@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -20,7 +20,7 @@ namespace NuGet.Commands
         {
             get
             {
-                return _metadata.Keys.ToList();
+                return _metadata.Keys.AsList();
             }
         }
 

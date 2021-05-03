@@ -97,10 +97,8 @@ namespace NuGet.Commands
                 PackageSpecificWarningProperties != null &&
                 !string.IsNullOrEmpty(message.LibraryId))
             {
-                var messageTargetFrameworks = message.TargetGraphs.Select(GetNuGetFramework).ToList();
-
                 // If the message does not contain a target graph, assume that it is applicable for all project frameworks.
-                if (messageTargetFrameworks.Count == 0)
+                if (!message.TargetGraphs.Select(GetNuGetFramework).Any())
                 {
                     // Suppress the warning if the code + libraryId combination is suppressed for all project frameworks.
                     if (ProjectFrameworks.Count > 0 &&

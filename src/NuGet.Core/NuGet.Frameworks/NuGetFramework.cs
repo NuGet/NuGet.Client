@@ -286,7 +286,7 @@ namespace NuGet.Frameworks
                         mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks);
 
                         // sort the PCL frameworks by alphabetical order
-                        var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
+                        var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase);
 
                         sb.Append(string.Join("+", sortedFrameworks));
                     }

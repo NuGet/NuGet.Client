@@ -741,8 +741,7 @@ namespace NuGet.ProjectModel
         {
             var orderedItems = items
                 .Select(f => GetPathWithForwardSlashes(f))
-                .OrderBy(f => f, StringComparer.Ordinal)
-                .ToList();
+                .OrderBy(f => f, StringComparer.Ordinal);
 
             WriteArray(json, property, orderedItems, writeItem);
         }
