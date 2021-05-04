@@ -5,20 +5,16 @@ $VSInstallerProcessName = "VSIXInstaller"
 function GetVSFolderPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion
     )
 
     $ProgramFilesPath = ${env:ProgramFiles}
-    if (Test-Path ${env:ProgramFiles(x86)}) {
-        $ProgramFilesPath = ${env:ProgramFiles(x86)}
-    }
 
+    $VS17PreviewRelativePath = "Microsoft Visual Studio\2022\Preview"
 
-    $VS16PreviewRelativePath = "Microsoft Visual Studio\2019\Preview"
-
-    if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath)) {
-        $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
+    if (Test-Path (Join-Path $ProgramFilesPath $VS17PreviewRelativePath)) {
+        $VSFolderPath = Join-Path $ProgramFilesPath $VS17PreviewRelativePath
     }
 
     return $VSFolderPath
@@ -28,7 +24,7 @@ function LaunchVSAndWaitForDTE {
     param (
         [string]$ActivityLogFullPath,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         $DTEReadyPollFrequencyInSecs,
@@ -68,7 +64,7 @@ function LaunchVSAndWaitForDTE {
 function GetVSIDEFolderPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion
     )
 
@@ -82,7 +78,7 @@ function KillRunningInstancesOfVS {
     Get-Process | ForEach-Object {
         if (-not [string]::IsNullOrEmpty($_.Path)) {
             $processPath = $_.Path | Out-String
-            if ($processPath.StartsWith("C:\Program Files (x86)\Microsoft Visual Studio", [System.StringComparison]::OrdinalIgnoreCase)) {
+            if ($processPath.StartsWith("C:\Program Files\Microsoft Visual Studio", [System.StringComparison]::OrdinalIgnoreCase)) {
                 Write-Host $processPath
                 Stop-Process $_ -ErrorAction SilentlyContinue -Force
                 if ($_.HasExited) {
@@ -96,7 +92,7 @@ function KillRunningInstancesOfVS {
 function LaunchVS {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion,
         [string]$ActivityLogFullPath
     )
@@ -115,7 +111,7 @@ function LaunchVS {
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion
     )
 
@@ -177,7 +173,7 @@ function ExecuteCommand {
 function GetVSIXInstallerPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion
     )
 
@@ -190,14 +186,14 @@ function GetVSIXInstallerPath {
 
 function GetMEFCachePath {
     $cachePath = $env:localappdata
-    @( "Microsoft", "VisualStudio", "16.*", "ComponentModelCache" ) | % { $cachePath = Join-Path $cachePath $_ }
+    @( "Microsoft", "VisualStudio", "17.*", "ComponentModelCache" ) | % { $cachePath = Join-Path $cachePath $_ }
 
     return $cachePath
 }
 
 function Update-Configuration(
-        [ValidateSet('16.0')]
-        [string] $vsVersion = '16.0') {
+        [ValidateSet('17.0')]
+        [string] $vsVersion = '17.0') {
 
     $vsIdeFolderPath = GetVSIDEFolderPath $vsVersion
     $vsFilePath = Join-Path $vsIdeFolderPath 'devenv.exe'
@@ -209,7 +205,7 @@ function Update-Configuration(
 
 function UpdateVSInstaller {
     param(
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -248,7 +244,7 @@ function UpdateVSInstaller {
 
 function ResumeVSInstall {
     param(
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -293,7 +289,7 @@ function UninstallVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixID,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -328,7 +324,7 @@ function DowngradeVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixID,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -374,7 +370,7 @@ function InstallVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixpath,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("17.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds

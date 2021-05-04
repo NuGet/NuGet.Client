@@ -21,7 +21,7 @@ param(
     [Alias('c')]
     [string]$Configuration = 'Debug',
     [Parameter(Mandatory=$True)]
-    [ValidateSet(15,16)]
+    [ValidateSet(15,16,17)]
     [Alias('tv')]
     [int]$ToolsetVersion,
     [Parameter(Mandatory=$False)]
