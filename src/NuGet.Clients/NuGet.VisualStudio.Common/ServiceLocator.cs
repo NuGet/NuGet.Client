@@ -117,7 +117,7 @@ namespace NuGet.VisualStudio
                 }
             }
 
-            return null;
+            return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class
