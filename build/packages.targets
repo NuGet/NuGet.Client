@@ -103,7 +103,6 @@
           However, our MSBuild integration tests use Microsoft.Build 16.8.0, which requires System.Threading.Tasks.Dataflow 4.9.0 (assembly version 4.9.3.0).
           To resolve runtime assembly binding failures, we'll downgrade the package from 4.11.1 to 4.9.0.
         -->
-        <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="16.9.31025.104" />
         <PackageReference Update="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
