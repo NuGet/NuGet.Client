@@ -188,13 +188,12 @@ namespace NuGet.Frameworks
             {
                 if (candidate.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
                 {
-                    string suffix = candidate.Framework.ToUpperInvariant().Replace("XAMARIN.", "");
-                    var comp = StringComparer.OrdinalIgnoreCase;
+                    var comp = StringComparison.OrdinalIgnoreCase;
+                    var fw = candidate.Framework;
                     result = result &&
-                    ((comp.Equals(suffix, "mac") && comp.Equals(target.Platform, "macos"))
-                        || (comp.Equals(suffix, "ios") && comp.Equals(target.Platform, "ios"))
-                        || (comp.Equals(suffix, "tvos") && comp.Equals(target.Platform, "tvos"))
-                        || (comp.Equals(suffix, "ios") && comp.Equals(target.Platform, "maccatalyst")));
+                    ((fw.EndsWith("mac", comp) && target.Platform.Equals("macos", comp))
+                        || (fw.EndsWith("ios", comp) && (target.Platform.Equals("ios", comp) || target.Platform.Equals("maccatalyst", comp)))
+                        || (fw.EndsWith("tvos", comp) && target.Platform.Equals("tvos", comp)));
                 }
                 else
                 {
