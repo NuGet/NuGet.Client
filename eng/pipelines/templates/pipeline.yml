@@ -134,7 +134,7 @@ jobs:
     name: DDNuGet-Windows
     demands:
     - DotNetFramework
-    - Allow_NuGet_E2E_Tests -equals true
+    - Agent.Name -equals DDNuGetW004
   strategy:
     matrix:
       Part1:
@@ -154,12 +154,14 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
+    VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
+  # Apex tests against 64-bit VS are blocked by https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1316999
+  condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'), not(eq(variables['VsTargetMajorVersion'], 17)))"
   pool:
     name: DDNuGet-Windows
     demands:
     - DotNetFramework
-    - Allow_NuGet_Apex_Tests -equals true
+    - Agent.Name -equals DDNuGetW004
 
   steps:
   - template: Apex_Tests_On_Windows.yml
