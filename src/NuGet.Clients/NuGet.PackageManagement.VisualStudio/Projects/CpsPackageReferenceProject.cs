@@ -17,6 +17,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -88,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(
+                    throw new ProjectNotNominatedException(
                         string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
                 else
@@ -129,7 +130,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<IAssetsLogMessage> additionalMessages;
             if (!_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo, out additionalMessages))
             {
-                throw new InvalidOperationException(
+                throw new ProjectNotNominatedException(
                     string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
             }
 
@@ -422,7 +423,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var spec = GetPackageSpec();
             if (spec == null)
             {
-                throw new InvalidOperationException(
+                throw new ProjectNotNominatedException(
                     string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
             }
 

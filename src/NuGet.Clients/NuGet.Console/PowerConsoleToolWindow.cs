@@ -271,7 +271,7 @@ namespace NuGetConsole.Implementation
                 if (args.InValue != null
                     || args.OutValue == IntPtr.Zero)
                 {
-                    throw new ArgumentException("Invalid argument", "e");
+                    throw new ArgumentException("Invalid argument", nameof(e));
                 }
                 Marshal.GetNativeVariantForObject(PowerConsoleWindow.PackageSources, args.OutValue);
             }
@@ -311,7 +311,7 @@ namespace NuGetConsole.Implementation
                 if (args.InValue != null
                     || args.OutValue == IntPtr.Zero)
                 {
-                    throw new ArgumentException("Invalid argument", "e");
+                    throw new ArgumentException("Invalid argument", nameof(e));
                 }
 
                 // get project list here
@@ -524,8 +524,6 @@ namespace NuGetConsole.Implementation
             // force the UI to update the toolbar
             IVsUIShell vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
             vsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleLoaded);
         }
 
         private IWpfConsole _wpfConsole;

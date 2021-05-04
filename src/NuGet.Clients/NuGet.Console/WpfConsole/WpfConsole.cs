@@ -585,7 +585,7 @@ namespace NuGetConsole.Implementation.Console
                 _historyInputs = InputHistory.History;
                 if (_historyInputs == null)
                 {
-                    _historyInputs = new string[] { };
+                    _historyInputs = Array.Empty<string>();
                 }
 
                 _currentHistoryInputIndex = _historyInputs.Count;
@@ -710,11 +710,6 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        [SuppressMessage(
-            "Microsoft.Usage",
-            "CA2213:DisposableFieldsShouldBeDisposed",
-            MessageId = "_marshaler",
-            Justification = "The Dispose() method on _marshaler is called when the tool window is closed.")]
         [SuppressMessage(
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",

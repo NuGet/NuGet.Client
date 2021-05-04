@@ -2976,7 +2976,7 @@ namespace ClassLibrary
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
-                File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), new byte[0]);
+                File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), Array.Empty<byte>());
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -5342,6 +5342,35 @@ namespace ClassLibrary
                 Assert.Equal(document.Root.Element(ns + "metadata").Element(ns + "requireLicenseAcceptance").Value, "true");
             }
         }
-    }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("wpf")]
+        [InlineData("wpflib")]
+        [InlineData("wpfcustomcontrollib")]
+        [InlineData("wpfusercontrollib")]
+        [InlineData("winforms")]
+        [InlineData("winformscontrollib")]
+        [InlineData("winformslib")]
+        public void Dotnet_New_Template_Restore_Pack_Success(string template)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
+                var workDirectory = pathContext.WorkingDirectory;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
+
+                // Act
+                msbuildFixture.CreateDotnetNewProject(workDirectory, projectName, template);
+                msbuildFixture.PackProject(solutionDirectory, projectName, string.Empty, null);
+
+                // Assert
+                // Make sure restore action was success.
+                Assert.True(File.Exists(Path.Combine(solutionDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                Assert.True(File.Exists(nupkgPath));
+            }
+        }
+    }
 }

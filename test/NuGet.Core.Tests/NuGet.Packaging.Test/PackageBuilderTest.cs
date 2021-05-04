@@ -345,22 +345,29 @@ namespace NuGet.Packaging.Test
                 builder.AddFiles(directory.Path, source, destination, exclude);
 
                 // Assert
-                Assert.Collection(builder.Files,
-                    file =>
+                var expectedResults = new[]
+                {
+                    new
                     {
-                        Assert.Equal(string.Format("Content{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
-                        Assert.Equal("file1.txt", file.EffectivePath);
+                        Path = string.Format("Content{0}file1.txt", Path.DirectorySeparatorChar),
+                        EffectivePath = "file1.txt"
                     },
-                    file =>
+                    new
                     {
-                        Assert.Equal(string.Format("Content{0}dir1{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
-                        Assert.Equal(string.Format("dir1{0}file1.txt", Path.DirectorySeparatorChar), file.EffectivePath);
+                        Path = string.Format("Content{0}dir1{0}file1.txt", Path.DirectorySeparatorChar),
+                        EffectivePath = string.Format("dir1{0}file1.txt", Path.DirectorySeparatorChar)
                     },
-                    file =>
+                    new
                     {
-                        Assert.Equal(string.Format("Content{0}dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
-                        Assert.Equal(string.Format("dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar), file.EffectivePath);
-                    });
+                        Path = string.Format("Content{0}dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar),
+                        EffectivePath = string.Format("dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar)
+                    }
+                };
+
+                var orderedExpectedResults = expectedResults.OrderBy(i => i.Path);
+                var orderedActualResults = builder.Files.Select(f => new { f.Path, f.EffectivePath }).OrderBy(i => i.Path);
+
+                Assert.Equal(orderedExpectedResults, orderedActualResults);
             }
         }
 
@@ -2276,6 +2283,24 @@ Description is required.");
                         new PhysicalPackageFile { TargetPath = @"lib" + Path.DirectorySeparatorChar + "net40" + Path.DirectorySeparatorChar + "baz.exe" },
                     };
             var packageAssemblyReferences = new PackageReferenceSet(NuGetFramework.AnyFramework, new string[] { "foo.dll", "bar", "baz" });
+
+            // Act and Assert
+            PackageBuilder.ValidateReferenceAssemblies(files, new[] { packageAssemblyReferences });
+
+            // If we've got this far, no exceptions were thrown.
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void ValidateReferencesAllowsNullFramework()
+        {
+            // Arrange
+            var files = new[] {
+                        new PhysicalPackageFile { TargetPath = @"lib" + Path.DirectorySeparatorChar + "net40" + Path.DirectorySeparatorChar + "foo.dll" },
+                        new PhysicalPackageFile { TargetPath = @"lib" + Path.DirectorySeparatorChar + "net40" + Path.DirectorySeparatorChar + "bar.dll" },
+                        new PhysicalPackageFile { TargetPath = @"lib" + Path.DirectorySeparatorChar + "net40" + Path.DirectorySeparatorChar + "baz.exe" },
+                    };
+            var packageAssemblyReferences = new PackageReferenceSet((NuGetFramework)null, new string[] { "foo.dll", "bar", "baz" });
 
             // Act and Assert
             PackageBuilder.ValidateReferenceAssemblies(files, new[] { packageAssemblyReferences });

@@ -26,12 +26,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (projectSystem == null)
             {
-                throw new ArgumentNullException("projectSystem");
+                throw new ArgumentNullException(nameof(projectSystem));
             }
 
             if (assemblyPath == null)
             {
-                throw new ArgumentNullException("assemblyPath");
+                throw new ArgumentNullException(nameof(assemblyPath));
             }
 
             string refreshFilePath = CreateRefreshFilePath(assemblyPath);

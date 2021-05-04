@@ -19,7 +19,7 @@
 
     <!-- ** Change for each new preview/rc -->
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.0</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.1</ReleaseLabel>
 
     <IsEscrowMode>false</IsEscrowMode>
 
@@ -34,7 +34,7 @@
     <!-- Specifies the SDK version to download to use for testing. The first value represents the channel, the second value represents the exact SDK version to be download. If a version is not specified, the latest version from the channel will be downloaded.
     Note that multiple SDKs can be downloaded by using `;` as a separator.
     -->
-    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">release/5.0.2xx 5.0.200-servicing.21120.4</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">release/5.0.2xx:5.0.200-servicing.21120.4</CliBranchForTesting>
   </PropertyGroup>
 
   <!-- Config -->
@@ -54,7 +54,7 @@
     <Description>NuGet client library.</Description>
     <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <Serviceable>true</Serviceable>
-    <PackageIconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup>

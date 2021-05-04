@@ -219,20 +219,20 @@ namespace NuGet.Packaging.Signing
             Timestamp timestamp;
             var timestampSummary = GetTimestamp(signature, verifierSettings, out timestamp);
 
+            var status = signature.Verify(
+            timestamp,
+            settings,
+            _fingerprintAlgorithm,
+            certificateExtraStore);
+
             if (timestampSummary.Status != SignatureVerificationStatus.Valid && !verifierSettings.AllowIgnoreTimestamp)
             {
                 return new SignatureVerificationSummary(
                     signature.Type,
                     SignatureVerificationStatus.Disallowed,
                     SignatureVerificationStatusFlags.NoValidTimestamp,
-                    timestampSummary.Issues);
+                    status.Issues.Concat(timestampSummary.Issues));
             }
-
-            var status = signature.Verify(
-                timestamp,
-                settings,
-                _fingerprintAlgorithm,
-                certificateExtraStore);
 
             return new SignatureVerificationSummary(
                 status.SignatureType,
@@ -240,7 +240,7 @@ namespace NuGet.Packaging.Signing
                 status.Flags,
                 status.Timestamp,
                 status.ExpirationTime,
-                timestampSummary.Issues.Concat(status.Issues));
+                status.Issues.Concat(timestampSummary.Issues));
         }
 
         private bool IsUntrustedRootAllowed(Signature signature)

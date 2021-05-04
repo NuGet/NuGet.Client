@@ -223,7 +223,7 @@ namespace NuGet.Protocol.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/NuGet/Home/issues/10706")]
         [InlineData("https://nuget.smbsrc.net/")]
         [InlineData("http://nuget.smbsrc.net/")]
         [InlineData("https://nuget.smbsrc.net")]

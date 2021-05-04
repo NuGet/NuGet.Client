@@ -41,6 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly string VSNuGetClientName = "NuGet VS VSIX";
 
         private readonly INuGetLockService _initLock;
+        private readonly ReentrantSemaphore _semaphoreLock = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -244,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (nuGetProject == null)
             {
-                throw new ArgumentNullException("nuGetProject");
+                throw new ArgumentNullException(nameof(nuGetProject));
             }
 
             await EnsureInitializeAsync();
@@ -784,9 +785,21 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // If already initialized, need not be on the UI thread
-                if (!_initialized)
+                if (_initialized)
                 {
-                    _initialized = true;
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                    return;
+                }
+
+                // Ensure all initialization finished when needed, it still runs as async and prevents _initialized set true too early.
+                // Setting '_initialized = true' too early caused random timing bug.
+
+                await _semaphoreLock.ExecuteAsync(async () =>
+                {
+                    if (_initialized)
+                    {
+                        return;
+                    }
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -797,11 +810,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
                     }
-                }
-                else
-                {
-                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
-                }
+
+                    _initialized = true;
+                });
             }
             catch (Exception e)
             {

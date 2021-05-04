@@ -1835,6 +1835,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Multiple nupkg files detected on &apos;{0}&apos; path to trust, only 1 is allowed..
+        /// </summary>
+        internal static string Multiple_Nupkgs_Detected {
+            get {
+                return ResourceManager.GetString("Multiple_Nupkgs_Detected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are no client certificates..
         /// </summary>
         internal static string NoClientCertificates {
@@ -2524,6 +2533,15 @@ namespace NuGet.Commands {
         internal static string VerifyCommand_FinishedWithErrors {
             get {
                 return ResourceManager.GetString("VerifyCommand_FinishedWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package signature validation command is not supported on this platform..
+        /// </summary>
+        internal static string VerifyCommand_NotSupported {
+            get {
+                return ResourceManager.GetString("VerifyCommand_NotSupported", resourceCulture);
             }
         }
         

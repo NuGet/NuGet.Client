@@ -40,6 +40,7 @@
   <ItemGroup>
     <Compile Include="Common\IProjectContextInfoExtensions.cs" />
     <Compile Include="Common\InstalledAndTransitivePackageCollections.cs" />
+    <Compile Include="Exceptions\ProjectNotNominatedException.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />

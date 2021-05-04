@@ -96,7 +96,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             _connection.MessageDispatcher.RequestHandlers.TryRemove(MessageMethod.Handshake);
-
+            _timeoutCancellationTokenSource.Dispose();
             GC.SuppressFinalize(this);
 
             _isDisposed = true;

@@ -27,9 +27,9 @@ namespace NuGet.Commands
         private readonly RestoreCollectorLogger _logger;
         private readonly ProjectRestoreRequest _request;
 
-        private const string WalkFrameworkDependencyDuration = "WalkFrameworkDependencyDuration";
-        private const string WalkRuntimeDependencyDuration = "WalkRuntimeDependencyDuration";
-        private const string EvaluateDownloadDependenciesDuration = "EvaluateDownloadDependenciesDuration";
+        private const string WalkFrameworkDependencyDuration = nameof(WalkFrameworkDependencyDuration);
+        private const string WalkRuntimeDependencyDuration = nameof(WalkRuntimeDependencyDuration);
+        private const string EvaluateDownloadDependenciesDuration = nameof(EvaluateDownloadDependenciesDuration);
 
         public Guid ParentId { get; }
 
@@ -48,7 +48,8 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             bool forceRuntimeGraphCreation,
             CancellationToken token,
-            TelemetryActivity telemetryActivity)
+            TelemetryActivity telemetryActivity,
+            string telemetryPrefix)
         {
             var allRuntimes = RuntimeGraph.Empty;
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
@@ -73,7 +74,7 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
-            telemetryActivity.EndIntervalMeasure(WalkFrameworkDependencyDuration);
+            telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkFrameworkDependencyDuration);
 
             telemetryActivity.StartIntervalMeasure();
 
@@ -90,7 +91,7 @@ namespace NuGet.Commands
 
             var downloadDependencyResolutionResults = await Task.WhenAll(downloadDependencyResolutionTasks);
 
-            telemetryActivity.EndIntervalMeasure(EvaluateDownloadDependenciesDuration);
+            telemetryActivity.EndIntervalMeasure(telemetryPrefix + EvaluateDownloadDependenciesDuration);
 
             var uniquePackages = new HashSet<LibraryIdentity>();
 
@@ -158,7 +159,7 @@ namespace NuGet.Commands
 
                 graphs.AddRange(runtimeGraphs);
 
-                telemetryActivity.EndIntervalMeasure(WalkRuntimeDependencyDuration);
+                telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkRuntimeDependencyDuration);
 
                 // Install runtime-specific packages
                 success &= await InstallPackagesAsync(

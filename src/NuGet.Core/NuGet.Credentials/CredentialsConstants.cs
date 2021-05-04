@@ -3,7 +3,7 @@
 
 namespace NuGet.Credentials
 {
-    public class CredentialsConstants
+    public static class CredentialsConstants
     {
         public static readonly int ProviderTimeoutSecondsDefault = 300;
 

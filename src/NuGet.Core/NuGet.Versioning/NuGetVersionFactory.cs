@@ -17,13 +17,13 @@ namespace NuGet.Versioning
         {
             if (String.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, value), "value");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, value), nameof(value));
             }
 
             NuGetVersion ver = null;
             if (!TryParse(value, out ver))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), "value");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), nameof(value));
             }
 
             return ver;

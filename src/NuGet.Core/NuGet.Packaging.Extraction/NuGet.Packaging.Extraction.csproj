@@ -296,49 +296,28 @@
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Link="NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Condition="'$(TargetFramework)' == 'net472'" />
     <Compile Include="..\NuGet.Packaging\Core\FrameworkReference.cs" Link="NuGet.Packaging\Core\FrameworkReference.cs" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NuGet.Packaging\RuntimeModel" />
-    <Folder Include="NuGet.Packaging\PackageExtraction" />
-    <Folder Include="NuGet.Packaging\Properties" />
-    <Folder Include="NuGet.Packaging\Telemetry" />
-    <Folder Include="NuGet.Packaging\Signing\Specifications" />
-    <Folder Include="NuGet.Packaging\Signing" />
-    <Folder Include="NuGet.Packaging\Core" />
-    <Folder Include="NuGet.Packaging\Signing\Verification" />
-    <Folder Include="NuGet.Packaging\NupkgMetadata" />
-    <Folder Include="NuGet.Packaging\Definitions" />
-    <Folder Include="NuGet.Packaging\Signing\Package" />
-    <Folder Include="NuGet.Packaging\Signing\Utility" />
-    <Folder Include="NuGet.Packaging\Core\comparers" />
-    <Folder Include="NuGet.Packaging\Signing\Signatures" />
-    <Folder Include="NuGet.Packaging\Signing\Content" />
-    <Folder Include="NuGet.Packaging\Exceptions" />
-    <Folder Include="NuGet.Packaging\PackageCreation\Authoring" />
-    <Folder Include="NuGet.Packaging\Licenses" />
-    <Folder Include="NuGet.Packaging\Signing\Cms" />
-    <Folder Include="NuGet.Packaging\Signing\Timestamp" />
-    <Folder Include="NuGet.Packaging\PackageCreation\Extensions" />
-    <Folder Include="NuGet.Packaging\Signing\Archive" />
-    <Folder Include="NuGet.Packaging\Signing\DerEncoding" />
-    <Folder Include="NuGet.Packaging\Signing\TrustedSigners" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="NuGet.Packaging\Rules\AnalysisResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AnalysisResources.resx</DependentUpon>
+    </Compile>
     <Compile Update="NuGet.Packaging\Signing\DerEncoding\SR.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>SR.resx</DependentUpon>
     </Compile>
-    <Compile Update="Strings.Designer.cs">
+    <Compile Update="NuGet.Packaging\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Update="Rules\AnalysisResources.Designer.cs">
+    <Compile Update="NuGet.Packaging\Rules\AnalysisResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>AnalysisResources.resx</DependentUpon>
@@ -346,19 +325,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="..\NuGet.Packaging\Rules\AnalysisResources.resx">
+    <EmbeddedResource Update="NuGet.Packaging\Rules\AnalysisResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>AnalysisResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="..\NuGet.Packaging\Signing\DerEncoding\SR.resx">
+    <EmbeddedResource Update="NuGet.Packaging\Signing\DerEncoding\SR.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SR.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="..\NuGet.Packaging\Strings.resx">
+    <EmbeddedResource Update="NuGet.Packaging\Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="..\NuGet.Packaging\PackageCreation\Resources\NuGetResources.resx">
+    <EmbeddedResource Update="NuGet.Packaging\PackageCreation\Resources\NuGetResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

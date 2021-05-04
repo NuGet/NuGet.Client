@@ -317,7 +317,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         if (!PowerShellLoaded)
                         {
-                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc);
+                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc, psVersion: Runspace.PSVersion.ToString());
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             PowerShellLoaded = true;
                         }
@@ -553,7 +553,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 await ExecuteInitScriptsAsync();
             });
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionBegin);
             ActiveConsole = console;
 
             string fullCommand;
@@ -571,8 +570,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         protected void OnExecuteCommandEnd()
         {
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionEnd);
-
             // dispose token source related to this current command
             _tokenSource?.Dispose();
             _token = CancellationToken.None;
@@ -929,6 +926,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
+            _tokenSource?.Dispose();
         }
 
         #endregion

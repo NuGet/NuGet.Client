@@ -100,7 +100,7 @@ namespace NuGet.VisualStudio
 
             foreach (var packagesElement in packagesElements)
             {
-                IList<PreinstalledPackageInfo> packages = new PreinstalledPackageInfo[0];
+                IList<PreinstalledPackageInfo> packages = Array.Empty<PreinstalledPackageInfo>();
                 string repositoryPath = null;
                 var isPreunzipped = false;
                 var forceDesignTimeBuild = false;

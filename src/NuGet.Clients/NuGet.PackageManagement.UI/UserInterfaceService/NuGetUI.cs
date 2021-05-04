@@ -178,13 +178,8 @@ namespace NuGet.PackageManagement.UI
                 DataContext = packages
             };
 
-            using (NuGetEventTrigger.TriggerEventBeginEnd(
-                NuGetEvent.LicenseWindowBegin,
-                NuGetEvent.LicenseWindowEnd))
-            {
-                var dialogResult = licenseWindow.ShowModal();
-                return dialogResult ?? false;
-            }
+            var dialogResult = licenseWindow.ShowModal();
+            return dialogResult ?? false;
         }
 
         public bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat)

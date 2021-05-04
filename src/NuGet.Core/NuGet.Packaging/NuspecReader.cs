@@ -593,7 +593,7 @@ namespace NuGet.Packaging
             return node?.Value;
         }
 
-        private static bool? AttributeAsNullableBool(XElement element, string attributeName)
+        private bool? AttributeAsNullableBool(XElement element, string attributeName)
         {
             bool? result = null;
 
@@ -614,7 +614,8 @@ namespace NuGet.Packaging
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.InvalidNuspecEntry,
-                            element.ToString().Trim());
+                            element.ToString().Trim(),
+                            GetIdentity());
 
                     throw new PackagingException(message);
                 }

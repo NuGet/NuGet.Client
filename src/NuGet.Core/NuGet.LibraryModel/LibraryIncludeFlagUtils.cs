@@ -10,7 +10,7 @@ namespace NuGet.LibraryModel
     /// <summary>
     /// Helper methods for dealing with include/exclude flag strings.
     /// </summary>
-    public class LibraryIncludeFlagUtils
+    public static class LibraryIncludeFlagUtils
     {
         /// <summary>
         /// By default build, contentFiles, and analyzers do not flow transitively between projects.

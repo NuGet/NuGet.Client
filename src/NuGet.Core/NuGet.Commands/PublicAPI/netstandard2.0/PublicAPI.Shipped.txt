@@ -178,7 +178,6 @@ NuGet.Commands.AddSourceArgs.Username.set -> void
 NuGet.Commands.AddSourceArgs.ValidAuthenticationTypes.get -> string
 NuGet.Commands.AddSourceArgs.ValidAuthenticationTypes.set -> void
 NuGet.Commands.AddSourceRunner
-NuGet.Commands.AddSourceRunner.AddSourceRunner() -> void
 NuGet.Commands.AssetTargetFallbackUtility
 NuGet.Commands.BuildAssetsUtils
 NuGet.Commands.ClientCertArgsExtensions
@@ -238,7 +237,6 @@ NuGet.Commands.DisableSourceArgs.DisableSourceArgs() -> void
 NuGet.Commands.DisableSourceArgs.Name.get -> string
 NuGet.Commands.DisableSourceArgs.Name.set -> void
 NuGet.Commands.DisableSourceRunner
-NuGet.Commands.DisableSourceRunner.DisableSourceRunner() -> void
 NuGet.Commands.DownloadDependencyResolutionResult
 NuGet.Commands.DownloadDependencyResolutionResult.Dependencies.get -> System.Collections.Generic.IList<System.Tuple<NuGet.LibraryModel.LibraryRange, NuGet.DependencyResolver.RemoteMatch>>
 NuGet.Commands.DownloadDependencyResolutionResult.Framework.get -> NuGet.Frameworks.NuGetFramework
@@ -251,7 +249,6 @@ NuGet.Commands.EnableSourceArgs.EnableSourceArgs() -> void
 NuGet.Commands.EnableSourceArgs.Name.get -> string
 NuGet.Commands.EnableSourceArgs.Name.set -> void
 NuGet.Commands.EnableSourceRunner
-NuGet.Commands.EnableSourceRunner.EnableSourceRunner() -> void
 NuGet.Commands.IClientCertArgsWithConfigFile
 NuGet.Commands.IClientCertArgsWithConfigFile.Configfile.get -> string
 NuGet.Commands.IClientCertArgsWithConfigFile.Configfile.set -> void
@@ -361,7 +358,6 @@ NuGet.Commands.ListSourceArgs.Format.get -> string
 NuGet.Commands.ListSourceArgs.Format.set -> void
 NuGet.Commands.ListSourceArgs.ListSourceArgs() -> void
 NuGet.Commands.ListSourceRunner
-NuGet.Commands.ListSourceRunner.ListSourceRunner() -> void
 NuGet.Commands.LocalsArgs
 NuGet.Commands.LocalsArgs.Arguments.get -> System.Collections.Generic.IList<string>
 NuGet.Commands.LocalsArgs.Clear.get -> bool
@@ -451,7 +447,6 @@ NuGet.Commands.MSBuildRestoreUtility
 NuGet.Commands.NoOpRestoreResult
 NuGet.Commands.NoOpRestoreResult.NoOpRestoreResult(bool success, string lockFilePath, System.Lazy<NuGet.ProjectModel.LockFile> lockFileLazy, NuGet.ProjectModel.CacheFile cacheFile, string cacheFilePath, NuGet.ProjectModel.ProjectStyle projectStyle, System.TimeSpan elapsedTime) -> void
 NuGet.Commands.NoOpRestoreUtilities
-NuGet.Commands.NoOpRestoreUtilities.NoOpRestoreUtilities() -> void
 NuGet.Commands.OriginalCaseGlobalPackageFolder
 NuGet.Commands.OriginalCaseGlobalPackageFolder.ConvertLockFileToOriginalCase(NuGet.ProjectModel.LockFile lockFile) -> void
 NuGet.Commands.OriginalCaseGlobalPackageFolder.CopyPackagesToOriginalCaseAsync(System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> graphs, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
@@ -571,7 +566,6 @@ NuGet.Commands.RemoveSourceArgs.Name.get -> string
 NuGet.Commands.RemoveSourceArgs.Name.set -> void
 NuGet.Commands.RemoveSourceArgs.RemoveSourceArgs() -> void
 NuGet.Commands.RemoveSourceRunner
-NuGet.Commands.RemoveSourceRunner.RemoveSourceRunner() -> void
 NuGet.Commands.RequestRuntimeUtility
 NuGet.Commands.ResolvedDependencyKey
 NuGet.Commands.ResolvedDependencyKey.Child.get -> NuGet.LibraryModel.LibraryIdentity
@@ -938,7 +932,6 @@ NuGet.Commands.UpdateSourceArgs.Username.set -> void
 NuGet.Commands.UpdateSourceArgs.ValidAuthenticationTypes.get -> string
 NuGet.Commands.UpdateSourceArgs.ValidAuthenticationTypes.set -> void
 NuGet.Commands.UpdateSourceRunner
-NuGet.Commands.UpdateSourceRunner.UpdateSourceRunner() -> void
 NuGet.Commands.VerifyArgs
 NuGet.Commands.VerifyArgs.CertificateFingerprint.get -> System.Collections.Generic.IEnumerable<string>
 NuGet.Commands.VerifyArgs.CertificateFingerprint.set -> void

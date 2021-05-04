@@ -123,7 +123,7 @@ namespace NuGet.SolutionRestoreManager
             if (_showErrorList)
             {
                 // Give the error list focus
-                _errorList.Value.BringToFrontIfSettingsPermit();
+                await _errorList.Value.BringToFrontIfSettingsPermitAsync();
             }
         }
 
@@ -302,12 +302,12 @@ namespace NuGet.SolutionRestoreManager
             ExceptionHelper.WriteErrorToActivityLog(ex);
         }
 
-        public void ShowError(string errorText)
+        public async Task ShowErrorAsync(string errorText)
         {
             var entry = new ErrorListTableEntry(errorText, LogLevel.Error);
 
             _errorList.Value.AddNuGetEntries(entry);
-            _errorList.Value.BringToFrontIfSettingsPermit();
+            await _errorList.Value.BringToFrontIfSettingsPermitAsync();
         }
 
         public Task WriteHeaderAsync()
@@ -439,6 +439,7 @@ namespace NuGet.SolutionRestoreManager
                 case LogLevel.Warning:
                     return MSBuildVerbosityLevel.Quiet;
                 case LogLevel.Minimal:
+                    return MSBuildVerbosityLevel.Minimal;
                 case LogLevel.Information:
                     return MSBuildVerbosityLevel.Normal;
                 case LogLevel.Verbose:

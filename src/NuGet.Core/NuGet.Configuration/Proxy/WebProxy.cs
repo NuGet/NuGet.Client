@@ -15,7 +15,12 @@ namespace NuGet.Configuration
     /// </summary>
     public class WebProxy : IWebProxy
     {
+#if NET45
         private IReadOnlyList<string> _bypassList = new string[] { };
+#else
+        private IReadOnlyList<string> _bypassList = Array.Empty<string>();
+#endif
+
         private Regex[] _regExBypassList; // can be null
 
         public WebProxy(string proxyAddress)
@@ -50,7 +55,12 @@ namespace NuGet.Configuration
             }
             set
             {
+#if NET45
                 _bypassList = value ?? new string[] { };
+#else
+                _bypassList = Array.Empty<string>();
+#endif
+
                 UpdateRegExList();
             }
         }

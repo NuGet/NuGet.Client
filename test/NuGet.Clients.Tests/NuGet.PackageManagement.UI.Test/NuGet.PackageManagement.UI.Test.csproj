@@ -6,6 +6,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <Description>Unit and integration tests for NuGet.PackageManagement.UI.</Description>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
     <Compile Include="Actions\UIActionEngineTests.cs" />
     <Compile Include="Actions\UpdatePreviewResultTests.cs" />
     <Compile Include="Converters\DateTimeConverterTests.cs" />
+    <Compile Include="Converters\DownloadCountToVisibilityConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
@@ -52,6 +54,7 @@
     <Compile Include="TestPackageSearchMetadata.cs" />
     <Compile Include="UserInterfaceService\NuGetUIContextTests.cs" />
     <Compile Include="UserInterfaceService\NuGetUITests.cs" />
+    <Compile Include="Utility\NuGetSearchServiceReconnectorTests.cs" />
     <Compile Include="Utility\ProjectUtilityTests.cs" />
     <Compile Include="WpfFactAttribute.cs" />
     <Compile Include="WpfFactDiscoverer.cs" />

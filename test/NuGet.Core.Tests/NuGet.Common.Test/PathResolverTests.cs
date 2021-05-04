@@ -135,7 +135,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".c" });
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]
@@ -146,7 +149,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}b{0}d", "a{0}b{0}c{0}d" });
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]
@@ -157,7 +163,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".{0}.c", "a{0}.c", "a{0}{0}.c", "b.c", "a{0}b{0}bc.c", "a{0}b{0}.c" });
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]
@@ -168,7 +177,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".{0}.c", "a{0}.c", "a{0}{0}.c", "b.c", "a{0}b{0}bc.c", "a{0}b{0}.c" });
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]
@@ -179,7 +191,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".{0}c", "a{0}c" });
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]
@@ -190,7 +205,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}b{0}d", "a{0}b{0}c{0}d" });
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]
@@ -201,7 +219,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { "a{0}b{0}c{0}d" });
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]
@@ -212,7 +233,10 @@ namespace NuGet.Common.Test
             IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
             string[] expectedResults = new[] { "abc", "adc" };
 
-            Assert.Equal(expectedResults, actualResults);
+            IEnumerable<string> orderedActualResults = actualResults.OrderBy(path => path);
+            IEnumerable<string> orderedExpectedResults = expectedResults.OrderBy(path => path);
+
+            Assert.Equal(orderedExpectedResults, orderedActualResults);
         }
 
         [Fact]

@@ -12,7 +12,6 @@ namespace NuGet.Versioning.Test
         [InlineData("(2.3.1-RC+srv01-a5c5ff9, 2.3.1-RC+srv02-dbf5ec0)", "2.3.1-RC+srv03-d9375a6")]
         [InlineData("(2.3.1-RC+srv01-a5c5ff9, 2.3.1-RC+srv02-dbf5ec0)", "2.3.1-RC+srv04-0ed1eb0")]
         [InlineData("(2.3.1-RC+srv01-a5c5ff9, 2.3.1-RC+srv02-dbf5ec0)", "2.3.1-RC+srv04-cc5438c")]
-        [InlineData("[2.3.1-RC+srv01-a5c5ff9, 2.3.1-RC+srv02-dbf5ec0)", "2.3.1-RC+srv00-a5c5ff9")]
         public void NuGetVersionRangeWithGitCommit(string verSpec, string ver)
         {
             // Arrange

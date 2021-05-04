@@ -18,8 +18,6 @@ namespace NuGet.Packaging
 {
     public class Manifest
     {
-        private const string SchemaVersionAttributeName = "schemaVersion";
-
         public Manifest(ManifestMetadata metadata)
                     : this(metadata, null)
         {
@@ -199,6 +197,7 @@ namespace NuGet.Packaging
 #if !IS_CORECLR // CORECLR_TODO: XmlSchema
             // Get the metadata node and look for the schemaVersion attribute
             XElement metadata = GetMetadataElement(document);
+            const string SchemaVersionAttributeName = "schemaVersion";
 
             if (metadata != null)
             {

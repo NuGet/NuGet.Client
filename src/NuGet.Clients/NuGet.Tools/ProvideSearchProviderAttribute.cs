@@ -16,7 +16,7 @@ namespace NuGetVSExtension
         {
             if (providerType == null)
             {
-                throw new ArgumentNullException("providerType");
+                throw new ArgumentNullException(nameof(providerType));
             }
 
             if (String.IsNullOrEmpty(providerName))

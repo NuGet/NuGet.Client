@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _installAsTopLevel = value;
-                OnPropertyChanged("InstallAsTopLevel");
+                OnPropertyChanged(nameof(InstallAsTopLevel));
             }
         }
 

@@ -29,9 +29,7 @@ NuGet.Common.CryptoHashProvider.CryptoHashProvider(string hashAlgorithm) -> void
 NuGet.Common.CryptoHashProvider.VerifyHash(byte[] data, byte[] hash) -> bool
 NuGet.Common.CryptoHashUtility
 NuGet.Common.CultureUtility
-NuGet.Common.CultureUtility.CultureUtility() -> void
 NuGet.Common.DatetimeUtility
-NuGet.Common.DatetimeUtility.DatetimeUtility() -> void
 NuGet.Common.DirectoryUtility
 NuGet.Common.EnvironmentVariableWrapper
 NuGet.Common.EnvironmentVariableWrapper.EnvironmentVariableWrapper() -> void
@@ -116,7 +114,6 @@ NuGet.Common.LegacyLoggerAdapter.LegacyLoggerAdapter() -> void
 NuGet.Common.LegacyLoggerAdapter.Log(NuGet.Common.LogLevel level, string data) -> void
 NuGet.Common.LegacyLoggerAdapter.LogAsync(NuGet.Common.LogLevel level, string data) -> System.Threading.Tasks.Task
 NuGet.Common.LocalResourceUtils
-NuGet.Common.LocalResourceUtils.LocalResourceUtils() -> void
 NuGet.Common.LogLevel
 NuGet.Common.LogLevel.Debug = 0 -> NuGet.Common.LogLevel
 NuGet.Common.LogLevel.Error = 5 -> NuGet.Common.LogLevel
@@ -140,7 +137,6 @@ NuGet.Common.LogMessage.Time.set -> void
 NuGet.Common.LogMessage.WarningLevel.get -> NuGet.Common.WarningLevel
 NuGet.Common.LogMessage.WarningLevel.set -> void
 NuGet.Common.LogMessageProperties
-NuGet.Common.LogMessageProperties.LogMessageProperties() -> void
 NuGet.Common.LoggerBase
 NuGet.Common.LoggerBase.LoggerBase() -> void
 NuGet.Common.LoggerBase.LoggerBase(NuGet.Common.LogLevel verbosityLevel) -> void
@@ -363,9 +359,7 @@ NuGet.Common.PathResolver.SearchPathResult.SearchPathResult(string path, bool is
 NuGet.Common.PathUtility
 NuGet.Common.PathValidator
 NuGet.Common.Preprocessor
-NuGet.Common.Preprocessor.Preprocessor() -> void
 NuGet.Common.ProjectJsonPathUtilities
-NuGet.Common.ProjectJsonPathUtilities.ProjectJsonPathUtilities() -> void
 NuGet.Common.RestoreLogMessage
 NuGet.Common.RestoreLogMessage.Code.get -> NuGet.Common.NuGetLogCode
 NuGet.Common.RestoreLogMessage.Code.set -> void

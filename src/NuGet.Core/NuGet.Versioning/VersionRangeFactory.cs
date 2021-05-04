@@ -92,12 +92,11 @@ namespace NuGet.Versioning
         {
             versionRange = null;
 
-            if (value == null)
+            var trimmedValue = value?.Trim();
+            if (string.IsNullOrEmpty(trimmedValue))
             {
                 return false;
             }
-
-            var trimmedValue = value.Trim();
 
             var charArray = trimmedValue.ToCharArray();
 
@@ -108,12 +107,6 @@ namespace NuGet.Versioning
             {
                 versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
                 return true;
-            }
-
-            // Fail early if the string is too short to be valid
-            if (charArray.Length < 3)
-            {
-                return false;
             }
 
             string minVersionString = null;
@@ -158,6 +151,7 @@ namespace NuGet.Versioning
 
                 // Split by comma, and make sure we don't get more than two pieces
                 var parts = trimmedValue.Split(',');
+
                 if (parts.Length > 2)
                 {
                     return false;
@@ -180,6 +174,13 @@ namespace NuGet.Versioning
                     {
                         return false;
                     }
+                }
+
+                // (1.0.0] and [1.0.0),(1.0.0) are invalid.
+                if (parts.Length == 1
+                    && !(isMinInclusive && isMaxInclusive))
+                {
+                    return false;
                 }
 
                 // If there is only one piece, we use it for both min and max
@@ -229,6 +230,24 @@ namespace NuGet.Versioning
                 if (!NuGetVersion.TryParse(maxVersionString, out maxVersion))
                 {
                     // invalid version
+                    return false;
+                }
+            }
+
+            if (minVersion != null && maxVersion != null)
+            {
+                int result = minVersion.CompareTo(maxVersion);
+
+                // minVersion > maxVersion
+                if (result > 0)
+                {
+                    return false;
+                }
+
+                // minVersion is equal to maxVersion (1.0.0, 1.0.0], [1.0.0, 1.0.0)
+                if (result == 0
+                    && (isMinInclusive ^ isMaxInclusive))
+                {
                     return false;
                 }
             }

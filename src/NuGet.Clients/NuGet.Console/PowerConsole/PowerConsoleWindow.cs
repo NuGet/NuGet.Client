@@ -22,20 +22,15 @@ namespace NuGetConsole.Implementation.PowerConsole
         private Dictionary<string, HostInfo> _hostInfos;
         private HostInfo _activeHostInfo;
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import(typeof(SVsServiceProvider))]
         internal IServiceProvider ServiceProvider { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IWpfConsoleService WpfConsoleService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany]
         internal IEnumerable<Lazy<IHostProvider, IHostMetadata>> HostProviders { get; set; }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "_hostInfo collection is disposed.")]
         private Dictionary<string, HostInfo> HostInfos
         {
             get

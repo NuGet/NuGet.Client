@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace NuGet.Common
 {
-    public class CultureUtility
+    public static class CultureUtility
     {
         public static void DisableLocalization()
         {

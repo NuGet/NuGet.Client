@@ -93,8 +93,7 @@ namespace NuGet.VisualStudio.Common
                 await _outputConsole.WriteLineAsync(string.Empty);
 
                 // Give the error list focus
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _errorList.Value.BringToFrontIfSettingsPermit();
+                await _errorList.Value.BringToFrontIfSettingsPermitAsync();
             });
         }
 
@@ -135,7 +134,7 @@ namespace NuGet.VisualStudio.Common
                     if (message.Level == LogLevel.Error ||
                         message.Level == LogLevel.Warning)
                     {
-                        await ReportAsync(message);
+                        ReportError(message);
                     }
                 }
             });
@@ -167,13 +166,6 @@ namespace NuGet.VisualStudio.Common
 
         public void ReportError(ILogMessage message)
         {
-            Run(() => ReportAsync(message));
-        }
-
-        private async Task ReportAsync(ILogMessage message)
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             var errorListEntry = new ErrorListTableEntry(message);
             _errorList.Value.AddNuGetEntries(errorListEntry);
         }
