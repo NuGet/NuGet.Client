@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.Protocol.Core.Types
@@ -37,6 +38,16 @@ namespace NuGet.Protocol.Core.Types
             DirectDownloadDirectory = directDownloadDirectory;
         }
 
+        public PackageDownloadContext(
+            SourceCacheContext sourceCacheContext,
+            string directDownloadDirectory,
+            bool directDownload,
+            ISettings settings)
+            : this(sourceCacheContext, directDownloadDirectory, directDownload)
+        {
+            Settings = settings;
+        }
+
         public SourceCacheContext SourceCacheContext { get; }
         public bool DirectDownload { get; }
         public string DirectDownloadDirectory { get; }
@@ -44,5 +55,6 @@ namespace NuGet.Protocol.Core.Types
         public Guid ParentId { get; set; }
 
         public ClientPolicyContext ClientPolicyContext { get; set; }
+        internal ISettings Settings { get; }
     }
 }

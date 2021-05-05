@@ -227,10 +227,19 @@ namespace NuGet.CommandLine
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
         {
+            var solutionDirectory =string.Empty;
+
             if (IsSolutionRestore(packageRestoreInputs))
             {
-                var solutionDirectory = GetSolutionDirectory(packageRestoreInputs);
+                solutionDirectory = GetSolutionDirectory(packageRestoreInputs);
+            }
+            else if(packageRestoreInputs.PackagesConfigFiles.Any())
+            {
+                solutionDirectory = Directory.GetCurrentDirectory();
+            }
 
+            if(!string.IsNullOrEmpty(solutionDirectory))
+            {
                 // Read the solution-level settings
                 var solutionSettingsFile = Path.Combine(
                     solutionDirectory,
@@ -382,7 +391,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload)
+                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, Settings)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
