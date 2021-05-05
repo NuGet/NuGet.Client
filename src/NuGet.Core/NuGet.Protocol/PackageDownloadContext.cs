@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.Protocol.Core.Types
@@ -42,10 +41,10 @@ namespace NuGet.Protocol.Core.Types
             SourceCacheContext sourceCacheContext,
             string directDownloadDirectory,
             bool directDownload,
-            ISettings settings)
+            INameSpaceLookup nameSpaceLookup)
             : this(sourceCacheContext, directDownloadDirectory, directDownload)
         {
-            Settings = settings;
+            NameSpaceLookup = nameSpaceLookup;
         }
 
         public SourceCacheContext SourceCacheContext { get; }
@@ -55,6 +54,6 @@ namespace NuGet.Protocol.Core.Types
         public Guid ParentId { get; set; }
 
         public ClientPolicyContext ClientPolicyContext { get; set; }
-        internal ISettings Settings { get; }
+        public INameSpaceLookup NameSpaceLookup { get; }
     }
 }

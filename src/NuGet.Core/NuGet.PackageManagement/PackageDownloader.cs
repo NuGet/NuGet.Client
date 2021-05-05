@@ -98,6 +98,13 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
+                (bool Prefixmath, bool ValueMatch, bool IsLeaf, HashSet<string> PackageSources) nameSpaceLookupResult = (false, false, false, null);
+
+                if (downloadContext?.NameSpaceLookup != null)
+                {
+                    nameSpaceLookupResult = downloadContext.NameSpaceLookup.Find(packageIdentity.Id);
+                }
+
                 while (groups.Count > 0)
                 {
                     token.ThrowIfCancellationRequested();
@@ -107,6 +114,12 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
+                        if (nameSpaceLookupResult.Prefixmath && !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name.Trim()))
+                        {
+                            // This package's id prefix is already defined in another package source, not this one.
+                            continue;
+                        }
+
                         var task = GetDownloadResourceResultAsync(
                             source,
                             packageIdentity,

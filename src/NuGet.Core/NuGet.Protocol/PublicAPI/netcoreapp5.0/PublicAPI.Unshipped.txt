@@ -1,8 +1,18 @@
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeUrl.get -> System.Uri
-NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload, NuGet.Configuration.ISettings settings) -> void
+NuGet.Protocol.Core.Types.PackageDownloadContext.NameSpaceLookup.get -> NuGet.Protocol.INameSpaceLookup
+NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload, NuGet.Protocol.INameSpaceLookup nameSpaceLookup) -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeUrl.set -> void
+NuGet.Protocol.INameSpaceLookup
+NuGet.Protocol.INameSpaceLookup.Find(string term) -> (bool Prefixmath, bool ValueMatch, bool IsLeaf, System.Collections.Generic.HashSet<string> PackageSources)
 NuGet.Protocol.LocalPackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeUrl.get -> System.Uri
+NuGet.Protocol.PackageSourceSection
+NuGet.Protocol.PackageSourceSection.GetNameSpaceIds() -> string[]
+NuGet.Protocol.PackageSourceSection.GetPackageSourceKey() -> string
+NuGet.Protocol.PackageSourceSection.PackageSourceSection(string[] nameSpaceIds, string packageSourceKey) -> void
+NuGet.Protocol.SearchTree
+NuGet.Protocol.SearchTree.Find(string term) -> (bool Prefixmath, bool ValueMatch, bool IsLeaf, System.Collections.Generic.HashSet<string> PackageSources)
+NuGet.Protocol.SearchTree.SearchTree(System.Collections.Generic.IReadOnlyList<NuGet.Protocol.PackageSourceSection> packageSourceSections) -> void
 const NuGet.Protocol.JsonProperties.ReadmeUrl = "readmeUrl" -> string
