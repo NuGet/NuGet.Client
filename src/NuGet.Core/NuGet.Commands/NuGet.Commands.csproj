@@ -13,7 +13,6 @@
     <Shipping>true</Shipping>
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
-    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">

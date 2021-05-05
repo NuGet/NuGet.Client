@@ -42,7 +42,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Editor" Version="16.9.119-preview" />
         <PackageReference Update="Microsoft.VisualStudio.Language.Intellisense" Version="16.9.119-preview" />
         <PackageReference Update="Microsoft.VisualStudio.Language.StandardClassification" Version="16.9.119-preview" />
-        <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="16.7.156-pre" />
+        <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="16.9.579-pre-g7b16785356" />
         <PackageReference Update="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Services.Client" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
@@ -59,7 +59,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Text.UI" Version="16.9.119-preview" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI.Wpf" Version="16.9.119-preview" />
         <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="10.0.30319" />
-        <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.9.39-alpha" />
+        <PackageReference Update="Microsoft.VisualStudio.Threading" Version="16.10.53-alpha" />
         <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="16.8.3038" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
@@ -81,6 +81,7 @@
         <PackageReference Update="VSLangProj80" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="VSSDK.TemplateWizardInterface" Version="12.0.4" />
         <PackageReference Update="VsWebSite.Interop" Version="16.9.31023.347" />
+        <PackageReference Update="Microsoft.Net.Compilers.Toolset" Version="3.9.0" />
     </ItemGroup>
 
     <!-- Test and utility packages -->
