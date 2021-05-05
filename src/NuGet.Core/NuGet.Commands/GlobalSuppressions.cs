@@ -8,6 +8,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+[assembly: SuppressMessage("Build", "CA1802:Field 'LiteralParent' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.", Justification = "External submodule code needs to be modified.", Scope = "member", Target = "~F:Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.ParentPathSegment.LiteralParent")]
 [assembly: SuppressMessage("Build", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member", Target = "~F:Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContext`1.Frame")]
 [assembly: SuppressMessage("Build", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member", Target = "~F:Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinear.FrameData.InStem")]
 [assembly: SuppressMessage("Build", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member", Target = "~F:Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinear.FrameData.IsNotApplicable")]
