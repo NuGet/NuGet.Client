@@ -189,11 +189,11 @@ namespace NuGet.Frameworks
                 if (candidate.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
                 {
                     var comp = StringComparison.OrdinalIgnoreCase;
-                    var fw = candidate.Framework;
+                    string fw = candidate.Framework;
                     result = result &&
-                    ((fw.EndsWith("mac", comp) && target.Platform.Equals("macos", comp))
-                        || (fw.EndsWith("ios", comp) && (target.Platform.Equals("ios", comp) || target.Platform.Equals("maccatalyst", comp)))
-                        || (fw.EndsWith("tvos", comp) && target.Platform.Equals("tvos", comp)));
+                    ((fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinMac, comp) && target.Platform.Equals("macos", comp))
+                        || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, comp) && (target.Platform.Equals("ios", comp) || target.Platform.Equals("maccatalyst", comp)))
+                        || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinTVOS, comp) && target.Platform.Equals("tvos", comp)));
                 }
                 else
                 {
