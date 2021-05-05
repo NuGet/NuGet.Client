@@ -69,33 +69,27 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var caption = string.Empty;
-            if (_useConsoleColor)
+
+            switch (logLevel)
             {
-                switch (logLevel)
-                {
-                    case LogLevel.Debug:
-                        caption = "debug: ";
-                        break;
-                    case LogLevel.Verbose:
-                        caption = "trace: ";
-                        break;
-                    case LogLevel.Information:
-                        caption = HidePrefixForInfoAndMinimal ? null : "info : ";
-                        break;
-                    case LogLevel.Minimal:
-                        caption = HidePrefixForInfoAndMinimal ? null : "log  : ";
-                        break;
-                    case LogLevel.Warning:
-                        caption = "warn : ";
-                        break;
-                    case LogLevel.Error:
-                        caption = "error: ";
-                        break;
-                }
-            }
-            else
-            {
-                caption = logLevel.ToString().ToLowerInvariant();
+                case LogLevel.Debug:
+                    caption = "debug: ";
+                    break;
+                case LogLevel.Verbose:
+                    caption = "trace: ";
+                    break;
+                case LogLevel.Information:
+                    caption = HidePrefixForInfoAndMinimal ? null : "info : ";
+                    break;
+                case LogLevel.Minimal:
+                    caption = HidePrefixForInfoAndMinimal ? null : "log  : ";
+                    break;
+                case LogLevel.Warning:
+                    caption = "warn : ";
+                    break;
+                case LogLevel.Error:
+                    caption = "error: ";
+                    break;
             }
 
             if (message.IndexOf('\n') >= 0)
