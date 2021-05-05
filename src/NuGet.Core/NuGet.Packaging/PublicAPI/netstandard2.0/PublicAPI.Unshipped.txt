@@ -11,4 +11,5 @@ NuGet.Packaging.ManifestMetadata.Readme.set -> void
 NuGet.Packaging.NuspecReader.GetReadme() -> string
 NuGet.Packaging.PackageBuilder.Readme.get -> string
 NuGet.Packaging.PackageBuilder.Readme.set -> void
+const NuGet.Packaging.Licenses.NuGetLicenseData.LicenseListVersion = "da7ecca" -> string
 static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string message) -> NuGet.Packaging.Signing.SignatureLog
