@@ -149,7 +149,7 @@ namespace NuGet.ProjectModel
             if (packageSpec != null)
             {
                 // Additional library properties
-                AddLibraryProperties(library, packageSpec, targetFramework); // use library if you need msbuildpath
+                AddLibraryProperties(library, packageSpec, targetFramework);
             }
 
             return library;
