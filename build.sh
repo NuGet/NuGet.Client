@@ -40,10 +40,10 @@ DOTNET="$(pwd)/cli/dotnet"
 $DOTNET --info
 
 # Get CLI Branches for testing
-echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
+echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
 IFS=$'\n'
-CMD_OUT_LINES=(`dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting`)
+CMD_OUT_LINES=(`$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting`)
 # Take only last the line which has the version information and strip all the spaces
 DOTNET_BRANCHES=${CMD_OUT_LINES[-1]//[[:space:]]}
 unset IFS
@@ -94,8 +94,8 @@ then
 fi
 
 # restore packages
-echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
@@ -103,8 +103,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # run tests
-echo "dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
 if [ $? -ne 0 ]; then
 	echo "Tests failed!!"
