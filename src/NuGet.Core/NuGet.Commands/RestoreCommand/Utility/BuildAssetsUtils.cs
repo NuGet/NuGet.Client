@@ -23,11 +23,11 @@ namespace NuGet.Commands
     public static class BuildAssetsUtils
     {
         private static readonly XNamespace Namespace = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
-        internal static readonly string CrossTargetingCondition = "'$(TargetFramework)' == ''";
-        internal static readonly string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
-        internal static readonly string LanguageCondition = "'$(Language)' == '{0}'";
-        internal static readonly string NegativeLanguageCondition = "'$(Language)' != '{0}'";
-        internal static readonly string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
+        internal const string CrossTargetingCondition = "'$(TargetFramework)' == ''";
+        internal const string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
+        internal const string LanguageCondition = "'$(Language)' == '{0}'";
+        internal const string NegativeLanguageCondition = "'$(Language)' != '{0}'";
+        internal const string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
         public const string TargetsExtension = ".targets";
         public const string PropsExtension = ".props";
 
