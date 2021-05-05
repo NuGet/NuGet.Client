@@ -31,8 +31,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async static Task<VsMSBuildProjectSystem> CreateMSBuildNuGetProjectSystemAsync(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             if (vsProjectAdapter == null)
             {
                 throw new ArgumentNullException(nameof(vsProjectAdapter));

@@ -63,8 +63,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(vsProjectAdapter);
 
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             var projectServices = await TryCreateProjectServicesAsync(
                 vsProjectAdapter,
                 forceCreate: forceProjectType);
@@ -91,6 +89,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapter vsProjectAdapter, bool forceCreate)
         {
             var componentModel = await _componentModel.GetValueAsync();
+
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
 
