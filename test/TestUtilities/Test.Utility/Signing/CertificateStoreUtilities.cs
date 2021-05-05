@@ -28,15 +28,6 @@ namespace Test.Utility.Signing
             return (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux) ? StoreName.CertificateAuthority : StoreName.My;
         }
 
-        internal static StoreLocation GetCertificateAuthorityStoreLocation()
-        {
-            // According to https://github.com/dotnet/runtime/issues/48207#issuecomment-778293907,
-            // only My, Root (RO), and Disallowed stores work on macOS.
-            // So use different approaches for Windows, Mac and Linux.
-
-            return (RuntimeEnvironmentHelper.IsWindows) ? StoreLocation.LocalMachine : StoreLocation.CurrentUser;
-        }
-
         internal static StoreName GetTrustedCertificateStoreNameForLeafOrSelfIssued()
         {
             // On MacOs, if we add the leaf or self-issued certificate into LocalMachine\Root, the private key will not be accessed.

@@ -60,6 +60,31 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
+        public async Task DotnetSign_SignPackageWithTrustedCertificateWithRelativePath_SuccceedsAsync()
+        {
+            // Arrange
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
+
+                var packageFileName = "PackageA.1.0.0.nupkg";
+
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                        pathContext.PackageSource,
+                        $"nuget sign .{Path.DirectorySeparatorChar}{packageFileName} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                        ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [Fact]
         public async Task DotnetSign_SignPackageWithInvalidEku_FailsAsync()
         {
             // Arrange
@@ -359,6 +384,38 @@ namespace Dotnet.Integration.Test
                 var result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-path {pfxPath} --certificate-password {password}",
+                    ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [Fact]
+        public async Task DotnetSign_SignPackageWithPfxFileOfRelativePath_SuccessAsync()
+        {
+            // Arrange
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext("PackageA", "1.0.0"));
+
+                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+
+                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+
+                var pfxName = Guid.NewGuid().ToString() + ".pfx";
+                var pfxPath = Path.Combine(pathContext.PackageSource, pfxName);
+                var password = Guid.NewGuid().ToString();
+                var pfxBytes = trustedCert.Source.Cert.Export(X509ContentType.Pfx, password);
+                File.WriteAllBytes(pfxPath, pfxBytes);
+
+                //Act
+                var result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-path .{Path.DirectorySeparatorChar}{pfxName} --certificate-password {password}",
                     ignoreExitCode: true);
 
                 // Assert

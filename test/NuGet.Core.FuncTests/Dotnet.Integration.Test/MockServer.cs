@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Protocol;
+using NuGet.Test.Server;
 using Test.Utility;
 
 namespace Dotnet.Integration.Test
@@ -29,7 +30,7 @@ namespace Dotnet.Integration.Test
 
         public string BasePath { get; }
         public HttpListener Listener { get; }
-        private PortReserver PortReserver { get; }
+        private PortReserverForSigning PortReserver { get; }
         public RouteTable Get { get; }
         public RouteTable Put { get; }
         public RouteTable Delete { get; }
@@ -47,7 +48,7 @@ namespace Dotnet.Integration.Test
         {
             BasePath = $"/{Guid.NewGuid().ToString("D")}";
 
-            PortReserver = new PortReserver(BasePath);
+            PortReserver = new PortReserverForSigning(BasePath);
 
             // tests that cancel downloads and exit will cause the mock server to throw, this should be ignored.
             Listener = new HttpListener()

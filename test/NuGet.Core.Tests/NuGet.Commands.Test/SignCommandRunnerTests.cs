@@ -26,14 +26,14 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithCertificateFileNotFound_ThrowsAsync()
         {
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
-                var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
+                var certificateFilePath = Path.Combine(testContext.Directory.Path, "certificate.pfx");
 
-                test.Args.CertificatePath = certificateFilePath;
+                testContext.Args.CertificatePath = certificateFilePath;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => test.Runner.ExecuteCommandAsync(test.Args));
+                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
                 Assert.Equal($"Certificate file '{certificateFilePath}' not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
@@ -43,10 +43,10 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithEmptyPkcs7File_ThrowsAsync()
         {
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 const string fileName = "EmptyCertificateStore.p7b";
-                var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
+                var certificateFilePath = Path.Combine(testContext.Directory.Path, fileName);
 
                 // This resource was created by calling X509Certificate2Collection.Export(X509ContentType.SerializedStore)
                 // with no certificates in the collection.  Programmatic creation works fine on Windows but not under Mono,
@@ -55,10 +55,10 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllBytes(certificateFilePath, bytes);
 
-                test.Args.CertificatePath = certificateFilePath;
+                testContext.Args.CertificatePath = certificateFilePath;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => test.Runner.ExecuteCommandAsync(test.Args));
+                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
                 Assert.Equal($"Certificate file '{certificateFilePath}' is invalid. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
@@ -68,14 +68,14 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithNoCertificateFound_ThrowsAsync()
         {
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
-                test.Args.CertificateFingerprint = "invalid fingerprint";
-                test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
-                test.Args.CertificateStoreName = StoreName.My;
+                testContext.Args.CertificateFingerprint = "invalid fingerprint";
+                testContext.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
+                testContext.Args.CertificateStoreName = StoreName.My;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => test.Runner.ExecuteCommandAsync(test.Args));
+                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
                 Assert.Equal("No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
@@ -87,24 +87,24 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndNoPassword_Succeed()
         {
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 const string fileName = "ExistingCertFile.pfx";
-                var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
+                var certificateFilePath = Path.Combine(testContext.Directory.Path, fileName);
 
-                var bytes = test.Certificate.Export(X509ContentType.Pfx);
+                var bytes = testContext.Certificate.Export(X509ContentType.Pfx);
 
                 File.WriteAllBytes(certificateFilePath, bytes);
 
-                test.Args.CertificatePath = certificateFilePath;
+                testContext.Args.CertificatePath = certificateFilePath;
 
-                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
-                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
-                var returncode = test.Runner.ExecuteCommandAsync(test.Args).Result;
+                var returncode = testContext.Runner.ExecuteCommandAsync(testContext.Args).Result;
                 Assert.Equal(returncode, 0);
 
-                var packagePaths = test.Args.PackagePaths;
+                var packagePaths = testContext.Args.PackagePaths;
                 Assert.Equal(packagePaths.Count, 1);
 
                 var packagePath = packagePaths[0];
@@ -122,25 +122,25 @@ namespace NuGet.Commands.Test
         {
             const string password = "password";
 
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 const string fileName = "ExistingCertFile.pfx";
-                var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
+                var certificateFilePath = Path.Combine(testContext.Directory.Path, fileName);
 
-                var bytes = test.Certificate.Export(X509ContentType.Pfx, password);
+                var bytes = testContext.Certificate.Export(X509ContentType.Pfx, password);
 
                 File.WriteAllBytes(certificateFilePath, bytes);
 
-                test.Args.CertificatePath = certificateFilePath;
-                test.Args.CertificatePassword = "password";
+                testContext.Args.CertificatePath = certificateFilePath;
+                testContext.Args.CertificatePassword = "password";
 
-                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
-                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
-                var returncode = test.Runner.ExecuteCommandAsync(test.Args).Result;
+                var returncode = testContext.Runner.ExecuteCommandAsync(testContext.Args).Result;
                 Assert.Equal(returncode, 0);
 
-                var packagePaths = test.Args.PackagePaths;
+                var packagePaths = testContext.Args.PackagePaths;
                 Assert.Equal(packagePaths.Count, 1);
 
                 var packagePath = packagePaths[0];
@@ -158,23 +158,23 @@ namespace NuGet.Commands.Test
         {
             const string password = "password";
 
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 const string fileName = "ExistingCertFile.pfx";
-                var certificateFilePath = Path.Combine(test.Directory.Path, fileName);
+                var certificateFilePath = Path.Combine(testContext.Directory.Path, fileName);
 
-                var bytes = test.Certificate.Export(X509ContentType.Pfx, password);
+                var bytes = testContext.Certificate.Export(X509ContentType.Pfx, password);
 
                 File.WriteAllBytes(certificateFilePath, bytes);
 
-                test.Args.CertificatePath = certificateFilePath;
-                test.Args.CertificatePassword = "incorrect password";
+                testContext.Args.CertificatePath = certificateFilePath;
+                testContext.Args.CertificatePassword = "incorrect password";
 
-                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
-                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => test.Runner.ExecuteCommandAsync(test.Args));
+                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
 
                 Assert.Equal($"Invalid password was provided for the certificate file '{certificateFilePath}'. Provide a valid password using the '-CertificatePassword' option", exception.Message);
             }
@@ -183,19 +183,19 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithExistingCertificateFromStoreAndNoPassword_Succeed()
         {
-            using (var test = await Test.CreateAsync(_fixture.GetTrustedCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetTrustedCertificate()))
             {
-                test.Args.CertificateStoreName = StoreName.My;
-                test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
-                test.Args.CertificateFingerprint = test.Certificate.Thumbprint;
+                testContext.Args.CertificateStoreName = StoreName.My;
+                testContext.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
+                testContext.Args.CertificateFingerprint = testContext.Certificate.Thumbprint;
 
-                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
-                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
-                var returncode = test.Runner.ExecuteCommandAsync(test.Args).Result;
+                var returncode = testContext.Runner.ExecuteCommandAsync(testContext.Args).Result;
                 Assert.Equal(returncode, 0);
 
-                var packagePaths = test.Args.PackagePaths;
+                var packagePaths = testContext.Args.PackagePaths;
                 Assert.Equal(packagePaths.Count, 1);
 
                 var packagePath = packagePaths[0];
@@ -212,15 +212,15 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task ExecuteCommandAsync_WithAmbiguousMatch_ThrowsAsync()
         {
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
-                test.Args.CertificateSubjectName = "Root";
+                testContext.Args.CertificateSubjectName = "Root";
                 //X509 store is opened in ReadOnly mode in this code path. Hence StoreLocation is set to LocalMachine.
-                test.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: true);
-                test.Args.CertificateStoreName = StoreName.Root;
+                testContext.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: true);
+                testContext.Args.CertificateStoreName = StoreName.Root;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => test.Runner.ExecuteCommandAsync(test.Args));
+                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
                 Assert.Equal("Multiple certificates were found that meet all the given criteria. Use the '-CertificateFingerprint' option with the hash of the desired certificate.", exception.Message);
@@ -234,28 +234,28 @@ namespace NuGet.Commands.Test
         {
             const string password = "password";
 
-            using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
+            using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
-                var certificateFilePath = Path.Combine(test.Directory.Path, "certificate.pfx");
+                var certificateFilePath = Path.Combine(testContext.Directory.Path, "certificate.pfx");
 
-                var bytes = test.Certificate.Export(X509ContentType.Pfx, password);
+                var bytes = testContext.Certificate.Export(X509ContentType.Pfx, password);
 
                 File.WriteAllBytes(certificateFilePath, bytes);
 
-                test.Args.CertificatePath = certificateFilePath;
-                test.Args.CertificatePassword = password;
+                testContext.Args.CertificatePath = certificateFilePath;
+                testContext.Args.CertificatePassword = password;
 
-                await Test.CreatePackageAsync(test.Directory, "package2.nupkg");
+                await TestContext.CreatePackageAsync(testContext.Directory, "package2.nupkg");
 
-                var packagesFilePath = Path.Combine(test.Directory, "*.nupkg");
+                var packagesFilePath = Path.Combine(testContext.Directory, "*.nupkg");
 
-                test.Args.PackagePaths = new string[] { packagesFilePath };
-                test.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
-                test.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.PackagePaths = new string[] { packagesFilePath };
+                testContext.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
+                testContext.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
-                await test.Runner.ExecuteCommandAsync(test.Args);
+                await testContext.Runner.ExecuteCommandAsync(testContext.Args);
 
-                Assert.Equal(1, test.Logger.LogMessages.Count(
+                Assert.Equal(1, testContext.Logger.LogMessages.Count(
                     message => message.Level == LogLevel.Warning && message.Code == NuGetLogCode.NU3018));
             }
         }
@@ -268,7 +268,7 @@ namespace NuGet.Commands.Test
                 typeof(SignCommandRunnerTests));
         }
 
-        private sealed class Test : IDisposable
+        private sealed class TestContext : IDisposable
         {
             private bool _isDisposed;
 
@@ -278,7 +278,7 @@ namespace NuGet.Commands.Test
             internal TestLogger Logger { get; }
             internal SignCommandRunner Runner { get; }
 
-            private Test(SignArgs args, TestDirectory directory, X509Certificate2 certificate, TestLogger logger)
+            private TestContext(SignArgs args, TestDirectory directory, X509Certificate2 certificate, TestLogger logger)
             {
                 Args = args;
                 Directory = directory;
@@ -300,7 +300,7 @@ namespace NuGet.Commands.Test
                 }
             }
 
-            internal static async Task<Test> CreateAsync(X509Certificate2 certificate)
+            internal static async Task<TestContext> CreateAsync(X509Certificate2 certificate)
             {
                 var directory = TestDirectory.Create();
                 var packageFilePath = await CreatePackageAsync(directory, "package.nupkg");
@@ -313,7 +313,7 @@ namespace NuGet.Commands.Test
                     PackagePaths = new string[] { packageFilePath }
                 };
 
-                return new Test(args, directory, certificate, logger);
+                return new TestContext(args, directory, certificate, logger);
             }
 
             internal static async Task<string> CreatePackageAsync(TestDirectory directory, string packageFileName)

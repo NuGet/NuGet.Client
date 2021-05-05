@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 
