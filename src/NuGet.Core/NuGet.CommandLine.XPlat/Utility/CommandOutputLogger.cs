@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class CommandOutputLogger : LoggerBase, ILogger
     {
-        private static readonly bool _useConsoleColor = true;
+        private const bool _useConsoleColor = true;
 
 
         public CommandOutputLogger(LogLevel logLevel)
