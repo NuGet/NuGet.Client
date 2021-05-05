@@ -30,7 +30,7 @@ namespace NuGet.CommandLine.Test
 
         public string BasePath { get; }
         public HttpListener Listener { get; }
-        private PortReserverForSigning PortReserver { get; }
+        private PortReserverOfMockServer PortReserver { get; }
         public RouteTable Get { get; }
         public RouteTable Put { get; }
         public RouteTable Delete { get; }
@@ -48,7 +48,7 @@ namespace NuGet.CommandLine.Test
         {
             BasePath = $"/{Guid.NewGuid().ToString("D")}";
 
-            PortReserver = new PortReserverForSigning(BasePath);
+            PortReserver = new PortReserverOfMockServer(BasePath);
 
             // tests that cancel downloads and exit will cause the mock server to throw, this should be ignored.
             Listener = new HttpListener()
