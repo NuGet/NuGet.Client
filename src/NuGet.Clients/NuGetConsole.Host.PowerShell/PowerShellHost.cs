@@ -38,7 +38,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     {
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
         private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
-        private static readonly int MaxTasks = 16;
+        private const int MaxTasks = 16;
         private static bool PowerShellLoaded = false;
 
         private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
