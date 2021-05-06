@@ -55,7 +55,7 @@ namespace NuGetConsole
                         // This is disposable, but it lives for the duration of the process.
                         return new ChannelOutputConsole(
                                 _asyncServiceProvider,
-                                GuidList.guidNuGetOutputWindowPaneGuid,
+                                GuidList.NuGetOutputWindowPaneGuid,
                                 Resources.OutputConsolePaneName,
                                 NuGetUIThreadHelper.JoinableTaskFactory);
                     }

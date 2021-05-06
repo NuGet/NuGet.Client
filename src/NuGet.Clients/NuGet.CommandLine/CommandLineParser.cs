@@ -18,7 +18,6 @@ namespace NuGet.CommandLine
         private readonly ICommandManager _commandManager;
 
         // On Unix or MacOSX slash as a switch indicator would interfere with the path separator
-        [SuppressMessage("Microsoft.Performance", "CA1802:UseLiteralsWhereAppropriate")]
         private static readonly bool _supportSlashAsSwitch = (Environment.OSVersion.Platform != PlatformID.Unix) && (Environment.OSVersion.Platform != PlatformID.MacOSX);
 
         public CommandLineParser(ICommandManager manager)
