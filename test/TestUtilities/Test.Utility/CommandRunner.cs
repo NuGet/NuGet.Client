@@ -74,7 +74,7 @@ namespace NuGet.Test.Utility
 
                 if (waitForExit)
                 {
-#if DEBUG
+#if DEBUG                   
                     p.WaitForExit();
                     var processExited = true;
 #else
@@ -89,6 +89,7 @@ namespace NuGet.Test.Utility
                     {
                         Kill(p);
                         WaitForExit(p);
+
                         var processName = Path.GetFileName(process);
 
                         throw new TimeoutException($"{processName} timed out: " + psi.Arguments);
