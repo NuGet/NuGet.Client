@@ -55,7 +55,7 @@ namespace NuGet.Protocol
 
             for (int i = 0; i < namespaceId.Length; i++)
             {
-                char c = MapCharsToCompactedArray(namespaceId[i]);
+                char c = namespaceId[i];
 
                 if (c == '.')
                 {
@@ -68,13 +68,13 @@ namespace NuGet.Protocol
                     break;
                 }
 
-                if (currentNode.Children[c - 'a'] == null)
+                if (!currentNode.Children.ContainsKey(c))
                 {
-                    currentNode.Children[c - 'a'] = new SearchNode(currentNode);
+                    currentNode.Children[c] = new SearchNode(currentNode);
                 }
 
                 currentNode.IsLeaf = false;
-                currentNode = currentNode.Children[c - 'a'];
+                currentNode = currentNode.Children[c];
             }
 
             if (string.IsNullOrEmpty(currentNode.NamespaceId))
@@ -105,7 +105,7 @@ namespace NuGet.Protocol
 
             for (; i < term.Length; i++)
             {
-                char c = MapCharsToCompactedArray(term[i]);
+                char c = term[i];
 
                 if (c == '*')
                 {
@@ -113,12 +113,12 @@ namespace NuGet.Protocol
                     break;
                 }
 
-                if (currentNode.Children[c - 'a'] == null)
+                if (!currentNode.Children.ContainsKey(c))
                 {
                     return currentNode.IsGlobbing ? (true, false, currentNode.IsLeaf, currentNode.PackageSources) : (false, false, currentNode.IsLeaf, currentNode.PackageSources);
                 }
 
-                currentNode = currentNode.Children[c - 'a'];
+                currentNode = currentNode.Children[c];
             }
 
             if (i == term.Length && !currentNode.IsValueNode) // full 'term' already matched, but still not at value Node. That means we need to go backtrace try to find better matching sources.
@@ -131,31 +131,6 @@ namespace NuGet.Protocol
 
             return currentNode == null ? (false, false, false, null)
                                         :(true, currentNode.IsValueNode, currentNode.IsLeaf, currentNode.PackageSources);
-        }
-
-        private char MapCharsToCompactedArray(char c)
-        {
-            if((c>='a' && c<='z') || c=='*')
-            {
-                return c;
-            }
-
-            if(c>='0' && c<='9')
-            {
-                return (char)(c - '0' + 26 + 'a');
-            }
-
-            switch (c)
-            {
-                case '-':
-                    return (char)(36 + 'a');
-                case '.':
-                    return (char)(37 + 'a');
-                case '_':
-                    return (char)(38 + 'a');
-                default:
-                    throw new ArgumentException($"{c} is unexpected character for package name");
-            }
         }
     }
 }

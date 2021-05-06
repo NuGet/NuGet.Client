@@ -8,7 +8,7 @@ namespace NuGet.Protocol
     internal class SearchNode
     {
         public readonly SearchNode Parent;
-        public readonly SearchNode[] Children;
+        public readonly Dictionary<char, SearchNode> Children;
         public bool IsValueNode => !string.IsNullOrWhiteSpace(NamespaceId);
         public bool IsLeaf { get; set; }
         public bool IsGlobbing { get; set; }
@@ -18,7 +18,7 @@ namespace NuGet.Protocol
         public SearchNode(SearchNode parent)
         {
             Parent = parent;
-            Children = new SearchNode[39]; // 'a-z', '0-9', '-', '.' , '-'
+            Children = new Dictionary<char, SearchNode>();
             NamespaceId = string.Empty;
             IsLeaf = true;
             IsGlobbing = false;
