@@ -13,6 +13,9 @@ namespace NuGet.Protocol
         {
             INameSpaceLookup nameSpaceLookup = null;
 
+            if (settings == null)
+                return nameSpaceLookup;
+
             PackageNamespacesConfiguration configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
             var packageSourceSections = new List<PackageSourceSection>();
 

@@ -104,12 +104,11 @@ namespace NuGet.PackageManagement
                 {
                     nameSpaceLookupResult = downloadContext.NameSpaceLookup.Find(packageIdentity.Id);
                     var packageSourcesAtPrefix = nameSpaceLookupResult.Prefixmath ? string.Join(", ", nameSpaceLookupResult.PackageSources) : string.Empty;
-                    File.AppendAllText(@"c:\Test\RestoreLog.txt", "------" + Environment.NewLine);
-                    File.AppendAllText(@"c:\Test\RestoreLog.txt", $"{packageIdentity}  Prefixmath : {nameSpaceLookupResult.Prefixmath}. packageSourcesAtPrefix: {packageSourcesAtPrefix}" + Environment.NewLine);
+                    logger.LogDebug($"{packageIdentity}  Prefixmath : {nameSpaceLookupResult.Prefixmath}. packageSources at prefix: {packageSourcesAtPrefix}" + Environment.NewLine);
                 }
                 else
                 {
-                    File.AppendAllText(@"c:\Test\RestoreLog.txt", $"{packageIdentity} : downloadContext?.NameSpaceLookup is not defined." + Environment.NewLine);
+                    logger.LogDebug($"{packageIdentity} : downloadContext?.NameSpaceLookup is not defined." + Environment.NewLine);
                 }
 
                 while (groups.Count > 0)
@@ -124,13 +123,13 @@ namespace NuGet.PackageManagement
                         if (nameSpaceLookupResult.Prefixmath
                             && !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
                         {
-                            File.AppendAllText(@"c:\Test\RestoreLog.txt", $"Skipping {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);
+                            logger.LogDebug($"Skipping {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);
                             // This package's id prefix is already defined in another package source, not this one, let's skip.
                             continue;
                         }
                         else
                         {
-                            File.AppendAllText(@"c:\Test\RestoreLog.txt", $"Search {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);
+                            logger.LogDebug($"Search {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);
                         }
 
                         var task = GetDownloadResourceResultAsync(

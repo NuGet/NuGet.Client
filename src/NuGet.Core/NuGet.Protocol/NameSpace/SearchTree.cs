@@ -44,10 +44,10 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(namespaceId));
             }
 
+            // For prevent from unwanted behaviour.
             if (namespaceId.Length > PackageIdMaxLength)
             {
-                // make it resource string.
-                // For the efficiency and prevent from unwanted behaviour.
+                // todo: make it resource string.
                 throw new ArgumentOutOfRangeException($"NamespaceId '{namespaceId}' in packageNamespaces section of nuget.config is too long. Please consider to reduce it.");
             }
 

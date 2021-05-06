@@ -227,19 +227,10 @@ namespace NuGet.CommandLine
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
         {
-            var solutionDirectory = string.Empty;
-
             if (IsSolutionRestore(packageRestoreInputs))
             {
-                solutionDirectory = GetSolutionDirectory(packageRestoreInputs);
-            }
-            else if (packageRestoreInputs.PackagesConfigFiles.Any())
-            {
-                solutionDirectory = Directory.GetCurrentDirectory();
-            }
+                var solutionDirectory = GetSolutionDirectory(packageRestoreInputs);
 
-            if (!string.IsNullOrEmpty(solutionDirectory))
-            {
                 // Read the solution-level settings
                 var solutionSettingsFile = Path.Combine(
                     solutionDirectory,
