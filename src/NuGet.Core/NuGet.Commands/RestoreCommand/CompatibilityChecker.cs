@@ -249,7 +249,7 @@ namespace NuGet.Commands
             return RestoreLogMessage.CreateError(logCode, issue.Format(), issue.Package.Id, graph.TargetGraphName);
         }
 
-        private static List<NuGetFramework> GetPackageFrameworks(
+        private static IEnumerable<NuGetFramework> GetPackageFrameworks(
             CompatibilityData compatibilityData,
             RestoreTargetGraph graph)
         {
@@ -290,7 +290,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return available.ToList();
+            return available;
         }
 
         private static List<NuGetFramework> GetProjectFrameworks(Library localLibrary)
