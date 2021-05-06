@@ -88,28 +88,23 @@ namespace NuGet.CommandLine.XPlat
                         assetsFile.Targets.Count != 0)
                     {
                         // Get all the packages that are referenced in a project
-                        var packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
+                        var packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive, includeProjects: listPackageArgs.ReportType == ReportType.Default);
 
                         // If packages equals null, it means something wrong happened
                         // with reading the packages and it was handled and message printed
                         // in MSBuildAPIUtility function, but we need to move to the next project
                         if (packages != null)
                         {
-                            // No packages means that no package references at all were found 
+                            // No packages means that no package references at all were found in the current framework
                             if (!packages.Any())
                             {
                                 Console.WriteLine(string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
                             }
                             else
                             {
-                                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
-                                {
-                                    await GetRegistrationMetadataAsync(packages, listPackageArgs);
-                                    await AddLatestVersionsAsync(packages, listPackageArgs);
-                                }
+                                bool printPackages = FilterPackages(packages, listPackageArgs);
 
                                 // Filter packages for dedicated reports, inform user if none
-                                var printPackages = FilterPackages(packages, listPackageArgs);
                                 if (listPackageArgs.ReportType != ReportType.Default && !printPackages)
                                 {
                                     switch (listPackageArgs.ReportType)
@@ -126,6 +121,13 @@ namespace NuGet.CommandLine.XPlat
                                     }
                                 }
 
+                                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                                {
+                                    await GetRegistrationMetadataAsync(packages, listPackageArgs);
+                                    await AddLatestVersionsAsync(packages, listPackageArgs);
+                                }
+
+                                printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
                                 if (printPackages)
                                 {
                                     var hasAutoReference = false;
@@ -156,7 +158,7 @@ namespace NuGet.CommandLine.XPlat
         {
             switch (listPackageArgs.ReportType)
             {
-                case ReportType.Default: break; // We do no filtering in this case
+                case ReportType.Default: break; // No filtering in this case
                 case ReportType.Outdated:
                     FilterPackages(
                         packages,
