@@ -21,8 +21,8 @@ namespace NuGet.Protocol
 
         public PackageSourceSection(string[] nameSpaceIds, string packageSourceKey)
         {
-           _nameSpaceIds = nameSpaceIds;
-           _packageSourceKey = packageSourceKey;
+            _nameSpaceIds = nameSpaceIds;
+            _packageSourceKey = packageSourceKey;
         }
     }
 }

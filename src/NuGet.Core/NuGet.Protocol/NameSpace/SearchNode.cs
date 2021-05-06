@@ -10,7 +10,6 @@ namespace NuGet.Protocol
         public readonly SearchNode Parent;
         public readonly Dictionary<char, SearchNode> Children;
         public bool IsValueNode => !string.IsNullOrWhiteSpace(NamespaceId);
-        public bool IsLeaf { get; set; }
         public bool IsGlobbing { get; set; }
         public string NamespaceId { get; set; }
         public HashSet<string> PackageSources;
@@ -20,7 +19,6 @@ namespace NuGet.Protocol
             Parent = parent;
             Children = new Dictionary<char, SearchNode>();
             NamespaceId = string.Empty;
-            IsLeaf = true;
             IsGlobbing = false;
         }
     }

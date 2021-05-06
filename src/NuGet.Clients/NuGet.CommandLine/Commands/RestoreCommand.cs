@@ -227,18 +227,18 @@ namespace NuGet.CommandLine
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
         {
-            var solutionDirectory =string.Empty;
+            var solutionDirectory = string.Empty;
 
             if (IsSolutionRestore(packageRestoreInputs))
             {
                 solutionDirectory = GetSolutionDirectory(packageRestoreInputs);
             }
-            else if(packageRestoreInputs.PackagesConfigFiles.Any())
+            else if (packageRestoreInputs.PackagesConfigFiles.Any())
             {
                 solutionDirectory = Directory.GetCurrentDirectory();
             }
 
-            if(!string.IsNullOrEmpty(solutionDirectory))
+            if (!string.IsNullOrEmpty(solutionDirectory))
             {
                 // Read the solution-level settings
                 var solutionSettingsFile = Path.Combine(
@@ -391,7 +391,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                INameSpaceLookup nameSpaceLookup = ConstructNameSpaceLookup(Settings); 
+                INameSpaceLookup nameSpaceLookup = ConstructNameSpaceLookup(Settings);
                 var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, nameSpaceLookup)
                 {
                     ClientPolicyContext = clientPolicyContext
@@ -972,7 +972,7 @@ namespace NuGet.CommandLine
             INameSpaceLookup nameSpaceLookup = null;
 
             PackageNamespacesConfiguration configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            var  packageSourceSections = new List<PackageSourceSection>();
+            var packageSourceSections = new List<PackageSourceSection>();
 
             foreach (var packageSourceKey in configuration.Namespaces.Keys)
             {
@@ -980,11 +980,11 @@ namespace NuGet.CommandLine
                 packageSourceSections.Add(new PackageSourceSection(nugetNamespaces, packageSourceKey));
             }
 
-            if(packageSourceSections.Any())
+            if (packageSourceSections.Any())
             {
                 nameSpaceLookup = new SearchTree(packageSourceSections);
             }
-           
+
             return nameSpaceLookup;
         }
 

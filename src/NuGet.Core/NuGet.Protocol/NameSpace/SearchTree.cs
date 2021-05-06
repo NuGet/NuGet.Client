@@ -23,7 +23,7 @@ namespace NuGet.Protocol
             foreach (PackageSourceSection packageSourceSection in packageSourceSections)
             {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-                var packageSourceKey = packageSourceSection.GetPackageSourceKey().ToLowerInvariant();
+                var packageSourceKey = packageSourceSection.GetPackageSourceKey().ToLowerInvariant().Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
                 foreach (string nameSpaceId in packageSourceSection.GetNameSpaceIds())
@@ -31,6 +31,8 @@ namespace NuGet.Protocol
                     Add(nameSpaceId, packageSourceKey);
                 }
             }
+
+            // todo : Once tree is fully populated, we can do compacting for better time and space complexity.
         }
 
         private void Add(string namespaceId, string packageSourceKey)
@@ -50,18 +52,14 @@ namespace NuGet.Protocol
             }
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
-            namespaceId = namespaceId.ToLowerInvariant();
+            namespaceId = namespaceId.ToLowerInvariant().Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
             for (int i = 0; i < namespaceId.Length; i++)
             {
                 char c = namespaceId[i];
 
-                if (c == '.')
-                {
-                    c = (char)(26 + 'a');
-                }
-                else if (c == '*')
+                if (c == '*')
                 {
                     // break here since seeing * means end of expression.
                     currentNode.IsGlobbing = true;
@@ -73,7 +71,6 @@ namespace NuGet.Protocol
                     currentNode.Children[c] = new SearchNode(currentNode);
                 }
 
-                currentNode.IsLeaf = false;
                 currentNode = currentNode.Children[c];
             }
 
@@ -90,7 +87,7 @@ namespace NuGet.Protocol
             currentNode.PackageSources.Add(packageSourceKey);
         }
 
-        public (bool Prefixmath, bool ValueMatch, bool IsLeaf, HashSet<string> PackageSources) Find(string term)
+        public (bool Prefixmath, HashSet<string> PackageSources) Find(string term)
         {
             if (string.IsNullOrWhiteSpace(term))
             {
@@ -115,7 +112,7 @@ namespace NuGet.Protocol
 
                 if (!currentNode.Children.ContainsKey(c))
                 {
-                    return currentNode.IsGlobbing ? (true, false, currentNode.IsLeaf, currentNode.PackageSources) : (false, false, currentNode.IsLeaf, currentNode.PackageSources);
+                    return currentNode.IsGlobbing ? (true, currentNode.PackageSources) : (false, currentNode.PackageSources);
                 }
 
                 currentNode = currentNode.Children[c];
@@ -123,14 +120,14 @@ namespace NuGet.Protocol
 
             if (i == term.Length && !currentNode.IsValueNode) // full 'term' already matched, but still not at value Node. That means we need to go backtrace try to find better matching sources.
             {
-                while(currentNode != null && !currentNode.IsValueNode)
+                while (currentNode != null && !currentNode.IsValueNode)
                 {
                     currentNode = currentNode.Parent;
                 }
             }
 
-            return currentNode == null ? (false, false, false, null)
-                                        :(true, currentNode.IsValueNode, currentNode.IsLeaf, currentNode.PackageSources);
+            return currentNode == null ? (false, null)
+                                        : (true, currentNode.PackageSources);
         }
     }
 }

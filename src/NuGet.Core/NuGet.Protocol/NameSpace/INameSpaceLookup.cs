@@ -7,6 +7,6 @@ namespace NuGet.Protocol
 {
     public interface INameSpaceLookup
     {
-        (bool Prefixmath, bool ValueMatch, bool IsLeaf, HashSet<string> PackageSources) Find(string term);
+        (bool Prefixmath, HashSet<string> PackageSources) Find(string term);
     }
 }
