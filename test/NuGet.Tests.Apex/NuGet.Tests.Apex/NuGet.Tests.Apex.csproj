@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Test.Apex.VisualStudio" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
@@ -77,6 +78,7 @@
       <Name>NuGet.VisualStudio</Name>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj" />
     <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\TestExtensions\NuGet.StaFact\NuGet.StaFact.csproj" />
     <ProjectReference Include="..\NuGet.Console.TestContract\NuGet.Console.TestContract.csproj" />
