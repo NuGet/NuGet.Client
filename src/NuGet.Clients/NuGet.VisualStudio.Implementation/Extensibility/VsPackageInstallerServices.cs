@@ -28,6 +28,7 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
+    [Obsolete]
     [Export(typeof(IVsPackageInstallerServices))]
     public class VsPackageInstallerServices : IVsPackageInstallerServices
     {
