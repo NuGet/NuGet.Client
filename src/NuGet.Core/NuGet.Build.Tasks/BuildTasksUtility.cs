@@ -549,8 +549,9 @@ namespace NuGet.Build.Tasks
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.NoCache = noCache;
+                INameSpaceLookup nameSpaceLookup = NameSpaceLookupUtility.ConstructNameSpaceLookup(settings);
 
-                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false)
+                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false, nameSpaceLookup : nameSpaceLookup)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };

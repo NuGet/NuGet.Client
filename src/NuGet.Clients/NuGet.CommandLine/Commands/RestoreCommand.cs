@@ -391,7 +391,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                INameSpaceLookup nameSpaceLookup = ConstructNameSpaceLookup(Settings);
+                INameSpaceLookup nameSpaceLookup = NameSpaceLookupUtility.ConstructNameSpaceLookup(Settings);
                 var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, nameSpaceLookup)
                 {
                     ClientPolicyContext = clientPolicyContext
@@ -965,27 +965,6 @@ namespace NuGet.CommandLine
                         errors: result));
                 }
             }
-        }
-
-        private INameSpaceLookup ConstructNameSpaceLookup(ISettings settings)
-        {
-            INameSpaceLookup nameSpaceLookup = null;
-
-            PackageNamespacesConfiguration configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            var packageSourceSections = new List<PackageSourceSection>();
-
-            foreach (var packageSourceKey in configuration.Namespaces.Keys)
-            {
-                string[] nugetNamespaces = configuration.Namespaces[packageSourceKey].ToArray();
-                packageSourceSections.Add(new PackageSourceSection(nugetNamespaces, packageSourceKey));
-            }
-
-            if (packageSourceSections.Any())
-            {
-                nameSpaceLookup = new SearchTree(packageSourceSections);
-            }
-
-            return nameSpaceLookup;
         }
 
         private class PackageRestoreInputs

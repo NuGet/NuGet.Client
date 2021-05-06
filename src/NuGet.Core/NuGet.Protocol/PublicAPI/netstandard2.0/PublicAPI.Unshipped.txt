@@ -6,6 +6,7 @@ NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetada
 NuGet.Protocol.INameSpaceLookup
 NuGet.Protocol.INameSpaceLookup.Find(string term) -> (bool Prefixmath, System.Collections.Generic.HashSet<string> PackageSources)
 NuGet.Protocol.LocalPackageSearchMetadata.ReadmeUrl.get -> System.Uri
+NuGet.Protocol.NameSpaceLookupUtility
 NuGet.Protocol.PackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.PackageSourceSection
@@ -16,3 +17,4 @@ NuGet.Protocol.SearchTree
 NuGet.Protocol.SearchTree.Find(string term) -> (bool Prefixmath, System.Collections.Generic.HashSet<string> PackageSources)
 NuGet.Protocol.SearchTree.SearchTree(System.Collections.Generic.IReadOnlyList<NuGet.Protocol.PackageSourceSection> packageSourceSections) -> void
 const NuGet.Protocol.JsonProperties.ReadmeUrl = "readmeUrl" -> string
+static NuGet.Protocol.NameSpaceLookupUtility.ConstructNameSpaceLookup(NuGet.Configuration.ISettings settings) -> NuGet.Protocol.INameSpaceLookup
