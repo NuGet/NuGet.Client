@@ -187,7 +187,7 @@ namespace NuGet.Frameworks
                     if (!isNet6Era || reduced.Any(f => _fwNameComparer.Equals(framework, f) && f.Version.Major >= 6))
                     {
                         // Prefer the highest framework version, likely to be the non-platform specific option.
-                        reduced = reduced.GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
+                        reduced = reduced.Where(f => _fwNameComparer.Equals(framework, f)).GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
                     }
                     else if (isNet6Era && reduced.Any(f => f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)))
                     {
