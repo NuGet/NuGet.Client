@@ -20,7 +20,6 @@ namespace NuGet.VisualStudio
     /// <summary>
     /// This class unifies all the different ways of getting services within visual studio.
     /// </summary>
-    // REVIEW: Make this internal 
     public static class ServiceLocator
     {
         public static void InitializePackageServiceProvider(IAsyncServiceProvider provider)

@@ -77,6 +77,7 @@ namespace NuGet.Commands
             Errors = errors;
         }
 
+        [Obsolete("Use the method that takes IReadOnlyList<RestoreSummary> as the 2nd parameter.")]
         public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)
         {
             Log(logger, restoreSummaries.ToList(), logErrors);

@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" ExcludeAssets="build" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" />
     <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />

@@ -14,14 +14,19 @@ namespace NuGet.Configuration.Test
 {
     public static class SettingsTestUtils
     {
-        public static void CreateConfigurationFile(string configurationPath, string mockBaseDirectory, string configurationContent)
+        public static void CreateConfigurationFile(string configurationPath, string configurationContent)
         {
-            Directory.CreateDirectory(mockBaseDirectory);
-            using (var file = File.Create(Path.Combine(mockBaseDirectory, configurationPath)))
+            using (var file = File.Create(configurationPath))
             {
                 var info = Encoding.UTF8.GetBytes(configurationContent);
                 file.Write(info, 0, info.Count());
             }
+        }
+
+        public static void CreateConfigurationFile(string configurationPath, string mockBaseDirectory, string configurationContent)
+        {
+            Directory.CreateDirectory(mockBaseDirectory);
+            CreateConfigurationFile(Path.Combine(mockBaseDirectory, configurationPath), configurationContent);
         }
 
         public static byte[] GetFileHash(string fileName)
@@ -122,6 +127,14 @@ namespace NuGet.Configuration.Test
             else if (setting1 is FileClientCertItem)
             {
                 return FileClientCertItem_DeepEquals(setting1 as FileClientCertItem, setting2 as FileClientCertItem);
+            }
+            else if (setting1 is NamespaceItem)
+            {
+                return NamespaceItem_DeepEquals(setting1 as NamespaceItem, setting2 as NamespaceItem);
+            }
+            else if (setting2 is PackageNamespacesSourceItem)
+            {
+                return PackageSourceNamespaceItem_Equals(setting1 as PackageNamespacesSourceItem, setting2 as PackageNamespacesSourceItem);
             }
 
             return false;
@@ -291,5 +304,21 @@ namespace NuGet.Configuration.Test
         {
             return ItemBase_DeepEquals(item1, item2);
         }
+
+        private static bool NamespaceItem_DeepEquals(NamespaceItem item1, NamespaceItem item2)
+        {
+            return ItemBase_DeepEquals(item1, item2);
+        }
+
+        private static bool PackageSourceNamespaceItem_Equals(PackageNamespacesSourceItem item1, PackageNamespacesSourceItem item2)
+        {
+            if (!ItemBase_DeepEquals(item1, item2))
+            {
+                return false;
+            }
+
+            return item1.Namespaces.OrderedEquals(item2.Namespaces, e => e.Id, StringComparer.OrdinalIgnoreCase);
+        }
+
     }
 }

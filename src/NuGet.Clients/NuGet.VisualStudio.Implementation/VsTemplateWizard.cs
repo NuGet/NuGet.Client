@@ -38,7 +38,9 @@ namespace NuGet.VisualStudio
 
         private DTE _dte;
         private Lazy<PreinstalledPackageInstaller> _preinstalledPackageInstaller;
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly IVsPackageInstallerServices _packageServices;
+#pragma warning restore CS0618 // Type or member is obsolete
         private readonly IOutputConsoleProvider _consoleProvider;
         private readonly IVsSolutionManager _solutionManager;
         private readonly Configuration.ISettings _settings;
@@ -50,7 +52,9 @@ namespace NuGet.VisualStudio
         [ImportingConstructor]
         public VsTemplateWizard(
             IVsPackageInstaller installer,
+#pragma warning disable CS0618 // Type or member is obsolete
             IVsPackageInstallerServices packageServices,
+#pragma warning restore CS0618 // Type or member is obsolete
             IOutputConsoleProvider consoleProvider,
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
