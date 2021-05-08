@@ -7278,7 +7278,7 @@ using System.Runtime.InteropServices;
         }
 
         [Fact]
-        public void PackCommand_NoRepo_GlobAllFiles_WithDefaultNuspec_Succeeds()
+        public void PackCommand_NoProjectFileWithDefaultNuspec_GlobsAllFiles()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -7341,7 +7341,7 @@ using System.Runtime.InteropServices;
         }
 
         [Fact]
-        public void PackCommand_WithRepo_WithDefaultNuspec_Succeeds()
+        public void PackCommand_WithProjectFileWithDefaultNuspec_Succeeds()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -7391,15 +7391,18 @@ namespace proj1
                     workingDirectory,
                     "spec",
                     waitForExit: true);
+
+                Assert.True(0 == specResult.ExitCode, specResult.AllOutput);
+
                 CommandRunnerResult packResult = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
                     " pack -properties tagVar=CustomTag;author=microsoft.com;Description=aaaaaaa -build",
                     waitForExit: true);
-                Assert.True(0 == specResult.ExitCode, specResult.AllOutput);
-                Assert.True(0 == packResult.ExitCode, packResult.AllOutput);
 
                 // Assert
+                Assert.True(0 == packResult.ExitCode, packResult.AllOutput);
+
                 var path = Path.Combine(workingDirectory, "proj1.1.0.0.nupkg");
                 using (var package = new PackageArchiveReader(path))
                 {
