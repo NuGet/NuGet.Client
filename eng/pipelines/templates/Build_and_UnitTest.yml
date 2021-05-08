@@ -470,7 +470,7 @@ steps:
   displayName: "Upload VSTS Drop"
   inputs:
     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
     sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
     toLowerCase: false
     usePat: true
