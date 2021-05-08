@@ -87,10 +87,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Verbosity_Description,
                     CommandOptionType.SingleValue);
 
-                CommandOption interactive = signCmd.Option(
-                    "--interactive",
-                    Strings.Verbosity_Description,
-                    CommandOptionType.NoValue);
+                //The interactive option is not enabled at first. And it's tracked by https://github.com/NuGet/Home/issues/10620
+                //CommandOption interactive = signCmd.Option(
+                //    "--interactive",
+                //    Strings.Verbosity_Description,
+                //    CommandOptionType.NoValue);
 
                 signCmd.HelpOption(XPlatUtility.HelpOption);
 
@@ -124,7 +125,8 @@ namespace NuGet.CommandLine.XPlat
                         SignatureHashAlgorithm = hashAlgorithm,
                         Logger = logger,
                         Overwrite = overwrite.HasValue(),
-                        NonInteractive = !interactive.HasValue(),
+                        //The interactive option is not enabled at first, so the NonInteractive is always set to true. This is tracked by https://github.com/NuGet/Home/issues/10620
+                        NonInteractive = true,
                         Timestamper = timestamper.Value(),
                         TimestampHashAlgorithm = timestampHashAlgorithm
                     };
