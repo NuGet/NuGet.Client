@@ -27,8 +27,7 @@ namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for InfiniteScrollList.xaml
-    /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001")]
+    /// </summary>    
     public partial class InfiniteScrollList : UserControl
     {
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();

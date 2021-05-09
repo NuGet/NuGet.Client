@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IProjectSystemCache))]
-    internal class ProjectSystemCache : IProjectSystemCache
+    internal class ProjectSystemCache : IProjectSystemCache, IDisposable
     {
         // Int used to indicate if the cache has been dirty.
         // 0 - Cache is clean
@@ -30,6 +30,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // Non-unique names index. We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<ProjectNames>> _shortNameCache = new Dictionary<string, HashSet<ProjectNames>>(StringComparer.OrdinalIgnoreCase);
+
+        private bool _disposed = false;
 
         // Returns the current value of _isCacheDirty.
         public int IsCacheDirty
@@ -523,6 +525,27 @@ namespace NuGet.PackageManagement.VisualStudio
         public bool TestResetDirtyFlag()
         {
             return (Interlocked.CompareExchange(location1: ref _isCacheDirty, value: 0, comparand: 1) == 1);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _readerWriterLock.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

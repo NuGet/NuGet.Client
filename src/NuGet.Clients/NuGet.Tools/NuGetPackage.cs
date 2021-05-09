@@ -1312,5 +1312,26 @@ namespace NuGetVSExtension
         }
 
         #endregion IVsPersistSolutionOpts
+
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (disposing)
+                {
+                    _mcs?.Dispose();
+                    _nuGetPowerShellUsageCollector?.Dispose();
+                    _semaphore.Dispose();
+                    ProjectRetargetingHandler?.Dispose();
+                    ProjectUpgradeHandler?.Dispose();
+
+                    GC.SuppressFinalize(this);
+                }
+            }
+            finally
+            {
+                base.Dispose(disposing);
+            }
+        }
     }
 }

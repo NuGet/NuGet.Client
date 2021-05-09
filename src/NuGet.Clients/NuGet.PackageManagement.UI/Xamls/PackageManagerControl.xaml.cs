@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageManagerControl.xaml
     /// </summary>
-    public partial class PackageManagerControl : UserControl, IVsWindowSearch
+    public partial class PackageManagerControl : UserControl, IVsWindowSearch, IDisposable
     {
         internal event EventHandler _actionCompleted;
         internal DetailControlModel _detailModel;
@@ -66,6 +66,7 @@ namespace NuGet.PackageManagement.UI
         private bool _recommendPackages = false;
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
+        private bool _disposed = false;
 
         private PackageManagerControl()
         {
@@ -1341,7 +1342,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void CleanUp()
+        private void CleanUp()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -1557,6 +1558,27 @@ namespace NuGet.PackageManagement.UI
                 await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project: null);
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(UpgradeButton_Click));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                CleanUp();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
