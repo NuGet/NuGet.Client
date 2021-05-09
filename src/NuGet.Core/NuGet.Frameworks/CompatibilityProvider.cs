@@ -37,12 +37,12 @@ namespace NuGet.Frameworks
         {
             if (target == null)
             {
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
             }
 
             if (candidate == null)
             {
-                throw new ArgumentNullException("candidate");
+                throw new ArgumentNullException(nameof(candidate));
             }
 
             // check the cache for a solution
