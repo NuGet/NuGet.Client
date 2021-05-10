@@ -29,14 +29,14 @@ jobs:
       tsaVersion: "TsaV2"
       codebase: "Existing"
       tsaEnvironment: "PROD"
-      codeBaseName: "$(TSACODEBASENAME)"
-      notificationAlias: "$(TSANOTIFICATIONALIAS)"
+      codeBaseName: "$(TsaCodebaseName)"
+      notificationAlias: "$(TsaNotificationEmail)"
       notifyAlwaysV2: true
-      codeBaseAdmins: "$(TSACODEBASEADMINS)"
-      instanceUrlForTsaV2: "$(TSAINSTANCEURL)"
-      projectNameDEVDIV: "$(TSAORGNAME)"
-      areaPath: "$(TSAAZDOAREAPATH)"
-      iterationPath: "$(TSAORGNAME)"
+      codeBaseAdmins: "$(TsaCodebaseAdmins)"
+      instanceUrlForTsaV2: "$(TsaInstanceUrl)"
+      projectNameDEVDIV: "$(TsaProjectName)"
+      areaPath: "$(TsaBugAreaPath)"
+      iterationPath: "$(TsaIterationPath)"
       uploadAPIScan: false
       uploadBinSkim: false
       uploadCredScan: true
