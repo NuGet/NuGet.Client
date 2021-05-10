@@ -134,6 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // call the recommender to get package recommendations
                 recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, _installedPackages, _transitivePackages, cancellationToken);
+                recommendIds = recommendIds.Take(MaxRecommended).ToList();
             }
 
             if (recommendIds is null || !recommendIds.Any())
@@ -141,32 +142,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
 
-            // get PackageIdentity info for the top 5 recommended packages
-            int index = 0;
-            List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
-            MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
-            PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-            while (index < recommendIds.Count && recommendPackages.Count < MaxRecommended)
+            // get metadata by doing a search for each recommended package id
+            var searchFilter = new SearchFilter(includePrerelease: false);
+            IEnumerable<Task<SearchResult<IPackageSearchMetadata>>> searchTasks = recommendIds.Select(p => _sourceRepository.SearchAsync(string.Format("packageid:{0}", p), searchFilter, pageSize:1, cancellationToken));
+            SearchResult<IPackageSearchMetadata>[] searchItems = await System.Threading.Tasks.Task.WhenAll(searchTasks);
+            IEnumerable<IPackageSearchMetadata> resultItems = searchItems.Where(i => i.RawItemsCount > 0)?.Select(si => si.Items[0]);
+            if (!resultItems.Any())
             {
-                Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
-                if (!(ver is null))
-                {
-                    var pid = new PackageIdentity(recommendIds[index], ver);
-                    recommendPackages.Add(pid);
-                }
-                index++;
+                return SearchResult.Empty<IPackageSearchMetadata>();
             }
-            var packages = recommendPackages.ToArray();
-
-            // get metadata for recommended packages
-            var items = await TaskCombinators.ThrottledAsync(
-                packages,
-                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
-                cancellationToken);
-
-            // The asynchronous execution has randomly returned the packages, so we need to resort
-            // based on the original recommendation order.
-            var result = SearchResult.FromItems(items.OrderBy(p => Array.IndexOf(packages, p.Identity)).ToArray());
+            SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(resultItems?.OrderBy(p => recommendIds.IndexOf(p.Identity.Id)).ToArray());
 
             // Set status to indicate that there are no more items to load
             result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
@@ -183,18 +168,5 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public Task<SearchResult<IPackageSearchMetadata>> RefreshSearchAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
             => System.Threading.Tasks.Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
-
-        public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
-        {
-            // first we try and load the metadata from a local package
-            var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            if (packageMetadata is null)
-            {
-                // and failing that we go to the network
-                packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            }
-            return packageMetadata;
-        }
-
     }
 }
