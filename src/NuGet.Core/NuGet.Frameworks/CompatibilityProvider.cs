@@ -183,7 +183,7 @@ namespace NuGet.Frameworks
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
             bool result = true;
-            bool isNet6Era = StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, target.Framework) && target.Version.Major >= 6;
+            bool isNet6Era = target.IsNet5Era && target.Version.Major >= 6;
             if (isNet6Era && target.HasPlatform && !NuGetFramework.FrameworkNameComparer.Equals(target, candidate))
             {
                 if (candidate.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))

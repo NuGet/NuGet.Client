@@ -94,7 +94,7 @@ namespace NuGet.Frameworks
                 // Remove lower versions of compatible frameworks
                 var reduced = ReduceUpwards(compatible);
 
-                bool isNet6Era = StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework.Framework) && framework.Version.Major >= 6;
+                bool isNet6Era = framework.IsNet5Era && framework.Version.Major >= 6;
 
                 // Reduce to the same framework name if possible, with an exception for Xamarin when net6.0+
                 if (reduced.Count() > 1 && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
