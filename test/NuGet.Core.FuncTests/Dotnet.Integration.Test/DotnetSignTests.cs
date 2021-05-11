@@ -22,8 +22,8 @@ namespace Dotnet.Integration.Test
         private SignCommandTestFixture _signFixture;
 
         private const string _packageAlreadySignedError = "NU3001: The package already contains a signature. Please remove the existing signature before adding a new signature.";
-        private readonly string _invalidPasswordErrorCode = "Invalid password was provided for the certificate file";
-        private readonly string _noCertFoundErrorCode = "No certificates were found that meet all the given criteria.";
+        private readonly string _invalidPasswordError = "NU3001: Invalid password was provided for the certificate file";
+        private readonly string _noCertFoundError = "NU3001: No certificates were found that meet all the given criteria.";
         private readonly string _chainBuildFailureErrorCode = NuGetLogCode.NU3018.ToString();
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
         private readonly string _timestampUnsupportedDigestAlgorithmCode = NuGetLogCode.NU3024.ToString();
@@ -106,7 +106,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_noCertFoundErrorCode);
+                result.AllOutput.Should().Contain(_noCertFoundError);
             }
         }
 
@@ -132,7 +132,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_noCertFoundErrorCode);
+                result.AllOutput.Should().Contain(_noCertFoundError);
             }
         }
 
@@ -158,7 +158,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_noCertFoundErrorCode);
+                result.AllOutput.Should().Contain(_noCertFoundError);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
-                result.AllOutput.Should().Contain(_noCertFoundErrorCode);
+                result.AllOutput.Should().Contain(_noCertFoundError);
             }
         }
 
@@ -451,8 +451,7 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
-                //result.AllOutput.Should().Contain(string.Format(_invalidPasswordErrorCode, pfxPath));
-                result.AllOutput.Should().Contain(_invalidPasswordErrorCode);
+                result.AllOutput.Should().Contain(string.Format(_invalidPasswordError, pfxPath));
             }
         }
 

@@ -30,35 +30,51 @@ namespace NuGet.Commands
                 return packages;
             });
 
-            var cert = await GetCertificateAsync(signArgs);
+            var success = true;
 
-            signArgs.Logger.LogInformation(Environment.NewLine);
-            signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
-            signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert, HashAlgorithmName.SHA256));
-
-            if (!string.IsNullOrEmpty(signArgs.Timestamper))
+            X509Certificate2 cert = null;
+            try
             {
-                signArgs.Logger.LogInformation(Strings.SignCommandDisplayTimestamper);
-                signArgs.Logger.LogInformation(signArgs.Timestamper);
+                cert = await GetCertificateAsync(signArgs);
+            }
+            catch (Exception e)
+            {
+                success = false;
+                ExceptionUtilities.LogException(e, signArgs.Logger);
             }
 
-            if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
+            if (success)
             {
-                signArgs.Logger.LogInformation(Strings.SignCommandOutputPath);
-                signArgs.Logger.LogInformation(signArgs.OutputDirectory);
+                signArgs.Logger.LogInformation(Environment.NewLine);
+                signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
+                signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert, HashAlgorithmName.SHA256));
+
+                if (!string.IsNullOrEmpty(signArgs.Timestamper))
+                {
+                    signArgs.Logger.LogInformation(Strings.SignCommandDisplayTimestamper);
+                    signArgs.Logger.LogInformation(signArgs.Timestamper);
+                }
+
+                if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
+                {
+                    signArgs.Logger.LogInformation(Strings.SignCommandOutputPath);
+                    signArgs.Logger.LogInformation(signArgs.OutputDirectory);
+                }
+
+                using (var signRequest = new AuthorSignPackageRequest(cert, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm))
+                {
+                    return await ExecuteCommandAsync(
+                        packagesToSign,
+                        signRequest,
+                        signArgs.Timestamper,
+                        signArgs.Logger,
+                        signArgs.OutputDirectory,
+                        signArgs.Overwrite,
+                        signArgs.Token);
+                }
             }
 
-            using (var signRequest = new AuthorSignPackageRequest(cert, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm))
-            {
-                return await ExecuteCommandAsync(
-                    packagesToSign,
-                    signRequest,
-                    signArgs.Timestamper,
-                    signArgs.Logger,
-                    signArgs.OutputDirectory,
-                    signArgs.Overwrite,
-                    signArgs.Token);
-            }
+            return success ? 0 : 1;
         }
 
         public async Task<int> ExecuteCommandAsync(
