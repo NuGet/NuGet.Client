@@ -10,11 +10,12 @@
     <Description>NuGet localization package for dotnet CLI.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+    <LocalizationOutputDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationOutputDirectory>
   </PropertyGroup>
 
   <PropertyGroup>
     <NuspecFile>NuGet.Localization.nuspec</NuspecFile>
-    <NuspecProperties>Version=$(Version);configuration=$(Configuration);LocalizationFilesDirectory=$(LocalizationFilesDirectory)</NuspecProperties>
+    <NuspecProperties>Version=$(Version);configuration=$(Configuration);LocalizationOutputDirectory=$(LocalizationOutputDirectory)</NuspecProperties>
   </PropertyGroup>
 
   <!--
@@ -27,7 +28,7 @@
 
   <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' == 'false' AND Exists($(LocalizationRootDirectory)) " BeforeTargets="GenerateNuspec">
     <MakeDir
-            Directories="$(LocalizationFilesDirectory)"/>
+            Directories="$(LocalizationOutputDirectory)"/>
     <ItemGroup>
       <LocalizationProjects Include="@(SolutionProjectsWithoutVSIX)" Exclude="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj"/>
     </ItemGroup>
@@ -44,7 +45,7 @@
 
     <ItemGroup>
       <_LocalizedFilePaths Include="@(_LocalizedFilesForLocalizationPackage)">
-        <TargetPath>$(LocalizationFilesDirectory)\%(_LocalizedFilesForLocalizationPackage.RelativeTargetPath)</TargetPath>
+        <TargetPath>$(LocalizationOutputDirectory)\%(_LocalizedFilesForLocalizationPackage.RelativeTargetPath)</TargetPath>
       </_LocalizedFilePaths>
     </ItemGroup>
 

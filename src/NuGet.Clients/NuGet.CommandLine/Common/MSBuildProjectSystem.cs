@@ -20,6 +20,13 @@ namespace NuGet.Common
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
 
+        private const string TargetFrameworksProperty = "TargetFrameworks";
+        private const string TargetFrameworkProperty = "TargetFramework";
+        private const string TargetFrameworkMonikerProperty = "TargetFrameworkMoniker";
+        private const string TargetPlatformIdentifierProperty = "TargetPlatformIdentifier";
+        private const string TargetPlatformVersionProperty = "TargetPlatformVersion";
+        private const string TargetPlatformMinVersionProperty = "TargetPlatformMinVersion";
+
         public MSBuildProjectSystem(
             string msbuildDirectory,
             string projectFullPath,
@@ -60,12 +67,12 @@ namespace NuGet.Common
                 {
                     var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
                         projectFilePath: ProjectFileFullPath,
-                        targetFrameworks: GetPropertyValue("TargetFrameworks"),
-                        targetFramework: GetPropertyValue("TargetFramework"),
-                        targetFrameworkMoniker: GetPropertyValue("TargetFrameworkMoniker"),
-                        targetPlatformIdentifier: GetPropertyValue("TargetPlatformIdentifier"),
-                        targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"),
-                        targetPlatformMinVersion: GetPropertyValue("TargetPlatformMinVersion"));
+                        targetFrameworks: GetPropertyValue(TargetFrameworksProperty),
+                        targetFramework: GetPropertyValue(TargetFrameworkProperty),
+                        targetFrameworkMoniker: GetPropertyValue(TargetFrameworkMonikerProperty),
+                        targetPlatformIdentifier: GetPropertyValue(TargetPlatformIdentifierProperty),
+                        targetPlatformVersion: GetPropertyValue(TargetPlatformVersionProperty),
+                        targetPlatformMinVersion: GetPropertyValue(TargetPlatformMinVersionProperty));
 
                     // Parse the framework of the project or return unsupported.
                     var frameworks = MSBuildProjectFrameworkUtility.GetProjectFrameworks(frameworkStrings).ToArray();

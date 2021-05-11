@@ -38,7 +38,7 @@ namespace NuGet.CommandLine
         public override void ExecuteCommand()
         {
             string sampleProjectUrl = "http://project_url_here_or_delete_this_line/";
-            string sampleIconUrl = "http://icon_url_here_or_delete_this_line/";
+            string sampleIconFile = "icon.png";
             string sampleTags = "Tag1 Tag2";
             string sampleReleaseNotes = "Summary of changes made in this release of the package.";
             string sampleDescription = "Package description";
@@ -110,7 +110,6 @@ namespace NuGet.CommandLine
 
             manifest.Metadata.SetProjectUrl(sampleProjectUrl);
             manifest.Metadata.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), Array.Empty<string>(), LicenseMetadata.CurrentVersion);
-            manifest.Metadata.SetIconUrl(sampleIconUrl);
             manifest.Metadata.Tags = sampleTags;
             manifest.Metadata.Copyright = "$copyright$";
             manifest.Metadata.ReleaseNotes = sampleReleaseNotes;
@@ -137,7 +136,7 @@ namespace NuGet.CommandLine
                             content = content.Replace("<id>mydummyidhere123123123</id>", "<id>$id$</id>");
                             content = content.Replace("<version>1.0.0</version>", "<version>$version$</version>");
                         }
-                        File.WriteAllText(nuspecFile, RemoveSchemaNamespace(content));
+                        File.WriteAllText(nuspecFile, RemoveSchemaNamespace(AddCommentedIconAttribute(content, sampleIconFile)));
                     }
 
                     Console.WriteLine(LocalizedResourceManager.GetString("SpecCommandCreatedNuSpec"), nuspecFile);
@@ -165,6 +164,14 @@ namespace NuGet.CommandLine
         {
             // This seems to be the only way to clear out xml namespaces.
             return Regex.Replace(content, @"(xmlns:?[^=]*=[""][^""]*[""])", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant);
+        }
+
+        private static string AddCommentedIconAttribute(string content, string iconFile)
+        {
+            string sampleIconFile = string.Format("    <!-- <icon>{0}</icon> -->", iconFile);
+
+            return content
+                .Replace($"</license>{Environment.NewLine}", string.Format("</license>{0}{1}{2}", Environment.NewLine, sampleIconFile, Environment.NewLine));
         }
     }
 }

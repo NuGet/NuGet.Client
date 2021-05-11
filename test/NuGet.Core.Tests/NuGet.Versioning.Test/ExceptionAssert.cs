@@ -45,15 +45,15 @@ namespace NuGet.Versioning.Test
         {
             if (minimum == null)
             {
-                return String.Format(equalAllowed ? "Argument_Must_Be_LessThanOrEqualTo" : "Argument_Must_Be_LessThan", maximum);
+                return string.Format(equalAllowed ? "Argument_Must_Be_LessThanOrEqualTo" : "Argument_Must_Be_LessThan", maximum);
             }
             else if (maximum == null)
             {
-                return String.Format(equalAllowed ? "Argument_Must_Be_GreaterThanOrEqualTo" : "Argument_Must_Be_GreaterThan", minimum);
+                return string.Format(equalAllowed ? "Argument_Must_Be_GreaterThanOrEqualTo" : "Argument_Must_Be_GreaterThan", minimum);
             }
             else
             {
-                return String.Format("Argument_Must_Be_Between", minimum, maximum);
+                return string.Format("Argument_Must_Be_Between", minimum, maximum);
             }
         }
 

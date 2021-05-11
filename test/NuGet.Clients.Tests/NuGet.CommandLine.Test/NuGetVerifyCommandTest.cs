@@ -53,12 +53,21 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(_failureCode, result.Item1);
-                Assert.Contains("File does not exist", result.Item3);
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(_failureCode == result.ExitCode, result.AllOutput);
+                    Assert.False(result.Success);
+                    Assert.Contains("Package signature validation command is not supported on this platform.", result.AllOutput);
+                }
+                else
+                {
+                    Assert.Equal(_failureCode, result.Item1);
+                    Assert.Contains("File does not exist", result.Item3);
+                }
             }
         }
 
-        [PlatformFact(Platform.Windows, SkipMono = true)]
+        [Fact]
         public void VerifyCommand_WithAuthorSignedPackage_FailsGracefully()
         {
             var nugetExe = Util.GetNuGetExePath();
@@ -81,7 +90,7 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(_failureCode == result.ExitCode, result.AllOutput);
                     Assert.False(result.Success);
-                    Assert.Contains("NU3004: The package is not signed.", result.AllOutput);
+                    Assert.Contains("Package signature validation command is not supported on this platform.", result.AllOutput);
                 }
                 else
                 {

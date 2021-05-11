@@ -19,7 +19,7 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public class JsonPackageSpecReader
+    public static class JsonPackageSpecReader
     {
         private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
         private static readonly char[] VersionSeparators = new[] { ';' };

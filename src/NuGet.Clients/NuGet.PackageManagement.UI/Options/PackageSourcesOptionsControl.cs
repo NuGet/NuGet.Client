@@ -691,6 +691,8 @@ namespace NuGet.Options
             Disposed -= PackageSourcesOptionsControl_Disposed;
             _nugetSourcesService?.Dispose();
             _nugetSourcesService = null;
+            _packageSources?.Dispose();
+            _machineWidepackageSources?.Dispose();
         }
 
         private static bool IsPathRootedSafe(string path)

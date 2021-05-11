@@ -83,7 +83,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "5.10.0";
+        public const string ProductVersion = "6.0.0";
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
         private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
@@ -1312,5 +1312,26 @@ namespace NuGetVSExtension
         }
 
         #endregion IVsPersistSolutionOpts
+
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (disposing)
+                {
+                    _mcs?.Dispose();
+                    _nuGetPowerShellUsageCollector?.Dispose();
+                    _semaphore.Dispose();
+                    ProjectRetargetingHandler?.Dispose();
+                    ProjectUpgradeHandler?.Dispose();
+
+                    GC.SuppressFinalize(this);
+                }
+            }
+            finally
+            {
+                base.Dispose(disposing);
+            }
+        }
     }
 }

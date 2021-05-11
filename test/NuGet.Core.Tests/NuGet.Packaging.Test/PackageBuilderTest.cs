@@ -2292,6 +2292,24 @@ Description is required.");
         }
 
         [Fact]
+        public void ValidateReferencesAllowsNullFramework()
+        {
+            // Arrange
+            var files = new[] {
+                        new PhysicalPackageFile { TargetPath = @"lib" + Path.DirectorySeparatorChar + "net40" + Path.DirectorySeparatorChar + "foo.dll" },
+                        new PhysicalPackageFile { TargetPath = @"lib" + Path.DirectorySeparatorChar + "net40" + Path.DirectorySeparatorChar + "bar.dll" },
+                        new PhysicalPackageFile { TargetPath = @"lib" + Path.DirectorySeparatorChar + "net40" + Path.DirectorySeparatorChar + "baz.exe" },
+                    };
+            var packageAssemblyReferences = new PackageReferenceSet((NuGetFramework)null, new string[] { "foo.dll", "bar", "baz" });
+
+            // Act and Assert
+            PackageBuilder.ValidateReferenceAssemblies(files, new[] { packageAssemblyReferences });
+
+            // If we've got this far, no exceptions were thrown.
+            Assert.True(true);
+        }
+
+        [Fact]
         public void ValidateReferencesThrowsForPartialNamesThatDoNotHaveAKnownExtension()
         {
             // Arrange

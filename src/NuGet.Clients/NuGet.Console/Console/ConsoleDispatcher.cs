@@ -69,7 +69,7 @@ namespace NuGetConsole.Implementation.Console
         {
             if (key == null)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
             _keyBuffer.Add(key);
         }

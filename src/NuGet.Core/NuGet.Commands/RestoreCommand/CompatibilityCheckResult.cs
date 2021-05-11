@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -17,7 +18,7 @@ namespace NuGet.Commands
         public CompatibilityCheckResult(RestoreTargetGraph graph, IEnumerable<CompatibilityIssue> issues)
         {
             Graph = graph;
-            Issues = issues.ToList().AsReadOnly();
+            Issues = issues.AsList().AsReadOnly();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement
         {
             if (commonOperations == null)
             {
-                throw new ArgumentNullException("commonOperations");
+                throw new ArgumentNullException(nameof(commonOperations));
             }
             CommonOperations = commonOperations;
         }

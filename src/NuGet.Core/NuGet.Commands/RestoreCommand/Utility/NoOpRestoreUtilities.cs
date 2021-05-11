@@ -5,16 +5,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Common;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
-    public class NoOpRestoreUtilities
+    public static class NoOpRestoreUtilities
     {
         /// <summary>
         /// The name of the file to use.  When changing this, you should also change <see cref="LockFileFormat.AssetsFileName"/>.

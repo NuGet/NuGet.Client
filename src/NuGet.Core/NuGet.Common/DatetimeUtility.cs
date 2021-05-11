@@ -8,7 +8,7 @@ namespace NuGet.Common
     /// <summary>
     /// static class to provide datetime common utility apis
     /// </summary>
-    public class DatetimeUtility
+    public static class DatetimeUtility
     {
         /// <summary>
         /// take timespan n return in appropriate unit like ms, or seconds, or minutes, or hours

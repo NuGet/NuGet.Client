@@ -143,7 +143,7 @@ namespace NuGetConsole.Host
             UtilityMethods.ThrowIfArgumentNull(interfaceType);
             if (!interfaceType.IsInterface)
             {
-                throw new ArgumentException("Invalid argument", "interfaceType");
+                throw new ArgumentException("Invalid argument", nameof(interfaceType));
             }
 
             TypeWrapper<T> wrapper = getTypeWrapper(scriptValue);

@@ -23,7 +23,6 @@ NuGet.LibraryModel.FrameworkDependencyFlags
 NuGet.LibraryModel.FrameworkDependencyFlags.All = 65535 -> NuGet.LibraryModel.FrameworkDependencyFlags
 NuGet.LibraryModel.FrameworkDependencyFlags.None = 0 -> NuGet.LibraryModel.FrameworkDependencyFlags
 NuGet.LibraryModel.FrameworkDependencyFlagsUtils
-NuGet.LibraryModel.FrameworkDependencyFlagsUtils.FrameworkDependencyFlagsUtils() -> void
 NuGet.LibraryModel.KnownLibraryProperties
 NuGet.LibraryModel.Library
 NuGet.LibraryModel.Library.Dependencies.get -> System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency>
@@ -90,7 +89,6 @@ NuGet.LibraryModel.LibraryDependencyTarget.Project = 2 -> NuGet.LibraryModel.Lib
 NuGet.LibraryModel.LibraryDependencyTarget.Reference = 16 -> NuGet.LibraryModel.LibraryDependencyTarget
 NuGet.LibraryModel.LibraryDependencyTarget.WinMD = 32 -> NuGet.LibraryModel.LibraryDependencyTarget
 NuGet.LibraryModel.LibraryDependencyTargetUtils
-NuGet.LibraryModel.LibraryDependencyTargetUtils.LibraryDependencyTargetUtils() -> void
 NuGet.LibraryModel.LibraryDependencyType
 NuGet.LibraryModel.LibraryDependencyType.Combine(System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependencyTypeFlag> add, System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependencyTypeFlag> remove) -> NuGet.LibraryModel.LibraryDependencyType
 NuGet.LibraryModel.LibraryDependencyType.Contains(NuGet.LibraryModel.LibraryDependencyTypeFlag flag) -> bool
@@ -114,7 +112,6 @@ NuGet.LibraryModel.LibraryIdentity.Type.set -> void
 NuGet.LibraryModel.LibraryIdentity.Version.get -> NuGet.Versioning.NuGetVersion
 NuGet.LibraryModel.LibraryIdentity.Version.set -> void
 NuGet.LibraryModel.LibraryIncludeFlagUtils
-NuGet.LibraryModel.LibraryIncludeFlagUtils.LibraryIncludeFlagUtils() -> void
 NuGet.LibraryModel.LibraryIncludeFlags
 NuGet.LibraryModel.LibraryIncludeFlags.All = NuGet.LibraryModel.LibraryIncludeFlags.Runtime | NuGet.LibraryModel.LibraryIncludeFlags.Compile | NuGet.LibraryModel.LibraryIncludeFlags.Build | NuGet.LibraryModel.LibraryIncludeFlags.Native | NuGet.LibraryModel.LibraryIncludeFlags.ContentFiles | NuGet.LibraryModel.LibraryIncludeFlags.Analyzers | NuGet.LibraryModel.LibraryIncludeFlags.BuildTransitive -> NuGet.LibraryModel.LibraryIncludeFlags
 NuGet.LibraryModel.LibraryIncludeFlags.Analyzers = 32 -> NuGet.LibraryModel.LibraryIncludeFlags

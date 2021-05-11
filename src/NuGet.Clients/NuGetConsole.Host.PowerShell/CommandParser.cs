@@ -42,7 +42,7 @@ namespace NuGetConsole.Host.PowerShell
         {
             if (command == null)
             {
-                throw new ArgumentNullException("command");
+                throw new ArgumentNullException(nameof(command));
             }
             return new CommandParser(command).ParseCore();
         }

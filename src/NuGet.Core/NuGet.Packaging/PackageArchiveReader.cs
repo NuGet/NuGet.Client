@@ -24,6 +24,7 @@ namespace NuGet.Packaging
     {
         private readonly ZipArchive _zipArchive;
         private readonly SigningSpecifications _signingSpecifications = SigningSpecifications.V1;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// Signature specifications.
@@ -35,6 +36,34 @@ namespace NuGet.Packaging
         /// If this is null then we cannot perform signature verification.
         /// </summary>
         protected Stream ZipReadStream { get; set; }
+
+#if IS_SIGNING_SUPPORTED
+        /// <summary>
+        /// True if the package is signed
+        /// </summary>
+        private bool? _isSigned;
+#endif
+
+        /// <summary>
+        /// Nupkg package reader
+        /// </summary>
+        /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
+        /// <param name="compatibilityProvider">Framework compatibility provider.</param>
+        private PackageArchiveReader(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+            : base(frameworkProvider, compatibilityProvider)
+        {
+            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
+        }
+
+        // For testing purposes only
+        internal PackageArchiveReader(Stream stream, IEnvironmentVariableReader environmentVariableReader)
+            : this(stream)
+        {
+            if (environmentVariableReader != null)
+            {
+                _environmentVariableReader = environmentVariableReader;
+            }
+        }
 
         /// <summary>
         /// Nupkg package reader
@@ -96,13 +125,13 @@ namespace NuGet.Packaging
         /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
         /// <param name="compatibilityProvider">Framework compatibility provider.</param>
         public PackageArchiveReader(ZipArchive zipArchive, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
-            : base(frameworkProvider, compatibilityProvider)
+            : this(frameworkProvider, compatibilityProvider)
         {
             _zipArchive = zipArchive ?? throw new ArgumentNullException(nameof(zipArchive));
         }
 
         public PackageArchiveReader(string filePath, IFrameworkNameProvider frameworkProvider = null, IFrameworkCompatibilityProvider compatibilityProvider = null)
-            : base(frameworkProvider ?? DefaultFrameworkNameProvider.Instance, compatibilityProvider ?? DefaultCompatibilityProvider.Instance)
+            : this(frameworkProvider ?? DefaultFrameworkNameProvider.Instance, compatibilityProvider ?? DefaultCompatibilityProvider.Instance)
         {
             if (filePath == null)
             {
@@ -352,21 +381,27 @@ namespace NuGet.Packaging
 
             ThrowIfZipReadStreamIsNull();
 
-            var isSigned = false;
-
 #if IS_SIGNING_SUPPORTED
-            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
+            if (!_isSigned.HasValue)
             {
-                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+                _isSigned = false;
 
-                if (signatureEntry != null &&
-                   string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
                 {
-                    isSigned = true;
+                    var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+
+                    if (signatureEntry != null &&
+                       string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                    {
+                        _isSigned = true;
+                    }
                 }
             }
+
+            return Task.FromResult(_isSigned.Value);
+#else
+            return Task.FromResult(false);
 #endif
-            return Task.FromResult(isSigned);
         }
 
         public override async Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
@@ -450,6 +485,25 @@ namespace NuGet.Packaging
             // Mono support has been deprioritized, so verification on Mono is not enabled, tracking issue: https://github.com/NuGet/Home/issues/9027
             if (RuntimeEnvironmentHelper.IsMono)
             {
+                return false;
+            }
+            else if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                // Please note: Linux/MAC case sensitive for env var name.
+                string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable("DOTNET_NUGET_SIGNATURE_VERIFICATION");
+
+                // Not opt-out option, only opt-in feature.
+                if (!string.IsNullOrEmpty(signVerifyEnvVariable))
+                {
+                    if (signVerifyEnvVariable.Equals(bool.TrueString.ToUpperInvariant(), StringComparison.Ordinal))
+                    {
+                        return true;
+                    }
+
+                    // other values are unsupported
+                    return false;
+                }
+
                 return false;
             }
             else

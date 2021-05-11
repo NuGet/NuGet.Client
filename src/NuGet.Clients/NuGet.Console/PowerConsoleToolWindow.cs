@@ -271,7 +271,7 @@ namespace NuGetConsole.Implementation
                 if (args.InValue != null
                     || args.OutValue == IntPtr.Zero)
                 {
-                    throw new ArgumentException("Invalid argument", "e");
+                    throw new ArgumentException("Invalid argument", nameof(e));
                 }
                 Marshal.GetNativeVariantForObject(PowerConsoleWindow.PackageSources, args.OutValue);
             }
@@ -311,7 +311,7 @@ namespace NuGetConsole.Implementation
                 if (args.InValue != null
                     || args.OutValue == IntPtr.Zero)
                 {
-                    throw new ArgumentException("Invalid argument", "e");
+                    throw new ArgumentException("Invalid argument", nameof(e));
                 }
 
                 // get project list here

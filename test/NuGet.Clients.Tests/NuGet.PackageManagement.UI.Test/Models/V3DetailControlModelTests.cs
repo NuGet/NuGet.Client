@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Moq;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -40,11 +41,11 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion(0, 0, 2))
             };
 
-            _testViewModel = new PackageItemViewModel()
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            _testViewModel = new PackageItemViewModel(searchService.Object)
             {
                 Id = "nuget.psm",
                 Version = testVersion,
-                Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions)),
                 InstalledVersion = testVersion,
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("nuget.psm.test") },
             };
@@ -141,11 +142,15 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
             };
 
-            var vm = new PackageItemViewModel()
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            var vm = new PackageItemViewModel(searchService.Object)
             {
+                Id = "package",
                 InstalledVersion = installedVersion,
                 Version = installedVersion,
-                Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions)),
             };
 
             // Act
@@ -262,11 +267,15 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
             };
 
-            var vm = new PackageItemViewModel()
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            var vm = new PackageItemViewModel(searchService.Object)
             {
+                Id = "package",
                 InstalledVersion = installedVersion,
                 Version = installedVersion,
-                Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions)),
             };
 
             // Act

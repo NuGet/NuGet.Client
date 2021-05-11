@@ -24,15 +24,15 @@ namespace NuGetVSExtension
         {
             if (menuCommandService == null)
             {
-                throw new ArgumentNullException("menuCommandService");
+                throw new ArgumentNullException(nameof(menuCommandService));
             }
             if (managePackageDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageDialogCommand));
             }
             if (managePackageForSolutionDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageForSolutionDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
             }
 
             _menuCommandService = menuCommandService;

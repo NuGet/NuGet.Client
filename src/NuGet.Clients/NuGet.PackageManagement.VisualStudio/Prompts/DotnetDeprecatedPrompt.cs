@@ -13,7 +13,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class DotnetDeprecatedPrompt
+    public static class DotnetDeprecatedPrompt
     {
         private const string DotnetDeprecationUrl = "https://aka.ms/rugr4c";
 

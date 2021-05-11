@@ -141,7 +141,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return output.OrderBy(e => e.Time).ToList();
+            return output.OrderBy(e => e.Time);
         }
     }
 }

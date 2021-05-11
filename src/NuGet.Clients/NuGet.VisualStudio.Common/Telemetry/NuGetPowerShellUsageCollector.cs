@@ -22,6 +22,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
         public const string FirstTimeLoadedFromPmc = nameof(FirstTimeLoadedFromPmc);
         public const string SolutionLoaded = nameof(SolutionLoaded);
         public const string Trigger = nameof(Trigger);
+        public const string PSVersion = nameof(PSVersion);
         public const string Pmc = nameof(Pmc);
         public const string Pmui = nameof(Pmui);
 

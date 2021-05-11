@@ -28,6 +28,7 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
+    [Obsolete]
     [Export(typeof(IVsPackageInstallerServices))]
     public class VsPackageInstallerServices : IVsPackageInstallerServices
     {
@@ -145,7 +146,7 @@ namespace NuGet.VisualStudio
         {
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             var packages = new List<PackageReference>();
@@ -177,7 +178,7 @@ namespace NuGet.VisualStudio
         {
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             try
@@ -286,7 +287,7 @@ namespace NuGet.VisualStudio
             }
             else if (!NuGetVersion.TryParse(versionString, out version))
             {
-                throw new ArgumentException(VsResources.InvalidNuGetVersionString, "versionString");
+                throw new ArgumentException(VsResources.InvalidNuGetVersionString, nameof(versionString));
             }
 
             return IsPackageInstalled(project, packageId, version);
@@ -309,12 +310,12 @@ namespace NuGet.VisualStudio
         {
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (string.IsNullOrEmpty(packageId))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageId");
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId));
             }
 
             // We simply use ThreadHelper.JoinableTaskFactory.Run instead of PumpingJTF.Run, unlike,

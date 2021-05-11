@@ -41,6 +41,14 @@ namespace NuGet.Configuration
 
         FileCert,
 
-        StoreCert
+        StoreCert,
+
+        /** Package Namespaces **/
+
+        PackageNamespaces,
+
+        PackageSource,
+
+        Namespace,
     }
 }

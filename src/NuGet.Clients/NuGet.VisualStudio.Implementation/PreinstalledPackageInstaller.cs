@@ -34,7 +34,9 @@ namespace NuGet.VisualStudio
     internal class PreinstalledPackageInstaller
     {
         private const string RegistryKeyRoot = @"SOFTWARE\NuGet\Repository";
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly IVsPackageInstallerServices _packageServices;
+#pragma warning restore CS0618 // Type or member is obsolete
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
@@ -44,7 +46,9 @@ namespace NuGet.VisualStudio
         public Action<string> InfoHandler { get; set; }
 
         public PreinstalledPackageInstaller(
+#pragma warning disable CS0618 // Type or member is obsolete
             IVsPackageInstallerServices packageServices,
+#pragma warning restore CS0618 // Type or member is obsolete
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
@@ -218,10 +222,12 @@ namespace NuGet.VisualStudio
                     var packageIdentity = new PackageIdentity(package.Id, package.Version);
 
                     // Does the project already have this package installed?
+#pragma warning disable CS0618 // Type or member is obsolete
                     if (_packageServices.IsPackageInstalled(project, package.Id))
                     {
                         // If so, is it the right version?
                         if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToNormalizedString()))
+#pragma warning restore CS0618 // Type or member is obsolete
                         {
                             // No? Raise a warning (likely written to the Output window) and ignore this package.
                             warningHandler(string.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
@@ -331,12 +337,12 @@ namespace NuGet.VisualStudio
         {
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (repositoryPath == null)
             {
-                throw new ArgumentNullException("repositoryPath");
+                throw new ArgumentNullException(nameof(repositoryPath));
             }
 
             if (!packageNames.Any())

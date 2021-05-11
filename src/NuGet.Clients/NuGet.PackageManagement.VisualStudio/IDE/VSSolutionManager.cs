@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
-        private static readonly string VSNuGetClientName = "NuGet VS VSIX";
+        private const string VSNuGetClientName = "NuGet VS VSIX";
 
         private readonly INuGetLockService _initLock;
         private readonly ReentrantSemaphore _semaphoreLock = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (nuGetProject == null)
             {
-                throw new ArgumentNullException("nuGetProject");
+                throw new ArgumentNullException(nameof(nuGetProject));
             }
 
             await EnsureInitializeAsync();

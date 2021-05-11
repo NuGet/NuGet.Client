@@ -727,7 +727,8 @@ namespace Test.Utility.Signing
             bool isUntrustedRoot = issues.Any(issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot).Any()); ;
+                (issue.Message.Contains("certificate is not trusted by the trust provider") ||
+                    issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot).Any()));
 
             Assert.True(isUntrustedRoot);
         }

@@ -10,7 +10,6 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
-    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

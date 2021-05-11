@@ -12,6 +12,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -36,7 +37,7 @@ namespace NuGet.PackageManagement.UI
         private IEnumerable<IPackageReferenceContextInfo> _packageReferences;
         private PackageFeedSearchState _state = new PackageFeedSearchState();
         private SearchFilter _searchFilter;
-        private INuGetSearchService _searchService;
+        private IReconnectingNuGetSearchService _searchService;
         public IItemLoaderState State => _state;
         private IServiceBroker _serviceBroker;
         private INuGetPackageFileService _packageFileService;
@@ -45,6 +46,7 @@ namespace NuGet.PackageManagement.UI
 
         private PackageItemLoader(
             IServiceBroker serviceBroker,
+            IReconnectingNuGetSearchService searchService,
             PackageLoadContext context,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
@@ -57,6 +59,7 @@ namespace NuGet.PackageManagement.UI
             Assumes.NotNullOrEmpty(packageSources);
 
             _serviceBroker = serviceBroker;
+            _searchService = searchService;
             _context = context;
             _searchText = searchText ?? string.Empty;
             _includePrerelease = includePrerelease;
@@ -67,6 +70,7 @@ namespace NuGet.PackageManagement.UI
 
         public static async ValueTask<PackageItemLoader> CreateAsync(
             IServiceBroker serviceBroker,
+            IReconnectingNuGetSearchService searchService,
             PackageLoadContext context,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
@@ -76,6 +80,7 @@ namespace NuGet.PackageManagement.UI
         {
             var itemLoader = new PackageItemLoader(
                 serviceBroker,
+                searchService,
                 context,
                 packageSources,
                 itemFilter,
@@ -94,7 +99,7 @@ namespace NuGet.PackageManagement.UI
             PackageLoadContext context,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             ContractItemFilter itemFilter,
-            INuGetSearchService searchService,
+            IReconnectingNuGetSearchService searchService,
             INuGetPackageFileService packageFileService,
             string searchText = null,
             bool includePrerelease = true,
@@ -102,6 +107,7 @@ namespace NuGet.PackageManagement.UI
         {
             var itemLoader = new PackageItemLoader(
                 serviceBroker,
+                searchService,
                 context,
                 packageSources,
                 itemFilter,
@@ -109,12 +115,12 @@ namespace NuGet.PackageManagement.UI
                 includePrerelease,
                 useRecommender);
 
-            await itemLoader.InitializeAsync(searchService, packageFileService);
+            await itemLoader.InitializeAsync(packageFileService);
 
             return itemLoader;
         }
 
-        private async ValueTask InitializeAsync(INuGetSearchService searchService = null, INuGetPackageFileService packageFileService = null)
+        private async ValueTask InitializeAsync(INuGetPackageFileService packageFileService = null)
         {
             _searchFilter = new SearchFilter(includePrerelease: _includePrerelease)
             {
@@ -122,7 +128,6 @@ namespace NuGet.PackageManagement.UI
             };
 
             _packageFileService = packageFileService ?? await GetPackageFileServiceAsync(CancellationToken.None);
-            _searchService = searchService ?? await GetSearchServiceAsync(CancellationToken.None);
             _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
         }
 
@@ -130,8 +135,6 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                _searchService?.Dispose();
-                _searchService = await GetSearchServiceAsync(CancellationToken.None);
                 _packageFileService?.Dispose();
                 _packageFileService = await GetPackageFileServiceAsync(CancellationToken.None);
             }).PostOnFailure(nameof(PackageItemLoader), nameof(OnAvailabilityChanged));
@@ -273,7 +276,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                var listItem = new PackageItemViewModel
+                var listItem = new PackageItemViewModel(_searchService)
                 {
                     Id = metadata.Identity.Id,
                     Version = metadata.Identity.Version,
@@ -283,15 +286,13 @@ namespace NuGet.PackageManagement.UI
                     Summary = metadata.Summary,
                     AllowedVersions = allowedVersions,
                     PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
-                    Versions = AsyncLazy.New(() => { return GetVersionInfoAsync(metadata.Identity); }),
-                    DeprecationMetadata = AsyncLazy.New(() => { return GetDeprecationMetadataAsync(metadata.Identity); }),
-                    DetailedPackageSearchMetadata = AsyncLazy.New(() => { return GetDetailedPackageSearchMetadataContextInfoAsync(metadata.Identity); }),
                     Recommended = metadata.IsRecommended,
                     RecommenderVersion = metadata.RecommenderVersion,
                     Vulnerabilities = metadata.Vulnerabilities,
                     Sources = _packageSources,
                     PackagePath = metadata.PackagePath,
                     PackageFileService = _packageFileService,
+                    IncludePrerelease = _includePrerelease
                 };
 
                 listItem.UpdatePackageStatus(_installedPackages);

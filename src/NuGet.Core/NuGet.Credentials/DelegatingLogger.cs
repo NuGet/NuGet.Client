@@ -11,10 +11,11 @@ namespace NuGet.Credentials
     /// <summary>
     ///  A delegating logger.
     /// </summary>
-    internal class DelegatingLogger : LoggerBase, ILogger
+    internal class DelegatingLogger : LoggerBase, ILogger, IDisposable
     {
         private readonly SemaphoreSlim _semaphore;
         private ILogger _delegateLogger;
+        private bool _disposed;
 
         internal DelegatingLogger(ILogger delegateLogger) : base()
         {
@@ -59,6 +60,27 @@ namespace NuGet.Credentials
             {
                 _semaphore.Release();
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _semaphore.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

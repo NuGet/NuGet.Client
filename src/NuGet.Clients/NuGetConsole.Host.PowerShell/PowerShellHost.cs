@@ -38,7 +38,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     {
         private static readonly string AggregateSourceName = Resources.AggregateSourceName;
         private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
-        private static readonly int MaxTasks = 16;
+        private const int MaxTasks = 16;
         private static bool PowerShellLoaded = false;
 
         private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
@@ -317,7 +317,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         if (!PowerShellLoaded)
                         {
-                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc);
+                            var telemetryEvent = new PowerShellLoadedEvent(isPmc: _isPmc, psVersion: Runspace.PSVersion.ToString());
                             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
                             PowerShellLoaded = true;
                         }
@@ -926,6 +926,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
             _initScriptsLock.Dispose();
             Runspace?.Dispose();
+            _tokenSource?.Dispose();
         }
 
         #endregion

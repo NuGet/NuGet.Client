@@ -10,7 +10,7 @@ namespace NuGet.LibraryModel
     /// <summary>
     /// Helper methods for dealing with LibraryDependencyTarget strings.
     /// </summary>
-    public class LibraryDependencyTargetUtils
+    public static class LibraryDependencyTargetUtils
     {
         /// <summary>
         /// Convert flag string into a LibraryTypeFlag.

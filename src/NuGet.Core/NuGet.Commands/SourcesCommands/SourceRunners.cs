@@ -10,7 +10,7 @@ using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
-    public partial class AddSourceRunner
+    public static class AddSourceRunner
     {
         public static void Run(AddSourceArgs args, Func<ILogger> getLogger)
         {
@@ -79,7 +79,7 @@ namespace NuGet.Commands
         }
     }
 
-    public partial class DisableSourceRunner
+    public static class DisableSourceRunner
     {
         public static void Run(DisableSourceArgs args, Func<ILogger> getLogger)
         {
@@ -89,7 +89,7 @@ namespace NuGet.Commands
         }
     }
 
-    public partial class EnableSourceRunner
+    public static class EnableSourceRunner
     {
         public static void Run(EnableSourceArgs args, Func<ILogger> getLogger)
         {
@@ -99,7 +99,7 @@ namespace NuGet.Commands
         }
     }
 
-    public partial class ListSourceRunner
+    public static class ListSourceRunner
     {
         public static void Run(ListSourceArgs args, Func<ILogger> getLogger)
         {
@@ -178,7 +178,7 @@ namespace NuGet.Commands
         }
     }
 
-    public partial class RemoveSourceRunner
+    public static class RemoveSourceRunner
     {
         public static void Run(RemoveSourceArgs args, Func<ILogger> getLogger)
         {
@@ -198,7 +198,7 @@ namespace NuGet.Commands
         }
     }
 
-    public partial class UpdateSourceRunner
+    public static class UpdateSourceRunner
     {
         public static void Run(UpdateSourceArgs args, Func<ILogger> getLogger)
         {

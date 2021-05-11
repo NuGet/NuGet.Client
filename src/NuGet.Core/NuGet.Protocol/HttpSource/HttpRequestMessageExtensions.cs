@@ -12,7 +12,7 @@ namespace NuGet.Protocol
 {
     public static class HttpRequestMessageExtensions
     {
-        private static readonly string NuGetConfigurationKey = "NuGet_Configuration";
+        private const string NuGetConfigurationKey = "NuGet_Configuration";
 
         /// <summary>
         /// Clones an <see cref="HttpRequestMessage" /> request.

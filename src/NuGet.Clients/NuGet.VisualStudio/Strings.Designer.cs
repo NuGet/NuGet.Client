@@ -61,11 +61,29 @@ namespace NuGet.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Value cannot be null or an empty string..
+        /// </summary>
+        internal static string Argument_Cannot_Be_Null_Or_Empty {
+            get {
+                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Argument must be of type &apos;{0}&apos;..
         /// </summary>
         internal static string ArgumentTypeExceptionMessage {
             get {
                 return ResourceManager.GetString("ArgumentTypeExceptionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid version string..
+        /// </summary>
+        internal static string SemanticVersionStringInvalid {
+            get {
+                return ResourceManager.GetString("SemanticVersionStringInvalid", resourceCulture);
             }
         }
     }

@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -382,7 +384,8 @@ namespace NuGet.Commands.Test
                     logger)
                 {
                     LockFilePath = lockFilePath,
-                    IsLowercasePackagesDirectory = !isLowercase
+                    IsLowercasePackagesDirectory = !isLowercase,
+                    AllowNoOp = false,
                 };
                 var commandA = new RestoreCommand(requestA);
                 var resultA = await commandA.ExecuteAsync();
@@ -398,7 +401,8 @@ namespace NuGet.Commands.Test
                 {
                     LockFilePath = lockFilePath,
                     IsLowercasePackagesDirectory = isLowercase,
-                    ExistingLockFile = lockFileFormat.Read(lockFilePath)
+                    ExistingLockFile = lockFileFormat.Read(lockFilePath),
+                    AllowNoOp = false,
                 };
                 var commandB = new RestoreCommand(requestB);
                 var resultB = await commandB.ExecuteAsync();
@@ -974,8 +978,8 @@ namespace NuGet.Commands.Test
         }
 
 #if IS_SIGNING_SUPPORTED
-        [Fact]
-        public async Task RestoreCommand_InvalidSignedPackageAsync()
+        [PlatformFact(Platform.Windows)]
+        public async Task RestoreCommand_InvalidSignedPackageAsync_FailsAsync()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -1041,6 +1045,76 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.False(result.Success);
+            }
+        }
+
+        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        public async Task RestoreCommand_InvalidSignedPackageAsync_SuccessAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net46"": {
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                PackageSpec spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
+
+                var logger = new TestLogger();
+
+                var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
+
+                signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
+                    It.IsAny<ISignedPackageReader>(),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, DefaultSettings)),
+                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Guid>())).
+                    ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: true));
+
+                ClientPolicyContext clientPolicyContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, clientPolicyContext, logger)
+                {
+                    LockFilePath = Path.Combine(project1.FullName, "project.lock.json"),
+                    SignedPackageVerifier = signedPackageVerifier.Object
+                };
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/net46/a.dll");
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.True(result.Success);
             }
         }
 
@@ -1987,6 +2061,212 @@ namespace NuGet.Commands.Test
                 Assert.Equal(1, targetLib.Dependencies.Count);
                 Assert.True(targetLib.Dependencies.Where(d => d.Id == packageName).Any());
             }
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithSinglePackage_PopulatesCorrectTelemetry()
+        {
+            // Arrange
+            using var context = new SourceCacheContext();
+            using var pathContext = new SimpleTestPathContext();
+            var projectName = "TestProject";
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+            var logger = new TestLogger();
+
+            var request = new TestRestoreRequest(packageSpec, new PackageSource[] { new PackageSource(pathContext.PackageSource) }, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                ProjectStyle = ProjectStyle.PackageReference,
+            };
+
+            // Set-up telemetry service - Important to set-up the service *after* the package source creation call as that emits telemetry!
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            var _telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+            _telemetryService
+                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+            TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
+
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
+            telemetryEvents.Should().HaveCountLessOrEqualTo(3);
+            telEventNames.Should().Contain("ProjectRestoreInformation");
+
+            var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+
+            projectInformationEvent.Count.Should().Be(23);
+            projectInformationEvent["RestoreSuccess"].Should().Be(true);
+            projectInformationEvent["NoOpResult"].Should().Be(false);
+            projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
+            projectInformationEvent["NoOpCacheFileEvaluationResult"].Should().Be(false);
+            projectInformationEvent["IsLockFileEnabled"].Should().Be(false);
+            projectInformationEvent["IsLockFileValidForRestore"].Should().Be(false);
+            projectInformationEvent["LockFileEvaluationResult"].Should().Be(true);
+            projectInformationEvent["NoOpDuration"].Should().NotBeNull();
+            projectInformationEvent["TotalUniquePackagesCount"].Should().Be(1);
+            projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
+            projectInformationEvent["EvaluateLockFileDuration"].Should().NotBeNull();
+            projectInformationEvent["CreateRestoreTargetGraphDuration"].Should().NotBeNull();
+            projectInformationEvent["GenerateRestoreGraphDuration"].Should().NotBeNull();
+            projectInformationEvent["CreateRestoreResultDuration"].Should().NotBeNull();
+            projectInformationEvent["WalkFrameworkDependencyDuration"].Should().NotBeNull();
+            projectInformationEvent["GenerateAssetsFileDuration"].Should().NotBeNull();
+            projectInformationEvent["ValidateRestoreGraphsDuration"].Should().NotBeNull();
+            projectInformationEvent["EvaluateDownloadDependenciesDuration"].Should().NotBeNull();
+            projectInformationEvent["NoOpCacheFileEvaluateDuration"].Should().NotBeNull();
+            projectInformationEvent["StartTime"].Should().NotBeNull();
+            projectInformationEvent["EndTime"].Should().NotBeNull();
+            projectInformationEvent["OperationId"].Should().NotBeNull();
+            projectInformationEvent["Duration"].Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithSinglePackage_WhenNoOping_PopulatesCorrectTelemetry()
+        {
+            // Arrange
+            using var context = new SourceCacheContext();
+            using var pathContext = new SimpleTestPathContext();
+            var projectName = "TestProject";
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+            var logger = new TestLogger();
+
+            var request = new TestRestoreRequest(packageSpec, new PackageSource[] { new PackageSource(pathContext.PackageSource) }, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                ProjectStyle = ProjectStyle.PackageReference
+            };
+
+            // Set-up telemetry service - Important to set-up the service *after* the package source creation call as that emits telemetry!
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            var _telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+            _telemetryService
+                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+            TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
+
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+            // Pre-conditions
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
+            telemetryEvents.Should().HaveCountLessOrEqualTo(3);
+            telEventNames.Should().Contain("ProjectRestoreInformation");
+
+            while (telemetryEvents.TryDequeue(out _))
+            {
+                // Clear telemetry
+            }
+
+            // Act!
+            restoreCommand = new RestoreCommand(request);
+            result = await restoreCommand.ExecuteAsync();
+
+            telemetryEvents.Should().HaveCount(1);
+
+            var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+
+            projectInformationEvent.Count.Should().Be(15);
+            projectInformationEvent["RestoreSuccess"].Should().Be(true);
+            projectInformationEvent["NoOpResult"].Should().Be(true);
+            projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
+            projectInformationEvent["NoOpCacheFileEvaluationResult"].Should().Be(true);
+            projectInformationEvent["NoOpRestoreOutputEvaluationResult"].Should().Be(true);
+            projectInformationEvent["NoOpDuration"].Should().NotBeNull();
+            projectInformationEvent["TotalUniquePackagesCount"].Should().Be(1);
+            projectInformationEvent["NewPackagesInstalledCount"].Should().Be(0);
+            projectInformationEvent["NoOpCacheFileEvaluateDuration"].Should().NotBeNull();
+            projectInformationEvent["StartTime"].Should().NotBeNull();
+            projectInformationEvent["EndTime"].Should().NotBeNull();
+            projectInformationEvent["OperationId"].Should().NotBeNull();
+            projectInformationEvent["Duration"].Should().NotBeNull();
+            projectInformationEvent["NoOpRestoreOutputEvaluationDuration"].Should().NotBeNull();
+            projectInformationEvent["NoOpReplayLogsDuration"].Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithPartiallyPopulatedGlobalPackagesFolder_PopulatesNewlyInstalledPackagesTelemetry()
+        {
+            // Arrange
+            using var context = new SourceCacheContext();
+            using var pathContext = new SimpleTestPathContext();
+            var projectName = "TestProject";
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            packageA.Dependencies.Add(packageB);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            // package B should be installed in the global packages folder.
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.UserPackagesFolder,
+                PackageSaveMode.Defaultv3,
+                packageB);
+
+            var logger = new TestLogger();
+
+            var request = new TestRestoreRequest(packageSpec, new PackageSource[] { new PackageSource(pathContext.PackageSource) }, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                ProjectStyle = ProjectStyle.PackageReference
+            };
+
+            // Set-up telemetry service - Important to set-up the service *after* the package source creation call as that emits telemetry!
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            var _telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+            _telemetryService
+                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+            TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
+
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
+            telemetryEvents.Should().HaveCountLessOrEqualTo(3);
+            telEventNames.Should().Contain("ProjectRestoreInformation");
+
+            var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+
+            projectInformationEvent.Count.Should().Be(23);
+            projectInformationEvent["RestoreSuccess"].Should().Be(true);
+            projectInformationEvent["NoOpResult"].Should().Be(false);
+            projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
+            projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
+        }
+
+        private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)
+        {
+            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)

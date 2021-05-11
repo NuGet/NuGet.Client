@@ -1237,5 +1237,105 @@ EndProject");
             // Verify traits of help message in stdout
             Assert.Contains("usage:", result.Item2);
         }
+
+        /// <summary>
+        /// Create a basic nfproj file for .NET nanoFramework.
+        /// </summary>
+        public static string GetNFProjXML(
+            string projectName,
+            List<(string, string)> packages)
+        {
+            var projContent = new StringBuilder();
+
+            projContent.AppendLine(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+    <Project ToolsVersion=""Current"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <PropertyGroup Label=""Globals"">
+        <NanoFrameworkProjectSystemPath>$(MSBuildToolsPath)..\..\..\nanoFramework\v1.0\</NanoFrameworkProjectSystemPath>
+        </PropertyGroup>
+        <Import Project=""$(NanoFrameworkProjectSystemPath)NFProjectSystem.Default.props"" Condition=""Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.Default.props')"" />
+        <PropertyGroup>
+        <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+        <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+        <ProjectTypeGuids>{11A8DD76-328B-46DF-9F39-F559912D0360};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+        <ProjectGuid>9e332e06-5faf-4861-8318-a806978b677d</ProjectGuid>
+        <OutputType>Exe</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <FileAlignment>512</FileAlignment>
+        <RootNamespace>$NAME$</RootNamespace>
+        <AssemblyName>$NAME$</AssemblyName>
+        <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+        </PropertyGroup>
+        <Import Project=""$(NanoFrameworkProjectSystemPath)NFProjectSystem.props"" Condition=""Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.props')"" />
+        <ItemGroup>");
+
+            foreach ((string, string) package in packages)
+            {
+                projContent.AppendLine(
+$@"        <Reference Include=""{package.Item1}, Version={package.Item2}, Culture=neutral"">
+            <HintPath>..\packages\{package.Item1}.{package.Item2}\lib\{package.Item1}.dll</HintPath>
+            <Private>True</Private>
+            <SpecificVersion>True</SpecificVersion>
+        </Reference>");
+            }
+
+            projContent.AppendLine(
+@"        </ItemGroup>
+            <ItemGroup>
+            <None Include=""packages.config"" />
+            </ItemGroup>
+            <Import Project=""$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets"" Condition=""Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets')"" />
+            <ProjectExtensions>
+            <ProjectCapabilities>
+                <ProjectConfigurationsDeclaredAsItems />
+            </ProjectCapabilities>
+            </ProjectExtensions>
+        </Project>".Replace("$NAME$", projectName));
+
+            return projContent.ToString();
+        }
+
+        /// <summary>
+        /// Create a Solution file with .NET nanoFramework projects in it.
+        /// </summary>
+        /// <param name="projectList">List of .NET nanoFramework projects to add to the solution</param>
+        /// <returns>Content of the Solution file</returns>
+        public static string CreateNFSolutionFileContent(List<string> projectList)
+        {
+            var slnContent = new StringBuilder();
+
+            slnContent.AppendLine("Microsoft Visual Studio Solution File, Format Version 12.00");
+            slnContent.AppendLine("# Visual Studio Version 16");
+            slnContent.AppendLine("VisualStudioVersion = 16.0.31005.135");
+
+            foreach (string project in projectList)
+            {
+                slnContent.AppendLine($"Project(\"{{11A8DD76-328B-46DF-9F39-F559912D0360}}\") = \"{project}\", \"{project}\\{project}.nfproj\", \"{{{Guid.NewGuid().ToString()}}}");
+                slnContent.AppendLine("EndProject");
+            }
+
+            return slnContent.ToString();
+        }
+
+        /// <summary>
+        /// Build packages.config from list of NuGet packages for .NET nanoFramework.
+        /// </summary>
+        /// <param name="packages">List of NuGet packages for .NET nanoFramework</param>
+        /// <returns></returns>
+        internal static string GetNFPackageConfig(List<(string, string)> packages)
+        {
+            var configContent = new StringBuilder();
+
+            configContent.AppendLine("<packages>");
+
+            foreach ((string, string) package in packages)
+            {
+                configContent.AppendLine($@"  <package id=""{package.Item1}"" version=""{package.Item2}"" targetFramework=""netnanoframework10"" />");
+            }
+
+            configContent.AppendLine("</packages>");
+
+            return configContent.ToString();
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(files));
             }
 
-            files = files.Where(path => !string.IsNullOrEmpty(path)).Distinct(StringComparer.Ordinal).ToList();
+            files = files.Where(path => !string.IsNullOrEmpty(path)).Distinct(StringComparer.Ordinal);
 
             string completeMessage = null;
 

@@ -19,7 +19,6 @@ namespace NuGet.PackageManagement.UI
     internal class PackageLoadContext
     {
         private readonly Task<PackageCollection> _installedPackagesTask;
-        private readonly JoinableTask<InstalledAndTransitivePackageCollections> _allPackagesTask;
 
         public PackageLoadContext(bool isSolution, INuGetUIContext uiContext)
         {
@@ -34,10 +33,6 @@ namespace NuGet.PackageManagement.UI
                 ServiceBroker,
                 Projects,
                 CancellationToken.None);
-            _allPackagesTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageCollection.FromProjectsIncludeTransitiveAsync(
-                ServiceBroker,
-                Projects,
-                CancellationToken.None));
         }
 
         public NuGetPackageManager PackageManager { get; }
@@ -56,8 +51,6 @@ namespace NuGet.PackageManagement.UI
         internal IServiceBroker ServiceBroker { get; }
 
         public Task<PackageCollection> GetInstalledPackagesAsync() => _installedPackagesTask;
-
-        public async Task<InstalledAndTransitivePackageCollections> GetInstalledAndTransitivePackagesAsync() => await _allPackagesTask;
 
         // Returns the list of frameworks that we need to pass to the server during search
         public async Task<IReadOnlyCollection<string>> GetSupportedFrameworksAsync()

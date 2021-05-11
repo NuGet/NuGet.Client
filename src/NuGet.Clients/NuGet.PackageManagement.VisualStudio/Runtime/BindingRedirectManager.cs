@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (bindingRedirects == null)
             {
-                throw new ArgumentNullException("bindingRedirects");
+                throw new ArgumentNullException(nameof(bindingRedirects));
             }
 
             // Do nothing if there are no binding redirects to add, bail out
@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (bindingRedirects == null)
             {
-                throw new ArgumentNullException("bindingRedirects");
+                throw new ArgumentNullException(nameof(bindingRedirects));
             }
 
             // Do nothing if there are no binding redirects to remove, bail out

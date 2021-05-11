@@ -159,6 +159,32 @@ namespace NuGet.Packaging.Test
             Assert.False(isValid);
         }
 
+        [Fact]
+        public void IsValidPackageId_PackageIdWithTwoUnderscores_Success()
+        {
+            // Arrange
+            string packageId = "Hello__World";
+
+            // Act
+            bool isValid = PackageIdValidator.IsValidPackageId(packageId);
+
+            // Assert
+            Assert.True(isValid);
+        }
+
+        [Fact]
+        public void IsValidPackageId_LongPackageIdWithUnMatchedCharAtTheEnd_Fails()
+        {
+            // Arrange
+            string packageId = string.Concat(new string('_', 100), "!");
+
+            // Act
+            bool isValid = PackageIdValidator.IsValidPackageId(packageId);
+
+            // Assert
+            Assert.False(isValid);
+        }
+
         [Theory]
         [InlineData(101)]
         [InlineData(102)]

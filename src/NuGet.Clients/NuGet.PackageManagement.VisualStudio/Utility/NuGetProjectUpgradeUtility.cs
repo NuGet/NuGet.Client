@@ -16,7 +16,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class NuGetProjectUpgradeUtility
+    public static class NuGetProjectUpgradeUtility
     {
         private static readonly HashSet<string> UpgradeableProjectTypes =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)

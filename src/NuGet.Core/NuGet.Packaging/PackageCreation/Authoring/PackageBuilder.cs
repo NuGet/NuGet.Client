@@ -606,7 +606,7 @@ namespace NuGet.Packaging
         {
             var frameworksMissingPlatformVersion = new HashSet<string>(packageAssemblyReferences
                 .Select(group => group.TargetFramework)
-                .Where(groupFramework => groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
+                .Where(groupFramework => groupFramework != null && groupFramework.HasPlatform && groupFramework.PlatformVersion == FrameworkConstants.EmptyVersion)
                 .Select(framework => framework.GetShortFolderName()));
             if (frameworksMissingPlatformVersion.Any())
             {
