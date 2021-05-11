@@ -345,6 +345,13 @@ Correct:
         /// </summary>
         /// <returns>A set of fruit types contain in this basket.</returns>
         public ISet<FruitType> GetAllFruitTypes()
+
+        /// <summary>
+        /// Determines whether the fruit has seeds.
+        /// </summary>
+        /// <param name="fruitType">A fruit type</param>
+        /// <returns> Whether the fruit has seeds. </returns>
+        public bool HasSeeds(FruitType fruitType)
 ```
 
 Incorrect:
@@ -354,6 +361,13 @@ Incorrect:
         /// </summary>
         /// <returns> </returns>
         public ISet<FruitType> GetAllFruitTypes()
+
+        /// <summary>
+        /// Determines whether the fruit has seeds.
+        /// </summary>
+        /// <param name="fruitType"></param>
+        /// <returns> </returns>
+        public bool HasSeeds(FruitType fruitType)
 ```
 
 ### Assertions
