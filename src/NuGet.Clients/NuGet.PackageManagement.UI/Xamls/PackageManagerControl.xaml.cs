@@ -628,7 +628,7 @@ namespace NuGet.PackageManagement.UI
 
                 _root.Children.Insert(0, RestoreBar);
 
-                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
+                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += PackageRestoreManager_PackagesMissingStatusChanged;
             }
         }
 
@@ -637,7 +637,7 @@ namespace NuGet.PackageManagement.UI
             if (RestoreBar != null)
             {
                 RestoreBar.CleanUp();
-                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged -= packageRestoreManager_PackagesMissingStatusChanged;
+                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged -= PackageRestoreManager_PackagesMissingStatusChanged;
             }
         }
 
@@ -662,7 +662,7 @@ namespace NuGet.PackageManagement.UI
                 _restartBar.CleanUp();
 
                 Model.Context.PackageRestoreManager.PackagesMissingStatusChanged
-                    -= packageRestoreManager_PackagesMissingStatusChanged;
+                    -= PackageRestoreManager_PackagesMissingStatusChanged;
             }
         }
 
@@ -675,36 +675,28 @@ namespace NuGet.PackageManagement.UI
             _root.Children.Insert(0, _migratorBar);
         }
 
-#pragma warning disable IDE1006 // Naming Styles
-        private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
-#pragma warning restore IDE1006 // Naming Styles
+        private void PackageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
-            // make sure update happens on the UI thread.
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            // TODO: PackageRestoreManager fires this event even when solution is closed.
+            // Don't do anything if solution is closed.
+            // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
+            // only when package is missing last time and is not missing this time, we need to refresh
+            if (!e.PackagesMissing && _missingPackageStatus)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                UpdateAfterPackagesMissingStatusChanged();
+            }
 
-                // TODO: PackageRestoreManager fires this event even when solution is closed.
-                // Don't do anything if solution is closed.
-                // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
-                // only when package is missing last time and is not missing this time, we need to refresh
-                if (!e.PackagesMissing && _missingPackageStatus)
-                {
-                    await UpdateAfterPackagesMissingStatusChangedAsync();
-                }
-
-                _missingPackageStatus = e.PackagesMissing;
-            });
+            _missingPackageStatus = e.PackagesMissing;
         }
 
         // Refresh the UI after packages are restored.
         // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
         // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
-        private async ValueTask UpdateAfterPackagesMissingStatusChangedAsync()
+        private void UpdateAfterPackagesMissingStatusChanged()
         {
-            VSThreadHelper.ThrowIfNotOnUIThread();
             var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
-            await RefreshAsync();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await RefreshAsync())
+                .PostOnFailure(nameof(PackageManagerControl), nameof(UpdateAfterPackagesMissingStatusChanged));
             EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
             _packageDetail.Refresh();
         }
