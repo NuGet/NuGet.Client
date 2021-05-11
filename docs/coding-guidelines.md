@@ -343,7 +343,7 @@ Correct:
         /// <summary>
         /// Calculates all fruit types
         /// </summary>
-        /// <returns>A set of fruit types contain in this basket.</returns>
+        /// <returns>A set of fruit types contained in this basket.</returns>
         public ISet<FruitType> GetAllFruitTypes()
 
         /// <summary>
