@@ -256,7 +256,7 @@ namespace NuGet.Frameworks
         {
             if (supportedFrameworks == null)
             {
-                throw new ArgumentNullException("supportedFrameworks");
+                throw new ArgumentNullException(nameof(supportedFrameworks));
             }
 
             profileNumber = -1;
@@ -469,7 +469,7 @@ namespace NuGet.Frameworks
         {
             if (shortPortableProfiles == null)
             {
-                throw new ArgumentNullException("shortPortableProfiles");
+                throw new ArgumentNullException(nameof(shortPortableProfiles));
             }
 
             var shortNames = shortPortableProfiles.Split(new char[] { '+' }, StringSplitOptions.RemoveEmptyEntries);
@@ -585,7 +585,7 @@ namespace NuGet.Frameworks
         {
             if (range == null)
             {
-                throw new ArgumentNullException("range");
+                throw new ArgumentNullException(nameof(range));
             }
 
             var relevant = new HashSet<NuGetFramework>();

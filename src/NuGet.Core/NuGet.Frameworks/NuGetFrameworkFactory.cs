@@ -46,12 +46,12 @@ namespace NuGet.Frameworks
         {
             if (folderName == null)
             {
-                throw new ArgumentNullException("folderName");
+                throw new ArgumentNullException(nameof(folderName));
             }
 
             if (mappings == null)
             {
-                throw new ArgumentNullException("mappings");
+                throw new ArgumentNullException(nameof(mappings));
             }
 
             Debug.Assert(folderName.IndexOf(";") < 0, "invalid folder name, this appears to contain multiple frameworks");
@@ -92,12 +92,12 @@ namespace NuGet.Frameworks
         {
             if (string.IsNullOrEmpty(targetFrameworkMoniker))
             {
-                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, "targetFrameworkMoniker");
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(targetFrameworkMoniker));
             }
 
             if (mappings == null)
             {
-                throw new ArgumentNullException("mappings");
+                throw new ArgumentNullException(nameof(mappings));
             }
 
             NuGetFramework result;
@@ -175,12 +175,12 @@ namespace NuGet.Frameworks
         {
             if (frameworkName == null)
             {
-                throw new ArgumentNullException("frameworkName");
+                throw new ArgumentNullException(nameof(frameworkName));
             }
 
             if (mappings == null)
             {
-                throw new ArgumentNullException("mappings");
+                throw new ArgumentNullException(nameof(mappings));
             }
 
             var parts = frameworkName.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
@@ -295,12 +295,12 @@ namespace NuGet.Frameworks
         {
             if (folderName == null)
             {
-                throw new ArgumentNullException("folderName");
+                throw new ArgumentNullException(nameof(folderName));
             }
 
             if (mappings == null)
             {
-                throw new ArgumentNullException("mappings");
+                throw new ArgumentNullException(nameof(mappings));
             }
 
             if (folderName.IndexOf('%') > -1)
