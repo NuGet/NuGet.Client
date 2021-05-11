@@ -66,8 +66,8 @@ steps:
 # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
 # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
 # won't be able to determine the URL to embed in the pdbs.
-# Therefore, when the git origin remote is not github (official builds), we need to add the GitHub repo URL as a remote, and
-# tell SourceLink.GitHub what that remote name is
+# Therefore, we need to add the GitHub repo URL as a remote, and tell SourceLink.GitHub what that remote name is.
+# We do this even when github is the origin URL, to avoid warnings in the CI logs.
 - task: PowerShell@1
   displayName: "Prepare for source link"
   inputs:
@@ -94,12 +94,10 @@ steps:
           Write-Host "git remote add github $nugetUrl"
           & git remote add github $nugetUrl
         }
-        Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
         exit 1
       }
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
@@ -116,7 +114,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
+    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github"
     maximumCpuCount: true
 
 - task: MSBuild@1
