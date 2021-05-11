@@ -24,7 +24,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithCertificateFileNotFound_ThrowsAsync()
+        public async Task ExecuteCommandAsync_WithCertificateFileNotFound_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
@@ -32,16 +32,17 @@ namespace NuGet.Commands.Test
 
                 testContext.Args.CertificatePath = certificateFilePath;
 
-                var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
+                await testContext.Runner.ExecuteCommandAsync(testContext.Args);
 
-                Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal($"Certificate file '{certificateFilePath}' not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
+                var expectedMessage = $"Certificate file '{certificateFilePath}' not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference";
+
+                Assert.Equal(1, testContext.Logger.LogMessages.Count(
+                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3001 && message.Message.Equals(expectedMessage)));
             }
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithEmptyPkcs7File_ThrowsAsync()
+        public async Task ExecuteCommandAsync_WithEmptyPkcs7File_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
@@ -57,16 +58,17 @@ namespace NuGet.Commands.Test
 
                 testContext.Args.CertificatePath = certificateFilePath;
 
-                var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
+                await testContext.Runner.ExecuteCommandAsync(testContext.Args);
 
-                Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal($"Certificate file '{certificateFilePath}' is invalid. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
+                var expectedMessage = $"Certificate file '{certificateFilePath}' is invalid. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference";
+
+                Assert.Equal(1, testContext.Logger.LogMessages.Count(
+                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3001 && message.Message.Equals(expectedMessage)));
             }
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithNoCertificateFound_ThrowsAsync()
+        public async Task ExecuteCommandAsync_WithNoCertificateFound_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
@@ -74,11 +76,12 @@ namespace NuGet.Commands.Test
                 testContext.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
                 testContext.Args.CertificateStoreName = StoreName.My;
 
-                var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
+                await testContext.Runner.ExecuteCommandAsync(testContext.Args);
 
-                Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal("No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
+                var expectedMessage = $"No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference";
+
+                Assert.Equal(1, testContext.Logger.LogMessages.Count(
+                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3001 && message.Message.Equals(expectedMessage)));
             }
         }
 
@@ -154,7 +157,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndWrongPassword_ThrowsAsync()
+        public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndWrongPassword_RaisesErrorsOnceAsync()
         {
             const string password = "password";
 
@@ -173,10 +176,12 @@ namespace NuGet.Commands.Test
                 testContext.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
                 testContext.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;
 
-                var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
+                await testContext.Runner.ExecuteCommandAsync(testContext.Args);
 
-                Assert.Equal($"Invalid password was provided for the certificate file '{certificateFilePath}'. Provide a valid password using the '-CertificatePassword' option", exception.Message);
+                var expectedMessage = $"Invalid password was provided for the certificate file '{certificateFilePath}'. Provide a valid password using the '-CertificatePassword' option";
+
+                Assert.Equal(1, testContext.Logger.LogMessages.Count(
+                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3001 && message.Message.Equals(expectedMessage)));
             }
         }
 
@@ -210,7 +215,7 @@ namespace NuGet.Commands.Test
 #endif
 
         [Fact]
-        public async Task ExecuteCommandAsync_WithAmbiguousMatch_ThrowsAsync()
+        public async Task ExecuteCommandAsync_WithAmbiguousMatch_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
             {
@@ -219,11 +224,12 @@ namespace NuGet.Commands.Test
                 testContext.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: true);
                 testContext.Args.CertificateStoreName = StoreName.Root;
 
-                var exception = await Assert.ThrowsAsync<SignCommandException>(
-                    () => testContext.Runner.ExecuteCommandAsync(testContext.Args));
+                await testContext.Runner.ExecuteCommandAsync(testContext.Args);
 
-                Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal("Multiple certificates were found that meet all the given criteria. Use the '-CertificateFingerprint' option with the hash of the desired certificate.", exception.Message);
+                var expectedMessage = "Multiple certificates were found that meet all the given criteria. Use the '-CertificateFingerprint' option with the hash of the desired certificate.";
+
+                Assert.Equal(1, testContext.Logger.LogMessages.Count(
+                    message => message.Level == LogLevel.Error && message.Code == NuGetLogCode.NU3001 && message.Message.Equals(expectedMessage)));
             }
         }
 
