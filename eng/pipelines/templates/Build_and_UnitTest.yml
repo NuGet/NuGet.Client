@@ -415,28 +415,11 @@ steps:
     ArtifactName: "$(VsixPublishDir)"
     ArtifactType: "Container"
 
-- task: CopyFiles@2
-  displayName: "Copy LCG Files to staging (deprecated)"
-  inputs:
-    SourceFolder: "artifacts\\"
-    Contents: |
-      **\*.lcg
-      !localize\**\*
-    TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
 - task: PublishPipelineArtifact@1
   displayName: "Publish localizationArtifacts artifact"
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
     artifactName: "localizationArtifacts"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Upload legacy localizeInputs artifact"
-  inputs:
-    targetPath: "$(Build.ArtifactStagingDirectory)\\PLOC"
-    artifactName: "legacy localizeInputs"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: NuGetCommand@2
