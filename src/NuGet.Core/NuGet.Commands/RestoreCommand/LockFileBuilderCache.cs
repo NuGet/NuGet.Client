@@ -87,12 +87,23 @@ namespace NuGet.Commands
         {
             public string TargetGraphName { get; }
 
-            public NuGetFramework FrameworkOverride { get; }
+            public NuGetFramework Framework { get; }
+
+            public AssetTargetFallbackFramework AssetTargetFallbackFramework { get; }
 
             public CriteriaKey(string targetGraphName, NuGetFramework frameworkOverride)
             {
                 TargetGraphName = targetGraphName;
-                FrameworkOverride = frameworkOverride;
+                if (frameworkOverride is AssetTargetFallbackFramework assetTargetFallbackFramework)
+                {
+                    Framework = null;
+                    AssetTargetFallbackFramework = assetTargetFallbackFramework;
+                }
+                else
+                {
+                    Framework = frameworkOverride;
+                    AssetTargetFallbackFramework = null;
+                }
             }
 
             public bool Equals(CriteriaKey other)
@@ -108,8 +119,9 @@ namespace NuGet.Commands
                 }
 
                 return StringComparer.Ordinal.Equals(TargetGraphName, other.TargetGraphName)
-                    && FrameworkOverride.Equals(other.FrameworkOverride)
-                    && other.FrameworkOverride.Equals(FrameworkOverride);
+                       && NuGetFramework.Comparer.Equals(Framework, other.Framework)
+                       && (AssetTargetFallbackFramework == null && other.AssetTargetFallbackFramework == null  ||
+                           AssetTargetFallbackFramework != null && AssetTargetFallbackFramework.Equals(other.AssetTargetFallbackFramework));
             }
 
             public override bool Equals(object obj)
@@ -122,7 +134,8 @@ namespace NuGet.Commands
                 var combiner = new HashCodeCombiner();
 
                 combiner.AddObject(StringComparer.Ordinal.GetHashCode(TargetGraphName));
-                combiner.AddObject(FrameworkOverride);
+                combiner.AddObject(Framework);
+                combiner.AddObject(AssetTargetFallbackFramework);
 
                 return combiner.CombinedHash;
             }
