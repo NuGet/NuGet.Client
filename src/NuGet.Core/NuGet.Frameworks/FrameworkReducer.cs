@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.Frameworks
@@ -93,11 +94,22 @@ namespace NuGet.Frameworks
                 // Remove lower versions of compatible frameworks
                 var reduced = ReduceUpwards(compatible);
 
-                // Reduce to the same framework name if possible
-                if (reduced.Count() > 1
-                    && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
+                bool isNet6Era = framework.IsNet5Era && framework.Version.Major >= 6;
+
+                // Reduce to the same framework name if possible, with an exception for Xamarin when net6.0+
+                if (reduced.Count() > 1 && reduced.Any(f => _fwNameComparer.Equals(f, framework)))
                 {
-                    reduced = reduced.Where(f => _fwNameComparer.Equals(f, framework));
+                    reduced = reduced.Where(f =>
+                    {
+                        if (isNet6Era && framework.HasPlatform && f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return _fwNameComparer.Equals(f, framework);
+                        }
+                    });
                 }
 
                 // PCL reduce
@@ -172,8 +184,21 @@ namespace NuGet.Frameworks
                 if (reduced.Count() > 1
                     && framework.HasPlatform)
                 {
-                    // Prefer the highest framework version, likely to be the non-platform specific option.
-                    reduced = reduced.GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
+                    if (!isNet6Era || reduced.Any(f => _fwNameComparer.Equals(framework, f) && f.Version.Major >= 6))
+                    {
+                        // Prefer the highest framework version, likely to be the non-platform specific option.
+                        reduced = reduced.Where(f => _fwNameComparer.Equals(framework, f)).GroupBy(f => f.Version).OrderByDescending(f => f.Key).First();
+                    }
+                    else if (isNet6Era && reduced.Any(f => f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        // We have a special case for *some* Xamarin frameworks here. For specific precedence rules, please see:
+                        // https://github.com/dotnet/designs/blob/main/accepted/2021/net6.0-tfms/net6.0-tfms.md#compatibility-rules
+                        reduced = reduced.GroupBy(f => f.Framework).OrderByDescending(f => f.Key).First(f =>
+                        {
+                            NuGetFramework first = f.First();
+                            return first.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase);
+                        });
+                    }
                 }
 
                 // if we have reduced down to a single framework, use that

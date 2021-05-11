@@ -182,16 +182,38 @@ namespace NuGet.Frameworks
 
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
-            bool result = NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
-                    && IsVersionCompatible(target.Version, candidate.Version)
-                    && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile);
-
-            if (target.IsNet5Era && candidate.HasPlatform)
+            bool result = true;
+            bool isNet6Era = target.IsNet5Era && target.Version.Major >= 6;
+            if (isNet6Era && target.HasPlatform && !NuGetFramework.FrameworkNameComparer.Equals(target, candidate))
             {
-                result = result
-                    && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, candidate.Platform)
-                    && IsVersionCompatible(target.PlatformVersion, candidate.PlatformVersion);
+                if (candidate.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
+                {
+                    var comp = StringComparison.OrdinalIgnoreCase;
+                    string fw = candidate.Framework;
+                    result = result &&
+                    ((fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinMac, comp) && target.Platform.Equals("macos", comp))
+                        || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, comp) && (target.Platform.Equals("ios", comp) || target.Platform.Equals("maccatalyst", comp)))
+                        || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinTVOS, comp) && target.Platform.Equals("tvos", comp)));
+                }
+                else
+                {
+                    result = false;
+                }
             }
+            else
+            {
+                result = NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+                            && IsVersionCompatible(target.Version, candidate.Version)
+                            && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile);
+
+                if (target.IsNet5Era && candidate.HasPlatform)
+                {
+                    result = result
+                        && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, candidate.Platform)
+                        && IsVersionCompatible(target.PlatformVersion, candidate.PlatformVersion);
+                }
+            }
+
 
             return result;
         }
