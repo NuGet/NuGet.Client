@@ -1,9 +1,9 @@
 resources:
   pipelines:
-  - pipeline: NuGet.Client-Compliance
-    source: NuGet.Client-Official
-    trigger:
-    - dev
+    - pipeline: NuGet.Client-Compliance
+      source: NuGet.Client-Official
+      trigger:
+        - dev
 
 jobs:
   - job: Static Analysis
