@@ -681,24 +681,19 @@ namespace NuGet.PackageManagement.UI
             // Don't do anything if solution is closed.
             // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
             // only when package is missing last time and is not missing this time, we need to refresh
+            // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
+            // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
             if (!e.PackagesMissing && _missingPackageStatus)
             {
-                UpdateAfterPackagesMissingStatusChanged();
+                EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await RefreshAsync();
+                    _packageDetail.Refresh();
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageRestoreManager_PackagesMissingStatusChanged));
             }
 
             _missingPackageStatus = e.PackagesMissing;
-        }
-
-        // Refresh the UI after packages are restored.
-        // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
-        // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
-        private void UpdateAfterPackagesMissingStatusChanged()
-        {
-            var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await RefreshAsync())
-                .PostOnFailure(nameof(PackageManagerControl), nameof(UpdateAfterPackagesMissingStatusChanged));
-            EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
-            _packageDetail.Refresh();
         }
 
         private async Task SetTitleAsync(IProjectMetadataContextInfo projectMetadata = null)
