@@ -87,12 +87,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Verbosity_Description,
                     CommandOptionType.SingleValue);
 
-                //The interactive option is not enabled at first. And it's tracked by https://github.com/NuGet/Home/issues/10620
-                //CommandOption interactive = signCmd.Option(
-                //    "--interactive",
-                //    Strings.Verbosity_Description,
-                //    CommandOptionType.NoValue);
-
                 signCmd.HelpOption(XPlatUtility.HelpOption);
 
                 signCmd.Description = Strings.SignCommandDescription;
@@ -131,10 +125,7 @@ namespace NuGet.CommandLine.XPlat
                         TimestampHashAlgorithm = timestampHashAlgorithm
                     };
 
-                    if (verbosity.HasValue())
-                    {
-                        setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
-                    }
+                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
                     var runner = getCommandRunner();
                     int result = await runner.ExecuteCommandAsync(args);
@@ -145,7 +136,8 @@ namespace NuGet.CommandLine.XPlat
 
         private static void ValidatePackagePaths(CommandArgument argument)
         {
-            if (argument.Values.Count == 0)
+            if (argument.Values.Count == 0 ||
+                argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
                     "sign",

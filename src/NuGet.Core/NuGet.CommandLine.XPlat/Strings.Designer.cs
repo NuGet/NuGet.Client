@@ -1636,7 +1636,7 @@ namespace NuGet.CommandLine.XPlat {
         
         /// <summary>
         ///   Looks up a localized string similar to Password for the certificate, if needed.
-        ///This option can be used to specify the password for the certificate. If no password is provided, the command will prompt for a password at run time in the --interactive mode.
+        ///This option can be used to specify the password for the certificate. The command will throw an error message if certificate is password protected but password is not provided as input..
         /// </summary>
         internal static string SignCommandCertificatePasswordDescription {
             get {
@@ -1720,7 +1720,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;-Timestamper&apos; option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/en-us/dotnet/core/tools.
+        ///   Looks up a localized string similar to The &apos;-Timestamper&apos; option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools.
         /// </summary>
         internal static string SignCommandNoTimestamperWarning {
             get {
