@@ -1,6 +1,6 @@
 resources:
   pipelines:
-    - pipeline: NuGet.Client-Compliance
+    - pipeline: nugetclientofficial
       source: NuGet.Client-Official
       trigger:
         - dev
