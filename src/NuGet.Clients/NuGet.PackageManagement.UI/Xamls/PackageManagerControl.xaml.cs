@@ -689,8 +689,8 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await RefreshAsync();
-                    _packageDetail.Refresh();
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageRestoreManager_PackagesMissingStatusChanged));
+                _packageDetail.Refresh();
             }
 
             _missingPackageStatus = e.PackagesMissing;
