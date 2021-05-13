@@ -690,7 +690,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     await RefreshAsync();
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageRestoreManager_PackagesMissingStatusChanged));
-                _packageDetail.Refresh();
             }
 
             _missingPackageStatus = e.PackagesMissing;
