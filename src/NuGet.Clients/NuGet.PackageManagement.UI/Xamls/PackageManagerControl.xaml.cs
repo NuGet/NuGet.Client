@@ -681,8 +681,6 @@ namespace NuGet.PackageManagement.UI
             // Don't do anything if solution is closed.
             // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
             // only when package is missing last time and is not missing this time, we need to refresh
-            // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
-            // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
             if (!e.PackagesMissing && _missingPackageStatus)
             {
                 EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
