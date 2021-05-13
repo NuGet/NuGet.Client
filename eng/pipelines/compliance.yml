@@ -1,0 +1,80 @@
+resources:
+  pipelines:
+    - pipeline: nugetclientofficial
+      source: NuGet.Client-Official
+      trigger:
+        - dev
+
+jobs:
+  - job: Static Analysis
+    pool:
+      vmImage: windows-latest
+
+    steps:
+
+  - task: CredScan@2
+    inputs:
+      toolMajorVersion: "V2"
+
+  - task: PoliCheck@1
+    inputs:
+      inputType: "Basic"
+      targetType: "F"
+      targetArgument: "$(Build.SourcesDirectory)"
+      result: "PoliCheck.xml"
+
+  - task: SdtReport@1
+    displayName: "Generate Analysis Report"
+    inputs:
+      CredScan: true
+      PoliCheck: true
+      ToolLogsNotFoundAction: "Standard"
+
+  - task: TSAUpload@1
+    displayName: "Upload to TSA"
+    inputs:
+      tsaVersion: "TsaV2"
+      codebase: "Existing"
+      tsaEnvironment: "PROD"
+      codeBaseName: "$(TsaCodebaseName)"
+      notificationAlias: "$(TsaNotificationEmail)"
+      notifyAlwaysV2: true
+      codeBaseAdmins: "$(TsaCodebaseAdmins)"
+      instanceUrlForTsaV2: "$(TsaInstanceUrl)"
+      projectNameDEVDIV: "$(TsaProjectName)"
+      areaPath: "$(TsaBugAreaPath)"
+      iterationPath: "$(TsaIterationPath)"
+      uploadAPIScan: false
+      uploadBinSkim: false
+      uploadCredScan: true
+      uploadFortifySCA: false
+      uploadFxCop: false
+      uploadModernCop: false
+      uploadPoliCheck: true
+      uploadPREfast: false
+      uploadRoslyn: false
+      uploadTSLint: false
+      uploadAsync: true
+
+  - task: PublishSecurityAnalysisLogs@2
+    displayName: "Publish CodeAnalysis Logs"
+    inputs:
+      ArtifactName: "CodeAnalysisLogs"
+      ArtifactType: "Container"
+      AllTools: false
+      AntiMalware: false
+      APIScan: false
+      BinSkim: false
+      CodesignValidation: false
+      CredScan: true
+      FortifySCA: false
+      FxCop: false
+      ModernCop: false
+      MSRD: false
+      PoliCheck: true
+      RoslynAnalyzers: false
+      SDLNativeRules: false
+      Semmle: false
+      TSLint: false
+      WebScout: false
+      ToolLogsNotFoundAction: "Standard"
