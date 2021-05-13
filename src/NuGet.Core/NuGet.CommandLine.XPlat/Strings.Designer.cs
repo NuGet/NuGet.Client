@@ -1684,7 +1684,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signs NuGet package(s) at &lt;package-path&gt; with the specified certificate..
+        ///   Looks up a localized string similar to Signs NuGet package(s) at &lt;package-paths&gt; with the specified certificate..
         /// </summary>
         internal static string SignCommandDescription {
             get {
@@ -1720,7 +1720,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;-Timestamper&apos; option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools.
+        ///   Looks up a localized string similar to The &apos;--timestamper&apos; option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools.
         /// </summary>
         internal static string SignCommandNoTimestamperWarning {
             get {

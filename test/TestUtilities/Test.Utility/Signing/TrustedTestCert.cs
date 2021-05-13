@@ -79,7 +79,6 @@ namespace Test.Utility.Signing
             else
             {
                 AddCertificateToStoreForMacOSX();
-
             }
 
             ExportCrl();

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -794,6 +794,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="SignCommandCertificateFingerprintDescription" xml:space="preserve">
     <value>SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</value>
+    <comment>Please don't localize '--certificate-store-name' and '--certificate-store-location'</comment>
   </data>
   <data name="SignCommandCertificatePasswordDescription" xml:space="preserve">
     <value>Password for the certificate, if needed.
@@ -805,14 +806,17 @@ This option can be used to specify the password for the certificate. The command
   <data name="SignCommandCertificateStoreLocationDescription" xml:space="preserve">
     <value>Name of the X.509 certificate store use to search for the certificate. Defaults to "CurrentUser", the X.509 certificate store used by the current user.
 This option should be used when specifying the certificate via --certificate-subject-name or --certificate-fingerprint options.</value>
+    <comment>Please don't localize '--certificate-subject-name' and '--certificate-fingerprint'</comment>
   </data>
   <data name="SignCommandCertificateStoreNameDescription" xml:space="preserve">
     <value>Name of the X.509 certificate store to use to search for the certificate. Defaults to "My", the X.509 certificate store for personal certificates.
 This option should be used when specifying the certificate via --certificate-subject-name or --certificate-fingerprint options.</value>
+    <comment>Please don't localize '--certificate-subject-name' and '--certificate-fingerprint'</comment>
   </data>
   <data name="SignCommandCertificateSubjectNameDescription" xml:space="preserve">
     <value>Subject name of the certificate used to search a local certificate store for the certificate.
 The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</value>
+    <comment>Please don't localize '--certificate-store-name' and '--certificate-store-location'</comment>
   </data>
   <data name="SignCommandHashAlgorithmDescription" xml:space="preserve">
     <value>Hash algorithm to be used to sign the package. Defaults to SHA256.</value>
@@ -822,6 +826,7 @@ The search is a case-insensitive string comparison using the supplied value, whi
   </data>
   <data name="SignCommandPackagePathDescription" xml:space="preserve">
     <value>Signs NuGet packages at &lt;package-paths&gt; with the specified certificate.</value>
+    <comment>Please don't localize '&lt;package-paths&gt;'</comment>
   </data>
   <data name="SignCommandTimestamperDescription" xml:space="preserve">
     <value>URL to an RFC 3161 timestamping server.</value>
@@ -830,10 +835,12 @@ The search is a case-insensitive string comparison using the supplied value, whi
     <value>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</value>
   </data>
   <data name="SignCommandDescription" xml:space="preserve">
-    <value>Signs NuGet package(s) at &lt;package-path&gt; with the specified certificate.</value>
+    <value>Signs NuGet package(s) at &lt;package-paths&gt; with the specified certificate.</value>
+    <comment>Please don't localize '&lt;package-paths&gt;'</comment>
   </data>
   <data name="SignCommandNoTimestamperWarning" xml:space="preserve">
-    <value>The '-Timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools</value>
+    <value>The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools</value>
+    <comment>Please don't localize '--timestamper'</comment>
   </data>
   <data name="Err_InvalidValue" xml:space="preserve">
     <value>Invalid value provided for '{0}'. The accepted values are {1}.</value>
