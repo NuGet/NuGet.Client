@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28404.58
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31312.29
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BD1946CE-5544-4F28-A04A-9C3D51113E1A}"
 EndProject
@@ -241,6 +241,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Internal.Contracts.Test", "test\NuGet.Clients.Tests\NuGet.VisualStudio.Internal.Contracts.Test\NuGet.VisualStudio.Internal.Contracts.Test.csproj", "{C24DD62A-905D-4C48-A17A-B83107F17EA7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tools.Test", "test\NuGet.Clients.Tests\NuGet.Tools.Test\NuGet.Tools.Test.csproj", "{FC1F1CF8-4902-46F0-929F-204E5B1B6D53}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmark", "Benchmark", "{4E76E1A3-EC46-4BCC-AE00-BA7E51B74DB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkTemplate", "test\Benchmarks\BenchmarkTemplate\BenchmarkTemplate.csproj", "{2ECAD674-D9F3-426A-A3E9-F41AB4B799EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -588,6 +592,10 @@ Global
 		{FC1F1CF8-4902-46F0-929F-204E5B1B6D53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC1F1CF8-4902-46F0-929F-204E5B1B6D53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC1F1CF8-4902-46F0-929F-204E5B1B6D53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ECAD674-D9F3-426A-A3E9-F41AB4B799EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ECAD674-D9F3-426A-A3E9-F41AB4B799EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ECAD674-D9F3-426A-A3E9-F41AB4B799EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ECAD674-D9F3-426A-A3E9-F41AB4B799EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -688,6 +696,8 @@ Global
 		{C7CE3001-1DCB-4D66-B583-AF54A59BD552} = {506AF844-92E0-4404-BBFC-0AB073890A72}
 		{C24DD62A-905D-4C48-A17A-B83107F17EA7} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
 		{FC1F1CF8-4902-46F0-929F-204E5B1B6D53} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
+		{4E76E1A3-EC46-4BCC-AE00-BA7E51B74DB7} = {D1549653-9631-4E16-9967-55427174A0DC}
+		{2ECAD674-D9F3-426A-A3E9-F41AB4B799EC} = {4E76E1A3-EC46-4BCC-AE00-BA7E51B74DB7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}
