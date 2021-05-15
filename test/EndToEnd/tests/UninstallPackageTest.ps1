@@ -122,27 +122,17 @@ function Test-UninstallPackageWithNestedContentFiles {
 function Test-SimpleFSharpUninstall {
     # Arrange
     $p = New-FSharpLibrary
+    Build-Solution # wait for project nomination
 
     # Act
-    Install-Package Ninject -ProjectName $p.Name -Source $context.RepositoryPath
-    Assert-NotNull (Get-ProjectItem $p two.txt)
-    Assert-Package $p Ninject
-    Assert-SolutionPackage Ninject
+    Install-Package Ninject -ProjectName $p.Name -Source $context.RepositoryPath -version 2.0.1
+    Build-Solution # wait for assets file to be updated
+    Assert-NetCorePackageInLockFile $p Ninject 2.0.1
     Uninstall-Package Ninject -ProjectName $p.Name
+    Build-Solution # wait for assets file to be updated
 
     # Assert
-    Assert-Null (Get-ProjectPackage $p Ninject)
-    Assert-Null (Get-SolutionPackage Ninject)
-    Assert-Null (Get-ProjectItem $ two.txt)
-}
-
-function Test-FSharpDependentPackageUninstall {
-    # Arrange
-    $p = New-FSharpLibrary
-    $p | Install-Package -Source $context.RepositoryRoot PackageWithDependencyOnPrereleaseTestPackage -FileConflictAction Overwrite
-
-    # Act & Assert
-    Assert-Throws { $p | Uninstall-Package PreReleaseTestPackage } "Unable to uninstall 'PreReleaseTestPackage.1.0.0' because 'PackageWithDependencyOnPrereleaseTestPackage.1.0.0' depends on it."
+    Assert-NetCorePackageNotInLockFile $p Ninject
 }
 
 function Test-UninstallPackageThatIsNotInstalledThrows {
@@ -240,7 +230,7 @@ function UninstallSpecificPackageThrowsIfNotInstalledInProject {
 function Test-UninstallSpecificVersionOfPackage {
     # Arrange
     $p1 = New-ClassLibrary
-    $p2 = New-FSharpLibrary
+    $p2 = New-ClassLibrary
     $p1 | Install-Package Antlr -Version 3.1.1 -Source $context.RepositoryPath
     $p2 | Install-Package Antlr -Version 3.1.3.42154 -Source $context.RepositoryPath
 

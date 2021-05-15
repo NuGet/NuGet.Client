@@ -183,36 +183,18 @@ function Test-GetPackageForProjectReturnsCorrectPackages2 {
 function Test-GetPackageForFSharpProjectReturnsCorrectPackages {
     # Arrange
     $p = New-FSharpConsoleApplication
+    Build-Solution # wait for project nomination
 
     Install-Package jQuery -Version 1.5 -Source $context.RepositoryPath
+    Build-Solution # wait for restore & assets file
 
     # Act
-    $result = @(Get-Package -ProjectName $p.Name)
+    $result = @(Get-Package -ProjectName $p.Name) | where { $_.id -ne "FSharp.Core" }
 
     # Assert
     Assert-AreEqual 1 $result.Count
     Assert-AreEqual "jQuery" $result[0].Id
     Assert-AreEqual "1.5.0" $result[0].Version
-}
-
-function Test-GetPackageForFSharpProjectReturnsCorrectPackages2 {
-    # Arrange
-    $p = New-FSharpConsoleApplication
-
-    # Note that installation of the second package on a project involves update of an existing packages.config
-    # which is different from the installation of the first package
-    Install-Package jQuery -Version 1.5 -Source $context.RepositoryPath
-    Install-Package MyAwesomeLibrary -Version 1.0 -Source $context.RepositoryPath
-
-    # Act
-    $result = @(Get-Package -ProjectName $p.Name)
-
-    # Assert
-    Assert-AreEqual 2 $result.Count
-    Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5.0" $result[0].Version
-    Assert-AreEqual "MyAwesomeLibrary" $result[1].Id
-    Assert-AreEqual "1.0.0" $result[1].Version
 }
 
 function Test-GetPackageForProjectReturnsEmptyIfItHasNoInstalledPackage {
