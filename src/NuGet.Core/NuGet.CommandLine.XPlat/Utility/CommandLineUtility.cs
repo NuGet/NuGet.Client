@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>Supported hash algorithm</returns>
         internal static HashAlgorithmName ParseAndValidateHashAlgorithm(string optionValue, string optionName, SigningSpecifications spec)
         {
-            var hashAlgorithm = HashAlgorithmName.SHA256;
+            HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA256;
 
             if (!string.IsNullOrEmpty(optionValue))
             {
@@ -57,8 +57,8 @@ namespace NuGet.CommandLine.XPlat
             if (hashAlgorithm == HashAlgorithmName.Unknown || !spec.AllowedHashAlgorithms.Contains(hashAlgorithm))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Err_InvalidValue,
-                        optionName, string.Join(",", spec.AllowedHashAlgorithms)));
+                    Strings.Err_InvalidValue,
+                    optionName, string.Join(",", spec.AllowedHashAlgorithms)));
             }
 
             return hashAlgorithm;

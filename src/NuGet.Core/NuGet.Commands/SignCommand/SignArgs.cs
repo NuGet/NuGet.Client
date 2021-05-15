@@ -42,7 +42,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Paths to the packages that has to be verified.
+        /// Paths to the packages that has to be signed.
         /// </summary>
         public IReadOnlyList<string> PackagePaths { get; set; }
 

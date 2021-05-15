@@ -19,7 +19,7 @@ namespace NuGet.Commands.Test
         {
             _defaultCertificate = SigningTestUtility.GenerateCertificate("test", generator => { });
 
-            var _defaultCertificateForTrust = SigningTestUtility.GenerateCertificate("test trusted", generator => { });
+            X509Certificate2 _defaultCertificateForTrust = SigningTestUtility.GenerateCertificate("test trusted", generator => { });
 
             _trustedDefaultCertificate = TrustedTestCert.Create(
                 new X509Certificate2(_defaultCertificateForTrust),
@@ -43,7 +43,7 @@ namespace NuGet.Commands.Test
 
         public X509Certificate2 GetDefaultCertificate()
         {
-            var certWithPrivateKey = SigningTestUtility.GetPublicCertWithPrivateKey(_defaultCertificate);
+            X509Certificate2 certWithPrivateKey = SigningTestUtility.GetPublicCertWithPrivateKey(_defaultCertificate);
             return certWithPrivateKey;
         }
 

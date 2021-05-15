@@ -35,7 +35,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task DotnetSign_SignPackageWithTrustedCertificate_SuccceedsAsync()
+        public async Task DotnetSign_SignPackageWithTrustedCertificate_SucceedsAsync()
         {
             // Arrange
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -48,10 +48,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -60,7 +60,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task DotnetSign_SignPackageWithTrustedCertificateWithRelativePath_SuccceedsAsync()
+        public async Task DotnetSign_SignPackageWithTrustedCertificateWithRelativePath_SucceedsAsync()
         {
             // Arrange
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -73,10 +73,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign .{Path.DirectorySeparatorChar}{packageFileName} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign .{Path.DirectorySeparatorChar}{packageFileName} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -98,10 +98,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> invalidEkuCert = _signFixture.TrustedTestCertificateWithInvalidEku;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {invalidEkuCert.Source.Cert.Thumbprint} --certificate-store-name {invalidEkuCert.StoreName} --certificate-store-location {invalidEkuCert.StoreLocation}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {invalidEkuCert.Source.Cert.Thumbprint} --certificate-store-name {invalidEkuCert.StoreName} --certificate-store-location {invalidEkuCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
@@ -124,10 +124,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> expiredCert = _signFixture.TrustedTestCertificateExpired;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {expiredCert.Source.Cert.Thumbprint} --certificate-store-name {expiredCert.StoreName} --certificate-store-location {expiredCert.StoreLocation}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {expiredCert.Source.Cert.Thumbprint} --certificate-store-name {expiredCert.StoreName} --certificate-store-location {expiredCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
@@ -150,10 +150,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> notYetValidCert = _signFixture.TrustedTestCertificateNotYetValid;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {notYetValidCert.Source.Cert.Thumbprint} --certificate-store-name {notYetValidCert.StoreName} --certificate-store-location {notYetValidCert.StoreLocation}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {notYetValidCert.Source.Cert.Thumbprint} --certificate-store-name {notYetValidCert.StoreName} --certificate-store-location {notYetValidCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
@@ -177,10 +177,10 @@ namespace Dotnet.Integration.Test
                 var timestampService = await _signFixture.GetDefaultTrustedTimestampServiceAsync();
                 TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --timestamper {timestampService.Url.OriginalString}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --timestamper {timestampService.Url.OriginalString}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -202,10 +202,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> revokedCert = _signFixture.RevokedTestCertificateWithChain;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {revokedCert.Source.Cert.Thumbprint} --certificate-store-name {revokedCert.StoreName} --certificate-store-location {revokedCert.StoreLocation}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {revokedCert.Source.Cert.Thumbprint} --certificate-store-name {revokedCert.StoreName} --certificate-store-location {revokedCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeFalse(because: result.AllOutput);
@@ -228,10 +228,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> revocationUnknownCert = _signFixture.RevocationUnknownTestCertificateWithChain;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {revocationUnknownCert.Source.Cert.Thumbprint} --certificate-store-name {revocationUnknownCert.StoreName} --certificate-store-location {revocationUnknownCert.StoreLocation}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {revocationUnknownCert.Source.Cert.Thumbprint} --certificate-store-name {revocationUnknownCert.StoreName} --certificate-store-location {revocationUnknownCert.StoreLocation}",
+                    ignoreExitCode: true);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -258,10 +258,10 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
-                        pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --output {outputDir}",
-                        ignoreExitCode: true);
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.PackageSource,
+                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --output {outputDir}",
+                    ignoreExitCode: true);
 
                 var signedPackagePath = Path.Combine(outputDir, "PackageA.1.0.0.nupkg");
 
@@ -286,12 +286,12 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
-                var firstResult = _msbuildFixture.RunDotnet(
+                CommandRunnerResult firstResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
                     ignoreExitCode: true);
 
-                var secondResult = _msbuildFixture.RunDotnet(
+                CommandRunnerResult secondResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
                     ignoreExitCode: true);
@@ -318,12 +318,12 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
-                var firstResult = _msbuildFixture.RunDotnet(
+                CommandRunnerResult firstResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
                     ignoreExitCode: true);
 
-                var secondResult = _msbuildFixture.RunDotnet(
+                CommandRunnerResult secondResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --overwrite",
                     ignoreExitCode: true);
@@ -350,7 +350,7 @@ namespace Dotnet.Integration.Test
 
                 TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
                 //Act
-                var result = _msbuildFixture.RunDotnet(
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --overwrite",
                     ignoreExitCode: true);
@@ -381,7 +381,7 @@ namespace Dotnet.Integration.Test
                 File.WriteAllBytes(pfxPath, pfxBytes);
 
                 //Act
-                var result = _msbuildFixture.RunDotnet(
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-path {pfxPath} --certificate-password {password}",
                     ignoreExitCode: true);
@@ -413,7 +413,7 @@ namespace Dotnet.Integration.Test
                 File.WriteAllBytes(pfxPath, pfxBytes);
 
                 //Act
-                var result = _msbuildFixture.RunDotnet(
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-path .{Path.DirectorySeparatorChar}{pfxName} --certificate-password {password}",
                     ignoreExitCode: true);
@@ -444,7 +444,7 @@ namespace Dotnet.Integration.Test
                 File.WriteAllBytes(pfxPath, pfxBytes);
 
                 //Act
-                var result = _msbuildFixture.RunDotnet(
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-path {pfxPath}",
                     ignoreExitCode: true);
@@ -470,7 +470,7 @@ namespace Dotnet.Integration.Test
                 X509Certificate2 untrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
 
                 //Act
-                var result = _msbuildFixture.RunDotnet(
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-fingerprint {untrustedSelfIssuedCert.Thumbprint}",
                     ignoreExitCode: true);
@@ -504,7 +504,7 @@ namespace Dotnet.Integration.Test
                 using (var UntrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore)
                 {
                     //Act
-                    var result = _msbuildFixture.RunDotnet(
+                    CommandRunnerResult result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
                         $"nuget sign {packageFilePath} --certificate-fingerprint {UntrustedSelfIssuedCert.Thumbprint} --timestamper {timestampService.Url}",
                         ignoreExitCode: true);

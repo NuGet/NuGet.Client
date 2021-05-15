@@ -78,8 +78,8 @@ namespace Test.Utility.Signing
         ///  "Object contains only the public half of a key pair. A private key must also be provided."
         internal TrustedTestCert<TestCertificate> WithPrivateKeyAndTrustForLeafOrSelfIssued()
         {
-            StoreName storeName = CertificateStoreUtilities.GetTrustedCertificateStoreNameForLeafOrSelfIssued();
-            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocatioinForLeafOrSelfIssued();
+            StoreName storeName = CertificateStoreUtilities.GetTrustedCertificateStoreNameForLeafOrSelfIssuedCertificate();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocationForLeafOrSelfIssuedCertificate();
 
             return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
         }

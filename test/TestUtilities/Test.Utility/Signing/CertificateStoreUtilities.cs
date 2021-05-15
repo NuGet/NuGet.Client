@@ -28,7 +28,7 @@ namespace Test.Utility.Signing
             return (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux) ? StoreName.CertificateAuthority : StoreName.My;
         }
 
-        internal static StoreName GetTrustedCertificateStoreNameForLeafOrSelfIssued()
+        internal static StoreName GetTrustedCertificateStoreNameForLeafOrSelfIssuedCertificate()
         {
             // On MacOs, if we add the leaf or self-issued certificate into LocalMachine\Root, the private key will not be accessed.
             // So the dotnet signing command tests will fail for:
@@ -36,7 +36,7 @@ namespace Test.Utility.Signing
             return StoreName.My;
         }
 
-        internal static StoreLocation GetTrustedCertificateStoreLocatioinForLeafOrSelfIssued()
+        internal static StoreLocation GetTrustedCertificateStoreLocationForLeafOrSelfIssuedCertificate()
         {
             // According to https://github.com/dotnet/runtime/blob/master/docs/design/features/cross-platform-cryptography.md#x509store   
             // use different approaches for Windows, Mac and Linux.

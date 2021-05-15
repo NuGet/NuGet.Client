@@ -47,7 +47,7 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyFact]
-        public void Verify_AuthorSignedAndTimestampedPackageWithOptionAll_Succceeds()
+        public void Verify_AuthorSignedAndTimestampedPackageWithOptionAll_Succeeds()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -91,7 +91,7 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyFact]
-        public void Verify_SignedPackageWithAllowedCertificate_Succceeds()
+        public void Verify_SignedPackageWithAllowedCertificate_Succeeds()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())

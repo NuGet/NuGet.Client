@@ -23,7 +23,7 @@ namespace NuGet.Commands
         public async Task<int> ExecuteCommandAsync(SignArgs signArgs)
         {
             // resolve path into multiple packages if needed.
-            var packagesToSign = signArgs.PackagePaths.SelectMany(packagePath =>
+            IEnumerable<string> packagesToSign = signArgs.PackagePaths.SelectMany(packagePath =>
             {
                 IEnumerable<string> packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
                 LocalFolderUtility.EnsurePackageFileExists(packagePath, packages);

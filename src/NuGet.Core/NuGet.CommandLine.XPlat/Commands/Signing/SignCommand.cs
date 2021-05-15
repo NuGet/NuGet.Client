@@ -15,12 +15,14 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class SignCommand
     {
+        private const string CommandName = "sign";
+
         internal static void Register(CommandLineApplication app,
-                         Func<ILogger> getLogger,
-                         Action<LogLevel> setLogLevel,
-                         Func<ISignCommandRunner> getCommandRunner)
+            Func<ILogger> getLogger,
+            Action<LogLevel> setLogLevel,
+            Func<ISignCommandRunner> getCommandRunner)
         {
-            app.Command("sign", signCmd =>
+            app.Command(CommandName, signCmd =>
             {
                 CommandArgument packagePaths = signCmd.Argument(
                     "<package-paths>",
@@ -52,7 +54,7 @@ namespace NuGet.CommandLine.XPlat
                     Strings.SignCommandCertificateSubjectNameDescription,
                     CommandOptionType.SingleValue);
 
-                CommandOption fingerPrint = signCmd.Option(
+                CommandOption fingerprint = signCmd.Option(
                     "--certificate-fingerprint",
                     Strings.SignCommandCertificateFingerprintDescription,
                     CommandOptionType.SingleValue);
@@ -93,18 +95,18 @@ namespace NuGet.CommandLine.XPlat
 
                 signCmd.OnExecute(async () =>
                 {
-                    var logger = getLogger();
+                    ILogger logger = getLogger();
 
                     ValidatePackagePaths(packagePaths);
                     WarnIfNoTimestamper(logger, timestamper);
-                    ValidateCertificateInputs(path, fingerPrint, subject, store, location);
+                    ValidateCertificateInputs(path, fingerprint, subject, store, location);
                     ValidateAndCreateOutputDirectory(outputDirectory);
 
-                    var signingSpec = SigningSpecifications.V1;
-                    var storeLocation = ValidateAndParseStoreLocation(location);
-                    var storeName = ValidateAndParseStoreName(store);
-                    var hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(algorithm.Value(), algorithm.LongName, signingSpec);
-                    var timestampHashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(timestamperAlgorithm.Value(), timestamperAlgorithm.LongName, signingSpec);
+                    SigningSpecificationsV1 signingSpec = SigningSpecifications.V1;
+                    StoreLocation storeLocation = ValidateAndParseStoreLocation(location);
+                    StoreName storeName = ValidateAndParseStoreName(store);
+                    HashAlgorithmName hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(algorithm.Value(), algorithm.LongName, signingSpec);
+                    HashAlgorithmName timestampHashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(timestamperAlgorithm.Value(), timestamperAlgorithm.LongName, signingSpec);
 
                     var args = new SignArgs()
                     {
@@ -114,7 +116,7 @@ namespace NuGet.CommandLine.XPlat
                         CertificateStoreName = storeName,
                         CertificateStoreLocation = storeLocation,
                         CertificateSubjectName = subject.Value(),
-                        CertificateFingerprint = fingerPrint.Value(),
+                        CertificateFingerprint = fingerprint.Value(),
                         CertificatePassword = password.Value(),
                         SignatureHashAlgorithm = hashAlgorithm,
                         Logger = logger,
@@ -127,7 +129,7 @@ namespace NuGet.CommandLine.XPlat
 
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
-                    var runner = getCommandRunner();
+                    ISignCommandRunner runner = getCommandRunner();
                     int result = await runner.ExecuteCommandAsync(args);
                     return result;
                 });
@@ -140,7 +142,7 @@ namespace NuGet.CommandLine.XPlat
                 argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
-                    "sign",
+                    CommandName,
                     argument.Name));
             }
         }
@@ -168,7 +170,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static StoreLocation ValidateAndParseStoreLocation(CommandOption location)
         {
-            var storeLocation = StoreLocation.CurrentUser;
+            StoreLocation storeLocation = StoreLocation.CurrentUser;
 
             if (location.HasValue())
             {
@@ -187,7 +189,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static StoreName ValidateAndParseStoreName(CommandOption store)
         {
-            var storeName = StoreName.My;
+            StoreName storeName = StoreName.My;
 
             if (store.HasValue())
             {
@@ -204,18 +206,18 @@ namespace NuGet.CommandLine.XPlat
             return storeName;
         }
 
-        private static void ValidateCertificateInputs(CommandOption path, CommandOption fingerPrint,
+        private static void ValidateCertificateInputs(CommandOption path, CommandOption fingerprint,
                                                       CommandOption subject, CommandOption store, CommandOption location)
         {
             if (string.IsNullOrEmpty(path.Value()) &&
-                string.IsNullOrEmpty(fingerPrint.Value()) &&
+                string.IsNullOrEmpty(fingerprint.Value()) &&
                 string.IsNullOrEmpty(subject.Value()))
             {
                 // Throw if user gave no certificate input
                 throw new ArgumentException(Strings.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(path.Value()) &&
-                (!string.IsNullOrEmpty(fingerPrint.Value()) ||
+                (!string.IsNullOrEmpty(fingerprint.Value()) ||
                  !string.IsNullOrEmpty(subject.Value()) ||
                  !string.IsNullOrEmpty(location.Value()) ||
                  !string.IsNullOrEmpty(store.Value())))
@@ -223,7 +225,7 @@ namespace NuGet.CommandLine.XPlat
                 // Thow if the user provided a path and any one of the other options
                 throw new ArgumentException(Strings.SignCommandMultipleCertificateException);
             }
-            else if (!string.IsNullOrEmpty(fingerPrint.Value()) && !string.IsNullOrEmpty(subject.Value()))
+            else if (!string.IsNullOrEmpty(fingerprint.Value()) && !string.IsNullOrEmpty(subject.Value()))
             {
                 // Thow if the user provided a fingerprint and a subject
                 throw new ArgumentException(Strings.SignCommandMultipleCertificateException);

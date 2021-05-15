@@ -223,7 +223,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        public MockServer CrlServer
+        internal MockServer CrlServer
         {
             get
             {
