@@ -38,7 +38,7 @@ namespace Test.Utility.Commands
 
         public PackageReferenceSpecBuilder WithTargetFrameworks(IEnumerable<string> targetFrameworks)
         {
-            _targetFrameworks.AddRange(targetFrameworks?.Select(e => new TargetFrameworkInformation {FrameworkName = NuGetFramework.Parse(e)}) ?? throw new ArgumentNullException(nameof(targetFrameworks)));
+            _targetFrameworks.AddRange(targetFrameworks?.Select(e => new TargetFrameworkInformation { FrameworkName = NuGetFramework.Parse(e) }) ?? throw new ArgumentNullException(nameof(targetFrameworks)));
             return this;
         }
 
@@ -82,7 +82,7 @@ namespace Test.Utility.Commands
                 ConfigFilePaths = new List<string>(),
                 RestoreLockProperties = new RestoreLockProperties(_isRestorePackagesWithLockFile.ToString(), Path.Combine(_projectDirectory, PackagesLockFileFormat.LockFileName), _isLockedMode),
             };
-            packageSpec.RestoreMetadata.TargetFrameworks.AddRange(packageSpec.TargetFrameworks.Select(e => new ProjectRestoreMetadataFrameworkInfo {FrameworkName = e.FrameworkName}));
+            packageSpec.RestoreMetadata.TargetFrameworks.AddRange(packageSpec.TargetFrameworks.Select(e => new ProjectRestoreMetadataFrameworkInfo { FrameworkName = e.FrameworkName }));
 
             return packageSpec;
         }

@@ -161,7 +161,7 @@ namespace NuGet.Commands.Test
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
             ILogger log,
-            LockFileBuilderCache lockFileBuilderCache): base(
+            LockFileBuilderCache lockFileBuilderCache) : base(
             project,
             RestoreCommandProviders.Create(
                 packagesDirectory,

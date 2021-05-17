@@ -28,7 +28,7 @@ namespace NuGet.Commands
             RestoreCommandProviders dependencyProviders,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
-            ILogger log) : this (project, dependencyProviders, cacheContext, clientPolicyContext, log, new LockFileBuilderCache())
+            ILogger log) : this(project, dependencyProviders, cacheContext, clientPolicyContext, log, new LockFileBuilderCache())
         {
         }
 

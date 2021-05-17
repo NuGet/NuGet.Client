@@ -28,8 +28,8 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>> _criteriaSets =
             new ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>>();
 
-        private readonly ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), LibraryDependency, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>> _lockFileTargetLibraryCache =
-            new ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), LibraryDependency, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>>();
+        private readonly ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), string, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>> _lockFileTargetLibraryCache =
+            new ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), string, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>>();
 
         /// <summary>
         /// Get ordered selection criteria.
@@ -74,12 +74,12 @@ namespace NuGet.Commands
         /// <summary>
         /// Try to get a LockFileTargetLibrary from the cache.
         /// </summary>
-        public LockFileTargetLibrary GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, LibraryDependency libraryDependency, LibraryIncludeFlags libraryIncludeFlags, Func<LockFileTargetLibrary> valueFactory)
+        internal LockFileTargetLibrary GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, string aliases, LibraryIncludeFlags libraryIncludeFlags, Func<LockFileTargetLibrary> valueFactory)
         {
             localPackageInfo = localPackageInfo ?? throw new ArgumentNullException(nameof(localPackageInfo));
             var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
             var package = (localPackageInfo.Id, localPackageInfo.Version, localPackageInfo.Sha512);
-            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, package, libraryDependency, libraryIncludeFlags),
+            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, package, aliases, libraryIncludeFlags),
                 key => new Lazy<LockFileTargetLibrary>(valueFactory)).Value;
         }
 
@@ -120,7 +120,7 @@ namespace NuGet.Commands
 
                 return StringComparer.Ordinal.Equals(TargetGraphName, other.TargetGraphName)
                        && NuGetFramework.Comparer.Equals(Framework, other.Framework)
-                       && (AssetTargetFallbackFramework == null && other.AssetTargetFallbackFramework == null  ||
+                       && (AssetTargetFallbackFramework == null && other.AssetTargetFallbackFramework == null ||
                            AssetTargetFallbackFramework != null && AssetTargetFallbackFramework.Equals(other.AssetTargetFallbackFramework));
             }
 

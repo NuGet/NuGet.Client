@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -104,11 +104,11 @@ namespace NuGet.Commands.Test
                     })
                     .Build();
 
-                var sources1 = new[] {new PackageSource(package1Source.FullName)}
+                var sources1 = new[] { new PackageSource(package1Source.FullName) }
                     .Select(source => Repository.Factory.GetCoreV3(source))
                     .ToList();
 
-                var sources2 = new[] {new PackageSource(package2Source.FullName)}
+                var sources2 = new[] { new PackageSource(package2Source.FullName) }
                     .Select(source => Repository.Factory.GetCoreV3(source))
                     .ToList();
 
@@ -121,7 +121,8 @@ namespace NuGet.Commands.Test
                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                     logger,
                     lockFileBuilderCache
-                ) {LockFilePath = Path.Combine(project1Directory.FullName, "project.lock.json")};
+                )
+                { LockFilePath = Path.Combine(project1Directory.FullName, "project.lock.json") };
 
                 var request2 = new TestRestoreRequest(
                     project2Spec,
@@ -132,7 +133,8 @@ namespace NuGet.Commands.Test
                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                     logger,
                     lockFileBuilderCache
-                ) {LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json")};
+                )
+                { LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json") };
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     package1Source.FullName,
@@ -233,9 +235,9 @@ namespace NuGet.Commands.Test
                     })
                     .Build();
 
-                 var sources = new[] {new PackageSource(packageSource.FullName)}
-                    .Select(source => Repository.Factory.GetCoreV3(source))
-                    .ToList();
+                var sources = new[] { new PackageSource(packageSource.FullName) }
+                   .Select(source => Repository.Factory.GetCoreV3(source))
+                   .ToList();
 
                 var request1 = new TestRestoreRequest(
                     project1Spec,
@@ -246,7 +248,8 @@ namespace NuGet.Commands.Test
                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                     logger,
                     lockFileBuilderCache
-                ) {LockFilePath = Path.Combine(project1Directory.FullName, "project.lock.json")};
+                )
+                { LockFilePath = Path.Combine(project1Directory.FullName, "project.lock.json") };
 
                 var request2 = new TestRestoreRequest(
                     project2Spec,
@@ -257,7 +260,8 @@ namespace NuGet.Commands.Test
                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                     logger,
                     lockFileBuilderCache
-                ) {LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json")};
+                )
+                { LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json") };
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     packageSource.FullName,
@@ -290,15 +294,15 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData("1.0.0", "net471", LibraryDependencyTarget.All, LibraryIncludeFlags.All, true)]
-        [InlineData("2.0.0", "net471", LibraryDependencyTarget.All, LibraryIncludeFlags.All, false)]
-        [InlineData("1.0.0", "netstandard2.0", LibraryDependencyTarget.All, LibraryIncludeFlags.All, false)]
-        [InlineData("1.0.0", "net471", LibraryDependencyTarget.Package, LibraryIncludeFlags.All, false)]
-        [InlineData("1.0.0", "net471", LibraryDependencyTarget.All, LibraryIncludeFlags.Runtime, false)]
+        [InlineData("1.0.0", "net471", null, LibraryIncludeFlags.All, true)]
+        [InlineData("2.0.0", "net471", null, LibraryIncludeFlags.All, false)]
+        [InlineData("1.0.0", "netstandard2.0", null, LibraryIncludeFlags.All, false)]
+        [InlineData("1.0.0", "net471", "MyAlias", LibraryIncludeFlags.All, false)]
+        [InlineData("1.0.0", "net471", null, LibraryIncludeFlags.Runtime, false)]
         public async Task LockFileBuilderCache_DependencyDifference_WillNotCache(
             string version,
             string framework,
-            LibraryDependencyTarget libraryDependencyTarget,
+            string aliases,
             LibraryIncludeFlags includeFlags,
             bool cachingIsExpected
         )
@@ -369,7 +373,8 @@ namespace NuGet.Commands.Test
                                     new LibraryDependency
                                     {
                                         LibraryRange = new LibraryRange("PackageA", VersionRange.Parse(version),
-                                            libraryDependencyTarget),
+                                            LibraryDependencyTarget.All),
+                                        Aliases = aliases,
                                         IncludeType = includeFlags,
                                     },
                                 })
@@ -377,7 +382,7 @@ namespace NuGet.Commands.Test
                     })
                     .Build();
 
-                var sources = new[] {new PackageSource(packageSource.FullName)}
+                var sources = new[] { new PackageSource(packageSource.FullName) }
                     .Select(source => Repository.Factory.GetCoreV3(source))
                     .ToList();
 
@@ -390,7 +395,8 @@ namespace NuGet.Commands.Test
                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                     logger,
                     lockFileBuilderCache
-                ) {LockFilePath = Path.Combine(project1Directory.FullName, "project.lock.json")};
+                )
+                { LockFilePath = Path.Combine(project1Directory.FullName, "project.lock.json") };
 
                 var request2 = new TestRestoreRequest(
                     project2Spec,
@@ -401,7 +407,8 @@ namespace NuGet.Commands.Test
                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                     logger,
                     lockFileBuilderCache
-                ) {LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json")};
+                )
+                { LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json") };
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     packageSource.FullName,
