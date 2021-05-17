@@ -208,7 +208,8 @@ namespace NuGet.Packaging.Signing
 
         private static void ValidateTimestampResponse(byte[] nonce, byte[] messageHash, IRfc3161TimestampToken timestampToken)
         {
-            if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
+            var tokenNonce = timestampToken.TokenInfo.GetNonce();
+            if (tokenNonce == null || !nonce.SequenceEqual(tokenNonce))
             {
                 throw new TimestampException(NuGetLogCode.NU3026, Strings.TimestampFailureNonceMismatch);
             }

@@ -9,8 +9,22 @@ namespace NuGet.Test
     public class CompatibilityTests
     {
         [Theory]
+        // Some net6.0 platforms are compatible with some Xamarin-ish TFMs
+        [InlineData("net6.0-ios1.0", "xamarin.ios", true)]
+        [InlineData("net6.0-tvos1.0", "xamarin.tvos", true)]
+        [InlineData("net6.0-macos1.0", "xamarin.mac", true)]
+        // MacCatalyst is a special fallback
+        [InlineData("net6.0-maccatalyst1.0", "xamarin.ios", true)]
+        [InlineData("net6.0-tizen9.0", "tizen9.0", true)]
+        [InlineData("net6.0-android12.0", "monoandroid12.0", true)]
+        [InlineData("net6.0-ios1.0", "xamarin.mac", false)]
+        [InlineData("net6.0-tvos1.0", "xamarin.mac", false)]
+        [InlineData("net6.0-maccatalyst1.0", "xamarin.mac", false)]
+        [InlineData("net6.0-tizen9.0", "xamarin.mac", false)]
+        [InlineData("net6.0-android12.0", "xamarin.mac", false)]
+
         // net5.0 and later is not compat with net1.0 through net 4.x.xxx.
-        // users must use those TFMs via AssetTargetFallback, which will be set 
+        // users must use those TFMs via AssetTargetFallback, which will be set
         [InlineData("net5.0", "net452", false)]
         [InlineData("net5.0", "net462", false)]
         [InlineData("net5.0", "net472", false)]

@@ -31,12 +31,12 @@ namespace NuGet.Frameworks
         {
             if (min == null)
             {
-                throw new ArgumentNullException("min");
+                throw new ArgumentNullException(nameof(min));
             }
 
             if (max == null)
             {
-                throw new ArgumentNullException("max");
+                throw new ArgumentNullException(nameof(max));
             }
 
             if (!SameExceptForVersion(min, max))

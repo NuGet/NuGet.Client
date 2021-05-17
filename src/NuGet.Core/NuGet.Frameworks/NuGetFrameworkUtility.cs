@@ -40,17 +40,17 @@ namespace NuGet.Frameworks
         {
             if (framework == null)
             {
-                throw new ArgumentNullException("framework");
+                throw new ArgumentNullException(nameof(framework));
             }
 
             if (frameworkMappings == null)
             {
-                throw new ArgumentNullException("frameworkMappings");
+                throw new ArgumentNullException(nameof(frameworkMappings));
             }
 
             if (compatibilityProvider == null)
             {
-                throw new ArgumentNullException("compatibilityProvider");
+                throw new ArgumentNullException(nameof(compatibilityProvider));
             }
 
             if (items != null)
@@ -89,17 +89,17 @@ namespace NuGet.Frameworks
         {
             if (framework == null)
             {
-                throw new ArgumentNullException("framework");
+                throw new ArgumentNullException(nameof(framework));
             }
 
             if (frameworkMappings == null)
             {
-                throw new ArgumentNullException("frameworkMappings");
+                throw new ArgumentNullException(nameof(frameworkMappings));
             }
 
             if (compatibilityProvider == null)
             {
-                throw new ArgumentNullException("compatibilityProvider");
+                throw new ArgumentNullException(nameof(compatibilityProvider));
             }
 
             if (items != null)

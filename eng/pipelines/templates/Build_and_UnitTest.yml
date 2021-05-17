@@ -47,7 +47,7 @@ steps:
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
 
-- task: ms-vseng.MicroBuildTasks.965C8DC6-1483-45C9-B384-5AC75DA1F1A4.MicroBuildOptProfPlugin@6
+- task: MicroBuildOptProfPlugin@6
   displayName: 'OptProfV2:  install the plugin'
   inputs:
     getDropNameByDrop: true
@@ -66,8 +66,8 @@ steps:
 # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
 # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
 # won't be able to determine the URL to embed in the pdbs.
-# Therefore, when the git origin remote is not github (official builds), we need to add the GitHub repo URL as a remote, and
-# tell SourceLink.GitHub what that remote name is
+# Therefore, we need to add the GitHub repo URL as a remote, and tell SourceLink.GitHub what that remote name is.
+# We do this even when github is the origin URL, to avoid warnings in the CI logs.
 - task: PowerShell@1
   displayName: "Prepare for source link"
   inputs:
@@ -94,12 +94,10 @@ steps:
           Write-Host "git remote add github $nugetUrl"
           & git remote add github $nugetUrl
         }
-        Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
         exit 1
       }
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
@@ -116,7 +114,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=$(gitRepositoryRemoteName)"
+    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github"
     maximumCpuCount: true
 
 - task: MSBuild@1
@@ -284,13 +282,13 @@ steps:
     arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
-- task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
+- task: MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName for the nupkgs
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
-- task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
+- task: MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
@@ -298,7 +296,7 @@ steps:
     WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
-- task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+- task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
@@ -347,7 +345,7 @@ steps:
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.308 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: ms-vseng.MicroBuildTasks.0e9d0d4d-71ec-4e4e-ae40-db9896f1ae74.MicroBuildBuildVSBootstrapper@2
+- task: MicroBuildBuildVSBootstrapper@2
   displayName: 'OptProfV2:  build a Visual Studio bootstrapper'
   inputs:
     channelName: "$(VsTargetChannel)"
@@ -387,25 +385,25 @@ steps:
     msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="$(TestDrop)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
+- task: artifactDropTask@0
   displayName: 'OptProfV2:  publish the .runsettings file to artifact services'
   inputs:
     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
     buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
     sourcePath: 'artifacts\RunSettings'
     toLowerCase: false
-    usePat: false
+    usePat: true
     dropMetadataContainerName: RunSettings
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
+- task: artifactDropTask@0
   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
   inputs:
     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
     buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
     sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
     toLowerCase: false
-    usePat: false
+    usePat: true
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishBuildArtifacts@1
@@ -415,28 +413,11 @@ steps:
     ArtifactName: "$(VsixPublishDir)"
     ArtifactType: "Container"
 
-- task: CopyFiles@2
-  displayName: "Copy LCG Files to staging (deprecated)"
-  inputs:
-    SourceFolder: "artifacts\\"
-    Contents: |
-      **\*.lcg
-      !localize\**\*
-    TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
 - task: PublishPipelineArtifact@1
   displayName: "Publish localizationArtifacts artifact"
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
     artifactName: "localizationArtifacts"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Upload legacy localizeInputs artifact"
-  inputs:
-    targetPath: "$(Build.ArtifactStagingDirectory)\\PLOC"
-    artifactName: "legacy localizeInputs"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: NuGetCommand@2
@@ -466,21 +447,15 @@ steps:
     artifactName: "symbols - $(RtmLabel)"
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
-  displayName: "Publish Symbols on Symweb"
-  inputs:
-    symbolServiceURI: "https://microsoft.artifacts.visualstudio.com/DefaultCollection"
-    requestName: "CollectionId/$(System.CollectionId)/ProjectId/$(System.TeamProjectId)/$(TeamName)/BuildId/$(Build.BuildId)"
-    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    detailedLog: "true"
-    expirationInDays: "45"
-    usePat: "false"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
-
-- task: MicroBuildUploadVstsDropFolder@1
+- task: artifactDropTask@0
   displayName: "Upload VSTS Drop"
   inputs:
-    DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    toLowerCase: false
+    usePat: true
+    dropMetadataContainerName: "DropMetadata-Product"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
