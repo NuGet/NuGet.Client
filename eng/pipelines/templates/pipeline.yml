@@ -154,9 +154,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-    VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
-  # Apex tests against 64-bit VS are blocked by https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1316999
-  condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'), not(eq(variables['VsTargetMajorVersion'], 17)))"
+  condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
   pool:
     name: DDNuGet-Windows
     demands:

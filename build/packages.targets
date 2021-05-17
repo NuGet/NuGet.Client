@@ -130,7 +130,8 @@
         <PackageReference Update="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.5.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="$(VSFrameworkVersion)" />
+        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.0.0-previews-1-31318-023" />
+        <PackageReference Update="Microsoft.VisualStudio.RpcContracts" Version="17.0.50-preview-0001-0001" />
         <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="16.5.22-beta" />
         <PackageReference Update="Moq" Version="4.14.5" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />

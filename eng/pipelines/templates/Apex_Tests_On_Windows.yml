@@ -69,7 +69,8 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber)"
+    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+    msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
 
 - task: MSBuild@1
   displayName: "Run Apex Tests (continue on error)"
@@ -79,7 +80,8 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -91,7 +93,8 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
     maximumCpuCount: true
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
