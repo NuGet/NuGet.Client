@@ -234,7 +234,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:ImportNuGetBuildTasksPackTargetsFromSdk=true /p:NuGetPackTaskAssemblyFile=$(Build.Repository.LocalPath)\\artifacts\\NuGet.Build.Tasks.Pack\\16.0\\bin\\Release\\net472\\NuGet.Build.Tasks.Pack.dll /p:NuGetBuildTasksPackTargets=$(Build.Repository.LocalPath)\\artifacts\\NuGet.Build.Tasks.Pack\\16.0\\bin\\Release\\net472\\NuGet.Build.Tasks.Pack.targets"
+    msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:ImportNuGetBuildTasksPackTargetsFromSdk=true /p:NuGetPackTaskAssemblyFile=$(Build.Repository.LocalPath)\\artifacts\\NuGet.Build.Tasks.Pack\\16.0-RTM\\bin\\Release\\net472\\NuGet.Build.Tasks.Pack.dll /p:NuGetBuildTasksPackTargets=$(Build.Repository.LocalPath)\\artifacts\\NuGet.Build.Tasks.Pack\\16.0-RTM\\bin\\Release\\net472\\NuGet.Build.Tasks.Pack.targets"
     maximumCpuCount: true
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
