@@ -376,8 +376,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Do NOT initialize VSSolutionManager through this API (by calling EnsureInitializeAsync)
             // This is a fast check implemented specifically for right click context menu to be
-            // quick and does not involve initializing VSSolutionManager. Otherwise it will create
-            // hang issues for right click on solution.
+            // quick and does not involve initializing VSSolutionManager. Otherwise it will make
+            // UI unresponsive for right click on solution.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // first check with DTE, and if we find any supported project, then return immediately.
