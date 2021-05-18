@@ -80,7 +80,7 @@ jobs:
       ArtifactType: "Container"
       AllTools: false
       AntiMalware: false
-      APIScan: false
+      APIScan: true
       BinSkim: false
       CodesignValidation: false
       CredScan: true
