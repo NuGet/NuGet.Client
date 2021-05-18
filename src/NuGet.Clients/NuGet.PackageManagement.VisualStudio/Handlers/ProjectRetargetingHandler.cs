@@ -301,7 +301,6 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         #endregion
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void Dispose()
         {
             // Nothing is initialized if _vsTrackProjectRetargeting is null. Check if it is not null
@@ -327,7 +326,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         _dte.Events.BuildEvents.OnBuildBegin -= BuildEvents_OnBuildBegin;
                         _dte.Events.SolutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
                     }
-                });
+                }).PostOnFailure(nameof(ProjectRetargetingHandler));
             }
         }
     }

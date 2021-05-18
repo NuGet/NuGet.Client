@@ -24,7 +24,6 @@ namespace NuGet.PackageManagement.UI
 
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void Start()
         {
             SetStatus(VsSearchTaskStatus.Started);
@@ -41,7 +40,7 @@ namespace NuGet.PackageManagement.UI
 
                 await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
                 SetStatus(VsSearchTaskStatus.Completed);
-            });
+            }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
         }
 
         public uint Id { get; private set; }

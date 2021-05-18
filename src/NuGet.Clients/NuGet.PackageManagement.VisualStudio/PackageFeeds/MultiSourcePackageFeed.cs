@@ -358,7 +358,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void LogError(Task task, object state)
         {
             if (_logger == null)
@@ -378,7 +377,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     new LogMessage(
                         LogLevel.Error,
                         $"[{state.ToString()}] {errorMessage}"));
-            });
+            }).PostOnFailure(nameof(MultiSourcePackageFeed));
         }
     }
 }

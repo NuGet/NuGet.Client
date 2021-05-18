@@ -74,14 +74,13 @@ namespace NuGet.PackageManagement.UI
             ShowMessage(message.FormatWithCode());
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void ShowMessage(string message)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 UpgradeMessage.Text = message;
-            });
+            }).PostOnFailure(nameof(PRMigratorBar));
         }
 
         public FileConflictAction ResolveFileConflict(string message)
@@ -89,7 +88,6 @@ namespace NuGet.PackageManagement.UI
             return FileConflictAction.IgnoreAll;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
@@ -104,7 +102,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     HideMigratorBar();
                 }
-            });
+            }).PostOnFailure(nameof(PRMigratorBar));
         }
 
         private async Task<bool> ShouldShowUpgradeProjectAsync()
