@@ -56,6 +56,23 @@ jobs:
       uploadTSLint: false
       uploadAsync: true
 
+  ### Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
+  - task: APIScan@2
+    displayName: Run APIScan
+    inputs:
+      softwareFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
+      softwareName: 'NuGet.Client'
+      softwareVersionNum: '$(Build.BuildId)'
+      isLargeApp: true
+      toolVersion: 'Latest'
+    condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
+    env:
+      AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
+
+  ### Publish Code Analysis results to build Artifacts.
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+    displayName: 'Publish Code Analysis Logs'
+
   - task: PublishSecurityAnalysisLogs@2
     displayName: "Publish CodeAnalysis Logs"
     inputs:
