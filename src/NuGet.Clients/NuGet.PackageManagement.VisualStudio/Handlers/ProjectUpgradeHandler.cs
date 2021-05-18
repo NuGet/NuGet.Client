@@ -131,11 +131,12 @@ namespace NuGet.PackageManagement.VisualStudio
         #endregion
 
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void Dispose()
         {
             if (_cookie != 0 && _vsSolution2 != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

@@ -71,9 +71,10 @@ namespace NuGet.PackageManagement.UI
             UpdateRestartBar(packageDirectoriesMarkedForDeletion);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void UpdateRestartBar(IReadOnlyList<string> packagesMarkedForDeletion)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var count = packagesMarkedForDeletion.Count;
@@ -148,9 +149,10 @@ namespace NuGet.PackageManagement.UI
             return FileConflictAction.IgnoreAll;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void ShowMessage(string message)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RequestRestartMessage.Text = message;

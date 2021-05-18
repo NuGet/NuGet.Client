@@ -13,9 +13,10 @@ namespace NuGet.VisualStudio.Telemetry
         /// <param name="joinableTask"> Joinable task to execute. </param>
         /// <param name="callerClassName"> Caller class name. </param>
         /// <param name="callerMemberName"> Caller member name. </param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public static void PostOnFailure(this JoinableTask joinableTask, string callerClassName, [CallerMemberName] string callerMemberName = null)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 try
                 {

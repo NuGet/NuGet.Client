@@ -135,9 +135,10 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             return IsPackageManagerUISupportAvailable;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void OpenPackageManagerUI(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
-            _joinableTaskFactory.Run(() => OpenPackageManagerUIAsync(workspaceVisualNodeBase));
+            _joinableTaskFactory.RunAsync(() => OpenPackageManagerUIAsync(workspaceVisualNodeBase));
         }
 
         private async Task OpenPackageManagerUIAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)

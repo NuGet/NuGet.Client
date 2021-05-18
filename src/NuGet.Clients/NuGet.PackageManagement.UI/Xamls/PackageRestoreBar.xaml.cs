@@ -78,11 +78,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (_packageRestoreManager != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     try
                     {
@@ -130,9 +131,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => UIRestorePackagesAsync(CancellationToken.None));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None));
         }
 
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
@@ -248,9 +250,10 @@ namespace NuGet.PackageManagement.UI
             StatusMessage.Text = UI.Resources.PackageRestoreErrorTryAgain + " " + error;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void ShowMessage(string message)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 StatusMessage.Text = message;

@@ -532,6 +532,7 @@ namespace NuGet.PackageManagement.UI
 
         private DisplayVersion _selectedVersion;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public DisplayVersion SelectedVersion
         {
             get { return _selectedVersion; }
@@ -556,7 +557,7 @@ namespace NuGet.PackageManagement.UI
                             PackageMetadata = detailedPackageMetadata;
                         }
 
-                        NuGetUIThreadHelper.JoinableTaskFactory.Run(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask());
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask());
                     }
 
                     OnPropertyChanged(nameof(SelectedVersion));
