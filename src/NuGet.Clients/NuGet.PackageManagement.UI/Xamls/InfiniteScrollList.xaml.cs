@@ -634,6 +634,7 @@ namespace NuGet.PackageManagement.UI
             _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
@@ -642,7 +643,7 @@ namespace NuGet.PackageManagement.UI
                 var last = _scrollViewer.ViewportHeight + first;
                 if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
                     );
                 }

@@ -881,11 +881,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="sender">Event sender object</param>
         /// <param name="e">Event arguments. This will be EventArgs.Empty</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void NuGetCacheUpdate_After(object sender, NuGetEventArgs<string> e)
         {
             // The AfterNuGetCacheUpdated event is raised on a separate Task to prevent blocking of the caller.
             // E.g. - If Restore updates the cache entries on CPS nomination, then restore should not be blocked till UI is restored.
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => FireNuGetCacheUpdatedEventAsync(e));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e));
         }
 
         private async Task FireNuGetCacheUpdatedEventAsync(NuGetEventArgs<string> e)
@@ -911,12 +912,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region IVsSelectionEvents
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {
             if (dwCmdUICookie == _solutionLoadedUICookie
                 && fActive == 1)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     await OnSolutionExistsAndFullyLoadedAsync());
             }
 

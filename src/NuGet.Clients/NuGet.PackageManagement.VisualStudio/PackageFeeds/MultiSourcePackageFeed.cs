@@ -358,6 +358,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return result;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void LogError(Task task, object state)
         {
             if (_logger == null)
@@ -368,7 +369,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // UI logger only can be engaged from the main thread
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

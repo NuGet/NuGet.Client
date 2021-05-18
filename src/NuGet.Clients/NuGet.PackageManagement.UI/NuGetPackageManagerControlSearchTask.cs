@@ -23,10 +23,12 @@ namespace NuGet.PackageManagement.UI
             SetStatus(VsSearchTaskStatus.Created);
 
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void Start()
         {
             SetStatus(VsSearchTaskStatus.Started);
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

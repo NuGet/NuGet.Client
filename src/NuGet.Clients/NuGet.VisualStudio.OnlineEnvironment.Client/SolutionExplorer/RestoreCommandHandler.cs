@@ -28,9 +28,10 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void RunSolutionRestore()
         {
-            _joinableTaskFactory.Run(RunSolutionRestoreAsync);
+            _joinableTaskFactory.RunAsync(RunSolutionRestoreAsync);
         }
 
         private async Task RunSolutionRestoreAsync()

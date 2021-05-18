@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
             {
                 _productUpdateService.Update();
-            }).FileAndForget("OnUpdateLinkClick");
+            }).PostOnFailure(nameof(ProductUpdateBar));
         }
 
         private void OnDeclineUpdateLinkClick(object sender, RoutedEventArgs e)
