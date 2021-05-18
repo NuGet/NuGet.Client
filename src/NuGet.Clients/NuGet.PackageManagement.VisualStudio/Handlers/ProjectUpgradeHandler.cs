@@ -135,7 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (_cookie != 0 && _vsSolution2 != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

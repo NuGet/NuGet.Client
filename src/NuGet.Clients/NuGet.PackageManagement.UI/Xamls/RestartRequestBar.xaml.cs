@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateRestartBar(IReadOnlyList<string> packagesMarkedForDeletion)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 var count = packagesMarkedForDeletion.Count;
@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ShowMessage(string message)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RequestRestartMessage.Text = message;

@@ -360,7 +360,7 @@ namespace NuGetConsole.Implementation.Console
                                 }
                                 else
                                 {
-                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); });
+                                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate { await TriggerCompletionAsync(); });
                                 }
                             }
                             hr = VSConstants.S_OK;

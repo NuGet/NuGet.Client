@@ -30,7 +30,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         public void RunSolutionRestore()
         {
-            _joinableTaskFactory.RunAsync(RunSolutionRestoreAsync);
+            _joinableTaskFactory.Run(RunSolutionRestoreAsync);
         }
 
         private async Task RunSolutionRestoreAsync()

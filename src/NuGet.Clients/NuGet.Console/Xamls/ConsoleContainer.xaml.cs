@@ -58,7 +58,7 @@ namespace NuGetConsole
                             RootLayout.Children.Add(new PackageRestoreBar(_solutionManager, packageRestoreManager));
                             RootLayout.Children.Add(new RestartRequestBar(deleteOnRestartManager, shell));
                         });
-                }, VsTaskRunContext.UIThreadIdlePriority);
+                }, VsTaskRunContext.UIThreadIdlePriority).FileAndForget("ConsoleContainer");
 
             // Set DynamicResource binding in code
             // The reason we can't set it in XAML is that the VsBrushes class come from either
