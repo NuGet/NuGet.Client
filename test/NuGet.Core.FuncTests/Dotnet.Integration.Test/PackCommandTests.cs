@@ -3843,8 +3843,8 @@ namespace ClassLibrary
                 // Assert
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
-                    var buildItems = nupkgReader.GetBuildItems().ToList();
-                    Assert.Equal(1, buildItems.Count);
+                    var nonDllFiles = nupkgReader.GetFiles().Where(t => !t.EndsWith(".dll")).ToList();
+                    Assert.Equal(0, nonDllFiles.Count);
                 }
             }
         }
