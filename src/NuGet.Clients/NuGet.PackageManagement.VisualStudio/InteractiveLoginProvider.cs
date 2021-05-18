@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var parent = IntPtr.Zero;
                 if (_dte != null)
                 {
-                    parent = new IntPtr((await _dte.GetValueAsync()).MainWindow.HWnd);
+                    parent = (await _dte.GetValueAsync()).MainWindow.HWnd;
                 }
 
                 account = await provider.CreateAccountWithUIAsync(parent, cancellationToken);
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var parent = IntPtr.Zero;
                 if (_dte != null)
                 {
-                    parent = new IntPtr((await _dte.GetValueAsync()).MainWindow.HWnd);
+                    parent = (await _dte.GetValueAsync()).MainWindow.HWnd;
                 }
 
                 try

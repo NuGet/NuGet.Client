@@ -306,7 +306,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Nothing is initialized if _vsTrackProjectRetargeting is null. Check if it is not null
             if (_vsTrackProjectRetargeting != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

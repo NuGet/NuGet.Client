@@ -368,7 +368,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // UI logger only can be engaged from the main thread
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

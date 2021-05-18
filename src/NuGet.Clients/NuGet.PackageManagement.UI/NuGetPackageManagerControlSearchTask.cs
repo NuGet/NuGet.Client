@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
         public void Start()
         {
             SetStatus(VsSearchTaskStatus.Started);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

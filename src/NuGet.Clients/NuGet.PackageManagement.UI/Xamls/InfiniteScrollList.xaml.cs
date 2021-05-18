@@ -642,7 +642,7 @@ namespace NuGet.PackageManagement.UI
                 var last = _scrollViewer.ViewportHeight + first;
                 if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
                     );
                 }

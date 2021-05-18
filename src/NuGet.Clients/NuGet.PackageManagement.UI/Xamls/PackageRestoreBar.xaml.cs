@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (_packageRestoreManager != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     try
                     {
@@ -132,7 +132,7 @@ namespace NuGet.PackageManagement.UI
 
         private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => UIRestorePackagesAsync(CancellationToken.None));
         }
 
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ShowMessage(string message)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 StatusMessage.Text = message;

@@ -137,7 +137,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         public void OpenPackageManagerUI(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
-            _joinableTaskFactory.RunAsync(() => OpenPackageManagerUIAsync(workspaceVisualNodeBase));
+            _joinableTaskFactory.Run(() => OpenPackageManagerUIAsync(workspaceVisualNodeBase));
         }
 
         private async Task OpenPackageManagerUIAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)

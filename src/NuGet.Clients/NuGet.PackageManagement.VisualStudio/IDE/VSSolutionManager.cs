@@ -885,7 +885,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // The AfterNuGetCacheUpdated event is raised on a separate Task to prevent blocking of the caller.
             // E.g. - If Restore updates the cache entries on CPS nomination, then restore should not be blocked till UI is restored.
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => FireNuGetCacheUpdatedEventAsync(e));
         }
 
         private async Task FireNuGetCacheUpdatedEventAsync(NuGetEventArgs<string> e)
@@ -916,7 +916,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (dwCmdUICookie == _solutionLoadedUICookie
                 && fActive == 1)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                     await OnSolutionExistsAndFullyLoadedAsync());
             }
 
