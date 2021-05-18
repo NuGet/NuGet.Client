@@ -12,6 +12,13 @@ jobs:
 
     steps:
 
+- task: DownloadPipelineArtifact@2
+  inputs:
+    source: specific
+    pipeline: NuGet.Client-Compliance
+    artifact: VS15
+    path: $(Pipeline.Workspace)\VS15
+
   - task: CredScan@2
     inputs:
       toolMajorVersion: "V2"
@@ -60,18 +67,14 @@ jobs:
   - task: APIScan@2
     displayName: Run APIScan
     inputs:
-      softwareFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
+      softwareFolder: $(Pipeline.Workspace)\VS15
       softwareName: 'NuGet.Client'
       softwareVersionNum: '$(Build.BuildId)'
-      isLargeApp: true
+      isLargeApp: false
       toolVersion: 'Latest'
     condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
     env:
       AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
-
-  ### Publish Code Analysis results to build Artifacts.
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
-    displayName: 'Publish Code Analysis Logs'
 
   - task: PublishSecurityAnalysisLogs@2
     displayName: "Publish CodeAnalysis Logs"
