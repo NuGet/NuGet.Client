@@ -53,7 +53,9 @@ param (
     [switch]$PackageEndToEnd,
     [switch]$SkipDelaySigning,
     [switch]$Binlog,
-    [switch]$IncludeApex
+    [switch]$IncludeApex,
+    [switch]$VSVersion = $env:VisualStudioVersion,
+    [switch]$NoDogFood
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -197,6 +199,14 @@ Invoke-BuildStep 'Packing RTM' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
     $args = "build\build.proj", "/t:BuildVS`;Pack", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
+
+    if (!$NoDogFood)
+    {
+        $args += "/p:ImportNuGetBuildTasksPackTargetsFromSdk=true"
+        $args += "/p:NuGetPackTaskAssemblyFile=$Artifacts\NuGet.Build.Tasks.Pack\$VSVersion-RTM\bin\$Configuration\net472\NuGet.Build.Tasks.Pack.dll"
+        $args += "/p:NuGetBuildTasksPackTargets=$Artifacts\NuGet.Build.Tasks.Pack\$VSVersion-RTM\bin\$Configuration\net472\NuGet.Build.Tasks.Pack.targets"
+    }
+
     if ($Binlog)
     {
         $args += "-bl:msbuild.pack.binlog"
