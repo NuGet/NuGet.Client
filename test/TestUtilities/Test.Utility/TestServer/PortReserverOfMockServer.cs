@@ -1,4 +1,6 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.Collections.Generic;
@@ -10,17 +12,17 @@ using System.Net.NetworkInformation;
 using System.Threading;
 using NuGet.Common;
 
-namespace NuGet.CommandLine.Test
+namespace NuGet.Test.Server
 {
     /// <summary>
-    /// This class allocates ports while ensuring that:
+    /// This class allocates ports for package signing tests while ensuring that:
     /// 1. Ports that are permanently taken (or taken for the duration of the test) are not being attempted to be used.
     /// 2. Ports are not shared across different tests (but you can allocate two different ports in the same test).
     /// 
     /// Gotcha: If another application grabs a port during the test, we have a race condition.
     /// </summary>
     [DebuggerDisplay("Port: {PortNumber}, Port count for this app domain: {_appDomainOwnedPorts.Count}")]
-    public class PortReserver : IDisposable
+    public class PortReserverOfMockServer : IDisposable
     {
         private Mutex _portMutex;
         private const int _waitTime = 2 * 60 * 1000; // 2 minutes in milliseconds
@@ -39,7 +41,7 @@ namespace NuGet.CommandLine.Test
         /// <param name="basePath">The base path for all request URL's.
         /// Can be either null (default) for "/" or any "/"-prefixed string (e.g.:  /{GUID}).</param>
         /// <param name="basePort">The base port for all request URL's.</param>
-        public PortReserver(string basePath = null, int basePort = 50231)
+        public PortReserverOfMockServer(string basePath = null, int basePort = 50231)
         {
             if (!string.IsNullOrEmpty(basePath) && (!basePath.StartsWith("/") || basePath.EndsWith("/")))
             {
