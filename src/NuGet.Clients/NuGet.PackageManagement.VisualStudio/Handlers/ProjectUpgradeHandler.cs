@@ -131,7 +131,6 @@ namespace NuGet.PackageManagement.VisualStudio
         #endregion
 
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void Dispose()
         {
             if (_cookie != 0 && _vsSolution2 != null)
@@ -142,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     _vsSolution2.UnadviseSolutionEvents(_cookie);
                     _cookie = VSConstants.VSCOOKIE_NIL;
-                });
+                }).PostOnFailure(nameof(ProjectUpgradeHandler));
             }
         }
     }

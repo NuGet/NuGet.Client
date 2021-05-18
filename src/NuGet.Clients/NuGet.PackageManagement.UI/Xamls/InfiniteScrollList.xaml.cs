@@ -634,7 +634,6 @@ namespace NuGet.PackageManagement.UI
             _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
@@ -645,7 +644,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
-                    );
+                    ).PostOnFailure(nameof(InfiniteScrollList));
                 }
             }
         }

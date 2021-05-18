@@ -149,7 +149,6 @@ namespace NuGetConsole.Implementation.Console
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-        [SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         protected override int InternalExec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -361,7 +360,8 @@ namespace NuGetConsole.Implementation.Console
                                 }
                                 else
                                 {
-                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); });
+                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); })
+                                                                           .PostOnFailure(nameof(WpfConsoleKeyProcessor));
                                 }
                             }
                             hr = VSConstants.S_OK;

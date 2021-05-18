@@ -206,7 +206,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
         {
             // This is a solution event. Should be on the UI thread
@@ -214,7 +213,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext))
+                                                   .PostOnFailure(nameof(VsDeleteOnRestartManager));
         }
     }
 }

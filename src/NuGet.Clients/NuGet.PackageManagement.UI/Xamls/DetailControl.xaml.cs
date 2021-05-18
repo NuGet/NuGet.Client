@@ -70,7 +70,6 @@ namespace NuGet.PackageManagement.UI
             _root.ScrollToHome();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD110:Observe result of async calls", Justification = "https://github.com/NuGet/Client.Engineering/issues/956")]
         public void Refresh()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
@@ -85,7 +84,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     await model.RefreshAsync(CancellationToken.None);
                 }
-            });
+            }).PostOnFailure(nameof(DetailControl));
         }
 
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
