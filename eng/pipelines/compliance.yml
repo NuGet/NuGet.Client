@@ -1,3 +1,6 @@
+# No CI trigger rely on Pipeline trigger only
+trigger: none
+
 resources:
   pipelines:
     - pipeline: nugetclientofficial
