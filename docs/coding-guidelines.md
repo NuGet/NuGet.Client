@@ -352,12 +352,6 @@ Correct:
         /// <param name="fruitType">A fruit type</param>
         /// <returns> Whether the fruit has seeds. </returns>
         public bool HasSeeds(FruitType fruitType)
-        
-        /// <summary>
-        /// Determines whether the fruit is multiannual
-        /// </summary>
-        /// <returns> Whether the fruit is multiannual. </returns>
-        public bool IsMultiannual(FruitType fruitType)
 ```
 
 Incorrect:
@@ -374,12 +368,6 @@ Incorrect:
         /// <param name="fruitType"></param>
         /// <returns> </returns>
         public bool HasSeeds(FruitType fruitType)
-        
-        /// <summary>
-        /// Determines whether the fruit is multiannual
-        /// </summary>
-        /// <returns> </returns>
-        public bool IsMultiannual(FruitType fruitType)
 ```
 
 ### Assertions
