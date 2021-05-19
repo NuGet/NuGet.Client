@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using Microsoft.ServiceHub.Framework;
@@ -56,7 +57,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ProjectChanged(object sender, IProjectContextInfo project)
         {
-            _nugetProjects = new List<IProjectContextInfo> { project };
+            _nugetProjects = new ReadOnlyCollection<IProjectContextInfo>(new List<IProjectContextInfo> { project });
 
             UpdateInstalledVersion();
         }
