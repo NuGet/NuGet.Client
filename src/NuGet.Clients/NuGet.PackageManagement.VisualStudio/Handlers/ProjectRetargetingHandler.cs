@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

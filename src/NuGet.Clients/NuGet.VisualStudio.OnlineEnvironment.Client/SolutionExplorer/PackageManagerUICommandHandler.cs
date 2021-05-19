@@ -25,6 +25,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Task = System.Threading.Tasks.Task;
