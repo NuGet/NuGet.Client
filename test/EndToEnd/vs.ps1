@@ -512,7 +512,9 @@ function New-FSharpLibrary {
         [string]$SolutionFolder
     )
 
-    New-Project FSharpLibrary $ProjectName $SolutionFolder
+    $project = New-Project FSharpLibrary $ProjectName $SolutionFolder
+    Wait-OnNetCoreRestoreCompletion $project
+    return $project
 }
 
 function New-FSharpConsoleApplication {
@@ -521,7 +523,9 @@ function New-FSharpConsoleApplication {
         [string]$SolutionFolder
     )
 
-    New-Project FSharpConsoleApplication $ProjectName $SolutionFolder
+    $project = New-Project FSharpConsoleApplication $ProjectName $SolutionFolder
+    Wait-OnNetCoreRestoreCompletion $project
+    return $project
 }
 
 function New-WPFApplication {
@@ -949,7 +953,7 @@ function Get-VSFolderPath
 }
 
 function Get-MSBuildExe {
-    
-    $MSBuildRoot = Get-VSFolderPath 
+
+    $MSBuildRoot = Get-VSFolderPath
     Join-Path $MSBuildRoot "MsBuild\Current\bin\msbuild.exe"
 }
