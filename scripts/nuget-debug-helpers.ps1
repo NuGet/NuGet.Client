@@ -1,6 +1,6 @@
 $NuGetClientRoot= Resolve-Path $(Join-Path $PSScriptRoot "..\")
 
-$VSVersion = $env:VisualStudioVersion ?? "17.0"
+$VSVersion = if (-Not [string]::IsNullOrEmpty($env:VisualStudioVersion)) { $env:VisualStudioVersion } else { "17.0" }
 $Configuration = "Debug"
 $NETFramework = "net472"
 $NETStandard = "netstandard2.0"
