@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
 using Task = System.Threading.Tasks.Task;
 

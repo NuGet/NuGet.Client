@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI

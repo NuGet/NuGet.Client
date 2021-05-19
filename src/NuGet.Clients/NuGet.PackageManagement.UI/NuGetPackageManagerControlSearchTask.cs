@@ -4,6 +4,7 @@
 using System.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {

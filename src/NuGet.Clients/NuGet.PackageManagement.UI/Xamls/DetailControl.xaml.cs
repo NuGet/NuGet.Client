@@ -9,6 +9,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
