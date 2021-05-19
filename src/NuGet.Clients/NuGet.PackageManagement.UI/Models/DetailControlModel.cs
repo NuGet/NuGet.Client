@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.UI
         private CancellationTokenSource _selectedVersionCancellationTokenSource = new CancellationTokenSource();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected IEnumerable<IProjectContextInfo> _nugetProjects;
+        protected ReadOnlyCollection<IProjectContextInfo> _nugetProjects;
 
         // all versions of the _searchResultPackage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
@@ -49,7 +50,7 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects)
         {
-            _nugetProjects = projects;
+            _nugetProjects = projects.ToList().AsReadOnly();
             ServiceBroker = serviceBroker;
             _options = new Options();
 
