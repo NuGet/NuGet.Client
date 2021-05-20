@@ -3844,6 +3844,10 @@ namespace ClassLibrary
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
+                    Assert.DoesNotContain($"lib/net5.0/{projectName}.exe", allFiles);
+                    Assert.DoesNotContain($"lib/net5.0/{projectName}.winmd", allFiles);
+                    Assert.DoesNotContain($"lib/net5.0/{projectName}.json", allFiles);
+                    Assert.DoesNotContain($"lib/net5.0/{projectName}.pri", allFiles);
                     Assert.DoesNotContain($"lib/net5.0/{projectName}.xml", allFiles);
                 }
             }
