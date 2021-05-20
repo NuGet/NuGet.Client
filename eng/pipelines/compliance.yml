@@ -6,18 +6,11 @@ resources:
         - dev
 
 jobs:
-  - job: Static Analysis
-    pool:
-      vmImage: windows-latest
+  - job: Static_Analysis
+    timeoutInMinutes: 180
+    pool: VSEngStaticAnalysis
 
     steps:
-
-- task: DownloadPipelineArtifact@2
-  inputs:
-    source: specific
-    pipeline: NuGet.Client-Compliance
-    artifact: VS15
-    path: $(Pipeline.Workspace)\VS15
 
   - task: CredScan@2
     inputs:
@@ -30,11 +23,42 @@ jobs:
       targetArgument: "$(Build.SourcesDirectory)"
       result: "PoliCheck.xml"
 
+  - task: DownloadPipelineArtifact@2
+    displayName: "Download symbols - RTM artifact"
+    inputs:
+      source: specific
+      project: 'devdiv'
+      pipeline: NuGet.Client-Official
+      artifact: "symbols - RTM"
+      path: $(Pipeline.Workspace)\symbols\RTM
+
+  - task: DownloadPipelineArtifact@2
+    displayName: "Download symbols - NonRTM artifact"
+    inputs:
+      source: specific
+      project: 'devdiv'
+      pipeline: NuGet.Client-Official
+      artifact: "symbols - NonRTM"
+      path: $(Pipeline.Workspace)\symbols\NonRTM          
+
+  ## Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
+  - task: APIScan@2
+    displayName: Run APIScan
+    inputs:
+      softwareFolder: $(Pipeline.Workspace)\symbols
+      softwareName: 'NuGet.Client'
+      softwareVersionNum: '$(Build.BuildId)'
+      isLargeApp: true
+      toolVersion: 'Latest'
+    env:
+      AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
+
   - task: SdtReport@1
     displayName: "Generate Analysis Report"
     inputs:
       CredScan: true
       PoliCheck: true
+      APIScan: true
       ToolLogsNotFoundAction: "Standard"
 
   - task: TSAUpload@1
@@ -62,19 +86,6 @@ jobs:
       uploadRoslyn: false
       uploadTSLint: false
       uploadAsync: true
-
-  ### Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
-  - task: APIScan@2
-    displayName: Run APIScan
-    inputs:
-      softwareFolder: $(Pipeline.Workspace)\VS15
-      softwareName: 'NuGet.Client'
-      softwareVersionNum: '$(Build.BuildId)'
-      isLargeApp: false
-      toolVersion: 'Latest'
-    condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
-    env:
-      AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
 
   - task: PublishSecurityAnalysisLogs@2
     displayName: "Publish CodeAnalysis Logs"
