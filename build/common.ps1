@@ -241,8 +241,8 @@ Function Install-DotnetCLI {
 
         #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
         if ($Force -or -not (Test-Path $probeDotnetPath)) {
-            Trace-Log "$DotNetInstall -Channel $($cli.Channel) -i $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
-            & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+            Trace-Log "$DotNetInstall -Channel $($cli.Channel) -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
+            & $DotNetInstall -Channel $cli.Channel -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
 
         if (-not (Test-Path $DotNetExe)) {
@@ -257,10 +257,10 @@ Function Install-DotnetCLI {
     }
 
     # Install the 2.x runtime because our tests target netcoreapp2x
-    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
+    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -InstallDir $CLIRoot -NoPath"
     # Work around the following install script bug https://github.com/dotnet/install-scripts/issues/152.
     # Start a new process to avoid the ev getting populated.
-    & powershell $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
+    & powershell $DotNetInstall -Runtime dotnet -Channel 2.2 -InstallDir $CLIRoot -NoPath
     # Display build info
     & $DotNetExe --info
 }
