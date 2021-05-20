@@ -241,8 +241,8 @@ Function Install-DotnetCLI {
 
         #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
         if ($Force -or -not (Test-Path $probeDotnetPath)) {
-            Trace-Log "$DotNetInstall -Channel $($cli.Channel) -i $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
-            & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+            Trace-Log "$DotNetInstall -Channel $($cli.Channel) -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
+            & $DotNetInstall -Channel $cli.Channel -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
 
         if (-not (Test-Path $DotNetExe)) {
