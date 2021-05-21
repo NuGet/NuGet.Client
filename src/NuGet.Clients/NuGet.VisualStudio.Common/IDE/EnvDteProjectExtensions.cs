@@ -155,7 +155,7 @@ namespace NuGet.VisualStudio
 
             if (!string.IsNullOrEmpty(fullPath))
             {
-                // Some Project System implementations (JS Modern UI (Windows 8 era) app) return the project 
+                // Some Project System implementations (JS Windows Store app) return the project
                 // file as FullPath. We only need the parent directory
                 return Path.GetDirectoryName(fullPath);
             }
