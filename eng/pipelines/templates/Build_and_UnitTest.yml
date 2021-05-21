@@ -298,6 +298,8 @@ steps:
 
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
+  inputs:
+    ignoreDirectories: '$(Build.Repository.LocalPath)\\test,$(Build.Repository.LocalPath)\\packages\\nuget.client.endtoend.testdata'
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
 - task: PublishPipelineArtifact@1
