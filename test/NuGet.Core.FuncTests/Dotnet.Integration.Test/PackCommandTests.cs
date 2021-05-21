@@ -3847,6 +3847,9 @@ namespace ClassLibrary
                     Assert.Contains($"lib/net5.0/{projectName}.dll", allFiles);
                     Assert.DoesNotContain($"lib/net5.0/{projectName}.xml", allFiles);
                     Assert.False(allFiles.Any(f => f.EndsWith(".exe")));
+                    Assert.False(allFiles.Any(f => f.EndsWith(".winmd")));
+                    Assert.False(allFiles.Any(f => f.EndsWith(".json")));
+                    Assert.False(allFiles.Any(f => f.EndsWith(".pri")));
                 }
             }
         }
