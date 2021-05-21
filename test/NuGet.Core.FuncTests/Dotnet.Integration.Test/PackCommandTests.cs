@@ -3845,6 +3845,7 @@ namespace ClassLibrary
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
                     Assert.Contains($"lib/net5.0/{projectName}.dll", allFiles);
+                    Assert.DoesNotContain($"lib/net5.0/{projectName}.xml", allFiles);
                     Assert.False(allFiles.Any(f => f.EndsWith(".exe")));
                 }
             }
