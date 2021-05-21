@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Perform the multi-package update action.
         /// </summary>
-        /// <remarks>This needs to be called from a background thread. It may make the UI thread unresponsive.</remarks>
+        /// <remarks>This needs to be called from a background thread. It may make the UI thread stop responding.</remarks>
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,

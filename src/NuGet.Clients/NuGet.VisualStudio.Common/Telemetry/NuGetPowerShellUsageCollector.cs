@@ -196,7 +196,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
         {
             lock (_lock)
             {
-                // Corner case: PMC used without solution load
+                // Edge case: PMC used without solution load
                 if (!_vsSolutionData.SolutionLoaded && _vsSolutionData.PmcExecuteCommandCount > 0)
                 {
                     // PMC used before any solution is loaded, let's emit what we have for nugetvsinstanceclose event.
