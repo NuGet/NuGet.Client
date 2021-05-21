@@ -88,7 +88,7 @@ function Test-PackageRestore-Website {
     Assert-Package $p JQuery
 }
 
-# Tests that package restore works for JavaScript Metro project
+# Tests that package restore works for JavaScript Modern UI (Windows 8 era) project
 function Test-PackageRestore-JavaScriptMetroProject {
     param($context)
 

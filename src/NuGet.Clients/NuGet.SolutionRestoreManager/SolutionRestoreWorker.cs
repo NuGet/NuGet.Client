@@ -713,7 +713,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 // Inner code block of using clause may throw an unhandled exception.
                 // This'd result in leaving the active task in incomplete state.
-                // Hence the next restore operation would stop responding.
+                // Hence the next restore operation would stop responding forever.
                 // To resolve potential deadlock issue the unbound task is to be completed here.
                 if (!Task.IsCompleted && !Task.IsCanceled && !Task.IsFaulted)
                 {

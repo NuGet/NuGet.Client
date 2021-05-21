@@ -260,7 +260,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     // on it. Note that a default prompt function as defined in Profile.ps1 will simply return
                     // a string "PM>". This will always work. However, a custom "prompt" function might call
                     // Write-Host and NuGet will explicity switch to the main thread using JTF.
-                    // If the main thread was blocked then, it will consistently result in UI stop responding
+                    // If the main thread was blocked then, it will consistently result in the UI stop responding
                     var output = await Task.Run(() =>
                                         Runspace.Invoke("prompt", null, outputResults: false).FirstOrDefault());
                     if (output != null)
