@@ -1045,7 +1045,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
             // ITU-T X.680 (11/2008)
             // 41.4 (PrintableString)
 
-            // Latin Capital, Latin Lowercase, Digits
+            // Latin Capital, Latin Small, Digits
             if ((c >= 'A' && c <= 'Z') ||
                 (c >= 'a' && c <= 'z') ||
                 (c >= '0' && c <= '9'))
