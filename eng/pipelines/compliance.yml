@@ -42,7 +42,6 @@ jobs:
           tsaEnvironment: "PROD"
           codeBaseName: "$(TsaCodebaseName)"
           notificationAlias: "$(TsaNotificationEmail)"
-          notifyAlwaysV2: true
           codeBaseAdmins: "$(TsaCodebaseAdmins)"
           instanceUrlForTsaV2: "$(TsaInstanceUrl)"
           projectNameDEVDIV: "$(TsaProjectName)"
