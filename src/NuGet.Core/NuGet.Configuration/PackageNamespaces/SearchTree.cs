@@ -3,15 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace NuGet.Protocol
+namespace NuGet.Configuration
 {
-    public class SearchTree : INameSpaceLookup
+    public class SearchTree
     {
         private readonly SearchNode _root;
         private const int PackageIdMaxLength = 100;
 
-        public SearchTree(IReadOnlyList<PackageSourceSection> packageSourceSections)
+        internal SearchTree(IReadOnlyList<PackageSourceSection> packageSourceSections)
         {
             if (packageSourceSections == null)
             {
@@ -87,7 +88,7 @@ namespace NuGet.Protocol
             currentNode.PackageSources.Add(packageSourceKey);
         }
 
-        public (bool Prefixmath, HashSet<string> PackageSources) Find(string term)
+        public ConfigNameSpaceLookup Find(string term)
         {
             if (string.IsNullOrWhiteSpace(term))
             {
@@ -112,7 +113,7 @@ namespace NuGet.Protocol
 
                 if (!currentNode.Children.ContainsKey(c))
                 {
-                    return currentNode.IsGlobbing ? (true, currentNode.PackageSources) : (false, currentNode.PackageSources);
+                    return currentNode.IsGlobbing ? new ConfigNameSpaceLookup(true, currentNode.PackageSources) : new ConfigNameSpaceLookup(false, currentNode.PackageSources);
                 }
 
                 currentNode = currentNode.Children[c];
@@ -126,8 +127,34 @@ namespace NuGet.Protocol
                 }
             }
 
-            return currentNode == null ? (false, null)
-                                        : (true, currentNode.PackageSources);
+            return currentNode == null ? new ConfigNameSpaceLookup(false, null)
+                                        : new ConfigNameSpaceLookup(true, currentNode.PackageSources);
+        }
+
+        public static SearchTree GetSearchTree(ISettings settings)
+        {
+            SearchTree nameSpaceLookup = null;
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            PackageNamespacesConfiguration configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            var packageSourceSections = new List<PackageSourceSection>();
+
+            foreach (var packageSourceKey in configuration.Namespaces.Keys)
+            {
+                string[] nugetNamespaces = configuration.Namespaces[packageSourceKey].ToArray();
+                packageSourceSections.Add(new PackageSourceSection(nugetNamespaces, packageSourceKey));
+            }
+
+            if (packageSourceSections.Any())
+            {
+                nameSpaceLookup = new SearchTree(packageSourceSections);
+            }
+
+            return nameSpaceLookup;
         }
     }
 }

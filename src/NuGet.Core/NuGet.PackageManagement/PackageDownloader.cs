@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -52,6 +54,8 @@ namespace NuGet.PackageManagement
             ILogger logger,
             CancellationToken token)
         {
+            Debugger.Launch();
+
             if (sources == null)
             {
                 throw new ArgumentNullException(nameof(sources));
@@ -98,13 +102,13 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
-                (bool Prefixmath, HashSet<string> PackageSources) nameSpaceLookupResult = (false, null);
+                ConfigNameSpaceLookup nameSpaceLookupResult = null;
 
-                if (downloadContext?.NameSpaceLookup != null)
+                if (downloadContext?.SearchTree != null)
                 {
-                    nameSpaceLookupResult = downloadContext.NameSpaceLookup.Find(packageIdentity.Id);
-                    var packageSourcesAtPrefix = nameSpaceLookupResult.Prefixmath ? string.Join(", ", nameSpaceLookupResult.PackageSources) : string.Empty;
-                    logger.LogDebug($"{packageIdentity}  Prefixmath : {nameSpaceLookupResult.Prefixmath}. packageSources at prefix: {packageSourcesAtPrefix}" + Environment.NewLine);
+                    nameSpaceLookupResult = downloadContext.SearchTree.Find(packageIdentity.Id);
+                    var packageSourcesAtPrefix = nameSpaceLookupResult.PrefixMatch ? string.Join(", ", nameSpaceLookupResult.PrefixMatch) : string.Empty;
+                    logger.LogDebug($"{packageIdentity}  Prefixmath : {nameSpaceLookupResult.PrefixMatch}. packageSources at prefix: {packageSourcesAtPrefix}" + Environment.NewLine);
                 }
                 else
                 {
@@ -120,7 +124,7 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        if (nameSpaceLookupResult.Prefixmath
+                        if (nameSpaceLookupResult !=null && nameSpaceLookupResult.PrefixMatch
                             && !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
                         {
                             logger.LogDebug($"Skipping {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);

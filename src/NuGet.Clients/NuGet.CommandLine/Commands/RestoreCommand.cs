@@ -200,7 +200,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable IDE1006 // Naming Styles
         private static CachingSourceProvider _sourceProvider;
+#pragma warning restore IDE1006 // Naming Styles
 
         private CachingSourceProvider GetSourceRepositoryProvider()
         {
@@ -382,8 +384,8 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                INameSpaceLookup nameSpaceLookup = NameSpaceLookupUtility.ConstructNameSpaceLookup(Settings);
-                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, nameSpaceLookup)
+                SearchTree searchTree = SearchTree.GetSearchTree(Settings);
+                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, searchTree)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };

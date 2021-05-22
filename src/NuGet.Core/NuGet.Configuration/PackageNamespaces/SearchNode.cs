@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.Protocol
+namespace NuGet.Configuration
 {
     internal class SearchNode
     {
