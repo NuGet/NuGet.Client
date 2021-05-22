@@ -1087,7 +1087,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // Test Plugin credential provider can have large std output without hanging.
+        // Test Plugin credential provider can have large std output without stop responding.
         [SkipMono]
         public void PushCommand_PushToServer_DoesNotDeadLockWhenSTDOutLarge()
         {

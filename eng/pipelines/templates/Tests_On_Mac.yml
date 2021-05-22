@@ -43,7 +43,7 @@ steps:
   condition: "succeededOrFailed()"
 
 - task: PublishBuildArtifacts@1
-  displayName: "Publish Test Hang Dump"
+  displayName: "Publish Test Freeze Dump"
   inputs:
     PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
     ArtifactName: "$(Agent.JobName)"

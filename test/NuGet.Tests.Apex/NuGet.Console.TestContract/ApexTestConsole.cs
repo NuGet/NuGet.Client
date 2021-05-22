@@ -33,8 +33,8 @@ namespace NuGet.Console.TestContract
 
             do
             {
-                // Avoid getting the host until the window has loaded
-                // If the host is loaded first the window will hang
+                // Avoid getting the host until the window has loaded.
+                // If the host is loaded first, the window will stop responding.
                 if (_consoleWindow.IsLoaded)
                 {
                     UIInvoke(() =>

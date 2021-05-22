@@ -60,7 +60,7 @@ namespace NuGet.Protocol.Plugins
                         // is fine.  However, when standard input is backed by a blocking stream,
                         // reading from standard input is a blocking call, and while the receive
                         // thread is in a read call it cannot respond to cancellation requests.
-                        // We would likely hang if we attempted to wait on completion of the
+                        // We would likely stop responding if we attempted to wait on completion of the
                         // receive thread task.
                     }
                 }

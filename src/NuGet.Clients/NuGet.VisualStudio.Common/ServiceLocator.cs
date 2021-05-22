@@ -62,7 +62,7 @@ namespace NuGet.VisualStudio
 
             // then try to find the service as a component model, then try dte then lastly try global service
             // Per bug #2072, avoid calling GetGlobalService() from within the Initialize() method of NuGetPackage class.
-            // Doing so is illegal and may cause VS to hang. As a result of that, we defer calling GetGlobalService to the last option.
+            // Doing so is illegal and may make VS to stop responding. As a result of that, we defer calling GetGlobalService to the last option.
             var serviceFromDTE = await GetDTEServiceAsync<TService>();
             if (serviceFromDTE != null)
             {

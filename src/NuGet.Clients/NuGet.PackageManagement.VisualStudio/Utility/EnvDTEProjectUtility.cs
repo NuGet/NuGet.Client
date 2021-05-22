@@ -155,7 +155,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             if (createIfNotExists)
             {
-                // The JS Metro project system has a bug whereby calling AddFolder() to an existing folder that
+                // The JS Windows Store app project system has a bug whereby calling AddFolder() to an existing folder that
                 // does not belong to the project will throw. To work around that, we have to manually include 
                 // it into our project.
                 if (envDTEProject.IsJavaScriptProject()
