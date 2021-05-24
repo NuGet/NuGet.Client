@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        if (nameSpaceLookupResult !=null && nameSpaceLookupResult.PrefixMatch
+                        if (nameSpaceLookupResult != null && nameSpaceLookupResult.PrefixMatch
                             && !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
                         {
                             logger.LogDebug($"Skipping {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);
