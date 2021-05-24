@@ -2751,7 +2751,6 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
@@ -2801,7 +2800,6 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
@@ -2813,6 +2811,8 @@ namespace ClassLibrary
                     Assert.Contains(@"runtimes/win/lib/net46/abc.pdb", files);
                     Assert.DoesNotContain(@"lib/netstandard1.4/abc.pdb", files);
                     Assert.DoesNotContain(@"lib/netstandard1.4/abc.dll", files);
+                    Assert.DoesNotContain(@"lib/net46/abc.pdb", files);
+                    Assert.DoesNotContain(@"lib/net46/abc.dll", files);
                 }
             }
         }
