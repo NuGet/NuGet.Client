@@ -28,15 +28,6 @@ jobs:
           result: "PoliCheck.xml"
 
       - task: DownloadPipelineArtifact@2
-        displayName: "Download symbols - RTM artifact"
-        inputs:
-          source: specific
-          project: 'devdiv'
-          pipeline: NuGet.Client-Official
-          artifact: "symbols - RTM"
-          path: $(Pipeline.Workspace)\symbols\RTM
-
-      - task: DownloadPipelineArtifact@2
         displayName: "Download symbols - NonRTM artifact"
         inputs:
           source: specific
