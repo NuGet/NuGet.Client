@@ -2809,10 +2809,10 @@ namespace ClassLibrary
                     var files = nupkgReader.GetFiles();
                     Assert.Contains(@"runtimes/win/lib/netstandard1.4/abc.pdb", files);
                     Assert.Contains(@"runtimes/win/lib/net46/abc.pdb", files);
-                    Assert.Contains(@"lib/net46/abc.pdb", files);
-                    Assert.Contains(@"lib/net46/abc.dll", files);
-                    Assert.DoesNotContain(@"lib/netstandard1.4/abc.pdb", files);
-                    Assert.DoesNotContain(@"lib/netstandard1.4/abc.dll", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.pdb", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.dll", files);
+                    Assert.DoesNotContain(@"lib/netstandard1.4/ClassLibrary1.pdb", files);
+                    Assert.DoesNotContain(@"lib/netstandard1.4/ClassLibrary1.dll", files);
                 }
             }
         }
