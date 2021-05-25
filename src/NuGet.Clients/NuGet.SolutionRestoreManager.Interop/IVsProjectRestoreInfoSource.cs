@@ -36,6 +36,6 @@ namespace NuGet.SolutionRestoreManager
         /// The task will be failed, if the source runs into a problem, so it cannot get correct data to nominate (for exammple: DT build failed)
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task WhenNominated(CancellationToken cancellationToken);
+        Task WhenNominatedAsync(CancellationToken cancellationToken);
     }
 }
