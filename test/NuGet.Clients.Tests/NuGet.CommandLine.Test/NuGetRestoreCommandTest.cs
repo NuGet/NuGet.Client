@@ -2251,7 +2251,7 @@ EndProject";
             using (var packageDestinationFolder = TestDirectory.Create())
             using (var projectFolder = TestDirectory.Create())
             {
-                var packageFile = new FileInfo(Path.Combine(packageSourceFolder.Path, "SignedPackage.1.0.0.nupkg"));
+                var packageFile = new FileInfo(Path.Combine(packageSourceFolder.Path, "TestPackage.AuthorSigned.1.0.0.nupkg"));
                 var package = GetResource(packageFile.Name);
 
                 File.WriteAllBytes(packageFile.FullName, package);
@@ -2279,7 +2279,7 @@ EndProject";
     <Reference Include=""Microsoft.CSharp"" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include=""SignedPackage"">
+    <PackageReference Include=""TestPackage.AuthorSigned"">
       <Version>1.0.0</Version>
     </PackageReference>
   </ItemGroup>
@@ -2287,7 +2287,7 @@ EndProject";
 </Project>
                     ");
 
-                var expectedFilePath = Path.Combine(packageDestinationFolder.Path, "SignedPackage", "1.0.0", packageFile.Name);
+                var expectedFilePath = Path.Combine(packageDestinationFolder.Path, "testpackage.authorsigned", "1.0.0", packageFile.Name);
                 var nugetExe = Util.GetNuGetExePath();
 
                 var args = new string[]
@@ -2454,11 +2454,11 @@ EndProject";
     <add key=""SharedRepository"" value=""{sharedRepository}"" />
     </packageSources>
     <packageNamespaces>
-    <packageSource key=""PublicRepository"">
-        <namespace id=""Newton.*"" />
-        <namespace id=""Great.*"" />
-        <namespace id=""Another.*"" />   
-    </packageSource>
+        <packageSource key=""PublicRepository"">
+            <namespace id=""Newton.*"" />
+            <namespace id=""Great.*"" />
+            <namespace id=""Another.*"" />   
+        </packageSource>
     </packageNamespaces>
 </configuration>");
 
@@ -2597,27 +2597,27 @@ EndProject";
     <add key=""signed"" value=""{signedRepository}"" />
     </packageSources>
     <packageNamespaces>
-    <packageSource key=""PublicRepository"">
-        <namespace id=""Moq.*"" />
-        <namespace id=""Nerdbank.*"" />   
-        <namespace id=""Microsoft.Asp.*"" />
-        <namespace id=""Microsoft.AspNet.*"" />
-        <namespace id=""Microsoft.Extensions.Configuration.*"" />
-        <namespace id=""System.Runtime.InteropServices.RuntimeInformation"" />            
-        <namespace id=""xunit.*"" />
-    </packageSource>
-    <packageSource key=""SharedRepository"">
-        <namespace id=""Castle.Cor*"" /> 
-        <namespace id=""Moq.*"" />
-        <namespace id=""Microsoft.Extensions.*"" />
-        <namespace id=""Microsoft.Extensions.Logging"" />
-        <namespace id=""Nerd*"" />             
-        <namespace id=""Test*"" />
-        <namespace id=""xunit.extensibility.core"" />
-    </packageSource>
-    <packageSource key=""signed"">
-        <namespace id=""TestPackage.*"" />    
-    </packageSource>        
+        <packageSource key=""PublicRepository"">
+            <namespace id=""Moq.*"" />
+            <namespace id=""Nerdbank.*"" />   
+            <namespace id=""Microsoft.Asp.*"" />
+            <namespace id=""Microsoft.AspNet.*"" />
+            <namespace id=""Microsoft.Extensions.Configuration.*"" />
+            <namespace id=""System.Runtime.InteropServices.RuntimeInformation"" />            
+            <namespace id=""xunit.*"" />
+        </packageSource>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Castle.Cor*"" /> 
+            <namespace id=""Moq.*"" />
+            <namespace id=""Microsoft.Extensions.*"" />
+            <namespace id=""Microsoft.Extensions.Logging"" />
+            <namespace id=""Nerd*"" />             
+            <namespace id=""Test*"" />
+            <namespace id=""xunit.extensibility.core"" />
+        </packageSource>
+        <packageSource key=""signed"">
+            <namespace id=""TestPackage.*"" />    
+        </packageSource>        
     </packageNamespaces>
 </configuration>");
 
