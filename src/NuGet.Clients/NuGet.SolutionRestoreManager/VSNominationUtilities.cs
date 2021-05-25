@@ -160,12 +160,14 @@ namespace NuGet.SolutionRestoreManager
             var targetFrameworkMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkMoniker);
             var targetPlatformMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMoniker);
             var targetPlatformMinVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMinVersion);
+            var clrSupport = GetPropertyValueOrNull(properties, ProjectBuildProperties.CLRSupport);
 
             return MSBuildProjectFrameworkUtility.GetProjectFramework(
                 projectFullPath,
                 targetFrameworkMoniker,
                 targetPlatformMoniker,
-                targetPlatformMinVersion);
+                targetPlatformMinVersion,
+                clrSupport);
         }
 
         internal static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreMetadataFrameworkInfo(

@@ -544,6 +544,7 @@ namespace NuGet.ProjectModel
                     SetCentralDependencies(writer, framework.CentralPackageVersions.Values, compressed);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
+                    SetValueIfNotNull(writer, "secondaryFramework", (framework.FrameworkName as DualCompatibilityFramework)?.SecondaryFramework.GetShortFolderName());
                     SetValueIfTrue(writer, "warn", framework.Warn);
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);

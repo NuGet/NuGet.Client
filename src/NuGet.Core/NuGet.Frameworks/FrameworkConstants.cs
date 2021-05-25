@@ -185,6 +185,9 @@ namespace NuGet.Frameworks
 
             // .NET 5.0 and later has NetCoreApp identifier
             public static readonly NuGetFramework Net50 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, Version5);
+
+            public static readonly NuGetFramework Native = new NuGetFramework(FrameworkIdentifiers.Native, new Version(0, 0, 0, 0));
+
         }
     }
 }

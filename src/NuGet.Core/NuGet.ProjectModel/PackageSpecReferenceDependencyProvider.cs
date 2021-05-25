@@ -186,11 +186,16 @@ namespace NuGet.ProjectModel
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
 
                 // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
-                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework)
+                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
                 {
-                    var atfFramework = targetFramework as AssetTargetFallbackFramework;
                     targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
                 }
+
+                if (targetFrameworkInfo.FrameworkName == null && targetFramework is DualCompatibilityFramework mcfFramework)
+                {
+                    targetFrameworkInfo = packageSpec.GetTargetFramework(mcfFramework.AsFallbackFramework());
+                }
+
 
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 

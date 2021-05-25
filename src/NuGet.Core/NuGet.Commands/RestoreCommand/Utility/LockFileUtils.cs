@@ -147,6 +147,7 @@ namespace NuGet.Commands
             var orderedCriteriaSets = new List<List<SelectionCriteria>>(1);
 
             var assetTargetFallback = framework as AssetTargetFallbackFramework;
+            var multipleCompatibilityFramework = framework as DualCompatibilityFramework;
 
             if (assetTargetFallback != null)
             {
@@ -155,6 +156,14 @@ namespace NuGet.Commands
 
                 // Add all fallbacks in order.
                 orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => CreateCriteria(targetGraph, e)));
+            }
+            else if (multipleCompatibilityFramework != null)
+            {
+                // Add the root project framework first.
+                orderedCriteriaSets.Add(CreateCriteria(targetGraph, multipleCompatibilityFramework.RootFramework));
+
+                // Add all fallback.
+                orderedCriteriaSets.Add(CreateCriteria(targetGraph, multipleCompatibilityFramework.SecondaryFramework));
             }
             else
             {
@@ -458,9 +467,17 @@ namespace NuGet.Commands
         {
             if (dependencies == null)
             {
-                // AssetFallbackFramework does not apply to dependencies.
+                // DualCompatibilityFramework & AssetFallbackFramework does not apply to dependencies.
                 // Convert it to a fallback framework if needed.
-                var currentFramework = (framework as AssetTargetFallbackFramework)?.AsFallbackFramework() ?? framework;
+                NuGetFramework currentFramework = framework;
+                if (framework is AssetTargetFallbackFramework atf)
+                {
+                    currentFramework = atf.AsFallbackFramework();
+                }
+                else if (framework is DualCompatibilityFramework mcf)
+                {
+                    currentFramework = mcf.AsFallbackFramework();
+                }
 
                 var dependencySet = nuspec
                     .GetDependencyGroups()

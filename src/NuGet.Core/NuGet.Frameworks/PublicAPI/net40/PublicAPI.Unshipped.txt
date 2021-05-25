@@ -1,0 +1,9 @@
+NuGet.Frameworks.DualCompatibilityFramework
+NuGet.Frameworks.DualCompatibilityFramework.AsFallbackFramework() -> NuGet.Frameworks.FallbackFramework
+NuGet.Frameworks.DualCompatibilityFramework.Equals(NuGet.Frameworks.DualCompatibilityFramework other) -> bool
+NuGet.Frameworks.DualCompatibilityFramework.DualCompatibilityFramework(NuGet.Frameworks.NuGetFramework framework, NuGet.Frameworks.NuGetFramework secondaryFramework) -> void
+NuGet.Frameworks.DualCompatibilityFramework.RootFramework.get -> NuGet.Frameworks.NuGetFramework
+NuGet.Frameworks.DualCompatibilityFramework.SecondaryFramework.get -> NuGet.Frameworks.NuGetFramework
+override NuGet.Frameworks.DualCompatibilityFramework.Equals(object obj) -> bool
+override NuGet.Frameworks.DualCompatibilityFramework.GetHashCode() -> int
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Native -> NuGet.Frameworks.NuGetFramework

@@ -1626,13 +1626,21 @@ namespace NuGet.ProjectModel
             NuGetFramework frameworkName = NuGetFramework.Parse((string)jsonReader.Value);
 
             var targetFrameworkInformation = new TargetFrameworkInformation();
-
+            NuGetFramework secondaryFramework = default;
             jsonReader.ReadObject(propertyName =>
             {
                 switch (propertyName)
                 {
                     case "assetTargetFallback":
                         targetFrameworkInformation.AssetTargetFallback = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "secondaryFramework":
+                        var secondaryFrameworkString = jsonReader.ReadAsString();
+                        if (!string.IsNullOrEmpty(secondaryFrameworkString))
+                        {
+                            secondaryFramework = NuGetFramework.Parse(secondaryFrameworkString);
+                        }
                         break;
 
                     case "centralPackageVersions":
@@ -1698,17 +1706,27 @@ namespace NuGet.ProjectModel
 
                 if (targetFrameworkInformation.AssetTargetFallback)
                 {
-                    updatedFramework = new AssetTargetFallbackFramework(frameworkName, imports);
+                    updatedFramework = new AssetTargetFallbackFramework(GetDualCompatibilityFrameworkIfNeeded(frameworkName, secondaryFramework), imports);
                 }
                 else
                 {
-                    updatedFramework = new FallbackFramework(frameworkName, imports);
+                    updatedFramework = new FallbackFramework(GetDualCompatibilityFrameworkIfNeeded(frameworkName, secondaryFramework), imports);
                 }
             }
 
             targetFrameworkInformation.FrameworkName = updatedFramework;
 
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
+        }
+
+        private static NuGetFramework GetDualCompatibilityFrameworkIfNeeded(NuGetFramework frameworkName, NuGetFramework secondaryFramework)
+        {
+            if (secondaryFramework != default)
+            {
+                return new DualCompatibilityFramework(frameworkName, secondaryFramework);
+            }
+
+            return frameworkName;
         }
 
         private static bool ValidateDependencyTarget(LibraryDependencyTarget targetValue)

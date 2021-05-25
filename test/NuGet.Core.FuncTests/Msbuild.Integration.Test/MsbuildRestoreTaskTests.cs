@@ -703,5 +703,149 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_WithCPPCliVcxproj_RestoresSuccessfullyWithPackageReference()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set-up packages
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
+                packageX.AddFile("lib/net5.0/a.dll");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+                // Set up project
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var framework = NuGetFramework.Parse("net5.0-windows7.0");
+                var projectA = SimpleTestProjectContext.CreateNETCore("projectName", pathContext.SolutionRoot, framework);
+                projectA.Properties.Add("CLRSupport", "NetCore");
+                //update path to vcxproj
+                projectA.ProjectPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), projectA.ProjectName + ".vcxproj");
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                // Act
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.TargetsOutput).Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.PropsOutput).Should().BeTrue(because: result.AllOutput);
+
+                var targetsSection = projectA.AssetsFile.Targets.First(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("x"), because: string.Join(",", targetsSection.Libraries));
+                // TODO NK - Check the correct assets are selected.
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_WithCPPCliVcxproj_WithNativeDependency_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set-up packages
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
+                packageX.AddFile("build/native/x.targets");
+                packageX.AddFile("lib/native/x.dll");
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+                // Set up project
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var framework = NuGetFramework.Parse("net5.0-windows7.0");
+                var projectA = SimpleTestProjectContext.CreateNETCore("projectName", pathContext.SolutionRoot, framework);
+                projectA.Properties.Add("CLRSupport", "NetCore");
+                //update path to vcxproj
+                projectA.ProjectPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), projectA.ProjectName + ".vcxproj");
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                // Act
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.TargetsOutput).Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.PropsOutput).Should().BeTrue(because: result.AllOutput);
+
+                var targetsSection = projectA.AssetsFile.Targets.First(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("x"), because: string.Join(",", targetsSection.Libraries));
+                // TODO NK - Check the correct assets are selected.
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_WithCPPCliVcxproj_WithNativeAndManagedTransitiveDependency_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set-up packages
+                // Managed 1.0.0 -> Managed.Child 1.0.0
+                // Native 1.0.0 -> Native.Child 1.0.
+                var packageNativeChild = new SimpleTestPackageContext("native.child", "1.0.0");
+                packageNativeChild.AddFile("build/native/native.child.targets");
+                packageNativeChild.AddFile("lib/native/native.child.dll");
+
+                var packageNative = new SimpleTestPackageContext("native", "1.0.0");
+                packageNative.AddFile("build/native/native.targets");
+                packageNative.AddFile("lib/native/native.dll");
+
+                packageNative.Dependencies.Add(packageNativeChild);
+
+                var packageManagedChild = new SimpleTestPackageContext("managed.child", "1.0.0");
+                packageManagedChild.AddFile("build/net5.0/managed.child.targets");
+                packageManagedChild.AddFile("lib/net5.0/managed.child.dll");
+
+                var packageManaged = new SimpleTestPackageContext("managed", "1.0.0");
+                packageManaged.AddFile("build/net5.0/managed.targets");
+                packageManaged.AddFile("lib/net5.0/managed.dll");
+
+                packageManaged.Dependencies.Add(packageManagedChild);
+
+                // TODO NK - Ensure the dependencies are using the dependency groups, cause this should be failing right now.
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageNative,
+                    packageNativeChild,
+                    packageManaged,
+                    packageManagedChild);
+
+                // Set up project
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var framework = NuGetFramework.Parse("net5.0-windows7.0");
+                var projectA = SimpleTestProjectContext.CreateNETCore("projectName", pathContext.SolutionRoot, framework);
+                projectA.Properties.Add("CLRSupport", "NetCore");
+                //update path to vcxproj
+                projectA.ProjectPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), projectA.ProjectName + ".vcxproj");
+                projectA.AddPackageToAllFrameworks(packageNative);
+                projectA.AddPackageToAllFrameworks(packageManaged);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                // Act
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.TargetsOutput).Should().BeTrue(because: result.AllOutput);
+                File.Exists(projectA.PropsOutput).Should().BeTrue(because: result.AllOutput);
+
+                var targetsSection = projectA.AssetsFile.Targets.First(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("native"), because: string.Join(",", targetsSection.Libraries));
+                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("native.child"), because: string.Join(",", targetsSection.Libraries));
+                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("managed"), because: string.Join(",", targetsSection.Libraries));
+                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("managed.child"), because: string.Join(",", targetsSection.Libraries));
+                // TODO NK - Check the correct assets are selected.
+            }
+        }
+
+        // TODO NK - Add tests to ensure ATF + Dual Compatibility are combinable!
     }
 }

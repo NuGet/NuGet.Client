@@ -2144,6 +2144,8 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(prodJson, testJson);
         }
 
+        // TODO NK - Add test for CLRSupport reading in VS.
+
         private delegate void TryGetProjectNamesCallback(string projectPath, out ProjectNames projectNames);
         private delegate bool TryGetProjectNamesReturns(string projectPath, out ProjectNames projectNames);
 

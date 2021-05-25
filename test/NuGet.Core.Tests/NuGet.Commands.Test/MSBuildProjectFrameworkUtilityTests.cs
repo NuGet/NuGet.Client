@@ -268,6 +268,38 @@ namespace NuGet.Commands.Test
                targetPlatformMinVersion));
         }
 
+        [Theory]
+        [InlineData(@"C:\project.vcxproj", ".NETFramework,Version=v4.5", "Windows,Version=7.0", "", "", "native", null)]
+        [InlineData(@"C:\project.vcxproj", ".NETFramework,Version=v4.5", "", "", "false", "native", null)]
+        [InlineData(@"C:\project.vcxproj", ".NETFramework,Version=v4.5", "", "", "NetFx", "native", null)]
+        [InlineData(@"C:\project.vcxproj", ".NETCoreApp,Version=v5.0", "", "", "NetCore", "net5.0", "native")]
+        [InlineData(@"C:\project.csproj", ".NETCoreApp,Version=v5.0", "", "", "NetCore", "net5.0", null)]
+        [InlineData(@"C:\project.csproj", ".NETFramework,Version=v4.5", "", "", "NetFramework", "net45", null)]
+        public void GetProjectFramework_WithCLRSupport_VariousInputs(
+               string projectFilePath,
+               string targetFrameworkMoniker,
+               string targetPlatformMoniker,
+               string targetPlatformMinVersion,
+               string clrSupport,
+               string expectedPrimaryShortName,
+               string expectedSecondaryShortName)
+        {
+            var nugetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                projectFilePath: projectFilePath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformMinVersion,
+                clrSupport);
+
+            Assert.Equal(expectedPrimaryShortName, nugetFramework.GetShortFolderName());
+            if (expectedSecondaryShortName != null)
+            {
+                Assert.IsAssignableFrom(typeof(DualCompatibilityFramework), nugetFramework);
+                var extendedFramework = nugetFramework as DualCompatibilityFramework;
+                Assert.Equal(expectedPrimaryShortName, extendedFramework.RootFramework.GetShortFolderName());
+                Assert.Equal(expectedSecondaryShortName, extendedFramework.SecondaryFramework.GetShortFolderName());
+            }
+        }
 
         /// <summary>
         /// Test helper

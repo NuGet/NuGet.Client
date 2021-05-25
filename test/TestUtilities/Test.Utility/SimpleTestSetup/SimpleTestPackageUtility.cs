@@ -196,6 +196,7 @@ namespace NuGet.Test.Utility
                     dependenciesNode.Add(groupNode);
                     metadata.Add(dependenciesNode);
 
+                    // TODO NK - There should be a way to 
                     foreach (var dependency in dependencies)
                     {
                         var node = new XElement(XName.Get("dependency"));

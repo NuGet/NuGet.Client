@@ -58,6 +58,26 @@ namespace NuGet.Commands
                 targetPlatformIdentifier: null,
                 targetPlatformVersion: null,
                 targetPlatformMinVersion,
+                clrSupport: null,
+                isXnaWindowsPhoneProject: false,
+                isManagementPackProject: false);
+        }
+
+        public static NuGetFramework GetProjectFramework(
+            string projectFilePath,
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformMinVersion,
+            string clrSupport)
+        {
+            return GetProjectFramework(
+                projectFilePath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformIdentifier: null,
+                targetPlatformVersion: null,
+                targetPlatformMinVersion,
+                clrSupport,
                 isXnaWindowsPhoneProject: false,
                 isManagementPackProject: false);
         }
@@ -89,6 +109,7 @@ namespace NuGet.Commands
                 targetPlatformIdentifier,
                 targetPlatformVersion,
                 targetPlatformMinVersion,
+                clrSupport: null,
                 isXnaWindowsPhoneProject,
                 isManagementPackProject);
         }
@@ -102,6 +123,7 @@ namespace NuGet.Commands
             string targetPlatformIdentifier,
             string targetPlatformVersion,
             string targetPlatformMinVersion,
+            string clrSupport,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
@@ -132,6 +154,7 @@ namespace NuGet.Commands
                 targetPlatformIdentifier,
                 targetPlatformVersion,
                 targetPlatformMinVersion,
+                clrSupport,
                 isXnaWindowsPhoneProject,
                 isManagementPackProject).DotNetFrameworkName };
         }
@@ -143,15 +166,18 @@ namespace NuGet.Commands
             string targetPlatformIdentifier,
             string targetPlatformVersion,
             string targetPlatformMinVersion,
+            string clrSupport,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
+            bool isCppCli = clrSupport?.Equals("NetCore", StringComparison.OrdinalIgnoreCase) == true;
             // C++ check
-            if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase) == true)
+            if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase) == true
+                && !isCppCli)
             {
                 // The C++ project does not have a TargetFrameworkMoniker property set. 
                 // We hard-code the return value to Native.
-                return NuGetFramework.Parse("Native, Version=0.0");
+                return FrameworkConstants.CommonFrameworks.Native;
             }
 
             // The MP project does not have a TargetFrameworkMoniker property set. 
@@ -226,6 +252,11 @@ namespace NuGet.Commands
                     return NuGetFramework.Parse(currentFrameworkString);
                 }
                 NuGetFramework framework = NuGetFramework.ParseComponents(currentFrameworkString, platformMoniker);
+
+                if (isCppCli)
+                {
+                    return new DualCompatibilityFramework(framework, FrameworkConstants.CommonFrameworks.Native);
+                }
 
                 return framework;
             }
