@@ -852,8 +852,4 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="SignCommandNoCertificateException" xml:space="preserve">
     <value>No certificate was provided.</value>
   </data>
-  <data name="Exception_TransitivePackagesWithoutTransitiveFlag" xml:space="preserve">
-    <value>Cannot filter transitive projects without transitive flag set to false</value>
-    <comment>Please don't localize second 'transitive' word and 'false'</comment>
-  </data>
 </root>

@@ -493,15 +493,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot filter transitive projects without transitive flag set to false.
-        /// </summary>
-        internal static string Exception_TransitivePackagesWithoutTransitiveFlag {
-            get {
-                return ResourceManager.GetString("Exception_TransitivePackagesWithoutTransitiveFlag", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Specifies one or more wildcard patterns to exclude when creating a package..
         /// </summary>
         internal static string Exclude_Description {

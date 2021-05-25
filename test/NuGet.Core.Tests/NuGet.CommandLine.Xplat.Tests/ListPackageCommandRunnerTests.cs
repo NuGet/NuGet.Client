@@ -125,7 +125,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                         resolvedPackageVersionString: "2.0.0", latestPackageVersionString: "3.0.0"));
                 }
 
-                ;
                 if (includeTransitivePositives)
                 {
                     transitivePackages.Add(ListPackageTestHelper.CreateInstalledPackageReference(
