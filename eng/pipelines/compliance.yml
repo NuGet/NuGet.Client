@@ -38,7 +38,7 @@ jobs:
         displayName: "Upload to TSA"
         inputs:
           tsaVersion: "TsaV2"
-          codebase: "Existing"
+          codebase: "$(TsaCodebase)"
           tsaEnvironment: "PROD"
           codeBaseName: "$(TsaCodebaseName)"
           notificationAlias: "$(TsaNotificationEmail)"
