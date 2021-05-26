@@ -147,8 +147,7 @@ namespace NuGet.Commands
             var orderedCriteriaSets = new List<List<SelectionCriteria>>(1);
 
             var assetTargetFallback = framework as AssetTargetFallbackFramework;
-            var multipleCompatibilityFramework = framework as DualCompatibilityFramework;
-
+            // TODO NK - Is dual compatibility framework accounted for.
             if (assetTargetFallback != null)
             {
                 // Add the root project framework first.
@@ -156,14 +155,6 @@ namespace NuGet.Commands
 
                 // Add all fallbacks in order.
                 orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => CreateCriteria(targetGraph, e)));
-            }
-            else if (multipleCompatibilityFramework != null)
-            {
-                // Add the root project framework first.
-                orderedCriteriaSets.Add(CreateCriteria(targetGraph, multipleCompatibilityFramework.RootFramework));
-
-                // Add all fallback.
-                orderedCriteriaSets.Add(CreateCriteria(targetGraph, multipleCompatibilityFramework.SecondaryFramework));
             }
             else
             {
