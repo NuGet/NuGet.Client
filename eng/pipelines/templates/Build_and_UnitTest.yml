@@ -444,7 +444,7 @@ steps:
   displayName: "Publish symbols as pipeline artifacts"
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    artifactName: "symbols - $(RtmLabel)"
+    artifactName: "symbols - $(RtmLabel)"  #'symbols - NonRTM' artifacts downloaded in compliance.yml for APIScan@2 task.
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
 - task: artifactDropTask@0
