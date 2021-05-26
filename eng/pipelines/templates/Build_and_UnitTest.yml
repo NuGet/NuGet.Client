@@ -282,16 +282,16 @@ steps:
     arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
-- task: MicroBuildCodesignVerify@1
+- task: MicroBuildCodesignVerify@3
   displayName: Verify Assembly Signatures and StrongName for the nupkgs
   inputs:
-    TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+    TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MicroBuildCodesignVerify@3
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
   inputs:
-    TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
+    TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
