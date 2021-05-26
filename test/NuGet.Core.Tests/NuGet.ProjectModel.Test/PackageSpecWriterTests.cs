@@ -662,6 +662,33 @@ namespace NuGet.ProjectModel.Test
             VerifyJsonPackageSpecRoundTrip(json);
         }
 
+        [Fact]
+        public void RoundTripDualCompatibilityFramework()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net5.0"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""imports"": [
+                           ""net472"",
+                           ""net471""
+                        ],
+                        ""assetTargetFallback"" : true,
+                        ""secondaryFramework"" : ""native""
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             JObject jObject = packageSpec.ToJObject();

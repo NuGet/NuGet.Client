@@ -544,7 +544,8 @@ namespace NuGet.ProjectModel
                     SetCentralDependencies(writer, framework.CentralPackageVersions.Values, compressed);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
-                    SetValueIfNotNull(writer, "secondaryFramework", (framework.FrameworkName as DualCompatibilityFramework)?.SecondaryFramework.GetShortFolderName());
+                    SetValueIfNotNull(writer, "secondaryFramework",
+                        (DeconstructFallbackFrameworks(framework.FrameworkName) as DualCompatibilityFramework)?.SecondaryFramework.GetShortFolderName());
                     SetValueIfTrue(writer, "warn", framework.Warn);
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
@@ -554,6 +555,22 @@ namespace NuGet.ProjectModel
 
                 writer.WriteObjectEnd();
             }
+        }
+
+        // An AssetTargetFallbackFramework or FallbackFramework *might* have a DualCompatibilityFramework as it's root.
+        private static NuGetFramework DeconstructFallbackFrameworks(NuGetFramework nuGetFramework)
+        {
+            if (nuGetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            {
+                return assetTargetFallbackFramework.RootFramework;
+            }
+
+            if (nuGetFramework is FallbackFramework fallbackFramework)
+            {
+                return fallbackFramework;
+            }
+
+            return nuGetFramework;
         }
 
         private static void SetFrameworkReferences(IObjectWriter writer, ISet<FrameworkDependency> frameworkReferences)

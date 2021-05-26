@@ -7,3 +7,6 @@ NuGet.Frameworks.DualCompatibilityFramework.SecondaryFramework.get -> NuGet.Fram
 override NuGet.Frameworks.DualCompatibilityFramework.Equals(object obj) -> bool
 override NuGet.Frameworks.DualCompatibilityFramework.GetHashCode() -> int
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Native -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net47 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net471 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net472 -> NuGet.Frameworks.NuGetFramework

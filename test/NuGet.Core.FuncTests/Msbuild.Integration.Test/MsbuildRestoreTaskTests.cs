@@ -866,8 +866,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 packageManaged.AddFile("build/net472/managed.targets");
                 packageManaged.AddFile("lib/net472.0/managed.dll");
 
-                packageManaged.PerFrameworkDependencies.Add(FrameworkConstants.CommonFrameworks.Net50, new List<SimpleTestPackageContext> { packageManagedChild });
-
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     packageNative,

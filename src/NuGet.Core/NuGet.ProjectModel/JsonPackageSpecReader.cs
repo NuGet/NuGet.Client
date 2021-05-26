@@ -1713,6 +1713,10 @@ namespace NuGet.ProjectModel
                     updatedFramework = new FallbackFramework(GetDualCompatibilityFrameworkIfNeeded(frameworkName, secondaryFramework), imports);
                 }
             }
+            else
+            {
+                updatedFramework = GetDualCompatibilityFrameworkIfNeeded(frameworkName, secondaryFramework);
+            }
 
             targetFrameworkInformation.FrameworkName = updatedFramework;
 

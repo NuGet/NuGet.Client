@@ -88,6 +88,9 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework Net461 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 1, 0));
             public static readonly NuGetFramework Net462 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 2, 0));
             public static readonly NuGetFramework Net463 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 3, 0));
+            public static readonly NuGetFramework Net47 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 7, 0, 0));
+            public static readonly NuGetFramework Net471 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 7, 1, 0));
+            public static readonly NuGetFramework Net472 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 7, 2, 0));
 
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));
