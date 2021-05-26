@@ -17,12 +17,15 @@ namespace NuGet.SolutionRestoreManager
     public interface IVsSolutionRestoreService4
     {
         /// <summary>
-        /// A project system can call this service (optionally) to register itself to coordinate restore.
-        /// Each project can only register once. NuGet will call into the source to wait for nominations for restore.
+        /// A project system can call this service (optionally) to register itself to coordinate restore. <br/>
+        /// Each project can only register once. NuGet will call into the source to wait for nominations for restore. <br/>
         /// NuGet will remove the registered object when a project is unloaded.
         /// </summary>
         /// <param name="restoreInfoSource">Represents a project specific info source</param>
         /// <param name="cancellationToken">Cancellation token.</param>
+        /// <exception cref="InvalidOperationException">If the project has already been registered.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="restoreInfoSource"/> is null. </exception>
+        /// <exception cref="ArgumentException">If <paramref name="restoreInfoSource"/>'s <see cref="IVsProjectRestoreInfoSource.Name"/> is <see langword="null"/>. </exception>
         public Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken cancellationToken);
     }
 }
