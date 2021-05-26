@@ -663,7 +663,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void RoundTripDualCompatibilityFramework()
+        public void Write_WithAssetTargetFallbackAndDualCompatibilityFramework_RoundTrips()
         {
             // Arrange
             var json = @"{

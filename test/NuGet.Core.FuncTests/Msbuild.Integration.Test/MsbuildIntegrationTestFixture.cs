@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
@@ -112,7 +113,7 @@ namespace Msbuild.Integration.Test
 
             if (!ignoreExitCode)
             {
-                Assert.True(result.ExitCode == 0, $"msbuild.exe {args} command failed with following log information :\n {result.AllOutput}");
+                result.ExitCode.Should().Be(0, because: $"msbuild.exe {args} command failed with following log information :\n {result.AllOutput}");
             }
 
             return result;

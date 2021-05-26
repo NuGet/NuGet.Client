@@ -704,8 +704,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_WithCPPCliVcxproj_RestoresSuccessfullyWithPackageReference()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task MsbuildRestore_WithCPPCliVcxproj_RestoresSuccessfullyWithPackageReference(bool isStaticGraphRestore)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -727,7 +729,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory,
+                    $"/t:restore {pathContext.SolutionRoot}" + (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty));
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -766,7 +769,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -831,7 +834,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -884,7 +887,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
