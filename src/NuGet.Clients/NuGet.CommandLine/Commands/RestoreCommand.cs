@@ -382,7 +382,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                SearchTree searchTree = SearchTree.GetSearchTree(Settings);
+                SearchTree searchTree = SearchTree.GetSearchTree(Settings, packageRestoreContext.Logger);
                 var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, searchTree)
                 {
                     ClientPolicyContext = clientPolicyContext

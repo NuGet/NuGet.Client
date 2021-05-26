@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement
             ILogger logger,
             CancellationToken token)
         {
-            //Debugger.Launch();
+            Debugger.Launch();
 
             if (sources == null)
             {
@@ -108,11 +108,16 @@ namespace NuGet.PackageManagement
                 {
                     nameSpaceLookupResult = downloadContext.SearchTree.Find(packageIdentity.Id);
                     var packageSourcesAtPrefix = nameSpaceLookupResult.PrefixMatch ? string.Join(", ", nameSpaceLookupResult.PrefixMatch) : string.Empty;
-                    logger.LogDebug($"{packageIdentity}  Prefixmath : {nameSpaceLookupResult.PrefixMatch}. packageSources at prefix: {packageSourcesAtPrefix}" + Environment.NewLine);
-                }
-                else
-                {
-                    logger.LogDebug($"{packageIdentity} : downloadContext?.NameSpaceLookup is not defined." + Environment.NewLine);
+
+                    if (nameSpaceLookupResult.PrefixMatch)
+                    {
+
+                        logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id));
+                    }
+                    else
+                    {
+                        logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixNoMatchFound, packageIdentity.Id));
+                    }
                 }
 
                 while (groups.Count > 0)
@@ -127,13 +132,13 @@ namespace NuGet.PackageManagement
                         if (nameSpaceLookupResult != null && nameSpaceLookupResult.PrefixMatch
                             && !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
                         {
-                            logger.LogDebug($"Skipping {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);
-                            // This package's id prefix is already defined in another package source, not this one, let's skip.
+                            // This package's id prefix is not defined in current package source, let's skip.
+                            logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixSkipSource, source.PackageSource.Name, packageIdentity.Id));
                             continue;
                         }
                         else
                         {
-                            logger.LogDebug($"Search {source.PackageSource.Name} for {packageIdentity}." + Environment.NewLine);
+                            logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixTrySource, source.PackageSource.Name, packageIdentity.Id));
                         }
 
                         var task = GetDownloadResourceResultAsync(

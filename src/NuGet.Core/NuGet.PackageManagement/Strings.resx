@@ -521,4 +521,22 @@
 2 - Package ID
 3 - Package Sources</comment>
   </data>
+  <data name="PackageNamespacePrefixMatchFound" xml:space="preserve">
+    <value>Package source namespace prefix match found for package id '{0}'</value>
+    <comment>{0} - package id</comment>
+  </data>
+  <data name="PackageNamespacePrefixNoMatchFound" xml:space="preserve">
+    <value>Package source namespace prefix match not found for package id '{0}'</value>
+    <comment>{0} - package id</comment>
+  </data>
+  <data name="PackageNamespacePrefixSkipSource" xml:space="preserve">
+    <value>Package source namespace: Skipping source '{0}' for package id '{1}'</value>
+    <comment>{0} - source id
+{1} - package id</comment>
+  </data>
+  <data name="PackageNamespacePrefixTrySource" xml:space="preserve">
+    <value>Package source namespace: Trying source '{0}' for package id '{1}'</value>
+    <comment>{0} - source id
+{1} - package id</comment>
+  </data>
 </root>

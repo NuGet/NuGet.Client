@@ -27,7 +27,7 @@ override NuGet.Configuration.PackageNamespacesSourceItem.Equals(object other) ->
 override NuGet.Configuration.PackageNamespacesSourceItem.GetHashCode() -> int
 override NuGet.Configuration.PackageNamespacesSourceItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
 static NuGet.Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageNamespacesConfiguration
-static NuGet.Configuration.SearchTree.GetSearchTree(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.SearchTree
+static NuGet.Configuration.SearchTree.GetSearchTree(NuGet.Configuration.ISettings settings, NuGet.Common.ILogger logger) -> NuGet.Configuration.SearchTree
 static readonly NuGet.Configuration.ConfigurationConstants.IdAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Namespace -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageNamespaces -> string

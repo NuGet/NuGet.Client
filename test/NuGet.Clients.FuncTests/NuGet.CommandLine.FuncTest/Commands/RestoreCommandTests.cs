@@ -1072,7 +1072,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
-                    // Assert correct ContosoA package was restored.
+                    // Assert correct Contoso package was restored.
                     Assert.Contains("lib/net461/contosoA.dll", allFiles);
                 }
                 Assert.True(File.Exists(externalRestorePath));
@@ -1256,7 +1256,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
-                    // Assert correct ContosoA package was restored.
+                    // Assert correct Contoso package was restored.
                     Assert.Contains("lib/net461/contosoA.dll", allFiles);
                 }
                 Assert.True(File.Exists(externalRestorePath));

@@ -727,6 +727,42 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package source namespace prefix match found for package id &apos;{0}&apos;.
+        /// </summary>
+        internal static string PackageNamespacePrefixMatchFound {
+            get {
+                return ResourceManager.GetString("PackageNamespacePrefixMatchFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source namespace prefix match not found for package id &apos;{0}&apos;.
+        /// </summary>
+        internal static string PackageNamespacePrefixNoMatchFound {
+            get {
+                return ResourceManager.GetString("PackageNamespacePrefixNoMatchFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source namespace: Skipping source &apos;{0}&apos; for package id &apos;{1}&apos;.
+        /// </summary>
+        internal static string PackageNamespacePrefixSkipSource {
+            get {
+                return ResourceManager.GetString("PackageNamespacePrefixSkipSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source namespace: Trying source &apos;{0}&apos; for package id &apos;{1}&apos;.
+        /// </summary>
+        internal static string PackageNamespacePrefixTrySource {
+            get {
+                return ResourceManager.GetString("PackageNamespacePrefixTrySource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; is not found.
         /// </summary>
         internal static string PackageNotFound {

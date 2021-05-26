@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -131,7 +133,7 @@ namespace NuGet.Configuration
                                         : new ConfigNameSpaceLookup(true, currentNode.PackageSources);
         }
 
-        public static SearchTree GetSearchTree(ISettings settings)
+        public static SearchTree GetSearchTree(ISettings settings, ILogger logger)
         {
             SearchTree nameSpaceLookup = null;
 
@@ -152,6 +154,7 @@ namespace NuGet.Configuration
             if (packageSourceSections.Any())
             {
                 nameSpaceLookup = new SearchTree(packageSourceSections);
+                logger?.LogDebug(string.Format(CultureInfo.CurrentCulture, Resources.PackageNamespaceFound));
             }
 
             return nameSpaceLookup;

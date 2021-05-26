@@ -1030,7 +1030,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
-                    // Assert correct ContosoA package was restored.
+                    // Assert correct Contoso package was restored.
                     Assert.Contains("lib/net461/realA.dll", allFiles);
                 }
             }
@@ -1273,7 +1273,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
-                    // Assert correct ContosoA package was restored.
+                    // Assert correct Contoso package was restored.
                     Assert.Contains("lib/net461/realA.dll", allFiles);
                 }
             }
@@ -1517,7 +1517,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
-                    // Assert correct ContosoA package was restored.
+                    // Assert correct Contoso package was restored.
                     Assert.Contains("lib/net461/realA.dll", allFiles);
                 }
             }
