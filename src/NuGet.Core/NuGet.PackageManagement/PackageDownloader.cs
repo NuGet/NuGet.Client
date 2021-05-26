@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -54,8 +53,6 @@ namespace NuGet.PackageManagement
             ILogger logger,
             CancellationToken token)
         {
-            Debugger.Launch();
-
             if (sources == null)
             {
                 throw new ArgumentNullException(nameof(sources));
@@ -111,7 +108,6 @@ namespace NuGet.PackageManagement
 
                     if (nameSpaceLookupResult.PrefixMatch)
                     {
-
                         logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id));
                     }
                     else

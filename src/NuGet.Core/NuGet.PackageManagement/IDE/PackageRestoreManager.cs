@@ -415,7 +415,7 @@ namespace NuGet.PackageManagement
         {
             var packageReferencesQueue = new ConcurrentQueue<PackageReference>(packageReferences);
             var tasks = new List<Task<List<AttemptedPackage>>>();
-            for (var i = 0; i < 1; i++)
+            for (var i = 0; i < Math.Min(packageRestoreContext.MaxNumberOfParallelTasks, packageReferences.Count); i++)
             {
                 tasks.Add(Task.Run(() => PackageRestoreRunnerAsync(
                     packageReferencesQueue,

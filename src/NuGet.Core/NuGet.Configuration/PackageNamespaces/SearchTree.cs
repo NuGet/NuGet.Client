@@ -34,8 +34,6 @@ namespace NuGet.Configuration
                     Add(nameSpaceId, packageSourceKey);
                 }
             }
-
-            // todo : Once tree is fully populated, we can do compacting for better time and space complexity.
         }
 
         private void Add(string namespaceId, string packageSourceKey)
@@ -50,8 +48,7 @@ namespace NuGet.Configuration
             // For prevent from unwanted behaviour.
             if (namespaceId.Length > PackageIdMaxLength)
             {
-                // todo: make it resource string.
-                throw new ArgumentOutOfRangeException($"NamespaceId '{namespaceId}' in packageNamespaces section of nuget.config is too long. Please consider to reduce it.");
+                throw new ArgumentOutOfRangeException(nameof(namespaceId));
             }
 
 #pragma warning disable CA1308 // Normalize strings to uppercase

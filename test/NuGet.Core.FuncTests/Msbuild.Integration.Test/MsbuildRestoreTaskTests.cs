@@ -1499,7 +1499,117 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             <namespace id=""Contoso.MVC.*"" /> 
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />
+            <namespace id=""Contoso.MVC.ASP"" />   <!-- Longer prefix prevails over Contoso.MVC.* -->
+        </packageSource>
+    </packageNamespaces>
+</configuration>";
+
+                using (var writer = new StreamWriter(configPath))
+                {
+                    writer.Write(configText);
+                }
+
+                // Act
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0);
+                var contosoRestorePath = Path.Combine(projectAPackages, packageOpenSourceContosoMvc.ToString(), packageOpenSourceContosoMvc.ToString() + ".nupkg");
+                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    // Assert correct Contoso package was restored.
+                    Assert.Contains("lib/net461/realA.dll", allFiles);
+                }
+
+                Assert.Contains("Package source namespace is found in nuget.config file.", result.Output);
+                Assert.Contains("Package source namespace prefix match found for package id 'Contoso.MVC.ASP'", result.Output);
+                Assert.Contains("Package source namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", result.Output);
+                Assert.Contains("Package source namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", result.Output);
+                Assert.Contains("Package source namespace prefix match found for package id 'Contoso.Opensource.Buffers'", result.Output);
+                Assert.Contains("Package source namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
+                Assert.Contains("Package source namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_PackageNamespaceSamePrefixMatchesMultipleSources_Succeed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackagesConfig,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+                var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config")))
+                {
+                    writer.Write(
+@"<packages>
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+                }
+
+                var sharedRepositoryPath1 = pathContext.UserPackagesFolder;
+                Directory.CreateDirectory(sharedRepositoryPath1);
+
+                var packageContosoMvcReal1 = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.MVC.ASP",
+                    Version = "1.0.0"
+                };
+                packageContosoMvcReal1.Files.Clear();
+                packageContosoMvcReal1.AddFile("lib/net461/realA1.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    sharedRepositoryPath1,
+                    packageContosoMvcReal1);
+
+                var sharedRepositoryPath2 = pathContext.UserPackagesFolder;
+                Directory.CreateDirectory(sharedRepositoryPath2);
+
+                var packageContosoMvcReal2 = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.MVC.ASP",
+                    Version = "1.0.0"
+                };
+                packageContosoMvcReal2.Files.Clear();
+                packageContosoMvcReal2.AddFile("lib/net461/realA2.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    sharedRepositoryPath2,
+                    packageContosoMvcReal2);
+
+                // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
+                // so we go ahead and remove that config before running MSBuild.
+                var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
+                var configText =
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""SharedRepository1"" value=""{sharedRepositoryPath1}"" />
+    <add key=""SharedRepository2"" value=""{sharedRepositoryPath2}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""SharedRepository1"">
+            <namespace id=""Contoso.MVC.*"" />
+        </packageSource>
+        <packageSource key=""SharedRepository2"">
+            <namespace id=""Contoso.MVC.*"" />
         </packageSource>
     </packageNamespaces>
 </configuration>";
@@ -1513,12 +1623,12 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
-                var contosoRestorePath = Path.Combine(projectAPackages, packageOpenSourceContosoMvc.ToString(), packageOpenSourceContosoMvc.ToString() + ".nupkg");
+                var contosoRestorePath = Path.Combine(projectAPackages, packageContosoMvcReal1.ToString(), packageContosoMvcReal1.ToString() + ".nupkg");
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
                     // Assert correct Contoso package was restored.
-                    Assert.Contains("lib/net461/realA.dll", allFiles);
+                    Assert.True(allFiles.Contains("lib/net461/realA1.dll") || allFiles.Contains("lib/net461/realA2.dll"));
                 }
             }
         }
