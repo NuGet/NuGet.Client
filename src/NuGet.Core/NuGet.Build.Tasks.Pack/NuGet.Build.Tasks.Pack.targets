@@ -462,6 +462,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TargetFramework>$(TargetFramework)</TargetFramework>
       </_TargetPathsToSymbolsWithTfm>
     </ItemGroup>
+    <ItemGroup>
+      <_TargetPathsToSymbolsWithTfm Include="@(TfmSpecificDebugSymbolsFile)" />
+    </ItemGroup>
   </Target>
 
   <!--Projects with target framework like UWP, Win8, wpa81 produce a Pri file

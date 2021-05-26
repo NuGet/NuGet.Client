@@ -2738,10 +2738,10 @@ namespace ClassLibrary
                     var xml = XDocument.Load(stream);
                     var target = @"<Target Name=""CustomContentTarget"">
     <ItemGroup>
-      <_TargetPathsToSymbolsWithTfm Include=""abc.pdb"">
+      <TfmSpecificDebugSymbolsFile Include=""abc.pdb"">
         <TargetPath>/runtimes/win/lib/$(TargetFramework)/abc.pdb</TargetPath>
         <TargetFramework>$(TargetFramework)</TargetFramework>
-      </_TargetPathsToSymbolsWithTfm>
+      </TfmSpecificDebugSymbolsFile>
     </ItemGroup>
   </Target>";
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
@@ -2786,10 +2786,10 @@ namespace ClassLibrary
                     var xml = XDocument.Load(stream);
                     var target = @"<Target Name=""CustomContentTarget"">
     <ItemGroup>
-      <_TargetPathsToSymbolsWithTfm Include=""abc.pdb"">
+      <TfmSpecificDebugSymbolsFile Include=""abc.pdb"">
         <TargetPath>/runtimes/win/lib/$(TargetFramework)/abc.pdb</TargetPath>
         <TargetFramework>$(TargetFramework)</TargetFramework>
-      </_TargetPathsToSymbolsWithTfm>
+      </TfmSpecificDebugSymbolsFile>
     </ItemGroup>
   </Target>";
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netstandard1.4;net46");
