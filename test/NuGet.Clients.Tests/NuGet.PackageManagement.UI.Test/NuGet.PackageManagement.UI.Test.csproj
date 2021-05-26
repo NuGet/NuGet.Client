@@ -64,9 +64,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj">
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </ProjectReference>
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
