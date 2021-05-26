@@ -3573,6 +3573,18 @@ namespace NuGet.ProjectModel.Test
             Assert.True(secondGroup.TransitiveDependencies.First().VersionCentrallyManaged);
         }
 
+        [Theory]
+        [InlineData(false)]
+        public void GetPackageSpec_WithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework(bool expectedValue)
+        {
+            // TODO NK - dual compatbility framework reader tests.
+            // TODO NK - Dual compatibility framework writer tests.
+            var json = $"{{\"frameworks\":{{\"a\":{{\"assetTargetFallback\":{expectedValue.ToString().ToLowerInvariant()}}}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json);
+
+            Assert.Equal(true, framework.AssetTargetFallback);
+        }
 
         private static PackageSpec GetPackageSpec(string json)
         {

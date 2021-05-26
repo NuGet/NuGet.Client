@@ -7,8 +7,6 @@ using Xunit;
 
 namespace NuGet.Frameworks.Test
 {
-    // TODO NK - Add simple compatibility tests in restore.
-    // TODO NK - Add dependencies tests
     public class DualCompatibilityFrameworkTests
     {
         [Fact]

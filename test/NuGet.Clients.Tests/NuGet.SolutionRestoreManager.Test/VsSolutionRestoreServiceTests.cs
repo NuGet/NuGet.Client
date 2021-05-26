@@ -2144,7 +2144,53 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(prodJson, testJson);
         }
 
-        // TODO NK - Add test for CLRSupport reading in VS.
+        [Theory]
+        [InlineData("NetCore", true)]
+        [InlineData("NetFx", false)]
+        [InlineData("false", false)]
+        public void ToPackageSpec_TargetFrameworkWithCLRSupport_InterpretsFrameworkCorrect(string clrSupport, bool isDualCompatibilityFramework)
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.vcxproj", "project", "project.csproj", "project", Guid.NewGuid().ToString());
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var packageReferenceProperties = new VsReferenceProperties();
+            var managedFramework = CommonFrameworks.Net50;
+            var nativeFramework = CommonFrameworks.Native;
+            var targetFrameworks = new VsTargetFrameworkInfo2[]
+            {
+                new VsTargetFrameworkInfo2(
+                    targetFrameworkMoniker: "tfm1",
+                    packageReferences: emptyReferenceItems,
+                    projectReferences: emptyReferenceItems,
+                    packageDownloads: emptyReferenceItems,
+                    frameworkReferences: emptyReferenceItems,
+                    projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(managedFramework, "tfm1", clrSupport),
+                    addTargetFrameworkProperties: false),
+            };
+            var originalTargetFrameworksString = string.Join(";", targetFrameworks.Select(tf => tf.TargetFrameworkMoniker));
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, originalTargetFrameworksString, string.Empty);
+
+            // Assert
+            Assert.Equal(1, result.TargetFrameworks.Count);
+            TargetFrameworkInformation targetFrameworkInfo = Assert.Single(result.TargetFrameworks, tf => tf.TargetAlias == "tfm1");
+
+            if (isDualCompatibilityFramework)
+            {
+                var comparer = new NuGetFrameworkFullComparer();
+                comparer.Equals(targetFrameworkInfo.FrameworkName, managedFramework).Should().BeTrue();
+                targetFrameworkInfo.FrameworkName.Should().BeOfType<DualCompatibilityFramework>();
+                var dualCompatibilityFramework = targetFrameworkInfo.FrameworkName as DualCompatibilityFramework;
+                dualCompatibilityFramework.RootFramework.Should().Be(managedFramework);
+                dualCompatibilityFramework.SecondaryFramework.Should().Be(CommonFrameworks.Native);
+            }
+            else
+            {
+                targetFrameworkInfo.FrameworkName.Should().NotBeOfType<DualCompatibilityFramework>();
+                targetFrameworkInfo.FrameworkName.Should().Be(nativeFramework);
+            }
+        }
 
         private delegate void TryGetProjectNamesCallback(string projectPath, out ProjectNames projectNames);
         private delegate bool TryGetProjectNamesReturns(string projectPath, out ProjectNames projectNames);

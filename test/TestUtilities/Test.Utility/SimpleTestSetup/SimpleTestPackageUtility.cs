@@ -19,6 +19,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -176,42 +177,39 @@ namespace NuGet.Test.Utility
                         .Add(new XAttribute(XName.Get("minClientVersion"), packageContext.MinClientVersion));
                 }
 
-                var dependencies = packageContext.Dependencies.Select(e =>
-                    new PackageDependency(
-                        e.Id,
-                        VersionRange.Parse(e.Version),
-                        string.IsNullOrEmpty(e.Include)
-                            ? new List<string>()
-                            : e.Include.Split(',').ToList(),
-                        string.IsNullOrEmpty(e.Exclude)
-                            ? new List<string>()
-                            : e.Exclude.Split(',').ToList()));
+                List<(string, List<PackageDependency>)> dependenciesPerFramework = GetPackageDependencies(packageContext);
 
-                if (dependencies.Any())
+                if (dependenciesPerFramework.Any())
                 {
                     var metadata = xml.Element(XName.Get("package")).Element(XName.Get("metadata"));
-
                     var dependenciesNode = new XElement(XName.Get("dependencies"));
-                    var groupNode = new XElement(XName.Get("group"));
-                    dependenciesNode.Add(groupNode);
-                    metadata.Add(dependenciesNode);
 
-                    // TODO NK - There should be a way to 
-                    foreach (var dependency in dependencies)
+                    foreach (var deps in dependenciesPerFramework)
                     {
-                        var node = new XElement(XName.Get("dependency"));
-                        groupNode.Add(node);
-                        node.Add(new XAttribute(XName.Get("id"), dependency.Id));
-                        node.Add(new XAttribute(XName.Get("version"), dependency.VersionRange.ToNormalizedString()));
-
-                        if (dependency.Include.Count > 0)
+                        var groupNode = new XElement(XName.Get("group"));
+                        if (!string.IsNullOrEmpty(deps.Item1))
                         {
-                            node.Add(new XAttribute(XName.Get("include"), string.Join(",", dependency.Include)));
+                            groupNode.SetAttributeValue("targetFramework", deps.Item1);
                         }
+                        dependenciesNode.Add(groupNode);
+                        metadata.Add(dependenciesNode);
 
-                        if (dependency.Exclude.Count > 0)
+                        foreach (var dependency in deps.Item2)
                         {
-                            node.Add(new XAttribute(XName.Get("exclude"), string.Join(",", dependency.Exclude)));
+                            var node = new XElement(XName.Get("dependency"));
+                            groupNode.Add(node);
+                            node.Add(new XAttribute(XName.Get("id"), dependency.Id));
+                            node.Add(new XAttribute(XName.Get("version"), dependency.VersionRange.ToNormalizedString()));
+
+                            if (dependency.Include.Count > 0)
+                            {
+                                node.Add(new XAttribute(XName.Get("include"), string.Join(",", dependency.Include)));
+                            }
+
+                            if (dependency.Exclude.Count > 0)
+                            {
+                                node.Add(new XAttribute(XName.Get("exclude"), string.Join(",", dependency.Exclude)));
+                            }
                         }
                     }
                 }
@@ -289,6 +287,44 @@ namespace NuGet.Test.Utility
 
             // Reset position
             stream.Position = 0;
+        }
+
+        private static List<(string, List<PackageDependency>)> GetPackageDependencies(SimpleTestPackageContext package)
+        {
+            if (package.PerFrameworkDependencies.Count > 0 && package.Dependencies.Count > 0)
+            {
+                throw new ArgumentException("A package context can't have dependencies with and without a group. Please use only one.");
+            }
+            var packageDependencies = new List<(string, List<PackageDependency>)>();
+
+            if (package.PerFrameworkDependencies.Count > 0)
+            {
+                foreach (var dependencies in package.PerFrameworkDependencies)
+                {
+                    packageDependencies.Add((dependencies.Key.GetFrameworkString(), GetPackageDependencyList(dependencies.Value)));
+                }
+            }
+
+            if (package.Dependencies.Count > 0)
+            {
+                packageDependencies.Add((string.Empty, GetPackageDependencyList(package.Dependencies)));
+            }
+
+            return packageDependencies;
+        }
+
+        private static List<PackageDependency> GetPackageDependencyList(List<SimpleTestPackageContext> packages)
+        {
+            return packages.Select(e =>
+                new PackageDependency(
+                    e.Id,
+                    VersionRange.Parse(e.Version),
+                    string.IsNullOrEmpty(e.Include)
+                        ? new List<string>()
+                        : e.Include.Split(',').ToList(),
+                    string.IsNullOrEmpty(e.Exclude)
+                        ? new List<string>()
+                        : e.Exclude.Split(',').ToList())).ToList();
         }
 
 #if IS_SIGNING_SUPPORTED
