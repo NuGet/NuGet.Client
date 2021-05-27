@@ -36,16 +36,17 @@ namespace NuGet.Protocol.Core.Types
             SourceCacheContext = sourceCacheContext;
             DirectDownload = directDownload;
             DirectDownloadDirectory = directDownloadDirectory;
+            PackageNamespacesConfiguration = new Lazy<PackageNamespacesConfiguration>(() => GetPackageNamespacesConfiguration());
         }
 
         public PackageDownloadContext(
             SourceCacheContext sourceCacheContext,
             string directDownloadDirectory,
             bool directDownload,
-            SearchTree searchTree)
+            ISettings settings)
             : this(sourceCacheContext, directDownloadDirectory, directDownload)
         {
-            SearchTree = searchTree;
+            Settings = settings;
         }
 
         public SourceCacheContext SourceCacheContext { get; }
@@ -55,6 +56,12 @@ namespace NuGet.Protocol.Core.Types
         public Guid ParentId { get; set; }
 
         public ClientPolicyContext ClientPolicyContext { get; set; }
-        public SearchTree SearchTree { get; }
+        public ISettings Settings { get; }
+        public Lazy<PackageNamespacesConfiguration> PackageNamespacesConfiguration { get; }
+
+        private PackageNamespacesConfiguration GetPackageNamespacesConfiguration()
+        {
+            return Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+        }
     }
 }

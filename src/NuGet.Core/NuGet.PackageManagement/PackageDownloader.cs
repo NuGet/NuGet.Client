@@ -101,9 +101,9 @@ namespace NuGet.PackageManagement
 
                 ConfigNameSpaceLookup nameSpaceLookupResult = null;
 
-                if (downloadContext?.SearchTree != null)
+                if (downloadContext.PackageNamespacesConfiguration?.Value.SearchTree?.Value != null)
                 {
-                    nameSpaceLookupResult = downloadContext.SearchTree.Find(packageIdentity.Id);
+                    nameSpaceLookupResult = downloadContext.PackageNamespacesConfiguration.Value.SearchTree.Value.Find(packageIdentity.Id);
 
                     if (nameSpaceLookupResult.PrefixMatch)
                     {
@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        if (nameSpaceLookupResult != null && nameSpaceLookupResult.PrefixMatch
+                        if (nameSpaceLookupResult != null && nameSpaceLookupResult.PackageSources != null
                             && !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
                         {
                             // This package's id prefix is not defined in current package source, let's skip.

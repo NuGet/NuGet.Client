@@ -358,15 +358,6 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace is found in nuget.config file..
-        /// </summary>
-        internal static string PackageNamespaceFound {
-            get {
-                return ResourceManager.GetString("PackageNamespaceFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The package source does not belong to the collection of available sources..
         /// </summary>
         internal static string PackageSource_Invalid {

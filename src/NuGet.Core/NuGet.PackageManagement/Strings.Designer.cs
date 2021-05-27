@@ -727,7 +727,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace prefix matches found for package id &apos;{0}&apos; are: &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Package namespace prefix matches found for package id &apos;{0}&apos; are: &apos;{1}&apos;.
         /// </summary>
         internal static string PackageNamespacePrefixMatchFound {
             get {
@@ -736,7 +736,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace prefix match not found for package id &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Package namespace prefix match not found for package id &apos;{0}&apos;.
         /// </summary>
         internal static string PackageNamespacePrefixNoMatchFound {
             get {
@@ -745,7 +745,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace: Skipping source &apos;{0}&apos; for package id &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Package namespace: Skipping source &apos;{0}&apos; for package id &apos;{1}&apos;.
         /// </summary>
         internal static string PackageNamespacePrefixSkipSource {
             get {
@@ -754,7 +754,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace: Trying source &apos;{0}&apos; for package id &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Package namespace: Trying source &apos;{0}&apos; for package id &apos;{1}&apos;.
         /// </summary>
         internal static string PackageNamespacePrefixTrySource {
             get {

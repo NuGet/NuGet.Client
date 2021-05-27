@@ -7,6 +7,7 @@ NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
 NuGet.Configuration.PackageNamespacesConfiguration.Namespaces.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.IReadOnlyList<string>>
+NuGet.Configuration.PackageNamespacesConfiguration.SearchTree.get -> System.Lazy<NuGet.Configuration.SearchTree>
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
@@ -27,7 +28,6 @@ override NuGet.Configuration.PackageNamespacesSourceItem.Equals(object other) ->
 override NuGet.Configuration.PackageNamespacesSourceItem.GetHashCode() -> int
 override NuGet.Configuration.PackageNamespacesSourceItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
 static NuGet.Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageNamespacesConfiguration
-static NuGet.Configuration.SearchTree.GetSearchTree(NuGet.Configuration.ISettings settings, NuGet.Common.ILogger logger) -> NuGet.Configuration.SearchTree
 static readonly NuGet.Configuration.ConfigurationConstants.IdAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Namespace -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageNamespaces -> string

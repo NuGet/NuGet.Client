@@ -14,9 +14,16 @@ namespace NuGet.Configuration
         /// </summary>
         public Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
 
+        /// <summary>
+        /// Generate a <see cref="SearchTree"/> based on the settings object.
+        /// <returns>A <see cref="SearchTree"/> based on the settings.</returns>
+        /// </summary>
+        public Lazy<SearchTree> SearchTree { get;}
+
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
+            SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
         }
 
         /// <summary>
@@ -42,6 +49,18 @@ namespace NuGet.Configuration
             }
 
             return new PackageNamespacesConfiguration(namespaces);
+        }
+
+        private SearchTree GetSearchTree()
+        {
+            SearchTree nameSpaceLookup = null;
+
+            if (Namespaces.Keys.Any())
+            {
+                nameSpaceLookup = new SearchTree(this);
+            }
+
+            return nameSpaceLookup;
         }
     }
 }

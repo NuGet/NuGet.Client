@@ -549,9 +549,8 @@ namespace NuGet.Build.Tasks
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.NoCache = noCache;
-                SearchTree searchTree = SearchTree.GetSearchTree(settings, log);
 
-                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false, searchTree: searchTree)
+                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false, settings)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };

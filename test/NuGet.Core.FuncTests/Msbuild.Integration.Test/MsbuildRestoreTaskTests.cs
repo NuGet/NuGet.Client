@@ -1288,10 +1288,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 Assert.Contains("Package source namespace is found in nuget.config file.", result.Output);
-                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", result.Output);
                 Assert.Contains("Package source namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", result.Output);
                 Assert.Contains("Package source namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", result.Output);
-                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.Opensource.Buffers' are: 'publicrepository'", result.Output);
                 Assert.Contains("Package source namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
                 Assert.Contains("Package source namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
             }
@@ -1384,11 +1382,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
-                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository1, sharedrepository2'", result.Output);
                 var contosoRestorePath = Path.Combine(projectAPackages, packageContosoMvcReal1.ToString(), packageContosoMvcReal1.ToString() + ".nupkg");
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {

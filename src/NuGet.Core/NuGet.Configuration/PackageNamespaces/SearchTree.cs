@@ -14,29 +14,25 @@ namespace NuGet.Configuration
         private readonly SearchNode _root;
         private const int PackageIdMaxLength = 100;
 
-        internal SearchTree(IReadOnlyList<PackageSourceSection> packageSourceSections)
+        internal SearchTree(PackageNamespacesConfiguration configuration)
         {
-            if (packageSourceSections == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException(nameof(packageSourceSections));
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             _root = new SearchNode(null);
 
-            foreach (PackageSourceSection packageSourceSection in packageSourceSections)
+            foreach (string packageSourceKey in configuration.Namespaces.Keys)
             {
-#pragma warning disable CA1308 // Normalize strings to uppercase
-                var packageSourceKey = packageSourceSection.GetPackageSourceKey().ToLowerInvariant().Trim();
-#pragma warning restore CA1308 // Normalize strings to uppercase
-
-                foreach (string nameSpaceId in packageSourceSection.GetNameSpaceIds())
+                foreach (string nugetNamespace in configuration.Namespaces[packageSourceKey])
                 {
-                    Add(nameSpaceId, packageSourceKey);
+                    Add(packageSourceKey, nugetNamespace);
                 }
             }
         }
 
-        private void Add(string namespaceId, string packageSourceKey)
+        private void Add(string packageSourceKey, string namespaceId)
         {
             SearchNode currentNode = _root;
 
@@ -52,6 +48,7 @@ namespace NuGet.Configuration
             }
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
+            packageSourceKey = packageSourceKey.ToLowerInvariant().Trim();
             namespaceId = namespaceId.ToLowerInvariant().Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
@@ -128,33 +125,6 @@ namespace NuGet.Configuration
 
             return currentNode == null ? new ConfigNameSpaceLookup(false, null)
                                         : new ConfigNameSpaceLookup(true, currentNode.PackageSources);
-        }
-
-        public static SearchTree GetSearchTree(ISettings settings, ILogger logger)
-        {
-            SearchTree nameSpaceLookup = null;
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            PackageNamespacesConfiguration configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            var packageSourceSections = new List<PackageSourceSection>();
-
-            foreach (var packageSourceKey in configuration.Namespaces.Keys)
-            {
-                string[] nugetNamespaces = configuration.Namespaces[packageSourceKey].ToArray();
-                packageSourceSections.Add(new PackageSourceSection(packageSourceKey, nugetNamespaces));
-            }
-
-            if (packageSourceSections.Any())
-            {
-                nameSpaceLookup = new SearchTree(packageSourceSections);
-                logger?.LogDebug(string.Format(CultureInfo.CurrentCulture, Resources.PackageNamespaceFound));
-            }
-
-            return nameSpaceLookup;
         }
     }
 }

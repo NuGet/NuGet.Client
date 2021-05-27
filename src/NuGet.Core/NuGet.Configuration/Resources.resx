@@ -308,7 +308,4 @@
     <comment>0 - The name of the item
 1 - file path</comment>
   </data>
-  <data name="PackageNamespaceFound" xml:space="preserve">
-    <value>Package source namespace is found in nuget.config file.</value>
-  </data>
 </root>

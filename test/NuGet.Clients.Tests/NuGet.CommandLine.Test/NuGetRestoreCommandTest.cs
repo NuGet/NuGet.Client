@@ -2744,10 +2744,8 @@ EndProject";
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
                 Assert.Contains("Package source namespace is found in nuget.config file.", r.Output);
-                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", r.Output);
                 Assert.Contains("Package source namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", r.Output);
                 Assert.Contains("Package source namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", r.Output);
-                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.Opensource.Buffers' are: 'publicrepository'", r.Output);
                 Assert.Contains("Package source namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
                 Assert.Contains("Package source namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
             }
@@ -2818,9 +2816,7 @@ EndProject";
                         "restore",
                         proj1File,
                         "-solutionDir",
-                        workingPath,
-                        "-Verbosity",
-                        "d"
+                        workingPath
                     };
 
                 // Act
@@ -2832,7 +2828,6 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepositorypath1, sharedrepositorypath2'", r.Output);
                 var contosoRestorePath = Path.Combine(packagePath, "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
                 Assert.True(File.Exists(contosoRestorePath));
             }
