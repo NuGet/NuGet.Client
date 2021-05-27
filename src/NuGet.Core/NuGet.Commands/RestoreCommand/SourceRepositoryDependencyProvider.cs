@@ -465,6 +465,11 @@ namespace NuGet.Commands
                 targetFramework,
                 item => item.TargetFramework);
 
+            if(dependencyGroup == null && targetFramework is DualCompatibilityFramework dualCompatibilityFramework)
+            {
+                dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups, dualCompatibilityFramework.SecondaryFramework, item => item.TargetFramework);
+            }
+
             if (dependencyGroup != null)
             {
                 return dependencyGroup.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec).ToArray();

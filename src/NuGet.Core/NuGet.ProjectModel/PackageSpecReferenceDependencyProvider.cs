@@ -195,7 +195,6 @@ namespace NuGet.ProjectModel
                 {
                     targetFrameworkInfo = packageSpec.GetTargetFramework(mcfFramework.AsFallbackFramework());
                 }
-                // TODO NK - Fix it?
 
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 

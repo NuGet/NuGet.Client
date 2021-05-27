@@ -142,17 +142,21 @@ namespace NuGet.Commands
             // Create an ordered list of selection criteria. Each will be applied, if the result is empty
             // fallback frameworks from "imports" will be tried.
             // These are only used for framework/RID combinations where content model handles everything.
-            // AssetTargetFallback frameworks will provide multiple criteria since all assets need to be
+            // AssetTargetFallback and DualCompatbiility frameworks will provide multiple criteria since all assets need to be
             // evaluated before selecting the TFM to use.
             var orderedCriteriaSets = new List<List<SelectionCriteria>>(1);
 
             var assetTargetFallback = framework as AssetTargetFallbackFramework;
-            // TODO NK - Is dual compatibility framework accounted for.
-            // Account for dual compatibility framework here and not in the resolver.
+
             if (assetTargetFallback != null)
             {
                 // Add the root project framework first.
                 orderedCriteriaSets.Add(CreateCriteria(targetGraph, assetTargetFallback.RootFramework));
+                // Add the secondary framework if dual compatibility framework.
+                if (framework is DualCompatibilityFramework dualCompatibilityFramework)
+                {
+                    orderedCriteriaSets.Add(CreateCriteria(targetGraph, dualCompatibilityFramework.SecondaryFramework));
+                }
 
                 // Add all fallbacks in order.
                 orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => CreateCriteria(targetGraph, e)));
@@ -161,6 +165,11 @@ namespace NuGet.Commands
             {
                 // Add the current framework.
                 orderedCriteriaSets.Add(CreateCriteria(targetGraph, framework));
+
+                if (framework is DualCompatibilityFramework dualCompatibilityFramework)
+                {
+                    orderedCriteriaSets.Add(CreateCriteria(targetGraph, dualCompatibilityFramework.SecondaryFramework));
+                }
             }
 
             return orderedCriteriaSets;
