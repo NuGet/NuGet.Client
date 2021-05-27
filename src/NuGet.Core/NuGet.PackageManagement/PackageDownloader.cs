@@ -104,11 +104,12 @@ namespace NuGet.PackageManagement
                 if (downloadContext?.SearchTree != null)
                 {
                     nameSpaceLookupResult = downloadContext.SearchTree.Find(packageIdentity.Id);
-                    var packageSourcesAtPrefix = nameSpaceLookupResult.PrefixMatch ? string.Join(", ", nameSpaceLookupResult.PrefixMatch) : string.Empty;
 
                     if (nameSpaceLookupResult.PrefixMatch)
                     {
-                        logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id));
+                        var packageSourcesAtPrefix = string.Join(", ", nameSpaceLookupResult.PackageSources);
+
+                        logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id, packageSourcesAtPrefix));
                     }
                     else
                     {

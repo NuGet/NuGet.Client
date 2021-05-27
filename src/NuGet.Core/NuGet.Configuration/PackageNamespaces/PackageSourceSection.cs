@@ -19,7 +19,7 @@ namespace NuGet.Configuration
             return _nameSpaceIds;
         }
 
-        public PackageSourceSection(string[] nameSpaceIds, string packageSourceKey)
+        public PackageSourceSection(string packageSourceKey, string[] nameSpaceIds)
         {
             _nameSpaceIds = nameSpaceIds;
             _packageSourceKey = packageSourceKey;

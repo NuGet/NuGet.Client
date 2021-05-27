@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -704,211 +704,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task MsbuildRestore_WithCPPCliVcxproj_RestoresSuccessfullyWithPackageReference(bool isStaticGraphRestore)
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set-up packages
-                var packageX = new SimpleTestPackageContext("x", "1.0.0");
-                packageX.AddFile("lib/net5.0/a.dll");
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageX);
-                // Set up project
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var framework = NuGetFramework.Parse("net5.0-windows7.0");
-                var projectA = SimpleTestProjectContext.CreateNETCore("projectName", pathContext.SolutionRoot, framework);
-                projectA.Properties.Add("CLRSupport", "NetCore");
-                //update path to vcxproj
-                projectA.ProjectPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), projectA.ProjectName + ".vcxproj");
-                projectA.AddPackageToAllFrameworks(packageX);
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-                // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory,
-                    $"/t:restore {pathContext.SolutionRoot}" + (isStaticGraphRestore ? " /p:RestoreUseStaticGraphEvaluation=true" : string.Empty));
-
-                // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.TargetsOutput).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.PropsOutput).Should().BeTrue(because: result.AllOutput);
-
-                var targetsSection = projectA.AssetsFile.Targets.First(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("x"), because: string.Join(",", targetsSection.Libraries));
-                var lockFileTargetLibrary = targetsSection.Libraries.First(e => e.Name.Equals("x"));
-                lockFileTargetLibrary.CompileTimeAssemblies.Should().Contain("lib/net5.0/a.dll");
-            }
-        }
-
-        [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_WithCPPCliVcxproj_WithNativeDependency_Succeeds()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set-up packages
-                var packageX = new SimpleTestPackageContext("x", "1.0.0");
-                packageX.AddFile("build/native/x.targets");
-                packageX.AddFile("lib/native/x.dll");
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageX);
-                // Set up project
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var framework = NuGetFramework.Parse("net5.0-windows7.0");
-                var projectA = SimpleTestProjectContext.CreateNETCore("projectName", pathContext.SolutionRoot, framework);
-                projectA.Properties.Add("CLRSupport", "NetCore");
-                //update path to vcxproj
-                projectA.ProjectPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), projectA.ProjectName + ".vcxproj");
-                projectA.AddPackageToAllFrameworks(packageX);
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-                // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}");
-
-                // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.TargetsOutput).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.PropsOutput).Should().BeTrue(because: result.AllOutput);
-
-                var targetsSection = projectA.AssetsFile.Targets.First(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("x"), because: string.Join(",", targetsSection.Libraries));
-                var lockFileTargetLibrary = targetsSection.Libraries.First(e => e.Name.Equals("x"));
-                lockFileTargetLibrary.CompileTimeAssemblies.Should().Contain("lib/native/x.dll");
-                lockFileTargetLibrary.Build.Should().Contain("build/native/x.targets");
-            }
-        }
-
-        [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_WithCPPCliVcxproj_WithNativeAndManagedTransitiveDependency_Succeeds()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set-up packages
-                // Managed 1.0.0 -> Managed.Child 1.0.0
-                // Native 1.0.0 -> Native.Child 1.0.
-                var packageNativeChild = new SimpleTestPackageContext("native.child", "1.0.0");
-                packageNativeChild.AddFile("build/native/native.child.targets");
-                packageNativeChild.AddFile("lib/native/native.child.dll");
-
-                var packageNative = new SimpleTestPackageContext("native", "1.0.0");
-                packageNative.AddFile("build/native/native.targets");
-                packageNative.AddFile("lib/native/native.dll");
-
-
-                packageNative.PerFrameworkDependencies.Add(FrameworkConstants.CommonFrameworks.Native, new List<SimpleTestPackageContext> { packageNativeChild });
-
-                var packageManagedChild = new SimpleTestPackageContext("managed.child", "1.0.0");
-                packageManagedChild.AddFile("build/net5.0/managed.child.targets");
-                packageManagedChild.AddFile("lib/net5.0/managed.child.dll");
-
-                var packageManaged = new SimpleTestPackageContext("managed", "1.0.0");
-                packageManaged.AddFile("build/net5.0/managed.targets");
-                packageManaged.AddFile("lib/net5.0/managed.dll");
-
-                packageManaged.PerFrameworkDependencies.Add(FrameworkConstants.CommonFrameworks.Net50, new List<SimpleTestPackageContext> { packageManagedChild });
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageNative,
-                    packageNativeChild,
-                    packageManaged,
-                    packageManagedChild);
-
-                // Set up project
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var framework = NuGetFramework.Parse("net5.0-windows7.0");
-                var projectA = SimpleTestProjectContext.CreateNETCore("projectName", pathContext.SolutionRoot, framework);
-                projectA.Properties.Add("CLRSupport", "NetCore");
-                //update path to vcxproj
-                projectA.ProjectPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), projectA.ProjectName + ".vcxproj");
-                projectA.AddPackageToAllFrameworks(packageNative);
-                projectA.AddPackageToAllFrameworks(packageManaged);
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-                // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}");
-
-                // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.TargetsOutput).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.PropsOutput).Should().BeTrue(because: result.AllOutput);
-
-                var targetsSection = projectA.AssetsFile.Targets.First(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("native"), because: string.Join(",", targetsSection.Libraries));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("native.child"), because: string.Join(",", targetsSection.Libraries));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("managed"), because: string.Join(",", targetsSection.Libraries));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("managed.child"), because: string.Join(",", targetsSection.Libraries));
-
-                var nativeChild = targetsSection.Libraries.First(e => e.Name.Equals("native.child"));
-                nativeChild.CompileTimeAssemblies.Should().Contain("lib/native/native.child.dll");
-                nativeChild.Build.Should().Contain("build/native/native.child.targets");
-            }
-        }
-
-        [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_WithCPPCliVcxproj_WithAssetTargetFallback_Succeeds()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set-up packages
-                var packageNative = new SimpleTestPackageContext("native", "1.0.0");
-                packageNative.AddFile("build/native/native.targets");
-                packageNative.AddFile("lib/native/native.dll");
-
-                var packageManaged = new SimpleTestPackageContext("managed", "1.0.0");
-                packageManaged.AddFile("build/net472/managed.targets");
-                packageManaged.AddFile("lib/net472/managed.dll");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageNative,
-                    packageManaged);
-
-                // Set up project
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var framework = NuGetFramework.Parse("net5.0-windows7.0");
-                var projectA = SimpleTestProjectContext.CreateNETCore("projectName", pathContext.SolutionRoot, framework);
-                projectA.Properties.Add("CLRSupport", "NetCore");
-                projectA.Properties.Add("AssetTargetFallback", "net472");
-                //update path to vcxproj
-                projectA.ProjectPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), projectA.ProjectName + ".vcxproj");
-                projectA.AddPackageToAllFrameworks(packageNative);
-                projectA.AddPackageToAllFrameworks(packageManaged);
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-                // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}");
-
-                // Assert
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.AssetsFileOutputPath).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.TargetsOutput).Should().BeTrue(because: result.AllOutput);
-                File.Exists(projectA.PropsOutput).Should().BeTrue(because: result.AllOutput);
-
-                var targetsSection = projectA.AssetsFile.Targets.First(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("native"), because: string.Join(",", targetsSection.Libraries));
-                targetsSection.Libraries.Should().Contain(e => e.Name.Equals("managed"), because: string.Join(",", targetsSection.Libraries));
-
-                var native = targetsSection.Libraries.First(e => e.Name.Equals("native"));
-                native.CompileTimeAssemblies.Should().Contain("lib/native/native.dll");
-                native.Build.Should().Contain("build/native/native.targets");
-
-                var managed = targetsSection.Libraries.First(e => e.Name.Equals("managed"));
-                managed.CompileTimeAssemblies.Should().Contain("lib/net472/managed.dll");
-                managed.Build.Should().Contain("build/net472/managed.targets");
-            }
-        }
-
         [PlatformFact(Platform.Windows)]
         public async Task MsbuildRestore_PackageNamespaceFullPrefix_Succeed()
         {
@@ -996,7 +791,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     packageContosoMvcReal);
 
                 // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
-                // so we go ahead and remove that config before running MSBuild.
+                // so we go ahead and replace that config before running MSBuild.
                 var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
                 var configText =
 $@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1012,7 +807,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             <namespace id=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.*"" /> 
+            <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
     </packageNamespaces>
 </configuration>";
@@ -1062,26 +857,13 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 {
                     writer.Write(
 @"<packages>
-    <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
-    <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
-    <package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
+<package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+<package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
                 }
 
                 var opensourceRepositoryPath = pathContext.PackageSource;
                 Directory.CreateDirectory(opensourceRepositoryPath);
-
-                var packageOpenSourceInternational = new SimpleTestPackageContext()
-                {
-                    Id = "测试更新包",
-                    Version = "1.0.0"
-                };
-                packageOpenSourceInternational.Files.Clear();
-                packageOpenSourceInternational.AddFile("lib/net461/a.dll");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    opensourceRepositoryPath,
-                    packageOpenSourceInternational);
 
                 var packageOpenSourceContosoMvc = new SimpleTestPackageContext()
                 {
@@ -1111,7 +893,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Directory.CreateDirectory(sharedRepositoryPath);
 
                 // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
-                // so we go ahead and remove that config before running MSBuild.
+                // so we go ahead and replace that config before running MSBuild.
                 var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
                 var configText =
 $@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1127,7 +909,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         <namespace id=""Contoso.Opensource.*"" />
     </packageSource>
     <packageSource key=""SharedRepository"">
-        <namespace id=""Contoso.MVC.*"" /> 
+        <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
     </packageSource>
 </packageNamespaces>
 </configuration>";
@@ -1141,8 +923,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(result.ExitCode == 1);
-                var packageInternationalPath = Path.Combine(projectAPackages, packageOpenSourceInternational.ToString(), packageOpenSourceInternational.ToString() + ".nupkg");
-                Assert.True(File.Exists(packageInternationalPath));
                 var packageContosoBuffersPath = Path.Combine(projectAPackages, packageContosoBuffersOpenSource.ToString(), packageContosoBuffersOpenSource.ToString() + ".nupkg");
                 Assert.True(File.Exists(packageContosoBuffersPath));
                 // Assert Contoso.MVC.ASP is not restored.
@@ -1239,7 +1019,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     packageContosoMvcReal);
 
                 // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
-                // so we go ahead and remove that config before running MSBuild.
+                // so we go ahead and replace that config before running MSBuild.
                 var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
                 var configText =
 $@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1305,26 +1085,13 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 {
                     writer.Write(
 @"<packages>
-    <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
-    <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
-    <package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
+<package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+<package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
                 }
 
                 var opensourceRepositoryPath = pathContext.PackageSource;
                 Directory.CreateDirectory(opensourceRepositoryPath);
-
-                var packageOpenSourceInternational = new SimpleTestPackageContext()
-                {
-                    Id = "测试更新包",
-                    Version = "1.0.0"
-                };
-                packageOpenSourceInternational.Files.Clear();
-                packageOpenSourceInternational.AddFile("lib/net461/a.dll");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    opensourceRepositoryPath,
-                    packageOpenSourceInternational);
 
                 var packageOpenSourceContosoMvc = new SimpleTestPackageContext()
                 {
@@ -1370,7 +1137,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         <namespace id=""Contoso.O*"" />
     </packageSource>
     <packageSource key=""SharedRepository"">
-        <namespace id=""Contoso.M*"" /> 
+        <namespace id=""Contoso.M*"" />  <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
     </packageSource>
 </packageNamespaces>
 </configuration>";
@@ -1384,8 +1151,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(result.ExitCode == 1);
-                var packageInternationalPath = Path.Combine(projectAPackages, packageOpenSourceInternational.ToString(), packageOpenSourceInternational.ToString() + ".nupkg");
-                Assert.True(File.Exists(packageInternationalPath));
                 var packageContosoBuffersPath = Path.Combine(projectAPackages, packageContosoBuffersOpenSource.ToString(), packageContosoBuffersOpenSource.ToString() + ".nupkg");
                 Assert.True(File.Exists(packageContosoBuffersPath));
                 // Assert Contoso.MVC.ASP is not restored.
@@ -1523,10 +1288,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 Assert.Contains("Package source namespace is found in nuget.config file.", result.Output);
-                Assert.Contains("Package source namespace prefix match found for package id 'Contoso.MVC.ASP'", result.Output);
+                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", result.Output);
                 Assert.Contains("Package source namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", result.Output);
                 Assert.Contains("Package source namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", result.Output);
-                Assert.Contains("Package source namespace prefix match found for package id 'Contoso.Opensource.Buffers'", result.Output);
+                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.Opensource.Buffers' are: 'publicrepository'", result.Output);
                 Assert.Contains("Package source namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
                 Assert.Contains("Package source namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
             }
@@ -1606,10 +1371,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     </packageSources>
     <packageNamespaces>
         <packageSource key=""SharedRepository1"">
-            <namespace id=""Contoso.MVC.*"" />
+            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
         <packageSource key=""SharedRepository2"">
-            <namespace id=""Contoso.MVC.*"" />
+            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
     </packageNamespaces>
 </configuration>";
@@ -1619,10 +1384,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
+                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository1, sharedrepository2'", result.Output);
                 var contosoRestorePath = Path.Combine(projectAPackages, packageContosoMvcReal1.ToString(), packageContosoMvcReal1.ToString() + ".nupkg");
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {

@@ -727,7 +727,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace prefix match found for package id &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Package source namespace prefix matches found for package id &apos;{0}&apos; are: &apos;{1}&apos;.
         /// </summary>
         internal static string PackageNamespacePrefixMatchFound {
             get {

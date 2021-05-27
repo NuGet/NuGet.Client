@@ -45,7 +45,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(namespaceId));
             }
 
-            // For prevent from unwanted behaviour.
+            // To prevent from unwanted behaviour.
             if (namespaceId.Length > PackageIdMaxLength)
             {
                 throw new ArgumentOutOfRangeException(nameof(namespaceId));
@@ -145,7 +145,7 @@ namespace NuGet.Configuration
             foreach (var packageSourceKey in configuration.Namespaces.Keys)
             {
                 string[] nugetNamespaces = configuration.Namespaces[packageSourceKey].ToArray();
-                packageSourceSections.Add(new PackageSourceSection(nugetNamespaces, packageSourceKey));
+                packageSourceSections.Add(new PackageSourceSection(packageSourceKey, nugetNamespaces));
             }
 
             if (packageSourceSections.Any())

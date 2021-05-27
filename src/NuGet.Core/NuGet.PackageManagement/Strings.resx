@@ -522,8 +522,9 @@
 3 - Package Sources</comment>
   </data>
   <data name="PackageNamespacePrefixMatchFound" xml:space="preserve">
-    <value>Package source namespace prefix match found for package id '{0}'</value>
-    <comment>{0} - package id</comment>
+    <value>Package source namespace prefix matches found for package id '{0}' are: '{1}'</value>
+    <comment>{0} - package id
+{1} - sources ids</comment>
   </data>
   <data name="PackageNamespacePrefixNoMatchFound" xml:space="preserve">
     <value>Package source namespace prefix match not found for package id '{0}'</value>

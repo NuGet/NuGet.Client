@@ -2503,8 +2503,8 @@ EndProject";
   <package id=""xunit.extensibility.core"" version=""2.0.0"" targetFramework=""net472"" />
 </packages>");
 
-                var configPath1 = Path.Combine(workingPath, "nuget.config");
-                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
@@ -2630,6 +2630,9 @@ EndProject";
             <namespace id=""Great.*"" />
             <namespace id=""Another.*"" />   
         </packageSource>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Some.*"" /> <!--Newton.* prefix exist in other repository, not this one. -->
+        </packageSource>
     </packageNamespaces>
 </configuration>");
 
@@ -2652,6 +2655,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_failureCode, r.ExitCode);
+                // Since Newton.* prefix direct 'Newton.Calc.1.0.0' to PublicRepository it should fail to find it, it only exist in SharedRepository.
                 Assert.True(r.Errors.Contains("Package 'Newton.Calc.1.0.0' is not found"));
             }
         }
@@ -2698,8 +2702,8 @@ EndProject";
   <package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
-                var configPath1 = Path.Combine(workingPath, "nuget.config");
-                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
@@ -2713,7 +2717,7 @@ EndProject";
             <namespace id=""Contoso.MVC.*"" /> 
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* -->
+            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
         </packageSource>
     </packageNamespaces>
 </configuration>");
@@ -2740,10 +2744,10 @@ EndProject";
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
                 Assert.Contains("Package source namespace is found in nuget.config file.", r.Output);
-                Assert.Contains("Package source namespace prefix match found for package id 'Contoso.MVC.ASP'", r.Output);
+                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", r.Output);
                 Assert.Contains("Package source namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", r.Output);
                 Assert.Contains("Package source namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", r.Output);
-                Assert.Contains("Package source namespace prefix match found for package id 'Contoso.Opensource.Buffers'", r.Output);
+                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.Opensource.Buffers' are: 'publicrepository'", r.Output);
                 Assert.Contains("Package source namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
                 Assert.Contains("Package source namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
             }
@@ -2788,8 +2792,8 @@ EndProject";
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
-                var configPath1 = Path.Combine(workingPath, "nuget.config");
-                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
@@ -2799,10 +2803,10 @@ EndProject";
     </packageSources>
     <packageNamespaces>
         <packageSource key=""SharedRepositoryPath1""> 
-            <namespace id=""Contoso.MVC.*"" />
+            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
         <packageSource key=""SharedRepositoryPath2"">
-            <namespace id=""Contoso.MVC.*"" />
+            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
     </packageNamespaces>
 </configuration>");
@@ -2814,7 +2818,9 @@ EndProject";
                         "restore",
                         proj1File,
                         "-solutionDir",
-                        workingPath
+                        workingPath,
+                        "-Verbosity",
+                        "d"
                     };
 
                 // Act
@@ -2826,6 +2832,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
+                Assert.Contains("Package source namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepositorypath1, sharedrepositorypath2'", r.Output);
                 var contosoRestorePath = Path.Combine(packagePath, "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
                 Assert.True(File.Exists(contosoRestorePath));
             }
