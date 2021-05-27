@@ -26,6 +26,6 @@ namespace NuGet.SolutionRestoreManager
         /// <exception cref="InvalidOperationException">If the project has already been registered.</exception>
         /// <exception cref="ArgumentNullException">If <paramref name="restoreInfoSource"/> is null. </exception>
         /// <exception cref="ArgumentException">If <paramref name="restoreInfoSource"/>'s <see cref="IVsProjectRestoreInfoSource.Name"/> is <see langword="null"/>. </exception>
-        public Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken cancellationToken);
+        Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken cancellationToken);
     }
 }
