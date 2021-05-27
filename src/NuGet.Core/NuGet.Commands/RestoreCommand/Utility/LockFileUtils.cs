@@ -148,6 +148,7 @@ namespace NuGet.Commands
 
             var assetTargetFallback = framework as AssetTargetFallbackFramework;
             // TODO NK - Is dual compatibility framework accounted for.
+            // Account for dual compatibility framework here and not in the resolver.
             if (assetTargetFallback != null)
             {
                 // Add the root project framework first.
