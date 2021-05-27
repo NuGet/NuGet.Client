@@ -173,7 +173,6 @@ namespace NuGet.DependencyResolver
             }
 
             var key = new LockFileCacheKey(targetFramework, runtimeIdentifier);
-            // TODO NK - Not doing this for DualCompatibiltiyFramework *completely* breaks potential lock file use for this, maybe reconsidered?
 
             // This is only applicable when packages has to be resolved from packages.lock.json file
             if (lockFileLibraries.TryGetValue(key, out var libraries))
