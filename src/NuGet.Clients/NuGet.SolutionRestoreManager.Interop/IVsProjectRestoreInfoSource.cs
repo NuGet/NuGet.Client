@@ -24,9 +24,9 @@ namespace NuGet.SolutionRestoreManager
 
         /// <summary>
         /// Whether the source needs to do some work that could lead to a nomination. <br/>
-        /// This method may be called frequently, so it should be very efficient.
+        /// Called frequently, so it should be very efficient.
         /// </summary> 
-        bool HasPendingNomination();
+        bool HasPendingNomination { get; }
 
         /// <summary>
         /// NuGet calls this method to wait on a potential nomination. <br/>
@@ -36,6 +36,6 @@ namespace NuGet.SolutionRestoreManager
         /// The task will be failed, if the source runs into a problem, and it cannot get the correct data to nominate (for example: DT build failed) <br/>
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
-        Task WhenNominatedAsync(CancellationToken cancellationToken);
+        Task WhenNominated(CancellationToken cancellationToken);
     }
 }
