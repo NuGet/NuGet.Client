@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Core.Types
         // duplicate calculation for each packageId.
         private PackageNamespacesConfiguration GetPackageNamespacesConfiguration()
         {
-            return Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+            return Settings != null ? Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings) : null;
         }
     }
 }
