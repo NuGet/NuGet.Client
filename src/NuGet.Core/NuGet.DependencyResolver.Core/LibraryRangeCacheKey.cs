@@ -14,8 +14,6 @@ namespace NuGet.DependencyResolver
     /// </summary>
     public class LibraryRangeCacheKey : IEquatable<LibraryRangeCacheKey>
     {
-        //        TODO NK - Make sure that the *caching* is done with the dual compatibility framework in mind.
-
         public LibraryRangeCacheKey(LibraryRange range, NuGetFramework framework)
         {
             Framework = framework;
