@@ -14,16 +14,14 @@ namespace NuGet.Configuration
         /// </summary>
         public Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
 
-        /// <summary>
-        /// Generate a <see cref="SearchTree"/> based on the settings object.
-        /// <returns>A <see cref="SearchTree"/> based on the settings.</returns>
-        /// </summary>
         private Lazy<SearchTree> SearchTree { get; }
 
         /// <summary>
-        /// Generate a <see cref="SearchTree"/> based on the settings object.
-        /// <returns>A <see cref="SearchTree"/> based on the settings.</returns>
+        /// Lookup a <see cref="ConfigNameSpaceLookup"/> with a term from package namespaces.
         /// </summary>
+        /// <param name="term">Search term. Never null. </param>
+        /// <returns>A <see cref="ConfigNameSpaceLookup"/> with a term from package namespaces.</returns>
+        /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
         public ConfigNameSpaceLookup Find(string term)
         {
             return SearchTree.Value?.Find(term);
