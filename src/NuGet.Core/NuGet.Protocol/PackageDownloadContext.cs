@@ -59,6 +59,8 @@ namespace NuGet.Protocol.Core.Types
         public ISettings Settings { get; }
         public Lazy<PackageNamespacesConfiguration> PackageNamespacesConfiguration { get; }
 
+        // We need to calculation of Settings to PackageNamespacesConfiguration here other wisewe there would be
+        // duplicate calculation for each packageId.
         private PackageNamespacesConfiguration GetPackageNamespacesConfiguration()
         {
             return Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);

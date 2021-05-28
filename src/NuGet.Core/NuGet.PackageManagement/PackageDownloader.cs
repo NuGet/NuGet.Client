@@ -99,22 +99,17 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
-                ConfigNameSpaceLookup nameSpaceLookupResult = null;
+                ConfigNameSpaceLookup nameSpaceLookupResult = downloadContext.PackageNamespacesConfiguration.Value?.Find(packageIdentity.Id);
 
-                if (downloadContext.PackageNamespacesConfiguration?.Value.SearchTree?.Value != null)
+                if (nameSpaceLookupResult?.PrefixMatch == true)
                 {
-                    nameSpaceLookupResult = downloadContext.PackageNamespacesConfiguration.Value.SearchTree.Value.Find(packageIdentity.Id);
+                    var packageSourcesAtPrefix = string.Join(", ", nameSpaceLookupResult.PackageSources);
 
-                    if (nameSpaceLookupResult.PrefixMatch)
-                    {
-                        var packageSourcesAtPrefix = string.Join(", ", nameSpaceLookupResult.PackageSources);
-
-                        logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id, packageSourcesAtPrefix));
-                    }
-                    else
-                    {
-                        logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixNoMatchFound, packageIdentity.Id));
-                    }
+                    logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id, packageSourcesAtPrefix));
+                }
+                else
+                {
+                    logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixNoMatchFound, packageIdentity.Id));
                 }
 
                 while (groups.Count > 0)
@@ -126,8 +121,8 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        if (nameSpaceLookupResult != null && nameSpaceLookupResult.PackageSources != null
-                            && !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
+                        if (nameSpaceLookupResult?.PackageSources != null &&
+                            !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
                         {
                             // This package's id prefix is not defined in current package source, let's skip.
                             logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixSkipSource, source.PackageSource.Name, packageIdentity.Id));

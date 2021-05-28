@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using NuGet.Common;
 
 namespace NuGet.Configuration
 {
-    public class SearchTree
+    internal class SearchTree
     {
         private readonly SearchNode _root;
         private const int PackageIdMaxLength = 100;

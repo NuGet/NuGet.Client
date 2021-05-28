@@ -6,14 +6,12 @@ NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
+NuGet.Configuration.PackageNamespacesConfiguration.Find(string term) -> NuGet.Configuration.ConfigNameSpaceLookup
 NuGet.Configuration.PackageNamespacesConfiguration.Namespaces.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.IReadOnlyList<string>>
-NuGet.Configuration.PackageNamespacesConfiguration.SearchTree.get -> System.Lazy<NuGet.Configuration.SearchTree>
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
 NuGet.Configuration.PackageNamespacesSourceItem.SetKey(string value) -> void
-NuGet.Configuration.SearchTree
-NuGet.Configuration.SearchTree.Find(string term) -> NuGet.Configuration.ConfigNameSpaceLookup
 NuGet.Configuration.SettingElementType.Namespace = 19 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageNamespaces = 17 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSource = 18 -> NuGet.Configuration.SettingElementType

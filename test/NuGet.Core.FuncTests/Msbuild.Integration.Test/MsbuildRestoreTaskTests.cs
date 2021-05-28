@@ -1287,11 +1287,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Assert.Contains("lib/net461/realA.dll", allFiles);
                 }
 
-                Assert.Contains("Package source namespace is found in nuget.config file.", result.Output);
-                Assert.Contains("Package source namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", result.Output);
-                Assert.Contains("Package source namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", result.Output);
-                Assert.Contains("Package source namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
-                Assert.Contains("Package source namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
+                Assert.Contains("Package namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", result.Output);
+                Assert.Contains("Package namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", result.Output);
+                Assert.Contains("Package namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", result.Output);
+                Assert.Contains("Package namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
+                Assert.Contains("Package namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
             }
         }
 

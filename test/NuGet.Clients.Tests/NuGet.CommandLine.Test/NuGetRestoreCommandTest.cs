@@ -2743,11 +2743,11 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package source namespace is found in nuget.config file.", r.Output);
-                Assert.Contains("Package source namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", r.Output);
-                Assert.Contains("Package source namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", r.Output);
-                Assert.Contains("Package source namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
-                Assert.Contains("Package source namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
+                Assert.Contains("Package namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", r.Output);
+                Assert.Contains("Package namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", r.Output);
+                Assert.Contains("Package namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", r.Output);
+                Assert.Contains("Package namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
+                Assert.Contains("Package namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", r.Output);
             }
         }
 

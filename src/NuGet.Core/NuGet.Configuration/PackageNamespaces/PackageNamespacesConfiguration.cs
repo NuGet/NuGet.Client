@@ -18,7 +18,16 @@ namespace NuGet.Configuration
         /// Generate a <see cref="SearchTree"/> based on the settings object.
         /// <returns>A <see cref="SearchTree"/> based on the settings.</returns>
         /// </summary>
-        public Lazy<SearchTree> SearchTree { get;}
+        private Lazy<SearchTree> SearchTree { get; }
+
+        /// <summary>
+        /// Generate a <see cref="SearchTree"/> based on the settings object.
+        /// <returns>A <see cref="SearchTree"/> based on the settings.</returns>
+        /// </summary>
+        public ConfigNameSpaceLookup Find(string term)
+        {
+            return SearchTree.Value?.Find(term);
+        }
 
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
