@@ -153,7 +153,7 @@ namespace NuGet.Commands
                 // Add the root project framework first.
                 orderedCriteriaSets.Add(CreateCriteria(targetGraph, assetTargetFallback.RootFramework));
                 // Add the secondary framework if dual compatibility framework.
-                if (framework is DualCompatibilityFramework dualCompatibilityFramework)
+                if (assetTargetFallback.RootFramework is DualCompatibilityFramework dualCompatibilityFramework)
                 {
                     orderedCriteriaSets.Add(CreateCriteria(targetGraph, dualCompatibilityFramework.SecondaryFramework));
                 }

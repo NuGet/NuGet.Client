@@ -3058,10 +3058,8 @@ namespace NuGet.Commands.FuncTest
         [Fact]
         public async Task RestoreCommand_WithCPPCliProject_WithNativePackageWithTransitiveDependency_Succeeds()
         {
-            using (var pathContext = new SimpleTestPathContext())
-            using (var context = new SourceCacheContext())
-            {
-                var configJson = JObject.Parse(@"
+            using var pathContext = new SimpleTestPathContext();
+            var configJson = JObject.Parse(@"
                 {
                     ""frameworks"": {
                         ""net5.0-windows7.0"": {
@@ -3076,83 +3074,61 @@ namespace NuGet.Commands.FuncTest
                     }
                 }");
 
-                // Arrange
-                var packageA = new SimpleTestPackageContext("a", "1.0.0");
-                packageA.Files.Clear();
-                packageA.AddFile("lib/net5.0/a.dll");
+            // Arrange
+            var nativePackage = new SimpleTestPackageContext("native", "1.0.0");
+            nativePackage.AddFile("lib/native/native.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageA);
+            var nativePackageChild = new SimpleTestPackageContext("native.child", "1.0.0");
+            nativePackageChild.AddFile("lib/native/native.child.dll");
 
-                var sources = new List<PackageSource>
+            nativePackage.PerFrameworkDependencies.Add(CommonFrameworks.Native, new List<SimpleTestPackageContext> { nativePackageChild });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                nativePackage,
+                nativePackageChild);
+
+            var sources = new List<PackageSource>
                 {
                     new PackageSource(pathContext.PackageSource)
                 };
-                var logger = new TestLogger();
+            var logger = new TestLogger();
 
-                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
-                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+            var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+            var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
-                var dgSpec = new DependencyGraphSpec();
-                dgSpec.AddProject(spec);
-                dgSpec.AddRestore(spec.Name);
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.vcxproj")).WithTestRestoreMetadata();
 
-                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
-                {
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    DependencyGraphSpec = dgSpec,
-                    AllowNoOp = true,
-                };
-                var command = new RestoreCommand(request);
+            var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+            {
+                ProjectStyle = ProjectStyle.PackageReference,
+            };
+            var command = new RestoreCommand(request);
 
-                // Preconditions
-                var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
-                result.Success.Should().BeTrue(because: logger.ShowMessages());
-
-                // Modify the assets file. No-op restore should not read the assets file, if it does, it will throw.
-                File.WriteAllText(Path.Combine(spec.RestoreMetadata.OutputPath, "project.assets.json"), "<xml> </xml>");
-                var newSpec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
-                var newDgSpec = new DependencyGraphSpec();
-                newDgSpec.AddProject(newSpec);
-                newDgSpec.AddRestore(newSpec.Name);
-
-                var newRequest = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
-                {
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    DependencyGraphSpec = dgSpec,
-                    AllowNoOp = true,
-                };
-                var newCommand = new RestoreCommand(newRequest);
-
-                // Act
-                result = await newCommand.ExecuteAsync();
-                // Assert
-
-                await result.CommitAsync(logger, CancellationToken.None);
-                result.Success.Should().BeTrue(because: logger.ShowMessages());
-            }
+            // Preconditions
+            var result = await command.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(2);
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
         }
 
         [Fact]
         public async Task RestoreCommand_WithCPPCliProjectWithAssetTargetFallback_WithNativePackageWithTransitiveDependency_Succeeds()
         {
-            using (var pathContext = new SimpleTestPathContext())
-            using (var context = new SourceCacheContext())
-            {
-                var configJson = JObject.Parse(@"
+            using var pathContext = new SimpleTestPathContext();
+            var configJson = JObject.Parse(@"
                 {
                     ""frameworks"": {
                         ""net5.0-windows7.0"": {
                             ""targetAlias"" : ""net5.0-windows"",
-                            ""secondaryFramework"" : ""native"",
-                            ""assetTargetFallback"" : ""true"",
+                            ""assetTargetFallback"" : true,
                             ""imports"" : [
                                 ""net472""
                             ],
+                            ""secondaryFramework"" : ""native"",
                             ""dependencies"": {
                                 ""Native"": {
                                     ""version"" : ""1.0.0"",
@@ -3162,65 +3138,45 @@ namespace NuGet.Commands.FuncTest
                     }
                 }");
 
-                // Arrange
-                var packageA = new SimpleTestPackageContext("a", "1.0.0");
-                packageA.Files.Clear();
-                packageA.AddFile("lib/net5.0/a.dll");
+            // Arrange
+            var nativePackage = new SimpleTestPackageContext("native", "1.0.0");
+            nativePackage.AddFile("lib/native/native.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageA);
+            var nativePackageChild = new SimpleTestPackageContext("native.child", "1.0.0");
+            nativePackageChild.AddFile("lib/native/native.child.dll");
 
-                var sources = new List<PackageSource>
+            nativePackage.PerFrameworkDependencies.Add(CommonFrameworks.Native, new List<SimpleTestPackageContext> { nativePackageChild });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                nativePackage,
+                nativePackageChild);
+
+            var sources = new List<PackageSource>
                 {
                     new PackageSource(pathContext.PackageSource)
                 };
-                var logger = new TestLogger();
+            var logger = new TestLogger();
 
-                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
-                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+            var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+            var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
-                var dgSpec = new DependencyGraphSpec();
-                dgSpec.AddProject(spec);
-                dgSpec.AddRestore(spec.Name);
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.vcxproj")).WithTestRestoreMetadata();
 
-                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
-                {
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    DependencyGraphSpec = dgSpec,
-                    AllowNoOp = true,
-                };
-                var command = new RestoreCommand(request);
+            var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+            {
+                ProjectStyle = ProjectStyle.PackageReference,
+            };
+            var command = new RestoreCommand(request);
 
-                // Preconditions
-                var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
-                result.Success.Should().BeTrue(because: logger.ShowMessages());
-
-                // Modify the assets file. No-op restore should not read the assets file, if it does, it will throw.
-                File.WriteAllText(Path.Combine(spec.RestoreMetadata.OutputPath, "project.assets.json"), "<xml> </xml>");
-                var newSpec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
-                var newDgSpec = new DependencyGraphSpec();
-                newDgSpec.AddProject(newSpec);
-                newDgSpec.AddRestore(newSpec.Name);
-
-                var newRequest = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
-                {
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    DependencyGraphSpec = dgSpec,
-                    AllowNoOp = true,
-                };
-                var newCommand = new RestoreCommand(newRequest);
-
-                // Act
-                result = await newCommand.ExecuteAsync();
-                // Assert
-
-                await result.CommitAsync(logger, CancellationToken.None);
-                result.Success.Should().BeTrue(because: logger.ShowMessages());
-            }
+            // Preconditions
+            var result = await command.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(2);
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
         }
 
         private static byte[] GetTestUtilityResource(string name)

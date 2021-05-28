@@ -867,7 +867,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 var packageManaged = new SimpleTestPackageContext("managed", "1.0.0");
                 packageManaged.AddFile("build/net472/managed.targets");
-                packageManaged.AddFile("lib/net472.0/managed.dll");
+                packageManaged.AddFile("lib/net472/managed.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,

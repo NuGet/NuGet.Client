@@ -465,7 +465,7 @@ namespace NuGet.Commands
                 targetFramework,
                 item => item.TargetFramework);
 
-            if(dependencyGroup == null && targetFramework is DualCompatibilityFramework dualCompatibilityFramework)
+            if(dependencyGroup == null && DeconstructFallbackFrameworks(targetFramework) is DualCompatibilityFramework dualCompatibilityFramework)
             {
                 dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups, dualCompatibilityFramework.SecondaryFramework, item => item.TargetFramework);
             }
@@ -476,6 +476,21 @@ namespace NuGet.Commands
             }
 
             return Enumerable.Empty<LibraryDependency>();
+        }
+
+        private static NuGetFramework DeconstructFallbackFrameworks(NuGetFramework nuGetFramework)
+        {
+            if (nuGetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            {
+                return assetTargetFallbackFramework.RootFramework;
+            }
+
+            if (nuGetFramework is FallbackFramework fallbackFramework)
+            {
+                return fallbackFramework;
+            }
+
+            return nuGetFramework;
         }
 
         private async Task EnsureResource()
