@@ -42,7 +42,6 @@ steps:
     signType: "$(SigningType)"
     esrpSigning: "true"
   displayName: "Install Signing Plugin"
-  condition: or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))  #skip this task for nonRTM in private build
 
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
@@ -226,7 +225,6 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
     maximumCpuCount: true
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
@@ -236,7 +234,6 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
     maximumCpuCount: true
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Ensure all Nupkgs and Symbols are created"
@@ -245,7 +242,6 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
@@ -273,20 +269,17 @@ steps:
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: NuGetCommand@2
   displayName: "Verify Nupkg Signatures"
   inputs:
     command: "custom"
     arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MicroBuildCodesignVerify@3
   displayName: Verify Assembly Signatures and StrongName for the nupkgs
   inputs:
     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MicroBuildCodesignVerify@3
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
@@ -294,7 +287,6 @@ steps:
     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
