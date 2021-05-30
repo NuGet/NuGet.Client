@@ -21,7 +21,6 @@ steps:
   displayName: "Bootstrap NuGet packages"
   inputs:
     solution: "build\\bootstrap.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Restore"
 
@@ -35,13 +34,12 @@ steps:
   displayName: "SetupFunctionalTests.ps1"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-    arguments: "-VSVersion 17.0"
 
 - task: PowerShell@1
   displayName: "InstallNuGetVSIX.ps1"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 17.0"
+    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180"
     failOnStandardError: "false"
 
 # - task: PowerShell@1
@@ -67,7 +65,6 @@ steps:
   displayName: "Restore Apex Tests"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
     msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
@@ -78,7 +75,6 @@ steps:
   continueOnError: "true"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
     msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
@@ -91,7 +87,6 @@ steps:
   continueOnError: "false"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
     msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"

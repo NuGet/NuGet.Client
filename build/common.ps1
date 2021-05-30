@@ -122,6 +122,7 @@ Function Invoke-BuildStep {
                 Trace-Log "[STOPPED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
             else {
+                $err
                 Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
         }
@@ -156,8 +157,7 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
-    $vsMajorVersion = Get-VSMajorVersion
-    $MSBuildExe = Get-MSBuildExe $vsMajorVersion
+    $MSBuildExe = Get-MSBuildExe
 
     $CmdOutLines = ((& $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting) | Out-String).Trim()
     $CliBranchListForTesting = ($CmdOutLines -split [Environment]::NewLine)[-1]
@@ -200,9 +200,6 @@ Function Install-DotnetCLI {
         else {
             $arch = "x86";
         }
-
-        $env:DOTNET_HOME = $cli.Root
-        $env:DOTNET_INSTALL_DIR = $NuGetClientRoot
 
         if ($Version -eq 'latest') {
 
@@ -301,43 +298,20 @@ Function Get-VSVersion() {
     return $VSVersion
 }
 
-Function Get-VSMajorVersion() {
-    $vsVersion = Get-VSVersion
-    $vsMajorVersion = "${vsVersion}".Split('.')[0]
-    return $vsMajorVersion
-}
-
 Function Get-MSBuildExe {
-    param(
-        [ValidateSet("16", "17", $null)]
-        [string]$MSBuildVersion
-    )
 
-    if (-not $MSBuildVersion) {
-        $MSBuildVersion = Get-VSMajorVersion
+    # If there's a msbuild.exe on the path, use it.
+    if ($null -ne (Get-Command "msbuild.exe" -ErrorAction Ignore))
+    {
+        return "msbuild.exe"
     }
 
-    $CommonToolsVar = "Env:VS${MSBuildVersion}0COMNTOOLS"
-    if (Test-Path $CommonToolsVar) {
-        $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
-        $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
-    }
-    else {
-        $VisualStudioRoot = Get-LatestVisualStudioRoot
-        if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
-            $MSBuildRoot = Join-Path $VisualStudioRoot 'MSBuild'
-        }
-    }
-
-    $MSBuildExe = Join-Path $MSBuildRoot 'Current\bin\msbuild.exe'
-
-    if (-not (Test-Path $MSBuildExe)) {
-        $MSBuildExe = Join-Path $MSBuildRoot "${MSBuildVersion}.0\bin\msbuild.exe"
-    }
+    # Otherwise, use VSWhere.exe to find the latest MSBuild.exe.
+    $MSBuildExe = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -requires Microsoft.Component.MSBuild -find MSBuild\**\bin\MSBuild.exe
 
     if (Test-Path $MSBuildExe) {
         Verbose-Log "Found MSBuild.exe at `"$MSBuildExe`""
-        $MSBuildExe
+        return $MSBuildExe
     }
     else {
         Error-Log 'Could not find MSBuild.exe' -Fatal
@@ -345,37 +319,9 @@ Function Get-MSBuildExe {
 }
 
 Function Test-BuildEnvironment {
-    [CmdletBinding()]
-    param(
-        [switch]$CI
-    )
-    if (-not (Test-Path $ConfigureJson)) {
-        # Run the configure script if it hasn't been executed
-        $configureScriptPath = Join-Path $NuGetClientRoot configure.ps1
-        Invoke-Expression $configureScriptPath
-    }
-
     $Installed = (Test-Path $DotNetExe)
     if (-not $Installed) {
         Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
-    }
-
-    $script:ConfigureObject = Get-Content $ConfigureJson -Raw | ConvertFrom-Json
-    Set-Variable MSBuildExe -Value $ConfigureObject.BuildTools.MSBuildExe -Scope Script -Force
-    Set-Alias msbuild $script:MSBuildExe -Scope Script -Force
-    Set-Variable BuildToolsets -Value $ConfigureObject.Toolsets -Scope Script -Force
-
-    $script:VSToolsetInstalled = ($BuildToolsets | where vstoolset -ne $null)
-
-    $ConfigureObject |
-    select -expand envvars -ea Ignore |
-    % { $_.psobject.properties } |
-    % { Set-Item -Path "env:$($_.Name)" -Value $_.Value }
-
-    if ($CI) {
-        # Explicitly add cli to environment PATH
-        # because dotnet-install script runs in configure.ps1 in previous build step
-        $env:path = "$CLIRoot;${env:path}"
     }
 }
 
@@ -425,57 +371,4 @@ Function Restore-SolutionPackages {
     if (-not $?) {
         Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
     }
-}
-
-Function New-BuildToolset {
-    param(
-        [ValidateSet(16, 17)]
-        [int]$ToolsetVersion
-    )
-    $CommonToolsVar = "Env:VS${ToolsetVersion}0COMNTOOLS"
-    if (Test-Path $CommonToolsVar) {
-        $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
-        Verbose-Log "Using environment variable `"$CommonToolsVar`" = `"$CommonToolsValue`""
-        $ToolsetObject = @{
-            VisualStudioInstallDir = [System.IO.Path]::GetFullPath((Join-Path $CommonToolsValue '..\IDE'))
-        }
-    }
-
-    if (-not $ToolsetObject) {
-        $VisualStudioRegistryKey = "HKCU:\SOFTWARE\Microsoft\VisualStudio\${ToolsetVersion}.0_Config"
-        if (Test-Path $VisualStudioRegistryKey) {
-            Verbose-Log "Retrieving Visual Studio installation path from registry '$VisualStudioRegistryKey'"
-            $ToolsetObject = @{
-                VisualStudioInstallDir = gp $VisualStudioRegistryKey | select -expand InstallDir -ea Ignore
-            }
-        }
-    }
-
-    if (-not $ToolsetObject) {
-        $VisualStudioInstallRootDir = Get-LatestVisualStudioRoot
-
-        if ($VisualStudioInstallRootDir) {
-            Verbose-Log "Using willow instance '$VisualStudioInstallRootDir' installation path"
-            $ToolsetObject = @{
-                VisualStudioInstallDir = [System.IO.Path]::GetFullPath((Join-Path $VisualStudioInstallRootDir Common7\IDE\))
-            }
-        }
-    }
-
-    if (-not $ToolsetObject) {
-        $DefaultInstallDir = Join-Path $env:ProgramFiles "Microsoft Visual Studio ${ToolsetVersion}.0\Common7\IDE\"
-        if (Test-Path $DefaultInstallDir) {
-            Verbose-Log "Using default location of Visual Studio installation path"
-            $ToolsetObject = @{
-                VisualStudioInstallDir = $DefaultInstallDir
-            }
-        }
-    }
-
-    if (-not $ToolsetObject) {
-        Warning-Log "Toolset VS${ToolsetVersion} is not found."
-    }
-
-    # return toolset build configuration object
-    $ToolsetObject
 }

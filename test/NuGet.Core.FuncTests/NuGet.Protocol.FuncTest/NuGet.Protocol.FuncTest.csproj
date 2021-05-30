@@ -30,10 +30,10 @@
 
   <PropertyGroup>
     <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">
-      xcopy /diye $(ArtifactsDirectory)TestablePlugin\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\* $(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\TestablePlugin\
+      xcopy /diye $(ArtifactsDirectory)TestablePlugin\bin\$(Configuration)\$(TargetFramework)\* $(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\TestablePlugin\
     </PostBuildEvent>
   </PropertyGroup>
-  
+
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
