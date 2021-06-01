@@ -21,8 +21,6 @@
         <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed" Version="[$(ProjectSystemManagedVersion)]" />
         <PackageDownload Update="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="[$(ProjectSystemManagedVersion)]" />
         <PackageDownload Update="NuGet.Core" Version="[$(NuGetCoreV2Version)]" />
-        <PackageDownload Update="VSLangProj140" Version="[14.0.25029]" />
-        <PackageDownload Update="VSLangProj150" Version="[1.0.0]" />
         <!-- PackageReference -->
         <PackageReference Update="Lucene.Net" Version="3.0.3" />
         <PackageReference Update="MessagePack" Version="2.2.60" />
