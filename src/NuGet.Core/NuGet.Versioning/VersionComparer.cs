@@ -256,7 +256,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// A version comparer that follows SemVer 2.0.0 rules.
         /// </summary>
-        public static IVersionComparer VersionReleaseMetadata = new VersionComparer(VersionComparison.VersionReleaseMetadata);
+        public static readonly IVersionComparer VersionReleaseMetadata = new VersionComparer(VersionComparison.VersionReleaseMetadata);
 
         /// <summary>
         /// Compares sets of release labels.

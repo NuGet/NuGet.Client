@@ -46,8 +46,10 @@ namespace NuGetConsole
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // create the Package Manager pane within the Output window
+                Guid outputWindowPaneId = GuidList.NuGetOutputWindowPaneGuid;
+
                 var hr = _vsOutputWindow.CreatePane(
-                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    ref outputWindowPaneId,
                     Resources.OutputConsolePaneName,
                     fInitVisible: 1,
                     fClearWithSolution: 0);
@@ -55,9 +57,11 @@ namespace NuGetConsole
 
                 IVsOutputWindowPane pane;
                 hr = _vsOutputWindow.GetPane(
-                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    ref outputWindowPaneId,
                     out pane);
                 ErrorHandler.ThrowOnFailure(hr);
+
+                GuidList.NuGetOutputWindowPaneGuid = outputWindowPaneId;
 
                 return pane;
 

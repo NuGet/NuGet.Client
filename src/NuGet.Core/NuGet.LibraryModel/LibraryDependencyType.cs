@@ -11,9 +11,9 @@ namespace NuGet.LibraryModel
     {
         private readonly HashSet<LibraryDependencyTypeFlag> _keywords;
 
-        public static LibraryDependencyType Default;
-        public static LibraryDependencyType Build;
-        public static LibraryDependencyType Platform;
+        public static readonly LibraryDependencyType Default;
+        public static readonly LibraryDependencyType Build;
+        public static readonly LibraryDependencyType Platform;
 
         static LibraryDependencyType()
         {

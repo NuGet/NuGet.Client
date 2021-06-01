@@ -625,21 +625,7 @@ override NuGet.ProjectModel.TargetFrameworkInformation.ToString() -> string
 override NuGet.ProjectModel.WarningProperties.Equals(object obj) -> bool
 override NuGet.ProjectModel.WarningProperties.GetHashCode() -> int
 static NuGet.ProjectModel.AssetsLogMessage.Create(NuGet.Common.IRestoreLogMessage logMessage) -> NuGet.ProjectModel.IAssetsLogMessage
-static NuGet.ProjectModel.BuildAction.AndroidAsset -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.AndroidResource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.ApplicationDefinition -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.BundleResource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.CodeAnalysisDictionary -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Compile -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Content -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.DesignData -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.DesignDataWithDesignTimeCreatableTypes -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.EmbeddedResource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.None -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Page -> NuGet.ProjectModel.BuildAction
 static NuGet.ProjectModel.BuildAction.Parse(string value) -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Resource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.SplashScreen -> NuGet.ProjectModel.BuildAction
 static NuGet.ProjectModel.BuildAction.operator !=(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
 static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
 static NuGet.ProjectModel.CacheFileFormat.Read(System.IO.Stream stream, NuGet.Common.ILogger log, string path) -> NuGet.ProjectModel.CacheFile
