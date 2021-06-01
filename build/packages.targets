@@ -24,7 +24,7 @@
         <!-- PackageReference -->
         <PackageReference Update="Lucene.Net" Version="3.0.3" />
         <PackageReference Update="MessagePack" Version="2.2.60" />
-        <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="runtime" />
+        <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.Build.Locator" Version="1.2.6" />
         <PackageReference Update="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
@@ -50,9 +50,9 @@
         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
 
         <PackageReference Update="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview" />
-        <PackageReference Update="Microsoft.VisualStudio.OLE.Interop" Version="17.0.0-preview-2-31221-277" ExcludeAssets="all" PrivateAssets="all" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.8.0" Version="17.0.0-preview-1-31108-209" ExcludeAssets="all" PrivateAssets="all" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.OLE.Interop" Version="17.0.0-preview-2-31221-277" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="17.0.0-preview-2-31221-277" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.8.0" Version="17.0.0-preview-2-31221-277" />
         <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" NoWarn="NU1605" />
         <PackageReference Update="Microsoft.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Interop" Version="$(VSFrameworkVersion)" NoWarn="NU1605" />
