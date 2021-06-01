@@ -230,3 +230,37 @@ Function DisableVisualStudioTelemetryFileLogging()
     $command = "reg delete HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\Telemetry\Channels /v fileLogger /f"
     Invoke-Expression $command
 }
+
+<#
+Isolate the restore output folders. When run, this too redirects all NuGet folders and caches to the directory passed in as $RootDirectory.
+The root folder *must* exist.
+.EXAMPLE
+    C:\PS> IsolateRestore -sdkLocation D:\source\NuGet.Client
+.EXAMPLE
+    C:\PS> IsolateRestore -sdkLocation .
+#>
+Function IsolateRestore {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootDirectory
+    )
+    $RootDirectory = Resolve-Path $RootDirectory
+    Write-Host "The root directory is $RootDirectory"
+    $gpf = Join-Path $RootDirectory -ChildPath "gpf"
+    $httpCache = Join-Path $RootDirectory -ChildPath "httpCache"
+    $pluginLogs = Join-Path $RootDirectory -ChildPath "plugin-logs"
+
+    Write-Host "Setting the global packages folder to $gpf"
+    $env:NUGET_PACKAGES=$gpf
+    Write-Host "Setting the http cache to $httpCache"
+    $env:NUGET_HTTP_CACHE_PATH=$httpCache
+    Write-Host "Enabling the plugins loggings"
+    $Env:NUGET_PLUGIN_ENABLE_LOG='true'
+    Write-Host "Setting the plugin log directory to $pluginLogs"
+    $Env:NUGET_PLUGIN_LOG_DIRECTORY_PATH=$pluginLogs
+    Write-Host "Creating the plugin logs path."
+    New-Item -ItemType directory -Path $pluginLogs
+    # https://docs.microsoft.com/en-us/nuget/consume-packages/managing-the-global-packages-and-cache-folders
+    # https://github.com/NuGet/Home/wiki/Plugin-Diagnostic-Logging
+}
