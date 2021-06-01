@@ -232,7 +232,7 @@ Function DisableVisualStudioTelemetryFileLogging()
 }
 
 <#
-Isolate the restore output folders. When run, this too redirects all NuGet folders and caches to the directory passed in as $RootDirectory.
+Isolate the restore output folders. When run, this redirects all NuGet folders and caches to the directory passed in as $RootDirectory.
 The root folder *must* exist.
 .EXAMPLE
     C:\PS> IsolateRestore -sdkLocation D:\source\NuGet.Client
