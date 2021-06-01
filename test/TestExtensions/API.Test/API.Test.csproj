@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
 
   <Target Name="DeployToArtifacts" AfterTargets="Build;Rebuild">
   <!--
