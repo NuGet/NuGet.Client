@@ -53,13 +53,13 @@
         <PackageReference Update="Microsoft.VisualStudio.OLE.Interop" Version="17.0.0-preview-2-31221-277" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="17.0.0-preview-2-31221-277" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.8.0" Version="17.0.0-preview-2-31221-277" />
-        <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.Internal.VisualStudio.Interop" Version="$(VSFrameworkVersion)" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.Internal.VisualStudio.Interop" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="17.0.24-g4265d215ae" NoWarn="NU1605" />
+        <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="17.0.67-g9e37b637e6" />
         <PackageReference Update="Microsoft.VisualStudio.Text.Logic" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI.Wpf" Version="17.0.24-g4265d215ae" />
