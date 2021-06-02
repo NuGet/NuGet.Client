@@ -15,7 +15,7 @@ True/false depending on whether nupkgs are being with or without the release lab
 param
 (
     [Parameter(Mandatory=$True)]
-    [boolean]$BuildRTM
+    [string]$BuildRTM
 )
 
 Function Get-Version {
@@ -65,10 +65,11 @@ Function Update-VsixVersion {
 
 Function Set-RtmLabel {
     param(
-        [boolean]$BuildRTM
+        [Parameter(Mandatory = $true)]
+        [boolean]$isRTMBuild
     )
 
-    if ($BuildRTM -eq $true) {
+    if ($isRTMBuild -eq $true) {
         $label = "RTM"
     } else {
         $label = "NonRTM"
@@ -78,7 +79,9 @@ Function Set-RtmLabel {
     Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
 }
 
-Set-RtmLabel -BuildRTM $BuildRTM
+$isRTMBuild = [boolean]::Parse($BuildRTM)
+
+Set-RtmLabel -isRTMBuild $isRTMBuild
 
 # Disable strong name verification of common public keys so that scenarios like building the VSIX or running unit tests
 # will not fail because of strong name verification errors.
