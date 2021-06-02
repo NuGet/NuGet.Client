@@ -1,4 +1,3 @@
-
 NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
