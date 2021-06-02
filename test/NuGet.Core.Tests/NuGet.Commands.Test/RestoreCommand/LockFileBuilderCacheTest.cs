@@ -14,6 +14,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Test;
+using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility.Commands;
@@ -170,7 +171,6 @@ namespace NuGet.Commands.Test
             }
         }
 
-
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -290,6 +290,160 @@ namespace NuGet.Commands.Test
                 var lockFile2TargetLibraryA = lockFile2.Targets.Single().Libraries.Single(x => x.Name == "PackageA");
 
                 Assert.Equal(!withFallbackFramework, ReferenceEquals(lockFile1TargetLibraryA, lockFile2TargetLibraryA));
+            }
+        }
+
+        [Fact]
+        public async Task LockFileBuilderCache_DifferentRuntimeGraph_WillNotCache()
+        {
+            // Arrange
+            using (var tmpPath = new SimpleTestPathContext())
+            {
+                var packageA100 = new SimpleTestPackageContext
+                {
+                    Id = "PackageA",
+                    Version = "1.0.0",
+                    Files = new List<KeyValuePair<string, byte[]>>
+                    {
+                        new("lib/net45/a.dll", new byte[0]),
+                        new("lib/netstandard2.0/a.dll", new byte[0]),
+                        new("runtimes/runtime1/native/foo.dll", new byte[0]),
+                        new("runtimes/runtime3/native/foo.dll", new byte[0]),
+                    },
+                };
+
+                var logger = new TestLogger();
+                var lockFileBuilderCache = new LockFileBuilderCache();
+                var project1Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Library1"));
+                var project2Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Library2"));
+                var globalPackages = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource"));
+
+                project1Directory.Create();
+                project2Directory.Create();
+                globalPackages.Create();
+                packageSource.Create();
+
+                var project1RuntimeGraph = new RuntimeGraph(new RuntimeDescription[]
+                {
+                    new("runtime1"), new("runtime2", new[] {"runtime1"}), new("runtime3"),
+                });
+
+                var runtimeJson1 = Path.Combine(project1Directory.FullName, "runtime.json");
+                JsonRuntimeFormat.WriteRuntimeGraph(runtimeJson1, project1RuntimeGraph);
+
+                var project1Spec = PackageReferenceSpecBuilder.Create("Library1", project1Directory.FullName)
+                    .WithTargetFrameworks(new[]
+                    {
+                        new TargetFrameworkInformation
+                        {
+                            FrameworkName = NuGetFramework.Parse("net5.0"),
+                            Dependencies = new List<LibraryDependency>(
+                                new[]
+                                {
+                                    new LibraryDependency
+                                    {
+                                        LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
+                                            LibraryDependencyTarget.All)
+                                    },
+                                }),
+                            RuntimeIdentifierGraphPath = runtimeJson1,
+                        },
+                    })
+                    .WithRuntimeIdentifiers(new[] { "runtime2" }, Enumerable.Empty<string>())
+                    .Build();
+
+                var project2RuntimeGraph = new RuntimeGraph(new RuntimeDescription[]
+                {
+                    new("runtime1"), new("runtime2", new[] {"runtime3"}), new("runtime3"),
+                });
+
+                var runtimeJson2 = Path.Combine(project2Directory.FullName, "runtime.json");
+                JsonRuntimeFormat.WriteRuntimeGraph(runtimeJson2, project2RuntimeGraph);
+
+                var project2Spec = PackageReferenceSpecBuilder.Create("Library2", project2Directory.FullName)
+                    .WithTargetFrameworks(new[]
+                    {
+                        new TargetFrameworkInformation
+                        {
+                            FrameworkName = NuGetFramework.Parse("net5.0"),
+                            Dependencies = new List<LibraryDependency>(
+                                new[]
+                                {
+                                    new LibraryDependency
+                                    {
+                                        LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
+                                            LibraryDependencyTarget.All)
+                                    },
+                                }),
+                            RuntimeIdentifierGraphPath = runtimeJson2,
+                        }
+                    })
+                    .WithRuntimeIdentifiers(new[] { "runtime2" }, Enumerable.Empty<string>())
+                    .Build();
+
+                var sources = new[] { new PackageSource(packageSource.FullName) }
+                    .Select(source => Repository.Factory.GetCoreV3(source))
+                    .ToList();
+
+                var request1 = new TestRestoreRequest(
+                    project1Spec,
+                    sources,
+                    globalPackages.FullName,
+                    new List<string>(),
+                    new TestSourceCacheContext(),
+                    ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                    logger,
+                    lockFileBuilderCache
+                )
+                { LockFilePath = Path.Combine(project1Directory.FullName, "project.lock.json") };
+
+                var request2 = new TestRestoreRequest(
+                    project2Spec,
+                    sources,
+                    globalPackages.FullName,
+                    new List<string>(),
+                    new TestSourceCacheContext(),
+                    ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                    logger,
+                    lockFileBuilderCache
+                )
+                { LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json") };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    packageSource.FullName,
+                    packageA100);
+
+                // Act
+                var command1 = new RestoreCommand(request1);
+                var result1 = await command1.ExecuteAsync();
+                var lockFile1 = result1.LockFile;
+
+                var command2 = new RestoreCommand(request2);
+                var result2 = await command2.ExecuteAsync();
+                var lockFile2 = result2.LockFile;
+
+                // Check whether packageA comes from the cache
+                var lockFile1TargetLibraryA = lockFile1.Targets
+                    .Single(x => x.RuntimeIdentifier == "runtime2")
+                    .Libraries.Single(x => x.Name == "PackageA");
+
+                var lockFile2TargetLibraryA = lockFile2.Targets
+                    .Single(x => x.RuntimeIdentifier == "runtime2")
+                    .Libraries.Single(x => x.Name == "PackageA");
+
+                // Assert
+                Assert.True(result1.Success);
+                Assert.Equal(1, lockFile1.Libraries.Count);
+                Assert.Equal(1, lockFile1.Targets.Single(x => x.RuntimeIdentifier == "runtime2").Libraries.Count);
+
+                Assert.True(result2.Success);
+                Assert.Equal(1, lockFile2.Libraries.Count);
+                Assert.Equal(1, lockFile2.Targets.Single(x => x.RuntimeIdentifier == "runtime2").Libraries.Count);
+
+                Assert.False(ReferenceEquals(lockFile1TargetLibraryA, lockFile2TargetLibraryA));
+                Assert.Equal("runtimes/runtime1/native/foo.dll", lockFile1TargetLibraryA.NativeLibraries.Single().Path);
+                Assert.Equal("runtimes/runtime3/native/foo.dll", lockFile2TargetLibraryA.NativeLibraries.Single().Path);
             }
         }
 

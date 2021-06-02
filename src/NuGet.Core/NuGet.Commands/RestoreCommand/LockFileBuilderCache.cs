@@ -76,6 +76,11 @@ namespace NuGet.Commands
         /// </summary>
         internal LockFileTargetLibrary GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, string aliases, LibraryIncludeFlags libraryIncludeFlags, Func<LockFileTargetLibrary> valueFactory)
         {
+            // Comparing RuntimeGraph for equality is very expensive,
+            // so in case of a request where the RuntimeGraph is not empty we avoid using the cache.
+            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
+                return valueFactory();
+
             localPackageInfo = localPackageInfo ?? throw new ArgumentNullException(nameof(localPackageInfo));
             var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
             var package = (localPackageInfo.Id, localPackageInfo.Version, localPackageInfo.Sha512);
