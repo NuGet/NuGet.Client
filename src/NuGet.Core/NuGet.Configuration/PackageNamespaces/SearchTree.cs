@@ -81,7 +81,7 @@ namespace NuGet.Configuration
             currentNode.PackageSources.Add(packageSourceKey);
         }
 
-        public ConfigNameSpaceLookup Find(string term)
+        public HashSet<string> PrefixMatch(string term)
         {
             if (string.IsNullOrWhiteSpace(term))
             {
@@ -106,7 +106,7 @@ namespace NuGet.Configuration
 
                 if (!currentNode.Children.ContainsKey(c))
                 {
-                    return currentNode.IsGlobbing ? new ConfigNameSpaceLookup(true, currentNode.PackageSources) : new ConfigNameSpaceLookup(false, currentNode.PackageSources);
+                    return currentNode.IsGlobbing ? currentNode.PackageSources : null;
                 }
 
                 currentNode = currentNode.Children[c];
@@ -120,8 +120,8 @@ namespace NuGet.Configuration
                 }
             }
 
-            return currentNode == null ? new ConfigNameSpaceLookup(false, null)
-                                        : new ConfigNameSpaceLookup(true, currentNode.PackageSources);
+            return currentNode == null ? null
+                                        : currentNode.PackageSources;
         }
     }
 }

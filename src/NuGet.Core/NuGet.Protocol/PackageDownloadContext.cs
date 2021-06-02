@@ -36,17 +36,16 @@ namespace NuGet.Protocol.Core.Types
             SourceCacheContext = sourceCacheContext;
             DirectDownload = directDownload;
             DirectDownloadDirectory = directDownloadDirectory;
-            PackageNamespacesConfiguration = new Lazy<PackageNamespacesConfiguration>(() => GetPackageNamespacesConfiguration());
         }
 
         public PackageDownloadContext(
             SourceCacheContext sourceCacheContext,
             string directDownloadDirectory,
             bool directDownload,
-            ISettings settings)
+            PackageNamespacesConfiguration packageNamespacesConfiguration)
             : this(sourceCacheContext, directDownloadDirectory, directDownload)
         {
-            Settings = settings;
+            PackageNamespacesConfiguration = packageNamespacesConfiguration;
         }
 
         public SourceCacheContext SourceCacheContext { get; }
@@ -56,14 +55,6 @@ namespace NuGet.Protocol.Core.Types
         public Guid ParentId { get; set; }
 
         public ClientPolicyContext ClientPolicyContext { get; set; }
-        public ISettings Settings { get; }
-        public Lazy<PackageNamespacesConfiguration> PackageNamespacesConfiguration { get; }
-
-        // We need to calculation of Settings to PackageNamespacesConfiguration here other wisewe there would be
-        // duplicate calculation for each packageId.
-        private PackageNamespacesConfiguration GetPackageNamespacesConfiguration()
-        {
-            return Settings != null ? Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings) : null;
-        }
+        public PackageNamespacesConfiguration PackageNamespacesConfiguration { get; }
     }
 }

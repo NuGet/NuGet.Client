@@ -17,14 +17,14 @@ namespace NuGet.Configuration
         private Lazy<SearchTree> SearchTree { get; }
 
         /// <summary>
-        /// Lookup a <see cref="ConfigNameSpaceLookup"/> with a term from package namespaces.
+        /// Lookup package sources matches with a term from package namespaces.
         /// </summary>
         /// <param name="term">Search term. Never null. </param>
-        /// <returns>A <see cref="ConfigNameSpaceLookup"/> with a term from package namespaces.</returns>
+        /// <returns>Package sources with a term from package namespaces.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
-        public ConfigNameSpaceLookup Find(string term)
+        public HashSet<string> Match(string term)
         {
-            return SearchTree.Value?.Find(term);
+            return SearchTree.Value?.PrefixMatch(term);
         }
 
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)

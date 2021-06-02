@@ -99,12 +99,11 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
-                ConfigNameSpaceLookup nameSpaceLookupResult = downloadContext.PackageNamespacesConfiguration.Value?.Find(packageIdentity.Id);
+                HashSet<string> nameSpacePackageSources = downloadContext.PackageNamespacesConfiguration?.Match(packageIdentity.Id);
 
-                if (nameSpaceLookupResult?.PrefixMatch == true)
+                if (nameSpacePackageSources != null)
                 {
-                    var packageSourcesAtPrefix = string.Join(", ", nameSpaceLookupResult.PackageSources);
-
+                    var packageSourcesAtPrefix = string.Join(", ", nameSpacePackageSources);
                     logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id, packageSourcesAtPrefix));
                 }
                 else
@@ -121,8 +120,8 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        if (nameSpaceLookupResult?.PackageSources != null &&
-                            !nameSpaceLookupResult.PackageSources.Contains(source.PackageSource.Name))
+                        if (nameSpacePackageSources != null &&
+                            !nameSpacePackageSources.Contains(source.PackageSource.Name))
                         {
                             // This package's id prefix is not defined in current package source, let's skip.
                             logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixSkipSource, source.PackageSource.Name, packageIdentity.Id));

@@ -1,12 +1,9 @@
-NuGet.Configuration.ConfigNameSpaceLookup
-NuGet.Configuration.ConfigNameSpaceLookup.ConfigNameSpaceLookup(bool prefixMatch, System.Collections.Generic.HashSet<string> packageSources) -> void
-NuGet.Configuration.ConfigNameSpaceLookup.PackageSources.get -> System.Collections.Generic.HashSet<string>
-NuGet.Configuration.ConfigNameSpaceLookup.PrefixMatch.get -> bool
+
 NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
-NuGet.Configuration.PackageNamespacesConfiguration.Find(string term) -> NuGet.Configuration.ConfigNameSpaceLookup
+NuGet.Configuration.PackageNamespacesConfiguration.Match(string term) -> System.Collections.Generic.HashSet<string>
 NuGet.Configuration.PackageNamespacesConfiguration.Namespaces.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.IReadOnlyList<string>>
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
