@@ -34,6 +34,12 @@ namespace NuGet.Shared
             AddHashCode(i);
         }
 
+        internal void AddObject(bool b)
+        {
+            CheckInitialized();
+            AddHashCode(b ? 1 : 0);
+        }
+
         internal void AddObject<TValue>(TValue o, IEqualityComparer<TValue> comparer)
         {
             CheckInitialized();
