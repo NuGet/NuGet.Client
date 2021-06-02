@@ -7,16 +7,14 @@ namespace NuGet.Configuration
 {
     internal class SearchNode
     {
-        public readonly SearchNode Parent;
         public readonly Dictionary<char, SearchNode> Children;
         public bool IsValueNode => !string.IsNullOrWhiteSpace(NamespaceId);
         public bool IsGlobbing { get; set; }
         public string NamespaceId { get; set; }
         public HashSet<string> PackageSources;
 
-        public SearchNode(SearchNode parent)
+        public SearchNode()
         {
-            Parent = parent;
             Children = new Dictionary<char, SearchNode>();
             NamespaceId = string.Empty;
             IsGlobbing = false;

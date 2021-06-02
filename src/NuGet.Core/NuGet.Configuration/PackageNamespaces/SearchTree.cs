@@ -18,7 +18,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            _root = new SearchNode(null);
+            _root = new SearchNode();
 
             foreach (string packageSourceKey in configuration.Namespaces.Keys)
             {
@@ -62,7 +62,7 @@ namespace NuGet.Configuration
 
                 if (!currentNode.Children.ContainsKey(c))
                 {
-                    currentNode.Children[c] = new SearchNode(currentNode);
+                    currentNode.Children[c] = new SearchNode();
                 }
 
                 currentNode = currentNode.Children[c];
@@ -92,6 +92,13 @@ namespace NuGet.Configuration
             term = term.ToLowerInvariant().Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
             SearchNode currentNode = _root;
+            SearchNode longestMatchingPrefixNode = null;
+
+            if (currentNode.PackageSources != null)
+            {
+                longestMatchingPrefixNode = currentNode;
+            }
+
             int i = 0;
 
             for (; i < term.Length; i++)
@@ -110,18 +117,14 @@ namespace NuGet.Configuration
                 }
 
                 currentNode = currentNode.Children[c];
-            }
-
-            if (i == term.Length && !currentNode.IsValueNode) // full 'term' already matched, but still not at value Node. That means we need to go backtrace try to find better matching sources.
-            {
-                while (currentNode != null && !currentNode.IsValueNode)
+                if (currentNode.PackageSources != null)
                 {
-                    currentNode = currentNode.Parent;
+                    longestMatchingPrefixNode = currentNode;
                 }
             }
 
-            return currentNode == null ? null
-                                        : currentNode.PackageSources;
+            return longestMatchingPrefixNode == null ? null
+                                        : longestMatchingPrefixNode.PackageSources;
         }
     }
 }

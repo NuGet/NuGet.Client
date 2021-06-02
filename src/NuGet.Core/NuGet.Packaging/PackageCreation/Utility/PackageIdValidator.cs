@@ -10,7 +10,7 @@ namespace NuGet.Packaging
 {
     public static class PackageIdValidator
     {
-        public const int MaxPackageIdLength = 100;
+        public const int MaxPackageIdLength = 100; // This value also set in src/NuGet.Core/NuGet.Configuration/PackageNamespaces/SearchTree.cs
         private static readonly Regex IdRegex = new Regex(pattern: @"^\w+([.-]\w+)*$",
             options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
             matchTimeout: TimeSpan.FromSeconds(10));
