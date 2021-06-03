@@ -1523,8 +1523,8 @@ namespace NuGet.Packaging.FuncTest
 
         [Collection(SigningTestCollection.Name)]
         public class FallbackFromPrimarySignaturesToCountersignatures
-        { 
-            //The settings when validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+        {
+            //The settings when validating packages from nuget.org in accept mode (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
             private readonly SignedPackageVerifierSettings _defaultNuGetOrgSettings = new SignedPackageVerifierSettings(
                 allowUnsigned: false,
                 allowIllegal: true,
