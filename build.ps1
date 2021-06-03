@@ -159,7 +159,7 @@ Invoke-BuildStep $VSMessage {
 } `
 -ev +BuildErrors
 
-Invoke-BuildStep 'Publishing the EndToEnd test package' {
+Invoke-BuildStep 'Creating the EndToEnd test package' {
         param($Configuration)
         $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
         $OutDir = Join-Path $Artifacts VS15

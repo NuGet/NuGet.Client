@@ -106,6 +106,9 @@ Function Invoke-BuildStep {
             }
             $completed = $true
         }
+        catch {
+            Error-Log $_
+        }
         finally {
             $sw.Stop()
             Reset-Colors
@@ -203,7 +206,7 @@ Function Install-DotnetCLI {
 
         if ($Version -eq 'latest') {
 
-            # When installing latest, we firstly check the latest version from the server against what we have installed locally. This also allows us to check the SDK was correctly installed.  
+            # When installing latest, we firstly check the latest version from the server against what we have installed locally. This also allows us to check the SDK was correctly installed.
             # Get the latest specific version number for a certain channel from url like : https://dotnetcli.blob.core.windows.net/dotnet/Sdk/release/3.0.1xx/latest.version
             $latestVersionLink = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $Channel + "/latest.version"
             $latestVersionFile = Invoke-RestMethod -Method Get -Uri $latestVersionLink

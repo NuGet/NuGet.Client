@@ -103,10 +103,22 @@ try {
     Run-RoboCopy $TestSource $packagesDirectory $opts
 
     $TestExtensionDirectoryPath = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net472"
+    if (!(Test-Path "$TestExtensionDirectoryPath\API.Test.dll"))
+    {
+        $errorMessage = "API.Test binaries not found at $TestExtensionDirectoryPath\API.Test.dll. Make sure the project has been built."
+        Write-Output $errorMessage
+        throw $errorMessage
+    }
     Write-Verbose "Copying test extension from '$TestExtensionDirectoryPath' to '$WorkingDirectory'"
     Run-RoboCopy $TestExtensionDirectoryPath $WorkingDirectory $(@('API.Test.*') + $opts)
 
     $GeneratePackagesUtil = Join-Path $NuGetRoot "artifacts\GenerateTestPackages\${ToolsetVersion}.0\bin\${Configuration}\net472"
+    if (!(Test-Path "$GeneratePackagesUtil\GenerateTestPackages.exe"))
+    {
+        $errorMessage = "GenerateTestPackages binaries not found at $GeneratePackagesUtil\GenerateTestPackages.exe. Make sure the project has been built."
+        Write-Output $errorMessage
+        throw $errorMessage
+    }
     Write-Verbose "Copying utility binaries from `"$GeneratePackagesUtil`" to `"$WorkingDirectory`""
     Run-RoboCopy $GeneratePackagesUtil $WorkingDirectory $(@('*.exe', '*.dll', '*.pdb') + $opts)
 
@@ -124,7 +136,7 @@ try {
     $TestPackage = Join-Path $OutputDirectory EndToEnd.zip
     Write-Verbose "Creating test package '$TestPackage'"
     Remove-Item $TestPackage -Force -ea Ignore | Out-Null
-    New-ZipArchive $WorkingDirectory $TestPackage
+    Compress-Archive -Path "$WorkingDirectory\*" -DestinationPath $TestPackage -CompressionLevel Optimal
 
     Write-Output "Created end-to-end test package for toolset '${ToolsetVersion}.0' at '$TestPackage'"
 }
