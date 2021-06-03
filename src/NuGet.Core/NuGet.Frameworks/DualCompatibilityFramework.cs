@@ -77,7 +77,7 @@ namespace NuGet.Frameworks
                 return true;
             }
 
-            return Comparer.Equals(this, other)
+            return Comparer.Equals(RootFramework, other.RootFramework)
                 && Comparer.Equals(SecondaryFramework, other.SecondaryFramework);
         }
 
@@ -88,7 +88,7 @@ namespace NuGet.Frameworks
                 var combiner = new HashCodeCombiner();
                 // Ensure that this is different from AssetTargetFallback & FallbackFramework;
                 combiner.AddStringIgnoreCase("multipleCompat");
-                combiner.AddObject(Comparer.GetHashCode(this));
+                combiner.AddObject(Comparer.GetHashCode(RootFramework));
                 combiner.AddObject(Comparer.GetHashCode(SecondaryFramework));
                 _hashCode = combiner.CombinedHash;
             }
