@@ -48,11 +48,14 @@ namespace NuGet.Frameworks
             // check the cache for a solution
             var cacheKey = new CompatibilityCacheKey(target, candidate);
 
-            bool? result = _cache.GetOrAdd(cacheKey, (Func<CompatibilityCacheKey, bool>)((key)
-                =>
-            { return IsCompatibleCore(target, candidate) == true; }));
+            bool result;
+            if (!_cache.TryGetValue(cacheKey, out result))
+            {
+                result = IsCompatibleCore(target, candidate) == true;
+                _cache.TryAdd(cacheKey, result);
+            }
 
-            return result == true;
+            return result;
         }
 
         /// <summary>
