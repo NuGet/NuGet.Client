@@ -1521,6 +1521,208 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        [Collection(SigningTestCollection.Name)]
+        public class FallbackFromPrimarySignaturesToCountersignatures
+        { 
+            //The settings when validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+            private readonly SignedPackageVerifierSettings _defaultNuGetOrgSettings = new SignedPackageVerifierSettings(
+                allowUnsigned: false,
+                allowIllegal: true,
+                allowUntrusted: false,
+                allowIgnoreTimestamp: true,
+                allowMultipleTimestamps: true,
+                allowNoTimestamp: true,
+                allowUnknownRevocation: true,
+                reportUnknownRevocation: false,
+                verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.Any,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
+                revocationMode: RevocationMode.Online);
+            private readonly SigningTestFixture _fixture;
+            private readonly SignatureTrustAndValidityVerificationProvider _provider;
+
+            public FallbackFromPrimarySignaturesToCountersignatures(SigningTestFixture fixture)
+            {
+                if (fixture == null)
+                {
+                    throw new ArgumentNullException(nameof(fixture));
+                }
+
+                _fixture = fixture;
+                _provider = new SignatureTrustAndValidityVerificationProvider();
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromTrustedPrimarySigntuareToValidCountersignature_NoFallbackAndReturnsValidAsync()
+            {
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: _fixture.TrustedTestCertificate.Source.Cert,
+                    repositoryCertificate: _fixture.TrustedRepositoryCertificate.Source.Cert))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromTrustedPrimarySigntuareToUntrustedCountersignature_NoFallbackAndReturnsValidAsync()
+            {
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: _fixture.TrustedTestCertificate.Source.Cert,
+                    repositoryCertificate: _fixture.UntrustedTestCertificate.Cert))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromUntrustedPrimarySigntuareToValidCountersignature_FallbackAndReturnsValidAsync()
+            {
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: _fixture.UntrustedTestCertificate.Cert,
+                    repositoryCertificate: _fixture.TrustedRepositoryCertificate.Source.Cert))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToValidCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            {
+                TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: authorSigningCertificate,
+                    repositoryCertificate: _fixture.TrustedTestCertificate.Source.Cert,
+                    authorTimestampServiceUrl: null,
+                    repoTimestampServiceUrl: timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToValidCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
+            {
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: authorSigningCertificate,
+                    repositoryCertificate: _fixture.TrustedTestCertificate.Source.Cert))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToExpiredCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            {
+                TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
+                using (X509Certificate2 repositorySigningCertificate = await GetExpiringCertificateAsync(_fixture))
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: authorSigningCertificate,
+                    repositoryCertificate: repositorySigningCertificate,
+                    authorTimestampServiceUrl: null,
+                    repoTimestampServiceUrl: timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(repositorySigningCertificate);
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToValidCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
+            {
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (X509Certificate2 authorSigningCertificate = _fixture.CreateUntrustedTestCertificateThatWillExpireSoon().Cert)
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: authorSigningCertificate,
+                    repositoryCertificate: _fixture.TrustedRepositoryCertificate.Source.Cert))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+                }
+            }
+
+            [CIOnlyFact]
+            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToValidCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            {
+                TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
+
+                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
+                var settings = _defaultNuGetOrgSettings;
+
+                using (X509Certificate2 authorSigningCertificate = _fixture.CreateUntrustedTestCertificateThatWillExpireSoon().Cert)
+                using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    authorCertificate: authorSigningCertificate,
+                    repositoryCertificate: _fixture.TrustedRepositoryCertificate.Source.Cert,
+                    authorTimestampServiceUrl: null,
+                    repoTimestampServiceUrl: timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
+                {
+                    await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
+                    PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+
+                    Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                }
+            }
+        }
+
+
+
         private sealed class Test : IDisposable
         {
             private readonly TestDirectory _directory;
