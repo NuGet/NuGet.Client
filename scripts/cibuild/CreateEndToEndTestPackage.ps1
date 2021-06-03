@@ -105,17 +105,19 @@ try {
     $TestExtensionDirectoryPath = Join-Path $NuGetRoot "artifacts\API.Test\${ToolsetVersion}.0\bin\${Configuration}\net472"
     if (!(Test-Path "$TestExtensionDirectoryPath\API.Test.dll"))
     {
-        Write-Output "API.Test binaries not found. Make sure the project has been built."
-        exit 1;
+        $errorMessage = "API.Test binaries not found at $TestExtensionDirectoryPath\API.Test.dll. Make sure the project has been built."
+        Write-Output $errorMessage
+        throw $errorMessage
     }
     Write-Verbose "Copying test extension from '$TestExtensionDirectoryPath' to '$WorkingDirectory'"
     Run-RoboCopy $TestExtensionDirectoryPath $WorkingDirectory $(@('API.Test.*') + $opts)
 
     $GeneratePackagesUtil = Join-Path $NuGetRoot "artifacts\GenerateTestPackages\${ToolsetVersion}.0\bin\${Configuration}\net472"
-    if (!(Test-Path "$TestExtensionDirectoryPath\API.Test.dll"))
+    if (!(Test-Path "$GeneratePackagesUtil\GenerateTestPackages.exe"))
     {
-        Write-Output "GenerateTestPackages binaries not found. Make sure the project has been built."
-        exit 1;
+        $errorMessage = "GenerateTestPackages binaries not found at $GeneratePackagesUtil\GenerateTestPackages.exe. Make sure the project has been built."
+        Write-Output $errorMessage
+        throw $errorMessage
     }
     Write-Verbose "Copying utility binaries from `"$GeneratePackagesUtil`" to `"$WorkingDirectory`""
     Run-RoboCopy $GeneratePackagesUtil $WorkingDirectory $(@('*.exe', '*.dll', '*.pdb') + $opts)
