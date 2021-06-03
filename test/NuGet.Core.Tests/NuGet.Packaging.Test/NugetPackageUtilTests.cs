@@ -322,7 +322,6 @@ namespace Commands.Test
             }
         }
 
-
         [Fact(Skip = "https://github.com/NuGet/Home/issues/10802")]
         public async Task PackageExpander_Recovers_WhenFileIsLocked()
         {
