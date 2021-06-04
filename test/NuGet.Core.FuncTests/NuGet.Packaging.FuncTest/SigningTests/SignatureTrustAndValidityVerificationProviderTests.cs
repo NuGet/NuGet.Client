@@ -1552,10 +1552,11 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
+            // Case1: primary signature (trusted + non-expired) doesn't fall back to countersiganture (trusted + non-expired).
+            // The verification result is the primary signature status(valid). 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromTrustedPrimarySigntuareToValidCountersignature_NoFallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_FallbackFromGoodPrimarySigntuareToGoodCountersignature_NoFallbackAndReturnsValidAsync()
             {
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1570,10 +1571,11 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case2: primary signature (trusted + non-expired) doesn't fall back to countersiganture untrusted + non-expired).
+            // The verification result is the primary signature status(valid).
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromTrustedPrimarySigntuareToUntrustedCountersignature_NoFallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_FallbackFromGoodPrimarySigntuareToUntrustedCountersignature_NoFallbackAndReturnsValidAsync()
             {
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1588,10 +1590,11 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case3: primary signature (untrusted + non-expired) falls back to countersiganture (trusted + non-expired).
+            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromUntrustedPrimarySigntuareToValidCountersignature_FallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_FallbackFromUntrustedPrimarySigntuareToGoodCountersignature_FallbackAndReturnsValidAsync()
             {
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1606,10 +1609,11 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case4: primary signature (untrusted + non-expired) falls back to countersiganture (untrusted + non-expired).
+            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(disallowed), so it's disallowed.
             [CIOnlyFact]
             public async Task GetTrustResultAsync_FallbackFromUntrustedPrimarySigntuareToUntrustedCountersignature_FallbackAndReturnsDisallowedAsync()
             {
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1624,12 +1628,14 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case5: primary signature (trusted + expired) falls back to countersiganture (trusted + non-expired).
+            // And the timestamp on countersignature could fullfill the role of a trust anchor for primary signature.
+            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToValidCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToGoodCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
@@ -1648,12 +1654,13 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case6: primary signature (trusted + expired) falls back to countersiganture (untrusted + non-expired).
+            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(disallowed), so it's disallowed.
             [CIOnlyFact]
             public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToUntrustedCountersignatureWithTimestamp_FallbackAndReturnsDisallowedAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
@@ -1672,10 +1679,12 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case7: primary signature (trusted + expired) falls back to countersiganture (trusted + non-expired).
+            // But the timestamp on countersignature could NOT fullfill the role of a trust anchor for primary signature.
+            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(valid), so it's disallowed.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToValidCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
+            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToGoodCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
             {
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
@@ -1692,12 +1701,14 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case8: primary signature (trusted + expired) falls back to countersiganture (trusted + expired but protected by a timestamp).
+            // And the timestamp on countersignature could fullfill the role of a trust anchor for primary signature.
+            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
             public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToExpiredCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
@@ -1718,10 +1729,12 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case9: primary signature (untrusted + expired) falls back to countersiganture (trusted + non-expired).
+            // But the timestamp on countersignature could NOT fullfill the role of a trust anchor for primary signature.
+            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(valid), so it's disallowed.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToValidCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
+            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToGoodCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
             {
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = _fixture.CreateUntrustedTestCertificateThatWillExpireSoon().Cert)
@@ -1738,12 +1751,14 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
+            // Case10: primary signature (untrusted + expired) falls back to countersiganture (trusted + non-expired).
+            // And the timestamp on countersignature could fullfill the role of a trust anchor for primary signature.
+            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToValidCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToGoodCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                //Same settings with validating packages from nuget.org (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
                 var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = _fixture.CreateUntrustedTestCertificateThatWillExpireSoon().Cert)
