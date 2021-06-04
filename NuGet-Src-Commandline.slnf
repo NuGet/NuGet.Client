@@ -3,7 +3,6 @@
     "path": "NuGet.sln",
     "projects": [
       "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj",
-      "src\\NuGet.Clients\\NuGet.MSSigning.Extensions\\NuGet.MSSigning.Extensions.csproj",
       "src\\NuGet.Core\\Microsoft.Build.NuGetSdkResolver\\Microsoft.Build.NuGetSdkResolver.csproj",
       "src\\NuGet.Core\\NuGet.Build.Tasks.Console\\NuGet.Build.Tasks.Console.csproj",
       "src\\NuGet.Core\\NuGet.Build.Tasks.Pack\\NuGet.Build.Tasks.Pack.csproj",
