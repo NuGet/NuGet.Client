@@ -522,7 +522,7 @@ namespace NuGetConsole.Implementation
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // force the UI to update the toolbar
-            IVsUIShell vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+            IVsUIShell vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell, IVsUIShell>(throwOnFailure: false);
             vsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
         }
 

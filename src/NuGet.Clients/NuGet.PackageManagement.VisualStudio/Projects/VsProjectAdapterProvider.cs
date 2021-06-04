@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
@@ -25,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectThreadingService threadingService)
             : this(
                   threadingService,
-                  new AsyncLazy<SVsSolution>(() => serviceProvider.GetServiceAsync<SVsSolution>(), threadingService.JoinableTaskFactory))
+                  new AsyncLazy<SVsSolution>(() => serviceProvider.GetServiceAsync<SVsSolution, SVsSolution>(throwOnFailure: false), threadingService.JoinableTaskFactory))
         {
         }
 

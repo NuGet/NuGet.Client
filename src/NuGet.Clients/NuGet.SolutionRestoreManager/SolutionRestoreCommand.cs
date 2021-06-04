@@ -68,7 +68,7 @@ namespace NuGet.SolutionRestoreManager
 
             _serviceProvider = serviceProvider;
 
-            var commandService = await serviceProvider.GetServiceAsync<IMenuCommandService>();
+            var commandService = await serviceProvider.GetServiceAsync<IMenuCommandService, IMenuCommandService>(throwOnFailure: false);
 
             var menuCommandId = new CommandID(CommandSet, CommandId);
             var menuItem = new OleMenuCommand(
