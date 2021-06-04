@@ -1778,8 +1778,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-
-
         private sealed class Test : IDisposable
         {
             private readonly TestDirectory _directory;
