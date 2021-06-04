@@ -1512,38 +1512,6 @@ EndGlobal";
             }
         }
 
-        [PlatformTheory(Platform.Linux)]
-        [InlineData("nunit-test")]
-        [InlineData("razorcomponent")]
-        [InlineData("page")]
-        [InlineData("viewimports")]
-        [InlineData("viewstart")]
-        [InlineData("gitignore")]
-        [InlineData("globaljson")]
-        [InlineData("nugetconfig")]
-        [InlineData("tool-manifest")]
-        [InlineData("webconfig")]
-        [InlineData("sln")]
-        [InlineData("proto")]
-        public void Dotnet_New_Template_CreateItem_Success(string template)
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-                var solutionDirectory = pathContext.SolutionRoot;
-
-                // Act
-                CommandRunnerResult newResult = _msbuildFixture.RunDotnet(solutionDirectory, "new " + template);
-
-                // Assert
-                // Make sure new template action was success.
-                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
-                // No actual restore happen here
-                // Pack doesn't work because `IsPackable` is set to false.
-            }
-        }
-
         private static SimpleTestPackageContext CreateNetstandardCompatiblePackage(string id, string version)
         {
             var pkgX = new SimpleTestPackageContext(id, version);
