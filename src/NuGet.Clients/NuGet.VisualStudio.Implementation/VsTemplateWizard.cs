@@ -305,7 +305,7 @@ namespace NuGet.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution>() as IVsSolution;
+            var solution = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution, IVsSolution>(throwOnFailure: false);
 
             if (solution != null)
             {

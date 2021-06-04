@@ -55,7 +55,7 @@ namespace NuGet.VisualStudio.Telemetry
         private static async Task<bool> IsShellAvailableAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var sVsShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+            var sVsShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell, IVsUIShell>(throwOnFailure: false);
             return sVsShell != null;
         }
 

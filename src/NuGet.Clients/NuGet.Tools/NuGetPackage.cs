@@ -234,7 +234,7 @@ namespace NuGetVSExtension
                 }
 
                 IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
-                IVsMonitorSelection vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection>();
+                IVsMonitorSelection vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection, IVsMonitorSelection>(throwOnFailure: false);
                 ProjectRetargetingHandler = new ProjectRetargetingHandler(
                         _dte,
                         SolutionManager.Value,

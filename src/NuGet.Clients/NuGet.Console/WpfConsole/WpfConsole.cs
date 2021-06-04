@@ -107,7 +107,7 @@ namespace NuGetConsole.Implementation.Console
         {
             if (_vsStatusBar == null)
             {
-                _vsStatusBar = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsStatusbar>();
+                _vsStatusBar = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsStatusbar, IVsStatusbar>(throwOnFailure: false);
             }
             return _vsStatusBar;
         }

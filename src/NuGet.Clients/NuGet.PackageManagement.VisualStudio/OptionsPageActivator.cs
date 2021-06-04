@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _vsUIShell = new AsyncLazy<IVsUIShell>(async () =>
             {
-                return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+                return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell, IVsUIShell>(throwOnFailure: false);
             },
             NuGetUIThreadHelper.JoinableTaskFactory);
         }
