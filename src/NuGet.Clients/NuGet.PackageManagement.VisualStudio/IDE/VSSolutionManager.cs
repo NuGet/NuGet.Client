@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IVsSolutionEvents, IDisposable
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private const string VSNuGetClientName = "NuGet VS VSIX";
@@ -50,6 +50,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
+        private uint _selectionEventsCookie;
+        private uint _solutionEventsCookie;
 
         private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
@@ -192,8 +194,9 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
 
-            uint cookie;
-            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
+            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
+            ErrorHandler.ThrowOnFailure(hr);
+            hr = _vsSolution.AdviseSolutionEvents(this, out _solutionEventsCookie);
             ErrorHandler.ThrowOnFailure(hr);
 
             // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
@@ -914,13 +917,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {
-            if (dwCmdUICookie == _solutionLoadedUICookie
-                && fActive == 1)
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                    await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(VSSolutionManager));
-            }
-
             return VSConstants.S_OK;
         }
 
@@ -1027,7 +1023,86 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return nuGetProject;
         }
-
         #endregion
+
+        #region IVsSolutionEvents
+        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(OnAfterOpenSolution));
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeCloseSolution(object pUnkReserved)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterCloseSolution(object pUnkReserved)
+        {
+            return VSConstants.S_OK;
+        }
+        #endregion
+
+        private bool _disposed = false;
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                if (ThreadHelper.JoinableTaskContext?.IsOnMainThread == true)
+                {
+                    if (_vsMonitorSelection != null && _selectionEventsCookie != 0)
+                    {
+                        _vsMonitorSelection.UnadviseSelectionEvents(_selectionEventsCookie);
+                        _selectionEventsCookie = 0;
+                    }
+
+                    if (_vsSolution != null && _solutionEventsCookie != 0)
+                    {
+                        _vsSolution.UnadviseSolutionEvents(_solutionEventsCookie);
+                        _solutionEventsCookie = 0;
+                    }
+                }
+
+                _semaphoreLock?.Dispose();
+            }
+        }
     }
 }
