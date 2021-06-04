@@ -1478,7 +1478,7 @@ EndGlobal";
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("worker")]
         [InlineData("mstest")]
         [InlineData("nunit")]
