@@ -347,7 +347,7 @@ namespace NuGetConsole.Implementation.Console
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.END);
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.RETURN);
 
-                                WpfConsole.EndInputLine();
+                                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => EndInputLineAsync(WpfConsole));
                             }
                             hr = VSConstants.S_OK;
                             break;
@@ -391,6 +391,12 @@ namespace NuGetConsole.Implementation.Console
                 }
             }
             return hr;
+        }
+
+        private static Task EndInputLineAsync(WpfConsole wpfConsole)
+        {
+            wpfConsole.EndInputLine();
+            return Task.CompletedTask;
         }
 
         private VsKeyInfo GetVsKeyInfo(IntPtr pvaIn, VSConstants.VSStd2KCmdID commandID)
