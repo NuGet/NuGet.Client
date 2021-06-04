@@ -63,7 +63,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
         private bool _cacheInitialized;
-        private bool _disposed = false;
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
@@ -1080,6 +1079,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
         #endregion
 
+        private bool _disposed = false;
         public void Dispose()
         {
             if (!_disposed)
