@@ -60,7 +60,11 @@ Some of the other points are summarized below:
 #### Investigating NuGet and project-system interactions
 
 When investigating Visual Studio PackageReference restore with SDK-based projects, you can set an environment variable respected by the [project-system](https://github.com/dotnet/project-system/pull/3027) that would dump the nomination data each time a project is nominated.
-Set `PROJECTSYSTEM_PROJECTOUTPUTPANEENABLED=1` and look for a new category enabled in the Output window.
+
+Set and look for a new category `Project` enabled in the Output window.
+
+* 16.7 and earlier - set `PROJECTSYSTEM_PROJECTOUTPUTPANEENABLED=1`
+* 16.8 and later - set `CPS_DiagnosticRuntime=1`
 
 ## Debugging and testing the NuGet MSBuild functionality
 
