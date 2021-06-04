@@ -427,7 +427,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private async Task ExecuteInitScriptsAsync()
         {
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
-            await TaskScheduler.Default;
             using (await _initScriptsLock.EnterAsync())
             {
                 if (!await _solutionManager.Value.IsSolutionOpenAsync())
