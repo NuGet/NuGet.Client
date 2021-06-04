@@ -849,7 +849,7 @@ namespace NuGetVSExtension
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             IVsWindowFrame windowFrame = null;
-            var solution = await this.GetServiceAsync<IVsSolution>();
+            var solution = await this.GetServiceAsync<SVsSolution, IVsSolution>();
             var uiShell = await this.GetServiceAsync<SVsUIShell, IVsUIShell>();
             var windowFlags =
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
