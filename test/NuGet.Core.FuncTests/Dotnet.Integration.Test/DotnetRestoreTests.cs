@@ -1478,9 +1478,21 @@ EndGlobal";
             }
         }
 
-        [PlatformTheory(Platform.Linux)]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("worker")]
         [InlineData("mstest")]
+        [InlineData("nunit")]
+        [InlineData("xunit")]
+        [InlineData("blazorserver")]
+        [InlineData("blazorwasm")]
+        [InlineData("web")]
+        [InlineData("mvc")]
+        [InlineData("webapp")]
+        [InlineData("angular")]
+        [InlineData("react")]
+        [InlineData("reactredux")]
+        [InlineData("webapi")]
+        [InlineData("grpc")]
         public void Dotnet_New_Template_Restore_Success(string template)
         {
             // Arrange
@@ -1496,6 +1508,38 @@ EndGlobal";
                 // Make sure restore action was success.
                 newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(solutionDirectory, "obj", "project.assets.json")));
+                // Pack doesn't work because `IsPackable` is set to false.
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("nunit-test")]
+        [InlineData("razorcomponent")]
+        [InlineData("page")]
+        [InlineData("viewimports")]
+        [InlineData("viewstart")]
+        [InlineData("gitignore")]
+        [InlineData("globaljson")]
+        [InlineData("nugetconfig")]
+        [InlineData("tool-manifest")]
+        [InlineData("webconfig")]
+        [InlineData("sln")]
+        [InlineData("proto")]
+        public void Dotnet_New_Template_CreateItem_Success(string template)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
+                var solutionDirectory = pathContext.SolutionRoot;
+
+                // Act
+                CommandRunnerResult newResult = _msbuildFixture.RunDotnet(solutionDirectory, "new " + template);
+
+                // Assert
+                // Make sure new template action was success.
+                newResult.Success.Should().BeTrue(because: newResult.AllOutput);
+                // No actual restore happen here
                 // Pack doesn't work because `IsPackable` is set to false.
             }
         }

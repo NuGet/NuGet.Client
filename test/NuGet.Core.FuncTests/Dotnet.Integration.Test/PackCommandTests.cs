@@ -5638,6 +5638,7 @@ namespace ClassLibrary
         [InlineData("winforms")]
         [InlineData("winformscontrollib")]
         [InlineData("winformslib")]
+        [InlineData("razorclasslib")]
         public void Dotnet_New_Template_Restore_Pack_Success(string template)
         {
             // Arrange
