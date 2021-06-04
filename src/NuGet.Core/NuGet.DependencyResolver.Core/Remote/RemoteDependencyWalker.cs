@@ -161,8 +161,13 @@ namespace NuGet.DependencyResolver
 
             // do not add nodes for all the centrally managed package versions to the graph
             // they will be added only if they are transitive
-            foreach (var dependency in node.Item.Data.Dependencies.Where(d => IsDependencyValidForGraph(d)))
+            foreach (var dependency in node.Item.Data.Dependencies)
             {
+                if (!IsDependencyValidForGraph(dependency))
+                {
+                    continue;
+                }
+
                 // Skip dependencies if the dependency edge has 'all' excluded and
                 // the node is not a direct dependency.
                 if (outerEdge == null
