@@ -1512,7 +1512,7 @@ EndGlobal";
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
+        [PlatformTheory(Platform.Linux)]
         [InlineData("nunit-test")]
         [InlineData("razorcomponent")]
         [InlineData("page")]
