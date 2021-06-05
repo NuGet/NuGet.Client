@@ -831,9 +831,11 @@ namespace NuGet.Packaging
             var warnPaths = new HashSet<string>();
 
             var frameworksMissingPlatformVersion = new HashSet<string>();
+            List<ContentItemGroup> targetedItemGroups = new();
             foreach (var pattern in frameworkPatterns)
             {
-                IEnumerable<ContentItemGroup> targetedItemGroups = ContentExtractor.GetContentForPattern(collection, pattern);
+                targetedItemGroups.Clear();
+                ContentExtractor.GetContentForPattern(collection, pattern, targetedItemGroups);
                 foreach (ContentItemGroup group in targetedItemGroups)
                 {
                     foreach (ContentItem item in group.Items)

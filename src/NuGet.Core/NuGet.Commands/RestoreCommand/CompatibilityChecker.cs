@@ -267,9 +267,12 @@ namespace NuGet.Commands
                 graph.Conventions.Patterns.ContentFiles
             };
 
+            List<ContentItemGroup> itemGroups = new();
             foreach (var pattern in patterns)
             {
-                foreach (var group in contentItems.FindItemGroups(pattern))
+                itemGroups.Clear();
+                contentItems.FindItemGroups(pattern, itemGroups);
+                foreach (var group in itemGroups)
                 {
                     // lib/net45/subfolder/a.dll will be returned as a group with zero items since sub
                     // folders are not allowed. Completely empty groups are not compatible, a group with
@@ -356,10 +359,11 @@ namespace NuGet.Commands
             var contentItems = new ContentItemCollection();
             contentItems.Load(compatibilityData.Files);
 
-
+            List<ContentItemGroup> itemGroups = new List<ContentItemGroup>();
             if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
             {
-                foreach (var group in contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies))
+                contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies, itemGroups);
+                foreach (var group in itemGroups)
                 {
                     group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);
                     group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out var tfmObj);

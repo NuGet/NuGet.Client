@@ -65,8 +65,10 @@ namespace NuGet.Packaging.Rules
             var collection = new ContentItemCollection();
             collection.Load(files);
 
-            var libItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
-            var refItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
+            List<ContentItemGroup> libItems = new();
+            List<ContentItemGroup> refItems = new();
+            ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies, libItems);
+            ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies, refItems);
 
             var tfmsFromFilesSet = new HashSet<NuGetFramework>();
             tfmsFromFilesSet.AddRange(ContentExtractor.GetGroupFrameworks(libItems));

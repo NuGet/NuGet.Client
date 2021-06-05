@@ -35,8 +35,6 @@ NuGet.ContentModel.ContentItem.Properties.get -> System.Collections.Generic.Dict
 NuGet.ContentModel.ContentItemCollection
 NuGet.ContentModel.ContentItemCollection.ContentItemCollection() -> void
 NuGet.ContentModel.ContentItemCollection.FindBestItemGroup(NuGet.ContentModel.SelectionCriteria criteria, params NuGet.ContentModel.PatternSet[] definitions) -> NuGet.ContentModel.ContentItemGroup
-NuGet.ContentModel.ContentItemCollection.FindItemGroups(NuGet.ContentModel.PatternSet definition) -> System.Collections.Generic.IEnumerable<NuGet.ContentModel.ContentItemGroup>
-NuGet.ContentModel.ContentItemCollection.FindItems(NuGet.ContentModel.PatternSet definition) -> System.Collections.Generic.IEnumerable<NuGet.ContentModel.ContentItem>
 NuGet.ContentModel.ContentItemCollection.HasContract.get -> bool
 NuGet.ContentModel.ContentItemCollection.HasItemGroup(NuGet.ContentModel.SelectionCriteria criteria, params NuGet.ContentModel.PatternSet[] definitions) -> bool
 NuGet.ContentModel.ContentItemCollection.Load(System.Collections.Generic.IEnumerable<string> paths) -> void

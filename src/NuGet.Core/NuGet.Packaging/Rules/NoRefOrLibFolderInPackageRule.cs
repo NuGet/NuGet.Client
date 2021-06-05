@@ -38,9 +38,12 @@ namespace NuGet.Packaging.Rules
             var collection = new ContentItemCollection();
             collection.Load(files);
 
-            var libItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
-            var refItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
-            var buildItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.MSBuildFiles);
+            List<ContentItemGroup> libItems = new();
+            List<ContentItemGroup> refItems = new();
+            List<ContentItemGroup> buildItems = new();
+            ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies, libItems);
+            ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies, refItems);
+            ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.MSBuildFiles, buildItems);
 
             var libFrameworks = ContentExtractor.GetGroupFrameworks(libItems).ToArray();
             var refFrameworks = ContentExtractor.GetGroupFrameworks(refItems).ToArray();

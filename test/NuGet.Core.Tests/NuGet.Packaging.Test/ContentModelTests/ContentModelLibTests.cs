@@ -78,7 +78,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies)
+            List<ContentItemGroup> itemGroups = new();
+            collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
+            var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
 
@@ -101,7 +103,8 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies).ToList();
+            List<ContentItemGroup> groups = new();
+            collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
@@ -124,7 +127,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies)
+            List<ContentItemGroup> itemGroups = new();
+            collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
+            var groups = itemGroups
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
