@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 UpgradeMessage.Text = message;
-            });
+            }).PostOnFailure(nameof(PRMigratorBar));
         }
 
         public FileConflictAction ResolveFileConflict(string message)
@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     HideMigratorBar();
                 }
-            });
+            }).PostOnFailure(nameof(PRMigratorBar));
         }
 
         private async Task<bool> ShouldShowUpgradeProjectAsync()

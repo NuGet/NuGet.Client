@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -326,7 +327,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         _dte.Events.BuildEvents.OnBuildBegin -= BuildEvents_OnBuildBegin;
                         _dte.Events.SolutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
                     }
-                });
+                }).PostOnFailure(nameof(ProjectRetargetingHandler));
             }
         }
     }

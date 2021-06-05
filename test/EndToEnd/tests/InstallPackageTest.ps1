@@ -767,6 +767,7 @@ function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
 }
 
 function Test-SimpleBindingRedirectsClassLibraryReference {
+    [SkipTest('https://github.com/NuGet/Home/issues/10890')]
     param(
         $context
     )

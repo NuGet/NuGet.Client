@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -141,7 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     _vsSolution2.UnadviseSolutionEvents(_cookie);
                     _cookie = VSConstants.VSCOOKIE_NIL;
-                });
+                }).PostOnFailure(nameof(ProjectUpgradeHandler));
             }
         }
     }

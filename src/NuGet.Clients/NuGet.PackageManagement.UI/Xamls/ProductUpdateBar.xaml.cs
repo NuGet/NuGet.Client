@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -63,7 +64,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
             {
                 _productUpdateService.Update();
-            });
+            }).PostOnFailure(nameof(ProductUpdateBar));
         }
 
         private void OnDeclineUpdateLinkClick(object sender, RoutedEventArgs e)

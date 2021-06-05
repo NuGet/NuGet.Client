@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
@@ -97,7 +98,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     RestartBar.Visibility = Visibility.Collapsed;
                 }
-            });
+            }).PostOnFailure(nameof(RestartRequestBar));
         }
 
         private void ExecuteRestart(object sender, EventArgs e)
@@ -154,7 +155,7 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RequestRestartMessage.Text = message;
-            });
+            }).PostOnFailure(nameof(RestartRequestBar));
         }
     }
 }

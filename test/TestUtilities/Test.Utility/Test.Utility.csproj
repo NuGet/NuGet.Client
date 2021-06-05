@@ -56,8 +56,10 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">

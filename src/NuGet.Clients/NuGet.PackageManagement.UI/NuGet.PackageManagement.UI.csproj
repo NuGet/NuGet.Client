@@ -510,6 +510,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
@@ -518,7 +519,6 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

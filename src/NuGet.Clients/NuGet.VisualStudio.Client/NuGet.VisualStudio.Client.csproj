@@ -36,6 +36,9 @@
     <CreateVsixContainer>True</CreateVsixContainer>
     <DeployExtension>True</DeployExtension>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -122,7 +125,7 @@
       <Name>NuGet.Common</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Configuration\NuGet.Configuration.csproj">
@@ -130,7 +133,7 @@
       <Name>NuGet.Configuration</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj">
@@ -138,7 +141,7 @@
       <Name>NuGet.DependencyResolver.Core</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Frameworks\NuGet.Frameworks.csproj">
@@ -146,7 +149,7 @@
       <Name>NuGet.Frameworks</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.LibraryModel\NuGet.LibraryModel.csproj">
@@ -154,7 +157,7 @@
       <Name>NuGet.LibraryModel</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj">
@@ -164,7 +167,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\NuGet.Packaging.csproj">
@@ -172,7 +175,7 @@
       <Name>NuGet.Packaging</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj">
@@ -180,7 +183,7 @@
       <Name>NuGet.ProjectModel</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj">
@@ -188,7 +191,7 @@
       <Name>NuGet.Protocol</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Resolver\NuGet.Resolver.csproj">
@@ -200,7 +203,7 @@
       <Name>NuGet.Versioning</Name>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Tools\NuGet.Tools.csproj">
@@ -222,7 +225,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj">
@@ -238,7 +241,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj">
@@ -252,7 +255,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
@@ -274,7 +277,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj">
@@ -296,7 +299,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
@@ -306,7 +309,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
@@ -363,10 +366,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="$(VSSDKBuildToolsVersion)" PrivateAssets="All" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(PkgMicrosoft_VSSDK_BuildTools)\tools\VSSDK\Microsoft.VsSDK.targets" Condition="'$(PkgMicrosoft_VSSDK_BuildTools)' != ''" />
   <Target Name="FindSourceVsixManifest">

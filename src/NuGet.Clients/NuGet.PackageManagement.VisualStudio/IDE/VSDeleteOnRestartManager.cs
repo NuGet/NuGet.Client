@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -213,7 +214,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext))
+                                                   .PostOnFailure(nameof(VsDeleteOnRestartManager));
         }
     }
 }

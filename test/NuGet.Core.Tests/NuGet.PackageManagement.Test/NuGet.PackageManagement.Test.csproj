@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities" />
   </ItemGroup>
 

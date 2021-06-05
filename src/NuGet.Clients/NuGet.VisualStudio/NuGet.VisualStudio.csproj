@@ -24,7 +24,9 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="VSSDK.TemplateWizardInterface" />
+    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +52,5 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

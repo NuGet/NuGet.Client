@@ -53,6 +53,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 

@@ -19,6 +19,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
@@ -644,7 +645,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
-                    );
+                    ).PostOnFailure(nameof(InfiniteScrollList));
                 }
             }
         }

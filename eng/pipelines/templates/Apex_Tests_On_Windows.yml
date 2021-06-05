@@ -35,13 +35,13 @@ steps:
   displayName: "SetupFunctionalTests.ps1"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-    arguments: "-VSVersion 16.0"
+    arguments: "-VSVersion 17.0"
 
 - task: PowerShell@1
   displayName: "InstallNuGetVSIX.ps1"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 16.0"
+    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 17.0"
     failOnStandardError: "false"
 
 # - task: PowerShell@1
@@ -69,7 +69,8 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber)"
+    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+    msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
 
 - task: MSBuild@1
   displayName: "Run Apex Tests (continue on error)"
@@ -79,7 +80,8 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -91,7 +93,8 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
     maximumCpuCount: true
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
