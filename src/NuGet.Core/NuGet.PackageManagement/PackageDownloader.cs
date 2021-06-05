@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement
                 if (nameSpacePackageSources != null)
                 {
                     var packageSourcesAtPrefix = string.Join(", ", nameSpacePackageSources);
-                    logger.LogDebug( StringFormatter.Log_PackageNamespacePrefixMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
+                    logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
                 }
                 else
                 {

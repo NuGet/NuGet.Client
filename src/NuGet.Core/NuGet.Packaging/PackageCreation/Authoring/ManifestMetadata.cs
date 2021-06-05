@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
@@ -308,7 +309,7 @@ namespace NuGet.Packaging
             }
             else
             {
-                if (Id.Length > PackageIdValidator.MaxPackageIdLength)
+                if (Id.Length > PackageNamespacesConfiguration.PackageIdMaxLength)
                 {
                     yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_IdMaxLengthExceeded);
                 }

@@ -4,13 +4,13 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using NuGet.Configuration;
 using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet.Packaging
 {
     public static class PackageIdValidator
     {
-        public const int MaxPackageIdLength = 100; // This value also set in src\NuGet.Core\NuGet.Configuration\PackageNamespaces\PackageNamespacesConfiguration.cs
         private static readonly Regex IdRegex = new Regex(pattern: @"^\w+([.-]\w+)*$",
             options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
             matchTimeout: TimeSpan.FromSeconds(10));
@@ -26,7 +26,7 @@ namespace NuGet.Packaging
 
         public static void ValidatePackageId(string packageId)
         {
-            if (packageId.Length > MaxPackageIdLength)
+            if (packageId.Length > PackageNamespacesConfiguration.PackageIdMaxLength)
             {
                 throw new ArgumentException(NuGetResources.Manifest_IdMaxLengthExceeded);
             }
