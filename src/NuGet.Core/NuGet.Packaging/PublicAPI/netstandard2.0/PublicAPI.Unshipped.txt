@@ -11,5 +11,6 @@ NuGet.Packaging.ManifestMetadata.Readme.set -> void
 NuGet.Packaging.NuspecReader.GetReadme() -> string
 NuGet.Packaging.PackageBuilder.Readme.get -> string
 NuGet.Packaging.PackageBuilder.Readme.set -> void
+override NuGet.Packaging.PackageArchiveReader.CopyNupkgAsync(string nupkgFilePath, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
 static NuGet.Packaging.Licenses.NuGetLicenseData.LicenseListVersion.get -> string
 static NuGet.Packaging.Signing.SignatureLog.MinimalLog(string message) -> NuGet.Packaging.Signing.SignatureLog
