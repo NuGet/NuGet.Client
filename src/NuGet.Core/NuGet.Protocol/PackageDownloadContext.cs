@@ -12,14 +12,16 @@ namespace NuGet.Protocol.Core.Types
         public PackageDownloadContext(SourceCacheContext sourceCacheContext) : this(
             sourceCacheContext,
             directDownloadDirectory: null,
-            directDownload: false)
+            directDownload: false,
+            packageNamespacesConfiguration: null)
         {
         }
 
         public PackageDownloadContext(
             SourceCacheContext sourceCacheContext,
             string directDownloadDirectory,
-            bool directDownload)
+            bool directDownload,
+            PackageNamespacesConfiguration packageNamespacesConfiguration)
         {
             if (sourceCacheContext == null)
             {
@@ -36,15 +38,6 @@ namespace NuGet.Protocol.Core.Types
             SourceCacheContext = sourceCacheContext;
             DirectDownload = directDownload;
             DirectDownloadDirectory = directDownloadDirectory;
-        }
-
-        public PackageDownloadContext(
-            SourceCacheContext sourceCacheContext,
-            string directDownloadDirectory,
-            bool directDownload,
-            PackageNamespacesConfiguration packageNamespacesConfiguration)
-            : this(sourceCacheContext, directDownloadDirectory, directDownload)
-        {
             PackageNamespacesConfiguration = packageNamespacesConfiguration;
         }
 

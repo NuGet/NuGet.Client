@@ -104,11 +104,11 @@ namespace NuGet.PackageManagement
                 if (nameSpacePackageSources != null)
                 {
                     var packageSourcesAtPrefix = string.Join(", ", nameSpacePackageSources);
-                    logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixMatchFound, packageIdentity.Id, packageSourcesAtPrefix));
+                    logger.LogDebug( StringFormatter.Log_PackageNamespacePrefixMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
                 }
                 else
                 {
-                    logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixNoMatchFound, packageIdentity.Id));
+                    logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixNoMatchFound(packageIdentity.Id));
                 }
 
                 while (groups.Count > 0)

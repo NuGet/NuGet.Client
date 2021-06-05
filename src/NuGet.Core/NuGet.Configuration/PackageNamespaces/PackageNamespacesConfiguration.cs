@@ -9,6 +9,8 @@ namespace NuGet.Configuration
 {
     public class PackageNamespacesConfiguration
     {
+        public static int PackageIdMaxLength { get; } = 100;
+
         /// <summary>
         /// Source name to package namespace list.
         /// </summary>

@@ -572,7 +572,8 @@ namespace NuGet.PackageManagement
                 var downloadContext = new PackageDownloadContext(
                     cacheContext,
                     directDownloadDirectory,
-                    directDownload: true);
+                    directDownload: true,
+                    packageNamespacesConfiguration: null);
 
                 // Act
                 using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(

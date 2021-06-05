@@ -9,7 +9,6 @@ namespace NuGet.Configuration
     internal class SearchTree
     {
         private readonly SearchNode _root;
-        private const int PackageIdMaxLength = 100;
 
         internal SearchTree(PackageNamespacesConfiguration configuration)
         {
@@ -39,7 +38,7 @@ namespace NuGet.Configuration
             }
 
             // To prevent from unwanted behaviour.
-            if (namespaceId.Length > PackageIdMaxLength)
+            if (namespaceId.Length > PackageNamespacesConfiguration.PackageIdMaxLength)
             {
                 throw new ArgumentOutOfRangeException(nameof(namespaceId));
             }
