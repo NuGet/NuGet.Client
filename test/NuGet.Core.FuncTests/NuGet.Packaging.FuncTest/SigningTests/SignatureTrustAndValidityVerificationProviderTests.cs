@@ -1552,91 +1552,97 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
-            // Case1: primary signature (trusted + non-expired) doesn't fall back to countersiganture (trusted + non-expired).
+            // Case1: primary signature (trusted + non-expired) doesn't fall back to countersignature (trusted + non-expired).
             // The verification result is the primary signature status(valid). 
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromGoodPrimarySigntuareToGoodCountersignature_NoFallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_WithGoodPrimarySignatureAndGoodCountersignature_NoFallbackAndReturnsValidAsync()
             {
-                var settings = _defaultNuGetOrgSettings;
-
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     authorCertificate: _fixture.TrustedTestCertificate.Source.Cert,
                     repositoryCertificate: _fixture.TrustedRepositoryCertificate.Source.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Empty(NU3037Issues);
                 }
             }
 
-            // Case2: primary signature (trusted + non-expired) doesn't fall back to countersiganture untrusted + non-expired).
+            // Case2: primary signature (trusted + non-expired) doesn't fall back to countersignature untrusted + non-expired).
             // The verification result is the primary signature status(valid).
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromGoodPrimarySigntuareToUntrustedCountersignature_NoFallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_WithGoodPrimarySignatureAndUntrustedCountersignature_NoFallbackAndReturnsValidAsync()
             {
-                var settings = _defaultNuGetOrgSettings;
-
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     authorCertificate: _fixture.TrustedTestCertificate.Source.Cert,
                     repositoryCertificate: _fixture.UntrustedTestCertificate.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Empty(NU3037Issues);
                 }
             }
 
-            // Case3: primary signature (untrusted + non-expired) falls back to countersiganture (trusted + non-expired).
-            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
+            // Case3: primary signature (untrusted + non-expired) falls back to countersignature (trusted + non-expired).
+            // The verification result is the severe one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromUntrustedPrimarySigntuareToGoodCountersignature_FallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_WithUntrustedPrimarySignatureAndGoodCountersignature_FallbackAndReturnsValidAsync()
             {
-                var settings = _defaultNuGetOrgSettings;
-
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     authorCertificate: _fixture.UntrustedTestCertificate.Cert,
                     repositoryCertificate: _fixture.TrustedRepositoryCertificate.Source.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Empty(NU3037Issues);
                 }
             }
 
-            // Case4: primary signature (untrusted + non-expired) falls back to countersiganture (untrusted + non-expired).
-            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(disallowed), so it's disallowed.
+            // Case4: primary signature (untrusted + non-expired) falls back to countersignature (untrusted + non-expired).
+            // The verification result is the severe one of fallback status(disallowed) and the countersignature status(disallowed), so it's disallowed.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromUntrustedPrimarySigntuareToUntrustedCountersignature_FallbackAndReturnsDisallowedAsync()
+            public async Task GetTrustResultAsync_WithUntrustedPrimarySignatureAndUntrustedCountersignature_FallbackAndReturnsDisallowedAsync()
             {
-                var settings = _defaultNuGetOrgSettings;
-
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     authorCertificate: _fixture.UntrustedTestCertificate.Cert,
                     repositoryCertificate: _fixture.UntrustedTestCertificate.Cert))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Equal(NU3018Issues.Count(), 2);
+                    Assert.Empty(NU3037Issues);
                 }
             }
 
-            // Case5: primary signature (trusted + expired) falls back to countersiganture (trusted + non-expired).
+            // Case5: primary signature (trusted + expired) falls back to countersignature (trusted + non-expired).
             // And the timestamp on countersignature could fullfill the role of a trust anchor for primary signature.
-            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
+            // The verification result is the severe one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToGoodCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_WithExpiredPrimarySignatureAndGoodCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
-                var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1648,20 +1654,22 @@ namespace NuGet.Packaging.FuncTest
                 {
                     await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Empty(NU3037Issues);
                 }
             }
 
-            // Case6: primary signature (trusted + expired) falls back to countersiganture (untrusted + non-expired).
-            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(disallowed), so it's disallowed.
+            // Case6: primary signature (trusted + expired) falls back to countersignature (untrusted + non-expired).
+            // The verification result is the severe one of fallback status(disallowed) and the countersignature status(disallowed), so it's disallowed.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToUntrustedCountersignatureWithTimestamp_FallbackAndReturnsDisallowedAsync()
+            public async Task GetTrustResultAsync_WithExpiredPrimarySignatureAndUntrustedCountersignatureWithTimestamp_FallbackAndReturnsDisallowedAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
-                var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1673,20 +1681,22 @@ namespace NuGet.Packaging.FuncTest
                 {
                     await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Equal(NU3018Issues.Count(), 1);
+                    Assert.Equal(NU3037Issues.Count(), 1);
                 }
             }
 
-            // Case7: primary signature (trusted + expired) falls back to countersiganture (trusted + non-expired).
+            // Case7: primary signature (trusted + expired) falls back to countersignature (trusted + non-expired).
             // But the timestamp on countersignature could NOT fullfill the role of a trust anchor for primary signature.
-            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(valid), so it's disallowed.
+            // The verification result is the severe one of fallback status(disallowed) and the countersignature status(valid), so it's disallowed.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToGoodCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
+            public async Task GetTrustResultAsync_WithExpiredPrimarySignatureAndGoodCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
             {
-                var settings = _defaultNuGetOrgSettings;
-
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     authorCertificate: authorSigningCertificate,
@@ -1695,21 +1705,23 @@ namespace NuGet.Packaging.FuncTest
                 {
                     await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Equal(NU3037Issues.Count(), 1);
                 }
             }
 
-            // Case8: primary signature (trusted + expired) falls back to countersiganture (trusted + expired but protected by a timestamp).
+            // Case8: primary signature (trusted + expired) falls back to countersignature (trusted + expired but protected by a timestamp).
             // And the timestamp on countersignature could fullfill the role of a trust anchor for primary signature.
-            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
+            // The verification result is the severe one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromExpiredPrimarySigntuareToExpiredCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_WithExpiredPrimarySignatureAndExpiredCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
-                var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = await GetExpiringCertificateAsync(_fixture))
                 using (X509Certificate2 repositorySigningCertificate = await GetExpiringCertificateAsync(_fixture))
@@ -1723,20 +1735,22 @@ namespace NuGet.Packaging.FuncTest
                     await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
                     await SignatureTestUtility.WaitForCertificateExpirationAsync(repositorySigningCertificate);
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Empty(NU3018Issues);
                 }
             }
 
-            // Case9: primary signature (untrusted + expired) falls back to countersiganture (trusted + non-expired).
+            // Case9: primary signature (untrusted + expired) falls back to countersignature (trusted + non-expired).
             // But the timestamp on countersignature could NOT fullfill the role of a trust anchor for primary signature.
-            // The verification result is the sever one of fallback status(disallowed) and the countersignature status(valid), so it's disallowed.
+            // The verification result is the severe one of fallback status(disallowed) and the countersignature status(valid), so it's disallowed.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToGoodCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
+            public async Task GetTrustResultAsync_WithUntrustedExpiredPrimarySignatureAndGoodCountersignatureWithNoTimestamp_FallbackAndReturnsDisallowedAsync()
             {
-                var settings = _defaultNuGetOrgSettings;
-
                 using (X509Certificate2 authorSigningCertificate = _fixture.CreateUntrustedTestCertificateThatWillExpireSoon().Cert)
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                     authorCertificate: authorSigningCertificate,
@@ -1745,21 +1759,23 @@ namespace NuGet.Packaging.FuncTest
                 {
                     await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Equal(NU3037Issues.Count(), 1);
                 }
             }
 
-            // Case10: primary signature (untrusted + expired) falls back to countersiganture (trusted + non-expired).
+            // Case10: primary signature (untrusted + expired) falls back to countersignature (trusted + non-expired).
             // And the timestamp on countersignature could fullfill the role of a trust anchor for primary signature.
-            // The verification result is the sever one of fallback status(valid) and the countersignature status(valid), so it's valid.
+            // The verification result is the severe one of fallback status(valid) and the countersignature status(valid), so it's valid.
             [CIOnlyFact]
-            public async Task GetTrustResultAsync_FallbackFromUntrustedExpiredPrimarySigntuareToGoodCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
+            public async Task GetTrustResultAsync_WithUntrustedExpiredPrimarySignatureAndGoodCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
-                var settings = _defaultNuGetOrgSettings;
 
                 using (X509Certificate2 authorSigningCertificate = _fixture.CreateUntrustedTestCertificateThatWillExpireSoon().Cert)
                 using (Test test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
@@ -1771,9 +1787,13 @@ namespace NuGet.Packaging.FuncTest
                 {
                     await SignatureTestUtility.WaitForCertificateExpirationAsync(authorSigningCertificate);
                     PrimarySignature primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
-                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
+                    PackageVerificationResult status = await _provider.GetTrustResultAsync(packageReader, primarySignature, _defaultNuGetOrgSettings, CancellationToken.None);
 
                     Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
+                    IEnumerable<SignatureLog> NU3018Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3018);
+                    IEnumerable<SignatureLog> NU3037Issues = status.Issues.Where(log => log.Code == NuGetLogCode.NU3037);
+                    Assert.Empty(NU3018Issues);
+                    Assert.Empty(NU3037Issues);
                 }
             }
         }
