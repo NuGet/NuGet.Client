@@ -9,10 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj">
-      <Name>NuGet.VisualStudio</Name>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </ProjectReference>
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 

@@ -74,7 +74,6 @@
     <ProjectReference Include="..\NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj">
       <Project>{4003E1AB-70DE-4B9C-8999-96160EE91D84}</Project>
       <Name>NuGet.SolutionRestoreManager.Interop</Name>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}</Project>

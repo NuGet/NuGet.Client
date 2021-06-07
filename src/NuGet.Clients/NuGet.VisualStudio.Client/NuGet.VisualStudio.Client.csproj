@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
@@ -205,6 +205,12 @@
       <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
       <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj">
+      <Project>{4003e1ab-70de-4b9c-8999-96160ee91d84}</Project>
+      <Name>NuGet.SolutionRestoreManager.Interop</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Tools\NuGet.Tools.csproj">
       <Project>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</Project>

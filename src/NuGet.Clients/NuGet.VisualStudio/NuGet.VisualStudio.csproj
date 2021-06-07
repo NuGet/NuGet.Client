@@ -13,7 +13,6 @@
     <PackageId>NuGet.VisualStudio</PackageId>
     <AssemblyDescription>APIs for invoking NuGet services in Visual Studio.</AssemblyDescription>
     <Description>APIs for invoking NuGet services in Visual Studio.</Description>
-    <ImportedFromTypeLib>NuGet.VisualStudio</ImportedFromTypeLib>
     <Guid>228F7591-2777-47D7-B81D-FEADFC71CEB5</Guid>
     <ComVisible>false</ComVisible>
     <authors>Microsoft</authors>
@@ -27,13 +26,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="NuGet.VisualStudio.targets">
-      <PackagePath>build</PackagePath>
-      <Pack>true</Pack>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
