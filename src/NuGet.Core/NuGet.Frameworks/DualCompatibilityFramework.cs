@@ -24,6 +24,7 @@ namespace NuGet.Frameworks
         public NuGetFramework SecondaryFramework { get; }
 
         private int? _hashCode;
+        private FallbackFramework _fallbackFramework;
 
         /// <summary>
         /// Multiple compatbility 
@@ -48,7 +49,12 @@ namespace NuGet.Frameworks
         /// </summary>
         public FallbackFramework AsFallbackFramework()
         {
-            return new FallbackFramework(RootFramework, new NuGetFramework[] { SecondaryFramework });
+            if (_fallbackFramework == null)
+            {
+                _fallbackFramework = new FallbackFramework(RootFramework, new NuGetFramework[] { SecondaryFramework });
+            }
+
+            return _fallbackFramework;
         }
 
         private static NuGetFramework ValidateFrameworkArgument(NuGetFramework framework)
@@ -87,7 +93,7 @@ namespace NuGet.Frameworks
             {
                 var combiner = new HashCodeCombiner();
                 // Ensure that this is different from AssetTargetFallback & FallbackFramework;
-                combiner.AddStringIgnoreCase("multipleCompat");
+                combiner.AddStringIgnoreCase(nameof(DualCompatibilityFramework));
                 combiner.AddObject(Comparer.GetHashCode(RootFramework));
                 combiner.AddObject(Comparer.GetHashCode(SecondaryFramework));
                 _hashCode = combiner.CombinedHash;

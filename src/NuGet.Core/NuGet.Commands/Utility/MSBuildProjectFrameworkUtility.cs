@@ -170,14 +170,18 @@ namespace NuGet.Commands
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
-            bool isCppCli = clrSupport?.Equals("NetCore", StringComparison.OrdinalIgnoreCase) == true;
+            bool isCppCliSet = clrSupport?.Equals("NetCore", StringComparison.OrdinalIgnoreCase) == true;
+            bool isCppCli = false;
             // C++ check
-            if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase) == true
-                && !isCppCli)
+            if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase) == true)
             {
-                // The C++ project does not have a TargetFrameworkMoniker property set. 
-                // We hard-code the return value to Native.
-                return FrameworkConstants.CommonFrameworks.Native;
+                if (!isCppCliSet)
+                {
+                    // The C++ project does not have a TargetFrameworkMoniker property set. 
+                    // We hard-code the return value to Native.
+                    return FrameworkConstants.CommonFrameworks.Native;
+                }
+                isCppCli = true;
             }
 
             // The MP project does not have a TargetFrameworkMoniker property set. 

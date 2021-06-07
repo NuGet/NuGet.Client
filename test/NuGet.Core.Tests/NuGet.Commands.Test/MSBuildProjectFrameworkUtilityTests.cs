@@ -299,6 +299,10 @@ namespace NuGet.Commands.Test
                 Assert.Equal(expectedPrimaryShortName, extendedFramework.RootFramework.GetShortFolderName());
                 Assert.Equal(expectedSecondaryShortName, extendedFramework.SecondaryFramework.GetShortFolderName());
             }
+            else
+            {
+                Assert.Null(nugetFramework as DualCompatibilityFramework);
+            }
         }
 
         /// <summary>

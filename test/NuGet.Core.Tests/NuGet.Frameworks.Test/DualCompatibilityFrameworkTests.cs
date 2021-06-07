@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using FluentAssertions;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.Frameworks.Test
 {
@@ -42,8 +44,26 @@ namespace NuGet.Frameworks.Test
         public void DualCompatibilityFrameworkEquals_WithNonDualCompatibilityFramework_Succeeds(string shortFrameworkName)
         {
             var nugetFramework = NuGetFramework.Parse(shortFrameworkName);
-            var assetTargetFallback = new DualCompatibilityFramework(nugetFramework, secondaryFramework: NuGetFramework.AnyFramework);
-            Assert.False(assetTargetFallback.Equals((object)nugetFramework));
+            var dualCompatibilityFramework = new DualCompatibilityFramework(nugetFramework, secondaryFramework: NuGetFramework.AnyFramework);
+            Assert.False(dualCompatibilityFramework.Equals((object)nugetFramework));
+        }
+
+        [Fact]
+        public void AsFallbackFramework_WhenCalledMultipleTimes_CachesFallbackObjectReference()
+        {
+            var nugetFramework = CommonFrameworks.Net50;
+            var dualCompatibilityFramework = new DualCompatibilityFramework(nugetFramework, secondaryFramework: NuGetFramework.AnyFramework);
+
+            FallbackFramework fallbackFramework = dualCompatibilityFramework.AsFallbackFramework();
+
+            var comparer = new NuGetFrameworkFullComparer();
+            Assert.True(comparer.Equals(fallbackFramework, nugetFramework));
+
+            fallbackFramework.Fallback.Should().HaveCount(1);
+            fallbackFramework.Fallback.Single().Should().Be(NuGetFramework.AnyFramework);
+
+            FallbackFramework fallbackFramework2 = dualCompatibilityFramework.AsFallbackFramework();
+            fallbackFramework.Should().BeSameAs(fallbackFramework2);
         }
     }
 }
