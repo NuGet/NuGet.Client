@@ -144,7 +144,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         {
             var source = new PackageSource(@"C:\packages");
             string expectedVsOfflinePackagesPath = null;
-        bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
+            bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
 
             Assert.False(actualResult);
         }
