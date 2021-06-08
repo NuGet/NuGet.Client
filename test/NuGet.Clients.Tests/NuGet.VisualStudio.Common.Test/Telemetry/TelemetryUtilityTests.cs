@@ -122,7 +122,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(expected, actual);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10926")]
         public void IsVsOfflineFeed_WhenSourceIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(() => TelemetryUtility.IsVsOfflineFeed(source: null));
@@ -130,7 +130,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal("source", exception.ParamName);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/10926")]
         public void IsVsOfflineFeed_WhenSourceIsNotLocal_ReturnsFalse()
         {
             var source = new PackageSource("https://nuget.test");
