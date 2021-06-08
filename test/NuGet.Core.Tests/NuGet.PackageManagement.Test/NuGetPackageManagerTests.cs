@@ -5070,8 +5070,7 @@ namespace NuGet.Test
                     var downloadContext = new PackageDownloadContext(
                         cacheContext,
                         directDownloadDirectory,
-                        directDownload: true,
-                        packageNamespacesConfiguration: null);
+                        directDownload: true);
 
                     await nuGetPackageManager.RestorePackageAsync(
                         packageIdentity,

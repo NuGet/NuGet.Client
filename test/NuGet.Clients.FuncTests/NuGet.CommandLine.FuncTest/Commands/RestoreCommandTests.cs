@@ -1272,7 +1272,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-
         [Fact]
         public async Task Restore_PackageNamespacePartialPrefixes_Fails()
         {
