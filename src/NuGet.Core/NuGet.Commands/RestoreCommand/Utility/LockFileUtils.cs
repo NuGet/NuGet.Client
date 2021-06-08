@@ -142,7 +142,7 @@ namespace NuGet.Commands
             // Create an ordered list of selection criteria. Each will be applied, if the result is empty
             // fallback frameworks from "imports" will be tried.
             // These are only used for framework/RID combinations where content model handles everything.
-            // AssetTargetFallback frameworks will provide multiple criteria since all assets need to be
+            // AssetTargetFallback and DualCompatbiility frameworks will provide multiple criteria since all assets need to be
             // evaluated before selecting the TFM to use.
             var orderedCriteriaSets = new List<List<SelectionCriteria>>(1);
 
@@ -152,6 +152,11 @@ namespace NuGet.Commands
             {
                 // Add the root project framework first.
                 orderedCriteriaSets.Add(CreateCriteria(targetGraph, assetTargetFallback.RootFramework));
+                // Add the secondary framework if dual compatibility framework.
+                if (assetTargetFallback.RootFramework is DualCompatibilityFramework dualCompatibilityFramework)
+                {
+                    orderedCriteriaSets.Add(CreateCriteria(targetGraph, dualCompatibilityFramework.SecondaryFramework));
+                }
 
                 // Add all fallbacks in order.
                 orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => CreateCriteria(targetGraph, e)));
@@ -160,6 +165,11 @@ namespace NuGet.Commands
             {
                 // Add the current framework.
                 orderedCriteriaSets.Add(CreateCriteria(targetGraph, framework));
+
+                if (framework is DualCompatibilityFramework dualCompatibilityFramework)
+                {
+                    orderedCriteriaSets.Add(CreateCriteria(targetGraph, dualCompatibilityFramework.SecondaryFramework));
+                }
             }
 
             return orderedCriteriaSets;
@@ -458,9 +468,17 @@ namespace NuGet.Commands
         {
             if (dependencies == null)
             {
-                // AssetFallbackFramework does not apply to dependencies.
+                // DualCompatibilityFramework & AssetFallbackFramework does not apply to dependencies.
                 // Convert it to a fallback framework if needed.
-                var currentFramework = (framework as AssetTargetFallbackFramework)?.AsFallbackFramework() ?? framework;
+                NuGetFramework currentFramework = framework;
+                if (framework is AssetTargetFallbackFramework atf)
+                {
+                    currentFramework = atf.AsFallbackFramework();
+                }
+                else if (framework is DualCompatibilityFramework mcf)
+                {
+                    currentFramework = mcf.AsFallbackFramework();
+                }
 
                 var dependencySet = nuspec
                     .GetDependencyGroups()

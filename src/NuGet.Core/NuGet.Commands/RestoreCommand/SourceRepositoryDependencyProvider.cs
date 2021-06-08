@@ -465,12 +465,32 @@ namespace NuGet.Commands
                 targetFramework,
                 item => item.TargetFramework);
 
+            if (dependencyGroup == null && DeconstructFallbackFrameworks(targetFramework) is DualCompatibilityFramework dualCompatibilityFramework)
+            {
+                dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups, dualCompatibilityFramework.SecondaryFramework, item => item.TargetFramework);
+            }
+
             if (dependencyGroup != null)
             {
                 return dependencyGroup.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec).ToArray();
             }
 
             return Enumerable.Empty<LibraryDependency>();
+        }
+
+        private static NuGetFramework DeconstructFallbackFrameworks(NuGetFramework nuGetFramework)
+        {
+            if (nuGetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            {
+                return assetTargetFallbackFramework.RootFramework;
+            }
+
+            if (nuGetFramework is FallbackFramework fallbackFramework)
+            {
+                return fallbackFramework;
+            }
+
+            return nuGetFramework;
         }
 
         private async Task EnsureResource()

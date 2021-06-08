@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using FluentAssertions;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -1585,6 +1586,21 @@ namespace NuGet.ProjectModel.Test
             TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(expectedValue, framework.AssetTargetFallback);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithAssetTargetFallbackAndImportsValues_ReturnsValidAssetTargetFallbackFramework()
+        {
+            var json = $"{{\"frameworks\":{{\"net5.0\":{{\"assetTargetFallback\": true, \"imports\": [\"net472\", \"net471\"]}}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json);
+
+            framework.AssetTargetFallback.Should().BeTrue();
+            var assetTargetFallback = framework.FrameworkName as AssetTargetFallbackFramework;
+            assetTargetFallback.RootFramework.Should().Be(FrameworkConstants.CommonFrameworks.Net50);
+            assetTargetFallback.Fallback.Should().HaveCount(2);
+            assetTargetFallback.Fallback.First().Should().Be(FrameworkConstants.CommonFrameworks.Net472);
+            assetTargetFallback.Fallback.Last().Should().Be(FrameworkConstants.CommonFrameworks.Net471);
         }
 
         [Fact]
@@ -3573,6 +3589,35 @@ namespace NuGet.ProjectModel.Test
             Assert.True(secondGroup.TransitiveDependencies.First().VersionCentrallyManaged);
         }
 
+        [Fact]
+        public void GetPackageSpec_WithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework()
+        {
+            var json = $"{{\"frameworks\":{{\"net5.0\":{{\"secondaryFramework\": \"native\"}}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json);
+            framework.FrameworkName.Should().BeOfType<DualCompatibilityFramework>();
+            var dualCompatibilityFramework = framework.FrameworkName as DualCompatibilityFramework;
+            dualCompatibilityFramework.RootFramework.Should().Be(FrameworkConstants.CommonFrameworks.Net50);
+            dualCompatibilityFramework.SecondaryFramework.Should().Be(FrameworkConstants.CommonFrameworks.Native);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithAssetTargetFallbackAndWithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework()
+        {
+            var json = $"{{\"frameworks\":{{\"net5.0\":{{\"assetTargetFallback\": true, \"imports\": [\"net472\", \"net471\"], \"secondaryFramework\": \"native\" }}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json);
+            framework.FrameworkName.Should().BeOfType<AssetTargetFallbackFramework>();
+            framework.AssetTargetFallback.Should().BeTrue();
+            var assetTargetFallbackFramework = framework.FrameworkName as AssetTargetFallbackFramework;
+            assetTargetFallbackFramework.RootFramework.Should().BeOfType<DualCompatibilityFramework>();
+            var dualCompatibilityFramework = assetTargetFallbackFramework.RootFramework as DualCompatibilityFramework;
+            dualCompatibilityFramework.RootFramework.Should().Be(FrameworkConstants.CommonFrameworks.Net50);
+            dualCompatibilityFramework.SecondaryFramework.Should().Be(FrameworkConstants.CommonFrameworks.Native);
+            assetTargetFallbackFramework.Fallback.Should().HaveCount(2);
+            assetTargetFallbackFramework.Fallback.First().Should().Be(FrameworkConstants.CommonFrameworks.Net472);
+            assetTargetFallbackFramework.Fallback.Last().Should().Be(FrameworkConstants.CommonFrameworks.Net471);
+        }
 
         private static PackageSpec GetPackageSpec(string json)
         {

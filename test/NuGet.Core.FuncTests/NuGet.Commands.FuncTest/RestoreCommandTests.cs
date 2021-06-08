@@ -3055,6 +3055,130 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+        [Fact]
+        public async Task RestoreCommand_WithCPPCliProject_WithNativePackageWithTransitiveDependency_Succeeds()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0-windows7.0"": {
+                            ""targetAlias"" : ""net5.0-windows"",
+                            ""secondaryFramework"" : ""native"",
+                            ""dependencies"": {
+                                ""Native"": {
+                                    ""version"" : ""1.0.0"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+            // Arrange
+            var nativePackage = new SimpleTestPackageContext("native", "1.0.0");
+            nativePackage.AddFile("lib/native/native.dll");
+
+            var nativePackageChild = new SimpleTestPackageContext("native.child", "1.0.0");
+            nativePackageChild.AddFile("lib/native/native.child.dll");
+
+            nativePackage.PerFrameworkDependencies.Add(CommonFrameworks.Native, new List<SimpleTestPackageContext> { nativePackageChild });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                nativePackage,
+                nativePackageChild);
+
+            var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+            var logger = new TestLogger();
+
+            var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+            var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.vcxproj")).WithTestRestoreMetadata();
+
+            var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+            {
+                ProjectStyle = ProjectStyle.PackageReference,
+            };
+            var command = new RestoreCommand(request);
+
+            // Preconditions
+            var result = await command.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(2);
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithCPPCliProjectWithAssetTargetFallback_WithNativePackageWithTransitiveDependency_Succeeds()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0-windows7.0"": {
+                            ""targetAlias"" : ""net5.0-windows"",
+                            ""assetTargetFallback"" : true,
+                            ""imports"" : [
+                                ""net472""
+                            ],
+                            ""secondaryFramework"" : ""native"",
+                            ""dependencies"": {
+                                ""Native"": {
+                                    ""version"" : ""1.0.0"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+            // Arrange
+            var nativePackage = new SimpleTestPackageContext("native", "1.0.0");
+            nativePackage.AddFile("lib/native/native.dll");
+
+            var nativePackageChild = new SimpleTestPackageContext("native.child", "1.0.0");
+            nativePackageChild.AddFile("lib/native/native.child.dll");
+
+            nativePackage.PerFrameworkDependencies.Add(CommonFrameworks.Native, new List<SimpleTestPackageContext> { nativePackageChild });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                nativePackage,
+                nativePackageChild);
+
+            var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+            var logger = new TestLogger();
+
+            var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+            var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.vcxproj")).WithTestRestoreMetadata();
+
+            var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+            {
+                ProjectStyle = ProjectStyle.PackageReference,
+            };
+            var command = new RestoreCommand(request);
+
+            // Preconditions
+            var result = await command.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(2);
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
+            result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

@@ -1,2 +1,3 @@
 NuGet.Commands.SignArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.Commands.SignArgs.PackagePaths.set -> void
+static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion, string clrSupport) -> NuGet.Frameworks.NuGetFramework

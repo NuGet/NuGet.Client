@@ -195,7 +195,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 originalTargetFramework: tfm.TargetAlias);
         }
 
-        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(NuGetFramework framework, string originalString = null)
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(NuGetFramework framework, string originalString = null, string clrSupport = null)
         {
             return new IVsProjectProperty[]
             {
@@ -206,7 +206,8 @@ namespace NuGet.SolutionRestoreManager.Test
                 new VsProjectProperty(ProjectBuildProperties.TargetFrameworkProfile, framework.Profile),
                 new VsProjectProperty(ProjectBuildProperties.TargetPlatformIdentifier, framework.Platform),
                 new VsProjectProperty(ProjectBuildProperties.TargetPlatformVersion, framework.PlatformVersion.ToString()),
-                new VsProjectProperty(ProjectBuildProperties.TargetFramework, originalString ?? framework.GetShortFolderName())
+                new VsProjectProperty(ProjectBuildProperties.TargetFramework, originalString ?? framework.GetShortFolderName()),
+                new VsProjectProperty(ProjectBuildProperties.CLRSupport, clrSupport ?? string.Empty)
             };
         }
 
