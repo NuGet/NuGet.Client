@@ -3,7 +3,6 @@ NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
 NuGet.Configuration.PackageNamespacesConfiguration.Match(string term) -> System.Collections.Generic.HashSet<string>
-NuGet.Configuration.PackageNamespacesConfiguration.Namespaces.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.IReadOnlyList<string>>
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void

@@ -1324,6 +1324,7 @@ const NuGet.Packaging.ManifestVersionUtility.TargetFrameworkSupportForReferences
 const NuGet.Packaging.ManifestVersionUtility.XdtTransformationVersion = 6 -> int
 const NuGet.Packaging.PackageBuilder.MaxIconFileSize = 1048576 -> int
 const NuGet.Packaging.PackageExtractionTelemetryEvent.EventName = "PackageExtractionInformation" -> string
+const NuGet.Packaging.PackageIdValidator.MaxPackageIdLength = 100 -> int
 const NuGet.Packaging.PackageSigningTelemetryEvent.EventName = "SigningInformation" -> string
 const NuGet.Packaging.Signing.Oids.AnyPolicy = "2.5.29.32.0" -> string
 const NuGet.Packaging.Signing.Oids.AuthorityKeyIdentifier = "2.5.29.35" -> string

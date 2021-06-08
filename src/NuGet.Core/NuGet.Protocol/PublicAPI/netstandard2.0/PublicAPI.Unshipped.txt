@@ -1,4 +1,5 @@
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeUrl.get -> System.Uri
+NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload) -> void
 NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload, NuGet.Configuration.PackageNamespacesConfiguration packageNamespacesConfiguration) -> void
 NuGet.Protocol.Core.Types.PackageDownloadContext.PackageNamespacesConfiguration.get -> NuGet.Configuration.PackageNamespacesConfiguration
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeUrl.get -> System.Uri

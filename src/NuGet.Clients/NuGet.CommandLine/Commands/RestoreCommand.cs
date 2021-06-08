@@ -382,9 +382,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                PackageNamespacesConfiguration packageNamespacesConfiguration = Settings != null ?
-                                                                                PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings)
-                                                                                : null;
+                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
 
                 var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, packageNamespacesConfiguration)
                 {

@@ -98,9 +98,7 @@ namespace NuGet.Configuration
                 longestMatchingPrefixNode = currentNode;
             }
 
-            int i = 0;
-
-            for (; i < term.Length; i++)
+            for (int i = 0; i < term.Length; i++)
             {
                 char c = term[i];
 
@@ -116,6 +114,7 @@ namespace NuGet.Configuration
                 }
 
                 currentNode = currentNode.Children[c];
+
                 if (currentNode.PackageSources != null)
                 {
                     longestMatchingPrefixNode = currentNode;

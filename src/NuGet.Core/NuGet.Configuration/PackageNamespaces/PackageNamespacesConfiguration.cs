@@ -9,12 +9,16 @@ namespace NuGet.Configuration
 {
     public class PackageNamespacesConfiguration
     {
+        /// <summary>
+        /// Max allowed length for package Id.
+        /// In case update this value please update in src/NuGet.Core/NuGet.Configuration/PackageNamespaces/PackageNamespacesConfiguration.cs too.
+        /// </summary>
         public static int PackageIdMaxLength { get; } = 100;
 
         /// <summary>
         /// Source name to package namespace list.
         /// </summary>
-        public Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
+        internal Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
 
         private Lazy<SearchTree> SearchTree { get; }
 
