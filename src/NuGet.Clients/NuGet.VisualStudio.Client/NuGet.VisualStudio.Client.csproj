@@ -372,7 +372,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="$(VSSDKBuildToolsVersion)" PrivateAssets="All" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />

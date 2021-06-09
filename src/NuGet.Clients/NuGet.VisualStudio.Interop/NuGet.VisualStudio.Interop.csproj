@@ -17,10 +17,7 @@
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>

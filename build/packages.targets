@@ -32,40 +32,13 @@
         <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
         <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
+        <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-        <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.7.327-preview" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.67-g9e37b637e6" />
-        <PackageReference Update="Microsoft.VisualStudio.Composition" Version="16.4.11" />
-        <PackageReference Update="Microsoft.VisualStudio.Editor" Version="17.0.24-g4265d215ae" />
-        <PackageReference Update="Microsoft.VisualStudio.Language.Intellisense" Version="17.0.24-g4265d215ae" />
-        <PackageReference Update="Microsoft.VisualStudio.Language.StandardClassification" Version="17.0.24-g4265d215ae" />
         <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="17.0.77-pre-g62a6cb5699" />
         <PackageReference Update="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Services.Client" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
-
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview" />
-        <PackageReference Update="Microsoft.VisualStudio.OLE.Interop" Version="17.0.0-preview-2-31221-277" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="17.0.0-preview-2-31221-277" />
-        <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.8.0" Version="17.0.0-preview-2-31221-277" />
-        <PackageReference Update="Microsoft.VisualStudio.Interop" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.Internal.VisualStudio.Interop" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.Internal.VisualStudio.Interop.Embeddable" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.TemplateWizardInterface" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="17.0.67-g9e37b637e6" />
-        <PackageReference Update="Microsoft.VisualStudio.Text.Logic" Version="17.0.24-g4265d215ae" />
-        <PackageReference Update="Microsoft.VisualStudio.Text.UI" Version="17.0.24-g4265d215ae" />
-        <PackageReference Update="Microsoft.VisualStudio.Text.UI.Wpf" Version="17.0.24-g4265d215ae" />
-        <PackageReference Update="Microsoft.VisualStudio.Threading" Version="17.0.15-alpha" />
-        <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Validation" Version="17.0.12-alpha" />
         <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
         <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.1600" />
@@ -101,8 +74,6 @@
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.5.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
         <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.0.0-previews-1-31318-023" />
-        <PackageReference Update="Microsoft.VisualStudio.Diagnostics.Assert" Version="17.0.0-previews-1-31327-285" />
-        <PackageReference Update="Microsoft.VisualStudio.RpcContracts" Version="17.0.50-preview-0001-0001" />
         <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="17.0.4-alpha" />
         <PackageReference Update="Moq" Version="4.16.1" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
@@ -111,4 +82,26 @@
         <PackageReference Update="xunit.runner.visualstudio" Version="$(XunitVersion)" />
         <PackageReference Update="Xunit.StaFact" Version="0.2.9" />
     </ItemGroup>
-</Project>
+
+    <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.CommandLine.csproj' ">
+        <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
+    </ItemGroup>
+
+    <!--
+      Packages that provide NuGet's Visual Studio extensibility APIs should not depend on the Visual Studio SDK, to ensure
+      there are no circular references in case the VS SDK itself adds our package as a dependency. Everything else, however
+      should not add PackageReference on any package that is part of the VS SDK.
+
+      These individual package versions should be equal to or less than the package version within the VS SDK that our
+      customers use, otherwise they might get NU1605 or MSB3277 warnings.
+    -->
+    <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR
+                           '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
+                           '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
+                           '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
+      <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.7.327-preview" />
+      <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.67-g9e37b637e6" />
+      <PackageReference Update="Microsoft.VisualStudio.Sdk" Version="" />
+      <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
+    </ItemGroup>
+  </Project>

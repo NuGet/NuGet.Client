@@ -16,8 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
 </ItemGroup>
 

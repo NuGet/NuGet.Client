@@ -152,15 +152,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Editor" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Data" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />

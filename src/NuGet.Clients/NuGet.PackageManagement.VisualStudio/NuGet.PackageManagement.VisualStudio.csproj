@@ -286,10 +286,8 @@
   <ItemGroup>
     <PackageDownload Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
-    <PackageReference Include="Microsoft.VisualStudio.Composition" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="VsWebSite.Interop" />
   </ItemGroup>
