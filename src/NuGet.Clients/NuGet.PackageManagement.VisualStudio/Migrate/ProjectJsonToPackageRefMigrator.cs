@@ -57,6 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectJsonFilePath);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task MigrateDependenciesAsync(BuildIntegratedNuGetProject project, PackageSpec packageSpec)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

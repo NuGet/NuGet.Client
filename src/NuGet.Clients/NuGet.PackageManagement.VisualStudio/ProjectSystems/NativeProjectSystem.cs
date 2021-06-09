@@ -51,6 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.CompletedTask;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public override void RemoveFile(string path)
         {
             if (string.IsNullOrEmpty(path))

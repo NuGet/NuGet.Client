@@ -45,6 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task<bool> SupportsBindingRedirectsAsync(EnvDTE.Project Project)
         {
             return (Project.Kind != null && ProjectType.IsSupportedForBindingRedirects(Project.Kind))
@@ -67,6 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 frameworkMultiTargeting, dependentEnvDTEProjectsDictionary, nuGetProjectContext);
         }
 
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task AddBindingRedirectsAsync(VSSolutionManager vsSolutionManager,
             IVsProjectAdapter vsProjectAdapter,
             AppDomain domain,

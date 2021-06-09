@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (_packageRestoreManager != null)
@@ -136,6 +138,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None)).PostOnFailure(nameof(PackageRestoreBar));
         }
 
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

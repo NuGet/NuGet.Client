@@ -23,6 +23,7 @@ namespace NuGet.Options
     {
         private PackageSourcesOptionsControl _optionsWindow;
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         protected override void OnActivate(CancelEventArgs e)
         {
             base.OnActivate(e);
