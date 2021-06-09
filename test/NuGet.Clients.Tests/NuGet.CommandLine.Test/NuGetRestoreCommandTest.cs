@@ -2910,6 +2910,75 @@ EndProject";
             }
         }
 
+        [Fact]
+        public void RestoreCommand_NoPackageNamespacesection_NoSourceRelatedLogMessage()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+                var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    </packageSources>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath,
+                        "-Verbosity",
+                        "d"
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                Assert.DoesNotContain("namespace", r.Output);
+            }
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

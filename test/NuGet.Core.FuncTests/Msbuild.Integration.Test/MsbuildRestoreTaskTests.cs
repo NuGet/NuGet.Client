@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1598,6 +1598,77 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     // Assert correct Contoso package was restored.
                     Assert.True(allFiles.Contains("lib/net461/realA1.dll") || allFiles.Contains("lib/net461/realA2.dll"));
                 }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore__NoPackageNamespacesection_NoSourceRelatedLogMessage()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackagesConfig,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+                var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config")))
+                {
+                    writer.Write(
+@"<packages>
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+                }
+
+                var sharedRepositoryPath = pathContext.UserPackagesFolder;
+                Directory.CreateDirectory(sharedRepositoryPath);
+
+                var packageContosoMvcReal = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.MVC.ASP",
+                    Version = "1.0.0"
+                };
+                packageContosoMvcReal.Files.Clear();
+                packageContosoMvcReal.AddFile("lib/net461/realA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    sharedRepositoryPath,
+                    packageContosoMvcReal);
+
+                // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
+                // so we go ahead and replace that config before running MSBuild.
+                var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
+                var configText =
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    </packageSources>
+</configuration>";
+                using (var writer = new StreamWriter(configPath))
+                {
+                    writer.Write(configText);
+                }
+
+                // Act
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0);
+                Assert.DoesNotContain("namespace", result.Output);
             }
         }
     }

@@ -18,7 +18,7 @@ namespace NuGet.Configuration
             PackageSourceNames = packageSourceNames;
         }
 
-        public bool PackageNamespaceSectionPresent { get;}
-        public HashSet<string> PackageSourceNames { get;}
+        public bool PackageNamespaceSectionPresent { get; }
+        public HashSet<string> PackageSourceNames { get; }
     }
 }

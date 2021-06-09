@@ -30,7 +30,7 @@ namespace NuGet.Configuration
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
         public PrefixMatchPackageSourceNames GetPrefixMatchPackageSourceNames(string term)
         {
-            return new PrefixMatchPackageSourceNames(SearchTree.Value == null, SearchTree.Value?.PrefixMatch(term));
+            return new PrefixMatchPackageSourceNames(SearchTree.Value != null, SearchTree.Value?.PrefixMatch(term));
         }
 
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)

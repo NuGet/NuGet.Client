@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -53,6 +54,7 @@ namespace NuGet.PackageManagement
             ILogger logger,
             CancellationToken token)
         {
+            Debugger.Launch();
             if (sources == null)
             {
                 throw new ArgumentNullException(nameof(sources));
@@ -101,7 +103,7 @@ namespace NuGet.PackageManagement
 
                 PrefixMatchPackageSourceNames prefixMatchPackageSourceNames = downloadContext.PackageNamespacesConfiguration?.GetPrefixMatchPackageSourceNames(packageIdentity.Id);
 
-                if(prefixMatchPackageSourceNames.PackageNamespaceSectionPresent)
+                if (prefixMatchPackageSourceNames.PackageNamespaceSectionPresent)
                 {
                     if (prefixMatchPackageSourceNames.PackageSourceNames != null)
                     {
@@ -129,12 +131,12 @@ namespace NuGet.PackageManagement
                                 !prefixMatchPackageSourceNames.PackageSourceNames.Contains(source.PackageSource.Name))
                             {
                                 // This package's id prefix is not defined in current package source, let's skip.
-                                logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixSkipSource, source.PackageSource.Name, packageIdentity.Id));
+                                logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixSkipSource(source.PackageSource.Name, packageIdentity.Id));
                                 continue;
                             }
                             else
                             {
-                                logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixTrySource, source.PackageSource.Name, packageIdentity.Id));
+                                logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixTrySource(source.PackageSource.Name, packageIdentity.Id));
                             }
                         }
 
