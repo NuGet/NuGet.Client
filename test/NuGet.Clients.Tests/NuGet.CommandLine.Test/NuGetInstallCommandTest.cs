@@ -669,15 +669,17 @@ namespace NuGet.CommandLine.Test
                     repositoryPath };
 
                 // Act
-                var path = Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", null);
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "PATH", null }
+                };
+
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
                     string.Join(" ", args),
-                    waitForExit: true);
-
-                Environment.SetEnvironmentVariable("PATH", path);
+                    waitForExit: true,
+                    environmentVariables: envVars);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
