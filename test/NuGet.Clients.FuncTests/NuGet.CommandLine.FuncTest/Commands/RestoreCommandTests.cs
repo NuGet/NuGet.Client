@@ -1161,6 +1161,190 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
+        [Fact]
+        public async Task Restore_PackageNamespacePartialPrefixes_Succeed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+                var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+                var configPath1 = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{pathContext.PackageSource}"" />
+    <add key=""InternalRepository"" value=""{pathContext.UserPackagesFolder}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""ExternalRepository"">
+            <namespace id=""Exter*"" />
+            <namespace id=""Other*"" />
+        </packageSource>
+        <packageSource key=""InternalRepository"">
+            <namespace id=""Conto*"" />             
+            <namespace id=""Test*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var ContosoReal = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.A",
+                    Version = "1.0.0"
+                };
+                ContosoReal.Files.Clear();
+                ContosoReal.AddFile("lib/net461/contosoA.dll");
+
+                var ExternalA = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.A",  // Initial version had id conflict with Contoso
+                    Version = "1.0.0"
+                };
+                ExternalA.Files.Clear();
+                ExternalA.AddFile("lib/net461/externalA.dll");
+
+                var ExternalB = new SimpleTestPackageContext()
+                {
+                    Id = "External.B",  // name conflict resolved.
+                    Version = "2.0.0"
+                };
+                ExternalB.Files.Clear();
+                ExternalB.AddFile("lib/net461/externalB.dll");
+
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""Contoso.A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""External.B"" version=""2.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.UserPackagesFolder,
+                    PackageSaveMode.Defaultv3,
+                    ContosoReal);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    ExternalA);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    ExternalB);
+
+                // Act
+                var result = RunRestore(pathContext, _successExitCode);
+
+                // Assert
+                var contosoRestorePath = Path.Combine(projectAPackages, ContosoReal.ToString(), ContosoReal.ToString() + ".nupkg");
+                var externalRestorePath = Path.Combine(projectAPackages, ExternalB.ToString(), ExternalB.ToString() + ".nupkg");
+                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    // Assert correct ContosoA package was restored.
+                    Assert.Contains("lib/net461/contosoA.dll", allFiles);
+                }
+                Assert.True(File.Exists(externalRestorePath));
+            }
+        }
+
+
+        [Fact]
+        public async Task Restore_PackageNamespacePartialPrefixes_Fails()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+                var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+                var configPath1 = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{pathContext.PackageSource}"" />
+    <add key=""InternalRepository"" value=""{pathContext.UserPackagesFolder}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""ExternalRepository"">
+            <namespace id=""Exter*"" />
+            <namespace id=""Other*"" />
+        </packageSource>
+        <packageSource key=""InternalRepository"">
+            <namespace id=""Conto*"" />             
+            <namespace id=""Test*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var ExternalA = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.A",  // Initial version had id conflict with Contoso
+                    Version = "1.0.0"
+                };
+                ExternalA.Files.Clear();
+                ExternalA.AddFile("lib/net461/externalA.dll");
+
+                var ExternalB = new SimpleTestPackageContext()
+                {
+                    Id = "External.B",  // name conflict resolved.
+                    Version = "2.0.0"
+                };
+                ExternalB.Files.Clear();
+                ExternalB.AddFile("lib/net461/externalB.dll");
+
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""Contoso.A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""External.B"" version=""2.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    ExternalA);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    ExternalB);
+
+                // Act
+                var result = RunRestore(pathContext, _failureExitCode);
+
+                // Assert
+                Assert.Contains("Unable to find version '1.0.0' of package 'Contoso.A'", result.Errors);
+            }
+        }
+
         public static string GetResource(string name)
         {
             using (var reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(name)))

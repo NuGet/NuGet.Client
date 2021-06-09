@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement
             ILogger logger,
             CancellationToken token)
         {
-            Debugger.Launch();
+            //Debugger.Launch();
 
             if (sources == null)
             {

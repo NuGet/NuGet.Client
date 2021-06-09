@@ -2403,89 +2403,6 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NameSpacePrefixFilter_Fails()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            {
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                Directory.CreateDirectory(proj1Directory);
-
-                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
-                File.WriteAllText(
-                    proj1File,
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-
-                var publicRepositoryPath = Path.Combine(workingPath, "PublicRepository");
-                Directory.CreateDirectory(publicRepositoryPath);
-                Util.CreateTestPackage("Great.Calc", "1.0.0", publicRepositoryPath);
-                Util.CreateTestPackage("Another.Calc", "1.0.0", publicRepositoryPath);
-
-                var sharedRepository = Path.Combine(workingPath, "SharedRepository");
-                Directory.CreateDirectory(sharedRepository);
-                Util.CreateTestPackage("Newton.Calc", "1.0.0", sharedRepository);
-
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""Newton.Calc"" version=""1.0.0"" targetFramework=""net48"" />
-  <package id=""Great.Calc"" version=""1.0.0"" targetFramework=""net48"" />
-  <package id=""Another.Calc"" version=""1.0.0"" targetFramework=""net48"" />
-</packages>");
-
-                var configPath1 = Path.Combine(workingPath, "nuget.config");
-                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSources>
-    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
-    <clear />
-    <add key=""PublicRepository"" value=""{publicRepositoryPath}"" />
-    <add key=""SharedRepository"" value=""{sharedRepository}"" />
-    </packageSources>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository"">
-            <namespace id=""Newton.*"" />
-            <namespace id=""Great.*"" />
-            <namespace id=""Another.*"" />   
-        </packageSource>
-    </packageNamespaces>
-</configuration>");
-
-                var packagePath = Path.Combine(workingPath, "packages");
-
-                string[] args = new string[]
-                    {
-                        "restore",
-                        proj1File,
-                        "-solutionDir",
-                        workingPath
-                    };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
-
-                // Assert
-                Assert.Equal(_failureCode, r.ExitCode);
-                Assert.True(r.Errors.Contains("Package 'Newton.Calc.1.0.0' is not found"));
-            }
-        }
-
-        [Fact]
         public void RestoreCommand_NameSpacePrefixFilter_Succeed()
         {
             // Arrange
@@ -2653,6 +2570,89 @@ EndProject";
                 }
 
                 Assert.Equal(expectedSignedPackageHash, GetHash(restoredSignedPackagePath));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_NameSpacePrefixFilter_Fails()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var publicRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(publicRepositoryPath);
+                Util.CreateTestPackage("Great.Calc", "1.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("Another.Calc", "1.0.0", publicRepositoryPath);
+
+                var sharedRepository = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepository);
+                Util.CreateTestPackage("Newton.Calc", "1.0.0", sharedRepository);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""Newton.Calc"" version=""1.0.0"" targetFramework=""net48"" />
+  <package id=""Great.Calc"" version=""1.0.0"" targetFramework=""net48"" />
+  <package id=""Another.Calc"" version=""1.0.0"" targetFramework=""net48"" />
+</packages>");
+
+                var configPath1 = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PublicRepository"" value=""{publicRepositoryPath}"" />
+    <add key=""SharedRepository"" value=""{sharedRepository}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PublicRepository"">
+            <namespace id=""Newton.*"" />
+            <namespace id=""Great.*"" />
+            <namespace id=""Another.*"" />   
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_failureCode, r.ExitCode);
+                Assert.True(r.Errors.Contains("Package 'Newton.Calc.1.0.0' is not found"));
             }
         }
 
