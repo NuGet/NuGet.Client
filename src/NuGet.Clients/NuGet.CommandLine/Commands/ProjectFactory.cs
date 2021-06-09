@@ -64,6 +64,13 @@ namespace NuGet.CommandLine
         [Import]
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
+        /// <summary>
+        /// Creates a MSBuild project factory with data from NuGet <see cref="Commands.PackArgs"/> object
+        /// </summary>
+        /// <param name="packArgs">NuGet arguments to create a package</param>
+        /// <param name="path">Not used</param>
+        /// <returns>A <see cref="ProjectFactory"/> object</returns>
+        /// <remarks>This methods is used in <see cref="PackCommandRunner.CreateProjectFactory"/> delegate</remarks>
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
             return new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
@@ -278,7 +285,7 @@ namespace NuGet.CommandLine
             Packaging.Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
-            if (!PackCommandRunner.ProcessProjectJsonFile(builder, _project.DirectoryPath as string, builder.Id, version, suffix, GetPropertyValue))
+            if (!PackCommandRunner.ProcessProjectJsonFile(builder, _project.DirectoryPath as string, builder.Id, version, suffix))
             {
                 // If the package contains a nuspec file then use it for metadata
                 manifest = ProcessNuspec(builder, basePath);
@@ -698,7 +705,7 @@ namespace NuGet.CommandLine
 
         private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
         {
-            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
+            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null);
         }
 
         // Creates a package dependency from the given project, which has a corresponding

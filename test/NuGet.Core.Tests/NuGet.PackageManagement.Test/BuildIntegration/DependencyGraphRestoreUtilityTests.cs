@@ -59,7 +59,6 @@ namespace NuGet.PackageManagement.Test
 
                     // Act
                     await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -117,7 +116,6 @@ namespace NuGet.PackageManagement.Test
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager.Object,
                     dgSpec,
                     restoreContext,
                     restoreCommandProvidersCache,

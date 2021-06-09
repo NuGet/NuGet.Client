@@ -139,8 +139,7 @@ namespace NuGet.ProjectManagement
             // Save the new content to the file system
             using (var fileStream = FileSystemUtility.CreateFile(
                 projectSystem.ProjectFullPath,
-                targetPath,
-                projectSystem.NuGetProjectContext))
+                targetPath))
             {
                 document.Save(fileStream);
             }

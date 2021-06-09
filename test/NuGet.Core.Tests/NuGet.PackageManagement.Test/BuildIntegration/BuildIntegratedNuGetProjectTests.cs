@@ -61,7 +61,6 @@ namespace NuGet.PackageManagement.Test
                 var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
                     dgSpec1,
                     restoreContext,
                     providersCache,
@@ -75,7 +74,6 @@ namespace NuGet.PackageManagement.Test
 
                 var dgSpec2 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
                 var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
                     dgSpec2,
                     restoreContext,
                     providersCache,
@@ -100,7 +98,6 @@ namespace NuGet.PackageManagement.Test
                 File.Delete(nupkgMetadataPath);
 
                 var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
                     await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
@@ -168,7 +165,6 @@ namespace NuGet.PackageManagement.Test
                     var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext);
 
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -229,7 +225,6 @@ namespace NuGet.PackageManagement.Test
                 var providersCache = new RestoreCommandProvidersCache();
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
                     await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
@@ -242,7 +237,6 @@ namespace NuGet.PackageManagement.Test
                     CancellationToken.None);
 
                 var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
                     await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     providersCache,
@@ -265,7 +259,6 @@ namespace NuGet.PackageManagement.Test
                 TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
 
                 var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
                     await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),
@@ -330,7 +323,6 @@ namespace NuGet.PackageManagement.Test
                     var providersCache = new RestoreCommandProvidersCache();
 
                     await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         providersCache,
@@ -343,7 +335,6 @@ namespace NuGet.PackageManagement.Test
                         CancellationToken.None);
 
                     var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         providersCache,
@@ -410,7 +401,6 @@ namespace NuGet.PackageManagement.Test
                     var restoreContext = new DependencyGraphCacheContext(testLogger, settings);
 
                     await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         providersCache,
@@ -423,7 +413,6 @@ namespace NuGet.PackageManagement.Test
                         CancellationToken.None);
 
                     var noOpRestoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         providersCache,
@@ -488,7 +477,6 @@ namespace NuGet.PackageManagement.Test
                     var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
                     await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         new RestoreCommandProvidersCache(),

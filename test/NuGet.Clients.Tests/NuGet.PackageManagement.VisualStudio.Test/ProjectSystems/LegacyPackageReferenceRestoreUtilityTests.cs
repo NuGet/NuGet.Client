@@ -107,7 +107,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -238,7 +237,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -340,7 +338,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     File.Create(projectLockFilePath).Close();
 
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -372,7 +369,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -473,7 +469,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
 
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -529,7 +524,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -626,7 +620,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -717,7 +710,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
 
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -761,7 +753,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -849,7 +840,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     File.Create(projectLockFilePath).Close();
 
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -885,7 +875,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -984,7 +973,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     File.Create(projectLockFilePath).Close();
 
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -1022,7 +1010,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -1463,7 +1450,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -1490,7 +1476,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -1653,7 +1638,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -1681,7 +1665,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -1811,7 +1794,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     File.Create(projectLockFilePath).Close();
 
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -1850,7 +1832,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -1983,7 +1964,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Set-up Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -2018,7 +1998,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     File.Delete(Path.Combine(await vsProjectAdapterB.GetMSBuildProjectExtensionsPathAsync(), NoOpRestoreUtilities.NoOpCacheFileName));
 
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -2141,7 +2120,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,
@@ -2261,7 +2239,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // Act
                     var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                        testSolutionManager,
                         dgSpec,
                         restoreContext,
                         providersCache,

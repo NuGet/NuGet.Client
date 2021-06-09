@@ -542,7 +542,7 @@ namespace NuGet.CommandLine
                 }
 
                 toolset = GetMsBuildDirectoryInternal(
-                    userVersion, console, installedToolsets.OrderByDescending(t => t), (IEnvironmentVariableReader reader) => GetMSBuild(reader));
+                    userVersion, installedToolsets.OrderByDescending(t => t), (IEnvironmentVariableReader reader) => GetMSBuild(reader));
 
                 Directory.SetCurrentDirectory(currentDirectoryCache);
                 return toolset;
@@ -553,19 +553,37 @@ namespace NuGet.CommandLine
             }
         }
 
+
         /// <summary>
         /// This method is called by GetMsBuildToolset(). This method is not intended to be called directly.
         /// It's marked public so that it can be called by unit tests.
         /// </summary>
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
-        /// <param name="console">console for status reporting. Not used</param>
+        /// <param name="installedToolsets">all msbuild toolsets discovered by caller</param>
+        /// <param name="getMsBuildPathInPathVar">delegate to provide msbuild exe discovered in path environemtnb var/s
+        /// (using a delegate allows for testability)</param>
+        /// <returns>directory to use for msbuild exe</returns>
+        [Obsolete("Use GetMsBuildDirectoryInternal(string, IEnumerable<MsBuildToolset>, Func<IEnvironmentVariableReader, string>) instead")]
+        public static MsBuildToolset GetMsBuildDirectoryInternal(
+            string userVersion,
+            IConsole console,
+            IEnumerable<MsBuildToolset> installedToolsets,
+            Func<IEnvironmentVariableReader, string> getMsBuildPathInPathVar)
+        {
+            return GetMsBuildDirectoryInternal(userVersion, installedToolsets, getMsBuildPathInPathVar);
+        }
+
+        /// <summary>
+        /// This method is called by GetMsBuildToolset(). This method is not intended to be called directly.
+        /// It's marked public so that it can be called by unit tests.
+        /// </summary>
+        /// <param name="userVersion">version string as passed by user (so may be empty)</param>
         /// <param name="installedToolsets">all msbuild toolsets discovered by caller</param>
         /// <param name="getMsBuildPathInPathVar">delegate to provide msbuild exe discovered in path environemtnb var/s
         /// (using a delegate allows for testability)</param>
         /// <returns>directory to use for msbuild exe</returns>
         public static MsBuildToolset GetMsBuildDirectoryInternal(
             string userVersion,
-            IConsole console,
             IEnumerable<MsBuildToolset> installedToolsets,
             Func<IEnvironmentVariableReader, string> getMsBuildPathInPathVar)
         {

@@ -1818,7 +1818,6 @@ namespace NuGet.Test
                 var dgSpec1 = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
 
                 await DependencyGraphRestoreUtility.RestoreAsync(
-                    testSolutionManager,
                     dgSpec1,
                     restoreContext,
                     providersCache,

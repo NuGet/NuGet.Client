@@ -432,7 +432,6 @@ namespace NuGet.SolutionRestoreManager
                                 try
                                 {
                                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                                       _solutionManager,
                                        dgSpec,
                                        cacheContext,
                                        providerCache,

@@ -277,15 +277,27 @@ namespace NuGet.ProjectManagement.Projects
         }
 
         /// <summary>
-        /// Uninstall a package from the config file.
+        /// Uninstalls a package from the config file.
         /// </summary>
-        /// <param name="packageId"></param>
-        /// <param name="nuGetProjectContext">No use</param>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="packageId">NuGet package ID, i.e., my.package</param>
+        /// <param name="nuGetProjectContext">Not used</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>A task returning true if te depdencency nis removed successfully</returns>
+        [Obsolete("Use RemoveDependencyAsync(string, CancellationToken) instead")]
         public async Task<bool> RemoveDependencyAsync(string packageId,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
+        {
+            return await RemoveDependencyAsync(packageId, token);
+        }
+
+        /// <summary>
+        /// Uninstalls a package from the config file.
+        /// </summary>
+        /// <param name="packageId">NuGet package ID, i.e., my.package</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>A task returning true if te depdencency nis removed successfully</returns>
+        public async Task<bool> RemoveDependencyAsync(string packageId, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -302,7 +314,7 @@ namespace NuGet.ProjectManagement.Projects
 
         public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            return await RemoveDependencyAsync(packageIdentity.Id, nuGetProjectContext, token);
+            return await RemoveDependencyAsync(packageIdentity.Id, token);
         }
 
         protected bool IsUAPFramework(NuGetFramework framework)
