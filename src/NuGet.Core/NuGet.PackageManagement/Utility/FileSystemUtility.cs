@@ -76,7 +76,7 @@ namespace NuGet.ProjectManagement
 
             var fullPath = GetFullPath(root, path);
 
-            using (var outputStream = CreateFile(fullPath, nuGetProjectContext))
+            using (var outputStream = CreateFile(fullPath))
             {
                 writeToStream(outputStream);
             }
@@ -110,9 +110,15 @@ namespace NuGet.ProjectManagement
         /// <param name="path">Relative path in the root folder.</param>
         /// <param name="nuGetProjectContext">the project context.</param>
         /// <returns>A writeable filestream.</returns>
+        [Obsolete("Use CreateFile(string, string) instead")]
         public static Stream CreateFile(string root, string path, INuGetProjectContext nuGetProjectContext)
         {
-            return CreateFile(GetFullPath(root, path), nuGetProjectContext);
+            return CreateFile(root, path);
+        }
+
+        public static Stream CreateFile(string root, string path)
+        {
+            return CreateFile(GetFullPath(root, path));
         }
 
         /// <summary>
@@ -121,13 +127,9 @@ namespace NuGet.ProjectManagement
         /// <param name="fullPath">Full path to the suggest file.</param>
         /// <param name="nuGetProjectContext">Not used</param>
         /// <returns>A writeable filestream.</returns>
+        [Obsolete("Use CreateFile(string) instead")]
         public static Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
-            if (string.IsNullOrEmpty(Path.GetFileName(fullPath)))
-            {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
-            }
-
             return CreateFile(fullPath);
         }
 

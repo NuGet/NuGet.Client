@@ -58,7 +58,6 @@ namespace NuGet.Test
 
                     // Act
                     await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -113,7 +112,6 @@ namespace NuGet.Test
 
                     // Act
                     await DependencyGraphRestoreUtility.RestoreAsync(
-                        solutionManager,
                         await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                         restoreContext,
                         new RestoreCommandProvidersCache(),
@@ -183,7 +181,6 @@ namespace NuGet.Test
 
                 // Act
                 await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
                     await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
                     restoreContext,
                     new RestoreCommandProvidersCache(),

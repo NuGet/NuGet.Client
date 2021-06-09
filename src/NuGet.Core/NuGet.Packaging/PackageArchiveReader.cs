@@ -80,6 +80,7 @@ namespace NuGet.Packaging
         /// <param name="stream">Nupkg data stream.</param>
         /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing. Not used in this constructor</param>
         /// <param name="compatibilityProvider">Framework compatibility provider. Not used in this constructor</param>
+        [Obsolete("Use PackageArchiveReader(Stream) instead")]
         public PackageArchiveReader(Stream stream, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : this(stream, false)
         {

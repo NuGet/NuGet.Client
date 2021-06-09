@@ -27,7 +27,6 @@ namespace NuGet.CommandLine.Test
             // Act
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: null,
-                console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: (reader) => null).Path;
 
@@ -44,7 +43,6 @@ namespace NuGet.CommandLine.Test
             // Act
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: null,
-                console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: (reader) => expectedPath).Path;
 
@@ -61,7 +59,6 @@ namespace NuGet.CommandLine.Test
             // Act
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: null,
-                console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: (reader) => expectedPath).Path;
 
@@ -78,7 +75,6 @@ namespace NuGet.CommandLine.Test
             // Act
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: null,
-                console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: (reader) => @"c:\foo").Path;
 
@@ -95,7 +91,6 @@ namespace NuGet.CommandLine.Test
             // Act
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: "latest",
-                console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: (reader) => lowVersionPath).Path;
 
@@ -116,7 +111,6 @@ namespace NuGet.CommandLine.Test
             // Act
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: userVersion,
-                console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: (reader) => null).Path;
 
@@ -137,7 +131,6 @@ namespace NuGet.CommandLine.Test
                 {
                     var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                         userVersion: userVersion,
-                        console: null,
                         installedToolsets: toolsets.OrderByDescending(t => t),
                         getMsBuildPathInPathVar: (reader) => null);
                 });
