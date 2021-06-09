@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Dotnet.Integration.Test
 {
-    [Collection(nameof(DotnetIntegrationNotThreadSafeCollection))]
+    [Collection("Dotnet Integration Tests")]
     public class DotnetSourcesTests
     {
         private readonly MsbuildIntegrationTestFixture _fixture;
@@ -459,7 +459,7 @@ namespace Dotnet.Integration.Test
 
         /// <summary>
         /// Utility for asserting faulty executions of dotnet.exe
-        /// 
+        ///
         /// Asserts a non-zero status code and a message on stderr.
         /// </summary>
         /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>

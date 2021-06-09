@@ -16,7 +16,6 @@ using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class MsBuildUtilityTest
     {
         // Test that when msbuildVersion is null, GetMsBuildDirectoryInternal returns the highest installed version.

@@ -10,7 +10,6 @@ using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class NuGetSourcesCommandTest
     {
         [Fact]
