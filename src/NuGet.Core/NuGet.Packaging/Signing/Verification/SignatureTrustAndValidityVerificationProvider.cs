@@ -154,7 +154,21 @@ namespace NuGet.Packaging.Signing
                     {
                         if (countersignatureSummary.Status == SignatureVerificationStatus.Valid)
                         {
-                            if (IsSignatureExpired(primarySummary) &&
+                            if (IsSignatureExpired(primarySummary) && HasUntrustedRoot(primarySummary))
+                            {
+                                // Exclude the issue of the primary signature being untrusted since the repository countersignature fulfills the role of a trust anchor.
+                                issues = issues.Where(log => log.Code != NuGetLogCode.NU3018);
+
+                                if (countersignatureSummary.Timestamp != null &&
+                                Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureSummary.Timestamp))
+                                {
+                                    // Exclude the issue of the primary signature being expired since the repository countersignature fulfills the role of a trusted timestamp.
+                                    issues = issues.Where(log => log.Code != NuGetLogCode.NU3037);
+
+                                    status = SignatureVerificationStatus.Valid;
+                                }
+                            }
+                            else if (IsSignatureExpired(primarySummary) &&
                                 countersignatureSummary.Timestamp != null &&
                                 Rfc3161TimestampVerificationUtility.ValidateSignerCertificateAgainstTimestamp(signature.SignerInfo.Certificate, countersignatureSummary.Timestamp))
                             {
@@ -163,8 +177,7 @@ namespace NuGet.Packaging.Signing
 
                                 status = SignatureVerificationStatus.Valid;
                             }
-
-                            if (HasUntrustedRoot(primarySummary))
+                            else if (HasUntrustedRoot(primarySummary))
                             {
                                 // Exclude the issue of the primary signature being untrusted since the repository countersignature fulfills the role of a trust anchor.
                                 issues = issues.Where(log => log.Code != NuGetLogCode.NU3018);
