@@ -54,7 +54,7 @@ namespace NuGet.Commands
             await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(bumpedUp));
 
             // 4. Detect dependencies that are higher than the upper bound of a version range.
-            var aboveUpperBounds = GetDependenciesAboveUpperBounds(indexedGraphs, logger);
+            var aboveUpperBounds = GetDependenciesAboveUpperBounds(indexedGraphs);
             await logger.LogMessagesAsync(aboveUpperBounds);
         }
 
@@ -229,7 +229,18 @@ namespace NuGet.Commands
         /// <param name="graphs">Flattened restore graphs with error and warning info</param>
         /// <param name="logger">Not used</param>
         /// <returns>A collection of log messages</returns>
+        [Obsolete("Use GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph>) instead")]
         public static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs, ILogger logger)
+        {
+            return GetDependenciesAboveUpperBounds(graphs);
+        }
+
+        /// <summary>
+        /// Logs upgrade warnings from the graphs.
+        /// </summary>
+        /// <param name="graphs">Flattened restore graphs with error and warning info</param>
+        /// <returns>A collection of log messages</returns>
+        public static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs)
         {
             var messages = new List<RestoreLogMessage>();
 

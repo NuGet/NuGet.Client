@@ -22,14 +22,6 @@ namespace NuGet.Commands.Test
         [Fact]
         public void GivenAPackageVersionAboveADependencyConstraintVerifyWarning()
         {
-            var testLogger = new TestLogger();
-            var range = VersionRange.Parse("1.0.0");
-            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
-            var project = new PackageSpec(tfi)
-            {
-                Name = "proj"
-            };
-
             var depY = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
@@ -40,7 +32,7 @@ namespace NuGet.Commands.Test
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
             var indexedGraphs = GetIndexedGraphs(flattened);
 
-            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs).ToList();
             var message = messages.FirstOrDefault();
 
             messages.Count.Should().Be(1);
@@ -54,14 +46,6 @@ namespace NuGet.Commands.Test
         [Fact]
         public void GivenAPackageVersionAboveMultipleDependencyConstraintsVerifyWarnings()
         {
-            var testLogger = new TestLogger();
-            var range = VersionRange.Parse("1.0.0");
-            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
-            var project = new PackageSpec(tfi)
-            {
-                Name = "proj"
-            };
-
             var depYX = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
@@ -77,7 +61,7 @@ namespace NuGet.Commands.Test
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY, itemZ };
             var indexedGraphs = GetIndexedGraphs(flattened);
 
-            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs).ToList();
             messages.Count.Should().Be(2);
             messages.Select(e => e.Code).Distinct().Single().Should().Be(NuGetLogCode.NU1608);
         }
@@ -89,14 +73,6 @@ namespace NuGet.Commands.Test
         [InlineData("2.0.0", "[1.0.0, 2.0.0)", "above range since it is non-inclusive")]
         public void GivenARangeVerifyNU1608Warning(string yVersion, string yDepRange, string reason)
         {
-            var testLogger = new TestLogger();
-            var range = VersionRange.Parse("1.0.0");
-            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
-            var project = new PackageSpec(tfi)
-            {
-                Name = "proj"
-            };
-
             var depY = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange("y", VersionRange.Parse(yDepRange), LibraryDependencyTarget.Package)
@@ -107,7 +83,7 @@ namespace NuGet.Commands.Test
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
             var indexedGraphs = GetIndexedGraphs(flattened);
 
-            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs).ToList();
             var message = messages.FirstOrDefault();
 
             messages.Count.Should().Be(1);
@@ -129,14 +105,6 @@ namespace NuGet.Commands.Test
         [InlineData("1.0.0", "[1.0.0,)", "no upper bound")]
         public void GivenARangeVerifyNU1608WarningNotPresent(string yVersion, string yDepRange, string reason)
         {
-            var testLogger = new TestLogger();
-            var range = VersionRange.Parse("1.0.0");
-            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
-            var project = new PackageSpec(tfi)
-            {
-                Name = "proj"
-            };
-
             var depY = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange("y", VersionRange.Parse(yDepRange), LibraryDependencyTarget.Package)
@@ -147,7 +115,7 @@ namespace NuGet.Commands.Test
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
             var indexedGraphs = GetIndexedGraphs(flattened);
 
-            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs).ToList();
 
             messages.Should().BeEmpty(reason);
         }
@@ -155,14 +123,6 @@ namespace NuGet.Commands.Test
         [Fact]
         public void GivenAPackageVersionDoesNotExistVerifyNoWarning()
         {
-            var testLogger = new TestLogger();
-            var range = VersionRange.Parse("1.0.0");
-            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
-            var project = new PackageSpec(tfi)
-            {
-                Name = "proj"
-            };
-
             var depY = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
@@ -172,7 +132,7 @@ namespace NuGet.Commands.Test
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX };
             var indexedGraphs = GetIndexedGraphs(flattened);
 
-            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs).ToList();
 
             messages.Should().BeEmpty();
         }
@@ -180,14 +140,6 @@ namespace NuGet.Commands.Test
         [Fact]
         public void GivenAProjectVersionAboveADependencyConstraintVerifyNoWarning()
         {
-            var testLogger = new TestLogger();
-            var range = VersionRange.Parse("1.0.0");
-            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", range, LibraryDependencyTarget.Package));
-            var project = new PackageSpec(tfi)
-            {
-                Name = "proj"
-            };
-
             var depY = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange("y", VersionRange.Parse("[1.0.0]"), LibraryDependencyTarget.Package)
@@ -198,7 +150,7 @@ namespace NuGet.Commands.Test
             var flattened = new HashSet<GraphItem<RemoteResolveResult>>() { itemX, itemY };
             var indexedGraphs = GetIndexedGraphs(flattened);
 
-            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs, testLogger).ToList();
+            var messages = UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(indexedGraphs).ToList();
 
             messages.Should().BeEmpty("project versions are not considered");
         }
