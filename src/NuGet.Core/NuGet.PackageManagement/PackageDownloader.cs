@@ -99,16 +99,19 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
-                HashSet<string> nameSpacePackageSources = downloadContext.PackageNamespacesConfiguration?.Match(packageIdentity.Id);
+                PrefixMatchPackageSourceNames prefixMatchPackageSourceNames = downloadContext.PackageNamespacesConfiguration?.GetPrefixMatchPackageSourceNames(packageIdentity.Id);
 
-                if (nameSpacePackageSources != null)
+                if(prefixMatchPackageSourceNames.PackageNamespaceSectionPresent)
                 {
-                    var packageSourcesAtPrefix = string.Join(", ", nameSpacePackageSources);
-                    logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
-                }
-                else
-                {
-                    logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixNoMatchFound(packageIdentity.Id));
+                    if (prefixMatchPackageSourceNames.PackageSourceNames != null)
+                    {
+                        var packageSourcesAtPrefix = string.Join(", ", prefixMatchPackageSourceNames.PackageSourceNames);
+                        logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
+                    }
+                    else
+                    {
+                        logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixNoMatchFound(packageIdentity.Id));
+                    }
                 }
 
                 while (groups.Count > 0)
@@ -120,16 +123,19 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        if (nameSpacePackageSources != null &&
-                            !nameSpacePackageSources.Contains(source.PackageSource.Name))
+                        if (prefixMatchPackageSourceNames.PackageNamespaceSectionPresent)
                         {
-                            // This package's id prefix is not defined in current package source, let's skip.
-                            logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixSkipSource, source.PackageSource.Name, packageIdentity.Id));
-                            continue;
-                        }
-                        else
-                        {
-                            logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixTrySource, source.PackageSource.Name, packageIdentity.Id));
+                            if (prefixMatchPackageSourceNames.PackageSourceNames != null &&
+                                !prefixMatchPackageSourceNames.PackageSourceNames.Contains(source.PackageSource.Name))
+                            {
+                                // This package's id prefix is not defined in current package source, let's skip.
+                                logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixSkipSource, source.PackageSource.Name, packageIdentity.Id));
+                                continue;
+                            }
+                            else
+                            {
+                                logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.PackageNamespacePrefixTrySource, source.PackageSource.Name, packageIdentity.Id));
+                            }
                         }
 
                         var task = GetDownloadResourceResultAsync(
