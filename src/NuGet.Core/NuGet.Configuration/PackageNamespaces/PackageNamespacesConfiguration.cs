@@ -11,7 +11,7 @@ namespace NuGet.Configuration
     {
         /// <summary>
         /// Max allowed length for package Id.
-        /// In case update this value please update in C:\NuGetProj\NuGet.Client\src\NuGet.Core\NuGet.Packaging\PackageCreation\Utility\PackageIdValidator.cs too.
+        /// In case update this value please update in src\NuGet.Core\NuGet.Packaging\PackageCreation\Utility\PackageIdValidator.cs too.
         /// </summary>
         internal static int PackageIdMaxLength { get; } = 100;
 
