@@ -777,8 +777,7 @@ namespace NuGet.Build.Tasks.Console
                 hasPackageReferenceItems: targetFrameworkInfos.Any(i => i.Dependencies.Any()),
                 projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
                 projectDirectory: project.Directory,
-                projectName: project.GetProperty("MSBuildProjectName"),
-                log: MSBuildLogger);
+                projectName: project.GetProperty("MSBuildProjectName"));
 
             var projectStyle = projectStyleResult.ProjectStyle;
 
