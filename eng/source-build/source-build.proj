@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.DotNet.Arcade.Sdk" DefaultTargets="Build">
+
+  <Import Project="../SourceBuild.props" />
+
+  <PropertyGroup>
+    <ProjectRoot>$(MSBuildThisFileDirectory)../../</ProjectRoot>
+  </PropertyGroup>
+
+  <Target Name="Build" DependsOnTargets="SourceBuildPostBuild" />
+
+  <Target Name="SourceBuildPreBuild">
+
+  </Target>
+
+  <Target Name="SourceBuildPostBuild" DependsOnTargets="SourceBuildInnerBuild">
+
+  </Target>
+
+  <Target Name="SourceBuildInnerBuild" DependsOnTargets="SourceBuildPreBuild">
+    <MSBuild Projects="$(ProjectRoot)build/build.proj"
+             Properties="Configuration=Release;DotNetBuildFromSource=true"
+             Targets="RestoreXPlat" />
+
+    <MSBuild Projects="$(ProjectRoot)build/build.proj"
+             Properties="Configuration=Release;DotNetBuildFromSource=true"
+             Targets="BuildXPlat" />
+
+    <MSBuild Projects="$(ProjectRoot)build/build.proj"
+             Properties="Configuration=Release;DotNetBuildFromSource=true"
+             Targets="PackXPlat" />
+
+  </Target>
+
+
+</Project>
+
