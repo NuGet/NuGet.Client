@@ -1,10 +1,11 @@
-<Project>
+﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TargetFramework Condition=" '$(IsXPlat)' == 'true' "></TargetFramework>
+    <UseParallelXunit>true</UseParallelXunit>
     <Description>An end-to-end test suite for NuGet.CommandLine. Contains tests for every nuget.exe CLI command. Overlaps in tests with NuGet.CommandLine.FuncTest.</Description>
   </PropertyGroup>
 
@@ -46,16 +47,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
-    
+
   <PropertyGroup>
     <PostBuildEvent>
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\

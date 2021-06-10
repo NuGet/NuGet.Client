@@ -15,40 +15,11 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void SourcesCommandTest_AddSource()
         {
-            using (var preserver = new DefaultConfigurationFilePreserver())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                // Arrange
-                var nugetexe = Util.GetNuGetExePath();
-                var args = new string[] {
-                    "sources",
-                    "Add",
-                    "-Name",
-                    "test_source",
-                    "-Source",
-                    "http://test_source"
-                };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
 
-                // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
-
-                // Assert
-                Assert.Equal(0, result.Item1);
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
-                var packageSourcesSection = settings.GetSection("packageSources");
-                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-            }
-        }
-
-        [Fact]
-        public void SourcesCommandTest_AddWithUserNamePassword()
-        {
-            using (var preserver = new DefaultConfigurationFilePreserver())
-            {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
@@ -58,44 +29,30 @@ namespace NuGet.CommandLine.Test
                     "test_source",
                     "-Source",
                     "http://test_source",
-                    "-UserName",
-                    "test_user_name",
-                    "-Password",
-                    "test_password"
+                    "-ConfigFile",
+                    settings.ConfigPath
                 };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
-                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
-
-                var packageSourcesSection = settings.GetSection("packageSources");
+                Assert.Equal(0, result.Item1);
+                var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-
-                var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
-                Assert.NotNull(credentialItem);
-
-                Assert.Equal("test_user_name", credentialItem.Username);
-
-                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password);
-                Assert.Equal("test_password", password);
             }
         }
 
         [Fact]
-        public void SourcesCommandTest_AddWithUserNamePasswordInClearText()
+        public void SourcesCommandTest_AddWithUserNamePassword()
         {
-            using (var preserver = new DefaultConfigurationFilePreserver())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
@@ -109,26 +66,72 @@ namespace NuGet.CommandLine.Test
                     "test_user_name",
                     "-Password",
                     "test_password",
-                    "-StorePasswordInClearText"
+                    "-ConfigFile",
+                    settings.ConfigPath
                 };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
                 Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
 
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
+                var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
 
-                var packageSourcesSection = settings.GetSection("packageSources");
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
 
-                var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
+                var sourceCredentialsSection = loadedSettings.GetSection("packageSourceCredentials");
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                Assert.NotNull(credentialItem);
+
+                Assert.Equal("test_user_name", credentialItem.Username);
+
+                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password);
+                Assert.Equal("test_password", password);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_AddWithUserNamePasswordInClearText()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "http://test_source",
+                    "-UserName",
+                    "test_user_name",
+                    "-Password",
+                    "test_password",
+                    "-StorePasswordInClearText",
+                    "-ConfigFile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+
+                // Assert
+                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+
+                var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
+
+                var sourceCredentialsSection = loadedSettings.GetSection("packageSourceCredentials");
                 var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
@@ -401,8 +404,11 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
-            using (var preserver = new DefaultConfigurationFilePreserver())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
@@ -415,20 +421,16 @@ namespace NuGet.CommandLine.Test
                     "-Verbosity",
                     "Quiet"
                 };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
                 Util.VerifyResultSuccess(result);
                 // Ensure that no messages are shown with Verbosity as Quiet
                 Assert.Equal(string.Empty, result.Item2);
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
-                var packageSourcesSection = settings.GetSection("packageSources");
+                var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
 
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
