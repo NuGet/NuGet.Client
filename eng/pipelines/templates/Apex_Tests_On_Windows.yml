@@ -33,12 +33,12 @@ steps:
 - task: PowerShell@1
   displayName: "SetupFunctionalTests.ps1"
   inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
+    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
 
 - task: PowerShell@1
   displayName: "InstallNuGetVSIX.ps1"
   inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
+    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/InstallNuGetVSIX.ps1"
     arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -ProcessExitTimeoutInSeconds 180"
     failOnStandardError: "false"
 
