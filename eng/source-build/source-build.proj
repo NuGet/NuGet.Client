@@ -6,17 +6,23 @@
     <ProjectRoot>$(MSBuildThisFileDirectory)../../</ProjectRoot>
   </PropertyGroup>
 
-  <Target Name="Build" DependsOnTargets="SourceBuildPostBuild" />
+  <Target Name="Build" DependsOnTargets="SourceBuildPostBuild">
+    <Message Text="Running source-build Build target" Importance="High" />
+  </Target>
 
   <Target Name="SourceBuildPreBuild">
 
+    <Message Text="Running source-build PreBuild target" Importance="High" />
   </Target>
 
   <Target Name="SourceBuildPostBuild" DependsOnTargets="SourceBuildInnerBuild">
+    <Message Text="Running source-build PostBuild target" Importance="High" />
 
   </Target>
 
   <Target Name="SourceBuildInnerBuild" DependsOnTargets="SourceBuildPreBuild">
+    <Message Text="Running source-build InnerBuild target" Importance="High" />
+
     <MSBuild Projects="$(ProjectRoot)build/build.proj"
              Properties="Configuration=Release;DotNetBuildFromSource=true"
              Targets="RestoreXPlat" />
@@ -30,7 +36,6 @@
              Targets="PackXPlat" />
 
   </Target>
-
 
 </Project>
 

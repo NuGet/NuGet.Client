@@ -1,0 +1,38 @@
+steps:
+- task: PowerShell@2
+  displayName: "Update Build Number"
+  inputs:
+    targetType: "inline"
+    script: |
+      Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
+    failOnStderr: "true"
+  condition: "always()"
+
+- task: PowerShell@2
+  displayName: "Prebuild test"
+  inputs:
+    targetType: "inline"
+    script: |
+      echo 'prebuild test'
+      dotnet --info
+    failOnStderr: "false"
+  condition: "always()"
+
+- task: PowerShell@2
+  displayName: "Build source-build"
+  inputs:
+    targetType: "inline"
+    script: |
+      dotnet msbuild "eng\\source-build\\source-build.proj" /t:Build /p:Configuration=$(BuildConfiguration) /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:diag /bl
+  condition: "always()"
+
+- task: PowerShell@2
+  displayName: "Postbuild test"
+  inputs:
+    targetType: "inline"
+    script: |
+      echo 'postbuild test'
+      gci -recurse
+    failOnStderr: "false"
+  condition: "always()"
+
