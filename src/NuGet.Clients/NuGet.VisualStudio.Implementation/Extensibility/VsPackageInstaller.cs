@@ -303,7 +303,7 @@ namespace NuGet.VisualStudio
                 RunJTFWithCorrectContext(project, () =>
                     {
                         var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
-                        repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
+                        repoProvider.AddFromExtension(extensionId);
 
                         var toInstall = GetIdentitiesFromDict(packageVersions);
 

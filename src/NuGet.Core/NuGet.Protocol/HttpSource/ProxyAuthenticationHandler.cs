@@ -111,7 +111,7 @@ namespace NuGet.Protocol
 
 #if !IS_CORECLR
         /// <summary>
-        /// Returns true if the cause of the exception is proxy authentication failure
+        /// Returns true if the cause of the exception is a proxy authentication failure
         /// </summary>
         /// <param name="ex">Exception to evaluate</param>
         /// <returns>true if Proxy Auth required</returns>

@@ -12,8 +12,8 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Gets a value from a Windows Registry
         /// </summary>
-        /// <param name="name">Registry subkey name</param>
-        /// <param name="registryKeyPath">Not used</param>
+        /// <param name="name">Registry key name</param>
+        /// <param name="registryKeyPath">Registry key path</param>
         /// <param name="registryKey">Windows Registry Key object</param>
         /// <param name="logger">Logger to log errors</param>
         /// <returns>Registry value or null if there is an error</returns>
@@ -21,7 +21,7 @@ namespace NuGet.CommandLine
         {
             try
             {
-                using (var key = registryKey?.OpenSubKey(name))
+                using (var key = registryKey?.OpenSubKey(registryKeyPath))
                 {
                     var result = key?.GetValue(name);
 
