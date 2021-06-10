@@ -2823,9 +2823,9 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", r.Output);
-                Assert.Contains("Package namespace: Skipping source", r.Output);
-                Assert.Contains("Package namespace: Trying source", r.Output);
+                Assert.Contains("Package namespace prefix match not found for package id 'My.MVC.ASP'", r.Output);
+                Assert.DoesNotContain("Package namespace: Skipping source", r.Output);
+                Assert.Contains("Package namespace: Trying source 'SharedRepository' for package id 'My.MVC.ASP'", r.Output);
             }
         }
 
