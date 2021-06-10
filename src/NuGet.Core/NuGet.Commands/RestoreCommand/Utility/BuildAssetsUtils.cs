@@ -447,7 +447,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Generates the props/target files content from restored packages
+        /// Generates the props/target files content from packages just before completing a restore operation
         /// </summary>
         /// <param name="project">Project/package specification</param>
         /// <param name="assetsFile">project.assets.json model object</param>

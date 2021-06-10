@@ -626,17 +626,18 @@ namespace NuGet.Protocol.Plugins
                 exception = ex;
             }
 
-            var requestContext = CreateInboundRequestContext(message, cancellationToken);
-
-            if (exception == null && requestHandler != null)
+            using (var requestContext = CreateInboundRequestContext(message, cancellationToken))
             {
-                _inboundRequestContexts.TryAdd(message.RequestId, requestContext);
+                if (exception == null && requestHandler != null)
+                {
+                    _inboundRequestContexts.TryAdd(message.RequestId, requestContext);
 
-                requestContext.BeginResponseAsync(message, requestHandler, this);
-            }
-            else
-            {
-                requestContext.BeginFaultAsync(message, exception);
+                    requestContext.BeginResponseAsync(message, requestHandler, this);
+                }
+                else
+                {
+                    requestContext.BeginFaultAsync(message, exception);
+                }
             }
         }
 
