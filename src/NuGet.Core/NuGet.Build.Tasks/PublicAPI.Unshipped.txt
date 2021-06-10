@@ -1,2 +1,4 @@
 static NuGet.Build.Tasks.Strings.Log_NoProjectsForRestore.get -> string
 static NuGet.Build.Tasks.Strings.Log_ProjectsInSolutionNotKnowntoMSBuild.get -> string
+static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(NuGet.ProjectModel.ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)
+static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)

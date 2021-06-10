@@ -58,7 +58,7 @@ namespace NuGet.Build.Tasks
             BuildTasksUtility.LogInputParam(log, nameof(ProjectJsonPath), ProjectJsonPath);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreProjectStyle), RestoreProjectStyle);
 
-            var result = BuildTasksUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, ProjectJsonPath, MSBuildProjectDirectory, MSBuildProjectName, log);
+            var result = BuildTasksUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, ProjectJsonPath, MSBuildProjectDirectory, MSBuildProjectName);
 
             IsPackageReferenceCompatibleProjectStyle = result.IsPackageReferenceCompatibleProjectStyle;
             ProjectStyle = result.ProjectStyle;
