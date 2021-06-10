@@ -5638,14 +5638,16 @@ namespace ClassLibrary
         [InlineData("winforms")]
         [InlineData("winformscontrollib")]
         [InlineData("winformslib")]
+        [InlineData("razorclasslib")]
         public void Dotnet_New_Template_Restore_Pack_Success(string template)
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
+            using (var testDirectory = TestDirectory.Create())
             {
-                var projectName = new DirectoryInfo(pathContext.SolutionRoot).Name;
-                var workDirectory = pathContext.WorkingDirectory;
-                var solutionDirectory = pathContext.SolutionRoot;
+                var projectName = "ClassLibrary1";
+                var workDirectory = Path.Combine(testDirectory);
+                var projectFile = Path.Combine(workDirectory, $"{projectName}.csproj");
+                var solutionDirectory = Path.Combine(testDirectory, projectName);
                 var nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
