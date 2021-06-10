@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement
 
                 PrefixMatchPackageSourceNames prefixMatchPackageSourceNames = downloadContext.PackageNamespacesConfiguration?.GetPrefixMatchPackageSourceNames(packageIdentity.Id);
 
-                if (prefixMatchPackageSourceNames.PackageNamespaceSectionPresent)
+                if (prefixMatchPackageSourceNames?.PackageNamespaceSectionPresent == true)
                 {
                     if (prefixMatchPackageSourceNames.PackageSourceNames != null)
                     {
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        if (prefixMatchPackageSourceNames.PackageNamespaceSectionPresent)
+                        if (prefixMatchPackageSourceNames?.PackageNamespaceSectionPresent == true)
                         {
                             if (prefixMatchPackageSourceNames.PackageSourceNames != null &&
                                 !prefixMatchPackageSourceNames.PackageSourceNames.Contains(source.PackageSource.Name))
