@@ -85,26 +85,66 @@ namespace NuGet.Commands
             ResolvedDependencies = resolvedDependencies;
         }
 
+        /// <summary>
+        /// Creates a restore graph for one project/package
+        /// </summary>
+        /// <param name="graphs">Resolved depdencies graphs collection</param>
+        /// <param name="context">Restore context</param>
+        /// <param name="framework">Target NuGet framework to restore</param>
+        /// <returns>A <see cref="RestoreTargetGraph "/> object built from arguments</returns>
+        [Obsolete("Use Create() overload withou logger argument instead")]
         public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, NuGetFramework framework)
         {
-            return Create(RuntimeGraph.Empty, graphs, context, logger, framework, runtimeIdentifier: null);
+            return Create(RuntimeGraph.Empty, graphs, context, framework, runtimeIdentifier: null);
         }
 
         /// <summary>
-        /// Factory method
+        /// Creates a restore graph for one project/package
         /// </summary>
-        /// <param name="runtimeGraph"></param>
-        /// <param name="graphs"></param>
-        /// <param name="context"></param>
+        /// <param name="graphs">Resolved depdencies graphs collection</param>
+        /// <param name="context">Restore context</param>
+        /// <param name="framework">Target NuGet framework to restore</param>
+        /// <returns>A <see cref="RestoreTargetGraph "/> object built from arguments</returns>
+        public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, NuGetFramework framework)
+        {
+            return Create(RuntimeGraph.Empty, graphs, context, framework, runtimeIdentifier: null);
+        }
+
+        /// <summary>
+        /// Creates a restore graph for one project/package
+        /// </summary>
+        /// <param name="runtimeGraph">Runtime graph with package/project dependencies</param>
+        /// <param name="graphs">Resolved depdencies graphs collection</param>
+        /// <param name="context">Restore context</param>
         /// <param name="log">Not used</param>
-        /// <param name="framework"></param>
-        /// <param name="runtimeIdentifier"></param>
-        /// <returns></returns>
+        /// <param name="framework">Target NuGet framework to restore</param>
+        /// <param name="runtimeIdentifier">Ru</param>
+        /// <returns>A <see cref="RestoreTargetGraph "/> object built from arguments</returns>
+        [Obsolete("Use Create() overload without log argument instead")]
         public static RestoreTargetGraph Create(
             RuntimeGraph runtimeGraph,
             IEnumerable<GraphNode<RemoteResolveResult>> graphs,
             RemoteWalkContext context,
             ILogger log,
+            NuGetFramework framework,
+            string runtimeIdentifier)
+        {
+            return Create(runtimeGraph, graphs, context, framework, runtimeIdentifier);
+        }
+
+        /// <summary>
+        /// Creates a restore graph for one project/package
+        /// </summary>
+        /// <param name="runtimeGraph">Runtime graph with package/project dependencies</param>
+        /// <param name="graphs">Resolved depdencies graphs collection</param>
+        /// <param name="context">Restore context</param>
+        /// <param name="framework">Target NuGet framework to restore</param>
+        /// <param name="runtimeIdentifier">Ru</param>
+        /// <returns>A <see cref="RestoreTargetGraph "/> object built from arguments</returns>
+        public static RestoreTargetGraph Create(
+            RuntimeGraph runtimeGraph,
+            IEnumerable<GraphNode<RemoteResolveResult>> graphs,
+            RemoteWalkContext context,
             NuGetFramework framework,
             string runtimeIdentifier)
         {
@@ -124,64 +164,64 @@ namespace NuGet.Commands
             }
 
             graphs.ForEach(node =>
+            {
+                if (node == null || node.Key == null)
                 {
-                    if (node == null || node.Key == null)
+                    return;
+                }
+
+                if (node.Disposition != Disposition.Rejected)
+                {
+                    if (node.Disposition == Disposition.Acceptable)
                     {
+                        // This wasn't resolved. It's a conflict.
+                        HashSet<ResolverRequest> ranges;
+                        if (!conflicts.TryGetValue(node.Key.Name, out ranges))
+                        {
+                            ranges = new HashSet<ResolverRequest>();
+                            conflicts[node.Key.Name] = ranges;
+                        }
+
+                        // OuterNode may be null if the project itself conflicts with a package name
+                        var requestor = node.OuterNode == null ? node.Item.Key : node.OuterNode.Item.Key;
+
+                        ranges.Add(new ResolverRequest(requestor, node.Key));
+                    }
+
+                    if (node?.Item?.Key?.Type == LibraryType.Unresolved)
+                    {
+                        if (node.Key.VersionRange != null)
+                        {
+                            unresolved.Add(node.Key);
+                        }
+
                         return;
                     }
 
-                    if (node.Disposition != Disposition.Rejected)
-                    {
-                        if (node.Disposition == Disposition.Acceptable)
-                        {
-                            // This wasn't resolved. It's a conflict.
-                            HashSet<ResolverRequest> ranges;
-                            if (!conflicts.TryGetValue(node.Key.Name, out ranges))
-                            {
-                                ranges = new HashSet<ResolverRequest>();
-                                conflicts[node.Key.Name] = ranges;
-                            }
+                    // Don't add rejected nodes since we only want to write reduced nodes
+                    // to the lock file
+                    flattened.Add(node.Item);
+                }
 
-                            // OuterNode may be null if the project itself conflicts with a package name
-                            var requestor = node.OuterNode == null ? node.Item.Key : node.OuterNode.Item.Key;
+                if (node?.OuterNode != null && node.Item.Key.Type != LibraryType.Unresolved)
+                {
+                    var dependencyKey = new ResolvedDependencyKey(
+                        parent: node.OuterNode.Item.Key,
+                        range: node.Key.VersionRange,
+                        child: node.Item.Key);
 
-                            ranges.Add(new ResolverRequest(requestor, node.Key));
-                        }
+                    resolvedDependencies.Add(dependencyKey);
+                }
 
-                        if (node?.Item?.Key?.Type == LibraryType.Unresolved)
-                        {
-                            if (node.Key.VersionRange != null)
-                            {
-                                unresolved.Add(node.Key);
-                            }
-
-                            return;
-                        }
-
-                        // Don't add rejected nodes since we only want to write reduced nodes
-                        // to the lock file
-                        flattened.Add(node.Item);
-                    }
-
-                    if (node?.OuterNode != null && node.Item.Key.Type != LibraryType.Unresolved)
-                    {
-                        var dependencyKey = new ResolvedDependencyKey(
-                            parent: node.OuterNode.Item.Key,
-                            range: node.Key.VersionRange,
-                            child: node.Item.Key);
-
-                        resolvedDependencies.Add(dependencyKey);
-                    }
-
-                    // If the package came from a remote library provider, it needs to be installed locally
-                    // Rejected nodes are included here to avoid downloading them from remote sources
-                    // each time the lock file is generated.
-                    var isRemote = context.RemoteLibraryProviders.Contains(node.Item.Data.Match.Provider);
-                    if (isRemote)
-                    {
-                        install.Add(node.Item.Data.Match);
-                    }
-                });
+                // If the package came from a remote library provider, it needs to be installed locally
+                // Rejected nodes are included here to avoid downloading them from remote sources
+                // each time the lock file is generated.
+                var isRemote = context.RemoteLibraryProviders.Contains(node.Item.Data.Match.Provider);
+                if (isRemote)
+                {
+                    install.Add(node.Item.Data.Match);
+                }
+            });
 
             return new RestoreTargetGraph(
                 conflicts.Select(p => new ResolverConflict(p.Key, p.Value)),

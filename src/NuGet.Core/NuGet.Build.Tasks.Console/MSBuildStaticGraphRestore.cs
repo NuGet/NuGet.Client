@@ -815,7 +815,7 @@ namespace NuGet.Build.Tasks.Console
                 };
             }
 
-            restoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, project.FullPath);
+            restoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath);
             restoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
             restoreMetadata.OutputPath = outputPath;
             targetFrameworkInfos.ForEach(tfi =>

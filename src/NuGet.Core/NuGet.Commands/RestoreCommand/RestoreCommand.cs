@@ -240,7 +240,7 @@ namespace NuGet.Commands
                     // In that case we want to write a `target` for each target framework to avoid missing target errors from the SDK build tasks.
                     graphs = _request.Project.TargetFrameworks.Select(e =>
                     {
-                        return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.FrameworkName, null);
+                        return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, e.FrameworkName, null);
                     });
                 }
 
@@ -306,8 +306,7 @@ namespace NuGet.Commands
                             localRepositories,
                             _request,
                             assetsFilePath,
-                            _success,
-                            _logger);
+                            _success);
                     }
 
                     // If the request is for a lower lock file version, downgrade it appropriately
@@ -741,8 +740,7 @@ namespace NuGet.Commands
                         existingLockFile,
                         project,
                         graphs,
-                        localRepositories,
-                        contextForProject);
+                        localRepositories);
 
             return lockFile;
         }

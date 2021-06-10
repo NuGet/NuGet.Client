@@ -33,19 +33,36 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// 
+        /// Creates a LockFile from an existing one given a project, a retore graph and local repositories
         /// </summary>
-        /// <param name="previousLockFile"></param>
-        /// <param name="project"></param>
-        /// <param name="targetGraphs"></param>
-        /// <param name="localRepositories"></param>
+        /// <param name="previousLockFile">Base Lock file</param>
+        /// <param name="project">A buildable, restorable project</param>
+        /// <param name="targetGraphs">Restore target graph</param>
+        /// <param name="localRepositories">V3 NuGet Sources collection</param>
         /// <param name="context">Not used</param>
-        /// <returns></returns>
+        /// <returns>A LockFile created from arguments</returns>
+        [Obsolete("Use CreateLockFile() overload without context argument instead")]
         public LockFile CreateLockFile(LockFile previousLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             RemoteWalkContext context)
+        {
+            return CreateLockFile(previousLockFile, project, targetGraphs, localRepositories);
+        }
+
+        /// <summary>
+        /// Creates a LockFile from an existing one given a project, a retore graph and local repositories
+        /// </summary>
+        /// <param name="previousLockFile">Base Lock file</param>
+        /// <param name="project">A buildable, restorable project</param>
+        /// <param name="targetGraphs">Restore target graph</param>
+        /// <param name="localRepositories">V3 NuGet Sources collection</param>
+        /// <returns>A LockFile created from arguments</returns>
+        public LockFile CreateLockFile(LockFile previousLockFile,
+            PackageSpec project,
+            IEnumerable<RestoreTargetGraph> targetGraphs,
+            IReadOnlyList<NuGetv3LocalRepository> localRepositories)
         {
             var lockFile = new LockFile()
             {

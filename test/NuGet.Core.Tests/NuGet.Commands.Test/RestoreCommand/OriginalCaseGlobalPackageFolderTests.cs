@@ -277,7 +277,6 @@ namespace NuGet.Commands.Test
                     }
                 },
                 new TestRemoteWalkContext(),
-                logger,
                 FrameworkConstants.CommonFrameworks.NetStandard16);
 
             return graph;
