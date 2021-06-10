@@ -400,17 +400,18 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// 
+        /// Generates the props/target files content from packages just before completing a restore operation
         /// </summary>
-        /// <param name="project"></param>
-        /// <param name="assetsFile"></param>
+        /// <param name="project">Project </param>
+        /// <param name="assetsFile">project.assets.json model object</param>
         /// <param name="targetGraphs"></param>
-        /// <param name="repositories"></param>
-        /// <param name="request"></param>
-        /// <param name="assetsFilePath"></param>
-        /// <param name="restoreSuccess"></param>
+        /// <param name="repositories">NuGet package sources</param>
+        /// <param name="request">Restore request model</param>
+        /// <param name="assetsFilePath">File Path from  <paramref name="assetsFile"/> is loaded</param>
+        /// <param name="restoreSuccess">Indicates if packages were restored successfully</param>
         /// <param name="log">Not used</param>
-        /// <returns></returns>
+        /// <returns>A collection of props/targets files generated from restored packages</returns>
+        [Obsolete("Use GetMSBuildOutputFiles() overload without log argument instead")]
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
             IEnumerable<RestoreTargetGraph> targetGraphs,
@@ -419,6 +420,28 @@ namespace NuGet.Commands
             string assetsFilePath,
             bool restoreSuccess,
             ILogger log)
+        {
+            return GetMSBuildOutputFiles(project, assetsFile, targetGraphs, repositories, request, assetsFilePath, restoreSuccess);
+        }
+
+        /// <summary>
+        /// Generates the props/target files content from restored packages
+        /// </summary>
+        /// <param name="project">Project </param>
+        /// <param name="assetsFile">project.assets.json model object</param>
+        /// <param name="targetGraphs"></param>
+        /// <param name="repositories">NuGet package sources</param>
+        /// <param name="request">Restore request model</param>
+        /// <param name="assetsFilePath">File Path from  <paramref name="assetsFile"/> is loaded</param>
+        /// <param name="restoreSuccess">Indicates if packages were restored successfully</param>
+        /// <returns>A collection of props/targets files generated from restored packages</returns>
+        public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
+            LockFile assetsFile,
+            IEnumerable<RestoreTargetGraph> targetGraphs,
+            IReadOnlyList<NuGetv3LocalRepository> repositories,
+            RestoreRequest request,
+            string assetsFilePath,
+            bool restoreSuccess)
         {
             // Generate file names
             var targetsPath = GetMSBuildFilePath(project, TargetsExtension);

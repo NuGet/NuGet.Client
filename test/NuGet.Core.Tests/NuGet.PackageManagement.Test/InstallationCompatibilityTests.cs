@@ -350,7 +350,6 @@ namespace NuGet.PackageManagement.Test
                 var graph = RestoreTargetGraph.Create(
                     new[] { node },
                     new TestRemoteWalkContext(),
-                    NullLogger.Instance,
                     FrameworkConstants.CommonFrameworks.NetStandard10);
 
                 return new RestoreResult(

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -45,16 +46,22 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// cacheRoot + "project.nuget.cache"
+        /// Combines <paramref name="cacheRoot"/> + "project.nuget.cache"
         /// </summary>
         /// <param name="cacheRoot">Path to cache root</param>
         /// <param name="projectPath">Not used</param>
-        /// <returns></returns>
+        /// <returns>The combined path</returns>
+        [Obsolete("Use overload withou projectPath argument")]
         public static string GetProjectCacheFilePath(string cacheRoot, string projectPath)
         {
             return GetProjectCacheFilePath(cacheRoot);
         }
 
+        /// <summary>
+        /// Combines <paramref name="cacheRoot"/> + "project.nuget.cache"
+        /// </summary>
+        /// <param name="cacheRoot">Path to cache root</param>
+        /// <returns>The combined path</returns>
         public static string GetProjectCacheFilePath(string cacheRoot)
         {
             return cacheRoot == null ? null : Path.Combine(cacheRoot, NoOpCacheFileName);

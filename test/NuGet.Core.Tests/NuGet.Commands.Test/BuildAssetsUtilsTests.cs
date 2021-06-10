@@ -730,7 +730,7 @@ namespace NuGet.Commands.Test
                 var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
 
                 // Act
-                var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true, logger);
+                var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true);
 
                 // Assert
                 var expectedPropertyGroup = outputFiles.FirstOrDefault().Content.Root.Elements().LastOrDefault();
@@ -842,7 +842,7 @@ namespace NuGet.Commands.Test
                 var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
 
                 // Act
-                var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true, logger);
+                var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true);
 
                 var expectedPropertyName = $"Pkg{identity.Id.Replace(".", "_")}";
 
