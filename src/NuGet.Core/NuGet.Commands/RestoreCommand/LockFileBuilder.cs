@@ -190,6 +190,14 @@ namespace NuGet.Commands
                     && (target.TargetFramework is FallbackFramework
                         || target.TargetFramework is AssetTargetFallbackFramework);
 
+                // This is used for a special-case warning we need to do when net6.0-maccatalyst selects a xamarin.ios asset.
+                MaccatalystFallback maccatalystFallback = null;
+
+                if (targetGraph.Framework.HasPlatform && targetGraph.Framework.Version.Major >= 6 && targetGraph.Framework.Platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase))
+                {
+                    maccatalystFallback = new MaccatalystFallback();
+                }
+
                 foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
                     var library = graphItem.Key;
@@ -214,10 +222,10 @@ namespace NuGet.Commands
                             library,
                             includeFlags,
                             targetGraph,
-                            rootProjectStyle);
+                            rootProjectStyle,
+                            maccatalystFallback);
 
                         target.Libraries.Add(projectLib);
-                        continue;
                     }
                     else if (library.Type == LibraryType.Package)
                     {
@@ -239,7 +247,8 @@ namespace NuGet.Commands
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
-                            cache: lockFileBuilderCache);
+                            cache: lockFileBuilderCache,
+                            maccatalystFallback);
 
                         target.Libraries.Add(targetLibrary);
 
@@ -256,7 +265,8 @@ namespace NuGet.Commands
                                 targetFrameworkOverride: nonFallbackFramework,
                                 dependencyType: includeFlags,
                                 dependencies: graphItem.Data.Dependencies,
-                                cache: lockFileBuilderCache);
+                                cache: lockFileBuilderCache,
+                                maccatalystFallback: maccatalystFallback);
 
                             if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
@@ -281,6 +291,29 @@ namespace NuGet.Commands
                             }
                         }
                     }
+
+                    if (maccatalystFallback != null && maccatalystFallback._usedXamarinIOs)
+                    {
+                        var libraryName = DiagnosticUtility.FormatIdentity(library);
+
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                            Strings.Warning_MacCatalystXamarinIOSCompat,
+                            libraryName,
+                            project.Name,
+                            targetGraph.Framework);
+
+                        var logMessage = RestoreLogMessage.CreateWarning(
+                            NuGetLogCode.NU1703,
+                            message,
+                            library.Name,
+                            targetGraph.TargetGraphName);
+
+                        _logger.Log(logMessage);
+
+                        // only log the warning once per library
+                        librariesWithWarnings.Add(library);
+                    }
+
                 }
 
                 lockFile.Targets.Add(target);

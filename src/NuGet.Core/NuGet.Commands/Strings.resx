@@ -1127,4 +1127,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="VerifyCommand_NotSupported" xml:space="preserve">
     <value>Package signature validation command is not supported on this platform.</value>
   </data>
+  <data name="Warning_MacCatalystXamarinIOSCompat" xml:space="preserve">
+    <value>'{0}' was resolved as a dependency of '{1}', but the dependency is using 'Xamarin.iOS' while '{1}' is using '{2}' as its TargetFramework. There might be compatibility issues when MacCatalyst projects depend on Xamarin.iOS projects.</value>
+    <comment>0 - library/package name, 1 - VS project name, 2 - target framework</comment>
+  </data>
 </root>
