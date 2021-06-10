@@ -140,7 +140,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return Enumerable.Empty<Reference>();
         }
 
-
         /// <summary>
         /// Get the unique names of all references which have ReferenceOutputAssembly set to false.
         /// </summary>

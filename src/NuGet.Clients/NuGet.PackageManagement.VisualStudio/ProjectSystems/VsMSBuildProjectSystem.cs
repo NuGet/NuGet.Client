@@ -259,7 +259,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return Path.GetDirectoryName(path).Equals(BinDir, StringComparison.OrdinalIgnoreCase);
         }
 
-
         /// <summary>
         /// This method should be on the UI thread. The overrides should ensure that
         /// </summary>

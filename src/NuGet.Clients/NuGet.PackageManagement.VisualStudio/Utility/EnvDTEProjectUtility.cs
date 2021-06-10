@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Traverse the path to get at the directory
             var pathParts = folderPath.Split(PathSeparatorChars, StringSplitOptions.RemoveEmptyEntries);
 
-            // 'cursor' can contain a reference to either a Project instance or ProjectItem instance. 
+            // 'cursor' can contain a reference to either a Project instance or ProjectItem instance.
             // Both types have the ProjectItems property that we want to access.
             object cursor = envDTEProject;
 
@@ -131,7 +131,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return GetProjectItems(cursor);
         }
-
 
         // 'parentItem' can be either a Project or ProjectItem
         [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
@@ -159,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (createIfNotExists)
             {
                 // The JS Windows Store app project system has a bug whereby calling AddFolder() to an existing folder that
-                // does not belong to the project will throw. To work around that, we have to manually include 
+                // does not belong to the project will throw. To work around that, we have to manually include
                 // it into our project.
                 if (envDTEProject.IsJavaScriptProject()
                     && Directory.Exists(fullPath))
@@ -167,8 +166,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     var succeeded = await IncludeExistingFolderToProjectAsync(envDTEProject, folderRelativePath);
                     if (succeeded)
                     {
-                        // IMPORTANT: after including the folder into project, we need to get 
-                        // a new EnvDTEProjecItems snapshot from the parent item. Otherwise, reusing 
+                        // IMPORTANT: after including the folder into project, we need to get
+                        // a new EnvDTEProjecItems snapshot from the parent item. Otherwise, reusing
                         // the old snapshot from above won't have access to the added folder.
                         envDTEProjectItems = GetProjectItems(parentItem);
                         if (TryGetFolder(envDTEProjectItems, folderName, out subFolder))
@@ -239,7 +238,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return envDTEProjectItem != null;
         }
-
 
         /// <summary>
         /// If we didn't find the project item at the top level, then we look one more level down.
@@ -429,7 +427,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return references;
         }
 
-
         /// <summary>
         /// Recursively retrieves all supported child projects of a virtual folder.
         /// </summary>
@@ -605,7 +602,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     // Get the referenced project from the reference if any
                     // C++ projects will throw on reference.SourceProject if reference3.Resolved is false.
-                    // It's also possible that the referenced project is the project itself 
+                    // It's also possible that the referenced project is the project itself
                     // for C++ projects. In this case this reference should be skipped to avoid circular
                     // references.
                     if (reference3 != null
@@ -660,7 +657,6 @@ namespace NuGet.PackageManagement.VisualStudio
             var parentEnvDTEProject = envDTEProject.ParentProjectItem.ContainingProject;
             return IsExplicitlyUnsupported(parentEnvDTEProject);
         }
-
 
         /// <summary>
         /// True if the project has a project.json file, indicating that it is build integrated
