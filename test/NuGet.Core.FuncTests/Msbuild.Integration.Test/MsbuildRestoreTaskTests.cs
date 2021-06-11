@@ -1075,7 +1075,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",  // Package Id conflict with internally created package
                     Version = "1.0.0"
                 };
-                packageOpenSourceContosoMvc.Files.Clear();
                 packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1087,7 +1086,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.Opensource.Buffers",
                     Version = "1.0.0"
                 };
-                packageContosoBuffersOpenSource.Files.Clear();
                 packageContosoBuffersOpenSource.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1177,7 +1175,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "测试更新包",
                     Version = "1.0.0"
                 };
-                packageOpenSourceInternational.Files.Clear();
                 packageOpenSourceInternational.AddFile("lib/net461/a.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1189,7 +1186,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",  // Package Id conflict with internally created package
                     Version = "1.0.0"
                 };
-                packageOpenSourceContosoMvc.Files.Clear();
                 packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1201,7 +1197,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.Opensource.Buffers",
                     Version = "1.0.0"
                 };
-                packageContosoBuffersOpenSource.Files.Clear();
                 packageContosoBuffersOpenSource.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1216,7 +1211,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",
                     Version = "1.0.0"
                 };
-                packageContosoMvcReal.Files.Clear();
                 packageContosoMvcReal.AddFile("lib/net461/realA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1303,7 +1297,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",  // Package Id conflict with internally created package
                     Version = "1.0.0"
                 };
-                packageOpenSourceContosoMvc.Files.Clear();
                 packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1315,7 +1308,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.Opensource.Buffers",
                     Version = "1.0.0"
                 };
-                packageContosoBuffersOpenSource.Files.Clear();
                 packageContosoBuffersOpenSource.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1405,7 +1397,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "测试更新包",
                     Version = "1.0.0"
                 };
-                packageOpenSourceInternational.Files.Clear();
                 packageOpenSourceInternational.AddFile("lib/net461/a.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1417,7 +1408,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",  // Package Id conflict with internally created package
                     Version = "1.0.0"
                 };
-                packageOpenSourceContosoMvc.Files.Clear();
                 packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1429,7 +1419,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.Opensource.Buffers",
                     Version = "1.0.0"
                 };
-                packageContosoBuffersOpenSource.Files.Clear();
                 packageContosoBuffersOpenSource.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1444,7 +1433,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",
                     Version = "1.0.0"
                 };
-                packageContosoMvcReal.Files.Clear();
                 packageContosoMvcReal.AddFile("lib/net461/realA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1539,7 +1527,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "My.MVC.ASP",  // Package Id conflict with internally created package
                     Version = "1.0.0"
                 };
-                packageOpenSourceContosoMvc.Files.Clear();
                 packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1551,7 +1538,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.Opensource.Buffers",
                     Version = "1.0.0"
                 };
-                packageContosoBuffersOpenSource.Files.Clear();
                 packageContosoBuffersOpenSource.AddFile("lib/net461/openA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1639,7 +1625,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",
                     Version = "1.0.0"
                 };
-                packageContosoMvcReal1.Files.Clear();
                 packageContosoMvcReal1.AddFile("lib/net461/realA1.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1654,7 +1639,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",
                     Version = "1.0.0"
                 };
-                packageContosoMvcReal2.Files.Clear();
                 packageContosoMvcReal2.AddFile("lib/net461/realA2.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -1740,7 +1724,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "Contoso.MVC.ASP",
                     Version = "1.0.0"
                 };
-                packageContosoMvcReal.Files.Clear();
                 packageContosoMvcReal.AddFile("lib/net461/realA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
