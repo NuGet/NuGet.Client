@@ -6,11 +6,11 @@ param (
     [Parameter(Mandatory=$true)]
     [int]$EachTestTimoutInSecs,
     [Parameter(Mandatory=$true)]
-    [string]$NuGetDropPath,
-    [Parameter(Mandatory=$true)]
-    [string]$FuncTestRoot,
-    [Parameter(Mandatory=$true)]
-    [string]$RunCounter)
+    [string]$FuncTestRoot)
+
+. "$PSScriptRoot\Utils.ps1"
+. "$PSScriptRoot\VSUtils.ps1"
+. "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
 
 $VSInstance = Get-LatestVSInstance
 
@@ -22,10 +22,6 @@ trap
     KillRunningInstancesOfVS $VsInstance
     exit 1
 }
-
-. "$PSScriptRoot\Utils.ps1"
-. "$PSScriptRoot\VSUtils.ps1"
-. "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
 
 $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"
 
