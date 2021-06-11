@@ -1,3 +1,72 @@
+
+function Test-InstallPackageAddPackagesConfigFileToProject
+{
+    param($context)
+
+    # Arrange
+    $p = New-ConsoleApplication
+    
+    $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+    $projectName = Split-Path -Path $projectDirectoryPath -Leaf
+    Write-Host "00000000000000" $projectName
+    $projectPath = Join-Path $projectDirectoryPath $projectName".csproj"
+    Write-Host "00000000000000" $projectPath
+
+    $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+    # Write a file to disk, but do not add it to project
+    '<packages>
+        <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
+        <package id="Contoso.Opensource.Buffers" version="2.0.0" targetFramework="net461" />
+        <package id="Foo" version="1.0.0" targetFramework="net461" />
+</packages>' | out-file $packagesConfigPath
+
+    Write-Host "1111111111111111" $projectDirectoryPath
+ 
+    $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
+    $opensourceRepo = Join-Path $solutionDirectory "opensourceRepo"
+    $privateRepo = Join-Path $solutionDirectory "privateRepo"
+
+    $nugetConfigPath = Join-Path $solutionDirectory 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="PublicRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PublicRepository"> 
+            <namespace id="Contoso.Opensource.*" />
+        </packageSource>
+        <packageSource key="PrivateRepository">
+            <namespace id="Contoso.MVC.*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+
+	$settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+    $contosoMVCAsp1Package = CreateTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo
+    $contosoOpensourceBuffers1Package = CreateTestPackage "Contoso.Opensource.Buffers" "2.0.0" $opensourceRepo
+    $foo1Package = CreateTestPackage "Foo" "1.0.0" $opensourceRepo
+    Write-Host "2222222" $solutionDirectory
+    # Act
+    & $context.NuGetExe restore -SolutionDirectory $solutionDirectory $projectPath
+
+    # # Assert
+
+    # Rename-Item "Newtonsoft.Json.12.0.1.nupkg" "Newtonsoft.Json.12.0.1.nupkg.zip"
+    # Expand-Archive "Newtonsoft.Json.12.0.1.nupkg.zip"
+
+    # $xmlFile = [xml](Get-Content $packagesConfigPath)
+    # Assert-AreEqual 2 $xmlFile.packages.package.Count
+    # Assert-AreEqual 'jquery' $xmlFile.packages.package[0].Id
+    # Assert-AreEqual 'SkypePackage' $xmlFile.packages.package[1].Id
+}
+
 # Tests that packages are restored on build
 function Test-PackageRestore-SimpleTest {
     param($context)
@@ -336,21 +405,26 @@ function CreateTestPackage {
         [string]$outputDirectory
     )
 
-    $builder = New-Object NuGet.PackageBuilder
+    $builder = New-Object NuGet.Packaging.PackageBuilder
     $builder.Authors.Add("test_author")
     $builder.Id = $id
-    $builder.Version = New-Object NuGet.SemanticVersion($version)
+    $builder.Version = [NuGet.Versioning.NuGetVersion]::Parse($version)
     $builder.Description = "description" 
 
     # add one content file
     $tempFile = [IO.Path]::GetTempFileName()
     "test" >> $tempFile
-    $packageFile = New-Object NuGet.PhysicalPackageFile
+    $packageFile = New-Object NuGet.Packaging.PhysicalPackageFile
     $packageFile.SourcePath = $tempFile
     $packageFile.TargetPath = "content\$id-test1.txt"
     $builder.Files.Add($packageFile)
 
     # create the package file
+    if(-not(Test-Path $outputDirectory))
+    {
+        New-Item -Path $outputDirectory -ItemType Directory
+    }
+
     $outputFileName = Join-Path $outputDirectory "$id.$version.nupkg"
     $outputStream = New-Object IO.FileStream($outputFileName, [System.IO.FileMode]::Create)
     try {
