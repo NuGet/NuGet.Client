@@ -177,6 +177,38 @@ namespace NuGet.Packaging
             return stream;
         }
 
+        /// <summary>
+        /// Asynchronously copies a package to the specified destination file path.
+        /// </summary>
+        /// <param name="nupkgFilePath">The destination file path.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="string" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="nupkgFilePath" />
+        /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public override async Task<string> CopyNupkgAsync(
+            string nupkgFilePath,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(nupkgFilePath))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(nupkgFilePath));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            ZipReadStream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+            using (var destination = File.OpenWrite(nupkgFilePath))
+            {
+                await ZipReadStream.CopyToAsync(destination);
+            }
+
+            return nupkgFilePath;
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

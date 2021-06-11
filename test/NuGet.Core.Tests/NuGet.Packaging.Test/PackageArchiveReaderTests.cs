@@ -1589,14 +1589,18 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task CopyNupkgAsync_Throws()
+        public async Task CopyNupkgAsync_SucceedsAsync()
         {
+            // Arrange
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
             {
-                await Assert.ThrowsAsync<NotImplementedException>(
-                    () => test.Reader.CopyNupkgAsync(
+                // Act
+                var result = await test.Reader.CopyNupkgAsync(
                         nupkgFilePath: "a",
-                        cancellationToken: CancellationToken.None));
+                        cancellationToken: CancellationToken.None);
+
+                // Assert
+                Assert.Equal("a", result);
             }
         }
 
