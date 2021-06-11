@@ -33,7 +33,7 @@ namespace NuGet.SolutionRestoreManager
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
         private const int DelaySolutionLoadRetry = 100;
-        private const int MaxIdleWaitTimeMs = 10000;
+        private const int MaxIdleWaitTimeMs = 60000;
 
         private readonly object _lockPendingRequestsObj = new object();
 
@@ -497,7 +497,8 @@ namespace NuGet.SolutionRestoreManager
                                 }
                                 else
                                 {
-                                    // Break if we've waited for more than 10s without an actual nomination.
+                                    // Break if we've waited for more than 60s without an actual nomination.
+                                    // Normally we would expect nominations to come quickly, but on slow machines it's quite possible this takes a while.
                                     if (lastNominationReceived.AddMilliseconds(MaxIdleWaitTimeMs) < DateTime.UtcNow)
                                     {
                                         break;
