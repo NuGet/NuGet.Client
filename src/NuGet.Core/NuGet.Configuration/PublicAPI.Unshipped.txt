@@ -2,15 +2,12 @@ NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
-NuGet.Configuration.PackageNamespacesConfiguration.GetPrefixMatchPackageSourceNames(string term) -> NuGet.Configuration.PrefixMatchPackageSourceNames
+NuGet.Configuration.PackageNamespacesConfiguration.GetConfiguredPackageSources(string term) -> System.Collections.Generic.HashSet<string>
+NuGet.Configuration.PackageNamespacesConfiguration.IsNamespacesEnabled.get -> bool
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
 NuGet.Configuration.PackageNamespacesSourceItem.SetKey(string value) -> void
-NuGet.Configuration.PrefixMatchPackageSourceNames
-NuGet.Configuration.PrefixMatchPackageSourceNames.PackageNamespaceSectionPresent.get -> bool
-NuGet.Configuration.PrefixMatchPackageSourceNames.PackageSourceNames.get -> System.Collections.Generic.HashSet<string>
-NuGet.Configuration.PrefixMatchPackageSourceNames.PrefixMatchPackageSourceNames(bool packageNamespaceSectionPresent, System.Collections.Generic.HashSet<string> packageSourceNames) -> void
 NuGet.Configuration.SettingElementType.Namespace = 19 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageNamespaces = 17 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSource = 18 -> NuGet.Configuration.SettingElementType

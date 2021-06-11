@@ -23,19 +23,25 @@ namespace NuGet.Configuration
         private Lazy<SearchTree> SearchTree { get; }
 
         /// <summary>
+        /// Indicate if any packageSource exist in package namespace section
+        /// </summary>
+        public bool IsNamespacesEnabled { get; }
+
+        /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
         /// </summary>
         /// <param name="term">Search term. Never null. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
-        public PrefixMatchPackageSourceNames GetPrefixMatchPackageSourceNames(string term)
+        public HashSet<string> GetConfiguredPackageSources(string term)
         {
-            return new PrefixMatchPackageSourceNames(SearchTree.Value != null, SearchTree.Value?.PrefixMatch(term));
+            return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
 
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
+            IsNamespacesEnabled = Namespaces.Keys.Any();
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
         }
 
@@ -68,7 +74,7 @@ namespace NuGet.Configuration
         {
             SearchTree nameSpaceLookup = null;
 
-            if (Namespaces.Keys.Any())
+            if (IsNamespacesEnabled)
             {
                 nameSpaceLookup = new SearchTree(this);
             }

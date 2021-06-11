@@ -30,19 +30,18 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.True(configuration.IsNamespacesEnabled);
+
             configuration.Namespaces.Should().HaveCount(1);
-            var packageSourcesMatchFull = configuration.GetPrefixMatchPackageSourceNames("stuff");
-            Assert.True(packageSourcesMatchFull.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull.PackageSourceNames.Count);
-            Assert.Equal("nuget.org", packageSourcesMatchFull.PackageSourceNames.First());
+            var packageSourcesMatchFull = configuration.GetConfiguredPackageSources("stuff");
+            Assert.Equal(1, packageSourcesMatchFull.Count);
+            Assert.Equal("nuget.org", packageSourcesMatchFull.First());
 
-            var packageSourcesMatchPartial = configuration.GetPrefixMatchPackageSourceNames("stu");
-            Assert.True(packageSourcesMatchPartial.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesMatchPartial.PackageSourceNames);
+            var packageSourcesMatchPartial = configuration.GetConfiguredPackageSources("stu");
+            Assert.Null(packageSourcesMatchPartial);
 
-            var packageSourcesNoMatch = configuration.GetPrefixMatchPackageSourceNames("random");
-            Assert.True(packageSourcesNoMatch.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesNoMatch.PackageSourceNames);
+            var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
+            Assert.Null(packageSourcesNoMatch);
         }
 
         [Fact]
@@ -64,34 +63,31 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.True(configuration.IsNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(1);
 
             // No match
-            var packageSourcesMatchPartial1 = configuration.GetPrefixMatchPackageSourceNames("Cont");
-            Assert.True(packageSourcesMatchPartial1.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesMatchPartial1.PackageSourceNames);
+            var packageSourcesMatchPartial1 = configuration.GetConfiguredPackageSources("Cont");
+            Assert.Null(packageSourcesMatchPartial1);
 
             // No match
-            var packageSourcesMatchPartial2 = configuration.GetPrefixMatchPackageSourceNames("Contoso.Opensource");
-            Assert.True(packageSourcesMatchPartial2.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesMatchPartial2.PackageSourceNames);
+            var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("Contoso.Opensource");
+            Assert.Null(packageSourcesMatchPartial2);
 
             // Match
-            var packageSourcesMatchFull1 = configuration.GetPrefixMatchPackageSourceNames("Contoso.Opensource.MVC");
-            Assert.True(packageSourcesMatchFull1.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull1.PackageSourceNames.Count);
-            Assert.Equal("publicrepository", packageSourcesMatchFull1.PackageSourceNames.First());
+            var packageSourcesMatchFull1 = configuration.GetConfiguredPackageSources("Contoso.Opensource.MVC");
+            Assert.Equal(1, packageSourcesMatchFull1.Count);
+            Assert.Equal("publicrepository", packageSourcesMatchFull1.First());
 
             // Match
-            var packageSourcesMatchFull2 = configuration.GetPrefixMatchPackageSourceNames("Contoso.Opensource.MVC.ASP");
-            Assert.True(packageSourcesMatchFull2.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull2.PackageSourceNames.Count);
-            Assert.Equal("publicrepository", packageSourcesMatchFull2.PackageSourceNames.First());
+            var packageSourcesMatchFull2 = configuration.GetConfiguredPackageSources("Contoso.Opensource.MVC.ASP");
+
+            Assert.Equal(1, packageSourcesMatchFull2.Count);
+            Assert.Equal("publicrepository", packageSourcesMatchFull2.First());
 
             // No match
-            var packageSourcesNoMatch = configuration.GetPrefixMatchPackageSourceNames("random");
-            Assert.True(packageSourcesNoMatch.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesNoMatch.PackageSourceNames);
+            var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
+            Assert.Null(packageSourcesNoMatch);
         }
 
         [Fact]
@@ -118,30 +114,27 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.True(configuration.IsNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(3);
 
-            var packageSourcesMatchFull1 = configuration.GetPrefixMatchPackageSourceNames("stuff");
-            Assert.True(packageSourcesMatchFull1.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull1.PackageSourceNames.Count);
-            Assert.Equal("nuget.org", packageSourcesMatchFull1.PackageSourceNames.First());
+            var packageSourcesMatchFull1 = configuration.GetConfiguredPackageSources("stuff");
 
-            var packageSourcesMatchPartial1 = configuration.GetPrefixMatchPackageSourceNames("stu");
-            Assert.True(packageSourcesMatchPartial1.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesMatchPartial1.PackageSourceNames);
+            Assert.Equal(1, packageSourcesMatchFull1.Count);
+            Assert.Equal("nuget.org", packageSourcesMatchFull1.First());
 
-            var packageSourcesMatchFull2 = configuration.GetPrefixMatchPackageSourceNames("moreStuff");
-            Assert.True(packageSourcesMatchFull2.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull2.PackageSourceNames.Count);
-            Assert.Equal("contoso", packageSourcesMatchFull2.PackageSourceNames.First());
+            var packageSourcesMatchPartial1 = configuration.GetConfiguredPackageSources("stu");
+            Assert.Null(packageSourcesMatchPartial1);
 
-            var packageSourcesMatchPartial2 = configuration.GetPrefixMatchPackageSourceNames("PrivateTest");
-            Assert.True(packageSourcesMatchPartial2.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchPartial2.PackageSourceNames.Count);
-            Assert.Equal("privaterepository", packageSourcesMatchPartial2.PackageSourceNames.First());
+            var packageSourcesMatchFull2 = configuration.GetConfiguredPackageSources("moreStuff");
+            Assert.Equal(1, packageSourcesMatchFull2.Count);
+            Assert.Equal("contoso", packageSourcesMatchFull2.First());
 
-            var packageSourcesNoMatch = configuration.GetPrefixMatchPackageSourceNames("random");
-            Assert.True(packageSourcesNoMatch.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesNoMatch.PackageSourceNames);
+            var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("PrivateTest");
+            Assert.Equal(1, packageSourcesMatchPartial2.Count);
+            Assert.Equal("privaterepository", packageSourcesMatchPartial2.First());
+
+            var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
+            Assert.Null(packageSourcesNoMatch);
         }
 
         [Fact]
@@ -172,35 +165,31 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.True(configuration.IsNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(4);
 
-            var packageSourcesMatchPartial1 = configuration.GetPrefixMatchPackageSourceNames("Contoso");
-            Assert.True(packageSourcesMatchPartial1.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesMatchPartial1.PackageSourceNames);
+            var packageSourcesMatchPartial1 = configuration.GetConfiguredPackageSources("Contoso");
+            Assert.Null(packageSourcesMatchPartial1);
 
-            var packageSourcesMatchPartial2 = configuration.GetPrefixMatchPackageSourceNames("Contoso.Opensource");
-            Assert.Equal(1, packageSourcesMatchPartial2.PackageSourceNames.Count);
-            Assert.Equal("privaterepository", packageSourcesMatchPartial2.PackageSourceNames.First());
+            var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("Contoso.Opensource");
+            Assert.Equal(1, packageSourcesMatchPartial2.Count);
+            Assert.Equal("privaterepository", packageSourcesMatchPartial2.First());
 
-            var packageSourcesMatchFull2 = configuration.GetPrefixMatchPackageSourceNames("Contoso.MVC");
-            Assert.True(packageSourcesMatchFull2.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull2.PackageSourceNames.Count);
-            Assert.Equal("sharedrepository", packageSourcesMatchFull2.PackageSourceNames.First());
+            var packageSourcesMatchFull2 = configuration.GetConfiguredPackageSources("Contoso.MVC");
+            Assert.Equal(1, packageSourcesMatchFull2.Count);
+            Assert.Equal("sharedrepository", packageSourcesMatchFull2.First());
 
-            var packageSourcesMatchFull3 = configuration.GetPrefixMatchPackageSourceNames("meta.cache");
-            Assert.True(packageSourcesMatchFull3.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull3.PackageSourceNames.Count);
-            Assert.Equal("metarepository", packageSourcesMatchFull3.PackageSourceNames.First());
+            var packageSourcesMatchFull3 = configuration.GetConfiguredPackageSources("meta.cache");
+            Assert.Equal(1, packageSourcesMatchFull3.Count);
+            Assert.Equal("metarepository", packageSourcesMatchFull3.First());
 
 
-            var packageSourcesMatchFull4 = configuration.GetPrefixMatchPackageSourceNames("meta.cache.test");
-            Assert.True(packageSourcesMatchFull4.PackageNamespaceSectionPresent);
-            Assert.Equal(1, packageSourcesMatchFull4.PackageSourceNames.Count);
-            Assert.Equal("metarepository", packageSourcesMatchFull4.PackageSourceNames.First());
+            var packageSourcesMatchFull4 = configuration.GetConfiguredPackageSources("meta.cache.test");
+            Assert.Equal(1, packageSourcesMatchFull4.Count);
+            Assert.Equal("metarepository", packageSourcesMatchFull4.First());
 
-            var packageSourcesNoMatch = configuration.GetPrefixMatchPackageSourceNames("random");
-            Assert.True(packageSourcesNoMatch.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesNoMatch.PackageSourceNames);
+            var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
+            Assert.Null(packageSourcesNoMatch);
         }
 
         [Fact]
@@ -216,11 +205,11 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.False(configuration.IsNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(0);
 
-            var packageSourcesMatchPartial = configuration.GetPrefixMatchPackageSourceNames("stuff");
-            Assert.False(packageSourcesMatchPartial.PackageNamespaceSectionPresent);
-            Assert.Null(packageSourcesMatchPartial.PackageSourceNames);
+            var packageSourcesMatchPartial = configuration.GetConfiguredPackageSources("stuff");
+            Assert.Null(packageSourcesMatchPartial);
         }
     }
 }
