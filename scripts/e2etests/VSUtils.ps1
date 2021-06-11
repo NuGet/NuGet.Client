@@ -64,13 +64,19 @@ function LaunchVSAndWaitForDTE {
         $NumberOfPolls
     )
 
-    KillRunningInstancesOfVS
+    KillRunningInstancesOfVS $VSInstance
 
     if ($ActivityLogFullPath) {
-        LaunchVS -VSInstance $VSInstance -ActivityLogFullPath $ActivityLogFullPath
+        $process = LaunchVS -VSInstance $VSInstance -ActivityLogFullPath $ActivityLogFullPath
     }
     else {
-        LaunchVS -VSInstance $VSInstance
+        $process = LaunchVS -VSInstance $VSInstance
+    }
+
+    if (-not $process)
+    {
+        Write-Error "Unable to start VS process"
+        return $null
     }
 
     $VSVersionString = $VsInstance.installationVersion
@@ -80,20 +86,27 @@ function LaunchVSAndWaitForDTE {
     $count = 0
     Write-Host "Will wait for $NumberOfPolls times and $DTEReadyPollFrequencyInSecs seconds each time."
 
+    # https://docs.microsoft.com/en-us/visualstudio/extensibility/launch-visual-studio-dte?view=vs-2019
+    $exeVersion = $VSInstance.installationVersion
+    $dteName = "VisualStudio.DTE." + $exeVersion.Substring(0, $exeVersion.IndexOf('.')) + ".0"
+    Write-Host "Looking for: $dteName"
+
     while ($count -lt $NumberOfPolls) {
         # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
         Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
         start-sleep $DTEReadyPollFrequencyInSecs
 
-        $dte2 = GetDTE2 $VSVersion
+        $dte2 = GetDTE2 -dteName $dteName
         if ($dte2) {
             Write-Host 'Obtained DTE. Wait for 5 seconds...'
             start-sleep 5
-            return $true
+            return $dte2
         }
 
         $count++
     }
+
+    return $null
 }
 
 function KillRunningInstancesOfVS {
@@ -126,21 +139,22 @@ function LaunchVS {
     $VSPath = $VSInstance.productPath
     Write-Host 'Starting ' $VSPath
     if ($ActivityLogFullPath) {
-        start-process $VSPath -ArgumentList "/log $ActivityLogFullPath"
+        $process = start-process $VSPath -ArgumentList "/log $ActivityLogFullPath" -PassThru
     }
     else {
-        start-process $VSPath
+        $process = start-process $VSPath -PassThru
     }
+    return $process
 }
 
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$VSVersion
+        [string]$dteName
     )
 
     Try {
-        $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject("VisualStudio.DTE." + $VSVersion)
+        $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject($dteName)
         return $dte2
     }
     Catch {
