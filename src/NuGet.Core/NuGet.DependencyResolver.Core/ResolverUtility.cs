@@ -130,7 +130,7 @@ namespace NuGet.DependencyResolver
                 Data = new RemoteResolveResult
                 {
                     Match = match,
-                    Dependencies = dependencies.Dependencies
+                    Dependencies = dependencies.Dependencies.ToList()
                 },
             };
         }
@@ -482,7 +482,7 @@ namespace NuGet.DependencyResolver
                 Data = new RemoteResolveResult()
                 {
                     Match = match,
-                    Dependencies = Enumerable.Empty<LibraryDependency>()
+                    Dependencies = RemoteResolveResult.EmptyDependencies
                 }
             };
         }

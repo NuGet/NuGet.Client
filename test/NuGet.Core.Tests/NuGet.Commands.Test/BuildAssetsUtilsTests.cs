@@ -697,7 +697,7 @@ namespace NuGet.Commands.Test
                     OriginalCaseGlobalPackageFolderTests.GetRestoreTargetGraph(pathContext.PackageSource, identity, packagePath, logger)
                 };
 
-                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies;
+                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies.ToList();
 
                 var lockFile = new LockFile
                 {
@@ -808,7 +808,7 @@ namespace NuGet.Commands.Test
                     OriginalCaseGlobalPackageFolderTests.GetRestoreTargetGraph(pathContext.PackageSource, identity, packagePath, logger)
                 };
 
-                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies;
+                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies.ToList();
 
                 var lockFile = new LockFile
                 {
