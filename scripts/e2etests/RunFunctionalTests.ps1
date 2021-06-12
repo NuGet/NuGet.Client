@@ -6,7 +6,11 @@ param (
     [Parameter(Mandatory=$true)]
     [int]$EachTestTimoutInSecs,
     [Parameter(Mandatory=$true)]
-    [string]$FuncTestRoot)
+    [string]$NuGetDropPath,
+    [Parameter(Mandatory=$true)]
+    [string]$FuncTestRoot,
+    [Parameter(Mandatory=$true)]
+    [string]$RunCounter)
 
 . "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\VSUtils.ps1"

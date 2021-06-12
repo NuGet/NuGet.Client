@@ -4,7 +4,7 @@ steps:
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
-      $EndToEndTestCommandToRunPart = '"' + "Run-Test -Exclude '${env:PART}' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
+      $EndToEndTestCommandToRunPart = "Run-Test -Exclude '${env:PART}' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
       Write-Host "##vso[task.setvariable variable=EndToEndTestCommandToRunPart]$EndToEndTestCommandToRunPart"
 
 - task: PowerShell@1
@@ -59,7 +59,7 @@ steps:
   continueOnError: "false"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/RunFunctionalTests.ps1"
-    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
+    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PowerShell@1
@@ -68,7 +68,7 @@ steps:
   continueOnError: "true"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/RunFunctionalTests.ps1"
-    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts"
+    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber)"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishTestResults@2
@@ -96,5 +96,5 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
-      KillRunningInstancesOfVS
+      KillRunningInstancesOfVS Get-LatestVSInstance
   condition: "always()"
