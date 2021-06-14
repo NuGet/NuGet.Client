@@ -51,6 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(VsProjectTypes.VsProjectItemKindSolutionFolder, StringComparison.OrdinalIgnoreCase);
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public static async Task<bool> ContainsFileAsync(EnvDTE.Project envDTEProject, string path)
         {
             if (string.Equals(envDTEProject.Kind, VsProjectTypes.WixProjectTypeGuid, StringComparison.OrdinalIgnoreCase)
@@ -109,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Traverse the path to get at the directory
             var pathParts = folderPath.Split(PathSeparatorChars, StringSplitOptions.RemoveEmptyEntries);
 
-            // 'cursor' can contain a reference to either a Project instance or ProjectItem instance. 
+            // 'cursor' can contain a reference to either a Project instance or ProjectItem instance.
             // Both types have the ProjectItems property that we want to access.
             object cursor = envDTEProject;
 
@@ -132,6 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         // 'parentItem' can be either a Project or ProjectItem
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task<EnvDTE.ProjectItem> GetOrCreateFolderAsync(
             EnvDTE.Project envDTEProject,
             object parentItem,
@@ -156,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (createIfNotExists)
             {
                 // The JS Windows Store app project system has a bug whereby calling AddFolder() to an existing folder that
-                // does not belong to the project will throw. To work around that, we have to manually include 
+                // does not belong to the project will throw. To work around that, we have to manually include
                 // it into our project.
                 if (envDTEProject.IsJavaScriptProject()
                     && Directory.Exists(fullPath))
@@ -164,8 +166,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     var succeeded = await IncludeExistingFolderToProjectAsync(envDTEProject, folderRelativePath);
                     if (succeeded)
                     {
-                        // IMPORTANT: after including the folder into project, we need to get 
-                        // a new EnvDTEProjecItems snapshot from the parent item. Otherwise, reusing 
+                        // IMPORTANT: after including the folder into project, we need to get
+                        // a new EnvDTEProjecItems snapshot from the parent item. Otherwise, reusing
                         // the old snapshot from above won't have access to the added folder.
                         envDTEProjectItems = GetProjectItems(parentItem);
                         if (TryGetFolder(envDTEProjectItems, folderName, out subFolder))
@@ -242,6 +244,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// In VS files can have other nested files like foo.aspx and foo.aspx.cs or web.config and web.debug.config.
         /// These are actually top level files in the file system but are represented as nested project items in VS.
         /// </summary>
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static bool TryGetNestedFile(EnvDTE.ProjectItems envDTEProjectItems, string name, out EnvDTE.ProjectItem envDTEProjectItem)
         {
             string parentFileName;
@@ -268,6 +271,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031")]
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static EnvDTE.ProjectItem GetProjectItem(EnvDTE.ProjectItems envDTEProjectItems, string name, IEnumerable<string> allowedItemKinds)
         {
             try
@@ -286,6 +290,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static EnvDTE.ProjectItems GetProjectItems(object parent)
         {
             var envDTEProject = parent as EnvDTE.Project;
@@ -303,6 +308,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         internal static async Task<EnvDTE.ProjectItem> GetProjectItemAsync(EnvDTE.Project envDTEProject, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -325,6 +331,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return projectItem;
         }
 
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         internal static async Task<IEnumerable<EnvDTE.ProjectItem>> GetChildItems(EnvDTE.Project envDTEProject, string path, string filter, string desiredKind)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -424,6 +431,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Recursively retrieves all supported child projects of a virtual folder.
         /// </summary>
         /// <param name="project">The root container project</param>
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         internal static async Task<IEnumerable<EnvDTE.Project>> GetSupportedChildProjectsAsync(EnvDTE.Project envDTEProject)
         {
             if (!await IsSolutionFolderAsync(envDTEProject))
@@ -484,6 +492,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return assemblies;
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task<HashSet<string>> GetLocalProjectAssembliesAsync(EnvDTE.Project envDTEProject)
         {
             if (envDTEProject.IsWebSite())
@@ -524,6 +533,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return assemblies;
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task<HashSet<string>> GetWebsiteLocalAssembliesAsync(EnvDTE.Project envDTEProject)
         {
             var assemblies = new HashSet<string>(PathComparer.Default);
@@ -592,7 +602,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     // Get the referenced project from the reference if any
                     // C++ projects will throw on reference.SourceProject if reference3.Resolved is false.
-                    // It's also possible that the referenced project is the project itself 
+                    // It's also possible that the referenced project is the project itself
                     // for C++ projects. In this case this reference should be skipped to avoid circular
                     // references.
                     if (reference3 != null
@@ -607,6 +617,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProjects;
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static IList<EnvDTE.Project> GetWebsiteReferencedProjects(EnvDTE.Project envDTEProject)
         {
             var envDTEProjects = new List<EnvDTE.Project>();
@@ -650,6 +661,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// True if the project has a project.json file, indicating that it is build integrated
         /// </summary>
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public static async Task<bool> HasBuildIntegratedConfig(EnvDTE.Project project)
         {
             var projectNameConfig = ProjectJsonPathUtilities.GetProjectConfigWithProjectName(project.Name);
@@ -688,6 +700,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         internal static async Task<bool> DeleteProjectItemAsync(EnvDTE.Project envDTEProject, string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

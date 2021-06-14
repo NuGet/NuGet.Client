@@ -19,17 +19,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Framework" />
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" ExcludeAssets="build" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.Client" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>

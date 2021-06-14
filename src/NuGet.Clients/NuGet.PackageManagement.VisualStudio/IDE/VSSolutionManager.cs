@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -464,6 +465,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Checks whether the current solution is saved to disk, as opposed to be in memory.
         /// </summary>
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private bool DoesSolutionRequireAnInitialSaveAs()
         {
             // Check if user is doing File - New File without saving the solution.
@@ -563,6 +565,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void OnEnvDTEProjectRenamed(Project envDTEProject, string oldName)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -617,6 +620,7 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectRemoved?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void OnEnvDTEProjectAdded(Project envDTEProject)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -637,6 +641,7 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task SetDefaultProjectNameAsync()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -1080,6 +1085,8 @@ namespace NuGet.PackageManagement.VisualStudio
         #endregion
 
         private bool _disposed = false;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public void Dispose()
         {
             if (!_disposed)

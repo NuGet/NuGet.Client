@@ -252,6 +252,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task AddProjectItemAsync(string filePath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

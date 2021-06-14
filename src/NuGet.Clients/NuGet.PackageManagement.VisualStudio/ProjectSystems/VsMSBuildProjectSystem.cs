@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -189,6 +190,7 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private Task AddFileCoreAsync(string path, Action addFile)
         {
             // Do not try to add file to project, if the path is null or empty.
@@ -260,6 +262,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// This method should be on the UI thread. The overrides should ensure that
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         protected virtual async Task AddFileToProjectAsync(string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -999,6 +1002,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await EnvDTEProjectUtility.GetProjectItemAsync(VsProjectAdapter.Project, path);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task AddProjectItemAsync(string filePath, string folderPath, bool createFolderIfNotExists)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

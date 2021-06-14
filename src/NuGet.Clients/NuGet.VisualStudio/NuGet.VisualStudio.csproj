@@ -23,9 +23,9 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
     <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
+    <PackageReference Include="Newtonsoft.Json" PrivateAssets="all" NoWarn="NU1605" />
   </ItemGroup>
 
   <ItemGroup>

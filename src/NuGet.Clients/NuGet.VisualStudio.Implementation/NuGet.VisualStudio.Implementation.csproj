@@ -33,9 +33,7 @@
   <ItemGroup>
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" />
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" />
-    <PackageReference Include="Microsoft.VisualStudio.Composition" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>

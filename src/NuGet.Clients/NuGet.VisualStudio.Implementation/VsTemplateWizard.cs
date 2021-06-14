@@ -264,6 +264,7 @@ namespace NuGet.VisualStudio
             return TemplateFinishedGeneratingAsync(project);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
         {
             return TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
@@ -326,6 +327,7 @@ namespace NuGet.VisualStudio
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
             if (runKind != WizardRunKind.AsNewProject
@@ -350,6 +352,7 @@ namespace NuGet.VisualStudio
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void AddTemplateParameters(Dictionary<string, string> replacementsDictionary)
         {
             // add the $nugetpackagesfolder$ parameter which returns relative path to the solution's packages folder.

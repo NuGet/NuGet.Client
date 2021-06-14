@@ -13,6 +13,10 @@
     <ProjectReference Include="$(RepositoryRootDirectory)test\TestExtensions\TestablePlugin\TestablePlugin.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
@@ -33,7 +37,7 @@
       xcopy /diye $(ArtifactsDirectory)TestablePlugin\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\* $(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\TestablePlugin\
     </PostBuildEvent>
   </PropertyGroup>
-  
+
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

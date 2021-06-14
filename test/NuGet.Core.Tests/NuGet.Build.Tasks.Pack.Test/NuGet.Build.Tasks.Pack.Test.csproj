@@ -18,6 +18,10 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="All" />
