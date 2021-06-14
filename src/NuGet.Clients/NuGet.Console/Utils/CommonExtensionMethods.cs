@@ -25,10 +25,6 @@ namespace NuGetConsole
             }
         }
 
-        [SuppressMessage(
-            "Microsoft.Performance",
-            "CA1811:AvoidUncalledPrivateCode",
-            Justification = "This file is shared between two projects. One project uses this method, the other don't.")]
         public static T GetService<T>(this IServiceProvider sp, Type serviceType)
             where T : class
         {
