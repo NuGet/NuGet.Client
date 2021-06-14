@@ -347,7 +347,9 @@ namespace NuGetConsole.Implementation.Console
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.END);
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.RETURN);
 
-                                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => EndInputLineAsync(WpfConsole));
+                                NuGetUIThreadHelper.JoinableTaskFactory
+                                    .RunAsync(() => EndInputLineAsync(WpfConsole))
+                                    .PostOnFailure(nameof(WpfConsoleKeyProcessor));
                             }
                             hr = VSConstants.S_OK;
                             break;
