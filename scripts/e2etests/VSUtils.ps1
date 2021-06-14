@@ -2,15 +2,28 @@ $VSInstallerProcessName = "VSIXInstaller"
 
 . "$PSScriptRoot\Utils.ps1"
 
-function Get-LatestVSInstance
+function Get-VisualStudioVersionRangeFromConfig
 {
     $VsVersion = & dotnet msbuild "$PSScriptRoot\..\..\build\config.props" -t:GetVSTargetMajorVersion -NoLogo
-    Write-Host "Looking for VS version $vsVersion"
+    Write-Host "config.props targets VS version $vsVersion"
     $VsVersionRange = "["+$VsVersion+".0,"+(1+$VsVersion)+".0)"
+    return $VsVersionRange
+}
+
+function Get-LatestVSInstance
+{
+    param(
+        [string]$VersionRange
+    )
 
     $vswhere = "${Env:\ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
-    $VSInstanceData = & $vswhere -latest -prerelease -version "$VsVersionRange" -nologo -format json | ConvertFrom-Json
+    if (-not $VersionRange) {
+        $VSInstanceData = & $vswhere -latest -prerelease -nologo -format json | ConvertFrom-Json
+    }
+    else {
+        $VSInstanceData = & $vswhere -latest -prerelease -version "$VersionRange" -nologo -format json | ConvertFrom-Json
+    }
 
     return $VSInstanceData
 }

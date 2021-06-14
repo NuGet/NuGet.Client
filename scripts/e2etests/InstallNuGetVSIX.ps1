@@ -26,7 +26,7 @@ $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 Copy-Item $VSIXSrcPath $VSIXPath
 
 if ([System.String]::IsNullOrEmpty($VSInstanceId)) {
-    $VSInstance = Get-LatestVSInstance
+    $VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
 }
 else {
     $VSInstance = Get-SpecificVSInstance $VSInstanceId

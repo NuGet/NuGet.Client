@@ -16,7 +16,7 @@ param (
 . "$PSScriptRoot\VSUtils.ps1"
 . "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
 
-$VSInstance = Get-LatestVSInstance
+$VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
 
 trap
 {
