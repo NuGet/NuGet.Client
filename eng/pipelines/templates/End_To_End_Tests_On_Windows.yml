@@ -96,5 +96,5 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
-      KillRunningInstancesOfVS Get-LatestVSInstance
+      KillRunningInstancesOfVS (Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig))
   condition: "always()"
