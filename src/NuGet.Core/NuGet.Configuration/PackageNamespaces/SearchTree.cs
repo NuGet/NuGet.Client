@@ -108,12 +108,6 @@ namespace NuGet.Configuration
             {
                 char c = term[i];
 
-                if (c == '*')
-                {
-                    // break here since seeing * means end of expression.
-                    break;
-                }
-
                 if (!currentNode.Children.ContainsKey(c))
                 {
                     return currentNode.IsGlobbing ? currentNode.PackageSources : null;
