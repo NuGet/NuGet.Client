@@ -61,6 +61,28 @@
         <PackageReference Update="Microsoft.Net.Compilers.Toolset" Version="3.9.0" />
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.CommandLine.csproj' ">
+        <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
+    </ItemGroup>
+
+    <!--
+      Packages that provide NuGet's Visual Studio extensibility APIs should not depend on the Visual Studio SDK, to ensure
+      there are no circular references in case the VS SDK itself adds our package as a dependency. Everything else, however
+      should not add PackageReference on any package that is part of the VS SDK.
+
+      These individual package versions should be equal to or less than the package version within the VS SDK that our
+      customers use, otherwise they might get NU1605 or MSB3277 warnings.
+    -->
+    <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR
+                          '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
+                          '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
+                          '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
+        <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.7.327-preview" />
+        <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.67-g9e37b637e6" />
+        <PackageReference Update="Microsoft.VisualStudio.Sdk" Version="" />
+        <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
+    </ItemGroup>
+
     <!-- Test and utility packages -->
     <ItemGroup>
         <PackageReference Update="FluentAssertions" Version="5.4.1" />
@@ -83,25 +105,4 @@
         <PackageReference Update="Xunit.StaFact" Version="0.2.9" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.CommandLine.csproj' ">
-        <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
-    </ItemGroup>
-
-    <!--
-      Packages that provide NuGet's Visual Studio extensibility APIs should not depend on the Visual Studio SDK, to ensure
-      there are no circular references in case the VS SDK itself adds our package as a dependency. Everything else, however
-      should not add PackageReference on any package that is part of the VS SDK.
-
-      These individual package versions should be equal to or less than the package version within the VS SDK that our
-      customers use, otherwise they might get NU1605 or MSB3277 warnings.
-    -->
-    <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR
-                           '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
-                           '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
-                           '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
-      <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.7.327-preview" />
-      <PackageReference Update="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.67-g9e37b637e6" />
-      <PackageReference Update="Microsoft.VisualStudio.Sdk" Version="" />
-      <PackageReference Update="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
-    </ItemGroup>
   </Project>
