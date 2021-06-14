@@ -41,7 +41,7 @@ namespace NuGet.Configuration
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
-            IsNamespacesEnabled = Namespaces.Keys.Any();
+            IsNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
         }
 
