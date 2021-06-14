@@ -1,5 +1,5 @@
 
-function Test-Restore_PackagesConfig_NamespaceFiltering
+function Test-NuGetPackagesConfigNamespace
 {
     param($context)
 
@@ -17,7 +17,6 @@ function Test-Restore_PackagesConfig_NamespaceFiltering
         <package id="Contoso.Opensource.Buffers" version="2.0.0" targetFramework="net461" />
         <package id="Foo" version="1.0.0" targetFramework="net461" />
 </packages>' | out-file $packagesConfigPath
-
 
     $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
     $opensourceRepo = Join-Path $solutionDirectory "opensourceRepo"
@@ -53,12 +52,20 @@ function Test-Restore_PackagesConfig_NamespaceFiltering
     & $context.NuGetExe restore -SolutionDirectory $solutionDirectory $projectPath
 
     # Assert
-    Assert-PathExists(Join-Path $privateRepo "Contoso.MVC.ASP.1.0.0.nupkg")
-    Assert-PathExists(Join-Path $opensourceRepo "Contoso.Opensource.Buffers.2.0.0.nupkg")
-    Assert-PathExists(Join-Path $opensourceRepo "Foo.1.0.0.nupkg")
+    $packagesFolder = Join-Path $solutionDirectory "packages"
+    $contosoMVCNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
+    Assert-PathExists(Join-Path $contosoMVCNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
+    $contosoOpenSourceNupkgFolder = Join-Path $packagesFolder "Contoso.Opensource.Buffers.2.0.0"
+    Assert-PathExists(Join-Path $contosoOpenSourceNupkgFolder "Contoso.Opensource.Buffers.2.0.0.nupkg")
+
+    $errorlist = Get-Errors
+    Assert-AreEqual 0 $errorlist.Count    
+
+    $warninglist = Get-Warnings
+    Assert-AreEqual 0 $warninglist.Count 
 }
 
-function Test-RestoreCorrectSource_PackagesConfig_NamespaceFiltering
+function Test-NuGetPackagesConfigNamespace2
 {
     param($context)
 
@@ -74,7 +81,6 @@ function Test-RestoreCorrectSource_PackagesConfig_NamespaceFiltering
     '<packages>
         <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
 </packages>' | out-file $packagesConfigPath
-
 
     $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
     $opensourceRepo = Join-Path $solutionDirectory "opensourceRepo"
@@ -113,6 +119,183 @@ function Test-RestoreCorrectSource_PackagesConfig_NamespaceFiltering
     # Make sure name squatting package from public repo not restored.
     $contentFolder = Join-Path $contosoNupkgFolder "content"
     Assert-PathExists(Join-Path $contentFolder "Thisisfromprivaterepo.txt")
+
+    $errorlist = Get-Errors
+    Assert-AreEqual 0 $errorlist.Count    
+}
+
+function Test-NuGetPackagesConfigNamespace3
+{
+    param($context)
+
+    # Arrange
+    $p = New-ConsoleApplication
+    
+    $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+    $projectName = Split-Path -Path $projectDirectoryPath -Leaf
+    $projectPath = Join-Path $projectDirectoryPath $projectName".csproj"
+
+    $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+    # Write a file to disk, but do not add it to project
+    '<packages>
+        <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
+</packages>' | out-file $packagesConfigPath
+
+    $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
+    $opensourceRepo = Join-Path $solutionDirectory "opensourceRepo"
+    $privateRepo = Join-Path $solutionDirectory "privateRepo"
+
+    $nugetConfigPath = Join-Path $solutionDirectory 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="OpensourceRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+</configuration>
+"@
+
+	$settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+    CreateTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo.txt"
+    CreateTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo.txt"
+
+    # Act
+    & $context.NuGetExe restore -SolutionDirectory $solutionDirectory $projectPath
+
+    # Assert
+    $packagesFolder = Join-Path $solutionDirectory "packages"
+    $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
+    Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
+
+    $errorlist = Get-Errors
+    Assert-AreEqual 0 $errorlist.Count
+}
+
+function Test-MSbuildPackagesConfigNamespace
+{
+    param($context)
+
+    # Arrange
+    $p = New-ConsoleApplication
+    
+    $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+    $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+    # Write a file to disk, but do not add it to project
+    '<packages>
+        <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
+        <package id="Contoso.Opensource.Buffers" version="2.0.0" targetFramework="net461" />
+        <package id="Foo" version="1.0.0" targetFramework="net461" />
+</packages>' | out-file $packagesConfigPath
+
+    $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
+    $opensourceRepo = Join-Path $solutionDirectory "opensourceRepo"
+    $privateRepo = Join-Path $solutionDirectory "privateRepo"
+
+    $testDirectory = Split-Path -Path $solutionDirectory -Parent
+    $nugetConfigPath = Join-Path $solutionDirectory 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="PublicRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PublicRepository"> 
+            <namespace id="Contoso.Opensource.*" />
+        </packageSource>
+        <packageSource key="PrivateRepository">
+            <namespace id="Contoso.MVC.*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+
+	$settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+    CreateTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo.txt"
+    CreateTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo.txt"
+    CreateTestPackage "Contoso.Opensource.Buffers" "2.0.0" $opensourceRepo
+    CreateTestPackage "Foo" "1.0.0" $opensourceRepo
+
+    # Act
+    $MSBuildExe = Get-MSBuildExe
+    & "$MSBuildExe" -p:RestorePackagesConfig=true /t:restore    
+    Build-Solution
+
+    # Assert
+    $packagesFolder = Join-Path $solutionDirectory "packages"
+    $contosoMVCNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
+    Assert-PathExists(Join-Path $contosoMVCNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
+    # Make sure name squatting package from public repo not restored.
+    $contentFolder = Join-Path $contosoMVCNupkgFolder "content"
+    # Assert-PathExists(Join-Path $contentFolder "Thisisfromprivaterepo.txt")
+    $contosoOpenSourceNupkgFolder = Join-Path $packagesFolder "Contoso.Opensource.Buffers.2.0.0"
+    Assert-PathExists(Join-Path $contosoOpenSourceNupkgFolder "Contoso.Opensource.Buffers.2.0.0.nupkg")
+    $fooNupkgFolder = Join-Path $packagesFolder "Foo.1.0.0"
+    Assert-PathExists(Join-Path $fooNupkgFolder "Foo.1.0.0.nupkg")
+
+    $errorlist = Get-Errors
+    Assert-AreEqual 0 $errorlist.Count    
+}
+
+function Test-MSBuildPackagesConfigNamespace2
+{
+    param($context)
+
+    # Arrange
+    $p = New-ConsoleApplication
+    
+    $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+    $projectName = Split-Path -Path $projectDirectoryPath -Leaf
+    $projectPath = Join-Path $projectDirectoryPath $projectName".csproj"
+
+    $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+    # Write a file to disk, but do not add it to project
+    '<packages>
+        <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
+</packages>' | out-file $packagesConfigPath
+
+    $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
+    $opensourceRepo = Join-Path $solutionDirectory "opensourceRepo"
+    $privateRepo = Join-Path $solutionDirectory "privateRepo"
+
+    $nugetConfigPath = Join-Path $solutionDirectory 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="OpensourceRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+</configuration>
+"@
+
+	$settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+    CreateTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo.txt"
+    CreateTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo.txt"
+    
+    # Act
+    $MSBuildExe = Get-MSBuildExe   
+    & "$MSBuildExe" -p:RestorePackagesConfig=true /t:restore
+    Build-Solution
+
+    Assert
+    $packagesFolder = Join-Path $solutionDirectory "packages"
+    $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
+    Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
+
+    $errorlist = Get-Errors
+    Assert-AreEqual 0 $errorlist.Count
 }
 
 # Tests that packages are restored on build
