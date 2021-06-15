@@ -24,5 +24,4 @@ static NuGet.Configuration.PackageNamespacesConfiguration.GetPackageNamespacesCo
 static readonly NuGet.Configuration.ConfigurationConstants.IdAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Namespace -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageNamespaces -> string
-static readonly NuGet.Configuration.NuGetConstants.ReadmeExtension -> string
 virtual NuGet.Configuration.PackageNamespacesSourceItem.Key.get -> string
