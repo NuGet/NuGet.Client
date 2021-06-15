@@ -17,7 +17,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            _root = new SearchNode(null);
+            _root = new SearchNode();
 
             foreach (string packageSourceKey in configuration.Namespaces.Keys)
             {
@@ -61,7 +61,7 @@ namespace NuGet.Configuration
 
                 if (!currentNode.Children.ContainsKey(c))
                 {
-                    currentNode.Children[c] = new SearchNode(currentNode);
+                    currentNode.Children[c] = new SearchNode();
                 }
 
                 currentNode = currentNode.Children[c];
@@ -97,7 +97,15 @@ namespace NuGet.Configuration
             term = term.ToLowerInvariant().Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
             SearchNode currentNode = _root;
+            SearchNode longestMatchingPrefixNode = null;
+
+            if (currentNode.IsGlobbing)
+            {
+                longestMatchingPrefixNode = currentNode;
+            }
+
             int i = 0;
+
             for (; i < term.Length; i++)
             {
                 char c = term[i];
@@ -108,11 +116,11 @@ namespace NuGet.Configuration
                 }
 
                 currentNode = currentNode.Children[c];
-            }
 
-            if (currentNode == null)
-            {
-                return null;
+                if (currentNode.IsGlobbing)
+                {
+                    longestMatchingPrefixNode = currentNode;
+                }
             }
 
             // Full term match.
@@ -121,16 +129,8 @@ namespace NuGet.Configuration
                 return currentNode.PackageSources;
             }
 
-            if (!currentNode.IsGlobbing) // Still not matched. That means we need to go backtrace try to find globbing node.
-            {
-                while (currentNode != null && !currentNode.IsGlobbing)
-                {
-                    currentNode = currentNode.Parent;
-                }
-            }
-
-            return currentNode == null ? null
-                                        : currentNode.PackageSources;
+            return longestMatchingPrefixNode == null ? null
+                                        : longestMatchingPrefixNode.PackageSources;
         }
     }
 }
