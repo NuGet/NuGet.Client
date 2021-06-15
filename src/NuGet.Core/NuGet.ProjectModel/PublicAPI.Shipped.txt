@@ -300,6 +300,10 @@ NuGet.ProjectModel.LockFileTargetLibrary.Type.set -> void
 NuGet.ProjectModel.LockFileTargetLibrary.Version.get -> NuGet.Versioning.NuGetVersion
 NuGet.ProjectModel.LockFileTargetLibrary.Version.set -> void
 NuGet.ProjectModel.LockFileUtilities
+NuGet.ProjectModel.LockFileValidationResult
+NuGet.ProjectModel.LockFileValidationResult.InvalidReasons.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.ProjectModel.LockFileValidationResult.IsValid.get -> bool
+NuGet.ProjectModel.LockFileValidationResult.LockFileValidationResult(bool isValid, System.Collections.Generic.IReadOnlyList<string> invalidReasons) -> void
 NuGet.ProjectModel.PackOptions
 NuGet.ProjectModel.PackOptions.Clone() -> NuGet.ProjectModel.PackOptions
 NuGet.ProjectModel.PackOptions.Equals(NuGet.ProjectModel.PackOptions other) -> bool
@@ -692,6 +696,7 @@ static NuGet.ProjectModel.PackagesLockFileUtilities.GetNuGetLockFilePath(NuGet.P
 static NuGet.ProjectModel.PackagesLockFileUtilities.GetNuGetLockFilePath(string baseDirectory, string projectName) -> string
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileStillValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> bool
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileStillValid(NuGet.ProjectModel.PackagesLockFile expected, NuGet.ProjectModel.PackagesLockFile actual) -> NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidityWithMatchedResults
+static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> NuGet.ProjectModel.LockFileValidationResult
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsNuGetLockFileEnabled(NuGet.ProjectModel.PackageSpec project) -> bool
 static NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash.Default.get -> NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash
 static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> noWarn) -> NuGet.ProjectModel.WarningProperties

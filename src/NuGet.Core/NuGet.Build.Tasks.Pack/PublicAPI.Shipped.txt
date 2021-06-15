@@ -94,6 +94,7 @@ NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.PackageTypes.get -> string[]
 NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.PackageVersion.get -> string
 NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.ProjectReferencesWithVersions.get -> TItem[]
 NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.ProjectUrl.get -> string
+NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.Readme.get -> string
 NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.ReleaseNotes.get -> string
 NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.RepositoryBranch.get -> string
 NuGet.Build.Tasks.Pack.IPackTaskRequest<TItem>.RepositoryCommit.get -> string
@@ -212,6 +213,8 @@ NuGet.Build.Tasks.Pack.PackTask.ProjectReferencesWithVersions.get -> Microsoft.B
 NuGet.Build.Tasks.Pack.PackTask.ProjectReferencesWithVersions.set -> void
 NuGet.Build.Tasks.Pack.PackTask.ProjectUrl.get -> string
 NuGet.Build.Tasks.Pack.PackTask.ProjectUrl.set -> void
+NuGet.Build.Tasks.Pack.PackTask.Readme.get -> string
+NuGet.Build.Tasks.Pack.PackTask.Readme.set -> void
 NuGet.Build.Tasks.Pack.PackTask.ReleaseNotes.get -> string
 NuGet.Build.Tasks.Pack.PackTask.ReleaseNotes.set -> void
 NuGet.Build.Tasks.Pack.PackTask.RepositoryBranch.get -> string
@@ -340,6 +343,8 @@ NuGet.Build.Tasks.Pack.PackTaskRequest.ProjectReferencesWithVersions.get -> NuGe
 NuGet.Build.Tasks.Pack.PackTaskRequest.ProjectReferencesWithVersions.set -> void
 NuGet.Build.Tasks.Pack.PackTaskRequest.ProjectUrl.get -> string
 NuGet.Build.Tasks.Pack.PackTaskRequest.ProjectUrl.set -> void
+NuGet.Build.Tasks.Pack.PackTaskRequest.Readme.get -> string
+NuGet.Build.Tasks.Pack.PackTaskRequest.Readme.set -> void
 NuGet.Build.Tasks.Pack.PackTaskRequest.ReleaseNotes.get -> string
 NuGet.Build.Tasks.Pack.PackTaskRequest.ReleaseNotes.set -> void
 NuGet.Build.Tasks.Pack.PackTaskRequest.RepositoryBranch.get -> string
