@@ -10,6 +10,8 @@
   d:DesignHeight="200"
   d:DesignWidth="500">
   <UserControl.Resources>
+    <nuget:BooleanToVisibilityConverter
+      x:Key="BooleanToVisibilityConverter" />
     <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
 
@@ -23,69 +25,6 @@
       DataType="{x:Type nuget:PackageItemViewModel}">
       <nuget:PackageItemControl
         DataContext="{Binding}" />
-    </DataTemplate>
-
-    <DataTemplate
-      DataType="{x:Type nuget:LoadingStatusIndicator}">
-      <Grid
-        Margin="0,8">
-        <TextBlock
-          Name="_noItemsFound"
-          FontStyle="Italic"
-          HorizontalAlignment="Center"
-          Text="{x:Static nuget:Resources.Text_NoPackagesFound}"
-          Visibility="Collapsed" />
-
-        <Grid
-          Name="_progressBar"
-          Visibility="Collapsed"
-          HorizontalAlignment="Center"
-          Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <nuget:Spinner
-            Grid.Column="0"
-            Width="16"
-            Height="16"
-            Margin="3"
-            HorizontalAlignment="Center" 
-            VerticalAlignment="Center" 
-            Visibility="{Binding Visibility,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1}}"/>
-          <TextBlock
-            Grid.Column="1"
-            Text="{Binding Path=LoadingMessage}"
-            HorizontalAlignment="Left" 
-            VerticalAlignment="Center"/>
-        </Grid>
-      </Grid>
-      <DataTemplate.Triggers>
-        <DataTrigger
-          Binding="{Binding Path=Status}"
-          Value="Loading">
-          <Setter
-            TargetName="_progressBar"
-            Property="Visibility"
-            Value="Visible" />
-        </DataTrigger>
-        <DataTrigger
-          Binding="{Binding Path=Status}"
-          Value="Ready">
-          <Setter
-            TargetName="_progressBar"
-            Property="Visibility"
-            Value="Visible" />
-        </DataTrigger>
-        <DataTrigger
-          Binding="{Binding Path=Status}"
-          Value="NoItemsFound">
-          <Setter
-            TargetName="_noItemsFound"
-            Property="Visibility"
-            Value="Visible" />
-        </DataTrigger>
-      </DataTemplate.Triggers>
     </DataTemplate>
 
     <!-- Template used by ListBoxItem that represents a package. -->
@@ -166,23 +105,6 @@
       </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Template used by the LoadingIndicator. We use it to disable the background change when mouse hovers over it. -->
-    <ControlTemplate
-      x:Key="LoadingIndicatorListBoxItemTemplate"
-      TargetType="{x:Type ListBoxItem}">
-      <Border
-        x:Name="Bd"
-        BorderThickness="0"
-        Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"
-        Padding="0"
-        SnapsToDevicePixels="true">
-        <ContentPresenter
-          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-      </Border>
-    </ControlTemplate>
-
     <!-- the base style of the ListBoxItem. -->
     <Style
       x:Key="listBoxItemStyle"
@@ -202,19 +124,6 @@
       <Setter
         Property="Background"
         Value="Transparent" />
-    </Style>
-
-    <!-- the style of the ListBoxItem when the item is the loading status indicator. -->
-    <Style
-      x:Key="loadingStatusIndicatorStyle"
-      TargetType="{x:Type ListBoxItem}"
-      BasedOn="{StaticResource listBoxItemStyle}">
-      <Setter
-        Property="Template"
-        Value="{StaticResource LoadingIndicatorListBoxItemTemplate}" />
-      <Setter
-        Property="Focusable"
-        Value="False" />
     </Style>
 
     <!-- the style of the ListBoxItem when the item is a package. -->
@@ -253,21 +162,99 @@
       This enables the loadingStatusBar to appear to be in the listbox.
     -->
     <ControlTemplate x:Key="ScrollViewerWithScrollBarExtraLargeOnTop" TargetType="{x:Type ScrollViewer}">
-      <Grid x:Name="Grid" Background="{TemplateBinding Background}" >
-          <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <Grid.RowDefinitions>
-              <RowDefinition Height="*"/>
-              <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-          <Rectangle x:Name="Corner" Grid.Column="1" Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.Row="1"/>
-          <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="0" Margin="{TemplateBinding Padding}" Grid.Row="0"/>
-          <ScrollBar x:Name="PART_VerticalScrollBar" AutomationProperties.AutomationId="VerticalScrollBar" Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollableHeight}" Margin="0,-22,0,0" Minimum="0" Grid.Row="0" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportHeight}"/>
-          <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}"/>
+      <Grid x:Name="Grid" Background="{TemplateBinding Background}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Rectangle x:Name="Corner" Grid.Column="1" Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.Row="1"/>
+        <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="0" Margin="{TemplateBinding Padding}" Grid.Row="0"/>
+        <ScrollBar x:Name="PART_VerticalScrollBar" AutomationProperties.AutomationId="VerticalScrollBar" Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollableHeight}" Margin="0,-22,0,0" Minimum="0" Grid.Row="0" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportHeight}"/>
+        <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}"/>
       </Grid>
     </ControlTemplate>
+
+    <!-- Template used by ListBox that represents a list of packages. DataContext is PackageListViewModel -->
+    <Style x:Key="ListBoxStyle" TargetType="{x:Type nuget:InfiniteScrollListBox}">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate>
+            <Border
+              x:Name="Bd"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              Background="{TemplateBinding Background}"
+              Padding="0"
+              SnapsToDevicePixels="true"
+              Visibility="{TemplateBinding Visibility}">
+              <ScrollViewer
+                x:Name="ListBoxScrollViewer"
+                Template="{StaticResource ScrollViewerWithScrollBarExtraLargeOnTop}"
+                Focusable="false"
+                Padding="{TemplateBinding Padding}"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Visible">
+                <WrapPanel Orientation="Vertical">
+                  <ItemsPresenter Width="{TemplateBinding ActualWidth}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+
+                  <!--Loading Status Indicator-->
+                  <Grid
+                     Focusable="False"
+                     Width="{TemplateBinding ActualWidth}"
+                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                     Margin="0,8"
+                     Visibility="{Binding HasStatusToDisplay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock
+                      Name="_noItemsFound"
+                      FontStyle="Italic"
+                      HorizontalAlignment="Center"
+                      Text="{x:Static nuget:Resources.Text_NoPackagesFound}"
+                      Visibility="{Binding ShowNoPackagesFound, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <Grid
+                      DataContext="{Binding LoadingStatusIndicator}"
+                      Name="_progressBar"
+                     Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                      HorizontalAlignment="Center"
+                      Height="22">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <nuget:Spinner
+                        Grid.Column="0"
+                        Width="16"
+                        Height="16"
+                        Margin="3"
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center" 
+                        Visibility="{Binding Visibility,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1}}"/>
+                      <TextBlock
+                        Grid.Column="1"
+                        Text="{Binding Path=LoadingMessage}"
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Center"/>
+                    </Grid>
+                  </Grid>
+                </WrapPanel>
+              </ScrollViewer>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}" />
+      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
+      <Setter Property="ItemContainerStyleSelector" Value="{DynamicResource itemStyleSelector}"/>
+      <Setter Property="VirtualizingPanel.IsVirtualizing" Value="true" />
+      <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+      <Setter Property="VirtualizingPanel.CacheLength" Value="1,2" />
+      <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Page" />
+      <Setter Property="BorderThickness" Value="0,0,0,0" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
   </UserControl.Resources>
   <DockPanel LastChildFill="True">
     <Border
@@ -325,46 +312,16 @@
         AutomationProperties.IsOffscreenBehavior="Offscreen" />
     </Grid>
     <nuget:InfiniteScrollListBox
-      d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
       x:Name="_list"
+      DataContext="{Binding}"
+      ItemsSource="{Binding Collection}"
+      d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
+      Style="{StaticResource ListBoxStyle}"
       AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_Packages}"
       DockPanel.Dock="Bottom"
       PreviewKeyUp="List_PreviewKeyUp"
-      Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"
-      Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
-      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-      ScrollViewer.VerticalScrollBarVisibility="Visible"
-      ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
-      VirtualizingPanel.IsVirtualizing="true"
-      VirtualizingPanel.VirtualizationMode="Recycling"
-      VirtualizingPanel.CacheLength="1,2"
-      VirtualizingPanel.CacheLengthUnit="Page"
-      BorderThickness="0,0,0,0"
-      HorizontalContentAlignment="Stretch"
       SelectionChanged="List_SelectionChanged"
-      Loaded="List_Loaded"
-      ItemsSource="{Binding}">
-      <!-- set the template to disable the background change when the IsEnabled is false. -->
-      <ListBox.Template>
-        <ControlTemplate
-          TargetType="{x:Type ListBox}">
-          <Border
-            x:Name="Bd"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            Background="{TemplateBinding Background}"
-            Padding="1"
-            SnapsToDevicePixels="true">
-            <ScrollViewer
-              Template="{StaticResource ScrollViewerWithScrollBarExtraLargeOnTop}"
-              Focusable="false"
-              Padding="{TemplateBinding Padding}">
-              <ItemsPresenter
-                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-            </ScrollViewer>
-          </Border>
-        </ControlTemplate>
-      </ListBox.Template>
+      Loaded="List_Loaded">
     </nuget:InfiniteScrollListBox>
   </DockPanel>
 </UserControl>

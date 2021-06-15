@@ -68,8 +68,14 @@ namespace NuGet.PackageManagement.UI
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
 
+        public PackageManagerViewModel ViewModel { get; private set; }
+
         private PackageManagerControl()
         {
+            ViewModel = new PackageManagerViewModel();
+
+            DataContext = this;
+
             InitializeComponent();
         }
 

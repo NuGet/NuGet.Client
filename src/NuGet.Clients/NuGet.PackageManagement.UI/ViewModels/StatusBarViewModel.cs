@@ -10,9 +10,9 @@ using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class LoadingStatusViewModel : DependencyObject
+    internal class StatusBarViewModel : DependencyObject
     {
-        public LoadingStatusViewModel()
+        public StatusBarViewModel()
         {
             UpdateModel();
         }
@@ -51,12 +51,12 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty SourceLoadingStatusProperty = DependencyProperty.Register(
             nameof(SourceLoadingStatus),
             typeof(System.Collections.IDictionary),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(null, OnSourceLoadingStatusPropertyChanged));
 
         private static void OnSourceLoadingStatusPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LoadingStatusViewModel)d).UpdateModel();
+            ((StatusBarViewModel)d).UpdateModel();
         }
 
         #endregion SourceLoadingStatus
@@ -72,12 +72,12 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty IsMultiSourceProperty = DependencyProperty.Register(
             nameof(IsMultiSource),
             typeof(bool),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(false, OnIsMultiSourcePropertyChanged));
 
         private static void OnIsMultiSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LoadingStatusViewModel)d).UpdateModel();
+            ((StatusBarViewModel)d).UpdateModel();
         }
 
         #endregion IsMultiSource
@@ -93,12 +93,12 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty LoadingMessageProperty = DependencyProperty.Register(
             nameof(LoadingMessage),
             typeof(string),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(string.Empty, OnLoadingMessagePropertyChanged));
 
         private static void OnLoadingMessagePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LoadingStatusViewModel)d).UpdateModel();
+            ((StatusBarViewModel)d).UpdateModel();
         }
 
         #endregion LoadingMessage
@@ -114,12 +114,12 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty PackageSearchStatusProperty = DependencyProperty.Register(
             nameof(PackageSearchStatus),
             typeof(PackageSearchStatus),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(PackageSearchStatus.Unknown, OnPackageSearchStatusPropertyChanged));
 
         private static void OnPackageSearchStatusPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LoadingStatusViewModel)d).UpdateModel();
+            ((StatusBarViewModel)d).UpdateModel();
         }
 
         #endregion PackageSearchStatus
@@ -135,13 +135,13 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty MessageLevelProperty = DependencyProperty.RegisterReadOnly(
             nameof(MessageLevel),
             typeof(MessageLevel),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(MessageLevel.Info, null, OnCoerceMessageLevel))
             .DependencyProperty;
 
         private static object OnCoerceMessageLevel(DependencyObject d, object baseValue)
         {
-            var vm = (LoadingStatusViewModel)d;
+            var vm = (StatusBarViewModel)d;
             switch (vm.PackageSearchStatus)
             {
                 case PackageSearchStatus.Loading:
@@ -174,12 +174,12 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty ItemsFoundProperty = DependencyProperty.Register(
             nameof(ItemsFound),
             typeof(int),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(0, OnItemsFoundPropertyChanged));
 
         private static void OnItemsFoundPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LoadingStatusViewModel)d).UpdateModel();
+            ((StatusBarViewModel)d).UpdateModel();
         }
 
         #endregion ItemsFound
@@ -195,12 +195,12 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty ItemsLoadedProperty = DependencyProperty.Register(
             nameof(ItemsLoaded),
             typeof(int),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(0, OnItemsLoadedPropertyChanged));
 
         private static void OnItemsLoadedPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LoadingStatusViewModel)d).UpdateModel();
+            ((StatusBarViewModel)d).UpdateModel();
         }
 
         #endregion ItemsLoaded
@@ -216,13 +216,13 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty HasMoreItemsProperty = DependencyProperty.RegisterReadOnly(
             nameof(HasMoreItems),
             typeof(bool),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(false, null, OnCoerceHasMoreItems))
             .DependencyProperty;
 
         private static object OnCoerceHasMoreItems(DependencyObject d, object baseValue)
         {
-            var vm = (LoadingStatusViewModel)d;
+            var vm = (StatusBarViewModel)d;
             return vm.ItemsLoaded > 0 && vm.ItemsFound > vm.ItemsLoaded;
         }
 
@@ -239,13 +239,13 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty MoreItemsLinkTextProperty = DependencyProperty.RegisterReadOnly(
             nameof(MoreItemsLinkText),
             typeof(string),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(string.Empty, null, OnCoerceMoreItemsLinkText))
             .DependencyProperty;
 
         private static object OnCoerceMoreItemsLinkText(DependencyObject d, object baseValue)
         {
-            var vm = (LoadingStatusViewModel)d;
+            var vm = (StatusBarViewModel)d;
             return string.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Resources.Button_ShowMoreResults,
@@ -265,13 +265,13 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty FailedSourcesProperty = DependencyProperty.RegisterReadOnly(
             nameof(FailedSources),
             typeof(string[]),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(null, null, OnCoerceFailedSources))
             .DependencyProperty;
 
         private static object OnCoerceFailedSources(DependencyObject d, object baseValue)
         {
-            var vm = (LoadingStatusViewModel)d;
+            var vm = (StatusBarViewModel)d;
             if (vm.SourceLoadingStatus == null)
             {
                 return null;
@@ -299,13 +299,13 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty LoadingSourcesProperty = DependencyProperty.RegisterReadOnly(
             nameof(LoadingSources),
             typeof(string[]),
-            typeof(LoadingStatusViewModel),
+            typeof(StatusBarViewModel),
             new PropertyMetadata(null, null, OnCoerceLoadingSources))
             .DependencyProperty;
 
         private static object OnCoerceLoadingSources(DependencyObject d, object baseValue)
         {
-            var vm = (LoadingStatusViewModel)d;
+            var vm = (StatusBarViewModel)d;
             if (vm.SourceLoadingStatus == null)
             {
                 return null;
