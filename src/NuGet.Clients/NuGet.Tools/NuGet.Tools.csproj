@@ -166,7 +166,7 @@
   <Target Name="GenerateNuGetToolsBindingRedirects" BeforeTargets="CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(_BindingRedirectsFile)">
     <PropertyGroup>
       <_GeneratedVSIXBindingRedirectContent><![CDATA[
-// Generated in NuGet.Toools.csproj 
+// Generated in NuGet.Tools.csproj 
 using Microsoft.VisualStudio.Shell;
 [assembly: ProvideBindingRedirection(CodeBase = @"$PackageFolder$\NuGet.VisualStudio.Contracts.dll", OldVersionLowerBound = "0.0.0.0", OldVersionUpperBound = "$(_AssemblyVersion)")]
 [assembly: ProvideBindingRedirection(CodeBase = @"$PackageFolder$\NuGet.VisualStudio.dll", OldVersionLowerBound = "0.0.0.0", OldVersionUpperBound = "$(_AssemblyVersion)")]
