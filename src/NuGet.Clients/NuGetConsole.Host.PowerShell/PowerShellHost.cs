@@ -424,7 +424,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             });
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want execution of init scripts to crash our console.")]
         private async Task ExecuteInitScriptsAsync()
         {
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
@@ -451,6 +450,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                     return;
                 }
+                // We may be enumerating packages from disk here. Always do it from a background thread.
+                await TaskScheduler.Default;
 
                 var packageManager = new NuGetPackageManager(
                     _sourceRepositoryProvider,
