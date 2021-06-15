@@ -21,7 +21,6 @@ steps:
   displayName: "Bootstrap NuGet packages"
   inputs:
     solution: "build\\bootstrap.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Restore"
 
@@ -34,14 +33,13 @@ steps:
 - task: PowerShell@1
   displayName: "SetupFunctionalTests.ps1"
   inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\SetupFunctionalTests.ps1"
-    arguments: "-VSVersion 16.0"
+    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
 
 - task: PowerShell@1
   displayName: "InstallNuGetVSIX.ps1"
   inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\InstallNuGetVSIX.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -NuGetVSIXID $(NuGetVsixId) -ProcessExitTimeoutInSeconds 180 -VSVersion 16.0"
+    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/InstallNuGetVSIX.ps1"
+    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -ProcessExitTimeoutInSeconds 180"
     failOnStandardError: "false"
 
 # - task: PowerShell@1
@@ -67,7 +65,6 @@ steps:
   displayName: "Restore Apex Tests"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber)"
 
@@ -77,7 +74,6 @@ steps:
   continueOnError: "true"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
     maximumCpuCount: true
@@ -89,7 +85,6 @@ steps:
   continueOnError: "false"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
     maximumCpuCount: true
@@ -120,5 +115,5 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
-      KillRunningInstancesOfVS
+      KillRunningInstancesOfVS (Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig))
   condition: "always()"
