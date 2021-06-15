@@ -23,7 +23,7 @@ steps:
   inputs:
     targetType: "inline"
     script: |
-      dotnet msbuild "eng\\source-build\\source-build.proj" /t:Build /p:Configuration=$(BuildConfiguration) /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:diag /bl
+      dotnet msbuild "eng\\source-build\\source-build.proj" /t:Build /p:Configuration=$(BuildConfiguration) /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /bl
   condition: "always()"
 
 - task: PowerShell@2
@@ -35,4 +35,13 @@ steps:
       gci -recurse
     failOnStderr: "false"
   condition: "always()"
+
+- task: PublishBuildArtifacts@1
+  displayName: Upload build logs
+  condition: "always()"
+  continueOnError: true
+  inputs:
+    PathToPublish: "**/*.binlog"
+    ArtifactName: "Source-build logs"
+    ArtifactType: Container
 
