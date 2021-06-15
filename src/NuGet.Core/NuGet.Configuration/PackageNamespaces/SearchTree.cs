@@ -98,38 +98,39 @@ namespace NuGet.Configuration
 #pragma warning restore CA1308 // Normalize strings to uppercase
             SearchNode currentNode = _root;
             int i = 0;
-
             for (; i < term.Length; i++)
             {
                 char c = term[i];
 
                 if (!currentNode.Children.ContainsKey(c))
                 {
-                    return currentNode.IsGlobbing ? currentNode.PackageSources : null;
+                    break;
                 }
 
                 currentNode = currentNode.Children[c];
             }
 
-            bool backtracked = false;
-
-            if (i == term.Length && string.IsNullOrWhiteSpace(currentNode.NamespaceId)) // full 'term' already matched, but still not at value Node. That means we need to go backtrace try to find better matching sources.
+            if (currentNode == null)
             {
-                backtracked = true;
-                while (currentNode != null && string.IsNullOrWhiteSpace(currentNode.NamespaceId))
+                return null;
+            }
+
+            // Full term match.
+            if (i == term.Length && currentNode.IsValueNode)
+            {
+                return currentNode.PackageSources;
+            }
+
+            if (!currentNode.IsGlobbing) // Still not matched. That means we need to go backtrace try to find globbing node.
+            {
+                while (currentNode != null && !currentNode.IsGlobbing)
                 {
                     currentNode = currentNode.Parent;
                 }
             }
 
-            if(currentNode == null)
-            {
-                // no match at all.
-                return null;
-            }
-            
-            return backtracked ? (currentNode.IsGlobbing ? currentNode.PackageSources : null)
-                                 : currentNode.PackageSources;
+            return currentNode == null ? null
+                                        : currentNode.PackageSources;
         }
     }
 }

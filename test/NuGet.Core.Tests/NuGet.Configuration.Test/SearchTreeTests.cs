@@ -211,5 +211,100 @@ namespace NuGet.Configuration.Test
             var packageSourcesMatchPartial = configuration.GetConfiguredPackageSources("stuff");
             Assert.Null(packageSourcesMatchPartial);
         }
+
+        [Fact]
+        public void SearchTree_TopNodeIsGlobbing()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageNamespaces>
+        <packageSource key=""source1"">
+            <namespace id=""NuGet.*"" />
+        </packageSource>
+        <packageSource key=""source2"">
+            <namespace id=""NuGet.Common"" />
+        </packageSource>
+        <packageSource key=""source3"">
+            <namespace id=""NuGet.Common.Identity"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.True(configuration.IsNamespacesEnabled);
+
+            configuration.Namespaces.Should().HaveCount(3);
+            var configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common1");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source1", configuredSources.First());
+
+            configuredSources = configuration.GetConfiguredPackageSources("Nu");
+            Assert.Equal(null, configuredSources);
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet");
+            Assert.Equal(null, configuredSources);
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Id");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source1", configuredSources.First());
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source2", configuredSources.First());
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common.Id");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source1", configuredSources.First());
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common.Identity");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source3", configuredSources.First());
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common.Identity.A");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source1", configuredSources.First());
+        }
+
+        [Fact]
+        public void SearchTree_TopNodeIsNotGlobbing()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageNamespaces>
+        <packageSource key=""source1"">
+            <namespace id=""NuGet.Common"" />
+        </packageSource>
+        <packageSource key=""source2"">
+            <namespace id=""NuGet"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.True(configuration.IsNamespacesEnabled);
+            configuration.Namespaces.Should().HaveCount(2);
+
+            // Since previous node is not globbing it shouldn't match anything.
+            var configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common1");
+            Assert.Equal(null, configuredSources);
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source2", configuredSources.First());
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source1", configuredSources.First());
+        }
     }
 }
