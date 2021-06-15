@@ -38,13 +38,14 @@
   </Target>
 
   <Target Name="ApplySourceBuildPatchFiles">
+    <Message Text="Check for patches in $(ProjectRoot)eng/source-build-patches/*.patch" Importance="High" />
     <ItemGroup>
-      <SourceBuildPatchFile Include="$(RepositoryEngineeringDir)source-build-patches\*.patch" />
+      <SourceBuildPatchFile Include="$(ProjectRoot)eng/source-build-patches/*.patch" />
     </ItemGroup>
 
     <Exec
       Command="git apply --ignore-whitespace --whitespace=nowarn &quot;%(SourceBuildPatchFile.FullPath)&quot;"
-      WorkingDirectory="$(RepoRoot)"
+      WorkingDirectory="$(ProjectRoot)"
       Condition="'@(SourceBuildPatchFile)' != ''" />
   </Target>
 
