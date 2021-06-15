@@ -41,7 +41,7 @@ steps:
   condition: "always()"
   continueOnError: true
   inputs:
-    PathToPublish: "**/*.binlog"
+    PathToPublish: "msbuild.binlog"
     ArtifactName: "Source-build logs"
     ArtifactType: Container
 
