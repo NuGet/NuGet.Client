@@ -284,7 +284,7 @@ function Test-MSBuild2
     & "$MSBuildExe" -p:RestorePackagesConfig=true /t:restore
     Build-Solution
 
-    Assert
+    # Assert
     $packagesFolder = Join-Path $solutionDirectory "packages"
     $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
     Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
