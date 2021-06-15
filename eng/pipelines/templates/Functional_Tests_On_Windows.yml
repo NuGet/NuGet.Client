@@ -28,7 +28,6 @@ steps:
   displayName: "Restore for VS2019"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
@@ -37,7 +36,6 @@ steps:
   continueOnError: "true"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
     maximumCpuCount: true
@@ -48,7 +46,6 @@ steps:
   continueOnError: "false"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
     maximumCpuCount: true
