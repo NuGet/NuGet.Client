@@ -52,7 +52,7 @@ namespace NuGet.Commands
                 IEnumerable<LibraryDependency> dependencies,
                 LockFileBuilderCache cache)
         {
-            return CreateLockFileTargetLibrary(libraryDependency: null, library, package, targetGraph, dependencyType, targetFrameworkOverride, dependencies, cache);
+            return CreateLockFileTargetLibrary(libraryDependency: null, library, package, targetGraph, dependencyType, targetFrameworkOverride, dependencies.ToList(), cache);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace NuGet.Commands
                 RestoreTargetGraph targetGraph,
                 LibraryIncludeFlags dependencyType,
                 NuGetFramework targetFrameworkOverride,
-                IEnumerable<LibraryDependency> dependencies,
+                List<LibraryDependency> dependencies,
                 LockFileBuilderCache cache)
         {
             LockFileTargetLibrary lockFileLib = null;

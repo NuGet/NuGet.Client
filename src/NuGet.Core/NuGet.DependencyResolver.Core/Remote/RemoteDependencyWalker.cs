@@ -136,9 +136,7 @@ namespace NuGet.DependencyResolver
             // Merge in runtime dependencies
             if (dependencies?.Count > 0)
             {
-                var nodeDependencies = node.Item.Data.Dependencies.AsList();
-
-                foreach (var nodeDep in nodeDependencies)
+                foreach (var nodeDep in node.Item.Data.Dependencies)
                 {
                     if (runtimeDependencies?.Contains(nodeDep.Name, StringComparer.OrdinalIgnoreCase) != true)
                     {

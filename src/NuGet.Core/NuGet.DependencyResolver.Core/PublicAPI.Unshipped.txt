@@ -1,0 +1,1 @@
+NuGet.DependencyResolver.RemoteResolveResult.Dependencies.get -> System.Collections.Generic.List<NuGet.LibraryModel.LibraryDependency>

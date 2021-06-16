@@ -237,7 +237,11 @@ namespace NuGet.Commands
 
                 foreach (var node in graph.Flattened)
                 {
-                    var dependencies = node.Data?.Dependencies ?? Enumerable.Empty<LibraryDependency>();
+                    List<LibraryDependency> dependencies = node.Data?.Dependencies;
+                    if (dependencies == null)
+                    {
+                        continue;
+                    }
 
                     foreach (var dependency in dependencies)
                     {
