@@ -43,10 +43,8 @@ namespace NuGet.Configuration
                 throw new ArgumentOutOfRangeException(nameof(namespaceId));
             }
 
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            packageSourceKey = packageSourceKey.ToLowerInvariant().Trim();
-            namespaceId = namespaceId.ToLowerInvariant().Trim();
-#pragma warning restore CA1308 // Normalize strings to uppercase
+            packageSourceKey = packageSourceKey.ToUpperInvariant().Trim();
+            namespaceId = namespaceId.ToUpperInvariant().Trim();
 
             for (int i = 0; i < namespaceId.Length; i++)
             {
@@ -77,7 +75,7 @@ namespace NuGet.Configuration
                 currentNode.PackageSources = new List<string>();
             }
 
-            currentNode.PackageSources.Add(packageSourceKey);
+            currentNode.PackageSources.Add(packageSourceKey.ToUpperInvariant());
         }
 
         /// <summary>
@@ -93,9 +91,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(term));
             }
 
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            term = term.ToLowerInvariant().Trim();
-#pragma warning restore CA1308 // Normalize strings to uppercase
+            term = term.ToUpperInvariant().Trim();
             SearchNode currentNode = _root;
             SearchNode longestMatchingPrefixNode = null;
 

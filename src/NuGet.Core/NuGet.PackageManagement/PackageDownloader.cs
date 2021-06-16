@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement
                         if (isPackageNamespaceEnabled)
                         {
                             if (configuredPackageSources != null &&
-                                !configuredPackageSources.Contains(source.PackageSource.Name))
+                                !configuredPackageSources.Contains(source.PackageSource.Name.ToUpperInvariant()))
                             {
                                 // This package's id prefix is not defined in current package source, let's skip.geSource.Name, packageIdentity.Id));
                                 continue;
