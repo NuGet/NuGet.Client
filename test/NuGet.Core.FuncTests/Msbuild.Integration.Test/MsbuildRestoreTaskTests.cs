@@ -1482,10 +1482,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 Assert.True(result.ExitCode == 0);
                 Assert.Contains("Package namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", result.Output);
-                Assert.Contains("Package namespace: Skipping source 'PublicRepository' for package id 'Contoso.MVC.ASP'", result.Output);
-                Assert.Contains("Package namespace: Trying source 'SharedRepository' for package id 'Contoso.MVC.ASP'", result.Output);
-                Assert.Contains("Package namespace: Trying source 'PublicRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
-                Assert.Contains("Package namespace: Skipping source 'SharedRepository' for package id 'Contoso.Opensource.Buffers'", result.Output);
             }
         }
 
@@ -1582,8 +1578,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 Assert.True(result.ExitCode == 0);
                 Assert.Contains("Package namespace prefix match not found for package id 'My.MVC.ASP'", result.Output);
-                Assert.DoesNotContain("Package namespace: Skipping source'", result.Output);
-                Assert.Contains("Package namespace: Trying source 'PublicRepository' for package id 'My.MVC.ASP'", result.Output);
             }
         }
 

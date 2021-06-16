@@ -33,7 +33,7 @@ namespace NuGet.Configuration
         /// <param name="term">Search term. Never null. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
-        public HashSet<string> GetConfiguredPackageSources(string term)
+        public List<string> GetConfiguredPackageSources(string term)
         {
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }

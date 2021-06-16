@@ -19,11 +19,11 @@ namespace NuGet.Configuration
 
             _root = new SearchNode();
 
-            foreach (string packageSourceKey in configuration.Namespaces.Keys)
+            foreach (var namespacePerSource in configuration.Namespaces)
             {
-                foreach (string nugetNamespace in configuration.Namespaces[packageSourceKey])
+                foreach (var namespaceId in namespacePerSource.Value)
                 {
-                    Add(packageSourceKey, nugetNamespace);
+                    Add(namespacePerSource.Key, namespaceId);
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace NuGet.Configuration
 
             if (currentNode.PackageSources == null)
             {
-                currentNode.PackageSources = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+                currentNode.PackageSources = new List<string>();
             }
 
             currentNode.PackageSources.Add(packageSourceKey);
@@ -86,7 +86,7 @@ namespace NuGet.Configuration
         /// <param name="term">Search term. Never null. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
-        public HashSet<string> GetConfiguredPackageSources(string term)
+        public List<string> GetConfiguredPackageSources(string term)
         {
             if (string.IsNullOrWhiteSpace(term))
             {

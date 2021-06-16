@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -727,38 +727,20 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package namespace prefix matches found for package id &apos;{0}&apos; are: &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Package namespace matches found for package id &apos;{0}&apos; are: &apos;{1}&apos;.
         /// </summary>
-        internal static string PackageNamespacePrefixMatchFound {
+        internal static string PackageNamespaceMatchFound {
             get {
-                return ResourceManager.GetString("PackageNamespacePrefixMatchFound", resourceCulture);
+                return ResourceManager.GetString("PackageNamespaceMatchFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package namespace prefix match not found for package id &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Package namespace match not found for package id &apos;{0}&apos;.
         /// </summary>
-        internal static string PackageNamespacePrefixNoMatchFound {
+        internal static string PackageNamespaceNoMatchFound {
             get {
-                return ResourceManager.GetString("PackageNamespacePrefixNoMatchFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package namespace: Skipping source &apos;{0}&apos; for package id &apos;{1}&apos;.
-        /// </summary>
-        internal static string PackageNamespacePrefixSkipSource {
-            get {
-                return ResourceManager.GetString("PackageNamespacePrefixSkipSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package namespace: Trying source &apos;{0}&apos; for package id &apos;{1}&apos;.
-        /// </summary>
-        internal static string PackageNamespacePrefixTrySource {
-            get {
-                return ResourceManager.GetString("PackageNamespacePrefixTrySource", resourceCulture);
+                return ResourceManager.GetString("PackageNamespaceNoMatchFound", resourceCulture);
             }
         }
         

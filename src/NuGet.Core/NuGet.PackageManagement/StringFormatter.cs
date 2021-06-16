@@ -5,40 +5,22 @@ namespace NuGet.PackageManagement
 {
     internal static class StringFormatter
     {
-        internal static string Log_PackageNamespacePrefixMatchFound(
+        internal static string Log_PackageNamespaceMatchFound(
             string packageId,
             string packageSourcesAtPrefix)
         {
-            return string.Format(Strings.PackageNamespacePrefixMatchFound,
+            return string.Format(Strings.PackageNamespaceMatchFound,
                 packageId,
                 packageSourcesAtPrefix
                 );
         }
 
-        internal static string Log_PackageNamespacePrefixNoMatchFound(
+        internal static string Log_PackageNamespaceNoMatchFound(
             string packageId)
         {
-            return string.Format(Strings.PackageNamespacePrefixNoMatchFound,
+            return string.Format(Strings.PackageNamespaceNoMatchFound,
                 packageId
                 );
-        }
-
-        internal static string Log_PackageNamespacePrefixSkipSource(
-            string pacakgeSourceName,
-            string packageId)
-        {
-            return string.Format(Strings.PackageNamespacePrefixSkipSource,
-                pacakgeSourceName,
-                packageId);
-        }
-
-        internal static string Log_PackageNamespacePrefixTrySource(
-            string pacakgeSourceName,
-            string packageId)
-        {
-            return string.Format(Strings.PackageNamespacePrefixTrySource,
-                pacakgeSourceName,
-                packageId);
         }
     }
 }

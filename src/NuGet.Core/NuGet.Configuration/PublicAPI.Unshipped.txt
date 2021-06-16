@@ -2,7 +2,7 @@ NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
-NuGet.Configuration.PackageNamespacesConfiguration.GetConfiguredPackageSources(string term) -> System.Collections.Generic.HashSet<string>
+NuGet.Configuration.PackageNamespacesConfiguration.GetConfiguredPackageSources(string term) -> System.Collections.Generic.List<string>
 NuGet.Configuration.PackageNamespacesConfiguration.IsNamespacesEnabled.get -> bool
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>

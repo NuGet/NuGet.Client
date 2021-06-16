@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -100,18 +99,18 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(otherGroup);
 
                 bool isPackageNamespaceEnabled = downloadContext.PackageNamespacesConfiguration?.IsNamespacesEnabled == true;
-                HashSet<string> configuredPackageSources = downloadContext.PackageNamespacesConfiguration?.GetConfiguredPackageSources(packageIdentity.Id);
+                List<string> configuredPackageSources = downloadContext.PackageNamespacesConfiguration?.GetConfiguredPackageSources(packageIdentity.Id);
 
                 if (isPackageNamespaceEnabled)
                 {
                     if (configuredPackageSources != null)
                     {
                         var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
-                        logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
+                        logger.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
                     }
                     else
                     {
-                        logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixNoMatchFound(packageIdentity.Id));
+                        logger.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(packageIdentity.Id));
                     }
                 }
 
@@ -129,13 +128,8 @@ namespace NuGet.PackageManagement
                             if (configuredPackageSources != null &&
                                 !configuredPackageSources.Contains(source.PackageSource.Name))
                             {
-                                // This package's id prefix is not defined in current package source, let's skip.
-                                logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixSkipSource(source.PackageSource.Name, packageIdentity.Id));
+                                // This package's id prefix is not defined in current package source, let's skip.geSource.Name, packageIdentity.Id));
                                 continue;
-                            }
-                            else
-                            {
-                                logger.LogDebug(StringFormatter.Log_PackageNamespacePrefixTrySource(source.PackageSource.Name, packageIdentity.Id));
                             }
                         }
 

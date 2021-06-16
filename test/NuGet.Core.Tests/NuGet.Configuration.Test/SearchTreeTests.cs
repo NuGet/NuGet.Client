@@ -306,5 +306,39 @@ namespace NuGet.Configuration.Test
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal("source1", configuredSources.First());
         }
+
+        [Fact]
+        public void SearchTree_TopBottomNodesBothGlobbing()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageNamespaces>
+        <packageSource key=""source1"">
+            <namespace id=""NuGet.*"" />
+        </packageSource>
+        <packageSource key=""source2"">
+            <namespace id=""NuGet.Common.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            Assert.True(configuration.IsNamespacesEnabled);
+            configuration.Namespaces.Should().HaveCount(2);
+
+            var configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common1");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source1", configuredSources.First());
+
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source1", configuredSources.First());
+        }
+
     }
 }

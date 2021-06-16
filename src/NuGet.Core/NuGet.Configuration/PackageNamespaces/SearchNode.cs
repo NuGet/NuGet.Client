@@ -11,7 +11,7 @@ namespace NuGet.Configuration
         public bool IsValueNode => !string.IsNullOrWhiteSpace(NamespaceId);
         public bool IsGlobbing { get; set; }
         public string NamespaceId { get; set; }
-        public HashSet<string> PackageSources;
+        public List<string> PackageSources;
 
         public SearchNode()
         {
