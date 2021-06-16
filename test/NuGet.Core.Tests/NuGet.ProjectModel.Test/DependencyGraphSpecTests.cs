@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -30,61 +28,16 @@ namespace NuGet.ProjectModel.Test
         private const string PackageSpecPath = @"c:\fake\project.json";
 
         [Fact]
-        public void Json_WhenDgSpecWasCreatedWithDefaultConstructor_ReturnsEmptyObject()
-        {
-            var dgSpec = new DependencyGraphSpec();
-
-            Assert.Empty(dgSpec.Json);
-        }
-
-        [Fact]
-        public void Json_WhenDgSpecWasCreatedWithBoolConstructor_ReturnsEmptyObject()
-        {
-            var dgSpec = new DependencyGraphSpec(isReadOnly: true);
-
-            Assert.Empty(dgSpec.Json);
-        }
-
-        [Fact]
-        public void Json_WhenDgSpecWasCreatedWithJObjectConstructor_ReturnsSameJObject()
-        {
-            var expectedResult = new JObject();
-            var dgSpec = new DependencyGraphSpec(expectedResult);
-
-            Assert.Same(expectedResult, dgSpec.Json);
-        }
-
-        [Fact]
-        public void Json_WhenDgSpecWasCreatedWithLoadFilePathMethod_ReturnsFileJObject()
-        {
-            string json = "{\"restore\":{}}";
-
-            using (Test test = Test.Create(json))
-            {
-                DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
-
-                Assert.Equal(json, dgSpec.Json.ToString(Formatting.None));
-            }
-        }
-
-        [Fact]
-        public void Json_WhenDgSpecWasCreatedWithLoadJObjectMethod_ReturnsSameJObject()
-        {
-            var expectedResult = new JObject();
-
-            DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(expectedResult);
-
-            Assert.Same(expectedResult, dgSpec.Json);
-        }
-
-        [Fact]
         public void GetParents_WhenCalledOnChild_ReturnsParents()
         {
             // Arrange
-            JObject json = GetResourceAsJObject(Test1Dg);
+            string jsonContent = GetResourceAsJson(Test1Dg);
+            using var testDirectory = TestDirectory.Create();
+            var jsonPath = Path.Combine(testDirectory.Path, "dg.json");
+            File.WriteAllText(jsonPath, jsonContent);
 
             // Act
-            var dg = DependencyGraphSpec.Load(json);
+            var dg = DependencyGraphSpec.Load(jsonPath);
 
             var xParents = dg.GetParents("A55205E7-4D08-4672-8011-0925467CC45F");
             var yParents = dg.GetParents("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F");
@@ -103,10 +56,13 @@ namespace NuGet.ProjectModel.Test
         public void GetClosure_WhenClosureExists_ReturnsClosure()
         {
             // Arrange
-            JObject json = GetResourceAsJObject(Test1Dg);
+            string jsonContent = GetResourceAsJson(Test1Dg);
+            using var testDirectory = TestDirectory.Create();
+            var jsonPath = Path.Combine(testDirectory.Path, "dg.json");
+            File.WriteAllText(jsonPath, jsonContent);
 
             // Act
-            var dg = DependencyGraphSpec.Load(json);
+            var dg = DependencyGraphSpec.Load(jsonPath);
 
             var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
             var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
@@ -129,10 +85,13 @@ namespace NuGet.ProjectModel.Test
         public void GetClosure_WhenClosureExistsCaseInsensitively_ReturnsClosure()
         {
             // Arrange
-            JObject json = GetResourceAsJObject(Test3Dg);
+            string jsonContent = GetResourceAsJson(Test3Dg);
+            using var testDirectory = TestDirectory.Create();
+            var jsonPath = Path.Combine(testDirectory.Path, "dg.json");
+            File.WriteAllText(jsonPath, jsonContent);
 
             // Act
-            var dg = DependencyGraphSpec.Load(json);
+            var dg = DependencyGraphSpec.Load(jsonPath);
 
             var xClosure = dg.GetClosure("A55205E7-4D08-4672-8011-0925467CC45F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.OrdinalIgnoreCase).ToList();
             var yClosure = dg.GetClosure("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F").OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.OrdinalIgnoreCase).ToList();
@@ -151,13 +110,17 @@ namespace NuGet.ProjectModel.Test
         public void GetClosure_WhenProjectHasToolReferences_ReturnsClosure()
         {
             // Arrange
-            JObject json = GetResourceAsJObject(Test2Dg);
+            string jsonContent = GetResourceAsJson(Test2Dg);
+            using var testDirectory = TestDirectory.Create();
+            var jsonPath = Path.Combine(testDirectory.Path, "dg.json");
+            File.WriteAllText(jsonPath, jsonContent);
+
+            // Act
+            var dg = DependencyGraphSpec.Load(jsonPath);
+
             var childProject = @"f:\validation\test\dg\Project.Core\Project.Core\Project.Core.csproj";
             var parentProject = @"f:\validation\test\dg\Project.Core\Project\Project.csproj";
             var tool = @"atool-netcoreapp2.0-[1.0.0, )";
-
-            // Act
-            var dg = DependencyGraphSpec.Load(json);
 
             var childClosure = dg.GetClosure(childProject).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
             var parentClosure = dg.GetClosure(parentProject).OrderBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).ToList();
@@ -173,20 +136,6 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(1, toolClosure.Count);
             Assert.Equal(tool, toolClosure.Single().RestoreMetadata.ProjectUniqueName);
-        }
-
-        [Fact]
-        public void Constructor_WhenJsonIsEmptyObject_CreatesEmptyDgSpec()
-        {
-            // Arrange
-            var json = new JObject();
-
-            // Act
-            var dg = new DependencyGraphSpec(json);
-
-            // Assert
-            Assert.Equal(0, dg.Restore.Count);
-            Assert.Equal(0, dg.Projects.Count);
         }
 
         [Fact]
@@ -214,18 +163,18 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        [Theory]
-        [InlineData("{}{}")]
-        [InlineData("{}[]")]
-        public void Load_WithPath_WhenJsonContainsMultipleTopLevelEntities_IgnoresNonFirstEntities(string json)
-        {
-            using (Test test = Test.Create(json))
-            {
-                DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
+        //[Theory]
+        //[InlineData("{}{}")]
+        //[InlineData("{}[]")]
+        //public void Load_WithPath_WhenJsonContainsMultipleTopLevelEntities_IgnoresNonFirstEntities(string json)
+        //{
+        //    using (Test test = Test.Create(json))
+        //    {
+        //        DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
 
-                Assert.Equal("{}", dgSpec.Json.ToString());
-            }
-        }
+        //        Assert.Equal("{}", dgSpec.Json.ToString());
+        //    }
+        //}
 
         [Fact]
         public void Load_WithPath_WhenJsonStartsWithComment_SkipsComment()
@@ -849,13 +798,6 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        private static JObject GetResourceAsJObject(string fileName)
-        {
-            string json = GetResourceAsJson(fileName);
-
-            return JObject.Parse(json);
-        }
-
         private static string GetResourceAsJson(string fileName)
         {
             var resourceName = $"NuGet.ProjectModel.Test.compiler.resources.{fileName}";
@@ -865,21 +807,23 @@ namespace NuGet.ProjectModel.Test
 
         private sealed class Test : IDisposable
         {
-            private readonly TestDirectory _directory;
-            private bool _isDisposed;
+            internal static string DefaultFileName = "dg.spec";
 
+            internal TestDirectory Directory { get; }
             internal string FilePath { get; }
+
+            private bool _isDisposed;
 
             private Test(TestDirectory directory, string filePath)
             {
-                _directory = directory;
+                Directory = directory;
                 FilePath = filePath;
             }
 
             internal static Test Create(string json = null)
             {
                 TestDirectory directory = TestDirectory.Create();
-                string filePath = Path.Combine(directory.Path, "dg.spec");
+                string filePath = Path.Combine(directory.Path, DefaultFileName);
 
                 File.WriteAllText(filePath, json ?? string.Empty);
 
@@ -890,7 +834,7 @@ namespace NuGet.ProjectModel.Test
             {
                 if (!_isDisposed)
                 {
-                    _directory.Dispose();
+                    Directory.Dispose();
 
                     _isDisposed = true;
                 }

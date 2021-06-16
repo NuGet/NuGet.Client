@@ -30,27 +30,6 @@ namespace NuGet.Common
         /// <summary> Singleton of NuGet telemetry service instance. </summary>
         public static INuGetTelemetryService NuGetTelemetryService { get; set; }
 
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public TelemetryActivity(Guid parentId) :
-            this(parentId, Guid.Empty, telemetryEvent: null)
-        {
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public TelemetryActivity(Guid parentId, Guid operationId) :
-            this(parentId, operationId, telemetryEvent: null)
-        {
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public TelemetryActivity(Guid parentId, Guid operationId, TelemetryEvent telemetryEvent) :
-            this(parentId, telemetryEvent, operationId)
-        {
-        }
-
         private TelemetryActivity(Guid parentId, TelemetryEvent telemetryEvent, Guid operationId)
         {
             if (telemetryEvent != null)
@@ -197,27 +176,6 @@ namespace NuGet.Common
         public static TelemetryActivity Create(Guid parentId, TelemetryEvent telemetryEvent)
         {
             return new TelemetryActivity(parentId, telemetryEvent, Guid.NewGuid());
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public static TelemetryActivity CreateTelemetryActivityWithNewOperationIdAndEvent(Guid parentId, string eventName)
-        {
-            return Create(parentId, new TelemetryEvent(eventName));
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public static TelemetryActivity CreateTelemetryActivityWithNewOperationId(Guid parentId)
-        {
-            return Create(parentId, default(TelemetryEvent));
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public static TelemetryActivity CreateTelemetryActivityWithNewOperationId()
-        {
-            return Create(Guid.Empty, default(TelemetryEvent));
         }
     }
 }

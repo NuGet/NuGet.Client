@@ -45,34 +45,6 @@ namespace NuGet.LibraryModel
 
         public LibraryDependency() { }
 
-        [Obsolete]
-        public LibraryDependency(
-            LibraryRange libraryRange,
-            LibraryDependencyType type,
-            LibraryIncludeFlags includeType,
-            LibraryIncludeFlags suppressParent,
-            IList<NuGetLogCode> noWarn,
-            bool autoReferenced,
-            bool generatePathProperty)
-            : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, versionCentrallyManaged: false, libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct, aliases: null)
-        {
-        }
-
-        [Obsolete]
-        public LibraryDependency(
-            LibraryRange libraryRange,
-            LibraryDependencyType type,
-            LibraryIncludeFlags includeType,
-            LibraryIncludeFlags suppressParent,
-            IList<NuGetLogCode> noWarn,
-            bool autoReferenced,
-            bool generatePathProperty,
-            bool versionCentrallyManaged,
-            LibraryDependencyReferenceType libraryDependencyReferenceType)
-            : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, versionCentrallyManaged, libraryDependencyReferenceType, aliases: null)
-        {
-        }
-
         internal LibraryDependency(
             LibraryRange libraryRange,
             LibraryDependencyType type,

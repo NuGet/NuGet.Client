@@ -738,7 +738,6 @@ NuGet.Packaging.PackageSigningTelemetryEvent
 NuGet.Packaging.PackageSigningTelemetryEvent.ExtractionId.get -> string
 NuGet.Packaging.PackageSigningTelemetryEvent.PackageSignType.get -> NuGet.Packaging.PackageSignType
 NuGet.Packaging.PackageSigningTelemetryEvent.PackageSigningTelemetryEvent() -> void
-NuGet.Packaging.PackageSigningTelemetryEvent.PackageSigningTelemetryEvent(NuGet.Packaging.PackageSignType packageSignType, NuGet.Common.NuGetOperationStatus status) -> void
 NuGet.Packaging.PackageSigningTelemetryEvent.SetResult(NuGet.Packaging.PackageSignType packageSignType, NuGet.Common.NuGetOperationStatus status) -> void
 NuGet.Packaging.PackageSigningTelemetryEvent.Status.get -> NuGet.Common.NuGetOperationStatus
 NuGet.Packaging.PackagesConfig

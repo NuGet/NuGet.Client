@@ -53,8 +53,6 @@ NuGet.LibraryModel.LibraryDependency.HasFlag(NuGet.LibraryModel.LibraryDependenc
 NuGet.LibraryModel.LibraryDependency.IncludeType.get -> NuGet.LibraryModel.LibraryIncludeFlags
 NuGet.LibraryModel.LibraryDependency.IncludeType.set -> void
 NuGet.LibraryModel.LibraryDependency.LibraryDependency() -> void
-NuGet.LibraryModel.LibraryDependency.LibraryDependency(NuGet.LibraryModel.LibraryRange libraryRange, NuGet.LibraryModel.LibraryDependencyType type, NuGet.LibraryModel.LibraryIncludeFlags includeType, NuGet.LibraryModel.LibraryIncludeFlags suppressParent, System.Collections.Generic.IList<NuGet.Common.NuGetLogCode> noWarn, bool autoReferenced, bool generatePathProperty) -> void
-NuGet.LibraryModel.LibraryDependency.LibraryDependency(NuGet.LibraryModel.LibraryRange libraryRange, NuGet.LibraryModel.LibraryDependencyType type, NuGet.LibraryModel.LibraryIncludeFlags includeType, NuGet.LibraryModel.LibraryIncludeFlags suppressParent, System.Collections.Generic.IList<NuGet.Common.NuGetLogCode> noWarn, bool autoReferenced, bool generatePathProperty, bool versionCentrallyManaged, NuGet.LibraryModel.LibraryDependencyReferenceType libraryDependencyReferenceType) -> void
 NuGet.LibraryModel.LibraryDependency.LibraryRange.get -> NuGet.LibraryModel.LibraryRange
 NuGet.LibraryModel.LibraryDependency.LibraryRange.set -> void
 NuGet.LibraryModel.LibraryDependency.Name.get -> string
