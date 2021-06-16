@@ -1,5 +1,7 @@
 variables:
   DOTNET_NOLOGO: 1
+  # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+  MSBuildEnableWorkloadResolver: false
 
 jobs:
 - job: Initialize_Build_SemanticVersion
