@@ -2403,7 +2403,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NameSpacePrefixFilter_Succeed()
+        public void RestoreCommand_NameSpaceFilter_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2574,7 +2574,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NameSpacePrefixFilter_Fails()
+        public void RestoreCommand_NameSpaceFilter_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2661,7 +2661,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespaceLongerPrefixMatches_Succeed()
+        public void RestoreCommand_PackageNamespaceLongerMatches_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2749,7 +2749,7 @@ EndProject";
 
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_NoPrefixMatches()
+        public void RestoreCommand_PackageNamespace_NoNamespaceMatches()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2824,7 +2824,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespaceSamePrefixMatchesMultipleSources_Succeed()
+        public void RestoreCommand_PackageNamespaceMatchesMultipleSources_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();

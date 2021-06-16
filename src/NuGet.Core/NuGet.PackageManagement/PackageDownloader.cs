@@ -99,10 +99,12 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(otherGroup);
 
                 bool isPackageNamespaceEnabled = downloadContext.PackageNamespacesConfiguration?.IsNamespacesEnabled == true;
-                List<string> configuredPackageSources = downloadContext.PackageNamespacesConfiguration?.GetConfiguredPackageSources(packageIdentity.Id);
+                List<string> configuredPackageSources = null;
 
                 if (isPackageNamespaceEnabled)
                 {
+                    configuredPackageSources = downloadContext.PackageNamespacesConfiguration?.GetConfiguredPackageSources(packageIdentity.Id);
+
                     if (configuredPackageSources != null)
                     {
                         var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);

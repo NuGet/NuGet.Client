@@ -978,7 +978,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public async Task Restore_PackageNamespacePrefixes_Succeed()
+        public async Task Restore_PackageNamespace_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1071,20 +1071,20 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 var contosoRestorePath = Path.Combine(projectAPackages, ContosoReal.ToString(), ContosoReal.ToString() + ".nupkg");
-                var externalRestorePath = Path.Combine(projectAPackages, ExternalB.ToString(), ExternalB.ToString() + ".nupkg");
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
                     // Assert correct Contoso package from Contoso repository was restored.
                     Assert.Contains("lib/net461/contosoA.dll", allFiles);
                 }
+                var externalRestorePath = Path.Combine(projectAPackages, ExternalB.ToString(), ExternalB.ToString() + ".nupkg");
                 Assert.True(File.Exists(externalRestorePath));
             }
         }
 
 
         [Fact]
-        public async Task Restore_PackageNamespacePrefixes_Fails()
+        public async Task Restore_PackageNamespace_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())

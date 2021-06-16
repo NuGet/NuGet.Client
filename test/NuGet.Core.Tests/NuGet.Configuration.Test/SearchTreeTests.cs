@@ -37,6 +37,9 @@ namespace NuGet.Configuration.Test
             Assert.Equal(1, packageSourcesMatchFull.Count);
             Assert.Equal("nuget.org", packageSourcesMatchFull.First());
 
+            var tooLongForMatch = configuration.GetConfiguredPackageSources("stuff.something");
+            Assert.Null(tooLongForMatch);
+
             var packageSourcesMatchPartial = configuration.GetConfiguredPackageSources("stu");
             Assert.Null(packageSourcesMatchPartial);
 
@@ -45,7 +48,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SearchTree_WithOneSourceMultipart()
+        public void SearchTree_WithOneSourceGlobbing()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -72,6 +75,10 @@ namespace NuGet.Configuration.Test
 
             // No match
             var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("Contoso.Opensource");
+            Assert.Null(packageSourcesMatchPartial2);
+
+            // No match
+            var packageSourcesMatchPartial3 = configuration.GetConfiguredPackageSources("Contoso.Opensource.");
             Assert.Null(packageSourcesMatchPartial2);
 
             // Match
@@ -132,61 +139,6 @@ namespace NuGet.Configuration.Test
             var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("PrivateTest");
             Assert.Equal(1, packageSourcesMatchPartial2.Count);
             Assert.Equal("privaterepository", packageSourcesMatchPartial2.First());
-
-            var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
-            Assert.Null(packageSourcesNoMatch);
-        }
-
-        [Fact]
-        public void SearchTree_WithMultipleSourcesMultiparts()
-        {
-            // Arrange
-            using var mockBaseDirectory = TestDirectory.Create();
-            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
-            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Public.*"" />
-            <namespace id=""Contoso.Opensource.*"" />
-        </packageSource>
-        <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.Opensource"" />
-        </packageSource>
-        <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC*"" />
-        </packageSource>
-        <packageSource key=""MetaRepository"">
-            <namespace id=""meta.cache*"" />
-        </packageSource>
-    </packageNamespaces>
-</configuration>");
-            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
-
-            // Act & Assert
-            var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.True(configuration.IsNamespacesEnabled);
-            configuration.Namespaces.Should().HaveCount(4);
-
-            var packageSourcesMatchPartial1 = configuration.GetConfiguredPackageSources("Contoso");
-            Assert.Null(packageSourcesMatchPartial1);
-
-            var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("Contoso.Opensource");
-            Assert.Equal(1, packageSourcesMatchPartial2.Count);
-            Assert.Equal("privaterepository", packageSourcesMatchPartial2.First());
-
-            var packageSourcesMatchFull2 = configuration.GetConfiguredPackageSources("Contoso.MVC");
-            Assert.Equal(1, packageSourcesMatchFull2.Count);
-            Assert.Equal("sharedrepository", packageSourcesMatchFull2.First());
-
-            var packageSourcesMatchFull3 = configuration.GetConfiguredPackageSources("meta.cache");
-            Assert.Equal(1, packageSourcesMatchFull3.Count);
-            Assert.Equal("metarepository", packageSourcesMatchFull3.First());
-
-
-            var packageSourcesMatchFull4 = configuration.GetConfiguredPackageSources("meta.cache.test");
-            Assert.Equal(1, packageSourcesMatchFull4.Count);
-            Assert.Equal("metarepository", packageSourcesMatchFull4.First());
 
             var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
             Assert.Null(packageSourcesNoMatch);
@@ -338,7 +290,10 @@ namespace NuGet.Configuration.Test
             configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common");
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal("source1", configuredSources.First());
-        }
 
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common.Package.Id");
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal("source2", configuredSources.First());
+        }
     }
 }

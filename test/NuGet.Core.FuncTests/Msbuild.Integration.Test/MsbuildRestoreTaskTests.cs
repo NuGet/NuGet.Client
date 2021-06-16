@@ -910,7 +910,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceFullPrefix_Succeed()
+        public async Task MsbuildRestore_PackageNamespaceFull_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1037,7 +1037,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceFullPrefix_Fails()
+        public async Task MsbuildRestore_PackageNamespaceFull_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1136,7 +1136,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespacePartialPrefix_Succeed()
+        public async Task MsbuildRestore_PackageNamespacePartial_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1259,7 +1259,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespacePartialPrefix_Fails()
+        public async Task MsbuildRestore_PackageNamespacePartial_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1358,7 +1358,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceLongerPrefixMatches_Succeed()
+        public async Task MsbuildRestore_PackageNamespaceLongerMatches_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1486,7 +1486,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceLongerPrefixMatches_NoPrefixMatchesLog()
+        public async Task MsbuildRestore_PackageNamespaceLongerMatches_NoNamespaceMatchesLog()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1582,7 +1582,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceSamePrefixMatchesMultipleSources_Succeed()
+        public async Task MsbuildRestore_PackageNamespaceSameMatchesMultipleSources_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
