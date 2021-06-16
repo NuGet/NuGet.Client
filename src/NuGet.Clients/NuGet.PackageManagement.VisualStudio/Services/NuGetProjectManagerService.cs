@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -717,6 +718,38 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 throw exception;
             }
+        }
+
+        public async ValueTask<IInstalledAndTransitivePackages> GetDirectFromTransitivePackageAsync(PackageIdentity transitivePackage, string projectId, CancellationToken cancellationToken)
+        {
+            var emptylist = ImmutableList<string>.Empty;
+            var list = emptylist.Add(projectId);
+
+            var trans = await GetInstalledAndTransitivePackagesAsync(list, cancellationToken);
+            var xyz = await GetInstalledPackagesDependencyInfoAsync(projectId, false, cancellationToken);
+
+            foreach(var directPkg in trans.TransitivePackages)
+            {
+
+            }
+
+            /**
+            foreach direct dependency d:
+                do DFS to look for transitive dependency
+
+                if found:
+                  Add to head list
+
+            return list
+            */
+            
+
+            throw new NotImplementedException();
+
+            /*
+            var x = trans.TransitivePackages.First();
+            GetPackageDep
+            */
         }
     }
 }

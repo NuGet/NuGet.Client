@@ -65,5 +65,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken);
+
+        ValueTask<IInstalledAndTransitivePackages> GetDirectFromTransitivePackageAsync(
+            PackageIdentity transitivePackage,
+            string projectId,
+            CancellationToken cancellationToken);
     }
 }
