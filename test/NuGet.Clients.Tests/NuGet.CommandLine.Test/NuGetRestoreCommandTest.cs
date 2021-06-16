@@ -2743,7 +2743,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace prefix matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", r.Output);
+                Assert.Contains("Package namespace matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", r.Output);
             }
         }
 
@@ -2819,7 +2819,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace prefix match not found for package id 'My.MVC.ASP'", r.Output);
+                Assert.Contains("Package namespace match not found for package id 'My.MVC.ASP'", r.Output);
             }
         }
 
