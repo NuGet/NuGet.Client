@@ -126,9 +126,7 @@ namespace NuGet.PackageManagement
                         if (isPackageNamespaceEnabled)
                         {
                             if (configuredPackageSources != null &&
-#pragma warning disable CA1308 // Normalize strings to uppercase
                                 !configuredPackageSources.Contains(source.PackageSource.Name.ToLowerInvariant()))
-#pragma warning restore CA1308 // Normalize strings to uppercase
                             {
                                 // This package's id prefix is not defined in current package source, let's skip.geSource.Name, packageIdentity.Id));
                                 continue;
