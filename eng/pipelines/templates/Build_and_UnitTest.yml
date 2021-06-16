@@ -102,7 +102,6 @@ steps:
   displayName: "Restore for VS2019"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
     maximumCpuCount: true
@@ -111,7 +110,6 @@ steps:
   displayName: "Build for VS2019"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github"
     maximumCpuCount: true
@@ -121,7 +119,6 @@ steps:
   continueOnError: "false"
   inputs:
     solution: "nuget.sln"
-    msbuildVersion: "16.0"
     msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
     maximumCpuCount: true
   condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
@@ -131,7 +128,6 @@ steps:
   continueOnError: "false"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
   condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
 
@@ -140,7 +136,6 @@ steps:
   displayName: "Localize Assemblies"
   inputs:
     solution: "build\\loc.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
 
@@ -148,7 +143,6 @@ steps:
   displayName: "Build Final NuGet.exe (via ILMerge)"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
 
@@ -156,7 +150,6 @@ steps:
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
   inputs:
     solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
@@ -166,7 +159,6 @@ steps:
   continueOnError: "false"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
@@ -176,7 +168,6 @@ steps:
   continueOnError: "true"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
@@ -221,7 +212,6 @@ steps:
   displayName: "Sign Assemblies"
   inputs:
     solution: "build\\sign.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
     maximumCpuCount: true
@@ -230,7 +220,6 @@ steps:
   displayName: "Pack Nupkgs"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
     maximumCpuCount: true
@@ -239,7 +228,6 @@ steps:
   displayName: "Ensure all Nupkgs and Symbols are created"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
 
@@ -247,7 +235,6 @@ steps:
   displayName: "Pack VSIX"
   inputs:
     solution: "build\\build.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
     maximumCpuCount: true
@@ -257,7 +244,6 @@ steps:
   displayName: "Generate Build Tools package"
   inputs:
     solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
@@ -266,7 +252,6 @@ steps:
   displayName: "Sign Nupkgs and VSIX"
   inputs:
     solution: "build\\sign.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
 
@@ -303,7 +288,6 @@ steps:
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -311,7 +295,6 @@ steps:
   displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -319,7 +302,7 @@ steps:
   displayName: "Create EndToEnd Test Package"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-    arguments: "-c $(BuildConfiguration) -tv 16 -out $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
     failOnStandardError: "true"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -373,7 +356,6 @@ steps:
   displayName: 'OptProfV2:  generate a .runsettings file'
   inputs:
     solution: 'build\NuGet.OptProfV2.runsettingsproj'
-    msbuildVersion: '16.0'
     msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="$(TestDrop)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -426,7 +408,6 @@ steps:
   displayName: "Collect Build Symbols"
   inputs:
     solution: "build\\symbols.proj"
-    msbuildVersion: "16.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
     maximumCpuCount: true

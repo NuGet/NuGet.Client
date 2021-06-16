@@ -130,21 +130,21 @@
     ============================================================
   -->
   <Target Name="RunVS" DependsOnTargets="BuildVS;Pack;CoreUnitTests;UnitTestsVS">
-    <Message Text="Running NuGet Build for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Running NuGet Build" Importance="high" />
   </Target>
 
   <!--
     ============================================================
-    Build 
+    Build
     ============================================================
   -->
   <Target Name="BuildVS"  Condition=" '$(IsXPlat)' != 'true' " >
-    <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Building" Importance="high" />
   </Target>
 
     <!--
     ============================================================
-    Build for XPLAT 
+    Build for XPLAT
     ============================================================
   -->
   <Target Name="BuildXPLAT" DependsOnTargets="GetXPLATProjects">
@@ -157,12 +157,11 @@
     ============================================================
   -->
   <Target Name="BuildNoVSIX" AfterTargets="BuildVS" Condition=" '$(IsXPlat)' != 'true' ">
-    <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Building" Importance="high" />
 
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
              Targets="Build"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties)" />
   </Target>
 
   <!--
@@ -175,8 +174,7 @@
 
     <MSBuild Projects="@(XPLATProjects)"
              Targets="Build"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties);" />
   </Target>
 
   <!--
@@ -187,14 +185,13 @@
     ============================================================
   -->
   <Target Name="BuildVSIX" AfterTargets= "BuildVS" Condition=" '$(IsXPlat)' != 'true' AND '$(BuildRTM)' != 'true'">
-    <Message Text="Building the VSIX for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Building the VSIX" Importance="high" />
 
     <MSBuild Projects="$(VSIXProject)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          BuildProjectReferences=false;
-                         IsVsixBuild=true;
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+                         IsVsixBuild=true;" />
   </Target>
 
   <!--
@@ -209,8 +206,7 @@
     <MSBuild BuildInParallel="true"
              Projects="@(SolutionProjects)"
              Targets="Clean"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties);" />
   </Target>
 
   <!--
@@ -219,13 +215,12 @@
     ============================================================
   -->
   <Target Name="Pack">
-    <Message Text="Packing for Visual Studio $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Packing" Importance="high" />
 
     <MSBuild BuildInParallel="false"
              Projects="@(SolutionProjects)"
              Targets="PackProjects"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties)" />
   </Target>
 
   <!--
@@ -239,8 +234,7 @@
     <MSBuild BuildInParallel="false"
              Projects="@(XPLATProjects)"
              Targets="PackProjects"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties)" />
   </Target>
 
   <!--
@@ -249,7 +243,7 @@
     ============================================================
   -->
   <Target Name="Restore">
-    <Message Text="Restoring for Visual Studio $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Restoring" Importance="high" />
 
     <!-- Convert list of projects to a property -->
     <PropertyGroup>
@@ -260,8 +254,7 @@
       Projects="restorehelper.targets"
       Targets="Restore"
       Properties="RestoreGraphProjectInput=$(ProjectListValue);
-                  $(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
+                  $(CommonMSBuildProperties)">
     </MSBuild>
   </Target>
 
@@ -274,8 +267,7 @@
     <MSBuild
       Projects="$(MSBuildThisFileFullPath)"
       Targets="Restore"
-      Properties="$(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
+      Properties="$(CommonMSBuildProperties)">
     </MSBuild>
   </Target>
 
@@ -286,7 +278,7 @@
   -->
   <Target Name="RestoreXPLAT" DependsOnTargets="GetXPLATProjects">
     <Message Text="Restoring for XPLAT" Importance="high" />
-    
+
     <PropertyGroup>
       <ProjectListValue>@(XPLATProjects)</ProjectListValue>
     </PropertyGroup>
@@ -295,14 +287,13 @@
       Projects="restorehelper.targets"
       Targets="Restore"
       Properties="RestoreGraphProjectInput=$(ProjectListValue);
-                  $(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
+                  $(CommonMSBuildProperties)">
     </MSBuild>
   </Target>
 
   <!--
     ============================================================
-    Restore Apex 
+    Restore Apex
     ============================================================
   -->
   <Target Name="RestoreApex">
@@ -316,8 +307,7 @@
       Projects="restorehelper.targets"
       Targets="Restore"
       Properties="RestoreGraphProjectInput=$(ProjectListValue);
-                  $(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
+                  $(CommonMSBuildProperties)">
     </MSBuild>
   </Target>
 
@@ -370,7 +360,7 @@
   <!--
     ============================================================
     RunTestsOnProjects
-    Finds all test assemblies and allows Xunit to run them as 
+    Finds all test assemblies and allows Xunit to run them as
     efficiently as the xunit.runner.json settings allow.
     ============================================================
   -->
@@ -384,8 +374,7 @@
     <MSBuild
             Projects="@(TestProjectToSearch)"
             Targets="GetTestAssemblies"
-            Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);"
+            Properties="$(CommonMSBuildProperties)"
             Condition=" '$(TestProjectPaths)' != '' ">
       <Output TaskParameter="TargetOutputs"
               ItemName="TestAssemblyPath" />
@@ -408,7 +397,7 @@
       <!-- Sort assemblies -->
       <DesktopInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsDesktop", "true"))</DesktopInputTestAssemblies>
       <DesktopInputTestAssembliesSpaced>$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
-      
+
       <!-- Build exe commands -->
       <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced) -verbose</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit)</DesktopTestCommand>
@@ -423,7 +412,7 @@
     </PropertyGroup>
 
     <!-- Desktop -->
-    <Message Text="Running $(DesktopTestCommand)" 
+    <Message Text="Running $(DesktopTestCommand)"
           Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' "/>
 
     <Exec Command="$(DesktopTestCommand)"
@@ -433,7 +422,7 @@
     </Exec>
 
     <!-- VSTest/NETCore -->
-    <Message Text="Running $(VSTestCommand)" 
+    <Message Text="Running $(VSTestCommand)"
           Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' "/>
 
     <Exec Command="$(VSTestCommand)"

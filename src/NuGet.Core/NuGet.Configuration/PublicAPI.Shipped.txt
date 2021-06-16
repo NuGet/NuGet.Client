@@ -496,6 +496,7 @@ static readonly NuGet.Configuration.NuGetConstants.NuGetSymbolHostName -> string
 static readonly NuGet.Configuration.NuGetConstants.PackageExtension -> string
 static readonly NuGet.Configuration.NuGetConstants.PackageReferenceFile -> string
 static readonly NuGet.Configuration.NuGetConstants.PackageSpecFileName -> string
+static readonly NuGet.Configuration.NuGetConstants.ReadmeExtension -> string
 static readonly NuGet.Configuration.NuGetConstants.ReadmeFileName -> string
 static readonly NuGet.Configuration.NuGetConstants.SnupkgExtension -> string
 static readonly NuGet.Configuration.NuGetConstants.SymbolsExtension -> string

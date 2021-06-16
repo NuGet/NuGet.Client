@@ -54,36 +54,6 @@ Invoke-BuildStep 'Cleaning package cache' {
     Clear-PackageCache
 } -skip:(-not $CleanCache) -ev +BuildErrors
 
-$ConfigureObject = @{
-    BuildTools = @{}
-    Toolsets = @{}
-    EnvVars = @{}
-}
-
-$vsMajorVersion = Get-VSMajorVersion
-$validateToolsetMessage = "Validating VS $vsMajorVersion toolset installation" 
-
-Invoke-BuildStep $validateToolsetMessage {
-    $vstoolset = New-BuildToolset $vsMajorVersion
-    if ($vstoolset) {
-        $ConfigureObject.Toolsets.Add('vstoolset', $vstoolset)
-        $ConfigureObject.EnvVars.Add('VisualStudioVersion', "$vsMajorVersion.0")
-        $script:MSBuildExe = Get-MSBuildExe $vsMajorVersion
-    }
-} -ev +BuildErrors
-
-if ($MSBuildExe) {
-    $MSBuildExe = [System.IO.Path]::GetFullPath($MSBuildExe)
-    $MSBuildVersion = & $MSBuildExe '/version' '/nologo'
-    Trace-Log "Using MSBUILD version $MSBuildVersion found at '$MSBuildExe'"
-    $ConfigureObject.BuildTools.Add('MSBuildExe', $MSBuildExe)
-}
-
-New-Item $Artifacts -ItemType Directory -ea Ignore | Out-Null
-$ConfigureObject | ConvertTo-Json -Compress | Set-Content $ConfigureJson
-
-Trace-Log "Configuration data has been written to '$ConfigureJson'"
-
 if ($BuildErrors) {
     $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
     Write-Error "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -ErrorAction Stop

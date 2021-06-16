@@ -65,6 +65,7 @@ Using the PublicApiAnalyzers changes the NuGet development and release lifecycle
 Each project in the NuGet SDK will have a `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` file, as required by the analyzer. Most NuGet projects (possibly all NuGet SDK projects) multitarget, and when a project has the same public API surface for all Target Frameworks (TFMs), they will use a single pair of files in the project root. When a project has different public API surface, each TFM will have their own pair of files in the `PublicAPI\<tfm>\` folder in the project.
 
 When an API is added, the analyzer will display errors unless the API is added to `PublicAPI.Unshipped.txt`. Note:
+
 * The analyzer will also stop complaining if the API is added to `PublicAPI.Shipped.txt`. However, new APIs should not be added to this file. Always add new APIs to the `Unshipped` file.
 * Adding APIs to the text file can be accomplished by using the analyzer's code-fix from Visual Studio. Developers not using Visual Studio (for example VSCode) may need to find alternative methods.
   * The analyzer code-fix only adds the API to the currently selected TFM's `PublicAPI.Unshipped.txt` file. For projects that have different public APIs per TFM, developers will need to repeat the code-fix for each target framework, or manually copy-paste the same changes in all `PublicAPI.Unshipped.txt` in all TFM directories. To run the code fix for each TFM, see the left-most drop-down at the code of Visual Studio's code editor.
@@ -82,5 +83,4 @@ Any additions to `PublicAPI.Unshipped.txt` should be considered, particularly us
 
 ### Shipping NuGet
 
-When NuGet ships a GA release, packages without pre-release versions are published to nuget.org. At this time all APIs listed in any `PublicAPI.Unshipped.txt` should be moved to `PublicAPI.Shipped.txt`. This must be done on the release-#.#.x branch, then should be cherry-picked onto the dev branch. Moving APIs from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` should be done using [`tools-local\ship-public-apis\`](../tools-local/ship-public-apis/) -- from root of enlistment, you can run: "dotnet run --project tools-local\ship-public-apis\ship-public-apis.csproj".
-
+When NuGet ships a GA release, packages without pre-release versions are published to nuget.org. At this time all APIs listed in any `PublicAPI.Unshipped.txt` should be moved to `PublicAPI.Shipped.txt`. This must be done on the release-#.#.x branch, then should be ported onto the dev branch. Moving APIs from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt` should be done using [`tools-local\ship-public-apis\`](../tools-local/ship-public-apis/) -- from root of enlistment, you can run: "dotnet run --project tools-local\ship-public-apis\ship-public-apis.csproj".

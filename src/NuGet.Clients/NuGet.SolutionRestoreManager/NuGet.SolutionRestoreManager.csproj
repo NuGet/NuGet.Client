@@ -143,6 +143,30 @@
       <Name>NuGet.Versioning</Name>
     </ProjectReference>
   </ItemGroup>
+
+  <PropertyGroup>
+    <_BindingRedirectsFile>$(IntermediateOutputPath)$(MSBuildProjectName).BindingRedirects.cs</_BindingRedirectsFile>
+    <_AssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</_AssemblyVersion>
+  </PropertyGroup>
+
+  <!-- This is a workaround for the bug in the Microsoft.VSSDK.BuildTools that doesn't set the correct upper bound when not provided. -->
+  <Target Name="GenerateNuGetSolutionRestoreManagerBindingRedirects" BeforeTargets="CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(_BindingRedirectsFile)">
+    <PropertyGroup>
+      <_GeneratedVSIXBindingRedirectContent><![CDATA[
+// Generated in NuGet.SolutionRestoreManager.csproj 
+using Microsoft.VisualStudio.Shell;
+[assembly: ProvideBindingRedirection(CodeBase = @"$PackageFolder$\NuGet.SolutionRestoreManager.Interop.dll", OldVersionLowerBound = "0.0.0.0", OldVersionUpperBound = "$(_AssemblyVersion)")]
+]]></_GeneratedVSIXBindingRedirectContent>
+    </PropertyGroup>
+    <WriteLinesToFile Lines="$([MSBuild]::Escape($(_GeneratedVSIXBindingRedirectContent)))" File="$(_BindingRedirectsFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+    <ItemGroup>
+      <Compile Include="$(_BindingRedirectsFile)">
+        <Visible>false</Visible>
+      </Compile>
+      <FileWrites Include="$(_BindingRedirectsFile)" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />

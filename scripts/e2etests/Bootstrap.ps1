@@ -8,11 +8,7 @@ function ExtractZip($source, $destination)
 {
     Write-Host 'Extracting files from ' $source ' to ' $destination '...'
 
-    $shell = New-Object -ComObject Shell.Application
-    $zip = $shell.NameSpace($source)
-    $files = $zip.Items()
-    # 0x14 means that the existing files will be overwritten silently
-    $timeTaken = measure-command { $shell.NameSpace($destination).CopyHere($files, 0x14) }
+    $timeTaken = measure-command { Expand-Archive -Path $source -DestinationPath $destination -Force }
     Write-Host 'Extraction Completed in ' $timeTaken.TotalSeconds ' seconds.'
 }
 
@@ -27,16 +23,13 @@ function ExtractEndToEndZip
     [string]$NuGetTestPath)
 
     $endToEndZipSrc = Join-Path $NuGetDropPath 'EndToEnd.zip'
-    $endToEndZip = Join-Path $FuncTestRoot 'EndToEnd.zip'
     $artifactsNuGetExe = Join-Path $NuGetDropPath 'NuGet.exe'
     $endToEndNuGetExe = Join-Path $NuGetTestPath 'NuGet.exe'
 
-    Copy-Item $endToEndZipSrc $endToEndZip -Force
-
     Write-Host 'Creating ' $NuGetTestPath
-    mkdir $NuGetTestPath
+    mkdir $NuGetTestPath | Out-Null
 
-    ExtractZip $endToEndZip $NuGetTestPath
+    ExtractZip $endToEndZipSrc $NuGetTestPath
 
     if(Test-Path $artifactsNuGetExe){
         Write-Host 'Copying ' $artifactsNuGetExe ' to ' $endToEndNuGetExe
@@ -78,7 +71,7 @@ if ($pcs.Count -gt 0)
 
 if(-Not (Test-Path $FuncTestRoot))
 {
-    mkdir $FuncTestRoot
+    mkdir $FuncTestRoot | Out-Null
 }
 
 $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"

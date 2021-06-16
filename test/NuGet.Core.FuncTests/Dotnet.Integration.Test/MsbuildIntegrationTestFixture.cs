@@ -452,12 +452,11 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(sdkDir).Select(Pat
 #else
                 "Release";
 #endif
-            const string toolsetVersion = "16.0";
-            CopyPackSdkArtifacts(artifactsDirectory, pathToSdkInCli, configuration, toolsetVersion);
-            CopyRestoreArtifacts(artifactsDirectory, pathToSdkInCli, configuration, toolsetVersion);
+            CopyPackSdkArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
+            CopyRestoreArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
         }
 
-        private void CopyRestoreArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration, string toolsetVersion)
+        private void CopyRestoreArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
         {
             const string restoreProjectName = "NuGet.Build.Tasks";
             const string restoreTargetsName = "NuGet.targets";
@@ -470,7 +469,7 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(sdkDir).Select(Pat
             // Copy rest of the NuGet assemblies.
             foreach (var projectName in sdkDependencies)
             {
-                var projectArtifactsBinFolder = Path.Combine(artifactsDirectory, projectName, toolsetVersion, "bin", configuration);
+                var projectArtifactsBinFolder = Path.Combine(artifactsDirectory, projectName, "bin", configuration);
 
                 var tfmToCopy = GetTfmToCopy(sdkTfm, projectArtifactsBinFolder);
                 var frameworkArtifactsFolder = new DirectoryInfo(Path.Combine(projectArtifactsBinFolder, tfmToCopy));
@@ -519,7 +518,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
             return selectedVersion;
         }
 
-        private void CopyPackSdkArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration, string toolsetVersion)
+        private void CopyPackSdkArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
         {
             var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
             var sdkTfm = AssemblyReader.GetTargetFramework(Path.Combine(pathToSdkInCli, "dotnet.dll"));
@@ -528,7 +527,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
             const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
 
             // Copy the pack SDK.
-            var packProjectBinDirectory = Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration);
+            var packProjectBinDirectory = Path.Combine(artifactsDirectory, packProjectName, "bin", configuration);
             var tfmToCopy = GetTfmToCopy(sdkTfm, packProjectBinDirectory);
 
             var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(packProjectBinDirectory, tfmToCopy));
