@@ -80,7 +80,7 @@ namespace NuGet.Configuration.Test
 
             // No match
             var packageSourcesMatchPartial3 = configuration.GetConfiguredPackageSources("Contoso.Opensource.");
-            Assert.Null(packageSourcesMatchPartial2);
+            Assert.Null(packageSourcesMatchPartial3);
 
             // Match
             var packageSourcesMatchFull1 = configuration.GetConfiguredPackageSources("Contoso.Opensource.MVC");
