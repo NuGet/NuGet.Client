@@ -25,7 +25,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Indicate if any packageSource exist in package namespace section
         /// </summary>
-        public bool IsNamespacesEnabled { get; }
+        public bool AreNamespacesEnabled { get; }
 
         /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
@@ -33,7 +33,7 @@ namespace NuGet.Configuration
         /// <param name="term">Search term. Never null. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
-        public List<string> GetConfiguredPackageSources(string term)
+        public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
@@ -41,14 +41,14 @@ namespace NuGet.Configuration
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
-            IsNamespacesEnabled = Namespaces.Keys.Count > 0;
+            AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
         }
 
         /// <summary>
         /// Generates a <see cref="PackageNamespacesConfiguration"/> based on the settings object.
         /// </summary>
-        /// <param name="settings">Settings. Never null. </param>
+        /// <param name="settings">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>A <see cref="PackageNamespacesConfiguration"/> based on the settings.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="settings"/> is null.</exception>
         public static PackageNamespacesConfiguration GetPackageNamespacesConfiguration(ISettings settings)
@@ -72,14 +72,14 @@ namespace NuGet.Configuration
 
         private SearchTree GetSearchTree()
         {
-            SearchTree nameSpaceLookup = null;
+            SearchTree namespaceLookup = null;
 
-            if (IsNamespacesEnabled)
+            if (AreNamespacesEnabled)
             {
-                nameSpaceLookup = new SearchTree(this);
+                namespaceLookup = new SearchTree(this);
             }
 
-            return nameSpaceLookup;
+            return namespaceLookup;
         }
     }
 }

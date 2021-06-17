@@ -98,8 +98,8 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
-                bool isPackageNamespaceEnabled = downloadContext.PackageNamespacesConfiguration?.IsNamespacesEnabled == true;
-                List<string> configuredPackageSources = null;
+                bool isPackageNamespaceEnabled = downloadContext.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
+                IReadOnlyList<string> configuredPackageSources = null;
 
                 if (isPackageNamespaceEnabled)
                 {
@@ -128,9 +128,9 @@ namespace NuGet.PackageManagement
                         if (isPackageNamespaceEnabled)
                         {
                             if (configuredPackageSources != null &&
-                                !configuredPackageSources.Contains(source.PackageSource.Name.ToLowerInvariant()))
+                                !configuredPackageSources.Contains(source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
                             {
-                                // This package's id prefix is not defined in current package source, let's skip.geSource.Name, packageIdentity.Id));
+                                // This package's id prefix is not defined in current package source, let's skip.
                                 continue;
                             }
                         }

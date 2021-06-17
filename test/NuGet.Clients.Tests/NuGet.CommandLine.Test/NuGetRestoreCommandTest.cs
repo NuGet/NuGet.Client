@@ -2819,7 +2819,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace match not found for package id 'My.MVC.ASP'", r.Output);
+                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.Output);
             }
         }
 

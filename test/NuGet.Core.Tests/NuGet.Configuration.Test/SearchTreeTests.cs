@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -30,7 +31,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.True(configuration.IsNamespacesEnabled);
+            Assert.True(configuration.AreNamespacesEnabled);
 
             configuration.Namespaces.Should().HaveCount(1);
             var packageSourcesMatchFull = configuration.GetConfiguredPackageSources("stuff");
@@ -66,7 +67,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.True(configuration.IsNamespacesEnabled);
+            Assert.True(configuration.AreNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(1);
 
             // No match
@@ -121,7 +122,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.True(configuration.IsNamespacesEnabled);
+            Assert.True(configuration.AreNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(3);
 
             var packageSourcesMatchFull1 = configuration.GetConfiguredPackageSources("stuff");
@@ -157,7 +158,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.False(configuration.IsNamespacesEnabled);
+            Assert.False(configuration.AreNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(0);
 
             var packageSourcesMatchPartial = configuration.GetConfiguredPackageSources("stuff");
@@ -188,7 +189,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.True(configuration.IsNamespacesEnabled);
+            Assert.True(configuration.AreNamespacesEnabled);
 
             configuration.Namespaces.Should().HaveCount(3);
             var configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common1");
@@ -243,7 +244,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.True(configuration.IsNamespacesEnabled);
+            Assert.True(configuration.AreNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(2);
 
             // Since previous node is not globbing it shouldn't match anything.
@@ -254,7 +255,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal("source2", configuredSources.First());
 
-            configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common");
+            configuredSources = configuration.GetConfiguredPackageSources("NuGet.common");
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal("source1", configuredSources.First());
         }
@@ -280,7 +281,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            Assert.True(configuration.IsNamespacesEnabled);
+            Assert.True(configuration.AreNamespacesEnabled);
             configuration.Namespaces.Should().HaveCount(2);
 
             var configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common1");
@@ -294,6 +295,41 @@ namespace NuGet.Configuration.Test
             configuredSources = configuration.GetConfiguredPackageSources("NuGet.Common.Package.Id");
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal("source2", configuredSources.First());
+        }
+
+        [Fact]
+        public void SearchTree_InvalidInput_Throws()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageNamespaces>
+        <packageSource key=""source1"">
+            <namespace id=""NuGet.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => configuration.GetConfiguredPackageSources(null));
+
+            Assert.Equal("Argument cannot be null, empty, or white space only." + Environment.NewLine + "Parameter name: term", exception.Message);
+
+            exception = Assert.Throws<ArgumentException>(
+                () => configuration.GetConfiguredPackageSources(string.Empty));
+
+            Assert.Equal("Argument cannot be null, empty, or white space only." + Environment.NewLine + "Parameter name: term", exception.Message);
+
+            exception = Assert.Throws<ArgumentException>(
+                () => configuration.GetConfiguredPackageSources(" "));
+
+            Assert.Equal("Argument cannot be null, empty, or white space only." + Environment.NewLine + "Parameter name: term", exception.Message);
         }
     }
 }

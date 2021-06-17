@@ -1010,11 +1010,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
     <add key=""ContosoRepository"" value=""{contosoRepositoryPath}"" />
     </packageSources>
     <packageNamespaces>
-        <packageSource key=""ExternalRepository"">
+        <packageSource key=""externalRepository"">
             <namespace id=""External.*"" />
             <namespace id=""Others.*"" />
         </packageSource>
-        <packageSource key=""ContosoRepository"">
+        <packageSource key=""contosoRepository"">
             <namespace id=""Contoso.*"" />             
             <namespace id=""Test.*"" />
         </packageSource>

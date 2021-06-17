@@ -11,16 +11,14 @@ namespace NuGet.PackageManagement
         {
             return string.Format(Strings.PackageNamespaceMatchFound,
                 packageId,
-                packageSourcesAtPrefix
-                );
+                packageSourcesAtPrefix);
         }
 
         internal static string Log_PackageNamespaceNoMatchFound(
             string packageId)
         {
             return string.Format(Strings.PackageNamespaceNoMatchFound,
-                packageId
-                );
+                packageId);
         }
     }
 }

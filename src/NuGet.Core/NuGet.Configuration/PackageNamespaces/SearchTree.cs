@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NuGet.Configuration
 {
@@ -19,9 +20,9 @@ namespace NuGet.Configuration
 
             _root = new SearchNode();
 
-            foreach (var namespacePerSource in configuration.Namespaces)
+            foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in configuration.Namespaces)
             {
-                foreach (var namespaceId in namespacePerSource.Value)
+                foreach (string namespaceId in namespacePerSource.Value)
                 {
                     Add(namespacePerSource.Key, namespaceId);
                 }
@@ -43,8 +44,8 @@ namespace NuGet.Configuration
                 throw new ArgumentOutOfRangeException(nameof(namespaceId));
             }
 
-            packageSourceKey = packageSourceKey.ToLowerInvariant().Trim();
-            namespaceId = namespaceId.ToLowerInvariant().Trim();
+            packageSourceKey = packageSourceKey.Trim();
+            namespaceId = namespaceId.ToLower(CultureInfo.CurrentCulture).Trim();
 
             for (int i = 0; i < namespaceId.Length; i++)
             {
@@ -75,23 +76,23 @@ namespace NuGet.Configuration
                 currentNode.PackageSources = new List<string>();
             }
 
-            currentNode.PackageSources.Add(packageSourceKey.ToLowerInvariant());
+            currentNode.PackageSources.Add(packageSourceKey);
         }
 
         /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
         /// </summary>
-        /// <param name="term">Search term. Never null. </param>
+        /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
-        public List<string> GetConfiguredPackageSources(string term)
+        public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {
             if (string.IsNullOrWhiteSpace(term))
             {
-                throw new ArgumentNullException(nameof(term));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly, nameof(term));
             }
 
-            term = term.ToLowerInvariant().Trim();
+            term = term.ToLower(CultureInfo.CurrentCulture).Trim();
             SearchNode currentNode = _root;
             SearchNode longestMatchingPrefixNode = null;
 
@@ -126,7 +127,7 @@ namespace NuGet.Configuration
             }
 
             return longestMatchingPrefixNode == null ? null
-                                        : longestMatchingPrefixNode.PackageSources;
+                : longestMatchingPrefixNode.PackageSources;
         }
     }
 }

@@ -16,7 +16,6 @@ namespace NuGet.Configuration
         public SearchNode()
         {
             Children = new Dictionary<char, SearchNode>();
-            NamespaceId = string.Empty;
             IsGlobbing = false;
         }
     }

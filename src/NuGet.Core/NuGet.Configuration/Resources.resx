@@ -308,4 +308,7 @@
     <comment>0 - The name of the item
 1 - file path</comment>
   </data>
+  <data name="Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly" xml:space="preserve">
+    <value>Argument cannot be null, empty, or white space only.</value>
+  </data>
 </root>
