@@ -23,7 +23,7 @@ steps:
   inputs:
     targetType: "inline"
     script: |
-      eng/source-build/build.sh
+      ./eng/source-build/build.sh
   condition: "always()"
 
 - task: PowerShell@2
