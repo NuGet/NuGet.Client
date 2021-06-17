@@ -16,7 +16,6 @@ namespace NuGet.ProjectModel.Test
 {
     public class DependencyGraphSpecTests
     {
-#pragma warning disable CS0618
         private const string DgSpecWithCentralDependencies = "DependencyGraphSpec_CentralVersionDependencies.json";
         private const string Project1Json = "project1.json";
         private const string Project2Json = "project2.json";
@@ -162,19 +161,6 @@ namespace NuGet.ProjectModel.Test
                 Assert.Null(exception.InnerException);
             }
         }
-
-        //[Theory]
-        //[InlineData("{}{}")]
-        //[InlineData("{}[]")]
-        //public void Load_WithPath_WhenJsonContainsMultipleTopLevelEntities_IgnoresNonFirstEntities(string json)
-        //{
-        //    using (Test test = Test.Create(json))
-        //    {
-        //        DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
-
-        //        Assert.Equal("{}", dgSpec.Json.ToString());
-        //    }
-        //}
 
         [Fact]
         public void Load_WithPath_WhenJsonStartsWithComment_SkipsComment()
@@ -840,6 +826,5 @@ namespace NuGet.ProjectModel.Test
                 }
             }
         }
-#pragma warning restore CS0618
     }
 }
