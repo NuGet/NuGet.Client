@@ -80,18 +80,19 @@ namespace NuGet.Configuration.Test
 
             // No match
             var packageSourcesMatchPartial3 = configuration.GetConfiguredPackageSources("Contoso.Opensource.");
-            Assert.Null(packageSourcesMatchPartial3);
+            Assert.Equal(1, packageSourcesMatchPartial3.Count);
+            Assert.Equal("PublicRepository", packageSourcesMatchPartial3.First());
 
             // Match
             var packageSourcesMatchFull1 = configuration.GetConfiguredPackageSources("Contoso.Opensource.MVC");
             Assert.Equal(1, packageSourcesMatchFull1.Count);
-            Assert.Equal("publicrepository", packageSourcesMatchFull1.First());
+            Assert.Equal("PublicRepository", packageSourcesMatchFull1.First());
 
             // Match
             var packageSourcesMatchFull2 = configuration.GetConfiguredPackageSources("Contoso.Opensource.MVC.ASP");
 
             Assert.Equal(1, packageSourcesMatchFull2.Count);
-            Assert.Equal("publicrepository", packageSourcesMatchFull2.First());
+            Assert.Equal("PublicRepository", packageSourcesMatchFull2.First());
 
             // No match
             var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
@@ -139,7 +140,7 @@ namespace NuGet.Configuration.Test
 
             var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("PrivateTest");
             Assert.Equal(1, packageSourcesMatchPartial2.Count);
-            Assert.Equal("privaterepository", packageSourcesMatchPartial2.First());
+            Assert.Equal("privateRepository", packageSourcesMatchPartial2.First());
 
             var packageSourcesNoMatch = configuration.GetConfiguredPackageSources("random");
             Assert.Null(packageSourcesNoMatch);

@@ -2743,7 +2743,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace matches found for package id 'Contoso.MVC.ASP' are: 'sharedrepository'", r.Output);
+                Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             }
         }
 
