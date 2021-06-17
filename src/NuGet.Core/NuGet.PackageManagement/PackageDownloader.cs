@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement
                     var sourceGroup = groups.Dequeue();
                     var tasks = new List<Task<DownloadResourceResult>>();
 
-                    foreach (var source in sourceGroup)
+                    foreach (SourceRepository source in sourceGroup)
                     {
                         if (isPackageNamespaceEnabled)
                         {

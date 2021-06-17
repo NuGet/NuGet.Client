@@ -30,7 +30,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
         /// </summary>
-        /// <param name="term">Search term. Never null. </param>
+        /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string term)

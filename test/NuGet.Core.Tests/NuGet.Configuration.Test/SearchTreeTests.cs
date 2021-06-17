@@ -38,8 +38,8 @@ namespace NuGet.Configuration.Test
             Assert.Equal(1, packageSourcesMatchFull.Count);
             Assert.Equal("nuget.org", packageSourcesMatchFull.First());
 
-            var tooLongForMatch = configuration.GetConfiguredPackageSources("stuff.something");
-            Assert.Null(tooLongForMatch);
+            var tooLongNoMatch = configuration.GetConfiguredPackageSources("stuff.something");
+            Assert.Null(tooLongNoMatch);
 
             var packageSourcesMatchPartial = configuration.GetConfiguredPackageSources("stu");
             Assert.Null(packageSourcesMatchPartial);
