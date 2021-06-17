@@ -78,7 +78,7 @@ namespace NuGet.Configuration.Test
             var packageSourcesMatchPartial2 = configuration.GetConfiguredPackageSources("Contoso.Opensource");
             Assert.Null(packageSourcesMatchPartial2);
 
-            // No match
+            // Match
             var packageSourcesMatchPartial3 = configuration.GetConfiguredPackageSources("Contoso.Opensource.");
             Assert.Equal(1, packageSourcesMatchPartial3.Count);
             Assert.Equal("PublicRepository", packageSourcesMatchPartial3.First());
