@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement
 
                 if (isPackageNamespaceEnabled)
                 {
-                    configuredPackageSources = downloadContext.PackageNamespacesConfiguration?.GetConfiguredPackageSources(packageIdentity.Id);
+                    configuredPackageSources = downloadContext.PackageNamespacesConfiguration.GetConfiguredPackageSources(packageIdentity.Id);
 
                     if (configuredPackageSources != null)
                     {

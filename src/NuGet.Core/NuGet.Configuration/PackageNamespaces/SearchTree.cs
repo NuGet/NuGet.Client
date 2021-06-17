@@ -84,7 +84,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
-        /// <exception cref="ArgumentNullException"> if <paramref name="term"/> is null or empty.</exception>
+        /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {
             if (string.IsNullOrWhiteSpace(term))

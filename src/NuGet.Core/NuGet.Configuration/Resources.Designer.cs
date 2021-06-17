@@ -61,7 +61,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument cannot be null, empty, or white space only..
+        ///   Looks up a localized string similar to Argument cannot be null, empty, or whitespace only..
         /// </summary>
         internal static string Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly {
             get {
