@@ -9,16 +9,6 @@ steps:
   condition: "always()"
 
 - task: PowerShell@2
-  displayName: "Prebuild test"
-  inputs:
-    targetType: "inline"
-    script: |
-      echo 'prebuild test'
-      dotnet --info
-    failOnStderr: "false"
-  condition: "always()"
-
-- task: PowerShell@2
   displayName: "Build source-build"
   inputs:
     targetType: "inline"
@@ -26,22 +16,12 @@ steps:
       ./eng/source-build/build.sh
   condition: "always()"
 
-- task: PowerShell@2
-  displayName: "Postbuild test"
-  inputs:
-    targetType: "inline"
-    script: |
-      echo 'postbuild test'
-      gci -recurse
-    failOnStderr: "false"
-  condition: "always()"
-
 - task: PublishBuildArtifacts@1
   displayName: Upload build logs
   condition: "always()"
   continueOnError: true
   inputs:
-    PathToPublish: "msbuild.binlog"
+    PathToPublish: "artifacts/**/*.binlog"
     ArtifactName: "Source-build logs"
     ArtifactType: Container
 
