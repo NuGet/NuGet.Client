@@ -40,7 +40,8 @@ function GetNuGetPackageCachePath {
   fi
 }
 
+export DOTNET=dotnet
+
 ReadGlobalVersion Microsoft.DotNet.Arcade.Sdk
 export ARCADE_VERSION=$_ReadGlobalVersion
-echo "ARCADE_VERSION=$ARCADE_VERSION scriproot=$scriptroot NUGET_PACKAGES=$NUGET_PACKAGES $DOTNET $scriptroot/source-build.proj"
 "$DOTNET" msbuild "$scriptroot/source-build.proj" /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog"
