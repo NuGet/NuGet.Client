@@ -23,7 +23,7 @@ steps:
   inputs:
     targetType: "inline"
     script: |
-      dotnet msbuild "eng\\source-build\\source-build.proj" /t:Build /p:Configuration=$(BuildConfiguration) /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /bl
+      eng/source-build/build.sh
   condition: "always()"
 
 - task: PowerShell@2
