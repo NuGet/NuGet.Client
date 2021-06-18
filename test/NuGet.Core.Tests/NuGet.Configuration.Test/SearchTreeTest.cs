@@ -170,7 +170,7 @@ namespace NuGet.Configuration.Test
         [InlineData("source1,nuget.*|source2,nuget.common|source3,nuGet.common.identity", "nu")]
         [InlineData(" source1 , nuget.* | source2 , nuget.common | source3 , nuGet.common.identity ", " nu ")]
         [InlineData("source1,nuget.*|source2,nuget.common|source3,nuGet.common.identity", "nuget")]
-        [InlineData(" source1 , nuget.* |  source2 , nuget.common | source3 , nuGet.common.identity ", " nuget ")]
+        [InlineData(" source1 , nuget.* | source2 , nuget.common | source3 , nuGet.common.identity ", " nuget ")]
         public void SearchTree_TopNodeIsGlobbing_NoMatch(string packageNamespaces, string term)
         {
             // Arrange
