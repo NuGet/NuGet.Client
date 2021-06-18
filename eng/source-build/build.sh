@@ -40,7 +40,7 @@ function GetNuGetPackageCachePath {
   fi
 }
 
-export DOTNET=dotnet
+export DOTNET=${DOTNET:-dotnet}
 
 ReadGlobalVersion Microsoft.DotNet.Arcade.Sdk
 export ARCADE_VERSION=$_ReadGlobalVersion
