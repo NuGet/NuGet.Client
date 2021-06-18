@@ -20,6 +20,18 @@ namespace NuGet.Configuration
         /// </summary>
         internal Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
 
+        /// <summary>
+        /// Get package source for package source key if there's one.
+        /// </summary>
+        /// <param name="packageSourceKey">package source key in package namespaces.</param>
+        /// <returns></returns>
+        internal PackageSource GetPackageSource(string packageSourceKey) => PackageSourceLookup[packageSourceKey];
+
+        /// <summary>
+        /// Mapping for package source key in package namespaces to actual package source in nuget.config file.
+        /// </summary>
+        private Dictionary<string, PackageSource> PackageSourceLookup { get; }
+
         private Lazy<SearchTree> SearchTree { get; }
 
         /// <summary>
@@ -38,11 +50,18 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
 
-        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
+        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces, PackageNamespacesProvider packageNamespacesProvider)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
+            var packageSources = packageNamespacesProvider.GetPackageSources();
+            PackageSourceLookup = new Dictionary<string, PackageSource>();
+
+            foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
+            {
+                PackageSourceLookup[namespacePerSource.Key] = packageSources.FirstOrDefault(s => s.Name == namespacePerSource.Key);
+            }
         }
 
         /// <summary>
@@ -59,7 +78,6 @@ namespace NuGet.Configuration
             }
 
             var packageNamespacesProvider = new PackageNamespacesProvider(settings);
-
             var namespaces = new Dictionary<string, IReadOnlyList<string>>();
 
             foreach (PackageNamespacesSourceItem packageSourceNamespaceItem in packageNamespacesProvider.GetPackageSourceNamespaces())
@@ -67,7 +85,7 @@ namespace NuGet.Configuration
                 namespaces.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Namespaces.Select(e => e.Id)));
             }
 
-            return new PackageNamespacesConfiguration(namespaces);
+            return new PackageNamespacesConfiguration(namespaces, packageNamespacesProvider);
         }
 
         private SearchTree GetSearchTree()

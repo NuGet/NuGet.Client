@@ -58,5 +58,11 @@ namespace NuGet.Configuration
 
             _settings.SaveToDisk();
         }
+
+        internal IReadOnlyList<PackageSource> GetPackageSources()
+        {
+            var packageSourceProvider = new PackageSourceProvider(_settings);
+            return packageSourceProvider.LoadPackageSources().ToList();
+        }
     }
 }

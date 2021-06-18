@@ -52,6 +52,8 @@ namespace NuGet.PackageManagement
             ILogger logger,
             CancellationToken token)
         {
+            System.Diagnostics.Debugger.Launch();
+
             if (sources == null)
             {
                 throw new ArgumentNullException(nameof(sources));
@@ -128,7 +130,7 @@ namespace NuGet.PackageManagement
                         if (isPackageNamespaceEnabled)
                         {
                             if (configuredPackageSources != null &&
-                                !configuredPackageSources.Contains(source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                                !configuredPackageSources.Contains(source.PackageSource.Source, StringComparer.CurrentCultureIgnoreCase))
                             {
                                 // This package's id prefix is not defined in current package source, let's skip.
                                 continue;
