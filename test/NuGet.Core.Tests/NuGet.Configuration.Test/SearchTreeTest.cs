@@ -24,14 +24,13 @@ namespace NuGet.Configuration.Test
         [InlineData("public, nuget ", "nuget")]
         [InlineData("public, nuget ", " nuget ")]
         [InlineData(" public , nuget ", " nuget ")]
-        [InlineData("   public    ,    nuget    ", "    nuget   ")]
-        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource")]
-        [InlineData("public,Contoso.Opensource.* ", "Contoso.Opensource")]
-        [InlineData(" public,Contoso.Opensource.*", "Contoso.Opensource")]
-        [InlineData(" public,Contoso.Opensource.* ", " Contoso.Opensource ")]
+        [InlineData("   public    ,    nuget    ", "   nuget   ")]
         [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.")]
         [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC")]
         [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP")]
+        [InlineData("public,Contoso.Opensource.* ", "Contoso.Opensource.MVC.ASP")]
+        [InlineData(" public,Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP")]
+        [InlineData(" public,Contoso.Opensource.* ", " Contoso.Opensource.MVC.ASP ")]
         public void SearchTree_WithOneSource_Match(string packageNamespaces, string term)
         {
             // Arrange
