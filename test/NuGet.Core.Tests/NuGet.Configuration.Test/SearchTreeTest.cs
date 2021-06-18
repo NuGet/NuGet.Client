@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using FluentAssertions;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Configuration.Test
@@ -94,7 +92,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_TopNodeIsGlobbing_Match()
         {
             // Arrange
-            SearchTree searchTree = GetSearchTree("source1, nuget.* |  source2, nuget.common,nuget.protocol.* | source3, nuGet.common.identity");
+            SearchTree searchTree = GetSearchTree("source1, nuget.* |  source2, nuget.common,nuget.protocol.* | source3, nuget.common.identity");
 
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common1");
@@ -176,7 +174,7 @@ namespace NuGet.Configuration.Test
                 string[] parts = section.Split(',');
                 string sourceKey = parts[0].Trim();
 
-                if(string.IsNullOrEmpty(sourceKey))
+                if (string.IsNullOrEmpty(sourceKey))
                 {
                     continue;
                 }
@@ -191,7 +189,7 @@ namespace NuGet.Configuration.Test
                 namespaces[sourceKey] = namespaceList;
             }
 
-           return new PackageNamespacesConfiguration(namespaces);
+            return new PackageNamespacesConfiguration(namespaces);
         }
     }
 }
