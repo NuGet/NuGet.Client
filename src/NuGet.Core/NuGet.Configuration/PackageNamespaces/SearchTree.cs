@@ -33,9 +33,9 @@ namespace NuGet.Configuration
         {
             SearchNode currentNode = _root;
 
-            if (namespaceId == null)
+            if (string.IsNullOrWhiteSpace(namespaceId))
             {
-                throw new ArgumentNullException(nameof(namespaceId));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly, nameof(namespaceId));
             }
 
             // To prevent from unwanted behaviour.
@@ -126,8 +126,7 @@ namespace NuGet.Configuration
                 return currentNode.PackageSources;
             }
 
-            return longestMatchingPrefixNode == null ? null
-                : longestMatchingPrefixNode.PackageSources;
+            return longestMatchingPrefixNode?.PackageSources;
         }
     }
 }

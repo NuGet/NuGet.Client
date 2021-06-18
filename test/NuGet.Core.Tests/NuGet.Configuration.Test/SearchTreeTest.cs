@@ -12,13 +12,26 @@ namespace NuGet.Configuration.Test
     public class SearchTreeTest
     {
         [Theory]
-        [InlineData("public, Nuget", "Nuget")]
-        [InlineData("public, nuget", "Nuget")]
-        [InlineData("public, Nuget", "nuget")]
+        [InlineData("public,Nuget", "Nuget")]
+        [InlineData("public,nuget", "Nuget")]
+        [InlineData("public,Nuget", "nuget")]
+        [InlineData("public,nuget", "nuget")]
+        [InlineData("public,nuget", " nuget")]
+        [InlineData("public,nuget", "nuget ")]
+        [InlineData("public,nuget", " nuget ")]
         [InlineData("public, nuget", "nuget")]
-        [InlineData("public, Contoso.Opensource.*", "Contoso.Opensource.")]
-        [InlineData("public, Contoso.Opensource.*", "Contoso.Opensource.MVC")]
-        [InlineData("public, Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP")]
+        [InlineData("public,nuget ", "nuget")]
+        [InlineData("public, nuget ", "nuget")]
+        [InlineData("public, nuget ", " nuget ")]
+        [InlineData(" public , nuget ", " nuget ")]
+        [InlineData("   public    ,    nuget    ", "    nuget   ")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource")]
+        [InlineData("public,Contoso.Opensource.* ", "Contoso.Opensource")]
+        [InlineData(" public,Contoso.Opensource.*", "Contoso.Opensource")]
+        [InlineData(" public,Contoso.Opensource.* ", " Contoso.Opensource ")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP")]
         public void SearchTree_WithOneSource_Match(string packageNamespaces, string term)
         {
             // Arrange
@@ -29,14 +42,15 @@ namespace NuGet.Configuration.Test
             configuration.AreNamespacesEnabled.Should().BeTrue();
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal(configuration.Namespaces.Keys.First(), configuredSources[0]);
+            Assert.Equal(configuration.Namespaces.Keys.First().Trim(), configuredSources[0]);
         }
 
         [Theory]
-        [InlineData("public, nuget", "nuge")]
-        [InlineData("public, nuget", "nuget1")]
-        [InlineData("public, Contoso.Opensource.*", "Cont")]
-        [InlineData("public, Contoso.Opensource.*", "Contoso.Opensource")]
+        [InlineData("public,nuget", "nuge")]
+        [InlineData("public,nuget", "nuget1")]
+        [InlineData("public,Contoso.Opensource.*", "Cont")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource")]
+        [InlineData(" public , Contoso.Opensource.* ", " Contoso.Opensource ")]
         public void SearchTree_WithOneSource_NoMatch(string packageNamespaces, string term)
         {
             // Arrange
@@ -48,8 +62,9 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData("nuget.org, nuget | privateRepository, private*", "nuget")]
-        [InlineData("nuget.org, nuget |  privateRepository, private*", "private.")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "nuget")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "private.")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ", " private. ")]
         public void SearchTree_WithMultipleSources_Match(string packageNamespaces, string term)
         {
             // Arrange
@@ -59,13 +74,14 @@ namespace NuGet.Configuration.Test
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Equal(1, configuredSources.Count);
-            Assert.True(configuredSources[0].StartsWith(term.Substring(0, 5)));
+            Assert.True(configuredSources[0].StartsWith(term.Trim().Substring(0, 5)));
         }
 
         [Theory]
-        [InlineData("nuget.org,nuget | privateRepository,private*", "nuge")]
-        [InlineData("nuget.org,nuget | privateRepository,private*", "nuget1")]
-        [InlineData("nuget.org,nuget |  privateRepository,private*", "privat")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "nuge")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "nuget1")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "privat")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ", " privat ")]
         public void SearchTree_WithMultipleSources_NoMatch(string packageNamespaces, string term)
         {
             // Arrange
@@ -78,7 +94,29 @@ namespace NuGet.Configuration.Test
 
         [Theory]
         [InlineData("", "nuget")]
+        [InlineData(" ", "nuget")]
+        [InlineData("  ", "nuget")]
         public void SearchTree_NoSources_NoMatch(string packageNamespaces, string term)
+        {
+            // Arrange
+            SearchTree searchTree = GetSearchTree(packageNamespaces);
+
+            // Act & Assert
+            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            Assert.Null(configuredSources);
+        }
+
+        [Theory]
+        [InlineData("nuget", "nuget")]
+        [InlineData(" , nuget ", " nuget ")]
+        [InlineData(",nuget", "nuget")]
+        [InlineData(",", "nuget")]
+        [InlineData(" ,", "nuget")]
+        [InlineData(", ", "nuget")]
+        [InlineData(" , ", "nuget")]
+        [InlineData(" , |, ", "nuget")]
+        [InlineData(" , | , ", "nuget")]
+        public void SearchTree_MalformedSources_NoMatch(string packageNamespaces, string term)
         {
             // Arrange
             SearchTree searchTree = GetSearchTree(packageNamespaces);
@@ -92,7 +130,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_TopNodeIsGlobbing_Match()
         {
             // Arrange
-            SearchTree searchTree = GetSearchTree("source1, nuget.* |  source2, nuget.common,nuget.protocol.* | source3, nuget.common.identity");
+            SearchTree searchTree = GetSearchTree("source1,nuget.*|source2,nuget.common,nuget.protocol.*|source3,nuget.common.identity");
 
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common1");
@@ -129,8 +167,10 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData("source1, nuget.* |  source2, nuget.common | source3, nuGet.common.identity", "nu")]
-        [InlineData("source1, nuget.* |  source2, nuget.common | source3, nuGet.common.identity", "nuget")]
+        [InlineData("source1,nuget.*|source2,nuget.common|source3,nuGet.common.identity", "nu")]
+        [InlineData(" source1 , nuget.* | source2 , nuget.common | source3 , nuGet.common.identity ", " nu ")]
+        [InlineData("source1,nuget.*|source2,nuget.common|source3,nuGet.common.identity", "nuget")]
+        [InlineData(" source1 , nuget.* |  source2 , nuget.common | source3 , nuGet.common.identity ", " nuget ")]
         public void SearchTree_TopNodeIsGlobbing_NoMatch(string packageNamespaces, string term)
         {
             // Arrange
@@ -142,10 +182,11 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData("nuget.org, nuget", null)]
-        [InlineData("nuget.org, nuget", "")]
-        [InlineData("nuget.org, nuget", " ")]
-        public void SearchTree_InvalidInput_Throws(string packageNamespaces, string term)
+        [InlineData("nuget.org,nuget", null)]
+        [InlineData("nuget.org,nuget", "")]
+        [InlineData("nuget.org,nuget", " ")]
+        [InlineData(" nuget.org , nuget", " ")]
+        public void SearchTree_InvalidSearchInput_Throws(string packageNamespaces, string term)
         {
             // Arrange
             PackageNamespacesConfiguration configuration = GetPackageNamespacesConfiguration(packageNamespaces);
@@ -172,9 +213,9 @@ namespace NuGet.Configuration.Test
             foreach (string section in sections)
             {
                 string[] parts = section.Split(',');
-                string sourceKey = parts[0].Trim();
+                string sourceKey = parts[0];
 
-                if (string.IsNullOrEmpty(sourceKey))
+                if (string.IsNullOrWhiteSpace(sourceKey))
                 {
                     continue;
                 }
@@ -182,8 +223,7 @@ namespace NuGet.Configuration.Test
                 var namespaceList = new List<string>();
                 for (int i = 1; i < parts.Length; i++)
                 {
-
-                    namespaceList.Add(parts[i].Trim());
+                    namespaceList.Add(parts[i]);
                 }
 
                 namespaces[sourceKey] = namespaceList;
