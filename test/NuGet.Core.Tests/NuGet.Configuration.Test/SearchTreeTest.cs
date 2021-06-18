@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Test.Utility;
+using Moq;
 using Xunit;
 
 namespace NuGet.Configuration.Test
@@ -203,6 +204,52 @@ namespace NuGet.Configuration.Test
         private SearchTree GetSearchTree(string packageNamespaces)
         {
             return new SearchTree(PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces));
+        }
+
+        private PackageNamespacesConfiguration GetPackageNamespacesConfiguration(string packageNamespaces)
+        {
+            string[] sections = packageNamespaces.Split('|');
+            var sourceKeys = new HashSet<string>();
+            var namespaces = new Dictionary<string, IReadOnlyList<string>>();
+
+            var namespacesList = new List<SourceItem>();
+
+            foreach (string section in sections)
+            {
+                string[] parts = section.Split(',');
+                string sourceKey = parts[0];
+
+                if (string.IsNullOrWhiteSpace(sourceKey))
+                {
+                    continue;
+                }
+
+                sourceKeys.Add(sourceKey);
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    namespacesList.Add(new PackageNamespacesSourceItem(sourceKey, parts[i]));
+                }
+            }
+
+            var packageSourcesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageSources,
+                sourceKeys.Select(ns => new SourceItem(ns, ns + ".com")).ToArray()
+                );
+
+            var packageNamespacesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageNamespaces,
+                namespacesList.ToArray()
+                );
+
+            var settings = new Moq.Mock<ISettings>(Moq.MockBehavior.Strict);
+
+            settings.Setup(s => s.GetSection("packageSources"))
+                .Returns(packageSourcesVirtualSection)
+                .Verifiable();
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
+            settings.Setup(s => s.GetSection(ConfigurationConstants.PackageNamespaces))
+                    .Returns(packageNamespacesVirtualSection);
+
+            return PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings.Object);
         }
     }
 }
