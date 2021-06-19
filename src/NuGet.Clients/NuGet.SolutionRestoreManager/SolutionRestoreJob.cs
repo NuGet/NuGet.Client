@@ -702,7 +702,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
 
-                var downloadContext = new PackageDownloadContext(cacheContext, packageNamespacesConfiguration)
+                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageNamespacesConfiguration)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
                     ClientPolicyContext = ClientPolicyContext.GetClientPolicy(_settings, logger)
