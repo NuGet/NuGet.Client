@@ -207,7 +207,7 @@ function CreateCustomTestPackage {
 
     # add one content file
     $tempFile = [IO.Path]::GetTempFileName()
-    "test" >> $tempFile
+    "temp1" >> $tempFile
     $packageFile = New-Object NuGet.Packaging.PhysicalPackageFile
     $packageFile.SourcePath = $tempFile
     $packageFile.TargetPath = "content\$id-test1.txt"
@@ -217,7 +217,7 @@ function CreateCustomTestPackage {
     {
         # add one content file
         $tempFile2 = [IO.Path]::GetTempFileName()
-        "test" >> $tempFile2        
+        "temp2" >> $tempFile2        
         $packageFile = New-Object NuGet.Packaging.PhysicalPackageFile
         $packageFile.SourcePath = $tempFile2
         $packageFile.TargetPath = "content\$requestAdditionalContent"
