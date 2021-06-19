@@ -61,13 +61,11 @@ NuGet.ProjectModel.DependencyGraphSpec.AddProject(NuGet.ProjectModel.PackageSpec
 NuGet.ProjectModel.DependencyGraphSpec.AddRestore(string projectUniqueName) -> void
 NuGet.ProjectModel.DependencyGraphSpec.CreateFromClosure(string projectUniqueName, System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec> closure) -> NuGet.ProjectModel.DependencyGraphSpec
 NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec() -> void
-NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec(Newtonsoft.Json.Linq.JObject json) -> void
 NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec(bool isReadOnly) -> void
 NuGet.ProjectModel.DependencyGraphSpec.GetClosure(string rootUniqueName) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 NuGet.ProjectModel.DependencyGraphSpec.GetHash() -> string
 NuGet.ProjectModel.DependencyGraphSpec.GetParents(string rootUniqueName) -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.DependencyGraphSpec.GetProjectSpec(string projectUniqueName) -> NuGet.ProjectModel.PackageSpec
-NuGet.ProjectModel.DependencyGraphSpec.Json.get -> Newtonsoft.Json.Linq.JObject
 NuGet.ProjectModel.DependencyGraphSpec.Projects.get -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 NuGet.ProjectModel.DependencyGraphSpec.Restore.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.DependencyGraphSpec.Save(string path) -> void
@@ -636,7 +634,6 @@ static NuGet.ProjectModel.CacheFileFormat.Read(System.IO.Stream stream, NuGet.Co
 static NuGet.ProjectModel.CacheFileFormat.Write(System.IO.Stream stream, NuGet.ProjectModel.CacheFile cacheFile) -> void
 static NuGet.ProjectModel.CacheFileFormat.Write(string filePath, NuGet.ProjectModel.CacheFile lockFile) -> void
 static NuGet.ProjectModel.DependencyGraphSpec.GetDGSpecFileName(string projectName) -> string
-static NuGet.ProjectModel.DependencyGraphSpec.Load(Newtonsoft.Json.Linq.JObject json) -> NuGet.ProjectModel.DependencyGraphSpec
 static NuGet.ProjectModel.DependencyGraphSpec.Load(string path) -> NuGet.ProjectModel.DependencyGraphSpec
 static NuGet.ProjectModel.DependencyGraphSpec.SortPackagesByDependencyOrder(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> packages) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 static NuGet.ProjectModel.DependencyGraphSpec.Union(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.DependencyGraphSpec> dgSpecs) -> NuGet.ProjectModel.DependencyGraphSpec

@@ -3,7 +3,6 @@
 
 using System;
 using System.Xml.Linq;
-using static NuGet.Shared.XmlUtility;
 
 namespace NuGet.Common
 {

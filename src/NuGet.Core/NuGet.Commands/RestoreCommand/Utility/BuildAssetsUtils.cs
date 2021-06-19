@@ -374,26 +374,6 @@ namespace NuGet.Commands
             return result;
         }
 
-        [Obsolete("This method looks at the RestoreRequest. It is expected that the PackageSpec contains all the relevant information the RestoreRequest would. Use GetMSBuildFilePath(PackageSpec project, string extension) instead.")]
-        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
-        {
-            string path;
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference)
-            {
-                // PackageReference style projects
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g{extension}");
-            }
-            else
-            {
-                // Project.json style projects
-                var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
-            }
-            return path;
-        }
-
         public static string GetMSBuildFilePath(PackageSpec project, string extension)
         {
             string path;
