@@ -430,6 +430,26 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
         }
 
+        internal override async Task<IList<LockFileTarget>> GetFullRestoreGraphAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            string assetsFilePath = await GetAssetsFilePathAsync();
+            var fileInfo = new FileInfo(assetsFilePath);
+
+            await TaskScheduler.Default;
+            if (fileInfo.Exists)
+            {
+                var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                if (!(lockFile is null))
+                {
+                    return lockFile.Targets;
+                }
+            }
+
+            return null;
+        }
+
         #endregion
     }
 }

@@ -720,36 +720,96 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public async ValueTask<IInstalledAndTransitivePackages> GetDirectFromTransitivePackageAsync(PackageIdentity transitivePackage, string projectId, CancellationToken cancellationToken)
+        public async ValueTask< IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>> > GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken cancellationToken)
         {
-            var emptylist = ImmutableList<string>.Empty;
-            var list = emptylist.Add(projectId);
+            /** Pseudocode
+            1. Get project restore graph 
 
-            var trans = await GetInstalledAndTransitivePackagesAsync(list, cancellationToken);
-            var xyz = await GetInstalledPackagesDependencyInfoAsync(projectId, false, cancellationToken);
+            2. Filter by packages
 
-            foreach(var directPkg in trans.TransitivePackages)
-            {
-
-            }
-
-            /**
-            foreach direct dependency d:
+            3. Foreach direct dependency d:
                 do DFS to look for transitive dependency
 
                 if found:
-                  Add to head list
+                  Add to list
 
-            return list
+            4. Return list
             */
-            
+            cancellationToken.ThrowIfCancellationRequested();
 
-            throw new NotImplementedException();
+            var singleProjectId = new[] { projectId };
+            var projectsList = await GetProjectsAsync(singleProjectId, cancellationToken);
+            var project = projectsList.FirstOrDefault();
+            IList<ProjectModel.LockFileTarget> fxGraphList;
 
-            /*
-            var x = trans.TransitivePackages.First();
-            GetPackageDep
-            */
+            if (project != default && project is PackageReferenceProject prProject)
+            {
+                fxGraphList = await prProject.GetFullRestoreGraphAsync(cancellationToken);
+            }
+            else
+            {
+                fxGraphList = new List<ProjectModel.LockFileTarget>();
+            }
+
+            var pkgs = await GetInstalledAndTransitivePackagesAsync(singleProjectId, cancellationToken);
+
+            var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>();
+
+            var visited = new HashSet<object>();
+
+            foreach (var targetFxGraph in fxGraphList)
+            {
+                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+                var list = new List<IPackageReferenceContextInfo>();
+
+                foreach (var directPkg in pkgs.InstalledPackages) // are InstalledPackages direct dependencies only? Yes!
+                {
+                    visited.Clear();
+                    var found = FindTransitive(directPkg.Identity, transitivePackage, targetFxGraph, visited);
+                    if (found)
+                    {
+                        list.Add(directPkg);
+                    }
+                }
+
+                if (list.Any())
+                {
+                    packageOrigins[key] = list;
+                }
+                
+            }
+
+            return packageOrigins;
+        }
+
+        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, ProjectModel.LockFileTarget graph, HashSet<object> visited)
+        {
+            if (current.Equals(transitivePackage))
+            {
+                return true;
+            }
+
+            var node = graph
+                .Libraries
+                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version))
+                .FirstOrDefault();
+
+            visited.Add(node);
+
+            if (node != default)
+            {
+                foreach (var dep in node.Dependencies)
+                {
+                    bool found = FindTransitive(new PackageIdentity(dep.Id, dep.VersionRange.MinVersion), transitivePackage, graph, visited);
+
+                    if (found)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

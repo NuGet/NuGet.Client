@@ -66,7 +66,15 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken);
 
-        ValueTask<IInstalledAndTransitivePackages> GetDirectFromTransitivePackageAsync(
+        /// <summary>
+        /// Gets a list of packages that indirectly installs a given transitive package in a project
+        /// </summary>
+        /// <param name="transitivePackage">Transitive Package coordinates (packageId, Version)</param>
+        /// <param name="projectId">Internal Project GUID to retreive packages from</param>
+        /// <param name="cancellationToken">Cancelation token</param>
+        /// <returns>A collection of user-installed packages that depends on the transitive package, for each framework/runtime combination</returns>
+        /// <exception cref="OperationCanceledException">If cancellation token is signaled to cancel</exception>
+        ValueTask<IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(
             PackageIdentity transitivePackage,
             string projectId,
             CancellationToken cancellationToken);
