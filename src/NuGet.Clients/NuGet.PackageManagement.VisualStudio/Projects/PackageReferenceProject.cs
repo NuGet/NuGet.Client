@@ -89,7 +89,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return all targets (dependency graph) found in project.assets.json file
         /// </summary>
         /// <param name="token">Cancellation token</param>
-        /// <returns>A list, one element for each framework restored</returns>
+        /// <returns>A list, one element for each framework restored, or <c>null</c> if project.assets.json file is not found</returns>
+        /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
         internal abstract Task<IList<LockFileTarget>> GetFullRestoreGraphAsync(CancellationToken token);
     }
 }

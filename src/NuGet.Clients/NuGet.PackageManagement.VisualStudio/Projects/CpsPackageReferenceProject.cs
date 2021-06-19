@@ -435,6 +435,7 @@ namespace NuGet.PackageManagement.VisualStudio
             token.ThrowIfCancellationRequested();
 
             string assetsFilePath = await GetAssetsFilePathAsync();
+
             var fileInfo = new FileInfo(assetsFilePath);
 
             await TaskScheduler.Default;

@@ -70,10 +70,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
         /// Gets a list of packages that indirectly installs a given transitive package in a project
         /// </summary>
         /// <param name="transitivePackage">Transitive Package coordinates (packageId, Version)</param>
-        /// <param name="projectId">Internal Project GUID to retreive packages from</param>
+        /// <param name="projectId">Internal Project ID to retreive packages from</param>
         /// <param name="cancellationToken">Cancelation token</param>
-        /// <returns>A collection of user-installed packages that depends on the transitive package, for each framework/runtime combination</returns>
+        /// <returns>A Dictionary of user-installed packages that depends on the transitive package, indexed by framework/runtime combination</returns>
         /// <exception cref="OperationCanceledException">If cancellation token is signaled to cancel</exception>
+        /// <remarks>Only work for PackageReference-based projects. Otherwise, it will return an empty dictionary</remarks>
         ValueTask<IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(
             PackageIdentity transitivePackage,
             string projectId,

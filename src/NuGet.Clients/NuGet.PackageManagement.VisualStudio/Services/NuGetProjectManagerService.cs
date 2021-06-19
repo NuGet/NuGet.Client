@@ -720,7 +720,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public async ValueTask< IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>> > GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken cancellationToken)
+        public async ValueTask< IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>> > GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
         {
             /** Pseudocode
             1. Get project restore graph 
@@ -735,48 +735,44 @@ namespace NuGet.PackageManagement.VisualStudio
 
             4. Return list
             */
-            cancellationToken.ThrowIfCancellationRequested();
+            ct.ThrowIfCancellationRequested();
 
             var singleProjectId = new[] { projectId };
-            var projectsList = await GetProjectsAsync(singleProjectId, cancellationToken);
+            var projectsList = await GetProjectsAsync(singleProjectId, ct);
             var project = projectsList.FirstOrDefault();
-            IList<ProjectModel.LockFileTarget> fxGraphList;
+            var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>();
 
             if (project != default && project is PackageReferenceProject prProject)
             {
-                fxGraphList = await prProject.GetFullRestoreGraphAsync(cancellationToken);
-            }
-            else
-            {
-                fxGraphList = new List<ProjectModel.LockFileTarget>();
-            }
+                IList<ProjectModel.LockFileTarget> fxGraphList = await prProject.GetFullRestoreGraphAsync(ct);
 
-            var pkgs = await GetInstalledAndTransitivePackagesAsync(singleProjectId, cancellationToken);
-
-            var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>();
-
-            var visited = new HashSet<object>();
-
-            foreach (var targetFxGraph in fxGraphList)
-            {
-                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-                var list = new List<IPackageReferenceContextInfo>();
-
-                foreach (var directPkg in pkgs.InstalledPackages) // are InstalledPackages direct dependencies only? Yes!
+                if (fxGraphList != null)
                 {
-                    visited.Clear();
-                    var found = FindTransitive(directPkg.Identity, transitivePackage, targetFxGraph, visited);
-                    if (found)
+                    var pkgs = await GetInstalledAndTransitivePackagesAsync(singleProjectId, ct);
+
+                    var visited = new HashSet<object>();
+
+                    foreach (var targetFxGraph in fxGraphList)
                     {
-                        list.Add(directPkg);
+                        var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+                        var list = new List<IPackageReferenceContextInfo>();
+
+                        foreach (var directPkg in pkgs.InstalledPackages) // are InstalledPackages direct dependencies only? Yes!
+                        {
+                            visited.Clear();
+                            var found = FindTransitive(directPkg.Identity, transitivePackage, targetFxGraph, visited);
+                            if (found)
+                            {
+                                list.Add(directPkg);
+                            }
+                        }
+
+                        if (list.Any())
+                        {
+                            packageOrigins[key] = list;
+                        }
                     }
                 }
-
-                if (list.Any())
-                {
-                    packageOrigins[key] = list;
-                }
-                
             }
 
             return packageOrigins;

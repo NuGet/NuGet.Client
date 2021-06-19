@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using FluentAssertions;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -21,6 +22,7 @@ using Moq;
 using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -535,6 +537,97 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        private async Task GetTransitivePackageOriginAsync_WithPackageReferenceProject_OneTransitiveReferenceAsync()
+        {
+            string projectName = Guid.NewGuid().ToString();
+            string projectId = projectName;
+            var projectSystemCache = new ProjectSystemCache();
+            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                Initialize();
+
+                // Prepare: Create project
+                string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
+                
+                var prProject = CpsPackageReferenceProjectTests.CreateCpsPackageReferenceProject(projectName, projectFullPath,
+                    projectSystemCache);
+
+                ProjectNames projectNames = CpsPackageReferenceProjectTests.GetTestProjectNames(projectFullPath, projectName);
+                PackageSpec packageSpec = CpsPackageReferenceProjectTests.GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+
+                // Restore info
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                projectSystemCache.AddProject(projectNames, projectAdapter, prProject).Should().BeTrue();
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var pajFilepath = Path.Combine(testDirectory, "project.assets.json");
+                var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = pajFilepath
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    packageSource.FullName,
+                    "packageA",
+                    "2.0.0",
+                    new PackageDependency[]
+                    {
+                        new PackageDependency("packageB", VersionRange.Parse("1.0.0"))
+                    });
+
+                _solutionManager.NuGetProjects.Add(prProject);
+
+                // Prepare: Create telemetry
+                var telemetrySession = new Mock<ITelemetrySession>();
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+
+                telemetrySession
+                    .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+                TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+                // Prepare: Force a nuget Restore
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+
+                // Force writing project.assets.json
+                var lff = new LockFileFormat();
+                lff.Write(File.Open(pajFilepath, FileMode.OpenOrCreate), result.LockFile);
+
+                Assert.True(result.Success);
+
+                // Act
+                var packages = await _projectManager.GetTransitivePackageOriginAsync(
+                    new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
+                    projectId,
+                    CancellationToken.None);
+
+                // Verify
+                Assert.NotNull(packages);
+                Assert.NotEmpty(packages);
+                Assert.Equal(1, packages.Count);
+                var tuple = packages.First();
+                Assert.Equal(1, tuple.Value.Count);
+                var dep = tuple.Value.First();
+                Assert.Equal("packageA", dep.Identity.Id);
+                Assert.Equal(new NuGetVersion("2.0.0"), dep.Identity.Version);
+            }
+
+        }
         private static void AddPackageDependency(ProjectSystemCache projectSystemCache, ProjectNames projectNames, PackageSpec packageSpec, SimpleTestPackageContext package)
         {
             var dependency = new LibraryDependency()
