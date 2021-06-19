@@ -10,19 +10,45 @@ namespace NuGet.Configuration
     public class PackageNamespacesConfiguration
     {
         /// <summary>
+        /// Max allowed length for package Id.
+        /// In case update this value please update in src\NuGet.Core\NuGet.Packaging\PackageCreation\Utility\PackageIdValidator.cs too.
+        /// </summary>
+        internal static int PackageIdMaxLength { get; } = 100;
+
+        /// <summary>
         /// Source name to package namespace list.
         /// </summary>
-        public Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
+        internal Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
+
+        private Lazy<SearchTree> SearchTree { get; }
+
+        /// <summary>
+        /// Indicate if any packageSource exist in package namespace section
+        /// </summary>
+        public bool AreNamespacesEnabled { get; }
+
+        /// <summary>
+        /// Get package source names with matching prefix "term" from package namespaces section.
+        /// </summary>
+        /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
+        /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
+        /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
+        public IReadOnlyList<string> GetConfiguredPackageSources(string term)
+        {
+            return SearchTree.Value?.GetConfiguredPackageSources(term);
+        }
 
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
+            AreNamespacesEnabled = Namespaces.Keys.Count > 0;
+            SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
         }
 
         /// <summary>
         /// Generates a <see cref="PackageNamespacesConfiguration"/> based on the settings object.
         /// </summary>
-        /// <param name="settings">Settings. Never null. </param>
+        /// <param name="settings">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>A <see cref="PackageNamespacesConfiguration"/> based on the settings.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="settings"/> is null.</exception>
         public static PackageNamespacesConfiguration GetPackageNamespacesConfiguration(ISettings settings)
@@ -42,6 +68,18 @@ namespace NuGet.Configuration
             }
 
             return new PackageNamespacesConfiguration(namespaces);
+        }
+
+        private SearchTree GetSearchTree()
+        {
+            SearchTree namespaceLookup = null;
+
+            if (AreNamespacesEnabled)
+            {
+                namespaceLookup = new SearchTree(this);
+            }
+
+            return namespaceLookup;
         }
     }
 }

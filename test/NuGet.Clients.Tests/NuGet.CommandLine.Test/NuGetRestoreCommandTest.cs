@@ -8,11 +8,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Configuration.Test;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -2400,12 +2402,671 @@ EndProject";
             Util.TestCommandInvalidArguments(cmd);
         }
 
+        [Fact]
+        public void RestoreCommand_NameSpaceFilter_Succeed()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var publicRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(publicRepositoryPath);
+                Util.CreateTestPackage("测试更新包", "1.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("_", "1.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("123123123123", "1.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("jQuery", "2.1.1", publicRepositoryPath);
+                Util.CreateTestPackage("Microsoft.AspNet.Mvc", "5.2.7", publicRepositoryPath);
+                Util.CreateTestPackage("Microsoft.AspNet.WebApi.Cors", "5.2.7", publicRepositoryPath);
+                Util.CreateTestPackage("Microsoft.Extensions.Configuration.Abstractions", "5.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("Microsoft.VisualStudio.Shell.Interop.9.0", "16.9.31023.347", publicRepositoryPath);
+                Util.CreateTestPackage("Moq", "4.16.1", publicRepositoryPath);
+                Util.CreateTestPackage("Moq.AutoMock", "2.3.0", publicRepositoryPath);
+                Util.CreateTestPackage("NerdBank.Algorithms", "1.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("Nerdbank.GitVersioning", "1.1.64", publicRepositoryPath);
+                Util.CreateTestPackage("Newtonsoft.Json", "12.0.3", publicRepositoryPath);
+                Util.CreateTestPackage("System.Buffers", "4.5.1", publicRepositoryPath);
+                Util.CreateTestPackage("System.Memory", "4.5.4", publicRepositoryPath);
+                Util.CreateTestPackage("System.Numerics.Vectors", "4.5.0", publicRepositoryPath);
+                Util.CreateTestPackage("System.Runtime.CompilerServices.Unsafe", "6.0.0-preview.1.21102.12", publicRepositoryPath);
+                Util.CreateTestPackage("System.Runtime.InteropServices.RuntimeInformation", "4.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("System.Threading.Tasks.Extensions", "4.5.4", publicRepositoryPath);
+                Util.CreateTestPackage("xunit", "2.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("xunit.abstractions", "2.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("xunit.assert", "2.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("xunit.core", "2.0.0", publicRepositoryPath);
+
+                var sharedRepository = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepository);
+                Util.CreateTestPackage("Castle.Core", "4.4.0", sharedRepository);
+                Util.CreateTestPackage("Microsoft.Extensions.Configuration", "5.0.0", sharedRepository);
+                Util.CreateTestPackage("Microsoft.Extensions.DependencyInjection.Abstractions", "5.0.0", sharedRepository);
+                Util.CreateTestPackage("Microsoft.Extensions.Logging", "5.0.0", sharedRepository);
+                Util.CreateTestPackage("Microsoft.Extensions.Primitives", "5.0.0", sharedRepository);
+                Util.CreateTestPackage("xunit.extensibility.core", "2.0.0", sharedRepository);
+                // Name squatting package on shared repo.
+                Util.CreateTestPackage("TestPackage.AuthorSigned", "1.0.0", publicRepositoryPath);
+
+                var signedRepository = Path.Combine(workingPath, "Signed");
+                Directory.CreateDirectory(signedRepository);
+                var authoredSignedPackage = new FileInfo(Path.Combine(signedRepository, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                File.WriteAllBytes(authoredSignedPackage.FullName, GetResource(authoredSignedPackage.Name));
+                var expectedSignedPackageHash = GetHash(authoredSignedPackage.FullName);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net48"" />
+  <package id=""_"" version=""1.0.0"" targetFramework=""net48"" />
+  <package id=""123123123123"" version=""1.0.0"" targetFramework=""net48"" /> 
+  <package id=""Castle.Core"" version=""4.4.0"" targetFramework=""net48"" />
+  <package id=""jQuery"" version=""2.1.1"" targetFramework=""net472"" />
+  <package id=""Microsoft.Extensions.Primitives"" version=""5.0.0"" targetFramework=""net48"" />
+  <package id=""Microsoft.Extensions.DependencyInjection.Abstractions"" version=""5.0.0"" targetFramework=""net48"" />
+  <package id=""Microsoft.Extensions.Configuration"" version=""5.0.0"" targetFramework=""net48"" />
+  <package id=""Microsoft.Extensions.Configuration.Abstractions"" version=""5.0.0"" targetFramework=""net48"" />
+  <package id=""Microsoft.Extensions.Logging"" version=""5.0.0"" targetFramework=""net48"" />
+  <package id=""Microsoft.VisualStudio.Shell.Interop.9.0"" version=""16.9.31023.347"" targetFramework=""net48"" />
+  <package id=""Moq"" version=""4.16.1"" targetFramework=""net48"" />
+  <package id=""Moq.AutoMock"" version=""2.3.0"" targetFramework=""net47"" />
+  <package id=""Nerdbank.GitVersioning"" version=""1.1.64"" targetFramework=""net48"" developmentDependency=""true"" />
+  <package id=""NerdBank.Algorithms"" version=""1.0.0"" targetFramework=""net48"" developmentDependency=""true"" />
+  <package id=""Newtonsoft.Json"" version=""12.0.3"" targetFramework=""net48"" />
+  <package id=""TestPackage.AuthorSigned"" version=""1.0.0"" targetFramework=""net48"" />
+  <package id=""System.Buffers"" version=""4.5.1"" targetFramework=""net48"" />
+  <package id=""System.Memory"" version=""4.5.4"" targetFramework=""net48"" />
+  <package id=""System.Numerics.Vectors"" version=""4.5.0"" targetFramework=""net48"" />
+  <package id=""System.Runtime.CompilerServices.Unsafe"" version=""6.0.0-preview.1.21102.12"" targetFramework=""net48"" />
+  <package id=""System.Runtime.InteropServices.RuntimeInformation"" version=""4.0.0"" targetFramework=""net48"" />
+  <package id=""System.Threading.Tasks.Extensions"" version=""4.5.4"" targetFramework=""net48"" />
+  <package id=""xunit"" version=""2.0.0"" targetFramework=""net472"" />
+  <package id=""xunit.abstractions"" version=""2.0.0"" targetFramework=""net472"" />
+  <package id=""xunit.assert"" version=""2.0.0"" targetFramework=""net472"" />
+  <package id=""xunit.core"" version=""2.0.0"" targetFramework=""net472"" />
+  <package id=""xunit.extensibility.core"" version=""2.0.0"" targetFramework=""net472"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PublicRepository"" value=""{publicRepositoryPath}"" />
+    <add key=""SharedRepository"" value=""{sharedRepository}"" />
+    <add key=""signed"" value=""{signedRepository}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PublicRepository"">
+            <namespace id=""Moq.*"" />
+            <namespace id=""Nerdbank.*"" />   
+            <namespace id=""Microsoft.Asp.*"" />
+            <namespace id=""Microsoft.AspNet.*"" />
+            <namespace id=""Microsoft.Extensions.Configuration.*"" />
+            <namespace id=""System.Runtime.InteropServices.RuntimeInformation"" />            
+            <namespace id=""xunit.*"" />
+        </packageSource>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Castle.Cor*"" /> 
+            <namespace id=""Moq.*"" />
+            <namespace id=""Microsoft.Extensions.*"" />
+            <namespace id=""Microsoft.Extensions.Logging"" />
+            <namespace id=""Nerd*"" />             
+            <namespace id=""Test*"" />
+            <namespace id=""xunit.extensibility.core"" />
+        </packageSource>
+        <packageSource key=""signed"">
+            <namespace id=""TestPackage.*"" />    
+        </packageSource>        
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                var packageNerdBankAlgorithms = Path.Combine(packagePath, "NerdBank.Algorithms.1.0.0", "NerdBank.Algorithms.1.0.0.nupkg");
+                Assert.True(File.Exists(packageNerdBankAlgorithms));
+                var packageCastleCore = Path.Combine(packagePath, "Castle.Core.4.4.0", "Castle.Core.4.4.0.nupkg");
+                Assert.True(File.Exists(packageCastleCore));
+                // Assert correct signed package is restored from correct repository
+                var restoredSignedPackagePath = Path.Combine(packagePath, "TestPackage.AuthorSigned.1.0.0", "TestPackage.AuthorSigned.1.0.0.nupkg");
+                using (var nupkgReader = new PackageArchiveReader(restoredSignedPackagePath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    Assert.Contains(".signature.p7s", allFiles);
+                }
+
+                Assert.Equal(expectedSignedPackageHash, GetHash(restoredSignedPackagePath));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_NameSpaceFilter_Fails()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var publicRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(publicRepositoryPath);
+                Util.CreateTestPackage("Great.Calc", "1.0.0", publicRepositoryPath);
+                Util.CreateTestPackage("Another.Calc", "1.0.0", publicRepositoryPath);
+
+                var sharedRepository = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepository);
+                Util.CreateTestPackage("Newton.Calc", "1.0.0", sharedRepository);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""Newton.Calc"" version=""1.0.0"" targetFramework=""net48"" />
+  <package id=""Great.Calc"" version=""1.0.0"" targetFramework=""net48"" />
+  <package id=""Another.Calc"" version=""1.0.0"" targetFramework=""net48"" />
+</packages>");
+
+                var configPath1 = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath1, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PublicRepository"" value=""{publicRepositoryPath}"" />
+    <add key=""SharedRepository"" value=""{sharedRepository}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PublicRepository"">
+            <namespace id=""Newton.*"" />
+            <namespace id=""Great.*"" />
+            <namespace id=""Another.*"" />   
+        </packageSource>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Some.*"" /> <!--Newton.* prefix exist in other repository, not this one. -->
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_failureCode, r.ExitCode);
+                // Since Newton.* prefix direct 'Newton.Calc.1.0.0' to PublicRepository it should fail to find it, it only exist in SharedRepository.
+                Assert.True(r.Errors.Contains("Package 'Newton.Calc.1.0.0' is not found"));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_PackageNamespaceLongerMatches_Succeed()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(opensourceRepositoryPath);
+                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource.Buffers", "1.0.0", opensourceRepositoryPath);
+
+                var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PublicRepository""> 
+            <namespace id=""Contoso.Opensource.*"" />
+            <namespace id=""Contoso.MVC.*"" /> 
+        </packageSource>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath,
+                        "-Verbosity",
+                        "d"
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+            }
+        }
+
+
+        [Fact]
+        public void RestoreCommand_PackageNamespace_NoNamespaceMatches()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepositoryPath);
+                Util.CreateTestPackage("My.MVC.ASP", "1.0.0", sharedRepositoryPath);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""My.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Contoso.MVC.ASP"" />  <!-- My.MVC.ASP doesn't match-->
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath,
+                        "-Verbosity",
+                        "d"
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.Output);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_PackageNamespaceMatchesMultipleSources_Succeed()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var sharedRepositoryPath1 = Path.Combine(workingPath, "SharedRepository1");
+                Directory.CreateDirectory(sharedRepositoryPath1);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath1);
+
+                var sharedRepositoryPath2 = Path.Combine(workingPath, "SharedRepository2");
+                Directory.CreateDirectory(sharedRepositoryPath2);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath2);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""SharedRepositoryPath1"" value=""{sharedRepositoryPath1}"" />
+    <add key=""SharedRepositoryPath2"" value=""{sharedRepositoryPath2}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""SharedRepositoryPath1""> 
+            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+        </packageSource>
+        <packageSource key=""SharedRepositoryPath2"">
+            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                var contosoRestorePath = Path.Combine(packagePath, "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
+                Assert.True(File.Exists(contosoRestorePath));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_PackageNamespaceEmptyPackageSource_Succeed()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var sharedRepositoryPath1 = Path.Combine(workingPath, "SharedRepository1");
+                Directory.CreateDirectory(sharedRepositoryPath1);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath1);
+
+                var sharedRepositoryPath2 = Path.Combine(workingPath, "SharedRepository2");
+                Directory.CreateDirectory(sharedRepositoryPath2);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath2);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""SharedRepositoryPath1"" value=""{sharedRepositoryPath1}"" />
+    <add key=""SharedRepositoryPath2"" value=""{sharedRepositoryPath2}"" />
+    </packageSources>
+    <packageNamespaces>
+        <!--Empty packageNamespaces -->
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                var contosoRestorePath = Path.Combine(packagePath, "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
+                Assert.True(File.Exists(contosoRestorePath));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_NoPackageNamespacesection_NoSourceRelatedLogMessage()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+                var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    </packageSources>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath,
+                        "-Verbosity",
+                        "d"
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                Assert.DoesNotContain("namespace", r.Output);
+            }
+        }
 
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
                 $"NuGet.CommandLine.Test.compiler.resources.{name}",
                 typeof(NuGetRestoreCommandTest));
+        }
+
+        private static string GetHash(string packagePath)
+        {
+            using (var stream = new FileStream(packagePath, FileMode.Open, FileAccess.Read))
+            {
+                using (var sha512 = SHA512.Create())
+                {
+                    return Convert.ToBase64String(sha512.ComputeHash(stream));
+                }
+            }
         }
     }
 }

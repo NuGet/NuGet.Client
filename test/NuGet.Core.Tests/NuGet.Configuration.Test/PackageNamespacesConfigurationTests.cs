@@ -31,6 +31,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            configuration.AreNamespacesEnabled.Should().BeTrue();
             configuration.Namespaces.Should().HaveCount(1);
             KeyValuePair<string, IReadOnlyList<string>> namespaceForSource = configuration.Namespaces.First();
             namespaceForSource.Key.Should().Be("nuget.org");
@@ -58,6 +59,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+            configuration.AreNamespacesEnabled.Should().BeTrue();
             configuration.Namespaces.Should().HaveCount(2);
 
             IReadOnlyList<string> nugetNamespaces = configuration.Namespaces["nuget.org"];
