@@ -1634,48 +1634,5 @@ namespace NuGet.PackageManagement.UI
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        /// <summary>
-        /// Tests Transitive Origin Package API. List origing for all transitive dependencies
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BtnTestAPI_Click(object sender, RoutedEventArgs e)
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                using (var cts = new CancellationTokenSource())
-                {
-                    IProjectContextInfo project = Model.Context.Projects.FirstOrDefault();
-                    Debug.Assert(project != null);
-                    var sb = new System.Text.StringBuilder();
-
-                    using (INuGetProjectManagerService projectManagerService = await Model.Context.ServiceBroker.GetProxyAsync<INuGetProjectManagerService>(NuGetServices.ProjectManagerService))
-                    {
-                        var pkgs = await projectManagerService.GetInstalledAndTransitivePackagesAsync(new[] { project.ProjectId }, cts.Token);
-
-                        foreach (var transDep in pkgs.TransitivePackages)
-                        {
-                            var origin = await projectManagerService.GetTransitivePackageOriginAsync(transDep.Identity, project.ProjectId, cts.Token);
-
-                            sb.Append($"Trans: {transDep.Identity}; origin: ");
-                            foreach (var o in origin)
-                            {
-                                sb.Append($"{o.Key}/");
-                                foreach (var directDep in o.Value)
-                                {
-                                    sb.Append($"{directDep.Identity};");
-                                }
-                            }
-                            sb.AppendLine();
-                        }
-                    }
-
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    MessageBox.Show(sb.ToString());
-                }
-
-            }).PostOnFailure(nameof(PackageManagerControl), nameof(BtnTestAPI_Click));
-        }
     }
 }

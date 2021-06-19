@@ -128,14 +128,12 @@
                   x:Name="_legalDisclaimerText"
                   Text="{x:Static nuget:Resources.Text_LegalDisclaimer}" />
                 <LineBreak />
-                <Button x:Name="BtnTestAPI" Width="100" Height="30" Content="Test API" Click="BtnTestAPI_Click" />
                 <CheckBox
                   Margin="0,12,0,12"
                   AutomationProperties.LabeledBy="{Binding ElementName=_legalDisclaimerText}"
                   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
                   Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
                   Checked="SuppressDisclaimerChecked" />
-                
               </TextBlock>
             </Border>
           </Grid>
