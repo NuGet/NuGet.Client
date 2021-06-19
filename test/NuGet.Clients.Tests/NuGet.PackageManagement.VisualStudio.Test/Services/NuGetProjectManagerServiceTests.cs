@@ -19,10 +19,10 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
+using NuGet.Commands;
 using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -551,7 +551,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Prepare: Create project
                 string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
-                
+
                 var prProject = CpsPackageReferenceProjectTests.CreateCpsPackageReferenceProject(projectName, projectFullPath,
                     projectSystemCache);
 

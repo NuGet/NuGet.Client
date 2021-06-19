@@ -720,7 +720,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public async ValueTask< IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>> > GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
+        public async ValueTask<IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
         {
             /** Pseudocode
             1. Get project restore graph 
