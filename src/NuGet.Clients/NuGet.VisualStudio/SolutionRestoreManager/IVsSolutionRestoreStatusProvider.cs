@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.VisualStudio
 {
     /// <summary>
     /// Provides the status of IVsSolutionRestore.

@@ -10,6 +10,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
+using NuGet.VisualStudio;
 
 namespace NuGet.SolutionRestoreManager.Test
 {

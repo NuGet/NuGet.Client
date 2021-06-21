@@ -1,0 +1,6 @@
+NuGet.VisualStudio.IVsProjectRestoreInfoSource
+NuGet.VisualStudio.IVsProjectRestoreInfoSource.HasPendingNomination.get -> bool
+NuGet.VisualStudio.IVsProjectRestoreInfoSource.Name.get -> string
+NuGet.VisualStudio.IVsProjectRestoreInfoSource.WhenNominated(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IVsSolutionRestoreService4
+NuGet.VisualStudio.IVsSolutionRestoreService4.RegisterRestoreInfoSourceAsync(NuGet.VisualStudio.IVsProjectRestoreInfoSource restoreInfoSource, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task

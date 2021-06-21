@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.VisualStudio
 {
     /// <summary>
     /// Represents a property as a key-value pair

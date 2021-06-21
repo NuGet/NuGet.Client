@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.VisualStudio;
 
 namespace NuGet.SolutionRestoreManager.Test
 {

@@ -4,23 +4,23 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.VisualStudio
 {
     /// <summary>
-    /// Represents metadata associated with a single reference item, e.g. project or package.
+    /// Represents a property as a key-value pair
     /// </summary>
     [ComImport]
-    [Guid("77ab3429-3e64-40ed-9082-10dc01668de9")]
-    public interface IVsReferenceItem
+    [Guid("1513778e-10b7-411e-a4d4-58dcbe51a9a5")]
+    public interface IVsReferenceProperty
     {
         /// <summary>
-        /// Unique reference item name.
+        /// Property name.
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// Collection of reference properties.
+        /// Property value.
         /// </summary>
-        IVsReferenceProperties Properties { get; }
+        string Value { get; }
     }
 }

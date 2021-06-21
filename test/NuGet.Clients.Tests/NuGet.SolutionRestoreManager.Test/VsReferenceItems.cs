@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using NuGet.VisualStudio;
 
 namespace NuGet.SolutionRestoreManager.Test
 {

@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Runtime.InteropServices;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.VisualStudio
 {
     /// <summary>
     /// Collection of restore reference items.
