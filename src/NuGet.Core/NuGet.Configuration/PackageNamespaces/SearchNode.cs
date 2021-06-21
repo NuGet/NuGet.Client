@@ -9,7 +9,6 @@ namespace NuGet.Configuration
     {
         public readonly Dictionary<char, SearchNode> Children;
         public bool IsGlobbing { get; set; }
-
         public List<string> PackageSources;
 
         public SearchNode()
