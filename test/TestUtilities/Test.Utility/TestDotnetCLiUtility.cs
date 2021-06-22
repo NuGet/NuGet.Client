@@ -63,10 +63,6 @@ namespace NuGet.Test.Utility
             CopyLatestCliToTestDirectory(cliDirDestination);
             UpdateCliWithLatestNuGetAssemblies(cliDirDestination);
 
-            // TODO - remove when SDK version for testing has Cryptography Dlls. See https://github.com/NuGet/Home/issues/8952
-            var patchPath = Directory.EnumerateDirectories(Path.Combine(cliDirDestination, "sdk")).Single();
-            PatchSDKWithCryptographyDlls(patchPath);
-
             return cliDirDestination;
         }
 
@@ -187,12 +183,11 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
 #else
                 "Release";
 #endif
-            const string toolsetVersion = "16.0";
-            CopyPackSdkArtifacts(artifactsDirectory, pathToSdkInCli, configuration, toolsetVersion);
-            CopyRestoreArtifacts(artifactsDirectory, pathToSdkInCli, configuration, toolsetVersion);
+            CopyPackSdkArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
+            CopyRestoreArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
         }
 
-        private static void CopyRestoreArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration, string toolsetVersion)
+        private static void CopyRestoreArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
         {
             const string restoreProjectName = "NuGet.Build.Tasks";
             const string restoreTargetsName = "NuGet.targets";
@@ -203,7 +198,7 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
             // Copy rest of the NuGet assemblies.
             foreach (var projectName in sdkDependencies)
             {
-                var projectArtifactsBinFolder = Path.Combine(artifactsDirectory, projectName, toolsetVersion, "bin", configuration);
+                var projectArtifactsBinFolder = Path.Combine(artifactsDirectory, projectName, "bin", configuration);
 
                 var tfmToCopy = GetTfmToCopy(projectArtifactsBinFolder);
                 var frameworkArtifactsFolder = new DirectoryInfo(Path.Combine(projectArtifactsBinFolder, tfmToCopy));
@@ -252,7 +247,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
             return selectedVersion;
         }
 
-        private static void CopyPackSdkArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration, string toolsetVersion)
+        private static void CopyPackSdkArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
         {
             var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
 
@@ -260,7 +255,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
             const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
 
             // Copy the pack SDK.
-            var packProjectBinDirectory = Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration);
+            var packProjectBinDirectory = Path.Combine(artifactsDirectory, packProjectName, "bin", configuration);
             var tfmToCopy = GetTfmToCopy(packProjectBinDirectory);
 
             var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(packProjectBinDirectory, tfmToCopy));
@@ -308,141 +303,6 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
             string globalJsonText = $"{{\"sdk\": {{\"version\": \"{SdkVersion}\"}}}}";
             var globalJsonPath = Path.Combine(path, "global.json");
             File.WriteAllText(globalJsonPath, globalJsonText);
-        }
-
-        /// <summary>
-        /// Temporary patching process to bring in Cryptography DLLs for testing while SDK gets around to including them in 5.0.
-        /// See also: https://github.com/NuGet/Home/issues/8508
-        /// </summary>
-        private static void PatchSDKWithCryptographyDlls(string sdkPath)
-        {
-            var assemblyNames = new string[1] { "System.Security.Cryptography.Pkcs.dll" };
-            PatchDepsJsonFiles(assemblyNames, sdkPath);
-
-            string userProfilePath = Environment.GetEnvironmentVariable(RuntimeEnvironmentHelper.IsWindows ? "USERPROFILE" : "HOME");
-            string globalPackagesPath = Path.Combine(userProfilePath, ".nuget", "packages");
-
-            CopyNewlyAddedDlls(assemblyNames, GetPkcsDllPath("System.Security.Cryptography.Pkcs.dll"), sdkPath);
-        }
-
-        private static void PatchDepsJsonFiles(string[] assemblyNames, string patchDir)
-        {
-            string[] fileNames = new string[3] { "dotnet.deps.json", "MSBuild.deps.json", "NuGet.CommandLine.XPlat.deps.json" };
-            string[] fullNames = fileNames.Select(filename => Path.Combine(patchDir, filename)).ToArray();
-            PatchDepsJsonWithNewlyAddedDlls(assemblyNames, fullNames);
-        }
-
-        private static void CopyNewlyAddedDlls(string[] assemblyNames, string copyFromPath, string copyToPath)
-        {
-            foreach (var assemblyName in assemblyNames)
-            {
-                File.Copy(
-                    Path.Combine(copyFromPath, assemblyName),
-                    Path.Combine(copyToPath, assemblyName)
-                );
-            }
-        }
-
-        private static void PatchDepsJsonWithNewlyAddedDlls(string[] assemblyNames, string[] filePaths)
-        {
-            foreach (string assemblyName in assemblyNames)
-            {
-                foreach (string filePath in filePaths)
-                {
-                    JObject jsonFile = GetJson(filePath);
-
-                    JObject targets = jsonFile.GetJObjectProperty<JObject>("targets");
-
-                    JObject netcoreapp50 = targets.GetJObjectProperty<JObject>(".NETCoreApp,Version=v5.0");
-
-                    JProperty nugetBuildTasksProperty = netcoreapp50.Properties().
-                        FirstOrDefault(prop => prop.Name.StartsWith("NuGet.Build.Tasks/", StringComparison.OrdinalIgnoreCase));
-
-                    JObject nugetBuildTasks = nugetBuildTasksProperty.Value.FromJToken<JObject>();
-
-                    JObject runtime = nugetBuildTasks.GetJObjectProperty<JObject>("runtime");
-
-                    var assemblyPath = Path.Combine(GetPkcsDllPath(assemblyName), assemblyName);
-                    var assemblyVersion = Assembly.LoadFile(assemblyPath).GetName().Version.ToString();
-                    var assemblyFileVersion = FileVersionInfo.GetVersionInfo(assemblyPath).FileVersion;
-                    var jproperty = new JProperty("lib/netcoreapp5.0/" + assemblyName,
-                        new JObject
-                        {
-                            new JProperty("assemblyVersion", assemblyVersion),
-                            new JProperty("fileVersion", assemblyFileVersion),
-                        }
-                    );
-                    runtime.Add(jproperty);
-                    nugetBuildTasks["runtime"] = runtime;
-                    netcoreapp50[nugetBuildTasksProperty.Name] = nugetBuildTasks;
-                    targets[".NETCoreApp,Version=v5.0"] = netcoreapp50;
-                    jsonFile["targets"] = targets;
-                    SaveJson(jsonFile, filePath);
-                }
-            }
-        }
-
-        private static JObject GetJson(string jsonFilePath)
-        {
-            try
-            {
-                return FileUtility.SafeRead(jsonFilePath, (stream, filePath) =>
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        return JObject.Parse(reader.ReadToEnd());
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    string.Format("Failed to read json file at {0}: {1}", jsonFilePath, ex.Message),
-                    ex
-                );
-            }
-        }
-
-        private static void SaveJson(JObject json, string jsonFilePath)
-        {
-            FileUtility.Replace((outputPath) =>
-            {
-                using (var writer = new StreamWriter(outputPath, append: false, encoding: Encoding.UTF8))
-                {
-                    writer.Write(json.ToString());
-                }
-            },
-            jsonFilePath);
-        }
-
-        private static string GetPkcsDllPath(string assemblyName)
-        {
-            var currentDir = Directory.CreateDirectory(Directory.GetCurrentDirectory());
-            while (currentDir != null)
-            {
-                if (currentDir.GetFiles().Any(e => e.Name.Equals("NuGet.sln", StringComparison.OrdinalIgnoreCase)))
-                {
-                    // We have found the repo root.
-                    break;
-                }
-
-                currentDir = currentDir.Parent;
-            }
-            const string configuration =
-#if DEBUG
-                "Debug";
-#else
-                "Release";
-#endif
-            var assemblyDir = Path.Combine(currentDir.FullName, "test", "NuGet.Core.FuncTests", "NuGet.Packaging.FuncTest", "bin", configuration, "netcoreapp5.0");
-
-            if (!File.Exists(Path.Combine(assemblyDir, assemblyName)))
-            {
-                var message = $@"Could not find {assemblyName} in {assemblyDir}";
-
-                throw new Exception(message);
-            }
-            return assemblyDir;
         }
     }
 }
