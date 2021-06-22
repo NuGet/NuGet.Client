@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NuGet.VisualStudio
+namespace NuGet.SolutionRestoreManager
 {
     /// <summary>
     /// Represents metadata associated with a single reference item, e.g. project or package.

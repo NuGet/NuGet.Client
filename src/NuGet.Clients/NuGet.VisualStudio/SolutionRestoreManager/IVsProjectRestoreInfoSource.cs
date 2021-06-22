@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.VisualStudio
+namespace NuGet.SolutionRestoreManager
 {
     /// <summary>
     /// Represents a package restore service API for integration with a project system.
@@ -25,7 +25,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Whether the source needs to do some work that could lead to a nomination. <br/>
         /// Called frequently, so it should be very efficient.
-        /// </summary> 
+        /// </summary>
         bool HasPendingNomination { get; }
 
         /// <summary>
