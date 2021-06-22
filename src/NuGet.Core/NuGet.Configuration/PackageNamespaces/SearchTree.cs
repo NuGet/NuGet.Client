@@ -115,7 +115,12 @@ namespace NuGet.Configuration
                 }
             }
 
-            return currentNode.PackageSources ?? (longestMatchingPrefixNode?.PackageSources);
+            if (i == term.Length && currentNode.PackageSources != null)
+            {
+                return currentNode.PackageSources;
+            }
+
+            return longestMatchingPrefixNode?.PackageSources;
         }
     }
 }
