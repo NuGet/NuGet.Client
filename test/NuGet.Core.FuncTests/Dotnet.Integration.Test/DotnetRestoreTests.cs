@@ -1481,6 +1481,18 @@ EndGlobal";
         [PlatformTheory(Platform.Linux)]
         [InlineData("worker")]
         [InlineData("mstest")]
+        [InlineData("nunit")]
+        [InlineData("xunit")]
+        [InlineData("blazorserver")]
+        [InlineData("blazorwasm")]
+        [InlineData("web")]
+        [InlineData("mvc")]
+        [InlineData("webapp")]
+        [InlineData("angular")]
+        [InlineData("react")]
+        [InlineData("reactredux")]
+        [InlineData("webapi")]
+        [InlineData("grpc")]
         public void Dotnet_New_Template_Restore_Success(string template)
         {
             // Arrange

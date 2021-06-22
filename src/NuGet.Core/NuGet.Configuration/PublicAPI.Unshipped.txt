@@ -2,7 +2,8 @@ NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
-NuGet.Configuration.PackageNamespacesConfiguration.Namespaces.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.IReadOnlyList<string>>
+NuGet.Configuration.PackageNamespacesConfiguration.AreNamespacesEnabled.get -> bool
+NuGet.Configuration.PackageNamespacesConfiguration.GetConfiguredPackageSources(string term) -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
@@ -24,5 +25,4 @@ static NuGet.Configuration.PackageNamespacesConfiguration.GetPackageNamespacesCo
 static readonly NuGet.Configuration.ConfigurationConstants.IdAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Namespace -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageNamespaces -> string
-static readonly NuGet.Configuration.NuGetConstants.ReadmeExtension -> string
 virtual NuGet.Configuration.PackageNamespacesSourceItem.Key.get -> string

@@ -126,15 +126,17 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData("http://username:password@localhost:8081/proxy.dat", "http://localhost:8081/proxy.dat", "username", "password")]
-        [InlineData("http://localhost:8081/proxy/.conf", "http://localhost:8081/proxy/.conf", null, null)]
-        public void GetUserConfiguredProxy_ReadsCredentialsFromEnvironmentVariable(string input, string host, string username, string password)
+        [InlineData("http://username:password@localhost:8081/proxy.dat", "http://localhost:8081/proxy.dat", "username", "password", new string[] { ".*.com" })]
+        [InlineData("http://username:password@localhost:8081/proxy.dat", "http://localhost:8081/proxy.dat", "username", "password", new string[] { })]
+        [InlineData("http://localhost:8081/proxy/.conf", "http://localhost:8081/proxy/.conf", null, null, new string[] { ".*.com", ".*.org" })]
+        [InlineData("http://localhost:8081/proxy/.conf", "http://localhost:8081/proxy/.conf", null, null, new string[] { })]
+        public void GetUserConfiguredProxy_ReadsCredentialsFromEnvironmentVariable(string input, string host, string username, string password, string[] bypassedAddresses)
         {
             // Arrange
             var settings = Mock.Of<ISettings>();
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
             environment.Setup(s => s.GetEnvironmentVariable("http_proxy")).Returns(input);
-            environment.Setup(s => s.GetEnvironmentVariable("no_proxy")).Returns("");
+            environment.Setup(s => s.GetEnvironmentVariable("no_proxy")).Returns(string.Join(",", bypassedAddresses));
 
             var proxyCache = new ProxyCache(settings, environment.Object);
 
@@ -143,6 +145,7 @@ namespace NuGet.Configuration.Test
 
             // Assert
             AssertProxy(host, username, password, proxy);
+            Assert.Equal(bypassedAddresses, proxy.BypassList);
         }
 
         private static void AssertProxy(string proxyAddress, string username, string password, WebProxy actual)

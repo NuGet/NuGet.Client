@@ -175,7 +175,7 @@ namespace NuGet.VisualStudio.Common
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            IVsShell vsShell = await _asyncServiceProvider.GetServiceAsync<IVsShell>();
+            IVsShell vsShell = await _asyncServiceProvider.GetServiceAsync<IVsShell, IVsShell>(throwOnFailure: false);
             int getPropertyReturnCode = vsShell.GetProperty((int)__VSSPROPID.VSSPROPID_ShowTasklistOnBuildEnd, out object propertyShowTaskListOnBuildEnd);
             bool showErrorListOnBuildEnd = true;
 

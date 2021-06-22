@@ -25,13 +25,13 @@ Function Get-Version {
     )
         Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
         # The major version is NuGetMajorVersion + 11, to match VS's number.
-        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105. 
-        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks. 
+        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105.
+        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks.
         # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
         $versionParts = $ProductVersion -split '\.'
         $major = $($versionParts[0] / 1) + 11
-        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
-    
+        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"
+
         Write-Host "The new VSIX Version is: $finalVersion"
         return $finalVersion
 }
@@ -65,10 +65,11 @@ Function Update-VsixVersion {
 
 Function Set-RtmLabel {
     param(
-        [string]$BuildRTM
+        [Parameter(Mandatory = $true)]
+        [boolean]$isRTMBuild
     )
 
-    if ($BuildRTM -eq $true) {
+    if ($isRTMBuild -eq $true) {
         $label = "RTM"
     } else {
         $label = "NonRTM"
@@ -78,9 +79,9 @@ Function Set-RtmLabel {
     Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
 }
 
-Set-RtmLabel -BuildRTM $BuildRTM
+$isRTMBuild = [boolean]::Parse($BuildRTM)
 
-$msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
+Set-RtmLabel -isRTMBuild $isRTMBuild
 
 # Disable strong name verification of common public keys so that scenarios like building the VSIX or running unit tests
 # will not fail because of strong name verification errors.
@@ -95,7 +96,7 @@ $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 # NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
 
-# Check if there is a localization branch associated with this branch repo 
+# Check if there is a localization branch associated with this branch repo
 $currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
 $lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
 Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
@@ -118,23 +119,17 @@ Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 # Get the commit of the localization repository that will be used for this build.
 $LocalizationRepoCommitHash = & git -C $NuGetLocalization log --pretty=format:'%H' -n 1
 
-if (-not (Test-Path $regKeyFileSystem)) 
+if (-not (Test-Path $regKeyFileSystem))
 {
     Write-Host "Enabling long path support on the build machine"
     Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
 }
 
 
-if ($BuildRTM -eq 'true')
-{
-    # Set the $(NupkgOutputDir) build variable in VSTS build
-    Write-Host "##vso[task.setvariable variable=NupkgOutputDir;]ReleaseNupkgs"
-    Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15-RTM"
-}
-else
+if ($BuildRTM -ne $true)
 {
     $newBuildCounter = $env:BUILD_BUILDNUMBER
-    $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
+    $VsTargetBranch = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -151,7 +146,7 @@ else
     New-Item $localBuildInfoJsonFilePath -Force
     $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath
 
-    $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
+    $productVersion = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
     if (-not $?)
     {
         Write-Error "Failed to get product version."

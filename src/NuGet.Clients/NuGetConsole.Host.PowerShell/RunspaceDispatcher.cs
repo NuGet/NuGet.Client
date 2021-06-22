@@ -88,7 +88,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public Collection<PSObject> Invoke(string command, object[] inputs, bool outputResults)
         {
             // Invoking a command on the pipeline thread blocks the caller.
-            // It will hang VS when a caller is on the UI thread.
+            // It will make VS stop responding when a caller is on the UI thread.
             ThreadHelper.ThrowIfOnUIThread();
 
             if (string.IsNullOrEmpty(command))

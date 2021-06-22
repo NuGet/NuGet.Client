@@ -264,6 +264,7 @@ namespace NuGet.VisualStudio
             return TemplateFinishedGeneratingAsync(project);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
         {
             return TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
@@ -305,7 +306,7 @@ namespace NuGet.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution>() as IVsSolution;
+            var solution = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution, IVsSolution>(throwOnFailure: false);
 
             if (solution != null)
             {
@@ -326,6 +327,7 @@ namespace NuGet.VisualStudio
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
             if (runKind != WizardRunKind.AsNewProject
@@ -350,6 +352,7 @@ namespace NuGet.VisualStudio
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void AddTemplateParameters(Dictionary<string, string> replacementsDictionary)
         {
             // add the $nugetpackagesfolder$ parameter which returns relative path to the solution's packages folder.
@@ -463,7 +466,7 @@ namespace NuGet.VisualStudio
             // VsPackageInstaller and VsPackageUninstaller. Because, no powershell scripts get executed
             // as part of the operations performed below. Powershell scripts need to be executed on the
             // pipeline execution thread and they might try to access DTE. Doing that under
-            // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
+            // ThreadHelper.JoinableTaskFactory.Run will consistently make the UI stop responding
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

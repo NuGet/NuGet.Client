@@ -333,6 +333,43 @@ The person writing the code will write the doc comments. Public APIs only. No ne
 
 Note: Public means callable by a customer, so it includes protected APIs. However, some public APIs might still be "for internal use only" but need to be public for technical reasons. We will still have doc comments for these APIs but they will be documented as appropriate.
 
+- Do not include empty XML comments.
+  - summary element must not be empty.
+  - param element must not be empty.
+
+Correct:
+
+```cs
+        /// <summary>
+        /// Calculates all fruit types
+        /// </summary>
+        /// <returns>A set of fruit types contained in this basket.</returns>
+        public ISet<FruitType> GetAllFruitTypes()
+
+        /// <summary>
+        /// Determines whether the fruit has seeds.
+        /// </summary>
+        /// <param name="fruitType">A fruit type</param>
+        /// <returns> Whether the fruit has seeds. </returns>
+        public bool HasSeeds(FruitType fruitType)
+```
+
+Incorrect:
+
+```cs
+        /// <summary>
+        /// </summary>
+        /// <returns> </returns>
+        public ISet<FruitType> GetAllFruitTypes()
+
+        /// <summary>
+        /// Determines whether the fruit has seeds.
+        /// </summary>
+        /// <param name="fruitType"></param>
+        /// <returns> </returns>
+        public bool HasSeeds(FruitType fruitType)
+```
+
 ### Assertions
 
 Do not use `Debug.Assert()`. That's what unit tests are for.

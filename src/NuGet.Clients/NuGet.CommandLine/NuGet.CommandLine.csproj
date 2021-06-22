@@ -151,7 +151,14 @@
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
+
+  <Target Name="NuGetLinkVSSDKEmbeddableAssemblies" AfterTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)' == 'Microsoft.VisualStudio.Setup.Configuration.Interop'">
+        <EmbedInteropTypes>true</EmbedInteropTypes>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
 
   <!-- Do nothing. This basically strips away the framework assemblies from the resulting nuspec.-->
   <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences"/>

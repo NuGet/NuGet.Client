@@ -1,3 +1,6 @@
+variables:
+  DOTNET_NOLOGO: 1
+
 jobs:
 - job: Initialize_Build_SemanticVersion
   timeoutInMinutes: 2

@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.Diagnostics.CodeAnalysis;
 using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -14,8 +13,6 @@ using Microsoft.VisualStudio.TemplateWizard;
 
 namespace NuGet.VisualStudio
 {
-    [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses",
-        Justification = "This class is referenced via .vstemplate files from a VS project template")]
     internal sealed class TemplateWizard : IWizard
     {
         [Import]

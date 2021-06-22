@@ -260,7 +260,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     // on it. Note that a default prompt function as defined in Profile.ps1 will simply return
                     // a string "PM>". This will always work. However, a custom "prompt" function might call
                     // Write-Host and NuGet will explicity switch to the main thread using JTF.
-                    // If the main thread was blocked then, it will consistently result in a hang.
+                    // If the main thread was blocked then, it will consistently make the UI stop responding
                     var output = await Task.Run(() =>
                                         Runspace.Invoke("prompt", null, outputResults: false).FirstOrDefault());
                     if (output != null)
@@ -424,7 +424,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             });
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want execution of init scripts to crash our console.")]
         private async Task ExecuteInitScriptsAsync()
         {
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
@@ -451,6 +450,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                     return;
                 }
+                // We may be enumerating packages from disk here. Always do it from a background thread.
+                await TaskScheduler.Default;
 
                 var packageManager = new NuGetPackageManager(
                     _sourceRepositoryProvider,

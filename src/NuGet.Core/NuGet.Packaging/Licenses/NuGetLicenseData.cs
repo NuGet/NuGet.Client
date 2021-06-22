@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Licenses
         // Refer to https://github.com/spdx/LicenseListPublisher/issues/102. 
         // When this files gets regenerated, this explanation will be removed. 
         // This is to be used as a marker to confirm that the linked issue with the data source has been fixed.
-        public static string LicenseListVersion = "da7ecca";
+        public static string LicenseListVersion { get; } = "da7ecca";
 
         public static readonly IReadOnlyDictionary<string, LicenseData> LicenseList = new Dictionary<string, LicenseData>()
         {

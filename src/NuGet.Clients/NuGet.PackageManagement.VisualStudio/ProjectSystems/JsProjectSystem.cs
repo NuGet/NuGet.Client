@@ -74,6 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         protected override async Task AddFileToProjectAsync(string path)
         {
             if (ExcludeFile(path))

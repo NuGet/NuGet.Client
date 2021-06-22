@@ -235,6 +235,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public Task<IEnumerable<string>> GetReferencedProjectsAsync()
         {
             if (Project.Kind != null

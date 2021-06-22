@@ -556,7 +556,8 @@ namespace NuGet.PackageManagement.UI
                             PackageMetadata = detailedPackageMetadata;
                         }
 
-                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask());
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask())
+                                                               .PostOnFailure(nameof(DetailControlModel));
                     }
 
                     OnPropertyChanged(nameof(SelectedVersion));

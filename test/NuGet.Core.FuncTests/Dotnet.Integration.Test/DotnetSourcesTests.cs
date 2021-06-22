@@ -24,8 +24,11 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSource_GotAdded()
         {
-            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
                 // Arrange
                 var args = new string[]
                 {
@@ -35,19 +38,17 @@ namespace Dotnet.Integration.Test
                     "https://source.test",
                     "--name",
                     "test_source",
+                    "--configfile",
+                    settings.ConfigPath
                 };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = _fixture.RunDotnet(root, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
-                var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                var packageSourcesSection = settings.GetSection("packageSources");
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
             }
@@ -56,56 +57,11 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSourceWithCredentials_CredentialsWereAddedAndEncrypted()
         {
-            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                // Arrange
-                var args = new string[]
-                {
-                    "nuget",
-                    "add",
-                    "source",
-                    "https://source.test",
-                    "--name",
-                    "test_source",
-                    "--username",
-                    "test_user_name",
-                    "--password",
-                    "test_password"
-                };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
 
-                // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = _fixture.RunDotnet(root, string.Join(" ", args), ignoreExitCode: true);
-
-
-                // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
-                var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-
-                var packageSourcesSection = settings.GetSection("packageSources");
-                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
-
-                var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
-                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
-                Assert.NotNull(credentialItem);
-
-                Assert.Equal("test_user_name", credentialItem.Username);
-
-                var password = EncryptionUtility.DecryptString(credentialItem.Password);
-                Assert.Equal("test_password", password);
-            }
-        }
-
-        [PlatformFact(Platform.Windows)]
-        public void Sources_WhenAddingSourceWithCredentialsInClearText_CredentialsWereAddedAndNotEncrypted()
-        {
-            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
-            {
                 // Arrange
                 var args = new string[]
                 {
@@ -119,26 +75,73 @@ namespace Dotnet.Integration.Test
                     "test_user_name",
                     "--password",
                     "test_password",
-                    "--store-password-in-clear-text"
+                    "--configfile",
+                    settings.ConfigPath
                 };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = _fixture.RunDotnet(root, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+
 
                 // Assert
                 Assert.True(result.Success, result.Output + " " + result.Errors);
 
-                var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
-                var packageSourcesSection = settings.GetSection("packageSources");
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
 
-                var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
+                var sourceCredentialsSection = loadedSettings.GetSection("packageSourceCredentials");
+                var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
+                Assert.NotNull(credentialItem);
+
+                Assert.Equal("test_user_name", credentialItem.Username);
+
+                var password = EncryptionUtility.DecryptString(credentialItem.Password);
+                Assert.Equal("test_password", password);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WhenAddingSourceWithCredentialsInClearText_CredentialsWereAddedAndNotEncrypted()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source",
+                    "--username",
+                    "test_user_name",
+                    "--password",
+                    "test_password",
+                    "--store-password-in-clear-text",
+                    "--configfile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
+
+                var sourceCredentialsSection = loadedSettings.GetSection("packageSourceCredentials");
                 var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
                 Assert.NotNull(credentialItem);
 
@@ -372,8 +375,11 @@ namespace Dotnet.Integration.Test
         [Fact(Skip = "cutting verbosity Quiet for now. #6374 covers fixing it for `dotnet add package` too.")]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
-            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
                 // Arrange
                 var args = new string[]
                 {
@@ -384,22 +390,20 @@ namespace Dotnet.Integration.Test
                     "--name",
                     "test_source",
                     "--verbosity",
-                    "Quiet"
+                    "Quiet",
+                    "--configfile",
+                    settings.ConfigPath
                 };
-                var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
-                // Set the working directory to C:\, otherwise,
-                // the test will change the nuget.config at the code repo's root directory
-                // And, will fail since global nuget.config is updated
-                var result = _fixture.RunDotnet(root, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
                 // Ensure that no messages are shown with Verbosity as Quiet
                 Assert.Equal(string.Empty, result.Output);
-                var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                var packageSourcesSection = settings.GetSection("packageSources");
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
 
                 Assert.Equal("https://source.test", sourceItem.GetValueAsPath());

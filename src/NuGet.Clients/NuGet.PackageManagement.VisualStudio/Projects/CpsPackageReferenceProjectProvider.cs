@@ -55,6 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
             IVsProjectAdapter vsProject,
             ProjectProviderContext context,
@@ -107,6 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 vsProject.ProjectId);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static UnconfiguredProject GetUnconfiguredProject(EnvDTE.Project project)
         {
             var context = project as IVsBrowseObjectContext;

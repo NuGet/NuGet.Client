@@ -9,7 +9,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
     internal sealed class Arguments
     {
         internal bool CauseProtocolException { get; private set; }
-        internal bool Hang { get; private set; }
+        internal bool Freeze { get; private set; }
         internal ushort PortNumber { get; private set; }
         internal int TestRunnerProcessId { get; private set; }
         internal ThrowException ThrowException { get; private set; }
@@ -21,7 +21,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             arguments = null;
 
             var causeProtocolException = false;
-            var hang = false;
+            var freezeEnabled = false;
             ushort portNumber = 0;
             var testRunnerProcessId = 0;
             var isPlugin = false;
@@ -37,8 +37,8 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                         causeProtocolException = true;
                         break;
 
-                    case "-hang":
-                        hang = true;
+                    case "-freeze":
+                        freezeEnabled = true;
                         break;
 
                     case "-portnumber":
@@ -100,7 +100,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             arguments = new Arguments()
             {
                 CauseProtocolException = causeProtocolException,
-                Hang = hang,
+                Freeze = freezeEnabled,
                 PortNumber = portNumber,
                 TestRunnerProcessId = testRunnerProcessId,
                 ThrowException = throwException

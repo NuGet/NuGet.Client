@@ -14,13 +14,6 @@
     <AssemblyDescription>$(Description)</AssemblyDescription>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="NuGet.SolutionRestoreManager.Interop.targets">
-      <PackagePath>build</PackagePath>
-      <Pack>true</Pack>
-    </Content>
-  </ItemGroup>
-
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

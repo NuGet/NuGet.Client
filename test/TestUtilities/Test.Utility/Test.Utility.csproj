@@ -57,7 +57,7 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">

@@ -89,6 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Removes a reference via the DTE.
         /// </summary>
         /// <remarks>This is identical to VsProjectSystem.RemoveReference except in the way we process exceptions.</remarks>
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void RemoveDTEReference(string name)
         {
             // Get the reference name without extension

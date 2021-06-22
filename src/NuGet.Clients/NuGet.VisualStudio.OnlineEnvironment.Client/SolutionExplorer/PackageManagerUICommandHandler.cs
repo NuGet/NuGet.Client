@@ -25,6 +25,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Task = System.Threading.Tasks.Task;
@@ -137,7 +138,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         public void OpenPackageManagerUI(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
-            _joinableTaskFactory.RunAsync(() => OpenPackageManagerUIAsync(workspaceVisualNodeBase));
+            _joinableTaskFactory.RunAsync(() => OpenPackageManagerUIAsync(workspaceVisualNodeBase)).PostOnFailure(nameof(PackageManagerUICommandHandler));
         }
 
         private async Task OpenPackageManagerUIAsync(WorkspaceVisualNodeBase workspaceVisualNodeBase)

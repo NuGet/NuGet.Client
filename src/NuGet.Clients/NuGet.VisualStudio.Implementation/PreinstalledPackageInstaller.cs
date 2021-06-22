@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -167,6 +168,7 @@ namespace NuGet.VisualStudio
         /// An action that accepts an error message and presents it to the user, allowing
         /// execution to continue.
         /// </param>
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         internal async Task PerformPackageInstallAsync(
             IVsPackageInstaller packageInstaller,
             EnvDTE.Project project,

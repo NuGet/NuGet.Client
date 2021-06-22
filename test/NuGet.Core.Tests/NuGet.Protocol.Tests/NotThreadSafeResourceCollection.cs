@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace NuGet.Test.Utility
+namespace NuGet.Protocol.Tests
 {
     [CollectionDefinition(nameof(NotThreadSafeResourceCollection), DisableParallelization = true)]
     public class NotThreadSafeResourceCollection

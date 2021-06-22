@@ -20,46 +20,35 @@ namespace NuGetConsole.Implementation.Console
     [Export(typeof(IWpfConsoleService))]
     internal class WpfConsoleService : IWpfConsoleService
     {
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IContentTypeRegistryService ContentTypeRegistryService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IVsEditorAdaptersFactoryService VsEditorAdaptersFactoryService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IEditorOptionsFactoryService EditorOptionsFactoryService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal ICompletionBroker CompletionBroker { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal ITextFormatClassifierProvider TextFormatClassifierProvider { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal ITextEditorFactoryService TextEditorFactoryService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany(typeof(ICommandExpansionProvider))]
         internal List<Lazy<ICommandExpansionProvider, IHostNameMetadata>> CommandExpansionProviders { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany(typeof(ICommandTokenizerProvider))]
         internal List<Lazy<ICommandTokenizerProvider, IHostNameMetadata>> CommandTokenizerProviders { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         public IStandardClassificationService StandardClassificationService { get; set; }
 
         private readonly IPrivateConsoleStatus _privateConsoleStatus;
 
-        [SuppressMessage(
-            "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "MEF export")]
         [Export(typeof(IConsoleStatus))]
         public IConsoleStatus ConsoleStatus
         {

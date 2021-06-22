@@ -58,7 +58,7 @@ namespace NuGet.Configuration
 #if NET45
                 _bypassList = value ?? new string[] { };
 #else
-                _bypassList = Array.Empty<string>();
+                _bypassList = value ?? Array.Empty<string>();
 #endif
 
                 UpdateRegExList();

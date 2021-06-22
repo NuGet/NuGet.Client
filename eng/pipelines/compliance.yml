@@ -1,3 +1,6 @@
+# No CI trigger rely on Pipeline trigger only
+trigger: none
+
 resources:
   pipelines:
     - pipeline: nugetclientofficial
@@ -9,8 +12,8 @@ resources:
 jobs:
   - job: Static_Analysis
     displayName: "Static Analysis"
-    pool:
-      vmImage: windows-latest
+    timeoutInMinutes: 180
+    pool: VSEngStaticAnalysis
 
     steps:
       - task: CredScan@2
@@ -24,22 +27,43 @@ jobs:
           targetArgument: "$(Build.SourcesDirectory)"
           result: "PoliCheck.xml"
 
+      - task: DownloadPipelineArtifact@2
+        displayName: "Download symbols - NonRTM artifact"
+        inputs:
+          source: specific
+          project: 'devdiv'
+          pipeline: NuGet.Client-Official
+          artifact: "symbols - NonRTM"
+          path: $(Pipeline.Workspace)\symbols\NonRTM          
+
+      ## Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
+      - task: APIScan@2
+        displayName: Run APIScan
+        inputs:
+          softwareFolder: $(Pipeline.Workspace)\symbols
+          softwareName: 'NuGet.Client'
+          softwareVersionNum: '$(Build.BuildId)'
+          isLargeApp: true
+          toolVersion: 'Latest'
+        env:
+          AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
+
       - task: SdtReport@1
         displayName: "Generate Analysis Report"
         inputs:
           CredScan: true
           PoliCheck: true
+          APIScan: true
           ToolLogsNotFoundAction: "Standard"
 
       - task: TSAUpload@1
         displayName: "Upload to TSA"
         inputs:
           tsaVersion: "TsaV2"
-          codebase: "Existing"
+          codebase: "$(TsaCodebase)"
           tsaEnvironment: "PROD"
           codeBaseName: "$(TsaCodebaseName)"
           notificationAlias: "$(TsaNotificationEmail)"
-          notifyAlwaysV2: true
           codeBaseAdmins: "$(TsaCodebaseAdmins)"
           instanceUrlForTsaV2: "$(TsaInstanceUrl)"
           projectNameDEVDIV: "$(TsaProjectName)"
@@ -64,7 +88,7 @@ jobs:
           ArtifactType: "Container"
           AllTools: false
           AntiMalware: false
-          APIScan: false
+          APIScan: true
           BinSkim: false
           CodesignValidation: false
           CredScan: true

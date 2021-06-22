@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Tests;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;

@@ -55,6 +55,7 @@ namespace NuGet.Configuration
             if (element != null)
             {
                 settings.Remove(section, element);
+                settings.SaveToDisk();
 
                 return true;
             }

@@ -5,6 +5,7 @@ NuGet.Credentials.dll
 NuGet.PackageManagement.PowerShellCmdlets.dll
 NuGet.PackageManagement.VisualStudio.dll
 NuGet.SolutionRestoreManager.dll
+NuGet.SolutionRestoreManager.Interop.dll
 NuGet.Tools.dll
 NuGet.VisualStudio.dll
 NuGet.VisualStudio.Common.dll

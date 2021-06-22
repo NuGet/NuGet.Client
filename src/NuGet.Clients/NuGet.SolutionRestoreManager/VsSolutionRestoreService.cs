@@ -22,6 +22,7 @@ using NuGet.Shared;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -34,7 +35,8 @@ namespace NuGet.SolutionRestoreManager
     [Export(typeof(IVsSolutionRestoreService))]
     [Export(typeof(IVsSolutionRestoreService2))]
     [Export(typeof(IVsSolutionRestoreService3))]
-    public sealed class VsSolutionRestoreService : IVsSolutionRestoreService, IVsSolutionRestoreService2, IVsSolutionRestoreService3
+    [Export(typeof(IVsSolutionRestoreService4))]
+    public sealed class VsSolutionRestoreService : IVsSolutionRestoreService, IVsSolutionRestoreService2, IVsSolutionRestoreService3, IVsSolutionRestoreService4
     {
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
@@ -320,6 +322,12 @@ namespace NuGet.SolutionRestoreManager
             dgSpec.AddProject(packageSpec);
 
             return dgSpec;
+        }
+
+        public Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+            // TODO: https://github.com/NuGet/Home/issues/10678
         }
     }
 }

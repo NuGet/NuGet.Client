@@ -96,7 +96,6 @@ namespace NuGet.CommandLine
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "It's constructed using CreateInstanceAndUnwrap in another app domain")]
         private sealed class MetadataExtractor : MarshalByRefObject
         {
             private class AssemblyResolver

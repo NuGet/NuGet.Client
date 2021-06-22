@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
-using NuGet.Test.Utility;
+using NuGet.Protocol.Tests;
 using NuGet.Versioning;
 using Xunit;
 

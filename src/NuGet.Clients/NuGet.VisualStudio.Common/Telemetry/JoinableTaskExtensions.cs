@@ -15,7 +15,7 @@ namespace NuGet.VisualStudio.Telemetry
         /// <param name="callerMemberName"> Caller member name. </param>
         public static void PostOnFailure(this JoinableTask joinableTask, string callerClassName, [CallerMemberName] string callerMemberName = null)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            JoinableTask forget = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 try
                 {

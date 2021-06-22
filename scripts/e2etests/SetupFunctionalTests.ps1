@@ -1,8 +1,9 @@
 param (
-    [ValidateSet("16.0")]
-    [string]$VSVersion = "16.0")
+    [ValidateSet("17.0")]
+    [string]$VSVersion = "17.0")
 
  . "$PSScriptRoot\Utils.ps1"
+ . "$PSScriptRoot\VSUtils.ps1"
 
 function EnableWindowsDeveloperMode()
 {
@@ -52,6 +53,15 @@ Function SuppressNuGetUI([Parameter(Mandatory = $True)] [string] $registryValueN
     }
 }
 
+function  Set-VSINSTALLDIR
+{
+    $VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
+    $installationPath = $VSInstance.installationPath
+    Write-Host "Setting $$env:VSINSTALLDIR = $installationPath"
+    $env:VSINSTALLDIR = $installationPath
+    Write-Host "##vso[task.setvariable variable=VSINSTALLDIR]$installationPath"
+}
+
 trap
 {
     Write-Host $_.Exception -ForegroundColor Red
@@ -92,5 +102,6 @@ if (!(Test-Path $net35x86) -or !(Test-Path $net35x64))
 }
 
 EnableWindowsDeveloperMode
+Set-VSINSTALLDIR
 
 Write-Host 'THE END!'

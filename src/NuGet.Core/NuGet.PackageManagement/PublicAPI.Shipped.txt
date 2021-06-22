@@ -90,10 +90,8 @@ NuGet.PackageManagement.IInstallationCompatibility.EnsurePackageCompatibilityAsy
 NuGet.PackageManagement.IPackageProjectEventsProvider
 NuGet.PackageManagement.IPackageProjectEventsProvider.GetPackageProjectEvents() -> NuGet.PackageManagement.PackageProjectEvents
 NuGet.PackageManagement.IPackageRestoreManager
-NuGet.PackageManagement.IPackageRestoreManager.EnableCurrentSolutionForRestore(bool fromActivation) -> void
 NuGet.PackageManagement.IPackageRestoreManager.GetPackagesInSolutionAsync(string solutionDirectory, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>>
 NuGet.PackageManagement.IPackageRestoreManager.GetPackagesRestoreData(string solutionDirectory, System.Collections.Generic.Dictionary<NuGet.Packaging.PackageReference, System.Collections.Generic.List<string>> packageReferencesDict) -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>
-NuGet.PackageManagement.IPackageRestoreManager.IsCurrentSolutionEnabledForRestore.get -> bool
 NuGet.PackageManagement.IPackageRestoreManager.PackageRestoreFailedEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoreFailedEventArgs>
 NuGet.PackageManagement.IPackageRestoreManager.PackageRestoredEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoredEventArgs>
 NuGet.PackageManagement.IPackageRestoreManager.PackagesMissingStatusChanged -> System.EventHandler<NuGet.PackageManagement.PackagesMissingStatusEventArgs>
@@ -274,10 +272,8 @@ NuGet.PackageManagement.PackageRestoreFailedEventArgs.ProjectNames.get -> System
 NuGet.PackageManagement.PackageRestoreFailedEventArgs.RestoreFailedPackageReference.get -> NuGet.Packaging.PackageReference
 NuGet.PackageManagement.PackageRestoreManager
 NuGet.PackageManagement.PackageRestoreManager.ClearMissingEventForSolution() -> void
-NuGet.PackageManagement.PackageRestoreManager.EnableCurrentSolutionForRestore(bool fromActivation) -> void
 NuGet.PackageManagement.PackageRestoreManager.GetPackagesInSolutionAsync(string solutionDirectory, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>>
 NuGet.PackageManagement.PackageRestoreManager.GetPackagesRestoreData(string solutionDirectory, System.Collections.Generic.Dictionary<NuGet.Packaging.PackageReference, System.Collections.Generic.List<string>> packageReferencesDict) -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>
-NuGet.PackageManagement.PackageRestoreManager.IsCurrentSolutionEnabledForRestore.get -> bool
 NuGet.PackageManagement.PackageRestoreManager.PackageRestoreFailedEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoreFailedEventArgs>
 NuGet.PackageManagement.PackageRestoreManager.PackageRestoreManager(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceRepositoryProvider, NuGet.Configuration.ISettings settings, NuGet.PackageManagement.ISolutionManager solutionManager) -> void
 NuGet.PackageManagement.PackageRestoreManager.PackageRestoredEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoredEventArgs>

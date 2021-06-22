@@ -282,11 +282,16 @@ NuGet.Common.NuGetLogCode.NU5034 = 5034 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5035 = 5035 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5036 = 5036 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5037 = 5037 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5038 = 5038 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5039 = 5039 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5040 = 5040 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5041 = 5041 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5045 = 5045 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5046 = 5046 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5047 = 5047 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5048 = 5048 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5049 = 5049 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5050 = 5050 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5100 = 5100 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5101 = 5101 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5102 = 5102 -> NuGet.Common.NuGetLogCode
@@ -318,6 +323,7 @@ NuGet.Common.NuGetLogCode.NU5128 = 5128 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5129 = 5129 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5130 = 5130 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5131 = 5131 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5132 = 5132 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5500 = 5500 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5501 = 5501 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.Undefined = 0 -> NuGet.Common.NuGetLogCode
@@ -411,9 +417,6 @@ NuGet.Common.TelemetryActivity.EndIntervalMeasure(string propertyName) -> void
 NuGet.Common.TelemetryActivity.OperationId.get -> System.Guid
 NuGet.Common.TelemetryActivity.ParentId.get -> System.Guid
 NuGet.Common.TelemetryActivity.StartIntervalMeasure() -> void
-NuGet.Common.TelemetryActivity.TelemetryActivity(System.Guid parentId) -> void
-NuGet.Common.TelemetryActivity.TelemetryActivity(System.Guid parentId, System.Guid operationId) -> void
-NuGet.Common.TelemetryActivity.TelemetryActivity(System.Guid parentId, System.Guid operationId, NuGet.Common.TelemetryEvent telemetryEvent) -> void
 NuGet.Common.TelemetryActivity.TelemetryEvent.get -> NuGet.Common.TelemetryEvent
 NuGet.Common.TelemetryActivity.TelemetryEvent.set -> void
 NuGet.Common.TelemetryEvent
@@ -602,9 +605,6 @@ static NuGet.Common.TelemetryActivity.Create(NuGet.Common.TelemetryEvent telemet
 static NuGet.Common.TelemetryActivity.Create(System.Guid parentId, NuGet.Common.TelemetryEvent telemetryEvent) -> NuGet.Common.TelemetryActivity
 static NuGet.Common.TelemetryActivity.Create(System.Guid parentId, string eventName) -> NuGet.Common.TelemetryActivity
 static NuGet.Common.TelemetryActivity.Create(string eventName) -> NuGet.Common.TelemetryActivity
-static NuGet.Common.TelemetryActivity.CreateTelemetryActivityWithNewOperationId() -> NuGet.Common.TelemetryActivity
-static NuGet.Common.TelemetryActivity.CreateTelemetryActivityWithNewOperationId(System.Guid parentId) -> NuGet.Common.TelemetryActivity
-static NuGet.Common.TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(System.Guid parentId, string eventName) -> NuGet.Common.TelemetryActivity
 static NuGet.Common.TelemetryActivity.EmitTelemetryEvent(NuGet.Common.TelemetryEvent TelemetryEvent) -> void
 static NuGet.Common.TelemetryActivity.NuGetTelemetryService.get -> NuGet.Common.INuGetTelemetryService
 static NuGet.Common.TelemetryActivity.NuGetTelemetryService.set -> void
@@ -639,4 +639,3 @@ virtual NuGet.Common.LoggerBase.LogInformationSummary(string data) -> void
 virtual NuGet.Common.LoggerBase.LogMinimal(string data) -> void
 virtual NuGet.Common.LoggerBase.LogVerbose(string data) -> void
 virtual NuGet.Common.LoggerBase.LogWarning(string data) -> void
-virtual NuGet.Common.TelemetryActivity.Dispose(bool disposing) -> void

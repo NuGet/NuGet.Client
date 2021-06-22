@@ -26,12 +26,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" />
-    <PackageReference Include="Microsoft.VisualStudio.Utilities" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -116,6 +116,8 @@ NuGet.VisualStudio.Internal.Contracts.NuGetProjectKind.Unknown = 0 -> NuGet.Visu
 NuGet.VisualStudio.Internal.Contracts.NuGetServices
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.AlternatePackage.get -> NuGet.VisualStudio.Internal.Contracts.AlternatePackageMetadataContextInfo?
+NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.Message.get -> string?
+NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.PackageDeprecationMetadataContextInfo(string? message, System.Collections.Generic.IReadOnlyCollection<string!>? reasons, NuGet.VisualStudio.Internal.Contracts.AlternatePackageMetadataContextInfo? alternatePackageContextInfo) -> void
 NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo.Reasons.get -> System.Collections.Generic.IReadOnlyCollection<string!>?
 NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo
 NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.AllowedVersions.get -> NuGet.Versioning.VersionRange?
@@ -143,6 +145,7 @@ NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.PackageSe
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.PrefixReserved.get -> bool
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.ProjectUrl.get -> System.Uri?
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.Published.get -> System.DateTimeOffset?
+NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.ReadmeUrl.get -> System.Uri?
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.RecommenderVersion.get -> (string! modelVersion, string! vsixVersion)?
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.ReportAbuseUrl.get -> System.Uri?
 NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.RequireLicenseAcceptance.get -> bool

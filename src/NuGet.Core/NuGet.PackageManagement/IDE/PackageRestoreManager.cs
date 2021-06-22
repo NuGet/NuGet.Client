@@ -23,10 +23,6 @@ namespace NuGet.PackageManagement
 {
     public class PackageRestoreManager : IPackageRestoreManager
     {
-        private const string NuGetSolutionSettingsFolder = ".nuget";
-        private static readonly string NuGetExeFile = Path.Combine(NuGetSolutionSettingsFolder, "NuGet.exe");
-        private static readonly string NuGetTargetsFile = Path.Combine(NuGetSolutionSettingsFolder, "NuGet.targets");
-
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
         private ISolutionManager SolutionManager { get; }
         private ISettings Settings { get; }
@@ -43,31 +39,6 @@ namespace NuGet.PackageManagement
             SourceRepositoryProvider = sourceRepositoryProvider ?? throw new ArgumentNullException(nameof(sourceRepositoryProvider));
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
-        }
-
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        public bool IsCurrentSolutionEnabledForRestore
-        {
-            get
-            {
-                if (!SolutionManager.IsSolutionOpen)
-                {
-                    return false;
-                }
-
-                var solutionDirectory = SolutionManager.SolutionDirectory;
-
-                return string.IsNullOrEmpty(solutionDirectory)
-                    ? false
-                    : FileSystemUtility.FileExists(solutionDirectory, NuGetExeFile) &&
-                       FileSystemUtility.FileExists(solutionDirectory, NuGetTargetsFile);
-            }
-        }
-
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        public void EnableCurrentSolutionForRestore(bool fromActivation)
-        {
-            // See comment on Obsolete attribute. This method no-ops
         }
 
         public virtual async Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token)

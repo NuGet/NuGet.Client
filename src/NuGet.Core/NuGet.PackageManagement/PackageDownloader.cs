@@ -98,6 +98,24 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
+                bool isPackageNamespaceEnabled = downloadContext.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
+                IReadOnlyList<string> configuredPackageSources = null;
+
+                if (isPackageNamespaceEnabled)
+                {
+                    configuredPackageSources = downloadContext.PackageNamespacesConfiguration.GetConfiguredPackageSources(packageIdentity.Id);
+
+                    if (configuredPackageSources != null)
+                    {
+                        var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                        logger.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
+                    }
+                    else
+                    {
+                        logger.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(packageIdentity.Id));
+                    }
+                }
+
                 while (groups.Count > 0)
                 {
                     token.ThrowIfCancellationRequested();
@@ -105,8 +123,18 @@ namespace NuGet.PackageManagement
                     var sourceGroup = groups.Dequeue();
                     var tasks = new List<Task<DownloadResourceResult>>();
 
-                    foreach (var source in sourceGroup)
+                    foreach (SourceRepository source in sourceGroup)
                     {
+                        if (isPackageNamespaceEnabled)
+                        {
+                            if (configuredPackageSources != null &&
+                                !configuredPackageSources.Contains(source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                            {
+                                // This package's id prefix is not defined in current package source, let's skip.
+                                continue;
+                            }
+                        }
+
                         var task = GetDownloadResourceResultAsync(
                             source,
                             packageIdentity,

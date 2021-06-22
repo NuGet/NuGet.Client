@@ -65,6 +65,8 @@ namespace NuGet.Client
                 AnyFramework.Instance )
         });
 
+        private static readonly FrameworkReducer FrameworkReducer = new();
+
         private RuntimeGraph _runtimeGraph;
 
         private Dictionary<string, NuGetFramework> _frameworkCache
@@ -268,11 +270,10 @@ namespace NuGet.Client
                 // If the frameworks are the same this can be skipped
                 if (!criteriaFrameworkName.Equals(availableFrameworkName))
                 {
-                    var reducer = new FrameworkReducer();
                     var frameworks = new NuGetFramework[] { criteriaFrameworkName, availableFrameworkName };
 
                     // Find the nearest compatible framework to the project framework.
-                    var nearest = reducer.GetNearest(projectFrameworkName, frameworks);
+                    var nearest = FrameworkReducer.GetNearest(projectFrameworkName, frameworks);
 
                     if (criteriaFrameworkName.Equals(nearest))
                     {

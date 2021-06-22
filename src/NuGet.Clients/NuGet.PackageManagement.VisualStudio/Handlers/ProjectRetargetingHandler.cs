@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -131,6 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async System.Threading.Tasks.Task ShowWarningsForPackageReinstallationAsync(Solution solution)
         {
             Debug.Assert(solution != null);
@@ -326,7 +328,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         _dte.Events.BuildEvents.OnBuildBegin -= BuildEvents_OnBuildBegin;
                         _dte.Events.SolutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
                     }
-                });
+                }).PostOnFailure(nameof(ProjectRetargetingHandler));
             }
         }
     }

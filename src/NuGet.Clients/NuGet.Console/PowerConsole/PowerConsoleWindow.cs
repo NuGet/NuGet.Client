@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -121,7 +120,7 @@ namespace NuGetConsole.Implementation.PowerConsole
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
+                var vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell, IVsUIShell>(throwOnFailure: false);
                 if (vsUIShell != null)
                 {
                     var guid = typeof(PowerConsoleToolWindow).GUID;

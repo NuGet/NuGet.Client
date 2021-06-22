@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
 using Task = System.Threading.Tasks.Task;
 
@@ -346,7 +347,9 @@ namespace NuGetConsole.Implementation.Console
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.END);
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.RETURN);
 
-                                WpfConsole.EndInputLine();
+                                NuGetUIThreadHelper.JoinableTaskFactory
+                                    .RunAsync(() => EndInputLineAsync(WpfConsole))
+                                    .PostOnFailure(nameof(WpfConsoleKeyProcessor));
                             }
                             hr = VSConstants.S_OK;
                             break;
@@ -360,7 +363,8 @@ namespace NuGetConsole.Implementation.Console
                                 }
                                 else
                                 {
-                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); });
+                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); })
+                                                                           .PostOnFailure(nameof(WpfConsoleKeyProcessor));
                                 }
                             }
                             hr = VSConstants.S_OK;
@@ -389,6 +393,12 @@ namespace NuGetConsole.Implementation.Console
                 }
             }
             return hr;
+        }
+
+        private static Task EndInputLineAsync(WpfConsole wpfConsole)
+        {
+            wpfConsole.EndInputLine();
+            return Task.CompletedTask;
         }
 
         private VsKeyInfo GetVsKeyInfo(IntPtr pvaIn, VSConstants.VSStd2KCmdID commandID)

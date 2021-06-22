@@ -9,6 +9,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class DTESourceControlUtility
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public static void EnsureCheckedOutIfExists(SourceControl sourceControl, string fullPath)
         {
             if (File.Exists(fullPath))

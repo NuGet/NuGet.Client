@@ -62,7 +62,7 @@ namespace NuGet.VisualStudio
 
             // then try to find the service as a component model, then try dte then lastly try global service
             // Per bug #2072, avoid calling GetGlobalService() from within the Initialize() method of NuGetPackage class.
-            // Doing so is illegal and may cause VS to hang. As a result of that, we defer calling GetGlobalService to the last option.
+            // Doing so is illegal and may make VS to stop responding. As a result of that, we defer calling GetGlobalService to the last option.
             var serviceFromDTE = await GetDTEServiceAsync<TService>();
             if (serviceFromDTE != null)
             {
@@ -140,7 +140,7 @@ namespace NuGet.VisualStudio
             return GetServiceProviderFromDTE(dte);
         }
 
-        private static object QueryService(_DTE dte, Type serviceType)
+        private static object QueryService(DTE dte, Type serviceType)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Guid guidService = serviceType.GUID;
@@ -168,7 +168,7 @@ namespace NuGet.VisualStudio
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The caller is responsible for disposing this")]
-        private static IServiceProvider GetServiceProviderFromDTE(_DTE dte)
+        private static IServiceProvider GetServiceProviderFromDTE(DTE dte)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             IServiceProvider serviceProvider = new ServiceProvider(dte as VsServiceProvider);

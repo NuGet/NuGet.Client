@@ -4,6 +4,7 @@
 using System.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,7 +40,7 @@ namespace NuGet.PackageManagement.UI
 
                 await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
                 SetStatus(VsSearchTaskStatus.Completed);
-            });
+            }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
         }
 
         public uint Id { get; private set; }

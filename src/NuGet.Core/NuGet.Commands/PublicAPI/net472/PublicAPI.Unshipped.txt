@@ -2,3 +2,4 @@ NuGet.Commands.LockFileBuilder.CreateLockFile(NuGet.ProjectModel.LockFile previo
 NuGet.Commands.RestoreRequest.RestoreRequest(NuGet.ProjectModel.PackageSpec project, NuGet.Commands.RestoreCommandProviders dependencyProviders, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Packaging.Signing.ClientPolicyContext clientPolicyContext, NuGet.Common.ILogger log, NuGet.Commands.LockFileBuilderCache lockFileBuilderCache) -> void
 NuGet.Commands.SignArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.Commands.SignArgs.PackagePaths.set -> void
+static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion, string clrSupport) -> NuGet.Frameworks.NuGetFramework
