@@ -68,13 +68,13 @@ Function InitializeAllTestsToPending {
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsDesktop" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
         Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsCore" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
-    if($env:RunCrossVerifyTestsOnWindows -eq "true")
+    if($env:RunCrossFrameworkTestsOnWindows -eq "true")
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "CrossVerify_Tests_On_Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "CrossFramework_Tests_On_Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     }
     else
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "CrossVerify_Tests_On_Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "CrossFramework_Tests_On_Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
     if($env:RunTestsOnMac -eq "true")
     {

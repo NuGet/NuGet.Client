@@ -42,9 +42,9 @@ steps:
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: DownloadBuildArtifacts@0
-  displayName: "Download NuGet.CommandLine.Test artifacts"
+  displayName: "Download Build artifacts"
   inputs:
-    artifactName: "NuGet.CommandLine.Test"
+    artifactName: "$(VsixPublishDir)"
     downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
 - task: PublishTestResults@2
