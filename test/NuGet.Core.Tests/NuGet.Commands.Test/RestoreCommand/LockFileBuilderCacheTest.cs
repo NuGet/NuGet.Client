@@ -26,32 +26,18 @@ namespace NuGet.Commands.Test
     public class LockFileBuilderCacheTest
     {
         [Theory]
-        [InlineData(false, false)]
-        [InlineData(true, true)]
-        public async Task LockFileBuilderCache_DifferentPackageContent_WillNotCache(bool identicalContent, bool cachingIsExpected)
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public async Task LockFileBuilderCache_DifferentPackagePath_WillNotCache(bool differentPath, bool cachingIsExpected)
         {
             // Arrange
             using (var tmpPath = new SimpleTestPathContext())
             {
-                var packageA1 = new SimpleTestPackageContext
+                var packageA = new SimpleTestPackageContext
                 {
                     Id = "PackageA",
                     Version = "1.0.0",
                 };
-
-                var packageA2 = new SimpleTestPackageContext
-                {
-                    Id = "PackageA",
-                    Version = "1.0.0",
-                };
-
-                // It is possible for different projects to use different NuGet configurations, so in consequence they can use different package sources.
-                // It is also possible that packages with the same identity (name and version) can have different content if it comes from two different sources.
-                // So to test whether the LockFileBuilderCache properly supports this scenario we create two packages with same identity but different lib content.
-                if (!identicalContent)
-                {
-                    packageA2.Files.Add(new KeyValuePair<string, byte[]>("Foo.txt", System.Array.Empty<byte>()));
-                }
 
                 var logger = new TestLogger();
                 var lockFileBuilderCache = new LockFileBuilderCache();
@@ -59,13 +45,11 @@ namespace NuGet.Commands.Test
                 var project2Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Library2"));
                 var globalPackages1 = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "globalPackages1"));
                 var globalPackages2 = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "globalPackages2"));
-                var package1Source = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource1"));
-                var package2Source = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource2"));
+                var packageSource = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource"));
 
                 globalPackages1.Create();
                 globalPackages2.Create();
-                package1Source.Create();
-                package2Source.Create();
+                packageSource.Create();
 
                 var project1Spec = PackageReferenceSpecBuilder.Create("Library1", project1Directory.FullName)
                     .WithTargetFrameworks(new[]
@@ -105,17 +89,13 @@ namespace NuGet.Commands.Test
                     })
                     .Build();
 
-                var sources1 = new[] { new PackageSource(package1Source.FullName) }
-                    .Select(source => Repository.Factory.GetCoreV3(source))
-                    .ToList();
-
-                var sources2 = new[] { new PackageSource(package2Source.FullName) }
+                var sources = new[] { new PackageSource(packageSource.FullName) }
                     .Select(source => Repository.Factory.GetCoreV3(source))
                     .ToList();
 
                 var request1 = new TestRestoreRequest(
                     project1Spec,
-                    sources1,
+                    sources,
                     globalPackages1.FullName,
                     new List<string>(),
                     new TestSourceCacheContext(),
@@ -127,8 +107,8 @@ namespace NuGet.Commands.Test
 
                 var request2 = new TestRestoreRequest(
                     project2Spec,
-                    sources2,
-                    globalPackages2.FullName,
+                    sources,
+                    differentPath ? globalPackages2.FullName : globalPackages1.FullName,
                     new List<string>(),
                     new TestSourceCacheContext(),
                     ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
@@ -138,12 +118,8 @@ namespace NuGet.Commands.Test
                 { LockFilePath = Path.Combine(project2Directory.FullName, "project.lock.json") };
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(
-                    package1Source.FullName,
-                    packageA1);
-
-                await SimpleTestPackageUtility.CreatePackagesAsync(
-                    package2Source.FullName,
-                    packageA2);
+                    packageSource.FullName,
+                    packageA);
 
                 // Act
                 var command1 = new RestoreCommand(request1);

@@ -22,14 +22,14 @@ namespace NuGet.Commands
     {
         // Package files
         private readonly ConcurrentDictionary<(string Id, NuGetVersion Version, string sha512), ContentItemCollection> _contentItems
-            = new ConcurrentDictionary<(string Id, NuGetVersion Version, string sha512), ContentItemCollection>();
+            = new();
 
         // OrderedCriteria is stored per target graph + override framework.
         private readonly ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>> _criteriaSets =
-            new ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>>();
+            new();
 
-        private readonly ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), string, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>> _lockFileTargetLibraryCache =
-            new ConcurrentDictionary<(CriteriaKey, (string Id, NuGetVersion Version, string sha512), string, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>>();
+        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>> _lockFileTargetLibraryCache =
+            new();
 
         /// <summary>
         /// Get ordered selection criteria.
@@ -83,8 +83,8 @@ namespace NuGet.Commands
 
             localPackageInfo = localPackageInfo ?? throw new ArgumentNullException(nameof(localPackageInfo));
             var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
-            var package = (localPackageInfo.Id, localPackageInfo.Version, localPackageInfo.Sha512);
-            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, package, aliases, libraryIncludeFlags),
+            var packagePath = localPackageInfo.ExpandedPath;
+            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, packagePath, aliases, libraryIncludeFlags),
                 key => new Lazy<LockFileTargetLibrary>(valueFactory)).Value;
         }
 
