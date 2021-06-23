@@ -166,3 +166,18 @@ jobs:
 
   steps:
   - template: Apex_Tests_On_Windows.yml
+
+- job: Source_Build
+  dependsOn:
+  - Initialize_Build
+  timeoutInMinutes: 120
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    BuildRTM: "false"
+  pool:
+    vmImage: ubuntu-latest
+    demands: sh
+  steps:
+  - template: Source_Build.yml
