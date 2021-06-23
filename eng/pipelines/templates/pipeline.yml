@@ -108,12 +108,6 @@ jobs:
     demands:
         - DotNetFramework
         - msbuild
-  strategy:
-    matrix:
-      IsDesktop:
-        SkipCoreAssemblies: "true"
-      IsCore:
-        SkipDesktopAssemblies: "true"
 
   steps:
   - template: CrossFramework_Tests_On_Windows.yml

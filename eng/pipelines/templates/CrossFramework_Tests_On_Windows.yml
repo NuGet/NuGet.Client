@@ -1,12 +1,11 @@
 steps:
 - task: PowerShell@2
-  displayName: "Update Build Number"
+  displayName: "Print Environment Variables"
   inputs:
     targetType: "inline"
     script: |
       Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
-    failOnStderr: "true"
-  condition: "always()"
+      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
 - task: PowerShell@1
   displayName: "Run Configure.ps1"
