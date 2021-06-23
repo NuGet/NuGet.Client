@@ -4,7 +4,7 @@ steps:
   inputs:
     targetType: "inline"
     script: |
-      Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
+      Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
 - task: PowerShell@1
