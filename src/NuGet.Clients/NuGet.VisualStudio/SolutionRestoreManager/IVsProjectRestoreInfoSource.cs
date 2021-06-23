@@ -25,7 +25,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Whether the source needs to do some work that could lead to a nomination. <br/>
         /// Called frequently, so it should be very efficient.
-        /// </summary> 
+        /// </summary>
         bool HasPendingNomination { get; }
 
         /// <summary>

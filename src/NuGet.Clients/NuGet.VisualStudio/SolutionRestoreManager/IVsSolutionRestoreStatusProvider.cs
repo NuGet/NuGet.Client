@@ -19,7 +19,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// IsRestoreCompleteAsync indicates whether or not automatic package restore has pending work.
         /// Automatic package restore applies for both packages.config and PackageReference projects.
-        /// 
+        ///
         /// Returns true if all projects in the solution that require nomination have been nominated for restore and all pending restores have completed.
         /// The result does not indicate that restore completed successfully, a failed restore will still return true.
         /// </summary>
