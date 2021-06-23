@@ -14,7 +14,7 @@ steps:
 - task: DownloadBuildArtifacts@0
   displayName: "Download Build artifacts"
   inputs:
-    artifactName: "$(VsixPublishDir)"
+    artifactName: "VS15"
     downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
 - task: MSBuild@1
@@ -28,7 +28,7 @@ steps:
   displayName: "Bootstrap.ps1"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
+    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
 
 - task: PowerShell@1
   displayName: "SetupFunctionalTests.ps1"
@@ -39,7 +39,7 @@ steps:
   displayName: "InstallNuGetVSIX.ps1"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/InstallNuGetVSIX.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir) -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -ProcessExitTimeoutInSeconds 180"
+    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -ProcessExitTimeoutInSeconds 180"
     failOnStandardError: "false"
 
 # - task: PowerShell@1

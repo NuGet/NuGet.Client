@@ -269,7 +269,7 @@ steps:
 - task: MicroBuildCodesignVerify@3
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
   inputs:
-    TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
+    TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
 
@@ -302,7 +302,7 @@ steps:
   displayName: "Create EndToEnd Test Package"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
     failOnStandardError: "true"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -325,8 +325,8 @@ steps:
   inputs:
     channelName: "$(VsTargetChannel)"
     vsMajorVersion: "$(VsTargetMajorVersion)"
-    manifests: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)\Microsoft.VisualStudio.NuGet.Core.vsman'
-    outputFolder: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)'
+    manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+    outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
   continueOnError: true
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -383,7 +383,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
   inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
     ArtifactName: "$(VsixPublishDir)"
     ArtifactType: "Container"
 
@@ -425,7 +425,7 @@ steps:
   inputs:
     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
     buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
-    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
     toLowerCase: false
     usePat: true
     dropMetadataContainerName: "DropMetadata-Product"
