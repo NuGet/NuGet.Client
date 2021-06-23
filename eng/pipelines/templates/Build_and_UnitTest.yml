@@ -278,7 +278,7 @@ steps:
 - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
   inputs:
-    TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
+    TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
     WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
@@ -312,7 +312,7 @@ steps:
   displayName: "Create EndToEnd Test Package"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
     failOnStandardError: "true"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
@@ -335,8 +335,8 @@ steps:
   inputs:
     channelName: "$(VsTargetChannel)"
     vsMajorVersion: "$(VsTargetMajorVersion)"
-    manifests: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)\Microsoft.VisualStudio.NuGet.Core.vsman'
-    outputFolder: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)'
+    manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+    outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
   continueOnError: true
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -393,7 +393,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
   inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
     ArtifactName: "$(VsixPublishDir)"
     ArtifactType: "Container"
 
@@ -461,7 +461,7 @@ steps:
 - task: MicroBuildUploadVstsDropFolder@1
   displayName: "Upload VSTS Drop"
   inputs:
-    DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
