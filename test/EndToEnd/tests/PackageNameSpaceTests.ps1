@@ -1,11 +1,9 @@
-function Test-PackageNameSpaceRestore
+function Test-PackageNameSpaceRestore-Succeed
 {
     param($context)
 
     # Arrange
-    $repoDirectory = Join-Path $OutputPath "CustomPackages"
-    $opensourceRepo = Join-Path $repoDirectory "opensourceRepo"
-    $privateRepo = Join-Path $repoDirectory "privateRepo"
+    $repoDirectory = $context.RepositoryRoot
     $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
 
     $settingFileContent =@"
@@ -13,23 +11,19 @@ function Test-PackageNameSpaceRestore
 <configuration>
     <packageSources>
     <clear />
-    <add key="PublicRepository" value="{0}" />
-    <add key="PrivateRepository" value="{1}" />
+    <add key="ReadyPackages" value="{0}" />
     </packageSources>
     <packageNamespaces>
-        <packageSource key="PublicRepository"> 
-            <namespace id="Contoso.Opensource.*" />
-        </packageSource>
-        <packageSource key="PrivateRepository">
-            <namespace id="Contoso.MVC.*" />
+        <packageSource key="ReadyPackages">
+            <namespace id="Soluti*" />
         </packageSource>
     </packageNamespaces>
 </configuration>
-"@    
+"@
+  
     try {
-
         # We have to create config file before creating solution, otherwise it's not effective for new solutions.
-        $settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+        $settingFileContent -f $repoDirectory | Out-File -Encoding "UTF8" $nugetConfigPath
     
         $p = New-ConsoleApplication
     
@@ -39,38 +33,26 @@ function Test-PackageNameSpaceRestore
         $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
         # Write a file to disk, but do not add it to project
         '<packages>
-            <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
-            <package id="Contoso.Opensource.Buffers" version="2.0.0" targetFramework="net461" />
-            <package id="Foo" version="1.0.0" targetFramework="net461" />
+            <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net461" />
     </packages>' | out-file $packagesConfigPath
-    
-    
-        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo
-        CreateCustomTestPackage "Contoso.Opensource.Buffers" "2.0.0" $opensourceRepo
-        CreateCustomTestPackage "Foo" "1.0.0" $opensourceRepo
     
         # Act
         Build-Solution
     
-        # Assert   
-    
+        # Assert
         $packagesFolder = Join-Path $solutionDirectory "packages"
-        $contosoMVCNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
-        Assert-PathExists(Join-Path $contosoMVCNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
-        $contosoOpenSourceNupkgFolder = Join-Path $packagesFolder "Contoso.Opensource.Buffers.2.0.0"
-        Assert-PathExists(Join-Path $contosoOpenSourceNupkgFolder "Contoso.Opensource.Buffers.2.0.0.nupkg")
+        $solutionLevelPkgNupkgFolder = Join-Path $packagesFolder "SolutionLevelPkg.1.0.0"
+        Assert-PathExists(Join-Path $solutionLevelPkgNupkgFolder "SolutionLevelPkg.1.0.0.nupkg")
         
         $errorlist = Get-Errors
         Assert-AreEqual 0 $errorlist.Count
     }
     finally {
-        Remove-Item -Recurse -Force $repoDirectory
         Remove-Item $nugetConfigPath
     }
-
 }
 
-function Test-PackageNameSpaceIdenticalPackageIdsRestoreCorrectPackage
+function Test-PackageNameSpaceIdenticalPackageIdsRestore-CorrectPackage
 {
     param($context)
 
@@ -109,7 +91,6 @@ function Test-PackageNameSpaceIdenticalPackageIdsRestoreCorrectPackage
         '<packages>
             <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
     </packages>' | out-file $packagesConfigPath
-
 
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo.txt"
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo.txt"
@@ -132,62 +113,6 @@ function Test-PackageNameSpaceIdenticalPackageIdsRestoreCorrectPackage
         Remove-Item -Recurse -Force $repoDirectory
         Remove-Item $nugetConfigPath
     }
-}
-
-function Test-NoPackageNameSpaceSectionRestoreNormally
-{
-    param($context)
-
-    # Arrange
-    $repoDirectory = Join-Path $OutputPath "CustomPackages"
-    $opensourceRepo = Join-Path $repoDirectory "opensourceRepo"
-    $privateRepo = Join-Path $repoDirectory "privateRepo"
-    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
-
-	$settingFileContent =@"
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-    <packageSources>
-    <clear />
-    <add key="OpensourceRepository" value="{0}" />
-    <add key="PrivateRepository" value="{1}" />
-    </packageSources>
-</configuration>
-"@
-    try {
-        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
-        $settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
-
-        $p = New-ConsoleApplication
-
-        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
-        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
-        # Write a file to disk, but do not add it to project
-        '<packages>
-            <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
-    </packages>' | out-file $packagesConfigPath
-
-
-        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo.txt"
-        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo.txt"
-
-        # Act
-        Build-Solution
-
-        # Assert   
-        $packagesFolder = Join-Path $solutionDirectory "packages"
-        $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
-        Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
-
-        $errorlist = Get-Errors
-        Assert-AreEqual 0 $errorlist.Count
-    }
-    finally {
-        Remove-Item -Recurse -Force $repoDirectory
-        Remove-Item $nugetConfigPath
-    }    
 }
 
 # Create a custom test package 
