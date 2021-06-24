@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
@@ -138,6 +138,15 @@ namespace NuGet.Build.Tasks {
         public static string InstallCommandNothingToInstall {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The solution did not have any projects to restore, ensure that all projects are known to be MSBuild and that the projects exist..
+        /// </summary>
+        public static string Log_NoProjectsForRestore {
+            get {
+                return ResourceManager.GetString("Log_NoProjectsForRestore", resourceCulture);
             }
         }
         

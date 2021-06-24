@@ -104,6 +104,12 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
+            if (dependencyGraphSpec.Restore.Count == 0)
+            {
+                MSBuildLogger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
+                return true;
+            }
+
             try
             {
                 return await BuildTasksUtility.RestoreAsync(

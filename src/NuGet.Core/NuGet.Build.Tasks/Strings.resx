@@ -180,4 +180,7 @@
     <comment>0 - number of projects not known to msbuild
 1 - list of projects</comment>
   </data>
+  <data name="Log_NoProjectsForRestore" xml:space="preserve">
+    <value>The solution did not have any projects to restore, ensure that all projects are known to be MSBuild and that the projects exist.</value>
+  </data>
 </root>
