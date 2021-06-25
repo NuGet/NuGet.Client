@@ -203,7 +203,10 @@ namespace NuGet.ContentModel.Infrastructure
                                     Path = path
                                 };
                             }
-                            item.Properties.Add(_token + "_raw", substring);
+                            if (StringComparer.Ordinal.Equals(_token, "tfm"))
+                            {
+                                item.Properties.Add("tfm_raw", substring);
+                            }
                             item.Properties.Add(_token, value);
                         }
                         endIndex = delimiterIndex;
