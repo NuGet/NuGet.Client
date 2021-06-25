@@ -352,7 +352,7 @@ namespace NuGet.PackageManagement.UI
             // makes sure we update using the relevant one.
             if (currentLoader == _loader)
             {
-                UpdatePackageList(loadedItems, refresh: false);
+                await UpdatePackageList(loadedItems, refresh: false);
             }
 
             token.ThrowIfCancellationRequested();
@@ -375,7 +375,7 @@ namespace NuGet.PackageManagement.UI
                 && !loadedItems.Any()
                 && currentLoader.State.LoadingStatus == LoadingStatus.Ready)
             {
-                UpdatePackageList(currentLoader.GetCurrent(), refresh: false);
+                await UpdatePackageList(currentLoader.GetCurrent(), refresh: false);
             }
 
             token.ThrowIfCancellationRequested();
@@ -502,11 +502,10 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="packages">Packages collection to add</param>
         /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
-        private void UpdatePackageList(IEnumerable<PackageItemViewModel> packages, bool refresh)
+        private async Task UpdatePackageList(IEnumerable<PackageItemViewModel> packages, bool refresh)
         {
-
             // Synchronize updating Items list
-            _list.ItemsLock.ExecuteAsync(async () =>
+            await _list.ItemsLock.ExecuteAsync(async () =>
             {
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
@@ -517,8 +516,8 @@ namespace NuGet.PackageManagement.UI
                         ClearPackageList();
                     }
 
-                        // add newly loaded items
-                        foreach (var package in packages)
+                    // add newly loaded items
+                    foreach (var package in packages)
                     {
                         package.PropertyChanged += Package_PropertyChanged;
                         ViewModel.Collection.Add(package);
@@ -679,7 +678,7 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                     LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
-                );
+                ).PostOnFailure(nameof(InfiniteScrollList));
             }
         }
 
@@ -721,7 +720,7 @@ namespace NuGet.PackageManagement.UI
         private void _loadingStatusBar_ShowMoreResultsClick(object sender, RoutedEventArgs e)
         {
             var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemViewModel>();
-            UpdatePackageList(packageItems, refresh: true);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => UpdatePackageList(packageItems, refresh: true));
             _loadingStatusBar.ItemsLoaded = _loader?.State.ItemsCount ?? 0;
 
             var desiredVisibility = EvaluateStatusBarVisibility(_loader, _loader.State);
