@@ -66,11 +66,6 @@ namespace NuGet.Configuration
                 currentNode = currentNode.Children[c];
             }
 
-            if (string.IsNullOrEmpty(currentNode.NamespaceId))
-            {
-                currentNode.NamespaceId = namespaceId;
-            }
-
             if (currentNode.PackageSources == null)
             {
                 currentNode.PackageSources = new List<string>();
@@ -120,8 +115,7 @@ namespace NuGet.Configuration
                 }
             }
 
-            // Full term match.
-            if (i == term.Length && currentNode.IsValueNode)
+            if (i == term.Length && currentNode.PackageSources != null)
             {
                 return currentNode.PackageSources;
             }

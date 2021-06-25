@@ -8,9 +8,7 @@ namespace NuGet.Configuration
     internal class SearchNode
     {
         public readonly Dictionary<char, SearchNode> Children;
-        public bool IsValueNode => !string.IsNullOrWhiteSpace(NamespaceId);
         public bool IsGlobbing { get; set; }
-        public string NamespaceId { get; set; }
         public List<string> PackageSources;
 
         public SearchNode()
