@@ -744,15 +744,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (project != default && project is PackageReferenceProject prProject)
             {
-                IList<ProjectModel.LockFileTarget> fxGraphList = await prProject.GetFullRestoreGraphAsync(ct);
+                IList<ProjectModel.LockFileTarget> fwGraphList = await prProject.GetFullRestoreGraphAsync(ct);
 
-                if (fxGraphList != null)
+                if (fwGraphList != null)
                 {
                     var pkgs = await GetInstalledAndTransitivePackagesAsync(singleProjectId, ct);
 
                     var visited = new HashSet<object>();
+                    var memory = new Dictionary<object, bool>();
 
-                    foreach (var targetFxGraph in fxGraphList)
+                    foreach (var targetFxGraph in fwGraphList)
                     {
                         var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
                         var list = new List<IPackageReferenceContextInfo>();
@@ -760,7 +761,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         foreach (var directPkg in pkgs.InstalledPackages) // are InstalledPackages direct dependencies only? Yes!
                         {
                             visited.Clear();
-                            var found = FindTransitive(directPkg.Identity, transitivePackage, targetFxGraph, visited);
+                            memory.Clear();
+                            var found = FindTransitive(directPkg.Identity, transitivePackage, targetFxGraph, visited, memory);
                             if (found)
                             {
                                 list.Add(directPkg);
@@ -778,33 +780,43 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageOrigins;
         }
 
-        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, ProjectModel.LockFileTarget graph, HashSet<object> visited)
+        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, ProjectModel.LockFileTarget graph, HashSet<object> visited, Dictionary<object, bool> memory)
         {
             if (current.Equals(transitivePackage))
             {
+                memory[current] = true;
                 return true;
             }
 
             var node = graph
                 .Libraries
-                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version))
+                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version) && x.Type == "package")
                 .FirstOrDefault();
-
-            visited.Add(node);
 
             if (node != default)
             {
+                visited.Add(current);
                 foreach (var dep in node.Dependencies)
                 {
-                    bool found = FindTransitive(new PackageIdentity(dep.Id, dep.VersionRange.MinVersion), transitivePackage, graph, visited);
+                    var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
 
-                    if (found)
+                    if (visited.Contains(pkgChild))
                     {
-                        return true;
+                        return memory[pkgChild];
+                    }
+                    else
+                    {
+                        bool found = FindTransitive(pkgChild, transitivePackage, graph, visited, memory);
+
+                        if (found)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
 
+            memory[current] = false;
             return false;
         }
     }

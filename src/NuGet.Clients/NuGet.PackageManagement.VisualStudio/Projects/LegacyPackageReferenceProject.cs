@@ -496,25 +496,5 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             };
         }
-
-        internal override async Task<IList<LockFileTarget>> GetFullRestoreGraphAsync(CancellationToken token)
-        {
-            token.ThrowIfCancellationRequested();
-
-            string assetsFilePath = await GetAssetsFilePathAsync();
-            var fileInfo = new FileInfo(assetsFilePath);
-
-            if (fileInfo.Exists)
-            {
-                await TaskScheduler.Default;
-                LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
-                if (!(lockFile is null))
-                {
-                    return lockFile.Targets;
-                }
-            }
-
-            return null;
-        }
     }
 }

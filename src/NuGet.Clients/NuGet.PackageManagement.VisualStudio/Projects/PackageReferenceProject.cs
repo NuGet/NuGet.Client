@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio.Utility;
@@ -91,6 +94,24 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="token">Cancellation token</param>
         /// <returns>A list, one element for each framework restored, or <c>null</c> if project.assets.json file is not found</returns>
         /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
-        internal abstract Task<IList<LockFileTarget>> GetFullRestoreGraphAsync(CancellationToken token);
+        internal async Task<IList<LockFileTarget>> GetFullRestoreGraphAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            string assetsFilePath = await GetAssetsFilePathAsync();
+            var fileInfo = new FileInfo(assetsFilePath);
+
+            if (fileInfo.Exists)
+            {
+                await TaskScheduler.Default;
+                LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                if (!(lockFile is null))
+                {
+                    return lockFile.Targets;
+                }
+            }
+
+            return null;
+        }
     }
 }
