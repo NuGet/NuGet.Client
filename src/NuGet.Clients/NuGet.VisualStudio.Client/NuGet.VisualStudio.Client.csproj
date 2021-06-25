@@ -206,6 +206,12 @@
       <NgenArchitecture>All</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj">
+      <Project>{4003e1ab-70de-4b9c-8999-96160ee91d84}</Project>
+      <Name>NuGet.SolutionRestoreManager.Interop</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.Tools\NuGet.Tools.csproj">
       <Project>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</Project>
       <Name>NuGet.Tools</Name>
@@ -335,8 +341,7 @@
     <!-- This is important because otherwise the VSSDK will include the unsigned version coming from the global packages folder instead of the in-place signed one from the bootstrapped packages folder -->
     <PackageReference Include="Lucene.Net" ExcludeAssets="all" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="SharpZipLib" ExcludeAssets="all" />
-    <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
+    <PackageReference Include="SharpZipLib" ExcludeAssets="all" /> <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
   </ItemGroup>
   <ItemGroup>
     <Content Include="eula.rtf">
