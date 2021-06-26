@@ -1,4 +1,4 @@
-function Test-PackageNameSpaceRestore-Succeed
+function Test-PackageNamespaceRestore-WithSingleFeed
 {
     param($context)
 
@@ -52,7 +52,7 @@ function Test-PackageNameSpaceRestore-Succeed
     }
 }
 
-function Test-PackageNameSpaceIdenticalPackageIdsRestore-CorrectPackage
+function Test-PackageNamespaceIdenticalPackageIdsRestore-CorrectPackage
 {
     param($context)
 
