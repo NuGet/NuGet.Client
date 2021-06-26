@@ -104,9 +104,10 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
-            if (dependencyGraphSpec.Restore.Count == 0)
+            if (string.Equals(Path.GetExtension(entryProjectFilePath), ".sln", StringComparison.OrdinalIgnoreCase)
+                    && dependencyGraphSpec.Restore.Count == 0)
             {
-                MSBuildLogger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
+                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
                 return true;
             }
 
@@ -552,9 +553,9 @@ namespace NuGet.Build.Tasks.Console
 
                 if (projectsNotKnownToMSBuild.Any())
                 {
-                    MSBuildLogger.LogVerbose(string.Format(CultureInfo.CurrentCulture,
+                    MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_ProjectsInSolutionNotKnowntoMSBuild,
-                        projectsNotKnownToMSBuild.Count(), string.Join(",", projectsNotKnownToMSBuild)));
+                        projectsNotKnownToMSBuild.Count(), string.Join(",", projectsNotKnownToMSBuild.Select(project => project.ProjectName))));
                 }
 
                 return projectsKnownToMSBuild.Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
