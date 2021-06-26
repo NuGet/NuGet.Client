@@ -726,13 +726,15 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain("The solution did not have any projects to restore, ensure that all projects are known to " +
+                    "be MSBuild and that the projects exist.", because: result.AllOutput);
             }
 
             return Task.CompletedTask;
         }
 
         [PlatformFact(Platform.Windows)]
-        public Task MsbuildRestore_WithStaticGraphRestore_MessageLoggedAtDefaultVerbosityWhenTheProjectIsNotKnownToMSBuild()
+        public Task MsbuildRestore_WithStaticGraphRestore_MessageLoggedAtDefaultVerbosityWhenAProjectIsNotKnownToMSBuild()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -746,21 +748,19 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     pathContext.SolutionRoot,
                     net461);
 
-                //string newProjectPath = Path.Combine(pathContext.SolutionRoot, "a", "a.xproj");
-                //project.ProjectPath = newProjectPath;
-
                 solution.Projects.Add(project);
                 solution.Create(pathContext.SolutionRoot);
 
-                string pathToSln = Path.Combine(pathContext.SolutionRoot, "solution.sln");
-                string newSlnFileContent = File.ReadAllText(pathToSln);
+                string newSlnFileContent = File.ReadAllText(solution.SolutionPath);
                 newSlnFileContent = newSlnFileContent.Replace("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC", Guid.Empty.ToString());
-                File.WriteAllText(pathToSln, newSlnFileContent);
+                File.WriteAllText(solution.SolutionPath, newSlnFileContent);
 
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestoreUseStaticGraphEvaluation=true",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain($"The solution contains 1 project(s) \"{project.ProjectName}\" that are not known to MSBuild. " +
+                    "Ensure that all projects are known to be MSBuild before running restore on the solution.", because: result.AllOutput);
             }
 
             return Task.CompletedTask;
