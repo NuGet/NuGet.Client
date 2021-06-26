@@ -43,7 +43,7 @@ namespace NuGet.Configuration.Test
             configuration.AreNamespacesEnabled.Should().BeTrue();
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal(configuration.Namespaces.Keys.First().Trim(), configuredSources[0]);
+            Assert.Equal(configuration.Namespaces.Keys.First().Trim() + ".com", configuredSources[0]);
         }
 
         [Theory]
@@ -108,7 +108,6 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData("nuget", "nuget")]
         [InlineData(" , nuget ", " nuget ")]
         [InlineData(",nuget", "nuget")]
         [InlineData(",", "nuget")]
@@ -136,35 +135,35 @@ namespace NuGet.Configuration.Test
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common1");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source1", configuredSources.First());
+            Assert.Equal("source1.com", configuredSources.First());
 
             configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Id");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source1", configuredSources.First());
+            Assert.Equal("source1.com", configuredSources.First());
 
             configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source2", configuredSources.First());
+            Assert.Equal("source2.com", configuredSources.First());
 
             configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common.Id");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source1", configuredSources.First());
+            Assert.Equal("source1.com", configuredSources.First());
 
             configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common.Identity");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source3", configuredSources.First());
+            Assert.Equal("source3.com", configuredSources.First());
 
             configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common.Identity.A");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source1", configuredSources.First());
+            Assert.Equal("source1.com", configuredSources.First());
 
             configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Protocol1");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source1", configuredSources.First());
+            Assert.Equal("source1.com", configuredSources.First());
 
             configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Protocol.Package.Id");
             Assert.Equal(1, configuredSources.Count);
-            Assert.Equal("source2", configuredSources.First());
+            Assert.Equal("source2.com", configuredSources.First());
         }
 
         [Theory]
@@ -183,10 +182,10 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData("nuget.org,nuget", null)]
-        [InlineData("nuget.org,nuget", "")]
-        [InlineData("nuget.org,nuget", " ")]
-        [InlineData(" nuget.org , nuget", " ")]
+        [InlineData("test.org,nuget", null)]
+        [InlineData("test.org,nuget", "")]
+        [InlineData("test.org,nuget", " ")]
+        [InlineData(" test.org , nuget", " ")]
         public void SearchTree_InvalidSearchInput_Throws(string packageNamespaces, string term)
         {
             // Arrange
@@ -212,7 +211,7 @@ namespace NuGet.Configuration.Test
             var sourceKeys = new HashSet<string>();
             var namespaces = new Dictionary<string, IReadOnlyList<string>>();
 
-            var namespacesList = new List<SourceItem>();
+            var namespacesList = new List<PackageNamespacesSourceItem>();
 
             foreach (string section in sections)
             {
@@ -225,27 +224,35 @@ namespace NuGet.Configuration.Test
                 }
 
                 sourceKeys.Add(sourceKey);
+
+                var namespaceItems = new List<NamespaceItem>();
                 for (int i = 1; i < parts.Length; i++)
                 {
-                    namespacesList.Add(new PackageNamespacesSourceItem(sourceKey, parts[i]));
+                    namespaceItems.Add(new NamespaceItem(parts[i]));
                 }
+
+                namespacesList.Add(new PackageNamespacesSourceItem(sourceKey, namespaceItems));
             }
 
             var packageSourcesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageSources,
-                sourceKeys.Select(ns => new SourceItem(ns, ns + ".com")).ToArray()
+                sourceKeys.Select(ns => new SourceItem(ns, ns.Trim() + ".com")).ToArray()
                 );
 
             var packageNamespacesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageNamespaces,
                 namespacesList.ToArray()
                 );
 
-            var settings = new Moq.Mock<ISettings>(Moq.MockBehavior.Strict);
+            var settings = new Moq.Mock<ISettings>(Moq.MockBehavior.Loose);
+
 
             settings.Setup(s => s.GetSection("packageSources"))
                 .Returns(packageSourcesVirtualSection)
                 .Verifiable();
             settings.Setup(s => s.GetConfigFilePaths())
                 .Returns(new List<string>());
+            settings.Setup(s => s.GetSection(ConfigurationConstants.DisabledPackageSources))
+                .Returns(new VirtualSettingSection(ConfigurationConstants.DisabledPackageSources))
+                .Verifiable();
             settings.Setup(s => s.GetSection(ConfigurationConstants.PackageNamespaces))
                     .Returns(packageNamespacesVirtualSection);
 

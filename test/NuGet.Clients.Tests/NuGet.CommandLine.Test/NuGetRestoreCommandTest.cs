@@ -3051,6 +3051,95 @@ EndProject";
             }
         }
 
+        [Fact]
+        public void RestoreCommand_PackageNamespace_PassSingleSource_LongerMatches_Succeed()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+
+                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                File.WriteAllText(
+                    proj1File,
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(opensourceRepositoryPath);
+                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource.Buffers", "1.0.0", opensourceRepositoryPath);
+
+                var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
+
+                Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PublicRepository""> 
+            <namespace id=""Contoso.Opensource.*"" />
+            <namespace id=""Contoso.MVC.*"" /> 
+        </packageSource>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                var packagePath = Path.Combine(workingPath, "packages");
+
+                string[] args = new string[]
+                    {
+                        "restore",
+                        proj1File,
+                        "-solutionDir",
+                        workingPath,
+                        "-source",
+                        "C:\\NuGetProj\\IssueRepro\\10948\\MyPackages"
+                        //"-Verbosity",
+                        //"d"
+                    };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.ExitCode);
+                //Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+            }
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
