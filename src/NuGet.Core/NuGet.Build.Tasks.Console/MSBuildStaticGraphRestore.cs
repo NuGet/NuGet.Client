@@ -553,9 +553,11 @@ namespace NuGet.Build.Tasks.Console
 
                 if (projectsNotKnownToMSBuild.Any())
                 {
+                    IList<string> projects = projectsNotKnownToMSBuild.Select(project => project.ProjectName).ToList();
+
                     MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_ProjectsInSolutionNotKnowntoMSBuild,
-                        projectsNotKnownToMSBuild.Count(), string.Join(",", projectsNotKnownToMSBuild.Select(project => project.ProjectName))));
+                        projects.Count, string.Join(",", projects)));
                 }
 
                 return projectsKnownToMSBuild.Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
