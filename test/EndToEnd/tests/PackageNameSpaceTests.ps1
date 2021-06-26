@@ -52,7 +52,7 @@ function Test-PackageNamespaceRestore-WithSingleFeed
     }
 }
 
-function Test-PackageNamespaceIdenticalPackageIdsRestore-CorrectPackage
+function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackage
 {
     param($context)
 
