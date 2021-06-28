@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class NuGetProjectUpgradeUtility
+    public static class NuGetProjectUpgradeUtility
     {
         private static readonly HashSet<string> UpgradeableProjectTypes =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -92,6 +93,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task<bool> IsProjectPackageReferenceCompatibleAsync(Project project)
         {
             var projectGuids = await project.GetProjectTypeGuidsAsync();
@@ -106,6 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    projectGuids.All(projectTypeGuid => !ProjectType.IsUnsupported(projectTypeGuid));
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public static bool IsPackagesConfigSelected(IVsMonitorSelection vsMonitorSelection)
         {
             var selectedFileName = GetSelectedFileName(vsMonitorSelection);

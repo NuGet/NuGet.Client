@@ -30,27 +30,6 @@ namespace NuGet.Common
         /// <summary> Singleton of NuGet telemetry service instance. </summary>
         public static INuGetTelemetryService NuGetTelemetryService { get; set; }
 
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public TelemetryActivity(Guid parentId) :
-            this(parentId, Guid.Empty, telemetryEvent: null)
-        {
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public TelemetryActivity(Guid parentId, Guid operationId) :
-            this(parentId, operationId, telemetryEvent: null)
-        {
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public TelemetryActivity(Guid parentId, Guid operationId, TelemetryEvent telemetryEvent) :
-            this(parentId, telemetryEvent, operationId)
-        {
-        }
-
         private TelemetryActivity(Guid parentId, TelemetryEvent telemetryEvent, Guid operationId)
         {
             if (telemetryEvent != null)
@@ -67,7 +46,10 @@ namespace NuGet.Common
             _intervalList = new List<Tuple<string, TimeSpan>>();
         }
 
-        /// <summary> Start interval measure. </summary>
+        /// <summary> Start interval measure.
+        /// End with <see cref="EndIntervalMeasure(string)"/>
+        /// The intervals cannot overlap. For non-overlapping intervals <see cref="StartIndependentInterval(string)"/>
+        /// </summary>
         public void StartIntervalMeasure()
         {
             _intervalWatch.Restart();
@@ -79,6 +61,31 @@ namespace NuGet.Common
         {
             _intervalWatch.Stop();
             _intervalList.Add(new Tuple<string, TimeSpan>(propertyName, _intervalWatch.Elapsed));
+        }
+
+        public IDisposable StartIndependentInterval(string propertyName)
+        {
+            return new Interval(this, propertyName);
+        }
+
+        private class Interval : IDisposable
+        {
+            private readonly TelemetryActivity _telemetryActivity;
+            private readonly string _propertyName;
+            private readonly Stopwatch _stopwatch;
+
+            internal Interval(TelemetryActivity telemetryActivity, string propertyName)
+            {
+                _telemetryActivity = telemetryActivity;
+                _propertyName = propertyName;
+                _stopwatch = Stopwatch.StartNew();
+            }
+
+            void IDisposable.Dispose()
+            {
+                _stopwatch.Stop();
+                _telemetryActivity.TelemetryEvent[_propertyName] = _stopwatch.Elapsed.TotalSeconds;
+            }
         }
 
         /// <summary> Stops tracking the activity and emits a telemetry event. </summary>
@@ -169,27 +176,6 @@ namespace NuGet.Common
         public static TelemetryActivity Create(Guid parentId, TelemetryEvent telemetryEvent)
         {
             return new TelemetryActivity(parentId, telemetryEvent, Guid.NewGuid());
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public static TelemetryActivity CreateTelemetryActivityWithNewOperationIdAndEvent(Guid parentId, string eventName)
-        {
-            return Create(parentId, new TelemetryEvent(eventName));
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public static TelemetryActivity CreateTelemetryActivityWithNewOperationId(Guid parentId)
-        {
-            return Create(parentId, default(TelemetryEvent));
-        }
-
-        /// <summary> Obsolete. Use one of static Create members. </summary>
-        [Obsolete]
-        public static TelemetryActivity CreateTelemetryActivityWithNewOperationId()
-        {
-            return Create(Guid.Empty, default(TelemetryEvent));
         }
     }
 }

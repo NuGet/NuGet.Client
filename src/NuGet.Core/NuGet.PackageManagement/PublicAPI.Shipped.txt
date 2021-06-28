@@ -90,10 +90,8 @@ NuGet.PackageManagement.IInstallationCompatibility.EnsurePackageCompatibilityAsy
 NuGet.PackageManagement.IPackageProjectEventsProvider
 NuGet.PackageManagement.IPackageProjectEventsProvider.GetPackageProjectEvents() -> NuGet.PackageManagement.PackageProjectEvents
 NuGet.PackageManagement.IPackageRestoreManager
-NuGet.PackageManagement.IPackageRestoreManager.EnableCurrentSolutionForRestore(bool fromActivation) -> void
 NuGet.PackageManagement.IPackageRestoreManager.GetPackagesInSolutionAsync(string solutionDirectory, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>>
 NuGet.PackageManagement.IPackageRestoreManager.GetPackagesRestoreData(string solutionDirectory, System.Collections.Generic.Dictionary<NuGet.Packaging.PackageReference, System.Collections.Generic.List<string>> packageReferencesDict) -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>
-NuGet.PackageManagement.IPackageRestoreManager.IsCurrentSolutionEnabledForRestore.get -> bool
 NuGet.PackageManagement.IPackageRestoreManager.PackageRestoreFailedEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoreFailedEventArgs>
 NuGet.PackageManagement.IPackageRestoreManager.PackageRestoredEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoredEventArgs>
 NuGet.PackageManagement.IPackageRestoreManager.PackagesMissingStatusChanged -> System.EventHandler<NuGet.PackageManagement.PackagesMissingStatusEventArgs>
@@ -135,12 +133,9 @@ NuGet.PackageManagement.InstallationCompatibility.EnsurePackageCompatibility(NuG
 NuGet.PackageManagement.InstallationCompatibility.EnsurePackageCompatibilityAsync(NuGet.ProjectManagement.NuGetProject nuGetProject, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Protocol.Core.Types.DownloadResourceResult resourceResult, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 NuGet.PackageManagement.InstallationCompatibility.InstallationCompatibility() -> void
 NuGet.PackageManagement.LogUtility
-NuGet.PackageManagement.NuGetEvent
 NuGet.PackageManagement.NuGetEventArgs<T>
 NuGet.PackageManagement.NuGetEventArgs<T>.Arg.get -> T
 NuGet.PackageManagement.NuGetEventArgs<T>.NuGetEventArgs(T arg) -> void
-NuGet.PackageManagement.NuGetEventTrigger
-NuGet.PackageManagement.NuGetEventTrigger.TriggerEvent(int id) -> void
 NuGet.PackageManagement.NuGetOperationType
 NuGet.PackageManagement.NuGetOperationType.Install = 0 -> NuGet.PackageManagement.NuGetOperationType
 NuGet.PackageManagement.NuGetOperationType.Uninstall = 2 -> NuGet.PackageManagement.NuGetOperationType
@@ -277,10 +272,8 @@ NuGet.PackageManagement.PackageRestoreFailedEventArgs.ProjectNames.get -> System
 NuGet.PackageManagement.PackageRestoreFailedEventArgs.RestoreFailedPackageReference.get -> NuGet.Packaging.PackageReference
 NuGet.PackageManagement.PackageRestoreManager
 NuGet.PackageManagement.PackageRestoreManager.ClearMissingEventForSolution() -> void
-NuGet.PackageManagement.PackageRestoreManager.EnableCurrentSolutionForRestore(bool fromActivation) -> void
 NuGet.PackageManagement.PackageRestoreManager.GetPackagesInSolutionAsync(string solutionDirectory, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>>
 NuGet.PackageManagement.PackageRestoreManager.GetPackagesRestoreData(string solutionDirectory, System.Collections.Generic.Dictionary<NuGet.Packaging.PackageReference, System.Collections.Generic.List<string>> packageReferencesDict) -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.PackageRestoreData>
-NuGet.PackageManagement.PackageRestoreManager.IsCurrentSolutionEnabledForRestore.get -> bool
 NuGet.PackageManagement.PackageRestoreManager.PackageRestoreFailedEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoreFailedEventArgs>
 NuGet.PackageManagement.PackageRestoreManager.PackageRestoreManager(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceRepositoryProvider, NuGet.Configuration.ISettings settings, NuGet.PackageManagement.ISolutionManager solutionManager) -> void
 NuGet.PackageManagement.PackageRestoreManager.PackageRestoredEvent -> System.EventHandler<NuGet.PackageManagement.PackageRestoredEventArgs>
@@ -340,7 +333,6 @@ NuGet.PackageManagement.SourceRepositoryComparer.Equals(NuGet.Protocol.Core.Type
 NuGet.PackageManagement.SourceRepositoryComparer.GetHashCode(NuGet.Protocol.Core.Types.SourceRepository obj) -> int
 NuGet.PackageManagement.SourceRepositoryComparer.SourceRepositoryComparer() -> void
 NuGet.PackageManagement.TelemetryConstants
-NuGet.PackageManagement.TriggerEventMethod
 NuGet.PackageManagement.UninstallResolver
 NuGet.PackageManagement.UninstallationContext
 NuGet.PackageManagement.UninstallationContext.ForceRemove.get -> bool
@@ -768,7 +760,6 @@ static NuGet.PackageManagement.GatherExceptionHelpers.ThrowIfVersionIsDisallowed
 static NuGet.PackageManagement.GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(string target, System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReference> packagesConfig, System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependencyInfo> availablePackages, NuGet.Common.ILogger logger) -> void
 static NuGet.PackageManagement.InstallationCompatibility.Instance.get -> NuGet.PackageManagement.InstallationCompatibility
 static NuGet.PackageManagement.LogUtility.LogLevelToMessageLevel(NuGet.Common.LogLevel level) -> NuGet.ProjectManagement.MessageLevel
-static NuGet.PackageManagement.NuGetEventTrigger.TriggerEventBeginEnd(int beginId, int endId) -> System.IDisposable
 static NuGet.PackageManagement.NuGetPackageManager.ClearDirectInstall(NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext) -> void
 static NuGet.PackageManagement.NuGetPackageManager.GetLatestVersionAsync(NuGet.Packaging.PackageReference package, NuGet.Frameworks.NuGetFramework framework, NuGet.PackageManagement.ResolutionContext resolutionContext, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> sources, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.PackageManagement.ResolvedPackage>
 static NuGet.PackageManagement.NuGetPackageManager.GetLatestVersionAsync(string packageId, NuGet.Frameworks.NuGetFramework framework, NuGet.PackageManagement.ResolutionContext resolutionContext, NuGet.Protocol.Core.Types.SourceRepository primarySourceRepository, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.PackageManagement.ResolvedPackage>
@@ -885,22 +876,6 @@ static NuGet.ProjectManagement.XmlUtility.LoadSafe(System.IO.Stream input, Syste
 static NuGet.ProjectManagement.XmlUtility.LoadSafe(System.IO.Stream input, bool ignoreWhiteSpace) -> System.Xml.Linq.XDocument
 static NuGet.ProjectManagement.XmlUtility.LoadSafe(string filePath) -> System.Xml.Linq.XDocument
 static NuGet.ProjectManagement.XmlUtility.TryParseDocument(string content, out System.Xml.Linq.XDocument document) -> bool
-static readonly NuGet.PackageManagement.NuGetEvent.LicenseWindowBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.LicenseWindowEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.LinkOpened -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageLoadBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageLoadEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageManagerConsoleCommandExecutionBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageManagerConsoleCommandExecutionEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageManagerConsoleLoaded -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageOperationBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageOperationEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.PackageRestoreCompleted -> int
-static readonly NuGet.PackageManagement.NuGetEvent.ProgressDialogBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.ProgressDialogEnd -> int
-static readonly NuGet.PackageManagement.NuGetEvent.SelectProjectDialogBegin -> int
-static readonly NuGet.PackageManagement.NuGetEvent.SelectProjectDialogEnd -> int
-static readonly NuGet.PackageManagement.NuGetEventTrigger.Instance -> NuGet.PackageManagement.NuGetEventTrigger
 static readonly NuGet.PackageManagement.PackageManagementConstants.DefaultMaxDegreeOfParallelism -> int
 static readonly NuGet.PackageManagement.PackageManagementConstants.DefaultRequestTimeout -> System.TimeSpan
 static readonly NuGet.PackageManagement.TelemetryConstants.ExecuteActionStepName -> string

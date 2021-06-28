@@ -13,7 +13,6 @@
     <PackageId>NuGet.VisualStudio</PackageId>
     <AssemblyDescription>APIs for invoking NuGet services in Visual Studio.</AssemblyDescription>
     <Description>APIs for invoking NuGet services in Visual Studio.</Description>
-    <ImportedFromTypeLib>NuGet.VisualStudio</ImportedFromTypeLib>
     <Guid>228F7591-2777-47D7-B81D-FEADFC71CEB5</Guid>
     <ComVisible>false</ComVisible>
     <authors>Microsoft</authors>
@@ -24,14 +23,9 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="VSSDK.TemplateWizardInterface" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="NuGet.VisualStudio.targets">
-      <PackagePath>build</PackagePath>
-      <Pack>true</Pack>
-    </Content>
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
+    <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
+    <PackageReference Include="Newtonsoft.Json" PrivateAssets="all" NoWarn="NU1605" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +44,5 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

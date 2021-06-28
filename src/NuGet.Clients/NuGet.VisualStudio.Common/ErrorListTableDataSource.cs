@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
 
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -168,34 +169,30 @@ namespace NuGet.VisualStudio.Common
         /// <summary>
         /// Show error window if settings permit.
         /// </summary>
-        public void BringToFrontIfSettingsPermit()
+        public async Task BringToFrontIfSettingsPermitAsync()
         {
             EnsureInitialized();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            IVsShell vsShell = await _asyncServiceProvider.GetServiceAsync<IVsShell, IVsShell>(throwOnFailure: false);
+            int getPropertyReturnCode = vsShell.GetProperty((int)__VSSPROPID.VSSPROPID_ShowTasklistOnBuildEnd, out object propertyShowTaskListOnBuildEnd);
+            bool showErrorListOnBuildEnd = true;
+
+            if (getPropertyReturnCode == VSConstants.S_OK)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                IVsShell vsShell = await _asyncServiceProvider.GetServiceAsync<IVsShell>();
-                object propertyShowTaskListOnBuildEnd;
-                int getPropertyReturnCode = vsShell.GetProperty((int)__VSSPROPID.VSSPROPID_ShowTasklistOnBuildEnd, out propertyShowTaskListOnBuildEnd);
-                bool showErrorListOnBuildEnd = true;
-
-                if (getPropertyReturnCode == VSConstants.S_OK)
+                if (bool.TryParse(propertyShowTaskListOnBuildEnd?.ToString(), out bool result))
                 {
-                    if (bool.TryParse(propertyShowTaskListOnBuildEnd?.ToString(), out bool result))
-                    {
-                        showErrorListOnBuildEnd = result;
-                    }
+                    showErrorListOnBuildEnd = result;
                 }
+            }
 
-                if (showErrorListOnBuildEnd)
-                {
-                    // Give the error list focus.
-                    var vsErrorList = _errorList as IVsErrorList;
-                    vsErrorList?.BringToFront();
-                }
-            });
+            if (showErrorListOnBuildEnd)
+            {
+                // Give the error list focus.
+                var vsErrorList = _errorList as IVsErrorList;
+                vsErrorList?.BringToFront();
+            }
         }
 
         // Lock before calling

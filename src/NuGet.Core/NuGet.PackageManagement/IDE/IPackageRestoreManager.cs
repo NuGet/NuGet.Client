@@ -16,22 +16,6 @@ namespace NuGet.PackageManagement
     public interface IPackageRestoreManager
     {
         /// <summary>
-        /// Gets a value indicating whether the current solution is configured for Package Restore mode.
-        /// </summary>
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        bool IsCurrentSolutionEnabledForRestore { get; }
-
-        /// <summary>
-        /// Configures the current solution for Package Restore mode.
-        /// </summary>
-        /// <param name="fromActivation">
-        /// if set to <c>false</c>, the method will not show any error message, and will
-        /// not set package restore consent.
-        /// </param>
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        void EnableCurrentSolutionForRestore(bool fromActivation);
-
-        /// <summary>
         /// Occurs when it is detected that the packages are missing or restored for the current solution.
         /// </summary>
         event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
@@ -153,7 +137,7 @@ namespace NuGet.PackageManagement
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             Package = packageIdentity;

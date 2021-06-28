@@ -512,7 +512,9 @@ function New-FSharpLibrary {
         [string]$SolutionFolder
     )
 
-    New-Project FSharpLibrary $ProjectName $SolutionFolder
+    $project = New-Project FSharpLibrary $ProjectName $SolutionFolder
+    Wait-OnNetCoreRestoreCompletion $project
+    return $project
 }
 
 function New-FSharpConsoleApplication {
@@ -521,7 +523,9 @@ function New-FSharpConsoleApplication {
         [string]$SolutionFolder
     )
 
-    New-Project FSharpConsoleApplication $ProjectName $SolutionFolder
+    $project = New-Project FSharpConsoleApplication $ProjectName $SolutionFolder
+    Wait-OnNetCoreRestoreCompletion $project
+    return $project
 }
 
 function New-WPFApplication {
@@ -932,24 +936,20 @@ function WaitUntilRebuildCompleted {
 function Get-VSFolderPath
 {
     $ProgramFilesPath = ${env:ProgramFiles}
-    if (Test-Path ${env:ProgramFiles(x86)})
-    {
-        $ProgramFilesPath = ${env:ProgramFiles(x86)}
-    }
 
-    $VS16PreviewRelativePath = "Microsoft Visual Studio\2019\Preview"
+    $VS17PreviewRelativePath = "Microsoft Visual Studio\2022\Preview"
 
-    # Give preference to preview installation of VS2019
-    if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath))
+    # Give preference to preview installation of VS2022
+    if (Test-Path (Join-Path $ProgramFilesPath $VS17PreviewRelativePath))
     {
-        $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
+        $VSFolderPath = Join-Path $ProgramFilesPath $VS17PreviewRelativePath
     }
 
     return $VSFolderPath
 }
 
 function Get-MSBuildExe {
-    
-    $MSBuildRoot = Get-VSFolderPath 
+
+    $MSBuildRoot = Get-VSFolderPath
     Join-Path $MSBuildRoot "MsBuild\Current\bin\msbuild.exe"
 }

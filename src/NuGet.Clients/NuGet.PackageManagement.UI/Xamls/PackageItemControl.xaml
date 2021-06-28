@@ -256,7 +256,7 @@
                       VerticalAlignment="Center"
                       HorizontalAlignment="Right"
                       Visibility="{Binding IsNotInstalled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
-                      Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}">
+                      Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}">
           <TextBlock.ToolTip>
             <MultiBinding Converter="{StaticResource StringFormatConverter}">
               <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
@@ -281,7 +281,7 @@
                       HorizontalAlignment="Right"
                       TextAlignment="Right"
                       Visibility="{Binding IsNotInstalled, Converter={StaticResource BooleanToVisibilityConverter}}"
-                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}"
+                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}"
                       ToolTip="{Binding LatestVersionToolTip}"
                       AutomationProperties.Name="{Binding LatestVersionToolTip}" />
 
@@ -383,7 +383,7 @@
                       Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="{Binding LatestVersionToolTip}"
                       AutomationProperties.Name="{Binding LatestVersionToolTip}"
-                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}" />
+                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}" />
 
         <!-- update button -->
         <Button

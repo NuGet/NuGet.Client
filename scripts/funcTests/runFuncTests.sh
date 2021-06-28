@@ -25,6 +25,8 @@ pushd $DIR/
 
 mono --version
 
+dotnet --info
+
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
@@ -36,18 +38,37 @@ chmod +x scripts/funcTests/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
 # Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
-scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
+scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -nopath
+
+if (( $? )); then
+	echo "The .NET CLI Install failed!!"
+	exit 1
+fi
+
+# Disable .NET CLI Install Lookup
+DOTNET_MULTILEVEL_LOOKUP=0
 
 DOTNET="$(pwd)/cli/dotnet"
 
+# Let the dotnet cli expand and decompress first if it's a first-run
+$DOTNET --info
 
+# Get CLI Branches for testing
 echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
-# run it twice so dotnet cli can expand and decompress without affecting the result of the target
-dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
-DOTNET_BRANCHES="$(dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
-echo $DOTNET_BRANCHES | tr ";" "\n" |  while read -r DOTNET_BRANCH
+
+IFS=$'\n'
+CMD_OUT_LINES=(`dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting`)
+# Take only last the line which has the version information and strip all the spaces
+CMD_LAST_LINE=${CMD_OUT_LINES[@]:(-1)}
+DOTNET_BRANCHES=${CMD_LAST_LINE//[[:space:]]}
+unset IFS
+
+IFS=$';'
+for DOTNET_BRANCH in ${DOTNET_BRANCHES[@]}
 do
 	echo $DOTNET_BRANCH
+
+	IFS=$':'
 	ChannelAndVersion=($DOTNET_BRANCH)
 	Channel=${ChannelAndVersion[0]}
 	if [ ${#ChannelAndVersion[@]} -eq 1 ]
@@ -56,14 +77,20 @@ do
 	else
 		Version=${ChannelAndVersion[1]}
 	fi
+	unset IFS
+
 	echo "Channel is: $Channel"
 	echo "Version is: $Version"
 	scripts/funcTests/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
 
-	# Display current version
-	$DOTNET --version
-	dotnet --info
+	if (( $? )); then
+		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
+		exit 1
+	fi
 done
+
+# Display .NET CLI info
+$DOTNET --info
 
 echo "initial dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
@@ -104,6 +131,7 @@ fi
 # restore packages
 echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
 dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1

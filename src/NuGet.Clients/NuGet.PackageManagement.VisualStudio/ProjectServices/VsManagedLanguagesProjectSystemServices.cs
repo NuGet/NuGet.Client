@@ -70,6 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ReferenceMetadata.SetValue(ProjectItemProperties.Aliases, 5);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public VsManagedLanguagesProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
             IComponentModel componentModel,
@@ -101,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (installedPackages == null)
             {
-                return new LibraryDependency[] { };
+                return Array.Empty<LibraryDependency>();
             }
 
             bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
@@ -141,7 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (AsVSProject4.References == null)
             {
-                return new ProjectRestoreReference[] { };
+                return Array.Empty<ProjectRestoreReference>();
             }
 
             var references = new List<ProjectRestoreReference>();

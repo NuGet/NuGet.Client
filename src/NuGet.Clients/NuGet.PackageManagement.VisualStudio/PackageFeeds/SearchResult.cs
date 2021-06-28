@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static SearchResult<T> Empty<T>() => new SearchResult<T>
         {
-            Items = new T[] { }
+            Items = Array.Empty<T>()
         };
     }
 }

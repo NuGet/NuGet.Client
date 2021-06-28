@@ -1,4 +1,10 @@
 steps:
+- task: PublishPipelineArtifact@1
+  displayName: "Save build YAML"
+  inputs:
+    artifactName: yaml
+    targetPath: "$(Build.Repository.LocalPath)\\eng\\pipelines"
+
 - task: PowerShell@1
   displayName: "Set Semantic Version"
   name: "setsemanticversion"

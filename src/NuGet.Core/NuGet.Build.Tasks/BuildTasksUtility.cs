@@ -550,7 +550,9 @@ namespace NuGet.Build.Tasks
             {
                 cacheContext.NoCache = noCache;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false)
+                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
+
+                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false, packageNamespacesConfiguration)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
@@ -666,54 +668,6 @@ namespace NuGet.Build.Tasks
             return result;
         }
 #endif
-
-        /// <summary>
-        /// Gets the package fallback folders for a project.
-        /// </summary>
-        /// <param name="projectDirectory">The full path to the directory of the project.</param>
-        /// <param name="fallbackFolders">A <see cref="T:string[]" /> containing the fallback folders for the project.</param>
-        /// <param name="fallbackFoldersOverride">A <see cref="T:string[]" /> containing overrides for the fallback folders for the project.</param>
-        /// <param name="additionalProjectFallbackFolders">An <see cref="IEnumerable{String}" /> containing additional fallback folders for the project.</param>
-        /// <param name="additionalProjectFallbackFoldersExcludes">An <see cref="IEnumerable{String}" /> containing fallback folders to exclude.</param>
-        /// <param name="settings">An <see cref="ISettings" /> object containing settings for the project.</param>
-        /// <returns>A <see cref="T:string[]" /> containing the package fallback folders for the project.</returns>
-        [Obsolete("This method calculates the source overrides incorrectly and will be removed in a future release")]
-        public static string[] GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
-        {
-            // Fallback folders
-            var currentFallbackFolders = RestoreSettingsUtils.GetValue(
-                () => fallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
-                () => MSBuildRestoreUtility.ContainsClearKeyword(fallbackFolders) ? Array.Empty<string>() : null,
-                () => fallbackFolders?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
-                () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
-
-            // Append additional fallback folders after removing excluded folders
-            var filteredAdditionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
-                    values: additionalProjectFallbackFolders,
-                    excludeValues: additionalProjectFallbackFoldersExcludes);
-
-            return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
-        }
-
-        [Obsolete("This method calculates the source overrides incorrectly and will be removed in a future release")]
-        public static string[] GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
-        {
-            // Sources
-            var currentSources = RestoreSettingsUtils.GetValue(
-                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
-                () => MSBuildRestoreUtility.ContainsClearKeyword(sources) ? Array.Empty<string>() : null,
-                () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
-                () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
-
-            // Append additional sources
-            // Escape strings to avoid xplat path issues with msbuild.
-            var filteredAdditionalProjectSources = MSBuildRestoreUtility.AggregateSources(
-                    values: additionalProjectSources,
-                    excludeValues: Enumerable.Empty<string>())
-                .Select(MSBuildRestoreUtility.FixSourcePath);
-
-            return AppendItems(projectDirectory, currentSources, filteredAdditionalProjectSources);
-        }
 
         public static string[] GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
         {

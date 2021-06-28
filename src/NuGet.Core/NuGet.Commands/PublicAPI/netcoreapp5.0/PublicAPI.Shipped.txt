@@ -178,7 +178,6 @@ NuGet.Commands.AddSourceArgs.Username.set -> void
 NuGet.Commands.AddSourceArgs.ValidAuthenticationTypes.get -> string
 NuGet.Commands.AddSourceArgs.ValidAuthenticationTypes.set -> void
 NuGet.Commands.AddSourceRunner
-NuGet.Commands.AddSourceRunner.AddSourceRunner() -> void
 NuGet.Commands.AssetTargetFallbackUtility
 NuGet.Commands.BuildAssetsUtils
 NuGet.Commands.ClientCertArgsExtensions
@@ -238,7 +237,6 @@ NuGet.Commands.DisableSourceArgs.DisableSourceArgs() -> void
 NuGet.Commands.DisableSourceArgs.Name.get -> string
 NuGet.Commands.DisableSourceArgs.Name.set -> void
 NuGet.Commands.DisableSourceRunner
-NuGet.Commands.DisableSourceRunner.DisableSourceRunner() -> void
 NuGet.Commands.DownloadDependencyResolutionResult
 NuGet.Commands.DownloadDependencyResolutionResult.Dependencies.get -> System.Collections.Generic.IList<System.Tuple<NuGet.LibraryModel.LibraryRange, NuGet.DependencyResolver.RemoteMatch>>
 NuGet.Commands.DownloadDependencyResolutionResult.Framework.get -> NuGet.Frameworks.NuGetFramework
@@ -251,7 +249,6 @@ NuGet.Commands.EnableSourceArgs.EnableSourceArgs() -> void
 NuGet.Commands.EnableSourceArgs.Name.get -> string
 NuGet.Commands.EnableSourceArgs.Name.set -> void
 NuGet.Commands.EnableSourceRunner
-NuGet.Commands.EnableSourceRunner.EnableSourceRunner() -> void
 NuGet.Commands.IClientCertArgsWithConfigFile
 NuGet.Commands.IClientCertArgsWithConfigFile.Configfile.get -> string
 NuGet.Commands.IClientCertArgsWithConfigFile.Configfile.set -> void
@@ -361,7 +358,6 @@ NuGet.Commands.ListSourceArgs.Format.get -> string
 NuGet.Commands.ListSourceArgs.Format.set -> void
 NuGet.Commands.ListSourceArgs.ListSourceArgs() -> void
 NuGet.Commands.ListSourceRunner
-NuGet.Commands.ListSourceRunner.ListSourceRunner() -> void
 NuGet.Commands.LocalsArgs
 NuGet.Commands.LocalsArgs.Arguments.get -> System.Collections.Generic.IList<string>
 NuGet.Commands.LocalsArgs.Clear.get -> bool
@@ -451,7 +447,6 @@ NuGet.Commands.MSBuildRestoreUtility
 NuGet.Commands.NoOpRestoreResult
 NuGet.Commands.NoOpRestoreResult.NoOpRestoreResult(bool success, string lockFilePath, System.Lazy<NuGet.ProjectModel.LockFile> lockFileLazy, NuGet.ProjectModel.CacheFile cacheFile, string cacheFilePath, NuGet.ProjectModel.ProjectStyle projectStyle, System.TimeSpan elapsedTime) -> void
 NuGet.Commands.NoOpRestoreUtilities
-NuGet.Commands.NoOpRestoreUtilities.NoOpRestoreUtilities() -> void
 NuGet.Commands.OriginalCaseGlobalPackageFolder
 NuGet.Commands.OriginalCaseGlobalPackageFolder.ConvertLockFileToOriginalCase(NuGet.ProjectModel.LockFile lockFile) -> void
 NuGet.Commands.OriginalCaseGlobalPackageFolder.CopyPackagesToOriginalCaseAsync(System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> graphs, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
@@ -571,7 +566,6 @@ NuGet.Commands.RemoveSourceArgs.Name.get -> string
 NuGet.Commands.RemoveSourceArgs.Name.set -> void
 NuGet.Commands.RemoveSourceArgs.RemoveSourceArgs() -> void
 NuGet.Commands.RemoveSourceRunner
-NuGet.Commands.RemoveSourceRunner.RemoveSourceRunner() -> void
 NuGet.Commands.RequestRuntimeUtility
 NuGet.Commands.ResolvedDependencyKey
 NuGet.Commands.ResolvedDependencyKey.Child.get -> NuGet.LibraryModel.LibraryIdentity
@@ -939,7 +933,6 @@ NuGet.Commands.UpdateSourceArgs.Username.set -> void
 NuGet.Commands.UpdateSourceArgs.ValidAuthenticationTypes.get -> string
 NuGet.Commands.UpdateSourceArgs.ValidAuthenticationTypes.set -> void
 NuGet.Commands.UpdateSourceRunner
-NuGet.Commands.UpdateSourceRunner.UpdateSourceRunner() -> void
 NuGet.Commands.VerifyArgs
 NuGet.Commands.VerifyArgs.CertificateFingerprint.get -> System.Collections.Generic.IEnumerable<string>
 NuGet.Commands.VerifyArgs.CertificateFingerprint.set -> void
@@ -1046,7 +1039,6 @@ static NuGet.Commands.BuildAssetsUtils.GenerateMultiTargetFailureFiles(string ta
 static NuGet.Commands.BuildAssetsUtils.GenerateMultiTargetFrameworkWarning() -> System.Xml.Linq.XDocument
 static NuGet.Commands.BuildAssetsUtils.GenerateProperty(string propertyName, string content) -> System.Xml.Linq.XElement
 static NuGet.Commands.BuildAssetsUtils.GetLanguage(string nugetLanguage) -> string
-static NuGet.Commands.BuildAssetsUtils.GetMSBuildFilePath(NuGet.ProjectModel.PackageSpec project, NuGet.Commands.RestoreRequest request, string extension) -> string
 static NuGet.Commands.BuildAssetsUtils.GetMSBuildFilePath(NuGet.ProjectModel.PackageSpec project, string extension) -> string
 static NuGet.Commands.BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(NuGet.ProjectModel.PackageSpec project, string extension) -> string
 static NuGet.Commands.BuildAssetsUtils.GetMSBuildOutputFiles(NuGet.ProjectModel.PackageSpec project, NuGet.ProjectModel.LockFile assetsFile, System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> targetGraphs, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> repositories, NuGet.Commands.RestoreRequest request, string assetsFilePath, bool restoreSuccess, NuGet.Common.ILogger log) -> System.Collections.Generic.List<NuGet.Commands.MSBuildOutputFile>
@@ -1086,7 +1078,6 @@ static NuGet.Commands.IndexedRestoreTargetGraph.Create(NuGet.Commands.IRestoreTa
 static NuGet.Commands.ListClientCertRunner.Run(NuGet.Commands.ListClientCertArgs args, System.Func<NuGet.Common.ILogger> getLogger) -> void
 static NuGet.Commands.ListSourceRunner.Run(NuGet.Commands.ListSourceArgs args, System.Func<NuGet.Common.ILogger> getLogger) -> void
 static NuGet.Commands.LockFileUtils.CreateLockFileTargetLibrary(NuGet.ProjectModel.LockFileLibrary library, NuGet.Repositories.LocalPackageInfo package, NuGet.Commands.RestoreTargetGraph targetGraph, NuGet.LibraryModel.LibraryIncludeFlags dependencyType) -> NuGet.ProjectModel.LockFileTargetLibrary
-static NuGet.Commands.LockFileUtils.CreateLockFileTargetLibrary(NuGet.ProjectModel.LockFileLibrary library, NuGet.Repositories.LocalPackageInfo package, NuGet.Commands.RestoreTargetGraph targetGraph, NuGet.LibraryModel.LibraryIncludeFlags dependencyType, NuGet.Frameworks.NuGetFramework targetFrameworkOverride, System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, NuGet.Commands.LockFileBuilderCache cache) -> NuGet.ProjectModel.LockFileTargetLibrary
 static NuGet.Commands.LockFileUtils.CreateLockFileTargetProject(NuGet.DependencyResolver.GraphItem<NuGet.DependencyResolver.RemoteResolveResult> graphItem, NuGet.LibraryModel.LibraryIdentity library, NuGet.LibraryModel.LibraryIncludeFlags dependencyType, NuGet.Commands.RestoreTargetGraph targetGraph, NuGet.ProjectModel.ProjectStyle rootProjectStyle) -> NuGet.ProjectModel.LockFileTargetLibrary
 static NuGet.Commands.LockFileUtils.ExcludeItems(NuGet.ProjectModel.LockFileTargetLibrary lockFileLib, NuGet.LibraryModel.LibraryIncludeFlags dependencyType) -> void
 static NuGet.Commands.LockFileUtils.ToDirectorySeparator(string path) -> string
@@ -1112,7 +1103,6 @@ static NuGet.Commands.MSBuildRestoreUtility.LogErrorForClearIfInvalid(System.Col
 static NuGet.Commands.MSBuildRestoreUtility.NormalizePathCasings(System.Collections.Generic.Dictionary<string, string> paths, NuGet.ProjectModel.DependencyGraphSpec graphSpec) -> void
 static NuGet.Commands.MSBuildRestoreUtility.NormalizePathCasings(System.Collections.Generic.IDictionary<string, string> paths, NuGet.ProjectModel.DependencyGraphSpec graphSpec) -> void
 static NuGet.Commands.MSBuildRestoreUtility.RemoveMissingProjects(NuGet.ProjectModel.DependencyGraphSpec graphSpec) -> void
-static NuGet.Commands.MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(NuGet.ProjectModel.LockFile lockFile, NuGet.Common.ILogger logger) -> System.Threading.Tasks.Task
 static NuGet.Commands.MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.IAssetsLogMessage> messages, NuGet.Common.ILogger logger) -> System.Threading.Tasks.Task
 static NuGet.Commands.NoOpRestoreUtilities.GetProjectCacheFilePath(string cacheRoot) -> string
 static NuGet.Commands.NoOpRestoreUtilities.GetProjectCacheFilePath(string cacheRoot, string projectPath) -> string
@@ -1143,7 +1133,6 @@ static NuGet.Commands.RestoreRunner.RunAsync(NuGet.Commands.RestoreArgs restoreC
 static NuGet.Commands.RestoreRunner.RunWithoutCommit(System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreSummaryRequest> restoreRequests, NuGet.Commands.RestoreArgs restoreContext) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<NuGet.Commands.RestoreResultPair>>
 static NuGet.Commands.RestoreSpecException.Create(string message, System.Collections.Generic.IEnumerable<string> files) -> NuGet.Commands.RestoreSpecException
 static NuGet.Commands.RestoreSpecException.Create(string message, System.Collections.Generic.IEnumerable<string> files, System.Exception innerException) -> NuGet.Commands.RestoreSpecException
-static NuGet.Commands.RestoreSummary.Log(NuGet.Common.ILogger logger, System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreSummary> restoreSummaries, bool logErrors = false) -> void
 static NuGet.Commands.RestoreSummary.Log(NuGet.Common.ILogger logger, System.Collections.Generic.IReadOnlyList<NuGet.Commands.RestoreSummary> restoreSummaries, bool logErrors = false) -> void
 static NuGet.Commands.RestoreTargetGraph.Create(NuGet.RuntimeModel.RuntimeGraph runtimeGraph, System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>> graphs, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Common.ILogger log, NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> NuGet.Commands.RestoreTargetGraph
 static NuGet.Commands.RestoreTargetGraph.Create(System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>> graphs, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Common.ILogger logger, NuGet.Frameworks.NuGetFramework framework) -> NuGet.Commands.RestoreTargetGraph

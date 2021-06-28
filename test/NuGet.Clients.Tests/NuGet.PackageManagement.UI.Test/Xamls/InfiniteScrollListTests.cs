@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -29,7 +30,7 @@ namespace NuGet.PackageManagement.UI.Test
             _output = output;
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public void Constructor_JoinableTaskFactoryIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -38,7 +39,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("joinableTaskFactory", exception.ParamName);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public void CheckBoxesEnabled_Initialized_DefaultIsFalse()
         {
             var list = new InfiniteScrollList();
@@ -53,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Same(list.DataContext, list.Items);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public void IsSolution_Initialized_DefaultIsFalse()
         {
             var list = new InfiniteScrollList();
@@ -61,7 +62,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.False(list.IsSolution);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public void Items_Initialized_DefaultIsEmpty()
         {
             var list = new InfiniteScrollList();
@@ -69,7 +70,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Empty(list.Items);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public void PackageItems_Initialized_DefaultIsEmpty()
         {
             var list = new InfiniteScrollList();
@@ -77,7 +78,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Empty(list.PackageItems);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public void SelectedPackageItem_Initialized_DefaultIsNull()
         {
             var list = new InfiniteScrollList();
@@ -85,7 +86,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Null(list.SelectedPackageItem);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public async Task LoadItems_LoaderIsNull_Throws()
         {
             var list = new InfiniteScrollList();
@@ -104,7 +105,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("loader", exception.ParamName);
         }
 
-        [WpfTheory]
+        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/10938")]
         [InlineData(null)]
         [InlineData("")]
         public async Task LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
@@ -125,7 +126,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("loadingMessage", exception.ParamName);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public async Task LoadItems_SearchResultTaskIsNull_Throws()
         {
             var list = new InfiniteScrollList();
@@ -144,7 +145,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("searchResultTask", exception.ParamName);
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public async Task LoadItems_IfCancelled_Throws()
         {
             var list = new InfiniteScrollList();
@@ -161,7 +162,7 @@ namespace NuGet.PackageManagement.UI.Test
                 });
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/10938")]
         public async Task LoadItems_BeforeGettingCurrent_WaitsForInitialResults()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -260,7 +261,7 @@ namespace NuGet.PackageManagement.UI.Test
             loader.Verify();
         }
 
-        [WpfTheory]
+        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/10938")]
         [MemberData(nameof(TestSearchMetadata))]
         public async Task LoadItemsAsync_LoadingStatusIndicator_InItemsCollectionIfEmptySearch(
             PackageSearchMetadataContextInfo[] searchItems,
@@ -274,6 +275,7 @@ namespace NuGet.PackageManagement.UI.Test
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
             var list = new InfiniteScrollList();
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
 
             var currentStatus = LoadingStatus.Loading;
 
@@ -299,7 +301,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult(0));
             loaderMock.Setup(x => x.GetCurrent())
-                .Returns(() => searchItems.Select(x => new PackageItemViewModel()));
+                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object)));
 
             list.LoadItemsCompleted += (sender, args) =>
             {

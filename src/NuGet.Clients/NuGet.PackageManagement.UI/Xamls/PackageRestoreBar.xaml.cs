@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
@@ -78,6 +80,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (_packageRestoreManager != null)
@@ -98,7 +101,7 @@ namespace NuGet.PackageManagement.UI
                         var unwrappedException = ExceptionUtility.Unwrap(ex);
                         ShowErrorUI(unwrappedException.Message);
                     }
-                });
+                }).PostOnFailure(nameof(PackageRestoreBar));
             }
         }
 
@@ -132,9 +135,10 @@ namespace NuGet.PackageManagement.UI
 
         private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None)).PostOnFailure(nameof(PackageRestoreBar));
         }
 
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -172,7 +176,6 @@ namespace NuGet.PackageManagement.UI
                 _restoreException = null;
             }
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageRestoreCompleted);
             return true;
         }
 
@@ -255,7 +258,7 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 StatusMessage.Text = message;
-            });
+            }).PostOnFailure(nameof(PackageRestoreBar));
         }
     }
 }

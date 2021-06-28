@@ -51,6 +51,9 @@ project.json text
 *.sql   text
 *.vb    text
 
+# Unix artifacts
+*.sh text eol=lf
+
 # Visual Studio artifacts
 *.csproj text eol=crlf
 *.dbproj text eol=crlf

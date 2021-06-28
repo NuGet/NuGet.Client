@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Moq;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -147,6 +148,7 @@ namespace NuGet.PackageManagement.UI.Test.UserInterfaceService
 
             return new NuGetUIContext(
                 Mock.Of<IServiceBroker>(),
+                Mock.Of<IReconnectingNuGetSearchService>(),
                 _solutionManager.Object,
                 new NuGetSolutionManagerServiceWrapper(),
                 packageManager,

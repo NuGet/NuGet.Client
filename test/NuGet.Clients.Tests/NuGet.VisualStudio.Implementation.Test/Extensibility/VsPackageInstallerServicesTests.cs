@@ -15,6 +15,7 @@ using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
+    [Obsolete]
     public class VsPackageInstallerServicesTests
     {
         [Fact]

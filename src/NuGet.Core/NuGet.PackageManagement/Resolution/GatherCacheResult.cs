@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement
 
             if (Packages.Any(package => package == null))
             {
-                throw new ArgumentException("Values in packages must not be null", "packages");
+                throw new ArgumentException("Values in packages must not be null", nameof(packages));
             }
         }
 

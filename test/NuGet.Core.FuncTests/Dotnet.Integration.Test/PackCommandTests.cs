@@ -2721,6 +2721,249 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+        public void PackCommand_ContentInnerTargetExtension_AddsExtraSymbolFiles(string tfmProperty, string tfmValue)
+        {
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                Directory.CreateDirectory(workingDirectory);
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var target = @"<Target Name=""CustomContentTarget"">
+    <ItemGroup>
+      <TfmSpecificDebugSymbolsFile Include=""abc.pdb"">
+        <TargetPath>/runtimes/win/lib/$(TargetFramework)/abc.pdb</TargetPath>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </TfmSpecificDebugSymbolsFile>
+    </ItemGroup>
+  </Target>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
+                    ProjectFileUtils.AddProperty(xml, "TargetsForTfmSpecificDebugSymbolsInPackage", "CustomContentTarget");
+                    ProjectFileUtils.AddProperty(xml, "IncludeSymbols", "true");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles();
+                    Assert.Contains(@"runtimes/win/lib/netstandard1.4/abc.pdb", files);
+
+                    if (tfmProperty == "TargetFrameworks")
+                    {
+                        Assert.Contains(@"runtimes/win/lib/net46/abc.pdb", files);
+                    }
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_ContentInnerTargetExtension_SymbolFilesWithoutDll()
+        {
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                Directory.CreateDirectory(workingDirectory);
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var target = @"<Target Name=""CustomContentTarget"">
+    <ItemGroup>
+      <TfmSpecificDebugSymbolsFile Include=""abc.pdb"">
+        <TargetPath>/runtimes/win/lib/$(TargetFramework)/abc.pdb</TargetPath>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </TfmSpecificDebugSymbolsFile>
+    </ItemGroup>
+  </Target>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netstandard1.4;net46");
+                    ProjectFileUtils.AddProperty(xml, "TargetsForTfmSpecificDebugSymbolsInPackage", "CustomContentTarget");
+                    ProjectFileUtils.AddProperty(xml, "IncludeBuildOutput", "false", $"'$(TargetFramework)'=='netstandard1.4'");
+                    ProjectFileUtils.AddProperty(xml, "IncludeSymbols", "true");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles();
+                    Assert.Contains(@"runtimes/win/lib/netstandard1.4/abc.pdb", files);
+                    Assert.Contains(@"runtimes/win/lib/net46/abc.pdb", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.pdb", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.dll", files);
+                    Assert.DoesNotContain(@"lib/netstandard1.4/ClassLibrary1.pdb", files);
+                    Assert.DoesNotContain(@"lib/netstandard1.4/ClassLibrary1.dll", files);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_ContentInnerTargetExtension_Snupkg()
+        {
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                Directory.CreateDirectory(workingDirectory);
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var target = @"<Target Name=""CustomContentTarget"">
+    <ItemGroup>
+      <TfmSpecificDebugSymbolsFile Include=""abc.pdb"">
+        <TargetPath>/runtimes/win/lib/$(TargetFramework)/abc.pdb</TargetPath>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </TfmSpecificDebugSymbolsFile>
+    </ItemGroup>
+  </Target>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netstandard1.4;net46");
+                    ProjectFileUtils.AddProperty(xml, "TargetsForTfmSpecificDebugSymbolsInPackage", "CustomContentTarget");
+                    ProjectFileUtils.AddProperty(xml, "IncludeSymbols", "true");
+                    ProjectFileUtils.AddProperty(xml, "SymbolPackageFormat", "snupkg");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles();
+                    Assert.Contains(@"runtimes/win/lib/netstandard1.4/abc.pdb", files);
+                    Assert.Contains(@"runtimes/win/lib/net46/abc.pdb", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.pdb", files);
+                    Assert.Contains(@"lib/netstandard1.4/ClassLibrary1.pdb", files);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_ContentInnerTargetExtension_SymbolFilesWithoutBuildOuput()
+        {
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                Directory.CreateDirectory(workingDirectory);
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var target = @"<Target Name=""CustomContentTarget"">
+    <ItemGroup>
+      <TfmSpecificDebugSymbolsFile Include=""abc.pdb"">
+        <TargetPath>/runtimes/win/lib/$(TargetFramework)/abc.pdb</TargetPath>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </TfmSpecificDebugSymbolsFile>
+    </ItemGroup>
+  </Target>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netstandard1.4;net46");
+                    ProjectFileUtils.AddProperty(xml, "TargetsForTfmSpecificDebugSymbolsInPackage", "CustomContentTarget");
+                    ProjectFileUtils.AddProperty(xml, "IncludeBuildOutput", "false", $"'$(TargetFramework)'=='netstandard1.4'");
+                    ProjectFileUtils.AddProperty(xml, "IncludeSymbols", "true");
+                    ProjectFileUtils.AddProperty(xml, "SymbolPackageFormat", "snupkg");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles();
+                    Assert.Contains(@"runtimes/win/lib/netstandard1.4/abc.pdb", files);
+                    Assert.Contains(@"runtimes/win/lib/net46/abc.pdb", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.pdb", files);
+                    Assert.DoesNotContain(@"lib/netstandard1.4/ClassLibrary1.pdb", files);
+                }
+            }
+        }
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_ContentInnerTargetExtension_SymbolFilesDllWithRecursive()
+        {
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                string symbolPath = Path.Combine(workingDirectory, "Random", "AnotherRandom");
+                Directory.CreateDirectory(symbolPath);
+                File.WriteAllText(Path.Combine(symbolPath, "abc.pdb"), "hello world");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var target = @"<Target Name=""CustomContentTarget"">
+    <ItemGroup>
+      <TfmSpecificDebugSymbolsFile Include=""Random/**/abc.pdb"">
+        <TargetPath>/runtimes/win/lib/$(TargetFramework)/random/abc.pdb</TargetPath>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </TfmSpecificDebugSymbolsFile>
+    </ItemGroup>
+  </Target>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netstandard1.4;net46");
+                    ProjectFileUtils.AddProperty(xml, "TargetsForTfmSpecificDebugSymbolsInPackage", "CustomContentTarget");
+                    ProjectFileUtils.AddProperty(xml, "IncludeBuildOutput", "false", $"'$(TargetFramework)'=='netstandard1.4'");
+                    ProjectFileUtils.AddProperty(xml, "IncludeSymbols", "true");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles();
+                    Assert.Contains(@"runtimes/win/lib/netstandard1.4/random/abc.pdb", files);
+                    Assert.Contains(@"runtimes/win/lib/net46/random/abc.pdb", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.pdb", files);
+                    Assert.Contains(@"lib/net46/ClassLibrary1.dll", files);
+                    Assert.DoesNotContain(@"lib/netstandard1.4/ClassLibrary1.pdb", files);
+                    Assert.DoesNotContain(@"lib/netstandard1.4/ClassLibrary1.dll", files);
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_BuildOutputInnerTargetExtension_AddsTfmSpecificBuildOuput(string tfmProperty,
     string tfmValue)
         {
@@ -2976,7 +3219,7 @@ namespace ClassLibrary
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
-                File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), new byte[0]);
+                File.WriteAllBytes(Path.Combine(workingDirectory, "abc.png"), Array.Empty<byte>());
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3806,6 +4049,50 @@ namespace ClassLibrary
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Contains(frameworkInPackage, libItems[0].TargetFramework.ToString());
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_BuildOutput_DoesNotContainDefaultExtensions()
+        {
+            // Arrange
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
+                    ProjectFileUtils.AddProperty(xml, "DefaultAllowedOutputExtensionsInPackageBuildOutputFolder", ".dll");
+                    ProjectFileUtils.AddProperty(xml, "GenerateDocumentationFile", "true");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    Assert.Contains($"lib/net5.0/{projectName}.dll", allFiles);
+                    Assert.DoesNotContain($"lib/net5.0/{projectName}.xml", allFiles);
+                    Assert.False(allFiles.Any(f => f.EndsWith(".exe")));
+                    Assert.False(allFiles.Any(f => f.EndsWith(".winmd")));
+                    Assert.False(allFiles.Any(f => f.EndsWith(".json")));
+                    Assert.False(allFiles.Any(f => f.EndsWith(".pri")));
                 }
             }
         }
@@ -5342,6 +5629,37 @@ namespace ClassLibrary
                 Assert.Equal(document.Root.Element(ns + "metadata").Element(ns + "requireLicenseAcceptance").Value, "true");
             }
         }
-    }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("wpf")]
+        [InlineData("wpflib")]
+        [InlineData("wpfcustomcontrollib")]
+        [InlineData("wpfusercontrollib")]
+        [InlineData("winforms")]
+        [InlineData("winformscontrollib")]
+        [InlineData("winformslib")]
+        [InlineData("razorclasslib")]
+        public void Dotnet_New_Template_Restore_Pack_Success(string template)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workDirectory = Path.Combine(testDirectory);
+                var projectFile = Path.Combine(workDirectory, $"{projectName}.csproj");
+                var solutionDirectory = Path.Combine(testDirectory, projectName);
+                var nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
+
+                // Act
+                msbuildFixture.CreateDotnetNewProject(workDirectory, projectName, template);
+                msbuildFixture.PackProject(solutionDirectory, projectName, string.Empty, null);
+
+                // Assert
+                // Make sure restore action was success.
+                Assert.True(File.Exists(Path.Combine(solutionDirectory, "obj", "project.assets.json")));
+                // Make sure pack action was success.
+                Assert.True(File.Exists(nupkgPath));
+            }
+        }
+    }
 }

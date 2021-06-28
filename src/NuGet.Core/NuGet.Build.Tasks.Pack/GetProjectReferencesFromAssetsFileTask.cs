@@ -77,7 +77,7 @@ namespace NuGet.Build.Tasks.Pack
             }
             else
             {
-                ProjectReferences = new ITaskItem[0];
+                ProjectReferences = Array.Empty<ITaskItem>();
             }
             return true;
         }

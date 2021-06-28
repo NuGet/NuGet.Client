@@ -37,17 +37,17 @@ namespace NuGet.Frameworks
         {
             if (framework == null)
             {
-                throw new ArgumentNullException("framework");
+                throw new ArgumentNullException(nameof(framework));
             }
 
             if (fallbackFrameworks == null)
             {
-                throw new ArgumentNullException("fallbackFrameworks");
+                throw new ArgumentNullException(nameof(fallbackFrameworks));
             }
 
             if (fallbackFrameworks.Count == 0)
             {
-                throw new ArgumentException("Empty fallbackFrameworks is invalid", "fallbackFrameworks");
+                throw new ArgumentException("Empty fallbackFrameworks is invalid", nameof(fallbackFrameworks));
             }
 
             _fallback = fallbackFrameworks;

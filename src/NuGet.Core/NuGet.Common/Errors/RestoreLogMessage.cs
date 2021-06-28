@@ -74,7 +74,7 @@ namespace NuGet.Common
             {
                 Code = code,
                 LibraryId = libraryId,
-                TargetGraphs = targetGraphs.ToList()
+                TargetGraphs = targetGraphs
             };
         }
 
@@ -111,7 +111,7 @@ namespace NuGet.Common
             {
                 Code = code,
                 LibraryId = libraryId,
-                TargetGraphs = targetGraphs.ToList()
+                TargetGraphs = targetGraphs
             };
         }
 

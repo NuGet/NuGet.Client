@@ -248,7 +248,6 @@ NuGet.Build.Tasks.NuGetMessageTask.Name.get -> string
 NuGet.Build.Tasks.NuGetMessageTask.Name.set -> void
 NuGet.Build.Tasks.NuGetMessageTask.NuGetMessageTask() -> void
 NuGet.Build.Tasks.RestoreSettingsUtils
-NuGet.Build.Tasks.RestoreSettingsUtils.RestoreSettingsUtils() -> void
 NuGet.Build.Tasks.RestoreTask
 NuGet.Build.Tasks.RestoreTask.Cancel() -> void
 NuGet.Build.Tasks.RestoreTask.Dispose() -> void
@@ -351,13 +350,11 @@ static NuGet.Build.Tasks.BuildTasksUtility.AddPropertyIfExists(System.Collection
 static NuGet.Build.Tasks.BuildTasksUtility.CopyPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, System.Collections.Generic.IDictionary<string, string> properties, string key) -> void
 static NuGet.Build.Tasks.BuildTasksUtility.CopyPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, System.Collections.Generic.IDictionary<string, string> properties, string key, string toKey) -> void
 static NuGet.Build.Tasks.BuildTasksUtility.DoesProjectSupportRestore(NuGet.ProjectModel.PackageSpec packageSpec) -> bool
-static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.GetFallbackFolders(string startupDirectory, string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFolders, System.Collections.Generic.IEnumerable<string> additionalProjectFallbackFoldersExcludes, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(NuGet.ProjectModel.ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, NuGet.Common.ILogger log) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)
 static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, NuGet.Common.ILogger log) -> (NuGet.ProjectModel.ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath)
 static NuGet.Build.Tasks.BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(string restoreProjectStyleProperty) -> NuGet.ProjectModel.ProjectStyle?
 static NuGet.Build.Tasks.BuildTasksUtility.GetPropertyIfExists(Microsoft.Build.Framework.ITaskItem item, string key) -> string
-static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, System.Collections.Generic.IEnumerable<string> additionalProjectSources, NuGet.Configuration.ISettings settings) -> string[]
 static NuGet.Build.Tasks.BuildTasksUtility.LogInputParam(NuGet.Common.ILogger log, string name, params string[] values) -> void
 static NuGet.Build.Tasks.BuildTasksUtility.LogOutputParam(NuGet.Common.ILogger log, string name, params string[] values) -> void

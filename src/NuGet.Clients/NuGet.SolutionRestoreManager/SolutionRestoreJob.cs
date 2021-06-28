@@ -198,7 +198,7 @@ namespace NuGet.SolutionRestoreManager
                         if (projects.Any() && solutionDirectory == null)
                         {
                             _status = NuGetOperationStatus.Failed;
-                            _logger.ShowError(Resources.SolutionIsNotSaved);
+                            await _logger.ShowErrorAsync(Resources.SolutionIsNotSaved);
                             await _logger.WriteLineAsync(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
 
                             return;
@@ -480,7 +480,7 @@ namespace NuGet.SolutionRestoreManager
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
-                _logger.ShowError(Resources.PackageRefNotRestoredBecauseOfNoConsent);
+                await _logger.ShowErrorAsync(Resources.PackageRefNotRestoredBecauseOfNoConsent);
             }
         }
 
@@ -558,7 +558,7 @@ namespace NuGet.SolutionRestoreManager
                             projectName,
                             exceptionMessage);
                         await _logger.WriteLineAsync(VerbosityLevel.Quiet, message);
-                        _logger.ShowError(message);
+                        await _logger.ShowErrorAsync(message);
                         await _logger.WriteLineAsync(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
                     }
                 });
@@ -590,7 +590,7 @@ namespace NuGet.SolutionRestoreManager
                     if (!isSolutionAvailable
                         && await CheckPackagesConfigAsync())
                     {
-                        _logger.ShowError(Resources.SolutionIsNotSaved);
+                        await _logger.ShowErrorAsync(Resources.SolutionIsNotSaved);
                         await _logger.WriteLineAsync(VerbosityLevel.Quiet, Resources.SolutionIsNotSaved);
                     }
 
@@ -676,7 +676,7 @@ namespace NuGet.SolutionRestoreManager
         /// Checks if there are missing packages that should be restored. If so, a warning will
         /// be added to the error list.
         /// </summary>
-        private Task CheckForMissingPackagesAsync(IEnumerable<PackageRestoreData> installedPackages)
+        private async Task CheckForMissingPackagesAsync(IEnumerable<PackageRestoreData> installedPackages)
         {
             var missingPackages = installedPackages.Where(p => p.IsMissing);
 
@@ -686,9 +686,8 @@ namespace NuGet.SolutionRestoreManager
                     CultureInfo.CurrentCulture,
                     Resources.PackageNotRestoredBecauseOfNoConsent,
                     string.Join(", ", missingPackages.Select(p => p.PackageReference.PackageIdentity.ToString())));
-                _logger.ShowError(errorText);
+                await _logger.ShowErrorAsync(errorText);
             }
-            return Task.CompletedTask;
         }
 
         private async Task RestoreMissingPackagesInSolutionAsync(
@@ -701,7 +700,9 @@ namespace NuGet.SolutionRestoreManager
 
             using (var cacheContext = new SourceCacheContext())
             {
-                var downloadContext = new PackageDownloadContext(cacheContext)
+                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+
+                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageNamespacesConfiguration)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
                     ClientPolicyContext = ClientPolicyContext.GetClientPolicy(_settings, logger)

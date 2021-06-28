@@ -207,6 +207,15 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void OwnersItem_Equals_WithDifferentOrderedOwners_ReturnsTrue()
+        {
+            var owners1 = new OwnersItem("one;two;three");
+            var owners2 = new OwnersItem("one;three;two");
+
+            owners1.Equals(owners2).Should().BeTrue();
+        }
+
+        [Fact]
         public void OwnersItem_Equals_WithDifferentContent_ReturnsFalse()
         {
             var owners1 = new OwnersItem("one;two;three");

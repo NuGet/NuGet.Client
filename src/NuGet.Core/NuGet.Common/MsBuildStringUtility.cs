@@ -142,7 +142,7 @@ namespace NuGet.Common
         /// </summary>
         public static IEnumerable<NuGetLogCode> GetDistinctNuGetLogCodesOrDefault(IEnumerable<IEnumerable<NuGetLogCode>> nugetLogCodeLists)
         {
-            if (nugetLogCodeLists.Count() > 0)
+            if (nugetLogCodeLists.Any())
             {
                 var result = Enumerable.Empty<NuGetLogCode>();
                 var first = true;

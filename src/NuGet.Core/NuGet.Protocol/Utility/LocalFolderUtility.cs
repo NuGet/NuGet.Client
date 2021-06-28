@@ -1043,7 +1043,7 @@ namespace NuGet.Protocol
                 log.LogWarning(e.Message);
             }
 
-            return new DirectoryInfo[0];
+            return Array.Empty<DirectoryInfo>();
         }
 
         private static DirectoryInfo[] GetDirectoriesSafe(DirectoryInfo root, string filter, SearchOption searchOption, ILogger log)
@@ -1057,7 +1057,7 @@ namespace NuGet.Protocol
                 log.LogWarning(e.Message);
             }
 
-            return new DirectoryInfo[0];
+            return Array.Empty<DirectoryInfo>();
         }
 
         /// <summary>
@@ -1074,7 +1074,7 @@ namespace NuGet.Protocol
                 log.LogWarning(e.Message);
             }
 
-            return new FileInfo[0];
+            return Array.Empty<FileInfo>();
         }
 
         /// <summary>

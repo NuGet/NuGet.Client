@@ -319,7 +319,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             var target = new PackTask
             {
                 AssemblyName = "AssemblyName",
-                FrameworkAssemblyReferences = new ITaskItem[0],
+                FrameworkAssemblyReferences = Array.Empty<ITaskItem>(),
                 Authors = Array.Empty<string>(),
                 AllowedOutputExtensionsInPackageBuildOutputFolder = Array.Empty<string>(),
                 AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = Array.Empty<string>(),
@@ -340,13 +340,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                 NuspecOutputPath = "NuspecOutputPath",
                 NuspecProperties = Array.Empty<string>(),
                 PackItem = null, // This is asserted by other tests. It does not serialize well.
-                PackageFiles = new ITaskItem[0],
-                PackageFilesToExclude = new ITaskItem[0],
+                PackageFiles = Array.Empty<ITaskItem>(),
+                PackageFilesToExclude = Array.Empty<ITaskItem>(),
                 PackageId = "PackageId",
                 PackageOutputPath = "PackageOutputPath",
                 PackageTypes = Array.Empty<string>(),
                 PackageVersion = "PackageVersion",
-                ProjectReferencesWithVersions = new ITaskItem[0],
+                ProjectReferencesWithVersions = Array.Empty<ITaskItem>(),
                 ProjectUrl = "ProjectUrl",
                 ReleaseNotes = "ReleaseNotes",
                 RepositoryType = "RepositoryType",
@@ -355,12 +355,12 @@ namespace NuGet.Build.Tasks.Pack.Test
                 RepositoryBranch = "RepositoryBranch",
                 RequireLicenseAcceptance = true,
                 Serviceable = true,
-                SourceFiles = new ITaskItem[0],
+                SourceFiles = Array.Empty<ITaskItem>(),
                 Tags = Array.Empty<string>(),
                 TargetFrameworks = Array.Empty<string>(),
-                BuildOutputInPackage = new ITaskItem[0],
-                TargetPathsToSymbols = new ITaskItem[0],
-                FrameworksWithSuppressedDependencies = new ITaskItem[0],
+                BuildOutputInPackage = Array.Empty<ITaskItem>(),
+                TargetPathsToSymbols = Array.Empty<ITaskItem>(),
+                FrameworksWithSuppressedDependencies = Array.Empty<ITaskItem>(),
             };
 
             var settings = new JsonSerializerSettings

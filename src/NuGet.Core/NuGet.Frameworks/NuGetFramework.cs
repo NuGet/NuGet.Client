@@ -68,22 +68,22 @@ namespace NuGet.Frameworks
         {
             if (frameworkIdentifier == null)
             {
-                throw new ArgumentNullException("frameworkIdentifier");
+                throw new ArgumentNullException(nameof(frameworkIdentifier));
             }
 
             if (frameworkVersion == null)
             {
-                throw new ArgumentNullException("frameworkVersion");
+                throw new ArgumentNullException(nameof(frameworkVersion));
             }
 
             if (platform == null)
             {
-                throw new ArgumentNullException("platform");
+                throw new ArgumentNullException(nameof(platform));
             }
 
             if (platformVersion == null)
             {
-                throw new ArgumentNullException("platformVersion");
+                throw new ArgumentNullException(nameof(platformVersion));
             }
 
             _frameworkIdentifier = frameworkIdentifier;
@@ -173,7 +173,7 @@ namespace NuGet.Frameworks
         {
             if (mappings == null)
             {
-                throw new ArgumentNullException("mappings");
+                throw new ArgumentNullException(nameof(mappings));
             }
 
             // Check for rewrites
@@ -286,7 +286,7 @@ namespace NuGet.Frameworks
                         mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks);
 
                         // sort the PCL frameworks by alphabetical order
-                        var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
+                        var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase);
 
                         sb.Append(string.Join("+", sortedFrameworks));
                     }

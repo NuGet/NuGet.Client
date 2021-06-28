@@ -377,7 +377,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     new LogMessage(
                         LogLevel.Error,
                         $"[{state.ToString()}] {errorMessage}"));
-            });
+            }).PostOnFailure(nameof(MultiSourcePackageFeed));
         }
     }
 }

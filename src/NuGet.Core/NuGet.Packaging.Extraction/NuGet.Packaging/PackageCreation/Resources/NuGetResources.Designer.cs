@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
+namespace NuGet.Packaging.PackageCreation.Resources {
     using System;
 
 
@@ -39,7 +39,7 @@ namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.PackageExtraction.PackageCreation.Resources.NuGetResources", typeof(NuGetResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Extraction.NuGet.Packaging.PackageCreation.Resources.NuGetResources", typeof(NuGetResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -88,6 +88,15 @@ namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Attempted to pack multiple files into the same location(s). The following destinations were used multiple times: {0}.
+        /// </summary>
+        internal static string FoundDuplicateFile {
+            get {
+                return ResourceManager.GetString("FoundDuplicateFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Cannot open the icon file &apos;{0}&apos;: {1}..
         /// </summary>
         internal static string IconCannotOpenFile {
@@ -102,6 +111,15 @@ namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
         internal static string IconErrorEmpty {
             get {
                 return ResourceManager.GetString("IconErrorEmpty", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;icon&apos; element &apos;{0}&apos; has an invalid file extension. Valid options are .png, .jpg or .jpeg..
+        /// </summary>
+        internal static string IconInvalidExtension {
+            get {
+                return ResourceManager.GetString("IconInvalidExtension", resourceCulture);
             }
         }
 
@@ -129,6 +147,15 @@ namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
         internal static string IconNoFileElement {
             get {
                 return ResourceManager.GetString("IconNoFileElement", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The icon file &apos;{0}&apos; does not exist in the package. (Did you mean &apos;{1}&apos;?).
+        /// </summary>
+        internal static string IconNoFileElementWithHint {
+            get {
+                return ResourceManager.GetString("IconNoFileElementWithHint", resourceCulture);
             }
         }
 
@@ -223,6 +250,15 @@ namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to The license file &apos;{0}&apos; does not exist in the package. (Did you mean &apos;{1}&apos;?).
+        /// </summary>
+        internal static string Manifest_LicenseFileIsNotInNupkgWithHint {
+            get {
+                return ResourceManager.GetString("Manifest_LicenseFileIsNotInNupkgWithHint", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to The licenseUrl and license elements cannot be used together..
         /// </summary>
         internal static string Manifest_LicenseUrlCannotBeUsedWithLicenseMetadata {
@@ -277,6 +313,15 @@ namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to EmitRequireLicenseAcceptance must not be set to false if RequireLicenseAcceptance is set to true..
+        /// </summary>
+        internal static string Manifest_RequireLicenseAcceptanceRequiresEmit {
+            get {
+                return ResourceManager.GetString("Manifest_RequireLicenseAcceptanceRequiresEmit", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Enabling license acceptance requires a license or a licenseUrl to be specified. The licenseUrl will be deprecated, consider using the license metadata..
         /// </summary>
         internal static string Manifest_RequireLicenseAcceptanceRequiresLicenseUrl {
@@ -318,6 +363,61 @@ namespace NuGet.Packaging.Extraction.PackageCreation.Resources {
         internal static string PackageAuthoring_FileNotFound {
             get {
                 return ResourceManager.GetString("PackageAuthoring_FileNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot open the readme file &apos;{0}&apos;: {1}..
+        /// </summary>
+        internal static string ReadmeCannotOpenFile
+        {
+            get
+            {
+                return ResourceManager.GetString("ReadmeCannotOpenFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The readme file is empty..
+        /// </summary>
+        internal static string ReadmeErrorEmpty
+        {
+            get
+            {
+                return ResourceManager.GetString("ReadmeErrorEmpty", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The readme file &apos;{0}&apos; has an invalid extension..
+        /// </summary>
+        internal static string ReadmeFileExtensionIsInvalid
+        {
+            get
+            {
+                return ResourceManager.GetString("ReadmeFileExtensionIsInvalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The element &apos;readme&apos; cannot be empty..
+        /// </summary>
+        internal static string ReadmeMissingRequiredValue
+        {
+            get
+            {
+                return ResourceManager.GetString("ReadmeMissingRequiredValue", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The readme file &apos;{0}&apos; does not exist in the package..
+        /// </summary>
+        internal static string ReadmeNoFileElement
+        {
+            get
+            {
+                return ResourceManager.GetString("ReadmeNoFileElement", resourceCulture);
             }
         }
 

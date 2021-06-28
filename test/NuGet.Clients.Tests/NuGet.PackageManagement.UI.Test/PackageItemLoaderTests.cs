@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -37,7 +38,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var solutionManager = Mock.Of<INuGetSolutionManagerService>();
             var uiContext = new Mock<INuGetUIContext>();
-            var searchService = new Mock<INuGetSearchService>(MockBehavior.Strict);
+            var searchService = new Mock<IReconnectingNuGetSearchService>(MockBehavior.Strict);
 
             var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
@@ -110,7 +111,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             uiContext.Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
-            var searchService = new Mock<INuGetSearchService>(MockBehavior.Strict);
+            var searchService = new Mock<IReconnectingNuGetSearchService>(MockBehavior.Strict);
 
             var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {

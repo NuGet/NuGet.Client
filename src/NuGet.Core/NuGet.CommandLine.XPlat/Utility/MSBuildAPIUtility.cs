@@ -160,7 +160,7 @@ namespace NuGet.CommandLine.XPlat
         {
             var itemGroups = GetItemGroups(project);
 
-            if (existingPackageReferences.Count() == 0)
+            if (!existingPackageReferences.Any())
             {
                 // Add packageReference only if it does not exist.
                 var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
@@ -323,10 +323,12 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectPath"> Path to the project to get versions for its packages </param>
         /// <param name="userInputFrameworks">A list of frameworks</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
-        /// <param name="transitive">Include transitive packages in the result</param>
-        /// <returns></returns>
+        /// <param name="transitive">Include transitive packages/projects in the result</param>
+        /// <param name="includeProjects">Include project references in top-level and transitive package lists</param>
+        /// <returns>FrameworkPackages collection with top-level and transitive package/project
+        /// references for each framework, or null on error</returns>
         internal IEnumerable<FrameworkPackages> GetResolvedVersions(
-            string projectPath, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive)
+            string projectPath, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive, bool includeProjects)
         {
             if (userInputFrameworks == null)
             {
@@ -422,11 +424,11 @@ namespace NuGet.CommandLine.XPlat
                         {
                             try
                             { // In case proj and assets file are not in sync and some refs were deleted
-                                installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name)).First();
+                                installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
                             }
                             catch (Exception)
                             {
-                                Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
+                                Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
                                 return null;
                             }
                         }
@@ -445,11 +447,14 @@ namespace NuGet.CommandLine.XPlat
 
                         installedPackage.AutoReference = topLevelPackage.AutoReferenced;
 
-                        topLevelPackages.Add(installedPackage);
+                        if (library.Type != "project" || includeProjects)
+                        {
+                            topLevelPackages.Add(installedPackage);
+                        }
                     }
                     // If no matching packages were found, then the package is transitive,
                     // and include-transitive must be used to add the package
-                    else if (transitive)
+                    else if (transitive) // be sure to exclude "project" references here as these are irrelevant
                     {
                         var installedPackage = new InstalledPackageReference(library.Name)
                         {
@@ -457,7 +462,11 @@ namespace NuGet.CommandLine.XPlat
                                 .FromIdentity(new PackageIdentity(library.Name, library.Version))
                                 .Build()
                         };
-                        transitivePackages.Add(installedPackage);
+
+                        if (library.Type != "project" || includeProjects)
+                        {
+                            transitivePackages.Add(installedPackage);
+                        }
                     }
                 }
 
@@ -597,7 +606,7 @@ namespace NuGet.CommandLine.XPlat
                 .Where(p => p.Name.Equals(FRAMEWORK_TAG, StringComparison.OrdinalIgnoreCase))
                 .Select(p => p.EvaluatedValue);
 
-            if (frameworks.Count() == 0)
+            if (!frameworks.Any())
             {
                 var frameworksString = project
                     .AllEvaluatedProperties

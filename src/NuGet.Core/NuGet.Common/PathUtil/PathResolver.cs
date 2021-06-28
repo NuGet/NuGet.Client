@@ -23,9 +23,9 @@ namespace NuGet.Common
             Func<T, string> getPath,
             IEnumerable<string> wildcards)
         {
-            IEnumerable<Regex> filters = wildcards.Select(WildcardToRegex);
+            List<Regex> filters = wildcards.Select(WildcardToRegex).ToList();
 
-            return source.Where(item =>
+            return source.AsParallel().Where(item =>
             {
                 string path = getPath(item);
                 return filters.Any(f => f.IsMatch(path));
@@ -79,7 +79,7 @@ namespace NuGet.Common
                 // regex wildcard adjustments for *nix-style file systems
                 pattern = pattern
                     .Replace(@"\.\*\*", @"\.[^/.]*") // .** should not match on ../file or ./file but will match .file
-                    .Replace(@"\*\*/", "(.+/)*") //For recursive wildcards /**/, include the current directory.
+                    .Replace(@"\*\*/", "/?([^/]+/)*?") //For recursive wildcards /**/, include the current directory.
                     .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
                     .Replace(@"\*", @"[^/]*(/)?") // For non recursive searches, limit it any character that is not a directory separator
                     .Replace(@"\?", "."); // ? translates to a single any character
@@ -90,7 +90,7 @@ namespace NuGet.Common
                 pattern = pattern
                     .Replace("/", @"\\") // On Windows, / is treated the same as \.
                     .Replace(@"\.\*\*", @"\.[^\\.]*") // .** should not match on ../file or ./file but will match .file
-                    .Replace(@"\*\*\\", @"(.+\\)*") //For recursive wildcards \**\, include the current directory.
+                    .Replace(@"\*\*\\", @"(\\\\)?([^\\]+\\)*?") //For recursive wildcards \**\, include the current directory.
                     .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
                     .Replace(@"\*", @"[^\\]*(\\)?") // For non recursive searches, limit it any character that is not a directory separator
                     .Replace(@"\?", "."); // ? translates to a single any character
@@ -146,7 +146,7 @@ namespace NuGet.Common
 
             // Starting from the base path, enumerate over all files and match it using the wildcard expression provided by the user.
             // Note: We use Directory.GetFiles() instead of Directory.EnumerateFiles() here to support Mono
-            IEnumerable<SearchPathResult> matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption)
+            IEnumerable<SearchPathResult> matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption).AsParallel()
                                                          where searchRegex.IsMatch(file)
                                                          select new SearchPathResult(file, isFile: true);
 

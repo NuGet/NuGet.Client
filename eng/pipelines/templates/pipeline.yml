@@ -1,3 +1,6 @@
+variables:
+  DOTNET_NOLOGO: 1
+
 jobs:
 - job: Initialize_Build_SemanticVersion
   timeoutInMinutes: 2
@@ -39,7 +42,7 @@ jobs:
     BuildRTM: "false"
 
   pool:
-    name: VSEng-MicroBuildVS2019
+    name: VSEngSS-MicroBuild2019
     demands:
       - DotNetFramework
       - msbuild
@@ -60,7 +63,7 @@ jobs:
     BuildRTM: "true"
 
   pool:
-    name: VSEng-MicroBuildVS2019
+    name: VSEngSS-MicroBuild2019
     demands:
       - DotNetFramework
       - msbuild
@@ -163,3 +166,18 @@ jobs:
 
   steps:
   - template: Apex_Tests_On_Windows.yml
+
+- job: Source_Build
+  dependsOn:
+  - Initialize_Build
+  timeoutInMinutes: 120
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    BuildRTM: "false"
+  pool:
+    vmImage: ubuntu-latest
+    demands: sh
+  steps:
+  - template: Source_Build.yml

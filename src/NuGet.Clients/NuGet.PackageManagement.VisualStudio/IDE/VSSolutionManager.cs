@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -27,6 +28,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -35,12 +37,13 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IVsSolutionEvents, IDisposable
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
-        private static readonly string VSNuGetClientName = "NuGet VS VSIX";
+        private const string VSNuGetClientName = "NuGet VS VSIX";
 
         private readonly INuGetLockService _initLock;
+        private readonly ReentrantSemaphore _semaphoreLock = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -48,6 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
+        private uint _selectionEventsCookie;
+        private uint _solutionEventsCookie;
 
         private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
@@ -190,8 +195,9 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
 
-            uint cookie;
-            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
+            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
+            ErrorHandler.ThrowOnFailure(hr);
+            hr = _vsSolution.AdviseSolutionEvents(this, out _solutionEventsCookie);
             ErrorHandler.ThrowOnFailure(hr);
 
             // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
@@ -206,8 +212,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
             var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
 
-            _solutionSaveEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
-            _solutionSaveAsEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
+            _solutionSaveEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveID);
+            _solutionSaveAsEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveAsID);
 
             _solutionSaveEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
             _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
@@ -244,7 +250,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (nuGetProject == null)
             {
-                throw new ArgumentNullException("nuGetProject");
+                throw new ArgumentNullException(nameof(nuGetProject));
             }
 
             await EnsureInitializeAsync();
@@ -375,8 +381,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Do NOT initialize VSSolutionManager through this API (by calling EnsureInitializeAsync)
             // This is a fast check implemented specifically for right click context menu to be
-            // quick and does not involve initializing VSSolutionManager. Otherwise it will create
-            // hang issues for right click on solution.
+            // quick and does not involve initializing VSSolutionManager. Otherwise it will make
+            // the UI stop responding for right click on solution.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // first check with DTE, and if we find any supported project, then return immediately.
@@ -403,13 +409,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 await EnsureInitializeAsync();
-                var vsSolution4 = _vsSolution as IVsSolution4;
-
-                if (vsSolution4 != null)
-                {
-                    // ignore result and continue. Since results may be incomplete if user canceled.
-                    vsSolution4.EnsureSolutionIsLoaded((uint)__VSBSLFLAGS.VSBSLFLAGS_None);
-                }
             });
         }
 
@@ -466,6 +465,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Checks whether the current solution is saved to disk, as opposed to be in memory.
         /// </summary>
+        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private bool DoesSolutionRequireAnInitialSaveAs()
         {
             // Check if user is doing File - New File without saving the solution.
@@ -565,6 +565,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void OnEnvDTEProjectRenamed(Project envDTEProject, string oldName)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -619,6 +620,7 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectRemoved?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void OnEnvDTEProjectAdded(Project envDTEProject)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -639,6 +641,7 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task SetDefaultProjectNameAsync()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -791,9 +794,21 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // If already initialized, need not be on the UI thread
-                if (!_initialized)
+                if (_initialized)
                 {
-                    _initialized = true;
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                    return;
+                }
+
+                // Ensure all initialization finished when needed, it still runs as async and prevents _initialized set true too early.
+                // Setting '_initialized = true' too early caused random timing bug.
+
+                await _semaphoreLock.ExecuteAsync(async () =>
+                {
+                    if (_initialized)
+                    {
+                        return;
+                    }
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -804,11 +819,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
                     }
-                }
-                else
-                {
-                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
-                }
+
+                    _initialized = true;
+                });
             }
             catch (Exception e)
             {
@@ -881,7 +894,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // The AfterNuGetCacheUpdated event is raised on a separate Task to prevent blocking of the caller.
             // E.g. - If Restore updates the cache entries on CPS nomination, then restore should not be blocked till UI is restored.
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e)).PostOnFailure(nameof(VSSolutionManager));
         }
 
         private async Task FireNuGetCacheUpdatedEventAsync(NuGetEventArgs<string> e)
@@ -909,13 +922,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {
-            if (dwCmdUICookie == _solutionLoadedUICookie
-                && fActive == 1)
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                    await OnSolutionExistsAndFullyLoadedAsync());
-            }
-
             return VSConstants.S_OK;
         }
 
@@ -1022,7 +1028,88 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return nuGetProject;
         }
-
         #endregion
+
+        #region IVsSolutionEvents
+        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(OnAfterOpenSolution));
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeCloseSolution(object pUnkReserved)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterCloseSolution(object pUnkReserved)
+        {
+            return VSConstants.S_OK;
+        }
+        #endregion
+
+        private bool _disposed = false;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                if (ThreadHelper.JoinableTaskContext?.IsOnMainThread == true)
+                {
+                    if (_vsMonitorSelection != null && _selectionEventsCookie != 0)
+                    {
+                        _vsMonitorSelection.UnadviseSelectionEvents(_selectionEventsCookie);
+                        _selectionEventsCookie = 0;
+                    }
+
+                    if (_vsSolution != null && _solutionEventsCookie != 0)
+                    {
+                        _vsSolution.UnadviseSolutionEvents(_solutionEventsCookie);
+                        _solutionEventsCookie = 0;
+                    }
+                }
+
+                _semaphoreLock?.Dispose();
+            }
+        }
     }
 }

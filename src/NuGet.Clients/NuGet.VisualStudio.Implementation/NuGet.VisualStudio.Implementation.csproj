@@ -9,7 +9,6 @@
     <Description>Implementation of the NuGet.VisualStudio extensibility APIs.</Description>
     <Guid>9623cf30-192c-4864-b419-29649169ae30</Guid>
     <ImportedFromTypeLib>NuGet.VisualStudio.Implementation</ImportedFromTypeLib>
-    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -34,7 +33,7 @@
   <ItemGroup>
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" />
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" />
-    <PackageReference Include="Microsoft.VisualStudio.Composition" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
@@ -42,10 +41,10 @@
       <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.VS.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed">
-      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed\$(ProjectSystemManagedVersion)\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS">
-      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed.vs\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed.vs\$(ProjectSystemManagedVersion)\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +69,5 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

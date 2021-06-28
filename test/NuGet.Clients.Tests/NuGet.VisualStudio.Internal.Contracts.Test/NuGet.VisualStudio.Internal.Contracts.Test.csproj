@@ -6,7 +6,6 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Description>Unit and integration tests for NuGet.VisualStudio.Internal.Contracts.</Description>
     <Nullable>enable</Nullable>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +21,5 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

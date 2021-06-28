@@ -15,25 +15,67 @@ echo "Installing dotnet CLI"
 mkdir -p cli
 curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 
+if (( $? )); then
+	echo "Could not download 'dotnet-install.sh' script. Please check your network and try again!"
+	exit 1
+fi
+
 # Run install.sh for cli
 chmod +x cli/dotnet-install.sh
 
-# v1 needed for some test and bootstrapping testing version
-cli/dotnet-install.sh -i cli -c 1.0
+# Get recommended version for bootstrapping testing version
+cli/dotnet-install.sh -i cli -c 2.2 -nopath
+
+if (( $? )); then
+	echo "The .NET CLI Install failed!!"
+	exit 1
+fi
+
+# Disable .NET CLI Install Lookup
+DOTNET_MULTILEVEL_LOOKUP=0
 
 DOTNET="$(pwd)/cli/dotnet"
 
-echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
+# Let the dotnet cli expand and decompress first if it's a first-run
+$DOTNET --info
 
-# run it twice so dotnet cli can expand and decompress without affecting the result of the target
-$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
-DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
+# Get CLI Branches for testing
+echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
-echo $DOTNET_BRANCH
-cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
+IFS=$'\n'
+CMD_OUT_LINES=(`dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting`)
+# Take only last the line which has the version information and strip all the spaces
+DOTNET_BRANCHES=${CMD_OUT_LINES[-1]//[[:space:]]}
+unset IFS
 
-# Display current version
-$DOTNET --version
+IFS=$';'
+for DOTNET_BRANCH in ${DOTNET_BRANCHES[@]}
+do
+	echo $DOTNET_BRANCH
+
+	IFS=$':'
+	ChannelAndVersion=($DOTNET_BRANCH)
+	Channel=${ChannelAndVersion[0]}
+	if [ ${#ChannelAndVersion[@]} -eq 1 ]
+	then
+		Version="latest"
+	else
+		Version=${ChannelAndVersion[1]}
+	fi
+	unset IFS
+
+	echo "Channel is: $Channel"
+	echo "Version is: $Version"
+	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+
+	if (( $? )); then
+		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
+		exit 1
+	fi
+done
+
+# Display .NET CLI info
+$DOTNET --info
 
 echo "================="
 
@@ -52,16 +94,17 @@ then
 fi
 
 # restore packages
-echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
 fi
 
 # run tests
-echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
 if [ $? -ne 0 ]; then
 	echo "Tests failed!!"

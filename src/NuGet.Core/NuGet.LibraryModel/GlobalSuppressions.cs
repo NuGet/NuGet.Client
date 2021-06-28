@@ -8,9 +8,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.LibraryModel.LibraryDependencyType.Build")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.LibraryModel.LibraryDependencyType.Default")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.LibraryModel.LibraryDependencyType.Platform")]
 [assembly: SuppressMessage("Build", "CA1308:In method 'GetHashCode', replace the call to 'ToLowerInvariant' with 'ToUpperInvariant'.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.LibraryModel.CentralPackageVersion.GetHashCode~System.Int32")]
 [assembly: SuppressMessage("Build", "CA1062:In externally visible method 'int DownloadDependency.CompareTo(DownloadDependency other)', validate parameter 'other' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.LibraryModel.DownloadDependency.CompareTo(NuGet.LibraryModel.DownloadDependency)~System.Int32")]
 [assembly: SuppressMessage("Build", "CA1308:In method 'GetHashCode', replace the call to 'ToLowerInvariant' with 'ToUpperInvariant'.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.LibraryModel.DownloadDependency.GetHashCode~System.Int32")]
@@ -29,6 +26,3 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Build", "CA2227:Change 'Items' to be read-only by removing the property setter.", Justification = "<Pending>", Scope = "member", Target = "~P:NuGet.LibraryModel.Library.Items")]
 [assembly: SuppressMessage("Build", "CA2227:Change 'NoWarn' to be read-only by removing the property setter.", Justification = "<Pending>", Scope = "member", Target = "~P:NuGet.LibraryModel.LibraryDependency.NoWarn")]
 [assembly: SuppressMessage("Build", "CA1067:Type NuGet.LibraryModel.FrameworkDependency should override Equals because it implements IEquatable<T>", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.LibraryModel.FrameworkDependency")]
-[assembly: SuppressMessage("Build", "CA1052:Type 'FrameworkDependencyFlagsUtils' is a static holder type but is neither static nor NotInheritable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.LibraryModel.FrameworkDependencyFlagsUtils")]
-[assembly: SuppressMessage("Build", "CA1052:Type 'LibraryDependencyTargetUtils' is a static holder type but is neither static nor NotInheritable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.LibraryModel.LibraryDependencyTargetUtils")]
-[assembly: SuppressMessage("Build", "CA1052:Type 'LibraryIncludeFlagUtils' is a static holder type but is neither static nor NotInheritable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.LibraryModel.LibraryIncludeFlagUtils")]

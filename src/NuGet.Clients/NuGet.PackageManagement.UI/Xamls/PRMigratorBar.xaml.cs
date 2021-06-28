@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -80,7 +81,7 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 UpgradeMessage.Text = message;
-            });
+            }).PostOnFailure(nameof(PRMigratorBar));
         }
 
         public FileConflictAction ResolveFileConflict(string message)
@@ -102,9 +103,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     HideMigratorBar();
                 }
-            });
+            }).PostOnFailure(nameof(PRMigratorBar));
         }
 
+        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task<bool> ShouldShowUpgradeProjectAsync()
         {
             ThreadHelper.ThrowIfNotOnUIThread();

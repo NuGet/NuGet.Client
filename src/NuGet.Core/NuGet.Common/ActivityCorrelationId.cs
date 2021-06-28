@@ -21,7 +21,7 @@ namespace NuGet.Common
 #if IS_CORECLR
         private static readonly AsyncLocal<string> _correlationId = new AsyncLocal<string>();
 #else
-        private static readonly string CorrelationIdSlot = "NuGet.Common.ActivityCorrelationId";
+        private const string CorrelationIdSlot = "NuGet.Common.ActivityCorrelationId";
 #endif
 
         private static readonly string DefaultCorrelationId = Guid.Empty.ToString();

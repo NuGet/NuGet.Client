@@ -25,7 +25,6 @@ NuGet.Protocol.CachingSourceProvider.CreateRepository(string source) -> NuGet.Pr
 NuGet.Protocol.CachingSourceProvider.GetRepositories() -> System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository>
 NuGet.Protocol.CachingSourceProvider.PackageSourceProvider.get -> NuGet.Configuration.IPackageSourceProvider
 NuGet.Protocol.CachingUtility
-NuGet.Protocol.CachingUtility.CachingUtility() -> void
 NuGet.Protocol.Core.Types.AutoCompleteResource
 NuGet.Protocol.Core.Types.AutoCompleteResource.AutoCompleteResource() -> void
 NuGet.Protocol.Core.Types.DependencyInfoResource
@@ -93,6 +92,7 @@ NuGet.Protocol.Core.Types.IPackageSearchMetadata.PackageDetailsUrl.get -> System
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.PrefixReserved.get -> bool
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.ProjectUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.Published.get -> System.DateTimeOffset?
+NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReportAbuseUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.RequireLicenseAcceptance.get -> bool
 NuGet.Protocol.Core.Types.IPackageSearchMetadata.Summary.get -> string
@@ -189,6 +189,8 @@ NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetada
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ProjectUrl.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Published.get -> System.DateTimeOffset?
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.Published.set -> void
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeUrl.get -> System.Uri
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeUrl.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReportAbuseUrl.get -> System.Uri
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReportAbuseUrl.set -> void
 NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.RequireLicenseAcceptance.get -> bool
@@ -633,6 +635,7 @@ NuGet.Protocol.LocalPackageSearchMetadata.PackageReader.get -> System.Func<NuGet
 NuGet.Protocol.LocalPackageSearchMetadata.PrefixReserved.get -> bool
 NuGet.Protocol.LocalPackageSearchMetadata.ProjectUrl.get -> System.Uri
 NuGet.Protocol.LocalPackageSearchMetadata.Published.get -> System.DateTimeOffset?
+NuGet.Protocol.LocalPackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.LocalPackageSearchMetadata.ReportAbuseUrl.get -> System.Uri
 NuGet.Protocol.LocalPackageSearchMetadata.RequireLicenseAcceptance.get -> bool
 NuGet.Protocol.LocalPackageSearchMetadata.Summary.get -> string
@@ -739,6 +742,7 @@ NuGet.Protocol.PackageSearchMetadata.ParsedVersions.get -> NuGet.Protocol.Core.T
 NuGet.Protocol.PackageSearchMetadata.PrefixReserved.get -> bool
 NuGet.Protocol.PackageSearchMetadata.ProjectUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadata.Published.get -> System.DateTimeOffset?
+NuGet.Protocol.PackageSearchMetadata.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadata.ReportAbuseUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadata.ReportAbuseUrl.set -> void
 NuGet.Protocol.PackageSearchMetadata.RequireLicenseAcceptance.get -> bool
@@ -773,6 +777,7 @@ NuGet.Protocol.PackageSearchMetadataV2Feed.PackageSearchMetadataV2Feed(NuGet.Pro
 NuGet.Protocol.PackageSearchMetadataV2Feed.PrefixReserved.get -> bool
 NuGet.Protocol.PackageSearchMetadataV2Feed.ProjectUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadataV2Feed.Published.get -> System.DateTimeOffset?
+NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadataV2Feed.ReportAbuseUrl.get -> System.Uri
 NuGet.Protocol.PackageSearchMetadataV2Feed.RequireLicenseAcceptance.get -> bool
 NuGet.Protocol.PackageSearchMetadataV2Feed.Summary.get -> string
@@ -1457,7 +1462,6 @@ NuGet.Protocol.V2FeedQueryBuilder.BuildGetPackagesUri(string searchTerm, NuGet.P
 NuGet.Protocol.V2FeedQueryBuilder.BuildSearchUri(string searchTerm, NuGet.Protocol.Core.Types.SearchFilter filters, int skip, int take) -> string
 NuGet.Protocol.V2FeedQueryBuilder.V2FeedQueryBuilder() -> void
 NuGet.Protocol.V2FeedUtilities
-NuGet.Protocol.V2FeedUtilities.V2FeedUtilities() -> void
 NuGet.Protocol.V3FeedListResourceProvider
 NuGet.Protocol.V3FeedListResourceProvider.V3FeedListResourceProvider() -> void
 NuGet.Protocol.VersionInfoConverter
@@ -1567,6 +1571,7 @@ const NuGet.Protocol.JsonProperties.PrefixReserved = "verified" -> string
 const NuGet.Protocol.JsonProperties.ProjectUrl = "projectUrl" -> string
 const NuGet.Protocol.JsonProperties.Published = "published" -> string
 const NuGet.Protocol.JsonProperties.Range = "range" -> string
+const NuGet.Protocol.JsonProperties.ReadmeUrl = "readmeUrl" -> string
 const NuGet.Protocol.JsonProperties.RequireLicenseAcceptance = "requireLicenseAcceptance" -> string
 const NuGet.Protocol.JsonProperties.Severity = "severity" -> string
 const NuGet.Protocol.JsonProperties.SigningCertificates = "signingCertificates" -> string

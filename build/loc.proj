@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="AfterBuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="AfterBuild">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.props"/>
 
@@ -30,17 +29,28 @@
     <Copy SourceFiles="@(NonProjectFilesToMove)" DestinationFiles="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
     <ItemGroup>
       <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')">
-        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
-        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
-	      <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationRootDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
+        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationWorkDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
+        <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationWorkDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
+        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationWorkDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
+        <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationWorkDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
         <Parser Condition="'%(Extension)' == '.vsixlangpack'">210</Parser>
         <SettingsFile Condition="'%(Extension)' == '.vsixlangpack'">$(LSBuildRoot)\locxml_teamarch.lss</SettingsFile>
+        <HasLceComments>false</HasLceComments>
       </FilesToLocalize>
     </ItemGroup>
   </Target>
 
   <Target Name="BatchLocalize">
+    <ItemGroup>
+      <_SubmoduleRepo Include="$(LocalizationRootDirectory)\**\*" />
+      <_SubmoduleFiles Include="@(_SubmoduleRepo)">
+        <DestinationPath>$(RepositoryRootDirectory)$([MSBuild]::MakeRelative($(NuGetBuildLocalizationRepository), %(_SubmoduleRepo.Identity)))</DestinationPath>
+      </_SubmoduleFiles>
+    </ItemGroup>
+
+    <RemoveDir Directories="$(RepositoryRootDirectory)localize" />
+    <Copy SourceFiles="@(_SubmoduleFiles)" DestinationFiles="@(_SubmoduleFiles->'%(DestinationPath)')" />
+
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;"
@@ -50,20 +60,21 @@
           TaskParameter="TargetOutputs"
           ItemName="FilesToLocalize" />
     </MSBuild>
-    <Message Text="Files to localize : @(FilesToLocalize, '%0a')" Importance="High"/>
+
+    <!-- Delete previous lsbuild.exe response outputs, so we keep last two ResponseFiles folders -->
+    <RemoveDir Directories="$(ArtifactsDirectory)localize\ResponseFiles\" />
   </Target>
 
   <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_MoveLocalizedFiles Include="@(LocalizedUserFiles)">
-        <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedUserFiles.lang), %(LocalizedUserFiles.RootDir)%(LocalizedUserFiles.Directory)))%(LocalizedUserFiles.Culture)\%(LocalizedUserFiles.Filename)%(LocalizedUserFiles.Extension)</DestinationDir>
+        <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedUserFiles.lang), %(LocalizedUserFiles.RootDir)%(LocalizedUserFiles.Directory)))\%(LocalizedUserFiles.Culture)\%(LocalizedUserFiles.Filename)%(LocalizedUserFiles.Extension)</DestinationDir>
       </_MoveLocalizedFiles>
     </ItemGroup>
     <Move SourceFiles="@(_MoveLocalizedFiles->'%(Identity)')" DestinationFiles="@(_MoveLocalizedFiles->'%(DestinationDir)')"/>
-    <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
   </Target>
 
-  <Target Name="MoveEulasToArtifacts" AfterTargets="Localize">
+  <Target Name="MoveLocalizedEulasToArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <!-- SupportedCultures is defined in MicroBuild.Plugins.Localization.targets which is installed as a plugin
       in VSTS MicroBuild -->
@@ -75,22 +86,33 @@
     <Copy SourceFiles="@(EulaFiles->'%(Identity)')" DestinationFiles="@(EulaFiles->'%(DestinationDir)')"/>
   </Target>
 
+  <!-- Prepares localization folder  -->
   <Target Name="CopyLcgFilesToArtifacts" AfterTargets="Localize">
     <ItemGroup>
-      <_MoveLcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
-        <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedToolFiles.lang), %(LocalizedToolFiles.RootDir)%(LocalizedToolFiles.Directory)))%(LocalizedToolFiles.Culture)\%(LocalizedToolFiles.Filename)%(LocalizedToolFiles.Extension)</DestinationDir>
-      </_MoveLcgFiles>
+      <_LcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
+        <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedToolFiles.lang), %(LocalizedToolFiles.RootDir)%(LocalizedToolFiles.Directory)))\%(LocalizedToolFiles.Culture)\%(LocalizedToolFiles.Filename)%(LocalizedToolFiles.Extension)</DestinationDir>
+      </_LcgFiles>
     </ItemGroup>
-    <Copy SourceFiles="@(_MoveLcgFiles->'%(Identity)')" DestinationFiles="@(_MoveLcgFiles->'%(DestinationDir)')"/>
+    <Copy SourceFiles="@(_LcgFiles->'%(Identity)')" DestinationFiles="@(_LcgFiles->'%(DestinationDir)')"/>
   </Target>
 
-  <Target Name="CopyBinariesToLocalizeENU" AfterTargets="Localize">
+  <!-- Prepares localization artifact -->
+  <Target Name="CopyBinariesToLocalizationArtifacts" AfterTargets="Localize">
     <ItemGroup>
-      <_EnglishBinaires Include="@(FilesToLocalize)" Condition="'%(FilesToLocalize.Extension)'== '.dll'">
-        <DestinationPath>$(ArtifactsDirectory)localize\ENU\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
-      </_EnglishBinaires>
+      <_EnglishBinaries Include="@(FilesToLocalize)">
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))\%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
+      </_EnglishBinaries>
+      <_LocalizeFolder Include="$(ArtifactsDirectory)localize\**\*" Exclude="$(ArtifactsDirectory)localize\ResponseFiles\**\*" />
+      <_LocalizeFiles Include="@(_LocalizeFolder)">
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(_LocalizeFolder.Identity)))</DestinationPath>
+      </_LocalizeFiles>
+      <!-- Second Localize run creates appropiate LocProject.json -->
+      <_LocalizeFiles Include="$(ArtifactsDirectory)localize\ResponseFiles\*.loc.002\ENU\LocProject.json">
+        <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\ENU\LocProject.json</DestinationPath>
+      </_LocalizeFiles>
     </ItemGroup>
-    <Copy SourceFiles="@(_EnglishBinaires)" DestinationFiles="@(_EnglishBinaires->'%(DestinationPath)')" />
+    <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
+    <Copy SourceFiles="@(_LocalizeFiles)" DestinationFiles="@(_LocalizeFiles->'%(DestinationPath)')" />
   </Target>
 
   <Target Name="AfterBuild" DependsOnTargets="LocalizeNonProjectFiles;BatchLocalize"/>

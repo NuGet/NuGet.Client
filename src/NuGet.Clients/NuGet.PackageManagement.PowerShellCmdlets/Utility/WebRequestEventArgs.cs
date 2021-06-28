@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (request == null)
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             Request = request;

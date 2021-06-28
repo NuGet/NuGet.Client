@@ -328,7 +328,7 @@ namespace NuGet.XPlat.FuncTest
                     .Descendants(GetReferenceType(packageType))
                     .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
 
-            return !(packageReferences.Count() > 0);
+            return !(packageReferences.Any());
         }
 
         public static XElement GetItemGroupForFramework(XElement root, string framework, PackageType packageType = null)
@@ -351,7 +351,7 @@ namespace NuGet.XPlat.FuncTest
                 var x = i.Descendants(referenceType);
             }
             return itemGroups
-                    .Where(i => i.Descendants(referenceType).Count() > 0 &&
+                    .Where(i => i.Descendants(referenceType).Any() &&
                                 i.FirstAttribute == null)
                      .First();
         }
@@ -367,7 +367,7 @@ namespace NuGet.XPlat.FuncTest
             return Directory.Exists(packageDirectoryPath) &&
                 Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower())) &&
                 Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())) &&
-                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())).Count() > 0;
+                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())).Any();
         }
 
         public static string CreateDGFileForProject(SimpleTestProjectContext project)

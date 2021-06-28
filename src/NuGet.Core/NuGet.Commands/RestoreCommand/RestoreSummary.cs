@@ -77,11 +77,6 @@ namespace NuGet.Commands
             Errors = errors;
         }
 
-        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)
-        {
-            Log(logger, restoreSummaries.ToList(), logErrors);
-        }
-
         public static void Log(ILogger logger, IReadOnlyList<RestoreSummary> restoreSummaries, bool logErrors = false)
         {
             if (restoreSummaries.Count == 0)

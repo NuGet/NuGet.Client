@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using SB = Microsoft.VisualStudio.Shell.ServiceBroker;
 using Task = System.Threading.Tasks.Task;
@@ -30,7 +31,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         public void RunSolutionRestore()
         {
-            _joinableTaskFactory.RunAsync(RunSolutionRestoreAsync);
+            _joinableTaskFactory.RunAsync(RunSolutionRestoreAsync).PostOnFailure(nameof(RestoreCommandHandler));
         }
 
         private async Task RunSolutionRestoreAsync()

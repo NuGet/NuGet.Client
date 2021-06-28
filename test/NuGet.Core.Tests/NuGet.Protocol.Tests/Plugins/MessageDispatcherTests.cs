@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Test.Utility;
+using NuGet.Protocol.Tests;
 using NuGet.Versioning;
 using Xunit;
 

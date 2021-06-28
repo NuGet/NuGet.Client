@@ -288,6 +288,23 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
+        [InlineData("0", "0.0")]
+        [InlineData("1", "1.0.0")]
+        [InlineData("02", "2.0.0.0")]
+        [InlineData("123.456", "123.456.0.0")]
+        [InlineData("[2021,)", "[2021.0.0.0,)")]
+        [InlineData("[,2021)", "[,2021.0.0.0)")]
+        public void VersionRange_MissingVersionComponents_DefaultToZero(string shortVersionSpec, string longVersionSpec)
+        {
+            // Act
+            var versionRange1 = VersionRange.Parse(shortVersionSpec);
+            var versionRange2 = VersionRange.Parse(longVersionSpec);
+
+            // Assert
+            Assert.Equal(versionRange2, versionRange1);
+        }
+
+        [Theory]
         [InlineData("1.0.0", "0.0.0")]
         [InlineData("[1.0.0, 2.0.0]", "2.0.1")]
         [InlineData("[1.0.0, 2.0.0]", "0.0.0")]
@@ -317,6 +334,14 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("1.0.0", "2.0.0")]
         [InlineData("[1.0.0, 2.0.0]", "2.0.0")]
+        [InlineData("(2.0.0,)", "2.1.0")]
+        [InlineData("[2.0.0]", "2.0.0")]
+        [InlineData("(,2.0.0]", "2.0.0")]
+        [InlineData("(,2.0.0]", "1.0.0")]
+        [InlineData("[2.0.0, )", "2.0.0")]
+        [InlineData("1.0.0", "1.0.0")]
+        [InlineData("[1.0.0]", "1.0.0")]
+        [InlineData("[1.0.0, 1.0.0]", "1.0.0")]
         [InlineData("[1.0.0, 2.0.0]", "1.0.0")]
         [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0")]
         [InlineData("[1.0.0-beta+meta, 2.0.0-beta+meta]", "1.0.0-beta+meta")]
@@ -416,7 +441,6 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("1.2.0", "[1.2.0, )")]
         [InlineData("1.2.3-beta.2.4.55.X+900", "[1.2.3-beta.2.4.55.X, )")]
-        [InlineData("[1.2.0)", "[1.2.0, 1.2.0)")]
         public void ParseVersionRangeToString(string version, string expected)
         {
             // Act
@@ -436,6 +460,16 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("")]
         [InlineData("      ")]
+        [InlineData("-1")]
+        [InlineData("+1")]
+        [InlineData("1.")]
+        [InlineData(".1")]
+        [InlineData("1,")]
+        [InlineData(",1")]
+        [InlineData(",")]
+        [InlineData("-")]
+        [InlineData("+")]
+        [InlineData("a")]
         public void ParseVersionRangeWithBadVersionThrows(string version)
         {
             // Act & Assert
@@ -714,12 +748,12 @@ namespace NuGet.Versioning.Test
         [InlineData("1.2.3-beta+900")]
         [InlineData("1.2.3-beta.2.4.55.X+900")]
         [InlineData("1.2.3-0+900")]
-        [InlineData("[1.2.0)")]
-        [InlineData("[1.2.3)")]
-        [InlineData("[1.2.3-beta)")]
-        [InlineData("[1.2.3-beta+900)")]
-        [InlineData("[1.2.3-beta.2.4.55.X+900)")]
-        [InlineData("[1.2.3-0+900)")]
+        [InlineData("[1.2.0]")]
+        [InlineData("[1.2.3]")]
+        [InlineData("[1.2.3-beta]")]
+        [InlineData("[1.2.3-beta+900]")]
+        [InlineData("[1.2.3-beta.2.4.55.X+900]")]
+        [InlineData("[1.2.3-0+900]")]
         [InlineData("(, 1.2.0)")]
         [InlineData("(, 1.2.3)")]
         [InlineData("(, 1.2.3-beta)")]
@@ -774,7 +808,6 @@ namespace NuGet.Versioning.Test
         [InlineData("[2.3.7, 3.2.4.5]", "2.3.7", true, "3.2.4.5", true)]
         [InlineData("(, 3.2.4.5]", null, false, "3.2.4.5", true)]
         [InlineData("(1.6, ]", "1.6", false, null, true)]
-        [InlineData("(1.6)", "1.6", false, "1.6", false)]
         [InlineData("[2.7]", "2.7", true, "2.7", true)]
         public void ParseVersionParsesTokensVersionsCorrectly(string versionString, string min, bool incMin, string max, bool incMax)
         {
@@ -1502,6 +1535,28 @@ namespace NuGet.Versioning.Test
                 };
 
             Assert.Equal("1.9.0--beta", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Theory]
+        [InlineData("[1.1.4, 1.1.2)")]
+        [InlineData("[1.1.4, 1.1.2]")]
+        [InlineData("(1.1.4, 1.1.2)")]
+        [InlineData("(1.1.4, 1.1.2]")]
+        [InlineData("[1.0.0, 1.0.0)")]
+        [InlineData("(1.0.0, 1.0.0]")]
+        [InlineData("(1.0, 1.0.0]")]
+        [InlineData("(*, *]")]
+        [InlineData("[1.0.0-beta, 1.0.0-beta+900)")]
+        [InlineData("(1.0.0-beta+600, 1.0.0-beta]")]
+        [InlineData("(1.0)")]
+        [InlineData("(1.0.0)")]
+        [InlineData("[2.0.0)")]
+        [InlineData("(2.0.0]")]
+        public void Parse_Illogical_VersionRange_Throws(string range)
+        {
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse(range));
+            Assert.Equal($"'{range}' is not a valid version string.", exception.Message);
         }
     }
 }

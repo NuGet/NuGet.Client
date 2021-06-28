@@ -244,21 +244,6 @@ NuGet.Configuration.SettingText
 NuGet.Configuration.SettingText.SettingText(string value) -> void
 NuGet.Configuration.SettingText.Value.get -> string
 NuGet.Configuration.SettingText.Value.set -> void
-NuGet.Configuration.SettingValue
-NuGet.Configuration.SettingValue.AdditionalData.get -> System.Collections.Generic.IDictionary<string, string>
-NuGet.Configuration.SettingValue.IsMachineWide.get -> bool
-NuGet.Configuration.SettingValue.IsMachineWide.set -> void
-NuGet.Configuration.SettingValue.Key.get -> string
-NuGet.Configuration.SettingValue.Origin.get -> NuGet.Configuration.ISettings
-NuGet.Configuration.SettingValue.OriginalValue.get -> string
-NuGet.Configuration.SettingValue.OriginalValue.set -> void
-NuGet.Configuration.SettingValue.Priority.get -> int
-NuGet.Configuration.SettingValue.Priority.set -> void
-NuGet.Configuration.SettingValue.SettingValue(string key, string value, NuGet.Configuration.ISettings origin, bool isMachineWide, int priority = 0) -> void
-NuGet.Configuration.SettingValue.SettingValue(string key, string value, NuGet.Configuration.ISettings origin, bool isMachineWide, string originalValue, int priority = 0) -> void
-NuGet.Configuration.SettingValue.SettingValue(string key, string value, bool isMachineWide, int priority = 0) -> void
-NuGet.Configuration.SettingValue.Value.get -> string
-NuGet.Configuration.SettingValue.Value.set -> void
 NuGet.Configuration.Settings
 NuGet.Configuration.Settings.AddOrUpdate(string sectionName, NuGet.Configuration.SettingItem item) -> void
 NuGet.Configuration.Settings.GetConfigFilePaths() -> System.Collections.Generic.IList<string>
@@ -370,8 +355,6 @@ override NuGet.Configuration.SettingText.Clone() -> NuGet.Configuration.SettingB
 override NuGet.Configuration.SettingText.Equals(object other) -> bool
 override NuGet.Configuration.SettingText.GetHashCode() -> int
 override NuGet.Configuration.SettingText.IsEmpty() -> bool
-override NuGet.Configuration.SettingValue.Equals(object obj) -> bool
-override NuGet.Configuration.SettingValue.GetHashCode() -> int
 override NuGet.Configuration.SettingsGroup<T>.IsEmpty() -> bool
 override NuGet.Configuration.SourceItem.Clone() -> NuGet.Configuration.SettingBase
 override NuGet.Configuration.SourceItem.Equals(object other) -> bool
@@ -496,6 +479,7 @@ static readonly NuGet.Configuration.NuGetConstants.NuGetSymbolHostName -> string
 static readonly NuGet.Configuration.NuGetConstants.PackageExtension -> string
 static readonly NuGet.Configuration.NuGetConstants.PackageReferenceFile -> string
 static readonly NuGet.Configuration.NuGetConstants.PackageSpecFileName -> string
+static readonly NuGet.Configuration.NuGetConstants.ReadmeExtension -> string
 static readonly NuGet.Configuration.NuGetConstants.ReadmeFileName -> string
 static readonly NuGet.Configuration.NuGetConstants.SnupkgExtension -> string
 static readonly NuGet.Configuration.NuGetConstants.SymbolsExtension -> string

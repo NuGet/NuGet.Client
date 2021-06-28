@@ -158,6 +158,8 @@ namespace NuGetConsole
                     {
                         // Ignore exceptions
                     }
+
+                    _pipeLock.Dispose();
                 }
                 _disposedValue = true;
             }

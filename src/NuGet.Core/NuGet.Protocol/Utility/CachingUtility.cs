@@ -10,7 +10,7 @@ using NuGet.Shared;
 
 namespace NuGet.Protocol
 {
-    public class CachingUtility
+    public static class CachingUtility
     {
         public const int BufferSize = 8192;
         // To maintain SHA-1 backwards compatibility with respect to the length of the hex-encoded hash, the hash will be truncated to a length of 20 bytes.

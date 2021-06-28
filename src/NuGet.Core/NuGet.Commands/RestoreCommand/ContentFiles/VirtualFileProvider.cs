@@ -14,7 +14,7 @@ namespace NuGet.Commands
     /// </summary>
     internal class VirtualFileProvider : IFileProvider
     {
-        public static readonly string RootDir = "ROOT";
+        public const string RootDir = "ROOT";
         private readonly List<string[]> _files;
         private const string ForwardSlash = "/";
         private const char ForwardSlashChar = '/';

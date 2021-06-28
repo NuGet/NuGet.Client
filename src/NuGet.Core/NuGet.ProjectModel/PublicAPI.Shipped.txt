@@ -51,7 +51,6 @@ NuGet.ProjectModel.CacheFile.Success.set -> void
 NuGet.ProjectModel.CacheFile.Version.get -> int
 NuGet.ProjectModel.CacheFile.Version.set -> void
 NuGet.ProjectModel.CacheFileFormat
-NuGet.ProjectModel.CacheFileFormat.CacheFileFormat() -> void
 NuGet.ProjectModel.CentralTransitiveDependencyGroup
 NuGet.ProjectModel.CentralTransitiveDependencyGroup.CentralTransitiveDependencyGroup(NuGet.Frameworks.NuGetFramework framework, System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> transitiveDependencies) -> void
 NuGet.ProjectModel.CentralTransitiveDependencyGroup.Equals(NuGet.ProjectModel.CentralTransitiveDependencyGroup other) -> bool
@@ -62,13 +61,11 @@ NuGet.ProjectModel.DependencyGraphSpec.AddProject(NuGet.ProjectModel.PackageSpec
 NuGet.ProjectModel.DependencyGraphSpec.AddRestore(string projectUniqueName) -> void
 NuGet.ProjectModel.DependencyGraphSpec.CreateFromClosure(string projectUniqueName, System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec> closure) -> NuGet.ProjectModel.DependencyGraphSpec
 NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec() -> void
-NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec(Newtonsoft.Json.Linq.JObject json) -> void
 NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec(bool isReadOnly) -> void
 NuGet.ProjectModel.DependencyGraphSpec.GetClosure(string rootUniqueName) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 NuGet.ProjectModel.DependencyGraphSpec.GetHash() -> string
 NuGet.ProjectModel.DependencyGraphSpec.GetParents(string rootUniqueName) -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.DependencyGraphSpec.GetProjectSpec(string projectUniqueName) -> NuGet.ProjectModel.PackageSpec
-NuGet.ProjectModel.DependencyGraphSpec.Json.get -> Newtonsoft.Json.Linq.JObject
 NuGet.ProjectModel.DependencyGraphSpec.Projects.get -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 NuGet.ProjectModel.DependencyGraphSpec.Restore.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.ProjectModel.DependencyGraphSpec.Save(string path) -> void
@@ -139,7 +136,6 @@ NuGet.ProjectModel.IncludeExcludeFiles.IncludeFiles.get -> System.Collections.Ge
 NuGet.ProjectModel.IncludeExcludeFiles.IncludeFiles.set -> void
 NuGet.ProjectModel.JTokenExtensions
 NuGet.ProjectModel.JsonPackageSpecReader
-NuGet.ProjectModel.JsonPackageSpecReader.JsonPackageSpecReader() -> void
 NuGet.ProjectModel.LockFile
 NuGet.ProjectModel.LockFile.CentralTransitiveDependencyGroups.get -> System.Collections.Generic.IList<NuGet.ProjectModel.CentralTransitiveDependencyGroup>
 NuGet.ProjectModel.LockFile.CentralTransitiveDependencyGroups.set -> void
@@ -302,6 +298,10 @@ NuGet.ProjectModel.LockFileTargetLibrary.Type.set -> void
 NuGet.ProjectModel.LockFileTargetLibrary.Version.get -> NuGet.Versioning.NuGetVersion
 NuGet.ProjectModel.LockFileTargetLibrary.Version.set -> void
 NuGet.ProjectModel.LockFileUtilities
+NuGet.ProjectModel.LockFileValidationResult
+NuGet.ProjectModel.LockFileValidationResult.InvalidReasons.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.ProjectModel.LockFileValidationResult.IsValid.get -> bool
+NuGet.ProjectModel.LockFileValidationResult.LockFileValidationResult(bool isValid, System.Collections.Generic.IReadOnlyList<string> invalidReasons) -> void
 NuGet.ProjectModel.PackOptions
 NuGet.ProjectModel.PackOptions.Clone() -> NuGet.ProjectModel.PackOptions
 NuGet.ProjectModel.PackOptions.Equals(NuGet.ProjectModel.PackOptions other) -> bool
@@ -403,7 +403,6 @@ NuGet.ProjectModel.PackagesLockFile.Targets.set -> void
 NuGet.ProjectModel.PackagesLockFile.Version.get -> int
 NuGet.ProjectModel.PackagesLockFile.Version.set -> void
 NuGet.ProjectModel.PackagesLockFileFormat
-NuGet.ProjectModel.PackagesLockFileFormat.PackagesLockFileFormat() -> void
 NuGet.ProjectModel.PackagesLockFileTarget
 NuGet.ProjectModel.PackagesLockFileTarget.Dependencies.get -> System.Collections.Generic.IList<NuGet.ProjectModel.LockFileDependency>
 NuGet.ProjectModel.PackagesLockFileTarget.Dependencies.set -> void
@@ -628,28 +627,13 @@ override NuGet.ProjectModel.TargetFrameworkInformation.ToString() -> string
 override NuGet.ProjectModel.WarningProperties.Equals(object obj) -> bool
 override NuGet.ProjectModel.WarningProperties.GetHashCode() -> int
 static NuGet.ProjectModel.AssetsLogMessage.Create(NuGet.Common.IRestoreLogMessage logMessage) -> NuGet.ProjectModel.IAssetsLogMessage
-static NuGet.ProjectModel.BuildAction.AndroidAsset -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.AndroidResource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.ApplicationDefinition -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.BundleResource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.CodeAnalysisDictionary -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Compile -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Content -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.DesignData -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.DesignDataWithDesignTimeCreatableTypes -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.EmbeddedResource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.None -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Page -> NuGet.ProjectModel.BuildAction
 static NuGet.ProjectModel.BuildAction.Parse(string value) -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.Resource -> NuGet.ProjectModel.BuildAction
-static NuGet.ProjectModel.BuildAction.SplashScreen -> NuGet.ProjectModel.BuildAction
 static NuGet.ProjectModel.BuildAction.operator !=(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
 static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
 static NuGet.ProjectModel.CacheFileFormat.Read(System.IO.Stream stream, NuGet.Common.ILogger log, string path) -> NuGet.ProjectModel.CacheFile
 static NuGet.ProjectModel.CacheFileFormat.Write(System.IO.Stream stream, NuGet.ProjectModel.CacheFile cacheFile) -> void
 static NuGet.ProjectModel.CacheFileFormat.Write(string filePath, NuGet.ProjectModel.CacheFile lockFile) -> void
 static NuGet.ProjectModel.DependencyGraphSpec.GetDGSpecFileName(string projectName) -> string
-static NuGet.ProjectModel.DependencyGraphSpec.Load(Newtonsoft.Json.Linq.JObject json) -> NuGet.ProjectModel.DependencyGraphSpec
 static NuGet.ProjectModel.DependencyGraphSpec.Load(string path) -> NuGet.ProjectModel.DependencyGraphSpec
 static NuGet.ProjectModel.DependencyGraphSpec.SortPackagesByDependencyOrder(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> packages) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 static NuGet.ProjectModel.DependencyGraphSpec.Union(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.DependencyGraphSpec> dgSpecs) -> NuGet.ProjectModel.DependencyGraphSpec
@@ -695,6 +679,7 @@ static NuGet.ProjectModel.PackagesLockFileUtilities.GetNuGetLockFilePath(NuGet.P
 static NuGet.ProjectModel.PackagesLockFileUtilities.GetNuGetLockFilePath(string baseDirectory, string projectName) -> string
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileStillValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> bool
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileStillValid(NuGet.ProjectModel.PackagesLockFile expected, NuGet.ProjectModel.PackagesLockFile actual) -> NuGet.ProjectModel.PackagesLockFileUtilities.LockFileValidityWithMatchedResults
+static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileValid(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectModel.PackagesLockFile nuGetLockFile) -> NuGet.ProjectModel.LockFileValidationResult
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsNuGetLockFileEnabled(NuGet.ProjectModel.PackageSpec project) -> bool
 static NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash.Default.get -> NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash
 static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> noWarn) -> NuGet.ProjectModel.WarningProperties

@@ -770,4 +770,86 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="VerifyCommandPackagePathDescription" xml:space="preserve">
     <value>Specify the path to the package</value>
   </data>
+  <data name="Error_UnknownAction" xml:space="preserve">
+    <value>The action '{0}' is not recognized.</value>
+    <comment>0 - action</comment>
+  </data>
+  <data name="TrustCommandActionDescription" xml:space="preserve">
+    <value>Command actions allow you to specify only a specific subset of signers whose signatures will be accepted, while rejecting all others.</value>
+  </data>
+  <data name="TrustCommandAlgorithm" xml:space="preserve">
+    <value>Specifies the hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256. Values supported are SHA256, SHA384 and SHA512.</value>
+  </data>
+  <data name="TrustCommandAllowUntrustedRoot" xml:space="preserve">
+    <value>Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root.</value>
+  </data>
+  <data name="TrustCommandDescription" xml:space="preserve">
+    <value>Manage the trusted signers.</value>
+  </data>
+  <data name="TrustCommandOwners" xml:space="preserve">
+    <value>Semi-colon separated list of trusted owners to further restrict the trust of a repository.</value>
+  </data>
+  <data name="SignCommandOutputDirectoryDescription" xml:space="preserve">
+    <value>Directory where the signed package(s) should be saved. By default the original package is overwritten by the signed package.</value>
+  </data>
+  <data name="SignCommandCertificateFingerprintDescription" xml:space="preserve">
+    <value>SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</value>
+    <comment>Please don't localize '--certificate-store-name' and '--certificate-store-location'</comment>
+  </data>
+  <data name="SignCommandCertificatePasswordDescription" xml:space="preserve">
+    <value>Password for the certificate, if needed.
+This option can be used to specify the password for the certificate. The command will throw an error message if certificate is password protected but password is not provided as input.</value>
+  </data>
+  <data name="SignCommandCertificatePathDescription" xml:space="preserve">
+    <value>File path to the certificate to be used while signing the package.</value>
+  </data>
+  <data name="SignCommandCertificateStoreLocationDescription" xml:space="preserve">
+    <value>Name of the X.509 certificate store use to search for the certificate. Defaults to "CurrentUser", the X.509 certificate store used by the current user.
+This option should be used when specifying the certificate via --certificate-subject-name or --certificate-fingerprint options.</value>
+    <comment>Please don't localize '--certificate-subject-name' and '--certificate-fingerprint'</comment>
+  </data>
+  <data name="SignCommandCertificateStoreNameDescription" xml:space="preserve">
+    <value>Name of the X.509 certificate store to use to search for the certificate. Defaults to "My", the X.509 certificate store for personal certificates.
+This option should be used when specifying the certificate via --certificate-subject-name or --certificate-fingerprint options.</value>
+    <comment>Please don't localize '--certificate-subject-name' and '--certificate-fingerprint'</comment>
+  </data>
+  <data name="SignCommandCertificateSubjectNameDescription" xml:space="preserve">
+    <value>Subject name of the certificate used to search a local certificate store for the certificate.
+The search is a case-insensitive string comparison using the supplied value, which will find all certificates with the subject name containing that string, regardless of other subject values. The certificate store can be specified by --certificate-store-name and --certificate-store-location options.</value>
+    <comment>Please don't localize '--certificate-store-name' and '--certificate-store-location'</comment>
+  </data>
+  <data name="SignCommandHashAlgorithmDescription" xml:space="preserve">
+    <value>Hash algorithm to be used to sign the package. Defaults to SHA256.</value>
+  </data>
+  <data name="SignCommandOverwriteDescription" xml:space="preserve">
+    <value>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</value>
+  </data>
+  <data name="SignCommandPackagePathDescription" xml:space="preserve">
+    <value>Signs NuGet packages at &lt;package-paths&gt; with the specified certificate.</value>
+    <comment>Please don't localize '&lt;package-paths&gt;'</comment>
+  </data>
+  <data name="SignCommandTimestamperDescription" xml:space="preserve">
+    <value>URL to an RFC 3161 timestamping server.</value>
+  </data>
+  <data name="SignCommandTimestampHashAlgorithmDescription" xml:space="preserve">
+    <value>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</value>
+  </data>
+  <data name="SignCommandDescription" xml:space="preserve">
+    <value>Signs NuGet package(s) at &lt;package-paths&gt; with the specified certificate.</value>
+    <comment>Please don't localize '&lt;package-paths&gt;'</comment>
+  </data>
+  <data name="SignCommandNoTimestamperWarning" xml:space="preserve">
+    <value>The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools</value>
+    <comment>Please don't localize '--timestamper'</comment>
+  </data>
+  <data name="Err_InvalidValue" xml:space="preserve">
+    <value>Invalid value provided for '{0}'. The accepted values are {1}.</value>
+    <comment>{0} - argument name in SignCommand. e.g. certificate storeName, certificate storelocation, hashAlgorithmName  {1} - the possible values of the argument.</comment>
+  </data>
+  <data name="SignCommandMultipleCertificateException" xml:space="preserve">
+    <value>Multiple options were used to specify a certificate.</value>
+  </data>
+  <data name="SignCommandNoCertificateException" xml:space="preserve">
+    <value>No certificate was provided.</value>
+  </data>
 </root>

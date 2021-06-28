@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NuGet.LibraryModel
 {
-    public class FrameworkDependencyFlagsUtils
+    public static class FrameworkDependencyFlagsUtils
     {
         public static readonly FrameworkDependencyFlags Default = FrameworkDependencyFlags.None;
 

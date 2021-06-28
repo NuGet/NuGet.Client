@@ -274,7 +274,6 @@ namespace NuGet.Versioning.Test
         [InlineData("(0.0.0, 0.0.0)", "[1.0.0, 3.0.0)", "[4.0.0, 5.0.0)")]
         [InlineData("(1.5.0, 2.0.0]", "[1.0.0, 2.0.0]", "(1.5.0, 3.0.0]")]
         [InlineData("[1.0.0, 1.5.0)", "[1.0.0, 1.5.0)", "[, ]")]
-        [InlineData("(0.0.0, 0.0.0)", "[1.0.0]", "(1.0.0)")]
         [InlineData("(0.0.0, 0.0.0)", "[1.0.0]", "[2.0.0]")]
         public void VersionRangeSet_CommonSubSet(string expected, string rangeA, string rangeB)
         {

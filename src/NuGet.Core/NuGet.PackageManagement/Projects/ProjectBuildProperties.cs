@@ -26,6 +26,7 @@ namespace NuGet.ProjectManagement
         public const string TargetPlatformIdentifier = nameof(TargetPlatformIdentifier);
         public const string TargetPlatformMoniker = nameof(TargetPlatformMoniker);
         public const string TargetPlatformMinVersion = nameof(TargetPlatformMinVersion);
+        public const string CLRSupport = nameof(CLRSupport);
         public const string TargetPlatformVersion = nameof(TargetPlatformVersion);
         public const string Version = nameof(Version);
         public const string RestorePackagesPath = nameof(RestorePackagesPath);
@@ -50,5 +51,6 @@ namespace NuGet.ProjectManagement
         public const string Clear = nameof(Clear);
         public const string RuntimeIdentifierGraphPath = nameof(RuntimeIdentifierGraphPath);
         public const string ManagePackageVersionsCentrally = nameof(ManagePackageVersionsCentrally);
+
     }
 }

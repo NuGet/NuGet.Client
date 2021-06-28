@@ -68,7 +68,7 @@ namespace NuGet.StaFact
 
                         // Arrange to pump messages to execute any async work associated with the test.
                         var frame = new DispatcherFrame();
-                        Task.Run(async delegate
+                        Task forget = Task.Run(async delegate
                         {
                             try
                             {

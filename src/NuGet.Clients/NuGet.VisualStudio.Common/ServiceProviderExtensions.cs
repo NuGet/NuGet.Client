@@ -25,12 +25,5 @@ namespace NuGet.VisualStudio
         {
             return site.GetServiceAsync<SComponentModel, IComponentModel>();
         }
-
-        public static async Task<TService> GetServiceAsync<TService>(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
-            where TService : class
-        {
-            return await site.GetServiceAsync(typeof(TService)) as TService;
-        }
     }
 }

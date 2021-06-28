@@ -943,6 +943,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
         <TargetPlatformVersion>$(TargetPlatformVersion)</TargetPlatformVersion>
         <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>
+        <CLRSupport>$(CLRSupport)</CLRSupport>
         <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
       </_RestoreGraphEntry>
     </ItemGroup>

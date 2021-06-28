@@ -217,7 +217,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.MSSigning.Extensions.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NuGetSdkResolver", "..\src\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj", "{299B3E44-5372-4D6B-A4E9-3DBEA4705701}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NuGetSdkResolver.Test", "..\test\NuGet.Core.Tests\Microsoft.Build.NuGetSdkResolver.Tests\Microsoft.Build.NuGetSdkResolver.Test.csproj", "{ADCF5BF7-5A77-4F0E-AE76-96C611A079D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NuGetSdkResolver.Test", "..\test\NuGet.Core.Tests\Microsoft.Build.NuGetSdkResolver.Test\Microsoft.Build.NuGetSdkResolver.Test.csproj", "{ADCF5BF7-5A77-4F0E-AE76-96C611A079D8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Common.Test", "..\test\NuGet.Clients.Tests\NuGet.VisualStudio.Common.Test\NuGet.VisualStudio.Common.Test.csproj", "{1EDFC48B-2CEC-49DD-90DA-3A69BDDAB8CF}"
 EndProject
@@ -240,6 +240,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.PackageManagement.UI.TestContract", "..\test\NuGet.Tests.Apex\NuGet.PackageManagement.UI.TestContract\NuGet.PackageManagement.UI.TestContract.csproj", "{DF56DB8F-F7A3-4EA6-912B-1CBC1741547F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tests.Apex", "..\test\NuGet.Tests.Apex\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj", "{81EB90B9-7FA5-434E-8502-09A9892A0FA7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Contracts", "..\src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj", "{5E23CEFF-16ED-42B7-BCB9-42F14B5ACB7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -583,6 +585,10 @@ Global
 		{81EB90B9-7FA5-434E-8502-09A9892A0FA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81EB90B9-7FA5-434E-8502-09A9892A0FA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81EB90B9-7FA5-434E-8502-09A9892A0FA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E23CEFF-16ED-42B7-BCB9-42F14B5ACB7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E23CEFF-16ED-42B7-BCB9-42F14B5ACB7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E23CEFF-16ED-42B7-BCB9-42F14B5ACB7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E23CEFF-16ED-42B7-BCB9-42F14B5ACB7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -683,6 +689,7 @@ Global
 		{A792EA9A-4291-4DB6-90B2-E7DBC03C3BB2} = {8155136C-FFEA-450B-BF55-3418A6B091CC}
 		{DF56DB8F-F7A3-4EA6-912B-1CBC1741547F} = {8155136C-FFEA-450B-BF55-3418A6B091CC}
 		{81EB90B9-7FA5-434E-8502-09A9892A0FA7} = {8155136C-FFEA-450B-BF55-3418A6B091CC}
+		{5E23CEFF-16ED-42B7-BCB9-42F14B5ACB7B} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}

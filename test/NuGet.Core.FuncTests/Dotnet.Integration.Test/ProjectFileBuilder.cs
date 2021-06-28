@@ -108,17 +108,17 @@ namespace NuGet.Test.Utility
 
                 if (PackageIconUrl != null)
                 {
-                    ProjectFileUtils.AddProperty(xml, "PackageIconUrl", PackageIconUrl);
+                    ProjectFileUtils.AddProperty(xml, nameof(PackageIconUrl), PackageIconUrl);
                 }
 
                 if (PackageIcon != null)
                 {
-                    ProjectFileUtils.AddProperty(xml, "PackageIcon", PackageIcon);
+                    ProjectFileUtils.AddProperty(xml, nameof(PackageIcon), PackageIcon);
                 }
 
                 if (PackageReadmeFile != null)
                 {
-                    ProjectFileUtils.AddProperty(xml, "PackageReadmeFile", PackageReadmeFile);
+                    ProjectFileUtils.AddProperty(xml, nameof(PackageReadmeFile), PackageReadmeFile);
                 }
 
                 ProjectFileUtils.AddProperties(xml, Properties);

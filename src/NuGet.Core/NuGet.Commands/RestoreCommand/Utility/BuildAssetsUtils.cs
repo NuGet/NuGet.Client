@@ -23,11 +23,11 @@ namespace NuGet.Commands
     public static class BuildAssetsUtils
     {
         private static readonly XNamespace Namespace = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
-        internal static readonly string CrossTargetingCondition = "'$(TargetFramework)' == ''";
-        internal static readonly string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
-        internal static readonly string LanguageCondition = "'$(Language)' == '{0}'";
-        internal static readonly string NegativeLanguageCondition = "'$(Language)' != '{0}'";
-        internal static readonly string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
+        internal const string CrossTargetingCondition = "'$(TargetFramework)' == ''";
+        internal const string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
+        internal const string LanguageCondition = "'$(Language)' == '{0}'";
+        internal const string NegativeLanguageCondition = "'$(Language)' != '{0}'";
+        internal const string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
         public const string TargetsExtension = ".targets";
         public const string PropsExtension = ".props";
 
@@ -372,26 +372,6 @@ namespace NuGet.Commands
             }
 
             return result;
-        }
-
-        [Obsolete("This method looks at the RestoreRequest. It is expected that the PackageSpec contains all the relevant information the RestoreRequest would. Use GetMSBuildFilePath(PackageSpec project, string extension) instead.")]
-        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
-        {
-            string path;
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference)
-            {
-                // PackageReference style projects
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g{extension}");
-            }
-            else
-            {
-                // Project.json style projects
-                var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
-            }
-            return path;
         }
 
         public static string GetMSBuildFilePath(PackageSpec project, string extension)

@@ -9,6 +9,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -84,7 +85,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     await model.RefreshAsync(CancellationToken.None);
                 }
-            });
+            }).PostOnFailure(nameof(DetailControl));
         }
 
         private void ProjectInstallButtonClicked(object sender, EventArgs e)

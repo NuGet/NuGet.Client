@@ -81,11 +81,6 @@ Trace-Log "Build #$BuildNumber started at $startTime"
 
 Test-BuildEnvironment -CI:$CI
 
-if (-not $VSToolsetInstalled) {
-    Warning-Log "The build is requested, but no toolset is available"
-    exit 1
-}
-
 $BuildErrors = @()
 
 Invoke-BuildStep 'Cleaning artifacts' {
@@ -95,7 +90,7 @@ Invoke-BuildStep 'Cleaning artifacts' {
 -skip:$Fast `
 -ev +BuildErrors
 
-if($SkipUnitTest){
+if ($SkipUnitTest) {
     $VSTarget = "BuildVS;Pack";
     $VSMessage = "Running Build"
 }
@@ -104,8 +99,9 @@ else {
     $VSMessage = "Running Build, Pack, Core unit tests, and Unit tests";
 }
 
-Invoke-BuildStep 'Running Restore' {
+$MSBuildExe = Get-MSBuildExe
 
+Invoke-BuildStep 'Running Restore' {
     # Restore
     $args = "build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
     if ($Binlog)
@@ -116,7 +112,7 @@ Invoke-BuildStep 'Running Restore' {
     Trace-Log ". `"$MSBuildExe`" $args"
     & $MSBuildExe @args
 
-    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:IncludeApex=$IncludeApex", "/v:m", "/m:1"
+    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:IncludeApex=$IncludeApex", "/v:m", "/m"
     if ($Binlog)
     {
         $args += "-bl:msbuild.restore.binlog"
@@ -160,11 +156,11 @@ Invoke-BuildStep $VSMessage {
 } `
 -ev +BuildErrors
 
-Invoke-BuildStep 'Publishing the EndToEnd test package' {
+Invoke-BuildStep 'Creating the EndToEnd test package' {
         param($Configuration)
         $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
         $OutDir = Join-Path $Artifacts VS15
-        & $EndToEndScript -c $Configuration -tv 16 -out $OutDir
+        & $EndToEndScript -c $Configuration -out $OutDir
     } `
     -args $Configuration `
     -skip:(-not $PackageEndToEnd) `

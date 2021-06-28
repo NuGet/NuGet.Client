@@ -428,37 +428,6 @@ function Test-InstallPackageWithWebConfigDebugChanges {
     Assert-AreEqual "Data Source=ReleaseSQLServer;Initial Catalog=MyReleaseDB;Integrated Security=True" $addNode.connectionString
 }
 
-function Test-FSharpSimpleInstallWithContentFiles {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p = New-FSharpLibrary
-
-    # Act
-    Install-Package jquery -Version 1.5 -Project $p.Name -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p jquery
-    Assert-SolutionPackage jquery
-    Assert-NotNull (Get-ProjectItem $p Scripts\jquery-1.5.js)
-    Assert-NotNull (Get-ProjectItem $p Scripts\jquery-1.5.min.js)
-}
-
-function Test-FSharpSimpleWithAssemblyReference {
-    # Arrange
-    $p = New-FSharpLibrary
-
-    # Act
-    Install-Package Antlr -Project $p.Name -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p Antlr
-    Assert-SolutionPackage Antlr
-    Assert-Reference $p Runtime
-}
-
 function Test-WebsiteInstallPackageWithRootNamespace {
     param(
         $context
@@ -491,13 +460,13 @@ function Test-AddBindingRedirectToWebsiteWithNonExistingOutputPath {
 function Test-InstallCanPipeToFSharpProjects {
     # Arrange
     $p = New-FSharpLibrary
+    Build-Solution # wait for project nomination
 
     # Act
     $p | Install-Package elmah -Version 1.1 -source $context.RepositoryPath
 
     # Assert
-    Assert-Package $p elmah
-    Assert-SolutionPackage elmah
+    Assert-NetCorePackageInLockFile $p elmah 1.1
 }
 
 function Test-PipingMultipleProjectsToInstall {
@@ -629,13 +598,11 @@ function Test-InstallPackageWithGacReferencesIntoMultipleProjectTypes {
     # Arrange
     $a = New-ClassLibrary
     $b = New-WebSite
-    $c = New-FSharpLibrary
-    $projects = @($a, $b, $c)
+    $projects = @($a, $b)
 
     # Act
     $a | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
     $b | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-    $c | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
 
     # Assert
     $projects | %{ Assert-Reference $_ System.Web }
@@ -800,6 +767,7 @@ function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
 }
 
 function Test-SimpleBindingRedirectsClassLibraryReference {
+    [SkipTest('https://github.com/NuGet/Home/issues/10890')]
     param(
         $context
     )

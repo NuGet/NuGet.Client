@@ -23,7 +23,7 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
 
-        internal static readonly string EventName = "PackageSourceDiagnostics";
+        internal const string EventName = "PackageSourceDiagnostics";
 
         public enum TelemetryAction
         {

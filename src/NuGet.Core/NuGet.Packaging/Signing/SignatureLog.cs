@@ -34,6 +34,12 @@ namespace NuGet.Packaging.Signing
             Time = DateTimeOffset.UtcNow;
         }
 
+        public static SignatureLog MinimalLog(string message)
+        {
+            // create a log message and make the code undefined to not display the code in any logger
+            return new SignatureLog(LogLevel.Minimal, NuGetLogCode.Undefined, message);
+        }
+
         public static SignatureLog InformationLog(string message)
         {
             // create a log message and make the code undefined to not display the code in any logger

@@ -37,6 +37,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             get { return _runspace.RunspaceAvailability; }
         }
 
+        public Version PSVersion
+        {
+            get { return _runspace.Version; }
+        }
+
         public RunspaceDispatcher(Runspace runspace)
         {
             _runspace = runspace;
@@ -83,12 +88,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public Collection<PSObject> Invoke(string command, object[] inputs, bool outputResults)
         {
             // Invoking a command on the pipeline thread blocks the caller.
-            // It will hang VS when a caller is on the UI thread.
+            // It will make VS stop responding when a caller is on the UI thread.
             ThreadHelper.ThrowIfOnUIThread();
 
             if (string.IsNullOrEmpty(command))
             {
-                throw new ArgumentNullException("command");
+                throw new ArgumentNullException(nameof(command));
             }
 
             using (var pipeline = CreatePipeline(command, outputResults))
@@ -109,7 +114,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             if (String.IsNullOrEmpty(command))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, command), "command");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, command), nameof(command));
             }
 
             Pipeline pipeline = CreatePipeline(command, outputResults);

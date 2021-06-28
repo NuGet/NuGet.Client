@@ -34,6 +34,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
             _menuId = menuId;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         bool IContextMenuController.ShowContextMenu(IEnumerable<object> items, Point location)
         {
             bool shouldShowMenu = items.All(item => item is IRelatableItem);

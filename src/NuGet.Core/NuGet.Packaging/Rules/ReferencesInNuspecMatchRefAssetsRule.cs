@@ -48,9 +48,9 @@ namespace NuGet.Packaging.Rules
         internal IEnumerable<MissingReference> Compare(IDictionary<string, IEnumerable<string>> nuspecReferences, IEnumerable<string> refFiles)
         {
             var missingReferences = new List<MissingReference>();
-            if (nuspecReferences.Count() != 0)
+            if (nuspecReferences.Any())
             {
-                if (refFiles.Count() != 0)
+                if (refFiles.Any())
                 {
                     var filesByTFM = refFiles.Where(t => t.Count(m => m == '/') > 1)
                         .GroupBy(t => NuGetFramework.ParseFolder(t.Split('/')[1]).GetShortFolderName(), t => Path.GetFileName(t));
@@ -58,7 +58,7 @@ namespace NuGet.Packaging.Rules
                     var missingSubfolderInFiles = nuspecReferences.Keys.Where(t => !keys.Contains(t) &&
                     !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("unsupported") &&
                     !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("any"));
-                    if (missingSubfolderInFiles.Count() != 0)
+                    if (missingSubfolderInFiles.Any())
                     {
                         var subfolder = nuspecReferences.Where(t => missingSubfolderInFiles.Contains(t.Key));
                         foreach (var item in subfolder)
@@ -127,7 +127,7 @@ namespace NuGet.Packaging.Rules
         internal IEnumerable<PackagingLogMessage> GenerateWarnings(IEnumerable<MissingReference> missingReferences)
         {
             var issues = new List<PackagingLogMessage>();
-            if (missingReferences.Count() != 0)
+            if (missingReferences.Any())
             {
                 var message = new StringBuilder();
                 message.AppendLine(MessageFormat);

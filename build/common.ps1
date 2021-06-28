@@ -106,6 +106,9 @@ Function Invoke-BuildStep {
             }
             $completed = $true
         }
+        catch {
+            Error-Log $_
+        }
         finally {
             $sw.Stop()
             Reset-Colors
@@ -153,10 +156,11 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
-    $vsMajorVersion = Get-VSMajorVersion
-    $MSBuildExe = Get-MSBuildExe $vsMajorVersion
-    $CliBranchListForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
-    $CliBranchList = $CliBranchListForTesting.Trim().Split(';');
+    $MSBuildExe = Get-MSBuildExe
+
+    $CmdOutLines = ((& $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting) | Out-String).Trim()
+    $CliBranchListForTesting = ($CmdOutLines -split [Environment]::NewLine)[-1]
+    $CliBranchList = $CliBranchListForTesting -split ';'
 
     $DotNetInstall = Join-Path $CLIRoot 'dotnet-install.ps1'
 
@@ -171,7 +175,7 @@ Function Install-DotnetCLI {
 
     ForEach ($CliBranch in $CliBranchList) {
         $CliBranch = $CliBranch.trim()
-        $CliChannelAndVersion = $CliBranch -split "\s+"
+        $CliChannelAndVersion = $CliBranch -split ":"
 
         $Channel = $CliChannelAndVersion[0].trim()
         if ($CliChannelAndVersion.count -eq 1) {
@@ -196,12 +200,9 @@ Function Install-DotnetCLI {
             $arch = "x86";
         }
 
-        $env:DOTNET_HOME = $cli.Root
-        $env:DOTNET_INSTALL_DIR = $NuGetClientRoot
-
         if ($Version -eq 'latest') {
 
-            # When installing latest, we firstly check the latest version from the server against what we have installed locally. This also allows us to check the SDK was correctly installed.  
+            # When installing latest, we firstly check the latest version from the server against what we have installed locally. This also allows us to check the SDK was correctly installed.
             # Get the latest specific version number for a certain channel from url like : https://dotnetcli.blob.core.windows.net/dotnet/Sdk/release/3.0.1xx/latest.version
             $latestVersionLink = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $Channel + "/latest.version"
             $latestVersionFile = Invoke-RestMethod -Method Get -Uri $latestVersionLink
@@ -239,8 +240,8 @@ Function Install-DotnetCLI {
 
         #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
         if ($Force -or -not (Test-Path $probeDotnetPath)) {
-            Trace-Log "$DotNetInstall -Channel $($cli.Channel) -i $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
-            & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+            Trace-Log "$DotNetInstall -Channel $($cli.Channel) -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
+            & $DotNetInstall -Channel $cli.Channel -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
 
         if (-not (Test-Path $DotNetExe)) {
@@ -255,16 +256,15 @@ Function Install-DotnetCLI {
     }
 
     # Install the 2.x runtime because our tests target netcoreapp2x
-    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
+    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -InstallDir $CLIRoot -NoPath"
     # Work around the following install script bug https://github.com/dotnet/install-scripts/issues/152.
     # Start a new process to avoid the ev getting populated.
-    & powershell $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
+    & powershell $DotNetInstall -Runtime dotnet -Channel 2.2 -InstallDir $CLIRoot -NoPath
     # Display build info
     & $DotNetExe --info
 }
 
 Function Get-LatestVisualStudioRoot {
-
     if (Test-Path $BuiltInVsWhereExe) {
         $installationPath = & $BuiltInVsWhereExe -latest -prerelease -property installationPath
         $installationVersion = & $BuiltInVsWhereExe -latest -prerelease -property installationVersion
@@ -297,43 +297,20 @@ Function Get-VSVersion() {
     return $VSVersion
 }
 
-Function Get-VSMajorVersion() {
-    $vsVersion = Get-VSVersion
-    $vsMajorVersion = "${vsVersion}".Split('.')[0]
-    return $vsMajorVersion
-}
-
 Function Get-MSBuildExe {
-    param(
-        [ValidateSet("15", "16", $null)]
-        [string]$MSBuildVersion
-    )
 
-    if (-not $MSBuildVersion) {
-        $MSBuildVersion = Get-VSMajorVersion
+    # If there's a msbuild.exe on the path, use it.
+    if ($null -ne (Get-Command "msbuild.exe" -ErrorAction Ignore))
+    {
+        return "msbuild.exe"
     }
 
-    $CommonToolsVar = "Env:VS${MSBuildVersion}0COMNTOOLS"
-    if (Test-Path $CommonToolsVar) {
-        $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
-        $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
-    }
-    else {
-        $VisualStudioRoot = Get-LatestVisualStudioRoot
-        if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
-            $MSBuildRoot = Join-Path $VisualStudioRoot 'MSBuild'
-        }
-    }
-
-    $MSBuildExe = Join-Path $MSBuildRoot 'Current\bin\msbuild.exe'
-
-    if (-not (Test-Path $MSBuildExe)) {
-        $MSBuildExe = Join-Path $MSBuildRoot "${MSBuildVersion}.0\bin\msbuild.exe"
-    }
+    # Otherwise, use VSWhere.exe to find the latest MSBuild.exe.
+    $MSBuildExe = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -requires Microsoft.Component.MSBuild -find MSBuild\**\bin\MSBuild.exe
 
     if (Test-Path $MSBuildExe) {
         Verbose-Log "Found MSBuild.exe at `"$MSBuildExe`""
-        $MSBuildExe
+        return $MSBuildExe
     }
     else {
         Error-Log 'Could not find MSBuild.exe' -Fatal
@@ -341,37 +318,9 @@ Function Get-MSBuildExe {
 }
 
 Function Test-BuildEnvironment {
-    [CmdletBinding()]
-    param(
-        [switch]$CI
-    )
-    if (-not (Test-Path $ConfigureJson)) {
-        # Run the configure script if it hasn't been executed
-        $configureScriptPath = Join-Path $NuGetClientRoot configure.ps1
-        Invoke-Expression $configureScriptPath
-    }
-
     $Installed = (Test-Path $DotNetExe)
     if (-not $Installed) {
         Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
-    }
-
-    $script:ConfigureObject = Get-Content $ConfigureJson -Raw | ConvertFrom-Json
-    Set-Variable MSBuildExe -Value $ConfigureObject.BuildTools.MSBuildExe -Scope Script -Force
-    Set-Alias msbuild $script:MSBuildExe -Scope Script -Force
-    Set-Variable BuildToolsets -Value $ConfigureObject.Toolsets -Scope Script -Force
-
-    $script:VSToolsetInstalled = ($BuildToolsets | where vstoolset -ne $null)
-
-    $ConfigureObject |
-    select -expand envvars -ea Ignore |
-    % { $_.psobject.properties } |
-    % { Set-Item -Path "env:$($_.Name)" -Value $_.Value }
-
-    if ($CI) {
-        # Explicitly add cli to environment PATH
-        # because dotnet-install script runs in configure.ps1 in previous build step
-        $env:path = "$CLIRoot;${env:path}"
     }
 }
 

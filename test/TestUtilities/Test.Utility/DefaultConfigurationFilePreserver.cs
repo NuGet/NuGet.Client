@@ -18,12 +18,17 @@ namespace NuGet.CommandLine.Test
 
         public DefaultConfigurationFilePreserver()
         {
-            _mutex = new Mutex(initiallyOwned: false, MutexName);
-            var owner = _mutex.WaitOne(TimeSpan.FromMinutes(2));
-            if (!owner)
+            bool mutexWasCreated;
+            // Request initial ownership of the named mutex by passing true for the first parameter.
+            //Only one system object named "DefaultConfigurationFilePreserver" can exist
+            _mutex = new Mutex(initiallyOwned: true, MutexName, out mutexWasCreated);
+            if (!mutexWasCreated)
             {
-                throw new TimeoutException(string.Format("Timedout while waiting for mutex {0}", MutexName));
+                bool owner = _mutex.WaitOne(TimeSpan.FromMinutes(2));
+                if (!owner)
+                    throw new TimeoutException(string.Format("Timedout while waiting for mutex {0}", MutexName));
             }
+
             BackupAndDeleteDefaultConfigurationFile();
         }
 

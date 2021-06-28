@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Tests;
 using NuGet.Test.Utility;
 using Xunit;
 

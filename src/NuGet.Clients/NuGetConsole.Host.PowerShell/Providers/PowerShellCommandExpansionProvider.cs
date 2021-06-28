@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host
 {
-    [SuppressMessage(
-        "Microsoft.Performance",
-        "CA1812:AvoidUninstantiatedInternalClasses",
-        Justification = "MEF requires this class to be non-static.")]
     [Export(typeof(ICommandExpansionProvider))]
     [HostName(PowerShellHostProvider.HostName)]
     internal class PowerShellCommandExpansionProvider : CommandExpansionProvider

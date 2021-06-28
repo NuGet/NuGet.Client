@@ -521,4 +521,13 @@
 2 - Package ID
 3 - Package Sources</comment>
   </data>
+  <data name="PackageNamespaceMatchFound" xml:space="preserve">
+    <value>Package namespace matches found for package ID '{0}' are: '{1}'</value>
+    <comment>{0} - package id
+{1} - sources ids</comment>
+  </data>
+  <data name="PackageNamespaceNoMatchFound" xml:space="preserve">
+    <value>Package namespace match not found for package ID '{0}'</value>
+    <comment>{0} - package id</comment>
+  </data>
 </root>

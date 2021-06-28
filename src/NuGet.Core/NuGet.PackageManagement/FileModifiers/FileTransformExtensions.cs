@@ -15,12 +15,12 @@ namespace NuGet.ProjectManagement
         {
             if (string.IsNullOrEmpty(installExtension))
             {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, "installExtension");
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(installExtension));
             }
 
             if (string.IsNullOrEmpty(uninstallExtension))
             {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, "uninstallExtension");
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(uninstallExtension));
             }
 
             InstallExtension = installExtension;

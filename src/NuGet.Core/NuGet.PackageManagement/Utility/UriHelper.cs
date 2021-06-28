@@ -40,7 +40,6 @@ namespace NuGet.PackageManagement
                 // REVIEW: Will this allow a package author to execute arbitrary program on user's machine?
                 // We have limited the url to be HTTP only, but is it sufficient?
                 Process.Start(url.AbsoluteUri);
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.LinkOpened);
             }
         }
 

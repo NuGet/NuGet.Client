@@ -93,14 +93,14 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task GetOrCreateAsync_WhenPluginHangs_Throws()
+        public async Task GetOrCreateAsync_WhenPluginFreezes_Throws()
         {
             using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
             using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
             {
                 var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
                     PluginFile.FullName,
-                    PluginConstants.PluginArguments.Concat(new[] { "-Hang" }),
+                    PluginConstants.PluginArguments.Concat(new[] { "-Freeze" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
                     cancellationTokenSource.Token));

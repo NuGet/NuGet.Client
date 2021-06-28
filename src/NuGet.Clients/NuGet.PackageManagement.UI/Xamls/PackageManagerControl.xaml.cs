@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageManagerControl.xaml
     /// </summary>
-    public partial class PackageManagerControl : UserControl, IVsWindowSearch
+    public partial class PackageManagerControl : UserControl, IVsWindowSearch, IDisposable
     {
         internal event EventHandler _actionCompleted;
         internal DetailControlModel _detailModel;
@@ -51,8 +51,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private Stopwatch _sinceLastRefresh;
         private CancellationTokenSource _refreshCts;
-        private bool _installedTabDataIsLoaded;
-        private bool _updatesTabDataIsLoaded;
         private bool _forceRecommender;
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
@@ -68,6 +66,7 @@ namespace NuGet.PackageManagement.UI
         private bool _recommendPackages = false;
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
+        private bool _disposed = false;
 
         private PackageManagerControl()
         {
@@ -411,7 +410,6 @@ namespace NuGet.PackageManagement.UI
             if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
-                ResetTabDataLoadFlags();
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
             }
@@ -505,7 +503,6 @@ namespace NuGet.PackageManagement.UI
             // search when needed by itself.
             _dontStartNewSearch = true;
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
-            ResetTabDataLoadFlags();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
@@ -631,7 +628,7 @@ namespace NuGet.PackageManagement.UI
 
                 _root.Children.Insert(0, RestoreBar);
 
-                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
+                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += PackageRestoreManager_PackagesMissingStatusChanged;
             }
         }
 
@@ -640,7 +637,7 @@ namespace NuGet.PackageManagement.UI
             if (RestoreBar != null)
             {
                 RestoreBar.CleanUp();
-                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged -= packageRestoreManager_PackagesMissingStatusChanged;
+                Model.Context.PackageRestoreManager.PackagesMissingStatusChanged -= PackageRestoreManager_PackagesMissingStatusChanged;
             }
         }
 
@@ -665,7 +662,7 @@ namespace NuGet.PackageManagement.UI
                 _restartBar.CleanUp();
 
                 Model.Context.PackageRestoreManager.PackagesMissingStatusChanged
-                    -= packageRestoreManager_PackagesMissingStatusChanged;
+                    -= PackageRestoreManager_PackagesMissingStatusChanged;
             }
         }
 
@@ -678,38 +675,22 @@ namespace NuGet.PackageManagement.UI
             _root.Children.Insert(0, _migratorBar);
         }
 
-#pragma warning disable IDE1006 // Naming Styles
-        private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
-#pragma warning restore IDE1006 // Naming Styles
+        private void PackageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
-            // make sure update happens on the UI thread.
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            // TODO: PackageRestoreManager fires this event even when solution is closed.
+            // Don't do anything if solution is closed.
+            // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
+            // only when package is missing last time and is not missing this time, we need to refresh
+            if (!e.PackagesMissing && _missingPackageStatus)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // TODO: PackageRestoreManager fires this event even when solution is closed.
-                // Don't do anything if solution is closed.
-                // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
-                // only when package is missing last time and is not missing this time, we need to refresh
-                if (!e.PackagesMissing && _missingPackageStatus)
+                EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await UpdateAfterPackagesMissingStatusChangedAsync();
-                }
+                    await RefreshAsync();
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageRestoreManager_PackagesMissingStatusChanged));
+            }
 
-                _missingPackageStatus = e.PackagesMissing;
-            });
-        }
-
-        // Refresh the UI after packages are restored.
-        // Note that the PackagesMissingStatusChanged event can be fired from a non-UI thread in one case:
-        // the VsSolutionManager.Init() method, which is scheduled on the thread pool.
-        private async ValueTask UpdateAfterPackagesMissingStatusChangedAsync()
-        {
-            VSThreadHelper.ThrowIfNotOnUIThread();
-            var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
-            await RefreshAsync();
-            EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
-            _packageDetail.Refresh();
+            _missingPackageStatus = e.PackagesMissing;
         }
 
         private async Task SetTitleAsync(IProjectMetadataContextInfo projectMetadata = null)
@@ -850,7 +831,6 @@ namespace NuGet.PackageManagement.UI
             else // Invalidate cache
             {
                 Model.CachedUpdates = null;
-                FlagTabDataAsLoaded(filterToRender, isLoaded: false);
             }
 
             try
@@ -858,6 +838,7 @@ namespace NuGet.PackageManagement.UI
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
+                    Model.Context.ReconnectingSearchService,
                     loadContext,
                     SelectedSource.PackageSources,
                     (NuGet.VisualStudio.Internal.Contracts.ItemFilter)_topPanel.Filter,
@@ -889,21 +870,11 @@ namespace NuGet.PackageManagement.UI
                 {
                     await RefreshInstalledAndUpdatesTabsAsync();
                 }
-
-                FlagTabDataAsLoaded(filterToRender);
-
-                // Loading Data on Installed tab should also consider the Data on Updates tab as loaded to indicate
-                // UI filtering for Updates is ready.
-                if (filterToRender == ItemFilter.Installed)
-                {
-                    FlagTabDataAsLoaded(ItemFilter.UpdatesAvailable);
-                }
             }
             catch (OperationCanceledException)
             {
                 // Invalidate cache.
                 Model.CachedUpdates = null;
-                FlagTabDataAsLoaded(filterToRender, isLoaded: false);
             }
         }
 
@@ -934,43 +905,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        /// <summary>
-        /// Set a flag indicating this tab has been loaded for the first time since the control was loaded.
-        /// Purpose is to identify cache availability and improve performance.
-        /// When clearing this flag by <paramref name="isLoaded"/> to false, Installed and Updates will both be cleared
-        /// since they are treated as one logical load.
-        /// </summary>
-        /// <param name="filterToCheck">Tab to mark as initially loaded. Currently supports Installed and Updates.</param>
-        /// <param name="isLoaded">Set to false to reset the tab to its original state of not loaded.</param>
-        private void FlagTabDataAsLoaded(ItemFilter filterToCheck, bool isLoaded = true)
-        {
-            switch (filterToCheck)
-            {
-                case ItemFilter.Installed:
-                    _installedTabDataIsLoaded = isLoaded;
-                    if (!isLoaded)
-                    {
-                        _updatesTabDataIsLoaded = false;
-                    }
-                    break;
-                case ItemFilter.UpdatesAvailable:
-                    _updatesTabDataIsLoaded = isLoaded;
-                    if (!isLoaded)
-                    {
-                        _installedTabDataIsLoaded = false;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void ResetTabDataLoadFlags()
-        {
-            _installedTabDataIsLoaded = false;
-            _updatesTabDataIsLoaded = false;
-        }
-
         private async ValueTask RefreshInstalledAndUpdatesTabsAsync()
         {
             // clear existing caches
@@ -983,6 +917,7 @@ namespace NuGet.PackageManagement.UI
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
             var loader = await PackageItemLoader.CreateAsync(
                 Model.Context.ServiceBroker,
+                Model.Context.ReconnectingSearchService,
                 loadContext,
                 SelectedSource.PackageSources,
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter.UpdatesAvailable,
@@ -1041,6 +976,7 @@ namespace NuGet.PackageManagement.UI
                 var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
+                    Model.Context.ReconnectingSearchService,
                     loadContext,
                     SelectedSource.PackageSources,
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.Consolidate,
@@ -1122,7 +1058,6 @@ namespace NuGet.PackageManagement.UI
         private void SourceRepoList_SelectionChanged(object sender, EventArgs e)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            ResetTabDataLoadFlags();
 
             if (_dontStartNewSearch || !_initialized)
             {
@@ -1165,34 +1100,12 @@ namespace NuGet.PackageManagement.UI
                 oldCts?.Cancel();
                 oldCts?.Dispose();
 
-                var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
-                    (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
-                var switchedToInstalledOrUpdatesTab = _topPanel.Filter == ItemFilter.UpdatesAvailable || _topPanel.Filter == ItemFilter.Installed;
-                var installedAndUpdatesTabDataLoaded = _installedTabDataIsLoaded && _updatesTabDataIsLoaded;
-
-                var isUiFiltering = switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabDataLoaded;
-
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    // Installed and Updates tabs don't need to be refreshed when switching between the two, if they're both loaded.
-                    if (isUiFiltering)
-                    {
-                        // UI can apply filtering.
-                        _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
-                    }
-                    else // Refresh tab from Cache.
-                    {
-                        // If we came from a tab outside Installed/Updates, then they need to be Refreshed before UI filtering can take place.
-                        if (!switchedFromInstalledOrUpdatesTab)
-                        {
-                            ResetTabDataLoadFlags();
-                        }
-
-                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                    }
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUiFiltering);
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
@@ -1203,8 +1116,6 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async ValueTask RefreshAsync()
         {
-            ResetTabDataLoadFlags();
-
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
@@ -1234,7 +1145,6 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            ResetTabDataLoadFlags();
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
             EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
@@ -1267,7 +1177,6 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
-            ResetTabDataLoadFlags();
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
@@ -1359,11 +1268,11 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            if (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabDataIsLoaded)
+            if (_topPanel.Filter == ItemFilter.UpdatesAvailable)
             {
                 SelectMatchingUpdatePackages(updatePackageOptions);
             }
-            else if (_topPanel.Filter == ItemFilter.Installed && _updatesTabDataIsLoaded)
+            else if (_topPanel.Filter == ItemFilter.Installed)
             {
                 _topPanel.SelectFilter(ItemFilter.UpdatesAvailable);
                 SelectMatchingUpdatePackages(updatePackageOptions);
@@ -1417,7 +1326,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void CleanUp()
+        private void CleanUp()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -1476,7 +1385,6 @@ namespace NuGet.PackageManagement.UI
                 IsEnabled = false;
                 _isExecutingAction = true;
 
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {
                     var nugetUi = Model.UIController as NuGetUI;
@@ -1498,7 +1406,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     //Invalidate cache.
                     Model.CachedUpdates = null;
-                    ResetTabDataLoadFlags();
 
                     IsEnabled = true;
                     _isExecutingAction = false;
@@ -1511,7 +1418,6 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                 }
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteAction));
@@ -1569,7 +1475,6 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            ResetTabDataLoadFlags();
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
                 .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
@@ -1637,6 +1542,27 @@ namespace NuGet.PackageManagement.UI
                 await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project: null);
             })
             .PostOnFailure(nameof(PackageManagerControl), nameof(UpgradeButton_Click));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                CleanUp();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
