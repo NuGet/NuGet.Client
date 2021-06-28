@@ -800,9 +800,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
 
-                    if (visited.Contains(pkgChild))
+                    if (visited.Contains(pkgChild) && memory.ContainsKey(pkgChild) && memory[pkgChild])
                     {
-                        return memory[pkgChild];
+                        return true;
                     }
                     else
                     {
