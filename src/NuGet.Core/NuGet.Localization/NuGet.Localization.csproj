@@ -20,7 +20,7 @@
       configuration=$(Configuration);
       LocalizationOutputDirectory=$(LocalizationOutputDirectory);
       PackageIcon=$(PackageIcon);
-      PackageIconPath=$(MSBuildThisFileDirectory)..\$(PackageIcon)
+      PackageIconPath=$([System.IO.Path]::Combine($(RepositoryRootDirectory),$(PackageIcon)))
     </NuspecProperties>
   </PropertyGroup>
 
