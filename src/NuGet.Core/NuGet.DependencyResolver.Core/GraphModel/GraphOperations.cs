@@ -48,7 +48,7 @@ namespace NuGet.DependencyResolver
 
             static bool AreAllParentsAccepted(DowngradeResult<RemoteResolveResult> d)
             {
-                var resultToCheck = d.DowngradedFrom.OuterNode;
+                GraphNode<RemoteResolveResult> resultToCheck = d.DowngradedFrom.OuterNode;
 
                 while (resultToCheck != null)
                 {
