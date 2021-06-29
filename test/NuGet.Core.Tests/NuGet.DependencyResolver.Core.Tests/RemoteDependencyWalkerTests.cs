@@ -1587,7 +1587,7 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
             var version100 = "1.0.0";
             var version200 = "2.0.0";
-             
+
             // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0 (this will be downgraded) -> E 1.0.0
             provider.Package("A", version100)
                     .DependsOn("B", version100);
