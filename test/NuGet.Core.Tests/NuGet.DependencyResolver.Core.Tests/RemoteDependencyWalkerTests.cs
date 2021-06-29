@@ -1573,7 +1573,7 @@ namespace NuGet.DependencyResolver.Tests
         /// <summary>
         /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0(this will be downgraded due to central 1.0.0) -> E 1.0.0
         ///   -> F 1.0.0 -> C 2.0.0
-        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0 (this will be downgraded due to central 1.0.0)
+        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 2.0.0 (this will be downgraded due to central 1.0.0)
         ///
         ///  D has version defined centrally 1.0.0
         ///  D 1.0.0 -> I 1.0.0
