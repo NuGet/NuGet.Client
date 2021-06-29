@@ -631,15 +631,15 @@ function Test-PackageReferenceToPackagesConfigProjectWithLockFile {
     $project2 = New-ClassLibraryNET46
     Add-ProjectReference $project1 $project2
 
-    $project1 | Install-Package Newtonsoft.Json -Version 9.0.1
     $project1.Save();
     Build-Solution
 
     $assetsFile = Get-NetCoreLockFilePath $project1
     Remove-Item -Force $assetsFile
+    $project1 | Install-Package Newtonsoft.Json -Version 9.0.1
 
     # Act
-    Rebuild-Solution
+    Build-Solution
 
     # Assert
     Assert-PathExists $assetsFile
