@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -164,7 +165,7 @@ namespace NuGet.ProjectModel
             }
 
             var projectsByUniqueName = _projects
-                .ToDictionary(t => t.Value.RestoreMetadata.ProjectUniqueName, t => t.Value, PathUtility.GetStringComparerBasedOnOS());
+                .ToDictionary(t => t.Value.RestoreMetadata.ProjectUniqueName, t => t.Value, _projects.Count, PathUtility.GetStringComparerBasedOnOS());
 
             var closure = new List<PackageSpec>();
 

@@ -9,6 +9,33 @@ namespace NuGet.Shared
 {
     internal static class Extensions
     {
+        /// <inheritdoc cref="Enumerable.ToDictionary{TSource, TKey, TElement}(IEnumerable{TSource}, Func{TSource, TKey}, Func{TSource, TElement}, IEqualityComparer{TKey})"/>.
+        public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, int capacity, IEqualityComparer<TKey> comparer)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (keySelector == null)
+            {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            if (elementSelector == null)
+            {
+                throw new ArgumentNullException(nameof(elementSelector));
+            }
+
+            var d = new Dictionary<TKey, TElement>(capacity, comparer);
+            foreach (TSource element in source)
+            {
+                d.Add(keySelector(element), elementSelector(element));
+            }
+
+            return d;
+        }
+
         /// <summary>
         /// Return the enumerable as a List of T, copying if required. Optimized for common case where it is an List of T.
         /// Avoid mutating the return value.
