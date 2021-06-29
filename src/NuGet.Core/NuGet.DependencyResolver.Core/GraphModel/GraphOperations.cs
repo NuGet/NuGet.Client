@@ -31,20 +31,20 @@ namespace NuGet.DependencyResolver
             root.TryResolveConflicts(result.VersionConflicts);
 
             // Remove all downgrades that didn't result in selecting the node we actually downgraded to
-            result.Downgrades.RemoveAll(d => IsIrrelevantDowngrade(d));
+            result.Downgrades.RemoveAll(d => !IsRelevantDowngrade(d));
 
             return result;
         }
 
         /// <summary>
-        /// A downgrade is relevnt if the node itself was `Accepted`.
-        /// A node that itself wasn't `Accepted`, or has a parent that wasn't accepted is irrelevant.
+        /// A downgrade is relevant if the node itself was `Accepted`.
+        /// A node that itself wasn't `Accepted`, or has a parent that wasn't accepted is not relevant.
         /// </summary>
         /// <param name="d">Downgrade result to analyze</param>
-        /// <returns>Whether the downgrade is irrelevant.</returns>
-        private static bool IsIrrelevantDowngrade(DowngradeResult<RemoteResolveResult> d)
+        /// <returns>Whether the downgrade is relevant.</returns>
+        private static bool IsRelevantDowngrade(DowngradeResult<RemoteResolveResult> d)
         {
-            return d.DowngradedTo.Disposition != Disposition.Accepted || AreAllParentsAccepted(d);
+            return d.DowngradedTo.Disposition == Disposition.Accepted && AreAllParentsAccepted(d);
 
             static bool AreAllParentsAccepted(DowngradeResult<RemoteResolveResult> d)
             {
@@ -54,11 +54,11 @@ namespace NuGet.DependencyResolver
                 {
                     if (resultToCheck.Disposition != Disposition.Accepted)
                     {
-                        return true;
+                        return false;
                     }
                     resultToCheck = resultToCheck.OuterNode;
                 }
-                return false;
+                return true;
             }
         }
 
