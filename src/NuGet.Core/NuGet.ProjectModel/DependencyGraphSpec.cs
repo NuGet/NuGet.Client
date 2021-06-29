@@ -163,9 +163,6 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(rootUniqueName));
             }
 
-            var projectsByUniqueName = _projects
-                .ToDictionary(t => t.Value.RestoreMetadata.ProjectUniqueName, t => t.Value, PathUtility.GetStringComparerBasedOnOS());
-
             var closure = new List<PackageSpec>();
 
             var added = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
@@ -184,7 +181,7 @@ namespace NuGet.ProjectModel
                     closure.Add(spec);
 
                     // Find children
-                    foreach (var projectName in GetProjectReferenceNames(spec, projectsByUniqueName))
+                    foreach (var projectName in GetProjectReferenceNames(spec, _projects))
                     {
                         if (added.Add(projectName))
                         {
@@ -197,7 +194,7 @@ namespace NuGet.ProjectModel
             return closure;
         }
 
-        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, Dictionary<string, PackageSpec> projectsByUniqueName)
+        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, SortedDictionary<string, PackageSpec> projectsByUniqueName)
         {
             // Handle projects which may not have specs, and which may not have references
             return spec?.RestoreMetadata?
