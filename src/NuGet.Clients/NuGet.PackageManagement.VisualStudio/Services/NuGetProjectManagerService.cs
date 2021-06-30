@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -744,7 +743,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (project != default && project is PackageReferenceProject prProject)
             {
-                IList<ProjectModel.LockFileTarget> fwGraphList = await prProject.GetFullRestoreGraphAsync(ct);
+                (IList<ProjectModel.LockFileTarget> fwGraphList, bool isCacheHit) = await prProject.GetFullRestoreGraphAsync(ct);
 
                 if (fwGraphList != null)
                 {

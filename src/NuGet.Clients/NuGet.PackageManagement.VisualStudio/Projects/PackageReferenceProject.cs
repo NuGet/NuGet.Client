@@ -26,6 +26,8 @@ namespace NuGet.PackageManagement.VisualStudio
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
         private protected DateTime _lastTimeAssetsModified;
+        private WeakReference<IList<LockFileTarget>> _lastLockFileTargets;
+        //private ObjectCache _transitiveOriginsCache;
 
         protected PackageReferenceProject(
             string projectName,
@@ -92,24 +94,50 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return all targets (dependency graph) found in project.assets.json file
         /// </summary>
         /// <param name="token">Cancellation token</param>
-        /// <returns>A list, one element for each framework restored, or <c>null</c> if project.assets.json file is not found</returns>
+        /// <returns>A 2-tuple with:
+        ///  <list type="bullet">
+        ///  <item>
+        ///    <term>TargetsList</term>
+        ///    <description>A list, one element for each framework restored, or <c>null</c> if project.assets.json file is not found</description>
+        ///  </item>
+        ///  <item>
+        ///    <term>IsCacheHit</term>
+        ///    <description>Indicates if target list was retrieved from cache</description>
+        ///  </item>
+        ///  </list>
+        /// </returns>
         /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
-        internal async Task<IList<LockFileTarget>> GetFullRestoreGraphAsync(CancellationToken token)
+        internal async Task<(IList<LockFileTarget> TargetsList, bool IsCacheHit)> GetFullRestoreGraphAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
             string assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
+            IList<LockFileTarget> lastPackageSpec = null;
+            bool cacheHit = _lastLockFileTargets != null ? _lastLockFileTargets.TryGetTarget(out lastPackageSpec) : false;
 
-            if (fileInfo.Exists)
+            (IList<LockFileTarget> TargetsList, bool IsCacheHit) returnValue = (null, false);
+
+            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHit)
             {
-                await TaskScheduler.Default;
-                LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+                if (fileInfo.Exists)
+                {
+                    await TaskScheduler.Default;
+                    LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
 
-                return lockFile?.Targets;
+                    returnValue.TargetsList = lockFile?.Targets;
+                }
+
+                _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+                _lastLockFileTargets = new WeakReference<IList<LockFileTarget>>(returnValue.TargetsList);
+            }
+            else if (cacheHit && lastPackageSpec != null)
+            {
+                returnValue.IsCacheHit = true;
+                returnValue.TargetsList = lastPackageSpec;
             }
 
-            return null;
+            return returnValue;
         }
     }
 }

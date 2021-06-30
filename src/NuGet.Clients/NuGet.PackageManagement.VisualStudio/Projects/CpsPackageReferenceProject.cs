@@ -11,7 +11,6 @@ using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.ProjectSystem.References;
-using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -44,7 +43,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly UnconfiguredProject _unconfiguredProject;
         private List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
         private List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
-        private WeakReference<PackageSpec> _lastPackageSpec;
 
         public CpsPackageReferenceProject(
             string projectName,
@@ -220,28 +218,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var frameworkSorter = new NuGetFrameworkSorter();
 
-                string assetsFilePath = await GetAssetsFilePathAsync();
-                var fileInfo = new FileInfo(assetsFilePath);
-                IList<LockFileTarget> targets = default;
-                PackageSpec lastPackageSpec = default;
-                _lastPackageSpec?.TryGetTarget(out lastPackageSpec);
-
-                if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !ReferenceEquals(lastPackageSpec, packageSpec))
+                (var targets, var isCacheHit) = await GetFullRestoreGraphAsync(token);
+                if (!isCacheHit)
                 {
-                    await TaskScheduler.Default;
-                    if (fileInfo.Exists)
-                    {
-                        var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
-                        if (!(lockFile is null))
-                        {
-                            targets = lockFile.Targets;
-                        }
-                    }
-                    _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
-                    _lastPackageSpec = new WeakReference<PackageSpec>(packageSpec);
-
                     // clear the transitive packages cache, since we don't know when a dependency has been removed
-                    _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
+                    _transitivePackages.Clear();
                 }
 
                 List<PackageReference> installedPackages = packageSpec
