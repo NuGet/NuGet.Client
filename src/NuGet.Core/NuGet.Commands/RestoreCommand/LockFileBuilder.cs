@@ -288,13 +288,6 @@ namespace NuGet.Commands
         private void ValidateLockFileLibrary(LockFile lockFile)
         {
             IList<LockFileLibrary> libraries = lockFile.Libraries;
-            var libNameVersion = libraries.Select(l => l.Name + " " + l.Version);
-
-            // If there is no duplicate then early return.
-            if (libNameVersion.Distinct().Count() == libNameVersion.Count())
-            {
-                return;
-            }
 
             var libraryReferences = new Dictionary<string, LockFileLibrary>();
 
@@ -306,7 +299,7 @@ namespace NuGet.Commands
                 {
                     if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
                     {
-                        // Prefer project reference over package reference, so remove the the package reference.
+                        // Prefer project reference over package reference, so replace the the package reference.
                         libraryReferences[libraryKey] = library;
                     }
                 }
@@ -326,13 +319,6 @@ namespace NuGet.Commands
         private void ValidateLockFileTargetLibrary(LockFileTarget lockFileTarget)
         {
             IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
-            var libNameVersion = libraries.Select(l => l.Name + " " + l.Version);
-
-            // If there is no duplicate then early return.
-            if (libNameVersion.Distinct().Count() == libNameVersion.Count())
-            {
-                return;
-            }
 
             var libraryReferences = new Dictionary<string, LockFileTargetLibrary>();
 
@@ -344,7 +330,7 @@ namespace NuGet.Commands
                 {
                     if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
                     {
-                        // Prefer project reference over package reference, so remove the the package reference.
+                        // Prefer project reference over package reference, so replace the the package reference.
                         libraryReferences[libraryKey] = library;
                     }
                 }
