@@ -288,7 +288,6 @@ namespace NuGet.Commands
         private void ValidateLockFileLibrary(LockFile lockFile)
         {
             IList<LockFileLibrary> libraries = lockFile.Libraries;
-
             var libraryReferences = new Dictionary<string, LockFileLibrary>();
 
             foreach (LockFileLibrary library in libraries)
@@ -319,7 +318,6 @@ namespace NuGet.Commands
         private void ValidateLockFileTargetLibrary(LockFileTarget lockFileTarget)
         {
             IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
-
             var libraryReferences = new Dictionary<string, LockFileTargetLibrary>();
 
             foreach (LockFileTargetLibrary library in libraries)
