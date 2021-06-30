@@ -148,7 +148,7 @@ namespace NuGet.Commands
                 }
             }
 
-            ValidateLockFileLibrary(lockFile.Libraries);
+            ValidateLockFileLibrary(lockFile);
             var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
@@ -271,7 +271,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                ValidateLockFileTargetLibrary(target.Libraries);
+                ValidateLockFileTargetLibrary(target);
                 lockFile.Targets.Add(target);
             }
 
@@ -285,8 +285,9 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        private void ValidateLockFileLibrary(IList<LockFileLibrary> libraries)
+        private void ValidateLockFileLibrary(LockFile lockFile)
         {
+            IList<LockFileLibrary> libraries = lockFile.Libraries;
             var libNameVersion = libraries.Select(l => l.Name + " " + l.Version);
 
             // If there is no duplicate then early return.
@@ -295,23 +296,36 @@ namespace NuGet.Commands
                 return;
             }
 
-            var librariesByNameAndVersion = libraries
-                                                    .ToLookup(lib => Tuple.Create(lib.Name, lib.Version))
-                                                    .Where(nv => nv.Count() == 2)
-                                                    .ToList();
+            var libraryReferences = new Dictionary<string, LockFileLibrary>();
 
-            foreach (IGrouping<Tuple<string, NuGetVersion>, LockFileLibrary> item in librariesByNameAndVersion)
+            foreach (LockFileLibrary library in libraries)
             {
-                LockFileLibrary first = item.First();
-                LockFileLibrary second = item.Last();
+                var libraryKey = library.Name + " " + library.Version;
 
-                // Prefer project reference over package reference, so remove the the package reference.
-                libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
+                if (libraryReferences.TryGetValue(libraryKey, out LockFileLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
+                    {
+                        // Prefer project reference over package reference, so remove the the package reference.
+                        libraryReferences[libraryKey] = library;
+                    }
+                }
+                else
+                {
+                    libraryReferences[libraryKey] = library;
+                }
+            }
+
+            lockFile.Libraries = new List<LockFileLibrary>(libraryReferences.Count);
+            foreach (KeyValuePair<string, LockFileLibrary> pair in libraryReferences)
+            {
+                lockFile.Libraries.Add(pair.Value);
             }
         }
 
-        private void ValidateLockFileTargetLibrary(IList<LockFileTargetLibrary> libraries)
+        private void ValidateLockFileTargetLibrary(LockFileTarget lockFileTarget)
         {
+            IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
             var libNameVersion = libraries.Select(l => l.Name + " " + l.Version);
 
             // If there is no duplicate then early return.
@@ -320,18 +334,30 @@ namespace NuGet.Commands
                 return;
             }
 
-            var librariesByNameAndVersion = libraries
-                                                .ToLookup(lib => Tuple.Create(lib.Name, lib.Version))
-                                                .Where(nv => nv.Count() == 2)
-                                                .ToList();
+            var libraryReferences = new Dictionary<string, LockFileTargetLibrary>();
 
-            foreach (IGrouping<Tuple<string, NuGetVersion>, LockFileTargetLibrary> item in librariesByNameAndVersion)
+            foreach (LockFileTargetLibrary library in libraries)
             {
-                LockFileTargetLibrary first = item.First();
-                LockFileTargetLibrary second = item.Last();
+                var libraryKey = library.Name + " " + library.Version;
 
-                // Prefer project reference over package reference, so remove the the package reference.
-                libraries.Remove(RankReferences(second.Type) > RankReferences(first.Type) ? second : first);
+                if (libraryReferences.TryGetValue(libraryKey, out LockFileTargetLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
+                    {
+                        // Prefer project reference over package reference, so remove the the package reference.
+                        libraryReferences[libraryKey] = library;
+                    }
+                }
+                else
+                {
+                    libraryReferences[libraryKey] = library;
+                }
+            }
+
+            lockFileTarget.Libraries = new List<LockFileTargetLibrary>(libraryReferences.Count);
+            foreach (KeyValuePair<string, LockFileTargetLibrary> pair in libraryReferences)
+            {
+                lockFileTarget.Libraries.Add(pair.Value);
             }
         }
 
