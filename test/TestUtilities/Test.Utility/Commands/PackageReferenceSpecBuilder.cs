@@ -15,7 +15,7 @@ namespace Test.Utility.Commands
 {
     public class PackageReferenceSpecBuilder
     {
-        private IEnumerable<string> _targetFrameworks;
+        private readonly List<TargetFrameworkInformation> _targetFrameworks = new List<TargetFrameworkInformation>();
         private IEnumerable<string> _runtimeIdentifiers;
         private IEnumerable<string> _runtimeSupports;
 
@@ -38,7 +38,13 @@ namespace Test.Utility.Commands
 
         public PackageReferenceSpecBuilder WithTargetFrameworks(IEnumerable<string> targetFrameworks)
         {
-            _targetFrameworks = targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks));
+            _targetFrameworks.AddRange(targetFrameworks?.Select(e => new TargetFrameworkInformation { FrameworkName = NuGetFramework.Parse(e) }) ?? throw new ArgumentNullException(nameof(targetFrameworks)));
+            return this;
+        }
+
+        public PackageReferenceSpecBuilder WithTargetFrameworks(IEnumerable<TargetFrameworkInformation> targetFrameworks)
+        {
+            _targetFrameworks.AddRange(targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks)));
             return this;
         }
 
@@ -62,9 +68,7 @@ namespace Test.Utility.Commands
 
             var packageSpec = JsonPackageSpecReader.GetPackageSpec("{ }", _projectName, projectPath);
             packageSpec.RuntimeGraph = ProjectTestHelpers.GetRuntimeGraph(_runtimeIdentifiers, _runtimeSupports);
-
-            IEnumerable<NuGetFramework> targetFrameworks = _targetFrameworks.Select(e => NuGetFramework.Parse(e));
-            packageSpec.TargetFrameworks.AddRange(targetFrameworks.Select(e => new TargetFrameworkInformation { FrameworkName = e }));
+            packageSpec.TargetFrameworks.AddRange(_targetFrameworks);
 
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata
             {
@@ -78,8 +82,7 @@ namespace Test.Utility.Commands
                 ConfigFilePaths = new List<string>(),
                 RestoreLockProperties = new RestoreLockProperties(_isRestorePackagesWithLockFile.ToString(), Path.Combine(_projectDirectory, PackagesLockFileFormat.LockFileName), _isLockedMode),
             };
-            packageSpec.RestoreMetadata.TargetFrameworks.AddRange(targetFrameworks.Select(e => new ProjectRestoreMetadataFrameworkInfo { FrameworkName = e }));
-
+            packageSpec.RestoreMetadata.TargetFrameworks.AddRange(packageSpec.TargetFrameworks.Select(e => new ProjectRestoreMetadataFrameworkInfo { FrameworkName = e.FrameworkName }));
 
             return packageSpec;
         }

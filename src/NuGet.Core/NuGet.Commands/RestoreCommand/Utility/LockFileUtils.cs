@@ -32,7 +32,7 @@ namespace NuGet.Commands
             LibraryIncludeFlags dependencyType)
         {
             return CreateLockFileTargetLibrary(
-                libraryDependency: null,
+                aliases: null,
                 library,
                 package,
                 targetGraph,
@@ -45,7 +45,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Create a lock file target library for the given <paramref name="library"/>
         /// </summary>
-        /// <param name="libraryDependency">The library dependency equivalent to <paramref name="library"/>. The library dependency contains metadata applicable during asset selection. Can be null.</param>
+        /// <param name="aliases">When an alias is specified, all assemblies coming from the library will need to be referenced with an alias.</param>
         /// <param name="library">The lock file library, expected to be for the equivalent package as <paramref name="library"/> and <paramref name="package"/>. </param>
         /// <param name="package">The local package info.</param>
         /// <param name="targetGraph">The target graph for which the asset selection needs to happen.</param>
@@ -55,7 +55,7 @@ namespace NuGet.Commands
         /// <param name="cache">The lock file build cache.</param>
         /// <returns>The LockFileTargetLibrary</returns>
         internal static LockFileTargetLibrary CreateLockFileTargetLibrary(
-                LibraryDependency libraryDependency,
+                string aliases,
                 LockFileLibrary library,
                 LocalPackageInfo package,
                 RestoreTargetGraph targetGraph,
@@ -64,64 +64,69 @@ namespace NuGet.Commands
                 List<LibraryDependency> dependencies,
                 LockFileBuilderCache cache)
         {
-            LockFileTargetLibrary lockFileLib = null;
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
 
-            // This will throw an appropriate error if the nuspec is missing
-            var nuspec = package.Nuspec;
-
-            var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
-            var contentItems = cache.GetContentItems(library, package);
-
-            var packageTypes = nuspec.GetPackageTypes().AsList();
-
-            for (var i = 0; i < orderedCriteriaSets.Count; i++)
-            {
-                // Create a new library each time to avoid 
-                // assets being added from other criteria.
-                lockFileLib = new LockFileTargetLibrary()
+            return cache.GetLockFileTargetLibrary(targetGraph, framework, package, aliases, dependencyType,
+                () =>
                 {
-                    Name = package.Id,
-                    Version = package.Version,
-                    Type = LibraryType.Package,
-                    PackageType = packageTypes
-                };
+                    LockFileTargetLibrary lockFileLib = null;
+                    // This will throw an appropriate error if the nuspec is missing
+                    var nuspec = package.Nuspec;
 
-                // Populate assets
+                    var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
+                    var contentItems = cache.GetContentItems(library, package);
 
-                if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
-                {
-                    AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
-                    if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                    var packageTypes = nuspec.GetPackageTypes().AsList();
+
+                    for (var i = 0; i < orderedCriteriaSets.Count; i++)
                     {
-                        break;
+                        // Create a new library each time to avoid
+                        // assets being added from other criteria.
+                        lockFileLib = new LockFileTargetLibrary()
+                        {
+                            Name = package.Id,
+                            Version = package.Version,
+                            Type = LibraryType.Package,
+                            PackageType = packageTypes
+                        };
+
+                        // Populate assets
+
+                        if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
+                        {
+                            AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework,
+                                runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                            if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            AddAssets(aliases, library, package, targetGraph, dependencyType, lockFileLib,
+                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                            // Check if compatile assets were found.
+                            // If no compatible assets were found and this is the last check
+                            // continue on with what was given, this will fail in the normal
+                            // compat verification.
+                            if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
+                            {
+                                // Stop when compatible assets are found.
+                                break;
+                            }
+                        }
+
                     }
-                }
-                else
-                {
-                    AddAssets(libraryDependency, library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
-                    // Check if compatile assets were found.
-                    // If no compatible assets were found and this is the last check
-                    // continue on with what was given, this will fail in the normal
-                    // compat verification.
-                    if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
-                    {
-                        // Stop when compatible assets are found.
-                        break;
-                    }
-                }
 
-            }
+                    // Add dependencies
+                    AddDependencies(dependencies, lockFileLib, framework, nuspec);
 
+                    // Exclude items
+                    ExcludeItems(lockFileLib, dependencyType);
 
-            // Add dependencies
-            AddDependencies(dependencies, lockFileLib, framework, nuspec);
-
-            // Exclude items
-            ExcludeItems(lockFileLib, dependencyType);
-
-            return lockFileLib;
+                    return lockFileLib;
+                });
         }
 
         internal static List<List<SelectionCriteria>> CreateOrderedCriteriaSets(RestoreTargetGraph targetGraph, NuGetFramework framework)
@@ -162,11 +167,11 @@ namespace NuGet.Commands
             return orderedCriteriaSets;
         }
 
-        private static void ApplyAliases(LibraryDependency libraryDependency, LockFileItem item)
+        private static void ApplyAliases(string aliases, LockFileItem item)
         {
-            if (!string.IsNullOrEmpty(libraryDependency?.Aliases))
+            if (!string.IsNullOrEmpty(aliases))
             {
-                item.Properties.Add(LockFileItem.AliasesProperty, libraryDependency.Aliases);
+                item.Properties.Add(LockFileItem.AliasesProperty, aliases);
             }
         }
 
@@ -174,7 +179,7 @@ namespace NuGet.Commands
         /// Populate assets for a <see cref="LockFileLibrary"/>.
         /// </summary>
         private static void AddAssets(
-            LibraryDependency libraryDependency,
+            string aliases,
             LockFileLibrary library,
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
@@ -191,7 +196,7 @@ namespace NuGet.Commands
 
             // Compile
             // Set-up action to update the compile time items.
-            Action<LockFileItem> applyAliases = (item) => ApplyAliases(libraryDependency, item);
+            Action<LockFileItem> applyAliases = (item) => ApplyAliases(aliases, item);
 
             // ref takes precedence over lib
             var compileGroup = GetLockFileItems(
@@ -347,7 +352,7 @@ namespace NuGet.Commands
             {
                 // Runtime targets contain all the runtime specific assets
                 // that could be contained in the runtime specific target graphs.
-                // These items are contained in a flat list and have additional properties 
+                // These items are contained in a flat list and have additional properties
                 // for the RID and lock file section the assembly would belong to.
                 var runtimeTargetItems = new List<LockFileRuntimeTarget>();
 
@@ -529,7 +534,7 @@ namespace NuGet.Commands
 
                 // Find all dependencies which would be in the nuspec
                 // Include dependencies with no constraints, or package/project/external
-                // Exclude suppressed dependencies, the top level project is not written 
+                // Exclude suppressed dependencies, the top level project is not written
                 // as a target so the node depth does not matter.
                 Dependencies = graphItem.Data.Dependencies
                     .Where(
@@ -814,9 +819,8 @@ namespace NuGet.Commands
             return managedCriteria;
         }
 
-
         /// <summary>
-        /// Clears a lock file group and replaces the first item with _._ if 
+        /// Clears a lock file group and replaces the first item with _._ if
         /// the group has items. Empty groups are left alone.
         /// </summary>
         private static void ClearIfExists<T>(IList<T> group) where T : LockFileItem
@@ -845,7 +849,7 @@ namespace NuGet.Commands
                 // Create a new item with the _._ path
                 var emptyItem = (T)Activator.CreateInstance(typeof(T), new[] { emptyDir });
 
-                // Copy over the properties from the first 
+                // Copy over the properties from the first
                 foreach (var pair in firstItem.Properties)
                 {
                     emptyItem.Properties.Add(pair.Key, pair.Value);
@@ -864,7 +868,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Group all items by the primary key, then select the nearest TxM 
+        /// Group all items by the primary key, then select the nearest TxM
         /// within each group.
         /// Items that do not contain the primaryKey will be filtered out.
         /// </summary>

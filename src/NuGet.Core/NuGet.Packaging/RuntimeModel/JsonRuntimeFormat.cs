@@ -52,8 +52,9 @@ namespace NuGet.RuntimeModel
             using (var writer = new JsonObjectWriter(jsonWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
-
+                jsonWriter.WriteStartObject();
                 WriteRuntimeGraph(writer, runtimeGraph);
+                jsonWriter.WriteEndObject();
             }
         }
 
