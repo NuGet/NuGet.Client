@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly ISharedServiceState _sharedState;
         private AsyncSemaphore.Releaser? _semaphoreReleaser;
 
+
         public NuGetProjectManagerService(
             ServiceActivationOptions options,
             IServiceBroker serviceBroker,
@@ -721,19 +722,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
         {
-            /** Pseudocode
-            1. Get project restore graph 
-
-            2. Filter by packages
-
-            3. Foreach direct dependency d:
-                do DFS to look for transitive dependency
-
-                if found:
-                  Add to list
-
-            4. Return list
-            */
             ct.ThrowIfCancellationRequested();
 
             var singleProjectId = new[] { projectId };
@@ -743,80 +731,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (project != default && project is PackageReferenceProject prProject)
             {
-                (IList<ProjectModel.LockFileTarget> fwGraphList, bool isCacheHit) = await prProject.GetFullRestoreGraphAsync(ct);
+                 var prOrigins = await prProject.GetTransitivePackageOriginAsync(transitivePackage, ct);
 
-                if (fwGraphList != null)
+                foreach(var fwRuntimeKey in prOrigins)
                 {
-                    var pkgs = await GetInstalledAndTransitivePackagesAsync(singleProjectId, ct);
-
-                    var visited = new HashSet<object>();
-                    var memory = new Dictionary<object, bool>();
-
-                    foreach (var targetFxGraph in fwGraphList)
-                    {
-                        var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-                        var list = new List<IPackageReferenceContextInfo>();
-
-                        foreach (var directPkg in pkgs.InstalledPackages) // are InstalledPackages direct dependencies only? Yes!
-                        {
-                            visited.Clear();
-                            memory.Clear();
-                            var found = FindTransitive(directPkg.Identity, transitivePackage, targetFxGraph, visited, memory);
-                            if (found)
-                            {
-                                list.Add(directPkg);
-                            }
-                        }
-
-                        if (list.Any())
-                        {
-                            packageOrigins[key] = list;
-                        }
-                    }
+                    var list = fwRuntimeKey.Value.Select(pr => PackageReferenceContextInfo.Create(pr)).ToList();
+                    packageOrigins[fwRuntimeKey.Key] = list;
                 }
             }
 
             return packageOrigins;
         }
 
-        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, ProjectModel.LockFileTarget graph, HashSet<object> visited, Dictionary<object, bool> memory)
-        {
-            if (current.Equals(transitivePackage))
-            {
-                memory[current] = true;
-                return true;
-            }
-
-            var node = graph
-                .Libraries
-                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version) && x.Type == "package")
-                .FirstOrDefault();
-
-            if (node != default)
-            {
-                visited.Add(current);
-                foreach (var dep in node.Dependencies)
-                {
-                    var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
-
-                    if (visited.Contains(pkgChild) && memory.ContainsKey(pkgChild) && memory[pkgChild])
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        bool found = FindTransitive(pkgChild, transitivePackage, graph, visited, memory);
-
-                        if (found)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            memory[current] = false;
-            return false;
-        }
     }
 }

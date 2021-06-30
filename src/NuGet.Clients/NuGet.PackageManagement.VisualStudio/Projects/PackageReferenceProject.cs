@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
@@ -13,9 +15,11 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using TransitiveEntry = System.Collections.Generic.IReadOnlyDictionary<System.Tuple<NuGet.Frameworks.NuGetFramework, string>, System.Collections.Generic.IReadOnlyList<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -25,9 +29,24 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
+        private static readonly CacheItemPolicy CacheItemPolicy = new()
+        {
+            SlidingExpiration = ObjectCache.NoSlidingExpiration,
+            AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
+        };
+        private static readonly ObjectCache TransitiveOriginsCache = new MemoryCache("TransitiveOriginsCache", new NameValueCollection
+        {
+            { "cacheMemoryLimitMegabytes", "4" },
+            { "physicalMemoryLimitPercentage", "0" },
+            { "pollingInterval", "00:02:00" }
+        });
+
+        private readonly protected string _projectName;
+        private readonly protected string _projectUniqueName;
+        private readonly protected string _projectFullPath;
+
         private protected DateTime _lastTimeAssetsModified;
-        private WeakReference<IList<LockFileTarget>> _lastLockFileTargets;
-        //private ObjectCache _transitiveOriginsCache;
+        private protected WeakReference<IList<LockFileTarget>> _lastLockFileTargets;
 
         protected PackageReferenceProject(
             string projectName,
@@ -114,7 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
             IList<LockFileTarget> lastPackageSpec = null;
-            bool cacheHit = _lastLockFileTargets != null ? _lastLockFileTargets.TryGetTarget(out lastPackageSpec) : false;
+            bool cacheHit = _lastLockFileTargets != null && _lastLockFileTargets.TryGetTarget(out lastPackageSpec);
 
             (IList<LockFileTarget> TargetsList, bool IsCacheHit) returnValue = (null, false);
 
@@ -138,6 +157,129 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return returnValue;
+        }
+
+        internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            (IList<LockFileTarget> fwGraphList, bool isCacheHit) = await GetFullRestoreGraphAsync(ct);
+            if (isCacheHit)
+            {
+                // assets file has not changed, look at transtive origin cache
+                var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
+                if (cacheEntry != null)
+                {
+                    return cacheEntry;
+                }
+            }
+
+            // otherwise, we need to find it and update cache
+
+            /** Pseudocode
+            1. Get project restore graph
+
+            2. Filter by packages
+
+            3. Foreach direct dependency d:
+                do DFS to look for transitive dependency
+
+                if found:
+                    Add to list
+
+            4. Return list
+            */
+            var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<PackageReference>>();
+
+            if (fwGraphList != null)
+            {
+                var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
+
+                var visited = new HashSet<object>();
+                var memory = new Dictionary<object, bool>();
+
+                foreach (var targetFxGraph in fwGraphList)
+                {
+                    var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+                    var list = new List<PackageReference>();
+
+                    foreach (var directPkg in pkgs.InstalledPackages) // are InstalledPackages direct dependencies only? Yes!
+                    {
+                        visited.Clear();
+                        memory.Clear();
+                        var found = FindTransitive(directPkg.PackageIdentity, transitivePackage, targetFxGraph, visited, memory);
+                        if (found)
+                        {
+                            list.Add(directPkg);
+                        }
+                    }
+
+                    if (list.Any())
+                    {
+                        packageOrigins[key] = list;
+                    }
+                }
+            }
+
+            SetCachedTransitiveOrigin(transitivePackage, packageOrigins);
+            return packageOrigins;
+        }
+
+        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, HashSet<object> visited, Dictionary<object, bool> memory)
+        {
+            if (current.Equals(transitivePackage))
+            {
+                memory[current] = true;
+                return true;
+            }
+
+            var node = graph
+                .Libraries
+                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version) && x.Type == "package")
+                .FirstOrDefault();
+
+            if (node != default)
+            {
+                visited.Add(current);
+                foreach (var dep in node.Dependencies)
+                {
+                    var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
+
+                    if (visited.Contains(pkgChild) && memory.ContainsKey(pkgChild) && memory[pkgChild])
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        bool found = FindTransitive(pkgChild, transitivePackage, graph, visited, memory);
+
+                        if (found)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            memory[current] = false;
+            return false;
+        }
+
+        internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
+        {
+            string key = _projectUniqueName + transitivePackage.ToString();
+            if (TransitiveOriginsCache.Contains(key))
+            {
+                return (TransitiveEntry)TransitiveOriginsCache.Get(key);
+            }
+
+            return null;
+        }
+
+        internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
+        {
+            string key = _projectUniqueName + transitivePackage.ToString();
+            TransitiveOriginsCache.Set(key, origins, CacheItemPolicy);
         }
     }
 }
