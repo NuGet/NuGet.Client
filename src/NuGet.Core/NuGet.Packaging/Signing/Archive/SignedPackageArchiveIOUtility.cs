@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -52,8 +53,9 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOInvalidRead);
             }
 
-            Stream stream = reader.BaseStream;
-            byte[] buffer = new byte[_bufferSize];
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(_bufferSize);
+
+            Stream stream = reader.BaseStream;            
             long currentPosition;
             while ((currentPosition = stream.Position) != position)
             {
@@ -62,6 +64,8 @@ namespace NuGet.Packaging.Signing
                 var bytesRead = stream.Read(buffer, 0, bytesToRead);
                 writer.Write(buffer, 0, bytesRead);
             }
+
+            ArrayPool<byte>.Shared.Return(buffer);
         }
 
         /// <summary>
@@ -89,8 +93,9 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOInvalidRead);
             }
 
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(_bufferSize);
+
             Stream stream = reader.BaseStream;
-            byte[] buffer = new byte[_bufferSize];
             long currentPosition;
             while ((currentPosition = stream.Position) != position)
             {
@@ -99,6 +104,8 @@ namespace NuGet.Packaging.Signing
                 var bytesRead = stream.Read(buffer, 0, bytesToRead);
                 HashBytes(hashAlgorithm, buffer, bytesRead);
             }
+
+            ArrayPool<byte>.Shared.Return(buffer);
         }
 
         /// <summary>
@@ -152,8 +159,9 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(position), Strings.SignedPackageArchiveIOInvalidRead);
             }
 
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(_bufferSize);
+
             Stream stream = reader.BaseStream;
-            byte[] buffer = new byte[_bufferSize];
             long currentPosition;
             while ((currentPosition = stream.Position) != position)
             {
@@ -162,6 +170,8 @@ namespace NuGet.Packaging.Signing
                 var bytesRead = stream.Read(buffer, 0, bytesToRead);
                 HashBytes(hashFunc, buffer, bytesRead);
             }
+
+            ArrayPool<byte>.Shared.Return(buffer);
         }
 
         /// <summary>
