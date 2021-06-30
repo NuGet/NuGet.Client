@@ -6,6 +6,7 @@
     <title>NuGet.Localization</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
+    <icon>$PackageIcon$</icon>
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://aka.ms/nugetprj</projectUrl>
     <copyright>&#169; Microsoft Corporation. All rights reserved.</copyright>
@@ -18,5 +19,6 @@
 
   <files>
     <file src="$LocalizationOutputDirectory$\**\*.resources.dll" target="lib\"/>
+    <file src="$PackageIconPath$" target="\" />
   </files>
 </package>

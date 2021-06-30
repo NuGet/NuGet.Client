@@ -15,7 +15,13 @@
 
   <PropertyGroup>
     <NuspecFile>NuGet.Localization.nuspec</NuspecFile>
-    <NuspecProperties>Version=$(Version);configuration=$(Configuration);LocalizationOutputDirectory=$(LocalizationOutputDirectory)</NuspecProperties>
+    <NuspecProperties>
+      Version=$(Version);
+      configuration=$(Configuration);
+      LocalizationOutputDirectory=$(LocalizationOutputDirectory);
+      PackageIcon=$(PackageIcon);
+      PackageIconPath=$([System.IO.Path]::Combine($(RepositoryRootDirectory),$(PackageIcon)))
+    </NuspecProperties>
   </PropertyGroup>
 
   <!--
