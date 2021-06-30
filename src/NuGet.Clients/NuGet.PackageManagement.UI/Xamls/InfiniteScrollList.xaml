@@ -215,9 +215,8 @@
                       Text="{x:Static nuget:Resources.Text_NoPackagesFound}"
                       Visibility="{Binding ShowNoPackagesFound, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <Grid
-                      DataContext="{Binding LoadingStatusIndicator}"
                       Name="_progressBar"
-                     Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                      Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibilityConverter}}" 
                       HorizontalAlignment="Center"
                       Height="22">
                       <Grid.ColumnDefinitions>
@@ -234,6 +233,7 @@
                         Visibility="{Binding Visibility,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1}}"/>
                       <TextBlock
                         Grid.Column="1"
+                        DataContext="{Binding LoadingStatusIndicator}"
                         Text="{Binding Path=LoadingMessage}"
                         HorizontalAlignment="Left" 
                         VerticalAlignment="Center"/>

@@ -60,6 +60,7 @@ namespace NuGet.PackageManagement.UI
         {
             RaisePropertyChanged(nameof(HasStatusToDisplay));
             RaisePropertyChanged(nameof(ShowNoPackagesFound));
+            RaisePropertyChanged(nameof(IsRunning));
 
             //RaisePropertyChanged(nameof(LoadingStatusIndicator));
         }

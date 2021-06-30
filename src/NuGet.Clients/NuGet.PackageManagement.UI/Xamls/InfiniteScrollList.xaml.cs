@@ -193,12 +193,6 @@ namespace NuGet.PackageManagement.UI
 
             var selectedPackageItem = SelectedPackageItem;
 
-            await _list.ItemsLock.ExecuteAsync(() =>
-            {
-                ClearPackageList();
-                return Task.CompletedTask;
-            });
-
             _selectedCount = 0;
 
             // triggers the package list loader
@@ -352,7 +346,7 @@ namespace NuGet.PackageManagement.UI
             // makes sure we update using the relevant one.
             if (currentLoader == _loader)
             {
-                await UpdatePackageList(loadedItems, refresh: false);
+                await UpdatePackageList(loadedItems, refresh: true);
             }
 
             token.ThrowIfCancellationRequested();
