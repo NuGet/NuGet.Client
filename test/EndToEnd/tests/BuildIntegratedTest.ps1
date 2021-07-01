@@ -178,10 +178,6 @@ function Test-BuildIntegratedInstallPackageJsonNet701Beta3 {
 }
 
 function Test-BuildIntegratedProjectClosure {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedProjectClosure"
-    }
-
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary Project1
     $project2 = New-Project BuildIntegratedClassLibrary Project2
@@ -199,10 +195,6 @@ function Test-BuildIntegratedProjectClosure {
 }
 
 function Test-BuildIntegratedProjectClosureWithLegacyProjects {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedProjectClosureWithLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary Project1
     $project2 = New-ClassLibrary Project2
@@ -222,10 +214,6 @@ function Test-BuildIntegratedProjectClosureWithLegacyProjects {
 
 # Tests that packages are restored on build
 function Test-BuildIntegratedMixedLegacyProjects {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-ClassLibrary
     $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
@@ -254,10 +242,6 @@ function Test-BuildIntegratedMixedLegacyProjects {
 }
 
 function Test-BuildIntegratedMixedLegacyProjectsProjectJsonOnly {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-ClassLibrary
     $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
@@ -279,10 +263,6 @@ function Test-BuildIntegratedMixedLegacyProjectsProjectJsonOnly {
 }
 
 function Test-BuildIntegratedMixedLegacyProjectsPackagesFolderOnly {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-ClassLibrary
     $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
@@ -306,10 +286,6 @@ function Test-BuildIntegratedMixedLegacyProjectsPackagesFolderOnly {
 # Verifies that project.json that specified in project.json referenced transitively through a non-project.json project
 # are correctly pulled in.
 function Test-BuildIntegratedTransitiveProjectJsonRestores {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary
     $project2 = New-ClassLibraryNET46
@@ -330,10 +306,6 @@ function Test-BuildIntegratedTransitiveProjectJsonRestores {
 
 # Verifies that parent projects are restored after an install
 function Test-BuildIntegratedParentProjectIsRestoredAfterInstall {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-BuildIntegratedProj UAPApp1
     $project2 = New-BuildIntegratedProj UAPApp2
@@ -358,10 +330,6 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterInstall {
 
 # Verifies that parent projects are restored after an uninstall
 function Test-BuildIntegratedParentProjectIsRestoredAfterUnInstall {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-BuildIntegratedProj UAPApp1
     $project2 = New-BuildIntegratedProj UAPApp2
@@ -391,10 +359,6 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterUnInstall {
 
 # Verifies that parent projects are restored after an update
 function Test-BuildIntegratedParentProjectIsRestoredAfterUpdate {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-BuildIntegratedProj UAPApp1
     $project2 = New-BuildIntegratedProj UAPApp2
@@ -425,10 +389,6 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterUpdate {
 # Verify that all build integrated projects are included in the closure, even when a 
 # non-build integrated project exists in between them
 function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTree {
-    if (!(Verify-BuildIntegratedMsBuildTask)) {
-        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
-    }
-
     # Arrange
     $project1 = New-Project BuildIntegratedClassLibrary
     $project2 = New-ClassLibraryNET46 ClassLib2
@@ -664,6 +624,25 @@ function Test-PackageReferenceProjectWithLockFile{
     
     #Assert
     Assert-PackagesLockFile $projectT
+}
+
+function Test-PackageReferenceToPackagesConfigProjectWithLockFile {
+    $project1 = New-Project PackageReferenceClassLibraryWithLockFile
+    $project2 = New-ClassLibraryNET46
+    Add-ProjectReference $project1 $project2
+
+    $project1.Save();
+    Build-Solution
+
+    $assetsFile = Get-NetCoreLockFilePath $project1
+    Remove-Item -Force $assetsFile
+    $project1 | Install-Package Newtonsoft.Json -Version 9.0.1
+
+    # Act
+    Build-Solution
+
+    # Assert
+    Assert-PathExists $assetsFile
 }
 
 function BuildProjectTemplateTestCases([string[]]$ProjectTemplates) {		
