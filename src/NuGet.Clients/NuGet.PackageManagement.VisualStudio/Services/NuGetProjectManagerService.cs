@@ -731,7 +731,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (project != default && project is PackageReferenceProject prProject)
             {
-                 var prOrigins = await prProject.GetTransitivePackageOriginAsync(transitivePackage, ct);
+                var prOrigins = await prProject.GetTransitivePackageOriginAsync(transitivePackage, ct);
 
                 foreach(var fwRuntimeKey in prOrigins)
                 {

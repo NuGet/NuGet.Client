@@ -114,6 +114,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        internal override async ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            Task<PackageSpec> vt = new Task<PackageSpec>(() => GetPackageSpec());
+
+            return await vt;
+        }
 
         #region IDependencyGraphProject
 
@@ -212,30 +220,29 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
-            var packageSpec = GetPackageSpec();
+            var reading = await GetFullRestoreGraphAsync(token);
 
-            if (packageSpec != null)
+            if (reading.PackageSpec != null)
             {
                 var frameworkSorter = new NuGetFrameworkSorter();
 
-                (var targets, var isCacheHit) = await GetFullRestoreGraphAsync(token);
-                if (!isCacheHit)
+                if (!reading.IsCacheHit)
                 {
                     // clear the transitive packages cache, since we don't know when a dependency has been removed
                     _transitivePackages.Clear();
                 }
 
-                List<PackageReference> installedPackages = packageSpec
+                List<PackageReference> installedPackages = reading.PackageSpec
                    .TargetFrameworks
-                   .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, targets))
+                   .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, reading.TargetsList.ToList()))
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();
 
                 // get the transitive packages, excluding any already contained in the installed packages
-                List<PackageReference> transitivePackages = packageSpec
+                List<PackageReference> transitivePackages = reading.PackageSpec
                    .TargetFrameworks
-                   .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, targets))
+                   .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, reading.TargetsList.ToList()))
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();

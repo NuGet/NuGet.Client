@@ -185,28 +185,26 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
-            PackageSpec packageSpec = await GetPackageSpecAsync(NullSettings.Instance);
-
-            var frameworkSorter = new NuGetFrameworkSorter();
-
-            (var targets, var isCacheHit) = await GetFullRestoreGraphAsync(token);
-            if (!isCacheHit)
+            var reading = await GetFullRestoreGraphAsync(token);
+            if (!reading.IsCacheHit)
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 _transitivePackages.Clear();
             }
 
+            var frameworkSorter = new NuGetFrameworkSorter();
+
             // get the installed packages
-            IEnumerable<PackageReference> installedPackages = packageSpec
+            IEnumerable<PackageReference> installedPackages = reading.PackageSpec
                .TargetFrameworks
-               .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, targets))
+               .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, reading.TargetsList.ToList()))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             // get the transitive packages, excluding any already contained in the installed packages
-            IEnumerable<PackageReference> transitivePackages = packageSpec
+            IEnumerable<PackageReference> transitivePackages = reading.PackageSpec
                .TargetFrameworks
-               .SelectMany(f => GetTransitivePackageReferences(f.FrameworkName, _installedPackages, _transitivePackages, targets))
+               .SelectMany(f => GetTransitivePackageReferences(f.FrameworkName, _installedPackages, _transitivePackages, reading.TargetsList.ToList()))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
@@ -483,6 +481,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageVersionsEnabled = isCpvmEnabled
                 }
             };
+        }
+
+        internal override async ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            return await GetPackageSpecAsync(NullSettings.Instance);
         }
     }
 }

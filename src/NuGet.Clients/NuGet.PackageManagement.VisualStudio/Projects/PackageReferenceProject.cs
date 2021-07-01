@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectFullPath;
 
         private protected DateTime _lastTimeAssetsModified;
-        private protected WeakReference<IList<LockFileTarget>> _lastLockFileTargets;
+        private protected WeakReference<Tuple<PackageSpec, IList<LockFileTarget>>> _lastLockFileTargets;
 
         protected PackageReferenceProject(
             string projectName,
@@ -109,6 +109,24 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+
+        internal class RestoreGraphRead
+        {
+            public IReadOnlyList<LockFileTarget> TargetsList { get; }
+
+            public bool IsCacheHit { get; }
+
+            public PackageSpec PackageSpec { get; }
+
+            public RestoreGraphRead(PackageSpec packageSpec, IReadOnlyList<LockFileTarget> targetsList, bool isCacheHit)
+            {
+                TargetsList = targetsList;
+                IsCacheHit = isCacheHit;
+                PackageSpec = packageSpec;
+            }
+        }
+
+
         /// <summary>
         /// Return all targets (dependency graph) found in project.assets.json file
         /// </summary>
@@ -126,45 +144,66 @@ namespace NuGet.PackageManagement.VisualStudio
         ///  </list>
         /// </returns>
         /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
-        internal async Task<(IList<LockFileTarget> TargetsList, bool IsCacheHit)> GetFullRestoreGraphAsync(CancellationToken token)
+        internal async Task<RestoreGraphRead> GetFullRestoreGraphAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
+            PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
+
             string assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
-            IList<LockFileTarget> lastPackageSpec = null;
-            bool cacheHit = _lastLockFileTargets != null && _lastLockFileTargets.TryGetTarget(out lastPackageSpec);
+            
 
-            (IList<LockFileTarget> TargetsList, bool IsCacheHit) returnValue = (null, false);
+            Tuple<PackageSpec, IList<LockFileTarget>> lastAssets = null;
+            bool cacheHit = _lastLockFileTargets != null && _lastLockFileTargets.TryGetTarget(out lastAssets);
+            IList<LockFileTarget> targetsList = null;
 
-            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHit)
+            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHit || !ReferenceEquals(currentPackageSpec, lastAssets.Item1))
             {
                 if (fileInfo.Exists)
                 {
                     await TaskScheduler.Default;
                     LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
 
-                    returnValue.TargetsList = lockFile?.Targets;
+                    targetsList = lockFile?.Targets;
                 }
 
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
-                _lastLockFileTargets = new WeakReference<IList<LockFileTarget>>(returnValue.TargetsList);
+                _lastLockFileTargets = new WeakReference<Tuple<PackageSpec, IList<LockFileTarget>>>(Tuple.Create(currentPackageSpec, targetsList));
             }
-            else if (cacheHit && lastPackageSpec != null)
+            else if (cacheHit && lastAssets != null)
             {
-                returnValue.IsCacheHit = true;
-                returnValue.TargetsList = lastPackageSpec;
+                targetsList = lastAssets.Item2;
             }
 
-            return returnValue;
+            return new RestoreGraphRead(currentPackageSpec, targetsList.ToArray(), cacheHit);
         }
 
         internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
         {
+            /** Pseudocode
+            1. Get project restore graph
+
+            2. If it is cached
+               2.1 Look for a transive cached entry
+               2.2 If found, return that entry
+
+            Otherwise:
+
+            3. For each target framework graph:
+              3.1 Foreach direct dependency d:
+                  3.1.1 do DFS to look for transitive dependency
+
+                  3.1.2 if found:
+                    Add to list, indexed by framework
+
+            4. Cache the result list and return it
+            */
+
             ct.ThrowIfCancellationRequested();
 
-            (IList<LockFileTarget> fwGraphList, bool isCacheHit) = await GetFullRestoreGraphAsync(ct);
-            if (isCacheHit)
+            RestoreGraphRead reading = await GetFullRestoreGraphAsync(ct);
+            if (reading.IsCacheHit)
             {
                 // assets file has not changed, look at transtive origin cache
                 var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
@@ -173,32 +212,23 @@ namespace NuGet.PackageManagement.VisualStudio
                     return cacheEntry;
                 }
             }
+            else
+            {
+                // assets file changed, need to recompute transitive origins
+                ClearCachedTransitiveOrigin();
+            }
 
-            // otherwise, we need to find it and update cache
-
-            /** Pseudocode
-            1. Get project restore graph
-
-            2. Filter by packages
-
-            3. Foreach direct dependency d:
-                do DFS to look for transitive dependency
-
-                if found:
-                    Add to list
-
-            4. Return list
-            */
+            // we need to find Transitive origin and update cache
             var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<PackageReference>>();
 
-            if (fwGraphList != null)
+            if (reading.TargetsList != null)
             {
                 var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
 
                 var visited = new HashSet<object>();
                 var memory = new Dictionary<object, bool>();
 
-                foreach (var targetFxGraph in fwGraphList)
+                foreach (var targetFxGraph in reading.TargetsList)
                 {
                     var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
                     var list = new List<PackageReference>();
@@ -281,5 +311,16 @@ namespace NuGet.PackageManagement.VisualStudio
             string key = _projectUniqueName + transitivePackage.ToString();
             TransitiveOriginsCache.Set(key, origins, CacheItemPolicy);
         }
+
+        internal void ClearCachedTransitiveOrigin()
+        {
+            var keys = TransitiveOriginsCache.Select(x => x.Key);
+            foreach(var k in keys)
+            {
+                TransitiveOriginsCache.Remove(k);
+            }
+        }
+
+        internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
     }
 }
