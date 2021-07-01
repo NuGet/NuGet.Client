@@ -30,8 +30,7 @@ namespace NuGet.Commands
         {
             if (fallback != null)
             {
-                object tfmObj;
-                if (properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj))
+                if (properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out object tfmObj))
                 {
                     var tfm = (NuGetFramework)tfmObj;
                     if (tfm.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, StringComparison.OrdinalIgnoreCase))
