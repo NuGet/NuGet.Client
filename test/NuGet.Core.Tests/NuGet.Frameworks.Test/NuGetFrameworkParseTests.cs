@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -423,5 +425,26 @@ namespace NuGet.Test
             // Compare the object references
             Assert.Same(framework1, framework2);
         }
+
+        public static IEnumerable<object[]> NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance_Data()
+        {
+            yield return new object[] { "net472", FrameworkConstants.CommonFrameworks.Net472 };
+            yield return new object[] { "net5.0", FrameworkConstants.CommonFrameworks.Net50 };
+            yield return new object[] { "net6.0", FrameworkConstants.CommonFrameworks.Net60 };
+
+        }
+
+        [Theory]
+        [MemberData(nameof(NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance_Data))]
+        public void NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance(string frameworkString, NuGetFramework frameworkObject)
+        {
+            // Act
+            NuGetFramework parsedFramework = NuGetFramework.Parse(frameworkString);
+
+            // Assert
+            Assert.Same(frameworkObject, parsedFramework);
+        }
+
+
     }
 }
