@@ -27,7 +27,8 @@ namespace NuGet.Commands
         internal static List<ContentItemGroup> GetContentGroupsForFramework(
             LockFileTargetLibrary lockFileLib,
             NuGetFramework framework,
-            IEnumerable<ContentItemGroup> contentGroups)
+            IEnumerable<ContentItemGroup> contentGroups,
+            MaccatalystFallback maccatalystFallback)
         {
             var groups = new List<ContentItemGroup>();
 
@@ -60,6 +61,7 @@ namespace NuGet.Commands
                 // If a compatible group exists within the code language add it to the results
                 if (nearestGroup != null)
                 {
+                    MaccatalystFallback.CheckFallback(maccatalystFallback, nearestGroup.Properties);
                     groups.Add(nearestGroup);
                 }
             }
@@ -165,7 +167,7 @@ namespace NuGet.Commands
                 else
                 {
                     // apply each entry
-                    // entries may not have all the attributes, if a value is null 
+                    // entries may not have all the attributes, if a value is null
                     // ignore it and continue using the previous value.
                     foreach (var filesEntry in entryMappings[file])
                     {

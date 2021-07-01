@@ -2609,6 +2609,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; was resolved as a dependency of &apos;{1}&apos;, but the dependency is using &apos;Xamarin.iOS&apos; while &apos;{1}&apos; is using &apos;{2}&apos; as its TargetFramework. There might be compatibility issues when MacCatalyst projects depend on Xamarin.iOS projects..
+        /// </summary>
+        internal static string Warning_MacCatalystXamarinIOSCompat {
+            get {
+                return ResourceManager.GetString("Warning_MacCatalystXamarinIOSCompat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved..
         /// </summary>
         internal static string Warning_MinVersionDoesNotExist {
