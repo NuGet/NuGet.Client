@@ -14,7 +14,6 @@ namespace NuGet.Commands
         internal bool _usedXamarinIOs { get; set; } = false;
 
         internal static MaccatalystFallback FallbackIfNeeded(NuGetFramework framework)
-
         {
             if (framework.HasPlatform && framework.Version.Major >= 6 && framework.Platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase))
             {
