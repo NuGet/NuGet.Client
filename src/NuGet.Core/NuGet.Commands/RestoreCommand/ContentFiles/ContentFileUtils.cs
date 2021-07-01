@@ -61,20 +61,8 @@ namespace NuGet.Commands
                 // If a compatible group exists within the code language add it to the results
                 if (nearestGroup != null)
                 {
+                    MaccatalystFallback.CheckFallback(maccatalystFallback, nearestGroup.Properties);
                     groups.Add(nearestGroup);
-
-                    if (maccatalystFallback != null)
-                    {
-                        object tfmObj;
-                        if (nearestGroup.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj))
-                        {
-                            var tfm = (NuGetFramework)tfmObj;
-                            if (tfm.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, StringComparison.OrdinalIgnoreCase))
-                            {
-                                maccatalystFallback._usedXamarinIOs = true;
-                            }
-                        }
-                    }
                 }
             }
 

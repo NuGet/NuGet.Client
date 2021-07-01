@@ -248,7 +248,7 @@ namespace NuGet.Commands
 
             lockFileLib.NativeLibraries.AddRange(nativeGroup);
 
-            // Add MSnuild files
+            // Add MSBuild files
             AddMSBuildAssets(library, targetGraph, lockFileLib, orderedCriteria, contentItems, maccatalystFallback);
 
             // Add content files
@@ -740,18 +740,7 @@ namespace NuGet.Commands
 
                 if (group != null)
                 {
-                    if (maccatalystFallback != null)
-                    {
-                        object tfmObj;
-                        if (group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj))
-                        {
-                            var tfm = (NuGetFramework)tfmObj;
-                            if (tfm.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, StringComparison.OrdinalIgnoreCase))
-                            {
-                                maccatalystFallback._usedXamarinIOs = true;
-                            }
-                        }
-                    }
+                    MaccatalystFallback.CheckFallback(maccatalystFallback, group.Properties);
 
                     foreach (var item in group.Items)
                     {
@@ -988,18 +977,7 @@ namespace NuGet.Commands
                 // If a compatible group exists within the secondary key add it to the results
                 if (nearestGroup != null)
                 {
-                    if (maccatalystFallback != null)
-                    {
-                        object tfmObj;
-                        if (nearestGroup.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj))
-                        {
-                            var tfm = (NuGetFramework)tfmObj;
-                            if (tfm.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, StringComparison.OrdinalIgnoreCase))
-                            {
-                                maccatalystFallback._usedXamarinIOs = true;
-                            }
-                        }
-                    }
+                    MaccatalystFallback.CheckFallback(maccatalystFallback, nearestGroup.Properties);
                     groups.Add(nearestGroup);
                 }
             }

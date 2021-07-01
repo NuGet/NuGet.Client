@@ -191,12 +191,7 @@ namespace NuGet.Commands
                         || target.TargetFramework is AssetTargetFallbackFramework);
 
                 // This is used for a special-case warning we need to do when net6.0-maccatalyst selects a xamarin.ios asset.
-                MaccatalystFallback maccatalystFallback = null;
-
-                if (targetGraph.Framework.HasPlatform && targetGraph.Framework.Version.Major >= 6 && targetGraph.Framework.Platform.Equals("maccatalyst", StringComparison.OrdinalIgnoreCase))
-                {
-                    maccatalystFallback = new MaccatalystFallback();
-                }
+                MaccatalystFallback maccatalystFallback = MaccatalystFallback.FallbackIfNeeded(targetGraph.Framework);
 
                 foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
