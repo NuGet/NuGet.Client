@@ -685,6 +685,12 @@ namespace NuGet.Frameworks
                 case "net50":
                     framework = FrameworkConstants.CommonFrameworks.Net50;
                     break;
+                case "netcoreapp6.0":
+                case "netcoreapp60":
+                case "net6.0":
+                case "net60":
+                    framework = FrameworkConstants.CommonFrameworks.Net60;
+                    break;
             }
 
             return framework != null;

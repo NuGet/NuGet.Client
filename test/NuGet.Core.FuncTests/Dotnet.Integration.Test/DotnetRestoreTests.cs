@@ -842,19 +842,23 @@ EndGlobal";
 @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFrameworks>net5.0;net5.0-windows</TargetFrameworks>
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
 </Project>";
                 File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "a.csproj"), projectFileContents);
 
+                _msbuildFixture.RestoreProject(pathContext.SolutionRoot, "a", args: "--use-lock-file");
+                string lockFilePath = Path.Combine(pathContext.SolutionRoot, PackagesLockFileFormat.LockFileName);
+                Assert.True(File.Exists(lockFilePath));
+                Directory.Delete(Path.Combine(pathContext.SolutionRoot, "obj"), recursive: true);
+
                 // Act
-                _msbuildFixture.RestoreProject(pathContext.SolutionRoot, "a", args: null);
+                _msbuildFixture.RestoreProject(pathContext.SolutionRoot, "a", args: "--locked-mode");
 
                 // Assert
-                PackagesLockFile lockFile = PackagesLockFileFormat.Read(Path.Combine(pathContext.SolutionRoot, PackagesLockFileFormat.LockFileName));
+                PackagesLockFile lockFile = PackagesLockFileFormat.Read(lockFilePath);
                 Assert.Equal(2, lockFile.Targets.Count);
                 Assert.Contains(lockFile.Targets, target => target.TargetFramework == FrameworkConstants.CommonFrameworks.Net50);
-                var net5win7 = NuGetFramework.Parse("net5.0-windows7.0");
+                NuGetFramework net5win7 = NuGetFramework.Parse("net5.0-windows7.0");
                 Assert.Contains(lockFile.Targets, target => target.TargetFramework == net5win7);
             }
         }
