@@ -308,6 +308,11 @@ namespace NuGet.Commands
                 }
             }
 
+            if (lockFile.Libraries.Count == libraryReferences.Count)
+            {
+                return;
+            }
+
             lockFile.Libraries = new List<LockFileLibrary>(libraryReferences.Count);
             foreach (KeyValuePair<string, LockFileLibrary> pair in libraryReferences)
             {
@@ -336,6 +341,11 @@ namespace NuGet.Commands
                 {
                     libraryReferences[libraryKey] = library;
                 }
+            }
+
+            if (lockFileTarget.Libraries.Count == libraryReferences.Count)
+            {
+                return;
             }
 
             lockFileTarget.Libraries = new List<LockFileTargetLibrary>(libraryReferences.Count);
