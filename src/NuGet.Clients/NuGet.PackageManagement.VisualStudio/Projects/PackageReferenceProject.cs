@@ -110,39 +110,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-
-        internal class RestoreGraphRead
-        {
-            public IReadOnlyList<LockFileTarget> TargetsList { get; }
-
-            public bool IsCacheHit { get; }
-
-            public PackageSpec PackageSpec { get; }
-
-            public RestoreGraphRead(PackageSpec packageSpec, IReadOnlyList<LockFileTarget> targetsList, bool isCacheHit)
-            {
-                TargetsList = targetsList;
-                IsCacheHit = isCacheHit;
-                PackageSpec = packageSpec;
-            }
-        }
-
-
         /// <summary>
         /// Return all targets (dependency graph) found in project.assets.json file
         /// </summary>
         /// <param name="token">Cancellation token</param>
-        /// <returns>A 2-tuple with:
-        ///  <list type="bullet">
-        ///  <item>
-        ///    <term>TargetsList</term>
-        ///    <description>A list, one element for each framework restored, or <c>null</c> if project.assets.json file is not found</description>
-        ///  </item>
-        ///  <item>
-        ///    <term>IsCacheHit</term>
-        ///    <description>Indicates if target list was retrieved from cache</description>
-        ///  </item>
-        ///  </list>
+        /// <returns>An <see cref="RestoreGraphRead"/> object
         /// </returns>
         /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
         internal async Task<RestoreGraphRead> GetFullRestoreGraphAsync(CancellationToken token)
@@ -180,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 isCacheHit = true;
             }
 
-            return new RestoreGraphRead(currentPackageSpec, targetsList.ToArray(), isCacheHit);
+            return new RestoreGraphRead(currentPackageSpec, targetsList?.ToArray(), isCacheHit);
         }
 
         internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
@@ -237,7 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
                     var list = new List<PackageReference>();
 
-                    foreach (var directPkg in pkgs.InstalledPackages) // are InstalledPackages direct dependencies only? Yes!
+                    foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
                     {
                         visited.Clear();
                         memory.Clear();
