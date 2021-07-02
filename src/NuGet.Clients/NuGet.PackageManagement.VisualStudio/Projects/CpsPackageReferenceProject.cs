@@ -231,6 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!reading.IsCacheHit)
                 {
                     // clear the transitive packages cache, since we don't know when a dependency has been removed
+                    ClearCachedTransitiveOrigin();
                     _transitivePackages.Clear();
                 }
 

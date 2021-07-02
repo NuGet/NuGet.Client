@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectFullPath;
 
         private protected DateTime _lastTimeAssetsModified;
-        private protected WeakReference<IList<LockFileTarget>> _lastTargets;
+        private protected IList<LockFileTarget> _lastTargets;
         private protected WeakReference<PackageSpec> _lastPackgeSpec;
 
         protected PackageReferenceProject(
@@ -154,10 +154,10 @@ namespace NuGet.PackageManagement.VisualStudio
             string assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
 
-            IList<LockFileTarget> lastTargets = null;
             PackageSpec lastPackageSpec = null;
-            bool cacheHitTargets = _lastTargets != null && _lastTargets.TryGetTarget(out lastTargets);
+            bool cacheHitTargets = _lastTargets != null;
             bool cacheHitPackageSpec = _lastPackgeSpec != null && _lastPackgeSpec.TryGetTarget(out lastPackageSpec);
+            bool isCacheHit = false;
             IList<LockFileTarget> targetsList = null;
 
             if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(currentPackageSpec, lastPackageSpec))
@@ -171,15 +171,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
-                _lastTargets = new WeakReference<IList<LockFileTarget>>(targetsList);
+                _lastTargets = targetsList;
                 _lastPackgeSpec = new WeakReference<PackageSpec>(currentPackageSpec);
             }
-            else if (cacheHitTargets && cacheHitPackageSpec && lastPackageSpec != null && lastTargets != null)
+            else if (cacheHitTargets && cacheHitPackageSpec && lastPackageSpec != null && _lastTargets != null)
             {
-                targetsList = lastTargets;
+                targetsList = _lastTargets;
+                isCacheHit = true;
             }
 
-            return new RestoreGraphRead(currentPackageSpec, targetsList.ToArray(), cacheHitTargets && cacheHitPackageSpec);
+            return new RestoreGraphRead(currentPackageSpec, targetsList.ToArray(), isCacheHit);
         }
 
         internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
