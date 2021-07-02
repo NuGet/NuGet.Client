@@ -148,8 +148,7 @@ namespace NuGet.Commands
                 }
             }
 
-            EnsureUniqueLockFileLibraries(lockFile);
-            var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
+            Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> libraries = GetUniqueLockFileLibraries(lockFile);
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
@@ -285,39 +284,39 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        private void EnsureUniqueLockFileLibraries(LockFile lockFile)
+        private Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> GetUniqueLockFileLibraries(LockFile lockFile)
         {
             IList<LockFileLibrary> libraries = lockFile.Libraries;
-            var libraryReferences = new Dictionary<string, LockFileLibrary>();
+            var libraryReferences = new Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary>();
 
-            foreach (LockFileLibrary library in libraries)
+            foreach (LockFileLibrary lib in libraries)
             {
-                var libraryKey = library.Name + " " + library.Version;
+                var libraryKey = Tuple.Create(lib.Name, lib.Version);
 
                 if (libraryReferences.TryGetValue(libraryKey, out LockFileLibrary existingLibrary))
                 {
-                    if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
+                    if (RankReferences(existingLibrary.Type) > RankReferences(lib.Type))
                     {
                         // Prefer project reference over package reference, so replace the the package reference.
-                        libraryReferences[libraryKey] = library;
+                        libraryReferences[libraryKey] = lib;
                     }
                 }
                 else
                 {
-                    libraryReferences[libraryKey] = library;
+                    libraryReferences[libraryKey] = lib;
                 }
             }
 
-            if (lockFile.Libraries.Count == libraryReferences.Count)
+            if (lockFile.Libraries.Count != libraryReferences.Count)
             {
-                return;
+                lockFile.Libraries = new List<LockFileLibrary>(libraryReferences.Count);
+                foreach (KeyValuePair<Tuple<string, NuGetVersion>, LockFileLibrary> pair in libraryReferences)
+                {
+                    lockFile.Libraries.Add(pair.Value);
+                }
             }
 
-            lockFile.Libraries = new List<LockFileLibrary>(libraryReferences.Count);
-            foreach (KeyValuePair<string, LockFileLibrary> pair in libraryReferences)
-            {
-                lockFile.Libraries.Add(pair.Value);
-            }
+            return libraryReferences;
         }
 
         private void EnsureUniqueLockFileTargetLibraries(LockFileTarget lockFileTarget)
