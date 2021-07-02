@@ -729,7 +729,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var project = projectsList.FirstOrDefault();
             var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>();
 
-            if (project != default && project is PackageReferenceProject prProject)
+            if (project != null && project is PackageReferenceProject prProject)
             {
                 var prOrigins = await prProject.GetTransitivePackageOriginAsync(transitivePackage, ct);
 

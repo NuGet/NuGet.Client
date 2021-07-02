@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
-        private static readonly CacheItemPolicy CacheItemPolicy = new()
+        private static readonly CacheItemPolicy TransitiveOriginsCacheItemPolicy = new()
         {
             SlidingExpiration = ObjectCache.NoSlidingExpiration,
             AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
@@ -290,7 +290,7 @@ namespace NuGet.PackageManagement.VisualStudio
         internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
         {
             string key = GetTransitiveCacheKey(transitivePackage);
-            TransitiveOriginsCache.Set(key, origins, CacheItemPolicy);
+            TransitiveOriginsCache.Set(key, origins, TransitiveOriginsCacheItemPolicy);
         }
 
         internal void ClearCachedTransitiveOrigin()
