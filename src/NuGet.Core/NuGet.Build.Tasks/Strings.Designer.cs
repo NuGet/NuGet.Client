@@ -151,7 +151,7 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The solution contains {0} project(s) &quot;{1}&quot; that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution..
+        ///   Looks up a localized string similar to The solution contains &apos;{0}&apos; project(s) &apos;{1}&apos; that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution..
         /// </summary>
         public static string Log_ProjectsInSolutionNotKnowntoMSBuild {
             get {

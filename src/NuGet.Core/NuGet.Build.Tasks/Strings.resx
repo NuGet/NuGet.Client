@@ -176,7 +176,7 @@
     <value>Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing.</value>
   </data>
   <data name="Log_ProjectsInSolutionNotKnowntoMSBuild" xml:space="preserve">
-    <value>The solution contains {0} project(s) "{1}" that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution.</value>
+    <value>The solution contains '{0}' project(s) '{1}' that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution.</value>
     <comment>0 - number of projects not known to msbuild
 1 - list of projects</comment>
   </data>
