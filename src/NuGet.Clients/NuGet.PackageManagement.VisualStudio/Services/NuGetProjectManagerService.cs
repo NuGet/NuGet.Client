@@ -722,6 +722,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
         {
+            if (transitivePackage == null)
+            {
+                throw new ArgumentNullException(nameof(transitivePackage));
+            }
+            if (projectId == null)
+            {
+                throw new ArgumentNullException(nameof(projectId));
+            }
+            if (ct == null)
+            {
+                throw new ArgumentNullException(nameof(ct));
+            }
+
             ct.ThrowIfCancellationRequested();
 
             var singleProjectId = new[] { projectId };
