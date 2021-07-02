@@ -201,8 +201,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
 
-                var visited = new HashSet<object>();
-                var memory = new Dictionary<object, bool>();
+                var memory = new Dictionary<PackageIdentity, bool?>();
 
                 foreach (var targetFxGraph in reading.TargetsList)
                 {
@@ -211,9 +210,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
                     {
-                        visited.Clear();
                         memory.Clear();
-                        var found = FindTransitive(directPkg.PackageIdentity, transitivePackage, targetFxGraph, visited, memory);
+                        var found = FindTransitive(directPkg.PackageIdentity, transitivePackage, targetFxGraph, memory);
                         if (found)
                         {
                             list.Add(directPkg);
@@ -231,49 +229,56 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageOrigins;
         }
 
-        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, HashSet<object> visited, Dictionary<object, bool> memory)
+        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory)
         {
             if (current.Equals(transitivePackage))
             {
-                memory[current] = true;
+                memory[current] = true; // found
                 return true;
             }
 
-            var node = graph
+            LockFileTargetLibrary node = graph
                 .Libraries
                 .Where(x => x.Name == current.Id && x.Version.Equals(current.Version) && x.Type == "package")
                 .FirstOrDefault();
 
             if (node != default)
             {
-                visited.Add(current);
-                foreach (var dep in node.Dependencies)
+                memory[current] = null; // visited
+                foreach (PackageDependency dep in node.Dependencies)
                 {
                     var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
 
-                    if (visited.Contains(pkgChild) && memory.ContainsKey(pkgChild) && memory[pkgChild])
+                    if (memory.ContainsKey(pkgChild) && memory[pkgChild].HasValue && memory[pkgChild] == true)
                     {
+                        memory[pkgChild] = true; // prunning, found
                         return true;
                     }
-                    else
+                    else if (!memory.ContainsKey(pkgChild))
                     {
-                        bool found = FindTransitive(pkgChild, transitivePackage, graph, visited, memory);
+                        bool found = FindTransitive(pkgChild, transitivePackage, graph, memory);
 
                         if (found)
                         {
+                            memory[pkgChild] = true; // prunning, found
                             return true;
                         }
                     }
                 }
             }
 
-            memory[current] = false;
+            memory[current] = false; // not found
             return false;
+        }
+
+        internal string GetTransitiveCacheKey(PackageIdentity transitivePackage)
+        {
+            return _projectUniqueName + transitivePackage.ToString();
         }
 
         internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
         {
-            string key = _projectUniqueName + transitivePackage.ToString();
+            string key = GetTransitiveCacheKey(transitivePackage);
             if (TransitiveOriginsCache.Contains(key))
             {
                 return (TransitiveEntry)TransitiveOriginsCache.Get(key);
@@ -284,7 +289,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
         {
-            string key = _projectUniqueName + transitivePackage.ToString();
+            string key = GetTransitiveCacheKey(transitivePackage);
             TransitiveOriginsCache.Set(key, origins, CacheItemPolicy);
         }
 
