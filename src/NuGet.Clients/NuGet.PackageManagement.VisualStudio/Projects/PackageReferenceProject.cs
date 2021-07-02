@@ -46,7 +46,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectFullPath;
 
         private protected DateTime _lastTimeAssetsModified;
-        private protected WeakReference<Tuple<PackageSpec, IList<LockFileTarget>>> _lastLockFileTargets;
+        private protected WeakReference<IList<LockFileTarget>> _lastTargets;
+        private protected WeakReference<PackageSpec> _lastPackgeSpec;
 
         protected PackageReferenceProject(
             string projectName,
@@ -152,13 +153,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             string assetsFilePath = await GetAssetsFilePathAsync();
             var fileInfo = new FileInfo(assetsFilePath);
-            
 
-            Tuple<PackageSpec, IList<LockFileTarget>> lastAssets = null;
-            bool cacheHit = _lastLockFileTargets != null && _lastLockFileTargets.TryGetTarget(out lastAssets);
+            IList<LockFileTarget> lastTargets = null;
+            PackageSpec lastPackageSpec = null;
+            bool cacheHitTargets = _lastTargets != null && _lastTargets.TryGetTarget(out lastTargets);
+            bool cacheHitPackageSpec = _lastPackgeSpec != null && _lastPackgeSpec.TryGetTarget(out lastPackageSpec);
             IList<LockFileTarget> targetsList = null;
 
-            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHit || !ReferenceEquals(currentPackageSpec, lastAssets.Item1))
+            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(currentPackageSpec, lastPackageSpec))
             {
                 if (fileInfo.Exists)
                 {
@@ -169,14 +171,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
-                _lastLockFileTargets = new WeakReference<Tuple<PackageSpec, IList<LockFileTarget>>>(Tuple.Create(currentPackageSpec, targetsList));
+                _lastTargets = new WeakReference<IList<LockFileTarget>>(targetsList);
+                _lastPackgeSpec = new WeakReference<PackageSpec>(currentPackageSpec);
             }
-            else if (cacheHit && lastAssets != null)
+            else if (cacheHitTargets && cacheHitPackageSpec && lastPackageSpec != null && lastTargets != null)
             {
-                targetsList = lastAssets.Item2;
+                targetsList = lastTargets;
             }
 
-            return new RestoreGraphRead(currentPackageSpec, targetsList.ToArray(), cacheHit);
+            return new RestoreGraphRead(currentPackageSpec, targetsList.ToArray(), cacheHitTargets && cacheHitPackageSpec);
         }
 
         internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)

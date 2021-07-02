@@ -118,9 +118,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ct.ThrowIfCancellationRequested();
 
-            Task<PackageSpec> vt = new Task<PackageSpec>(() => GetPackageSpec());
-
-            return await vt;
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+                var vt = new Task<PackageSpec>(() => GetPackageSpec());
+                vt.Start();
+                return await vt;
+            });
         }
 
         #region IDependencyGraphProject
