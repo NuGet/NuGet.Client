@@ -725,9 +725,9 @@ namespace NuGet.PackageManagement.VisualStudio
             ct.ThrowIfCancellationRequested();
 
             var singleProjectId = new[] { projectId };
-            var projectsList = await GetProjectsAsync(singleProjectId, ct);
-            var project = projectsList.FirstOrDefault();
             var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>();
+            IReadOnlyList<NuGetProject>? projectsList = await GetProjectsAsync(singleProjectId, ct);
+            NuGetProject? project = projectsList.FirstOrDefault();
 
             if (project != null && project is PackageReferenceProject prProject)
             {
@@ -742,6 +742,5 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return packageOrigins;
         }
-
     }
 }
