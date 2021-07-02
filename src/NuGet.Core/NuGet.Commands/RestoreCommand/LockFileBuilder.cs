@@ -148,7 +148,7 @@ namespace NuGet.Commands
                 }
             }
 
-            ValidateLockFileLibrary(lockFile);
+            EnsureUniqueLockFileLibraries(lockFile);
             var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
@@ -271,7 +271,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                ValidateLockFileTargetLibrary(target);
+                EnsureUniqueLockFileTargetLibraries(target);
                 lockFile.Targets.Add(target);
             }
 
@@ -285,7 +285,7 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        private void ValidateLockFileLibrary(LockFile lockFile)
+        private void EnsureUniqueLockFileLibraries(LockFile lockFile)
         {
             IList<LockFileLibrary> libraries = lockFile.Libraries;
             var libraryReferences = new Dictionary<string, LockFileLibrary>();
@@ -320,7 +320,7 @@ namespace NuGet.Commands
             }
         }
 
-        private void ValidateLockFileTargetLibrary(LockFileTarget lockFileTarget)
+        private void EnsureUniqueLockFileTargetLibraries(LockFileTarget lockFileTarget)
         {
             IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
             var libraryReferences = new Dictionary<string, LockFileTargetLibrary>();
