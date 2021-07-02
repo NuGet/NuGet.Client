@@ -32,32 +32,29 @@ namespace NuGet.Versioning
                 return null;
             }
 
-            // single char identifiers
-            if (format.Length == 1)
-            {
-                return Format(format[0], version);
-            }
-            else
-            {
-                var sb = new StringBuilder(format.Length);
+            var builder = StringBuilderPool.Shared.Rent(Math.Max(format.Length, 100));
 
-                for (var i = 0; i < format.Length; i++)
+            foreach (char c in format)
+            {
+                var s = Format(c, version);
+                if (s == null)
                 {
-                    var s = Format(format[i], version);
-
-                    if (s == null)
-                    {
-                        sb.Append(format[i]);
-                    }
-                    else
-                    {
-                        sb.Append(s);
-                    }
+                    builder.Append(c);
                 }
+                else
 
-                return sb.ToString();
+                {
+                    builder.Append(s);
+                }
             }
-        }
+
+            string formattedString = builder.ToString();
+
+            StringBuilderPool.Shared.Return(builder);
+
+            return formattedString;
+            
+    }
 
         /// <summary>
         /// Get version format type.
