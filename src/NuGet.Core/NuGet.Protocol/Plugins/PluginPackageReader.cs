@@ -507,15 +507,7 @@ namespace NuGet.Protocol.Plugins
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Asynchronously gets supported frameworks.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.
-        /// The task result (<see cref="Task{TResult}.Result" />) returns an
-        /// <see cref="IEnumerable{NuGetFramework}" />.</returns>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
-        /// is cancelled.</exception>
+        /// <inheritdoc cref="PackageReaderBase.GetSupportedFrameworksAsync(CancellationToken)"/>
         public override async Task<IEnumerable<NuGetFramework>> GetSupportedFrameworksAsync(
             CancellationToken cancellationToken)
         {
