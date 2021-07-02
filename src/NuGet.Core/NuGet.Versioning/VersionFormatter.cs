@@ -27,48 +27,36 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(arg));
             }
 
-            string formatted = null;
-            var argType = arg.GetType();
-
-            if (argType == typeof(IFormattable))
+            if (string.IsNullOrEmpty(format) || arg is not SemanticVersion version)
             {
-                formatted = ((IFormattable)arg).ToString(format, formatProvider);
+                return null;
             }
-            else if (!String.IsNullOrEmpty(format))
-            {
-                var version = arg as SemanticVersion;
 
-                if (version != null)
+            // single char identifiers
+            if (format.Length == 1)
+            {
+                return Format(format[0], version);
+            }
+            else
+            {
+                var sb = new StringBuilder(format.Length);
+
+                for (var i = 0; i < format.Length; i++)
                 {
-                    // single char identifiers
-                    if (format.Length == 1)
+                    var s = Format(format[i], version);
+
+                    if (s == null)
                     {
-                        formatted = Format(format[0], version);
+                        sb.Append(format[i]);
                     }
                     else
                     {
-                        var sb = new StringBuilder(format.Length);
-
-                        for (var i = 0; i < format.Length; i++)
-                        {
-                            var s = Format(format[i], version);
-
-                            if (s == null)
-                            {
-                                sb.Append(format[i]);
-                            }
-                            else
-                            {
-                                sb.Append(s);
-                            }
-                        }
-
-                        formatted = sb.ToString();
+                        sb.Append(s);
                     }
                 }
-            }
 
-            return formatted;
+                return sb.ToString();
+            }
         }
 
         /// <summary>
