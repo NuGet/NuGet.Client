@@ -81,9 +81,9 @@ namespace NuGet.Packaging
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 
             int bytesRead;
-            while ((bytesRead = inputStream.Read(buffer, 0, buffer.Length)) != 0)
+            while ((bytesRead = inputStream.Read(buffer, offset: 0, buffer.Length)) != 0)
             {
-                outputStream.Write(buffer, 0, bytesRead);
+                outputStream.Write(buffer, offset: 0, bytesRead);
             }
 
             ArrayPool<byte>.Shared.Return(buffer);

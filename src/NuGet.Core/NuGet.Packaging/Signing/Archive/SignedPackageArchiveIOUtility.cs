@@ -55,14 +55,14 @@ namespace NuGet.Packaging.Signing
 
             byte[] buffer = ArrayPool<byte>.Shared.Rent(_bufferSize);
 
-            Stream stream = reader.BaseStream;            
+            Stream stream = reader.BaseStream;
             long currentPosition;
             while ((currentPosition = stream.Position) != position)
             {
                 var bytesToRead = (int)Math.Min(position - currentPosition, buffer.Length);
 
-                var bytesRead = stream.Read(buffer, 0, bytesToRead);
-                writer.Write(buffer, 0, bytesRead);
+                int bytesRead = stream.Read(buffer, offset: 0, bytesToRead);
+                writer.Write(buffer, index: 0, bytesRead);
             }
 
             ArrayPool<byte>.Shared.Return(buffer);
@@ -101,7 +101,7 @@ namespace NuGet.Packaging.Signing
             {
                 var bytesToRead = (int)Math.Min(position - currentPosition, buffer.Length);
 
-                var bytesRead = stream.Read(buffer, 0, bytesToRead);
+                int bytesRead = stream.Read(buffer, offset: 0, bytesToRead);
                 HashBytes(hashAlgorithm, buffer, bytesRead);
             }
 
@@ -126,7 +126,12 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(hashAlgorithm));
             }
 
-            if (bytes == null || bytes.Length == 0 || count == 0)
+            if (count <= 0 || bytes.Length < count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            if (bytes == null || bytes.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
             }
@@ -167,7 +172,7 @@ namespace NuGet.Packaging.Signing
             {
                 var bytesToRead = (int)Math.Min(position - currentPosition, buffer.Length);
 
-                var bytesRead = stream.Read(buffer, 0, bytesToRead);
+                int bytesRead = stream.Read(buffer, offset: 0, bytesToRead);
                 HashBytes(hashFunc, buffer, bytesRead);
             }
 
@@ -189,6 +194,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="hashFunc">HashAlgorithm wrapper used to hash contents cross platform</param>
         /// <param name="bytes">Content to hash</param>
+        /// <param name="count">The number of bytes in the input byte array to use as data.</param>
         internal static void HashBytes(Sha512HashFunction hashFunc, byte[] bytes, int count)
         {
             if (hashFunc == null)
@@ -196,12 +202,17 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(hashFunc));
             }
 
-            if (bytes == null || bytes.Length == 0 || count == 0)
+            if (count <= 0 || bytes.Length < count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            if (bytes == null || bytes.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
             }
 
-            hashFunc.Update(bytes, 0, count);
+            hashFunc.Update(bytes, offset: 0, count);
         }
 
         /// <summary>

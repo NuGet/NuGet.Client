@@ -32,7 +32,7 @@ namespace System.Buffers
         /// <summary>
         /// Retrieves a shared <see cref="ArrayPool{T}"/> instance.
         /// </summary>
-        public static ArrayPool<T> Shared = new();
+        public static readonly ArrayPool<T> Shared = new();
 
         /// <summary>
         /// Retrieves a buffer that is at least the requested length.
@@ -64,12 +64,6 @@ namespace System.Buffers
         /// </summary>
         /// <param name="array">
         /// The buffer previously obtained from <see cref="Rent"/> to return to the pool.
-        /// </param>
-        /// <param name="clearArray">
-        /// If <c>true</c> and if the pool will store the buffer to enable subsequent reuse, <see cref="Return"/>
-        /// will clear <paramref name="array"/> of its contents so that a subsequent consumer via <see cref="Rent"/>
-        /// will not see the previous consumer's content.  If <c>false</c> or if the pool will release the buffer,
-        /// the array's contents are left unchanged.
         /// </param>
         /// <remarks>
         /// Once a buffer has been returned to the pool, the caller gives up all ownership of the buffer
