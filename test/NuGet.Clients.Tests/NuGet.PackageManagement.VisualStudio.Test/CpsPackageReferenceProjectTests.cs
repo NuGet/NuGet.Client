@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Commands;
 using NuGet.Commands.Test;
@@ -28,7 +29,6 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
-using Microsoft.VisualStudio.Sdk.TestFramework;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
