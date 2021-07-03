@@ -296,7 +296,7 @@ namespace NuGet.PackageManagement.VisualStudio
         internal void ClearCachedTransitiveOrigin()
         {
             var keys = TransitiveOriginsCache.Select(x => x.Key);
-            foreach(var k in keys)
+            foreach (var k in keys)
             {
                 TransitiveOriginsCache.Remove(k);
             }

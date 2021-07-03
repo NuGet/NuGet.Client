@@ -118,7 +118,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ct.ThrowIfCancellationRequested();
 
-            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => {
+            return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
                 var vt = new Task<PackageSpec>(() => GetPackageSpec());
                 vt.Start();
                 return await vt;

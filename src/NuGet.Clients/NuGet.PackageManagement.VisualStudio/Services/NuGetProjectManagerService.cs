@@ -746,7 +746,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var prOrigins = await prProject.GetTransitivePackageOriginAsync(transitivePackage, ct);
 
-                foreach(var fwRuntimeKey in prOrigins)
+                foreach (var fwRuntimeKey in prOrigins)
                 {
                     var list = fwRuntimeKey.Value.Select(pr => PackageReferenceContextInfo.Create(pr)).ToList();
                     packageOrigins[fwRuntimeKey.Key] = list;
