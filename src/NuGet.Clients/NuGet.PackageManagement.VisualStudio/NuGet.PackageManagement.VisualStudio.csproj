@@ -60,6 +60,7 @@
     <Compile Include="Services\NuGetSourcesService.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
+    <Compile Include="Projects\RestoreGraphRead.cs" />
     <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
     <Compile Include="CommonResources.cs" />
     <Compile Include="Common\PackageCollection.cs" />

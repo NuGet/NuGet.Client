@@ -1336,6 +1336,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
         {
+            return CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService);
+        }
+
+        internal static LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string projectId, string range, IVsProjectThreadingService threadingService)
+        {
             var framework = NuGetFramework.Parse("netstandard13");
             var projectAdapter = CreateProjectAdapter(testDirectory);
 
@@ -1352,9 +1357,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var testProject = new LegacyPackageReferenceProject(
                 projectAdapter,
-                Guid.NewGuid().ToString(),
+                projectId,
                 projectServices,
-                _threadingService);
+                threadingService);
             return testProject;
         }
 
