@@ -28,11 +28,19 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    public class CpsPackageReferenceProjectTests
+    [Collection(MockedVS.Collection)]
+    public class CpsPackageReferenceProjectTests : MockedVSCollectionTests
     {
+        public CpsPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
+        {
+        }
+
+
         [Fact]
         public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
         {

@@ -111,12 +111,11 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Return all targets (dependency graph) found in project.assets.json file
+        /// Returns <see cref="PackageSpec"/> and all targets (dependency graph) found in assets file (project.assets.json)
         /// </summary>
         /// <param name="token">Cancellation token</param>
-        /// <returns>An <see cref="RestoreGraphRead"/> object
-        /// </returns>
-        /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
+        /// <returns>An <see cref="RestoreGraphRead"/> object</returns>
+        /// <remarks>Projects need to be NuGet-restored before calling this function. Assets file readin happens in background</remarks>
         internal async Task<RestoreGraphRead> GetFullRestoreGraphAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -132,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
             bool isCacheHit = false;
             IList<LockFileTarget> targetsList = null;
 
-            if ((fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(currentPackageSpec, lastPackageSpec))
+            if (IsCacheHit(cacheHitTargets, cacheHitPackageSpec, currentPackageSpec, lastPackageSpec, fileInfo))
             {
                 if (fileInfo.Exists)
                 {
@@ -181,7 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio
             RestoreGraphRead reading = await GetFullRestoreGraphAsync(ct);
             if (reading.IsCacheHit)
             {
-                // assets file has not changed, look at transtive origin cache
+                // Assets file has not changed, look at transtive origin cache
                 var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
                 if (cacheEntry != null)
                 {
@@ -190,11 +189,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                // assets file changed, need to recompute transitive origins
+                // Assets file changed, recompute transitive origins
                 ClearCachedTransitiveOrigin();
             }
 
-            // we need to find Transitive origin and update cache
+            // Otherwise, find Transitive origin and update cache
             var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<PackageReference>>();
 
             if (reading.TargetsList != null)
@@ -207,10 +206,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
                     var list = new List<PackageReference>();
+                    memory.Clear();
 
                     foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
                     {
-                        memory.Clear();
                         var found = FindTransitive(directPkg.PackageIdentity, transitivePackage, targetFxGraph, memory);
                         if (found)
                         {
@@ -303,5 +302,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
+
+        internal abstract bool IsCacheHit(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets);
     }
 }

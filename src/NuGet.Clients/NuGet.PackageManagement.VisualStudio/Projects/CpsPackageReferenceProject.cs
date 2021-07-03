@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 List<PackageReference> installedPackages = reading.PackageSpec
                    .TargetFrameworks
-                   .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, reading.TargetsList.ToList()))
+                   .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, reading.TargetsList?.ToList()))
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();
@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // get the transitive packages, excluding any already contained in the installed packages
                 List<PackageReference> transitivePackages = reading.PackageSpec
                    .TargetFrameworks
-                   .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, reading.TargetsList.ToList()))
+                   .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, reading.TargetsList?.ToList()))
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();
@@ -420,6 +420,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
+        }
+
+        internal override bool IsCacheHit(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo fileInfo)
+        {
+            return (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(actual, last);
         }
 
         #endregion
