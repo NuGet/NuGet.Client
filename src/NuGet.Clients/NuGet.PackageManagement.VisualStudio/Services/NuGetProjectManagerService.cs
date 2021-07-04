@@ -38,7 +38,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly ISharedServiceState _sharedState;
         private AsyncSemaphore.Releaser? _semaphoreReleaser;
 
-
         public NuGetProjectManagerService(
             ServiceActivationOptions options,
             IServiceBroker serviceBroker,
