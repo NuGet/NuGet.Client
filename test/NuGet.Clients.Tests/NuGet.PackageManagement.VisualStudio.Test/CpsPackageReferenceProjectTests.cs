@@ -29,6 +29,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
+using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -39,7 +40,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             : base(globalServiceProvider)
         {
         }
-
 
         [Fact]
         public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
@@ -3404,53 +3404,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     unconfiguredProject: null,
                     projectServices: projectServices,
                     projectId: projectName);
-        }
-
-        internal static CpsPackageReferenceProject CreateCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache)
-        {
-            var projectServices = new TestProjectSystemServices();
-
-            return new CpsPackageReferenceProject(
-                    projectName: projectName,
-                    projectUniqueName: projectName,
-                    projectFullPath: projectFullPath,
-                    projectSystemCache: projectSystemCache,
-                    unconfiguredProject: null,
-                    projectServices: projectServices,
-                    projectId: projectName);
-        }
-
-        internal static ProjectNames GetTestProjectNames(string projectPath, string projectUniqueName)
-        {
-            var projectNames = new ProjectNames(
-            fullName: projectPath,
-            uniqueName: projectUniqueName,
-            shortName: projectUniqueName,
-            customUniqueName: projectUniqueName,
-            projectId: Guid.NewGuid().ToString());
-            return projectNames;
-        }
-
-        internal static PackageSpec GetPackageSpec(string projectName, string testDirectory, string version)
-        {
-            string referenceSpec = $@"
-                {{
-                    ""frameworks"":
-                    {{
-                        ""net5.0"":
-                        {{
-                            ""dependencies"":
-                            {{
-                                ""packageA"":
-                                {{
-                                    ""version"": ""{version}"",
-                                    ""target"": ""Package""
-                                }},
-                            }}
-                        }}
-                    }}
-                }}";
-            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
 
         private static PackageSpec GetPackageSpecNoPackages(string projectName, string testDirectory)

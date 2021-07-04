@@ -72,7 +72,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
-
         public override Task AddFileToProjectAsync(string filePath)
         {
             // sdk-style project system uses globbing to dynamically add files from project root into project
@@ -233,6 +232,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     // clear the transitive packages cache, since we don't know when a dependency has been removed
                     ClearCachedTransitiveOrigin();
+                    _installedPackages.Clear();
                     _transitivePackages.Clear();
                 }
 

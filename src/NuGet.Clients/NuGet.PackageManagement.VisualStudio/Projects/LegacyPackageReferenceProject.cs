@@ -190,6 +190,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 ClearCachedTransitiveOrigin();
+                _installedPackages.Clear();
                 _transitivePackages.Clear();
             }
 

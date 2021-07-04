@@ -38,6 +38,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
 using Test.Utility;
 using Xunit;
+using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
 
@@ -547,7 +548,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
-                LegacyPackageReferenceProject testProject = LegacyPackageReferenceProjectTests.CreateLegacyPackageReferenceProject(testDirectory, projectId, "[1.0.0, )", _threadingService);
+                LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, projectId, "[1.0.0, )", _threadingService);
 
                 NullSettings settings = NullSettings.Instance;
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -629,11 +630,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Prepare: Create project
                 string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
 
-                var prProject = CpsPackageReferenceProjectTests.CreateCpsPackageReferenceProject(projectName, projectFullPath,
+                var prProject = CreateCpsPackageReferenceProject(projectName, projectFullPath,
                     projectSystemCache);
 
-                ProjectNames projectNames = CpsPackageReferenceProjectTests.GetTestProjectNames(projectFullPath, projectName);
-                PackageSpec packageSpec = CpsPackageReferenceProjectTests.GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+                PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
                 DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
@@ -702,8 +703,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal("packageA", dep.Identity.Id);
                 Assert.Equal(new NuGetVersion("2.0.0"), dep.Identity.Version);
             }
-
         }
+
         private static void AddPackageDependency(ProjectSystemCache projectSystemCache, ProjectNames projectNames, PackageSpec packageSpec, SimpleTestPackageContext package)
         {
             var dependency = new LibraryDependency()

@@ -20,11 +20,11 @@ using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
-using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Xunit;
+using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -1336,31 +1336,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
         {
-            return CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService);
-        }
-
-        internal static LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string projectId, string range, IVsProjectThreadingService threadingService)
-        {
-            var framework = NuGetFramework.Parse("netstandard13");
-            var projectAdapter = CreateProjectAdapter(testDirectory);
-
-            var projectServices = new TestProjectSystemServices();
-            projectServices.SetupInstalledPackages(
-                framework,
-                new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange(
-                        "packageA",
-                        VersionRange.Parse(range),
-                        LibraryDependencyTarget.Package)
-                });
-
-            var testProject = new LegacyPackageReferenceProject(
-                projectAdapter,
-                projectId,
-                projectServices,
-                threadingService);
-            return testProject;
+            return ProjectFactories.CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService);
         }
 
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProjectNoPackages(TestDirectory testDirectory)
@@ -1375,48 +1351,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectServices,
                 _threadingService);
             return testProject;
-        }
-
-        private static Mock<IVsProjectAdapter> CreateProjectAdapter()
-        {
-            var projectAdapter = new Mock<IVsProjectAdapter>();
-
-            projectAdapter
-                .SetupGet(x => x.ProjectName)
-                .Returns("TestProject");
-
-            projectAdapter
-                .Setup(x => x.GetRuntimeIdentifiersAsync())
-                .ReturnsAsync(Enumerable.Empty<RuntimeDescription>);
-
-            projectAdapter
-                .Setup(x => x.GetRuntimeSupportsAsync())
-                .ReturnsAsync(Enumerable.Empty<CompatibilityProfile>);
-
-            projectAdapter
-                .Setup(x => x.Version)
-                .Returns("1.0.0");
-
-            return projectAdapter;
-        }
-
-        private static IVsProjectAdapter CreateProjectAdapter(string fullPath)
-        {
-            var projectAdapter = CreateProjectAdapter();
-            projectAdapter
-                .Setup(x => x.FullProjectPath)
-                .Returns(Path.Combine(fullPath, "foo.csproj"));
-            projectAdapter
-                .Setup(x => x.GetTargetFrameworkAsync())
-                .ReturnsAsync(NuGetFramework.Parse("netstandard13"));
-
-            var testMSBuildProjectExtensionsPath = Path.Combine(fullPath, "obj");
-            Directory.CreateDirectory(testMSBuildProjectExtensionsPath);
-            projectAdapter
-                .Setup(x => x.GetMSBuildProjectExtensionsPathAsync())
-                .Returns(Task.FromResult(testMSBuildProjectExtensionsPath));
-
-            return projectAdapter.Object;
         }
     }
 
