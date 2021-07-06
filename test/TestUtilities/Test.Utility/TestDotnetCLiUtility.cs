@@ -176,7 +176,8 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
             var artifactsDirectory = TestFileSystemUtility.GetArtifactsDirectoryInRepo();
             var pathToSdkInCli = Path.Combine(
                     Directory.EnumerateDirectories(Path.Combine(cliDirectory, "sdk"))
-                        .First());
+                    .Where(d => !string.Equals(Path.GetFileName(d), "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase))
+                    .First());
             const string configuration =
 #if DEBUG
                 "Debug";
