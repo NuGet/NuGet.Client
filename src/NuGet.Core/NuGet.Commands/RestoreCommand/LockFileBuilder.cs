@@ -148,7 +148,7 @@ namespace NuGet.Commands
                 }
             }
 
-            Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> libraries = GetUniqueLockFileLibraries(lockFile);
+            Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> libraries = EnsureUniqueLockFileLibraries(lockFile);
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
@@ -284,7 +284,7 @@ namespace NuGet.Commands
             return lockFile;
         }
 
-        private Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> GetUniqueLockFileLibraries(LockFile lockFile)
+        private Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> EnsureUniqueLockFileLibraries(LockFile lockFile)
         {
             IList<LockFileLibrary> libraries = lockFile.Libraries;
             var libraryReferences = new Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary>();
