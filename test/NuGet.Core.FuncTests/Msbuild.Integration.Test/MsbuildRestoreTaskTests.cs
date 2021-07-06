@@ -759,7 +759,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
-                result.AllOutput.Should().Contain($"The solution contains 1 project(s) \"{project.ProjectName}\" that are not known to MSBuild. " +
+                result.AllOutput.Should().Contain($"The solution contains '{solution.Projects.Count}' project(s) '{project.ProjectName}' that are not known to MSBuild. " +
                     "Ensure that all projects are known to be MSBuild before running restore on the solution.", because: result.AllOutput);
             }
 
