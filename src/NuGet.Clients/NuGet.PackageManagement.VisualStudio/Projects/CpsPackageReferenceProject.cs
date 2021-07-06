@@ -231,9 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!reading.IsCacheHit)
                 {
                     // clear the transitive packages cache, since we don't know when a dependency has been removed
-                    ClearCachedTransitiveOrigin();
-                    _installedPackages.Clear();
-                    _transitivePackages.Clear();
+                    CleanCache();
                 }
 
                 List<PackageReference> installedPackages = reading.PackageSpec
@@ -425,6 +423,13 @@ namespace NuGet.PackageManagement.VisualStudio
         internal override bool IsCacheHit(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo fileInfo)
         {
             return (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(actual, last);
+        }
+
+        internal override void CleanCache()
+        {
+            ClearCachedTransitiveOrigin();
+            _installedPackages.Clear();
+            _transitivePackages.Clear();
         }
 
         #endregion
