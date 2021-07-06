@@ -226,17 +226,23 @@ namespace NuGet.DependencyResolver
                 }
             }
 
-            while (tasks?.Count > 0)
+            if (tasks?.Count > 0)
             {
-                // Wait for any node to finish resolving
-                var task = await Task.WhenAny(tasks);
+                if (tasks.Count > 1)
+                {
+                    // Wait for all the nodes to finish resolving. We only do this if we
+                    // have more than one to avoid WhenAll's defensive copying allocations.
+                    // Otherwise, if there's just one, we'll just end up waiting on it in
+                    // the loop.
+                    await Task.WhenAll(tasks);
+                }
 
-                // Extract the resolved node
-                tasks.Remove(task);
-                var dependencyNode = await task;
-                dependencyNode.OuterNode = node;
-
-                node.InnerNodes.Add(dependencyNode);
+                foreach (var task in tasks)
+                {
+                    var dependencyNode = await task;
+                    dependencyNode.OuterNode = node;
+                    node.InnerNodes.Add(dependencyNode);
+                }
             }
 
             return node;
