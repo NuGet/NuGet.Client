@@ -56,7 +56,7 @@
     Run package signing cross verify tests
     ============================================================
   -->
-  <Target Name="CrossVerifyTests" DependsOnTargets="BuildVS;Pack">
+  <Target Name="CrossVerifyTests">
     <!-- Test inputs -->
     <PropertyGroup>
       <TestProjectPaths>@(CrossVerifyProjects)</TestProjectPaths>
