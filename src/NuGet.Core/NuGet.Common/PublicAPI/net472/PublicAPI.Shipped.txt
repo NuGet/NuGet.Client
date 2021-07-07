@@ -595,8 +595,6 @@ static NuGet.Common.RestoreLogMessage.CreateError(NuGet.Common.NuGetLogCode code
 static NuGet.Common.RestoreLogMessage.CreateError(NuGet.Common.NuGetLogCode code, string message, string libraryId, params string[] targetGraphs) -> NuGet.Common.RestoreLogMessage
 static NuGet.Common.RestoreLogMessage.CreateWarning(NuGet.Common.NuGetLogCode code, string message) -> NuGet.Common.RestoreLogMessage
 static NuGet.Common.RestoreLogMessage.CreateWarning(NuGet.Common.NuGetLogCode code, string message, string libraryId, params string[] targetGraphs) -> NuGet.Common.RestoreLogMessage
-static NuGet.Common.RuntimeEnvironmentHelper.IsDev14.get -> bool
-static NuGet.Common.RuntimeEnvironmentHelper.IsDev14.set -> void
 static NuGet.Common.RuntimeEnvironmentHelper.IsLinux.get -> bool
 static NuGet.Common.RuntimeEnvironmentHelper.IsMacOSX.get -> bool
 static NuGet.Common.RuntimeEnvironmentHelper.IsMono.get -> bool
