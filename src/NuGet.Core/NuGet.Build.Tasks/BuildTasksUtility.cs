@@ -550,9 +550,7 @@ namespace NuGet.Build.Tasks
             {
                 cacheContext.NoCache = noCache;
 
-                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-
-                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false, packageNamespacesConfiguration)
+                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
