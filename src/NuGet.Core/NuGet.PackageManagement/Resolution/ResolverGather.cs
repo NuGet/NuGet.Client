@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement
         {
             _context = context;
 
-            _maxDegreeOfParallelism = 1;
+            _maxDegreeOfParallelism = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
             RequestTimeout = PackageManagementConstants.DefaultRequestTimeout;
 
             _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
