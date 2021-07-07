@@ -209,7 +209,25 @@ namespace NuGet.PackageManagement
                     // Gather packages for all missing ids
                     foreach (var missingId in missingIds)
                     {
-                        QueueWork(_allResources, missingId, ignoreExceptions: true);
+                        IReadOnlyList<string> configuredPackageSources = null;
+
+                        if (_isPackageNamespaceEnabled)
+                        {
+                            configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(missingId);
+
+                            if (configuredPackageSources != null)
+                            {
+                                var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                                _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(missingId, packageSourcesAtPrefix));
+                            }
+                            else
+                            {
+                                _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(missingId));
+                            }
+
+                        }
+
+                        QueueWork(_allResources, missingId, ignoreExceptions: true, configuredPackageSources: configuredPackageSources);
                     }
                 }
 
@@ -562,10 +580,10 @@ namespace NuGet.PackageManagement
             return results;
         }
 
-        private void QueueWork(IReadOnlyList<SourceResource> sources, string packageId, bool ignoreExceptions)
+        private void QueueWork(IReadOnlyList<SourceResource> sources, string packageId, bool ignoreExceptions, IReadOnlyList<string> configuredPackageSources)
         {
             var identity = new PackageIdentity(packageId, version: null);
-            QueueWork(sources, identity, ignoreExceptions, isInstalledPackage: false);
+            QueueWork(sources, identity, ignoreExceptions, isInstalledPackage: false, configuredPackageSources: configuredPackageSources);
         }
 
         private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage, IReadOnlyList<string> configuredPackageSources = null)
