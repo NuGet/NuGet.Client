@@ -105,7 +105,7 @@ namespace NuGet.PackageManagement
                 if (_isPackageNamespaceEnabled)
                 {
                     configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(primaryTarget.Id);
-                    
+
                     if (configuredPackageSources != null)
                     {
                         var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
@@ -595,7 +595,7 @@ namespace NuGet.PackageManagement
             {
                 foreach (SourceResource source in sources)
                 {
-                    if(_isPackageNamespaceEnabled)
+                    if (_isPackageNamespaceEnabled)
                     {
                         if (configuredPackageSources != null &&
     !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
