@@ -9,5 +9,7 @@ namespace NuGet.PackageManagement.UI
         public const string DoNotShowPreviewWindowRegistryName = "DoNotShowPreviewWindow";
         public const string SuppressUpgradePackagesConfigName = "SuppressUpgradePackagesConfig";
         public const string IncludePrereleaseRegistryName = "IncludePrerelease";
+
+        public const string ReadMeMarkdownToolWindowGuid = "bcd11f28-784f-44fd-b9fc-d5c1f4e1b96f";
     }
 }

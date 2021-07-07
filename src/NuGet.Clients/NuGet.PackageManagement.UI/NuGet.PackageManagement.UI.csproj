@@ -80,6 +80,7 @@
     <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
+    <Compile Include="Utility\ReadMeMarkdownToolWindow.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
     <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
     <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
