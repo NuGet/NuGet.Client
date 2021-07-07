@@ -100,25 +100,8 @@ namespace NuGet.PackageManagement
                 // Add the id to the search list to block searching for all versions
                 _idsSearched.Add(primaryTarget.Id);
                 allPrimaryTargets.Add(primaryTarget.Id);
-                IReadOnlyList<string> configuredPackageSources = null;
 
-                if (_isPackageNamespaceEnabled)
-                {
-                    configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(primaryTarget.Id);
-
-                    if (configuredPackageSources != null)
-                    {
-                        var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
-                        _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(primaryTarget.Id, packageSourcesAtPrefix));
-                    }
-                    else
-                    {
-                        _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(primaryTarget.Id));
-                    }
-
-                }
-
-                QueueWork(_primaryResources, primaryTarget, ignoreExceptions: false, isInstalledPackage: false, configuredPackageSources: configuredPackageSources);
+                QueueWork(_primaryResources, primaryTarget, ignoreExceptions: false, isInstalledPackage: false);
             }
 
             // null can occur for scenarios with PackageIdentities only
@@ -128,25 +111,8 @@ namespace NuGet.PackageManagement
                 {
                     allPrimaryTargets.Add(primaryTargetId);
                     var identity = new PackageIdentity(primaryTargetId, version: null);
-                    IReadOnlyList<string> configuredPackageSources = null;
 
-                    if (_isPackageNamespaceEnabled)
-                    {
-                        configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(primaryTargetId);
-
-                        if (configuredPackageSources != null)
-                        {
-                            var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
-                            _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(primaryTargetId, packageSourcesAtPrefix));
-                        }
-                        else
-                        {
-                            _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(primaryTargetId));
-                        }
-
-                    }
-
-                    QueueWork(_primaryResources, identity, ignoreExceptions: false, isInstalledPackage: false, configuredPackageSources: configuredPackageSources);
+                    QueueWork(_primaryResources, identity, ignoreExceptions: false, isInstalledPackage: false);
                 }
             }
 
@@ -209,25 +175,7 @@ namespace NuGet.PackageManagement
                     // Gather packages for all missing ids
                     foreach (var missingId in missingIds)
                     {
-                        IReadOnlyList<string> configuredPackageSources = null;
-
-                        if (_isPackageNamespaceEnabled)
-                        {
-                            configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(missingId);
-
-                            if (configuredPackageSources != null)
-                            {
-                                var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
-                                _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(missingId, packageSourcesAtPrefix));
-                            }
-                            else
-                            {
-                                _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(missingId));
-                            }
-
-                        }
-
-                        QueueWork(_allResources, missingId, ignoreExceptions: true, configuredPackageSources: configuredPackageSources);
+                        QueueWork(_allResources, missingId, ignoreExceptions: true);
                     }
                 }
 
@@ -580,14 +528,32 @@ namespace NuGet.PackageManagement
             return results;
         }
 
-        private void QueueWork(IReadOnlyList<SourceResource> sources, string packageId, bool ignoreExceptions, IReadOnlyList<string> configuredPackageSources)
+        private void QueueWork(IReadOnlyList<SourceResource> sources, string packageId, bool ignoreExceptions)
         {
             var identity = new PackageIdentity(packageId, version: null);
-            QueueWork(sources, identity, ignoreExceptions, isInstalledPackage: false, configuredPackageSources: configuredPackageSources);
+            QueueWork(sources, identity, ignoreExceptions, isInstalledPackage: false);
         }
 
-        private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage, IReadOnlyList<string> configuredPackageSources = null)
+        private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage)
         {
+            IReadOnlyList<string> configuredPackageSources = null;
+
+            if (_isPackageNamespaceEnabled)
+            {
+
+                configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(package.Id);
+
+                if (configuredPackageSources != null)
+                {
+                    var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                    _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound((package.Id), packageSourcesAtPrefix));
+                }
+                else
+                {
+                    _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound((package.Id)));
+                }
+            }
+
             // No-op if the id has already been searched for
             // Exact versions are not added to the list since we may need to search for the full
             // set of packages for that id later if it becomes part of the closure later.
@@ -595,14 +561,10 @@ namespace NuGet.PackageManagement
             {
                 foreach (SourceResource source in sources)
                 {
-                    if (_isPackageNamespaceEnabled)
+                    if (_isPackageNamespaceEnabled && !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
                     {
-                        if (configuredPackageSources != null &&
-    !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
-                        {
-                            // This package's id prefix is not defined in current package source, let's skip.
-                            continue;
-                        }
+                        // This package's id prefix is not defined in current package source, let's skip.
+                        continue;
                     }
 
                     // Keep track of the order in which these were made
