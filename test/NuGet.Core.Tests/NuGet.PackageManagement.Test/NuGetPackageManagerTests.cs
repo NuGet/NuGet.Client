@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Configuration.Test;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
@@ -7031,6 +7032,230 @@ namespace NuGet.Test
                         sourceRepositoryProvider.GetRepositories(),
                         CancellationToken.None);
                 });
+            }
+        }
+
+        [Fact]
+        public async Task TestPacManPreview_Install_PackageNamespace_Succeed()
+        {
+            // Arrange
+            using (var testSolutionManager = new TestSolutionManager())
+            {
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                var externalRepositoryPath = Path.Combine(testSolutionManager.SolutionDirectory, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
+
+                var privateRepositoryPath = Path.Combine(testSolutionManager.SolutionDirectory, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+
+                // Replace the default nuget.config with custom one.
+                SettingsTestUtils.CreateConfigurationFile(testSolutionManager.NuGetConfigPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""externalRepository"">
+            <namespace id=""External.*"" />
+            <namespace id=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <namespace id=""Contoso.*"" />             
+            <namespace id=""Test.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+                var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
+
+                var ExternalA = new SimpleTestPackageContext()
+                {
+                    Id = contosoPackageIdentity.Id,  // Initial version had package id conflict with Contoso repository
+                    Version = "1.0.0"
+                };
+                ExternalA.AddFile("lib/net461/externalA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalA);
+
+                var ExternalB = new SimpleTestPackageContext()
+                {
+                    Id = "External.B",  // name conflict resolved.
+                    Version = "2.0.0"
+                };
+                ExternalB.AddFile("lib/net461/externalB.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalB);
+
+                sources.Add(new PackageSource(externalRepositoryPath, "ExternalRepository"));
+
+                var ContosoReal = new SimpleTestPackageContext()
+                {
+                    Id = contosoPackageIdentity.Id,
+                    Version = "1.0.0"
+                };
+                ContosoReal.AddFile("lib/net461/contosoA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    privateRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ContosoReal);
+
+                sources.Add(new PackageSource(privateRepositoryPath, "PrivateRepository"));
+
+                SourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                ISettings testSettings = Settings.LoadSpecificSettings(testSolutionManager.SolutionDirectory, "NuGet.Config");
+                var token = CancellationToken.None;
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
+                var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
+
+                // Pre-Assert
+                // Check that the packages.config file does not exist
+                Assert.False(File.Exists(packagesConfigPath));
+                // Check that there are no packages returned by PackagesConfigProject
+                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(0, packagesInPackagesConfig.Count);
+                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+                // Act
+                var packageActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, contosoPackageIdentity,
+                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories(), null, token)).ToList();
+
+                // Assert
+                Assert.Equal(1, packageActions.Count());
+                Assert.True(contosoPackageIdentity.Equals(packageActions[0].PackageIdentity));
+                Assert.Equal(NuGetProjectActionType.Install, packageActions[0].NuGetProjectActionType);
+                Assert.Equal(privateRepositoryPath,
+                    packageActions[0].SourceRepository.PackageSource.Source);
+            }
+        }
+
+
+        [Fact]
+        public async Task TestPacManPreview_Install_PackageNamespace_Fails()
+        {
+            // Arrange
+            using (var testSolutionManager = new TestSolutionManager())
+            {
+                // Set up Package Source
+                var sources = new List<PackageSource>();
+                var externalRepositoryPath = Path.Combine(testSolutionManager.SolutionDirectory, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
+
+                var privateRepositoryPath = Path.Combine(testSolutionManager.SolutionDirectory, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+
+                // Replace the default nuget.config with custom one.
+                SettingsTestUtils.CreateConfigurationFile(testSolutionManager.NuGetConfigPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""externalRepository"">
+            <namespace id=""External.*"" />
+            <namespace id=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <namespace id=""Contoso.*"" />             
+            <namespace id=""Test.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+                var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
+
+                var ExternalA = new SimpleTestPackageContext()
+                {
+                    Id = contosoPackageIdentity.Id,  // Initial version had package id conflict with Contoso repository
+                    Version = "1.0.0"
+                };
+                ExternalA.AddFile("lib/net461/externalA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalA);
+
+                var ExternalB = new SimpleTestPackageContext()
+                {
+                    Id = "External.B",  // name conflict resolved.
+                    Version = "2.0.0"
+                };
+                ExternalB.AddFile("lib/net461/externalB.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalB);
+
+                sources.Add(new PackageSource(externalRepositoryPath, "ExternalRepository"));
+
+                var ContosoReal = new SimpleTestPackageContext()
+                {
+                    Id = contosoPackageIdentity.Id,
+                    Version = "2.0.0"
+                };
+                ContosoReal.AddFile("lib/net461/contosoA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    privateRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ContosoReal);
+
+                sources.Add(new PackageSource(privateRepositoryPath, "PrivateRepository"));
+
+                SourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+
+                ISettings testSettings = Settings.LoadSpecificSettings(testSolutionManager.SolutionDirectory, "NuGet.Config");
+                var token = CancellationToken.None;
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem as TestMSBuildNuGetProjectSystem;
+                var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
+
+                // Pre-Assert
+                // Check that the packages.config file does not exist
+                Assert.False(File.Exists(packagesConfigPath));
+                // Check that there are no packages returned by PackagesConfigProject
+                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(0, packagesInPackagesConfig.Count);
+                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+                // Act and Assert
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                {
+                    await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, contosoPackageIdentity,
+                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories(), null, token);
+                });
+
+                // Even though Contoso.A 1.0.0 exist in ExternalRepository it wouldn't be picked for install.
+                Assert.True(ex.Message.StartsWith("Package 'Contoso.A 1.0.0' is not found in the following primary source(s): "));
             }
         }
 
