@@ -31,17 +31,19 @@ namespace NuGet.PackageManagement
         private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _maxDegreeOfParallelism;
         private readonly ConcurrentDictionary<string, TimeSpan> _timeTaken = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
+        private readonly bool _isPackageNamespaceEnabled;
 
         private ResolverGather(GatherContext context)
         {
             _context = context;
 
-            _maxDegreeOfParallelism = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+            _maxDegreeOfParallelism = 1;
             RequestTimeout = PackageManagementConstants.DefaultRequestTimeout;
 
             _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
 
             _cache = _context.ResolutionContext?.GatherCache;
+            _isPackageNamespaceEnabled = _context.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
         }
 
         /// <summary>
@@ -93,23 +95,58 @@ namespace NuGet.PackageManagement
             var allPrimaryTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // resolve primary targets only from primary sources
-            foreach (var primaryTarget in _context.PrimaryTargets)
+            foreach (PackageIdentity primaryTarget in _context.PrimaryTargets)
             {
                 // Add the id to the search list to block searching for all versions
                 _idsSearched.Add(primaryTarget.Id);
                 allPrimaryTargets.Add(primaryTarget.Id);
+                IReadOnlyList<string> configuredPackageSources = null;
 
-                QueueWork(_primaryResources, primaryTarget, ignoreExceptions: false, isInstalledPackage: false);
+                if (_isPackageNamespaceEnabled)
+                {
+                    configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(primaryTarget.Id);
+                    
+                    if (configuredPackageSources != null)
+                    {
+                        var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                        _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(primaryTarget.Id, packageSourcesAtPrefix));
+                    }
+                    else
+                    {
+                        _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(primaryTarget.Id));
+                    }
+
+                }
+
+                QueueWork(_primaryResources, primaryTarget, ignoreExceptions: false, isInstalledPackage: false, configuredPackageSources: configuredPackageSources);
             }
 
             // null can occur for scenarios with PackageIdentities only
             if (_context.PrimaryTargetIds != null)
             {
-                foreach (var primaryTargetId in _context.PrimaryTargetIds)
+                foreach (string primaryTargetId in _context.PrimaryTargetIds)
                 {
                     allPrimaryTargets.Add(primaryTargetId);
                     var identity = new PackageIdentity(primaryTargetId, version: null);
-                    QueueWork(_primaryResources, identity, ignoreExceptions: false, isInstalledPackage: false);
+                    IReadOnlyList<string> configuredPackageSources = null;
+
+                    if (_isPackageNamespaceEnabled)
+                    {
+                        configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(primaryTargetId);
+
+                        if (configuredPackageSources != null)
+                        {
+                            var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                            _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(primaryTargetId, packageSourcesAtPrefix));
+                        }
+                        else
+                        {
+                            _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(primaryTargetId));
+                        }
+
+                    }
+
+                    QueueWork(_primaryResources, identity, ignoreExceptions: false, isInstalledPackage: false, configuredPackageSources: configuredPackageSources);
                 }
             }
 
@@ -531,15 +568,25 @@ namespace NuGet.PackageManagement
             QueueWork(sources, identity, ignoreExceptions, isInstalledPackage: false);
         }
 
-        private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage)
+        private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage, IReadOnlyList<string> configuredPackageSources = null)
         {
             // No-op if the id has already been searched for
             // Exact versions are not added to the list since we may need to search for the full
             // set of packages for that id later if it becomes part of the closure later.
             if (package.HasVersion || _idsSearched.Add(package.Id))
             {
-                foreach (var source in sources)
+                foreach (SourceResource source in sources)
                 {
+                    if(_isPackageNamespaceEnabled)
+                    {
+                        if (configuredPackageSources != null &&
+    !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                        {
+                            // This package's id prefix is not defined in current package source, let's skip.
+                            continue;
+                        }
+                    }
+
                     // Keep track of the order in which these were made
                     var requestId = GetNextRequestId();
 

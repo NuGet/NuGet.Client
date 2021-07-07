@@ -1736,8 +1736,9 @@ namespace NuGet.PackageManagement
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
 
                     HashSet<SourcePackageDependencyInfo> availablePackageDependencyInfoWithSourceSet = null;
+                    PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
 
-                    var gatherContext = new GatherContext()
+                    var gatherContext = new GatherContext(packageNamespacesConfiguration)
                     {
                         InstalledPackages = oldListOfInstalledPackages.ToList(),
                         PrimaryTargets = primaryPackages,

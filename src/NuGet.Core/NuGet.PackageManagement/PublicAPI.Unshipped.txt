@@ -1,1 +1,3 @@
+NuGet.PackageManagement.GatherContext.GatherContext(NuGet.Configuration.PackageNamespacesConfiguration packageNamespacesConfiguration) -> void
+NuGet.PackageManagement.GatherContext.PackageNamespacesConfiguration.get -> NuGet.Configuration.PackageNamespacesConfiguration
 const NuGet.ProjectManagement.ProjectBuildProperties.CLRSupport = "CLRSupport" -> string
