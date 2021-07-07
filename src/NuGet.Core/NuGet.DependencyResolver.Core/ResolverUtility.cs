@@ -507,18 +507,14 @@ namespace NuGet.DependencyResolver
             // filter package namespaces if enabled
             IEnumerable<IRemoteDependencyProvider> remoteDependencyProviders = context.RemoteLibraryProviders;
 
-            if (context.PackageNamespaces != null)
+            if (libraryRange.TypeConstraint == LibraryDependencyTarget.Package && context?.PackageNamespaces?.AreNamespacesEnabled == true)
             {
-                if (libraryRange.TypeConstraint == LibraryDependencyTarget.Package
-                        && context.PackageNamespaces.AreNamespacesEnabled)
-                {
-                    IReadOnlyList<string> sources = context.PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
+                IReadOnlyList<string> sources = context.PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
 
-                    if (sources.Count == 0)
-                        throw new Exception("something went wrong in namespaces work");
+                if (sources.Count == 0)
+                    throw new Exception("something went wrong in namespaces work");
 
-                    remoteDependencyProviders = context.RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name));
-                }
+                remoteDependencyProviders = context.RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name));
             }
 
             return remoteDependencyProviders;
