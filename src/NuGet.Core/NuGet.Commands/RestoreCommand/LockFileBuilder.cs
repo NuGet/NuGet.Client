@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
@@ -13,6 +12,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGetVersion = NuGet.Versioning.NuGetVersion;
 
 namespace NuGet.Commands
 {
@@ -164,7 +164,7 @@ namespace NuGet.Commands
                 }
             }
 
-            var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
+            Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> libraries = EnsureUniqueLockFileLibraries(lockFile);
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
@@ -311,6 +311,7 @@ namespace NuGet.Commands
 
                 }
 
+                EnsureUniqueLockFileTargetLibraries(target);
                 lockFile.Targets.Add(target);
             }
 
@@ -322,6 +323,99 @@ namespace NuGet.Commands
             lockFile.PackageSpec = project;
 
             return lockFile;
+        }
+
+        private Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> EnsureUniqueLockFileLibraries(LockFile lockFile)
+        {
+            IList<LockFileLibrary> libraries = lockFile.Libraries;
+            var libraryReferences = new Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary>();
+
+            foreach (LockFileLibrary lib in libraries)
+            {
+                var libraryKey = Tuple.Create(lib.Name, lib.Version);
+
+                if (libraryReferences.TryGetValue(libraryKey, out LockFileLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(lib.Type))
+                    {
+                        // Prefer project reference over package reference, so replace the the package reference.
+                        libraryReferences[libraryKey] = lib;
+                    }
+                }
+                else
+                {
+                    libraryReferences[libraryKey] = lib;
+                }
+            }
+
+            if (lockFile.Libraries.Count != libraryReferences.Count)
+            {
+                lockFile.Libraries = new List<LockFileLibrary>(libraryReferences.Count);
+                foreach (KeyValuePair<Tuple<string, NuGetVersion>, LockFileLibrary> pair in libraryReferences)
+                {
+                    lockFile.Libraries.Add(pair.Value);
+                }
+            }
+
+            return libraryReferences;
+        }
+
+        private void EnsureUniqueLockFileTargetLibraries(LockFileTarget lockFileTarget)
+        {
+            IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
+            var libraryReferences = new Dictionary<string, LockFileTargetLibrary>();
+
+            foreach (LockFileTargetLibrary library in libraries)
+            {
+                var libraryKey = library.Name + " " + library.Version;
+
+                if (libraryReferences.TryGetValue(libraryKey, out LockFileTargetLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
+                    {
+                        // Prefer project reference over package reference, so replace the the package reference.
+                        libraryReferences[libraryKey] = library;
+                    }
+                }
+                else
+                {
+                    libraryReferences[libraryKey] = library;
+                }
+            }
+
+            if (lockFileTarget.Libraries.Count == libraryReferences.Count)
+            {
+                return;
+            }
+
+            lockFileTarget.Libraries = new List<LockFileTargetLibrary>(libraryReferences.Count);
+            foreach (KeyValuePair<string, LockFileTargetLibrary> pair in libraryReferences)
+            {
+                lockFileTarget.Libraries.Add(pair.Value);
+            }
+        }
+
+        /// <summary>
+        /// Prefer projects over packages
+        /// </summary>
+        /// <param name="referenceType"></param>
+        /// <returns></returns>
+        private static int RankReferences(string referenceType)
+        {
+            if (referenceType == "project")
+            {
+                return 0;
+            }
+            else if (referenceType == "externalProject")
+            {
+                return 1;
+            }
+            else if (referenceType == "package")
+            {
+                return 2;
+            }
+
+            return 5;
         }
 
         private static string GetFallbackFrameworkString(NuGetFramework framework)
