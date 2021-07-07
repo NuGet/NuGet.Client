@@ -177,6 +177,7 @@ namespace NuGet.Commands
                 sharedCache,
                 restoreArgs.CacheContext,
                 clientPolicyContext,
+                packageNamespaces: null,
                 restoreArgs.Log,
                 _lockFileBuilderCache)
             {
