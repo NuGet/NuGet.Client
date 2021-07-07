@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement
             var allPrimaryTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // resolve primary targets only from primary sources
-            foreach (PackageIdentity primaryTarget in _context.PrimaryTargets)
+            foreach (var primaryTarget in _context.PrimaryTargets)
             {
                 // Add the id to the search list to block searching for all versions
                 _idsSearched.Add(primaryTarget.Id);
@@ -107,11 +107,10 @@ namespace NuGet.PackageManagement
             // null can occur for scenarios with PackageIdentities only
             if (_context.PrimaryTargetIds != null)
             {
-                foreach (string primaryTargetId in _context.PrimaryTargetIds)
+                foreach (var primaryTargetId in _context.PrimaryTargetIds)
                 {
                     allPrimaryTargets.Add(primaryTargetId);
                     var identity = new PackageIdentity(primaryTargetId, version: null);
-
                     QueueWork(_primaryResources, identity, ignoreExceptions: false, isInstalledPackage: false);
                 }
             }
