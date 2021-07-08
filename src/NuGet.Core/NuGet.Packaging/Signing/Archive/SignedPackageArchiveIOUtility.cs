@@ -126,14 +126,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(hashAlgorithm));
             }
 
-            if (count <= 0 || bytes.Length < count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
-
             if (bytes == null || bytes.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
+            }
+
+            if (count <= 0 || bytes.Length < count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
             hashAlgorithm.TransformBlock(bytes, inputOffset: 0, count, outputBuffer: null, outputOffset: 0);
@@ -202,14 +202,14 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(hashFunc));
             }
 
-            if (count <= 0 || bytes.Length < count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
-
             if (bytes == null || bytes.Length == 0)
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
+            }
+
+            if (count <= 0 || bytes.Length < count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
             hashFunc.Update(bytes, offset: 0, count);
