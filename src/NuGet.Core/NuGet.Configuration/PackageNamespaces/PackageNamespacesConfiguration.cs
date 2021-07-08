@@ -38,7 +38,7 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
 
-        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
+        public PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;

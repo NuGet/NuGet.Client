@@ -80,6 +80,9 @@ namespace NuGet.PackageManagement
         /// </summary>
         public bool IsUpdateAll { get; set; }
 
+        /// <summary>
+        /// PackageNamespacesConfiguration section value from nuget.config file, if section doesn't exist then it's null.
+        /// </summary>
         public PackageNamespacesConfiguration PackageNamespacesConfiguration { get; }
 
         /// <summary>
