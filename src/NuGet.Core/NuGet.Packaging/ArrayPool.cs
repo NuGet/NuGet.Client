@@ -29,6 +29,10 @@ namespace System.Buffers
         private const int MaxPooledArraySize = 81920;
         private readonly SimplePool<T[]> _pool = new(() => new T[MaxPooledArraySize]);
 
+        private ArrayPool()
+        {
+        }
+
         /// <summary>
         /// Retrieves a shared <see cref="ArrayPool{T}"/> instance.
         /// </summary>
