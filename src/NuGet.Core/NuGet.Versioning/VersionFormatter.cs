@@ -32,7 +32,7 @@ namespace NuGet.Versioning
                 return null;
             }
 
-            var builder = StringBuilderPool.Shared.Rent(Math.Max(format.Length, 100));
+            var builder = StringBuilderPool.Shared.Rent(256);
 
             foreach (char c in format)
             {
