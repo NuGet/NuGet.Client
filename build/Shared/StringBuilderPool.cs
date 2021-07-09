@@ -23,7 +23,7 @@ namespace NuGet
     internal class StringBuilderPool
     {
         private const int MaxPoolSize = 256;
-        private readonly SimplePool<StringBuilder> _pool = new(() => new StringBuilder(256));
+        private readonly SimplePool<StringBuilder> _pool = new(() => new StringBuilder(MaxPoolSize));
 
         /// <summary>
         /// Retrieves a shared <see cref="StringBuilderPool"/> instance.
