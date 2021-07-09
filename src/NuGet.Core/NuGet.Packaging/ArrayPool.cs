@@ -3,8 +3,7 @@
 
 #if NETFRAMEWORK || NETSTANDARD2_0
 
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+using NuGet;
 
 namespace System.Buffers
 {
@@ -83,32 +82,6 @@ namespace System.Buffers
             {
                 _pool.Free(array);
             }
-        }
-    }
-
-    internal class SimplePool<T> where T : class
-    {
-        private readonly ConcurrentStack<T> _values = new();
-        private readonly Func<T> _allocate;
-
-        public SimplePool(Func<T> allocate)
-        {
-            _allocate = allocate;
-        }
-
-        public T Allocate()
-        {
-            if (_values.TryPop(out T result))
-            {
-                return result;
-            }
-
-            return _allocate();
-        }
-
-        public void Free(T value)
-        {
-            _values.Push(value);
         }
     }
 }
