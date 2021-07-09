@@ -23,6 +23,9 @@
     <CommandBinding
       Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
       Executed="ExecuteOpenLicenseLink" />
+    <CommandBinding
+      Command="{x:Static nuget:PackageManagerControlCommands.MakeSearchLink}"
+      Executed="ExecuteSearchForPackage" />
   </UserControl.CommandBindings>
   <ScrollViewer
     x:Name="_root"

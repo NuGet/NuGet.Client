@@ -28,17 +28,25 @@
             AutomationProperties.LabeledBy="{Binding ElementName=_deprecationLabel}"
             ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
             Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
-        <TextBlock
+          <TextBlock
             Name="_deprecationLabel"
             FontWeight="Bold"
             Text="{x:Static nuget:Resources.Label_Deprecated}"/>
-      </StackPanel>
+        </StackPanel>
         <TextBox
           Style="{DynamicResource SelectableTextBlockStyle}" 
           Margin="0,8,0,0"
           TextWrapping="WrapWithOverflow"
           Text="{Binding Path=PackageDeprecationReasons}"
           AutomationProperties.Name="{x:Static nuget:Resources.Label_DeprecationReasons}"/>
+        <TextBlock>
+          <Hyperlink
+            NavigateUri="{Binding Path=PackageMetadata.PackageDetailsUrl}"
+            ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
+            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+            <Run Text="{x:Static nuget:Resources.Deprecation_MoreInfo}" />
+          </Hyperlink>
+        </TextBlock>
         <StackPanel
           Margin="0,8,0,0"
           Orientation="Vertical"
@@ -50,12 +58,18 @@
           <StackPanel
             Orientation="Horizontal"
             VerticalAlignment="Center">
-            <TextBox
-              Style="{DynamicResource SelectableTextBlockStyle}" 
+            <!-- Style="{DynamicResource SelectableTextBlockStyle}" -->
+            <TextBlock
               TextWrapping="Wrap"
               VerticalAlignment="Center"
-              AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}"
-              Text="{Binding Path=PackageDeprecationAlternatePackageText}"/>
+              AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}">
+              <Hyperlink
+                NavigateUri="{Binding Path=PackageDeprecationAlternatePackageUri}"
+                ToolTip="Click to search alternative package"
+                Command="{x:Static nuget:PackageManagerControlCommands.MakeSearchLink}">
+                <Run Text="{Binding Path=PackageDeprecationAlternatePackageText}" />
+              </Hyperlink>
+            </TextBlock>
           </StackPanel>
         </StackPanel>
       </StackPanel>

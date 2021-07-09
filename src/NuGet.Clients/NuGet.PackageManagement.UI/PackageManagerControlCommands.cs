@@ -8,5 +8,7 @@ namespace NuGet.PackageManagement.UI
     public static class PackageManagerControlCommands
     {
         public static readonly RoutedCommand OpenExternalLink = new RoutedCommand();
+
+        public static readonly RoutedCommand MakeSearchLink = new RoutedCommand();
     }
 }

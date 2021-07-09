@@ -67,6 +67,15 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void ExecuteSearchForPackage(object sender, ExecutedRoutedEventArgs e)
+        {
+            var hyperlink = e.OriginalSource as Hyperlink;
+            if (Control != null)
+            {
+                Control.Search(hyperlink.NavigateUri.Host);
+            }
+        }
+
         public void ScrollToHome()
         {
             _root.ScrollToHome();

@@ -709,6 +709,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to More info.
+        /// </summary>
+        public static string Deprecation_MoreInfo {
+            get {
+                return ResourceManager.GetString("Deprecation_MoreInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Learn more.
         /// </summary>
         public static string Description_LearnMore {
