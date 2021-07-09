@@ -248,7 +248,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
             namespaces.Add("source2", new List<string>() { "x" });
             namespaces.Add("source1", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new (namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
             context.PackageNamespaces = namespacesConfiguration;
 
             // Act
