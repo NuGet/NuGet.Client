@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -204,6 +203,113 @@ namespace NuGet.DependencyResolver.Core.Tests
             Assert.Equal(LibraryType.Unresolved, result.Data.Match.Library.Type);
             Assert.Equal("x", result.Data.Match.Library.Name);
             Assert.Equal("1.0.0-beta", result.Data.Match.Library.Version.ToString());
+        }
+
+        [Fact]
+        public async Task FindPackage_VerifyPackageSourcesAreFilteredWhenPackageNamespacesAreConfigured_Success()
+        {
+            // Arrange
+            var range = new LibraryRange("x", VersionRange.Parse("1.0.0-beta.1"), LibraryDependencyTarget.Package);
+            var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var context = new RemoteWalkContext(cacheContext, testLogger);
+            var token = CancellationToken.None;
+            var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
+            var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta.1"), LibraryType.Package);
+            var dependencies = new[] { new LibraryDependency() { LibraryRange = new LibraryRange("y", VersionRange.All, LibraryDependencyTarget.Package) } };
+            var dependencyInfo = LibraryDependencyInfo.Create(actualIdentity, framework, dependencies);
+
+            var downloadCount = 0;
+
+            // Source1 returns 1.0.0-beta.1
+            var remoteProvider = new Mock<IRemoteDependencyProvider>();
+            remoteProvider.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(actualIdentity);
+            remoteProvider.SetupGet(e => e.IsHttp).Returns(true);
+            remoteProvider.SetupGet(e => e.Source).Returns(new PackageSource("source1"));
+            remoteProvider.Setup(e => e.GetDependenciesAsync(It.IsAny<LibraryIdentity>(), It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(dependencyInfo)
+                .Callback(() => ++downloadCount);
+            context.RemoteLibraryProviders.Add(remoteProvider.Object);
+
+            // Source2 returns 1.0.0-beta.1
+            var remoteProvider2 = new Mock<IRemoteDependencyProvider>();
+            remoteProvider2.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(actualIdentity);
+            remoteProvider2.SetupGet(e => e.IsHttp).Returns(true);
+            remoteProvider2.SetupGet(e => e.Source).Returns(new PackageSource("source2"));
+            remoteProvider2.Setup(e => e.GetDependenciesAsync(It.IsAny<LibraryIdentity>(), It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(dependencyInfo)
+                .Callback(() => ++downloadCount);
+            context.RemoteLibraryProviders.Add(remoteProvider2.Object);
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add("source2", new List<string>() { "x" });
+            namespaces.Add("source1", new List<string>() { "y" });
+            PackageNamespacesConfiguration namespacesConfiguration = new (namespaces);
+            context.PackageNamespaces = namespacesConfiguration;
+
+            // Act
+            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token);
+
+            // Assert
+            // Verify only one download happened from the expected source i.e. source2
+            Assert.Equal(1, downloadCount);
+            Assert.Equal("1.0.0-beta.1", result.Key.Version.ToString());
+            Assert.Equal("source2", result.Data.Match.Provider.Source.Name);
+        }
+
+        [Fact]
+        public async Task FindPackage_WhenNoPackageNamespacesAreConfigured_Throws()
+        {
+            // Arrange
+            var range = new LibraryRange("x", VersionRange.Parse("1.0.0-beta.1"), LibraryDependencyTarget.Package);
+            var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var context = new RemoteWalkContext(cacheContext, testLogger);
+            var token = CancellationToken.None;
+            var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
+            var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta.1"), LibraryType.Package);
+            var dependencies = new[] { new LibraryDependency() { LibraryRange = new LibraryRange("y", VersionRange.All, LibraryDependencyTarget.Package) } };
+            var dependencyInfo = LibraryDependencyInfo.Create(actualIdentity, framework, dependencies);
+
+            var downloadCount = 0;
+
+            // Source1 returns 1.0.0-beta.1
+            var remoteProvider = new Mock<IRemoteDependencyProvider>();
+            remoteProvider.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(actualIdentity);
+            remoteProvider.SetupGet(e => e.IsHttp).Returns(true);
+            remoteProvider.SetupGet(e => e.Source).Returns(new PackageSource("source1"));
+            remoteProvider.Setup(e => e.GetDependenciesAsync(It.IsAny<LibraryIdentity>(), It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(dependencyInfo)
+                .Callback(() => ++downloadCount);
+            context.RemoteLibraryProviders.Add(remoteProvider.Object);
+
+            // Source2 returns 1.0.0-beta.1
+            var remoteProvider2 = new Mock<IRemoteDependencyProvider>();
+            remoteProvider2.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(actualIdentity);
+            remoteProvider2.SetupGet(e => e.IsHttp).Returns(true);
+            remoteProvider2.SetupGet(e => e.Source).Returns(new PackageSource("source2"));
+            remoteProvider2.Setup(e => e.GetDependenciesAsync(It.IsAny<LibraryIdentity>(), It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(dependencyInfo)
+                .Callback(() => ++downloadCount);
+            context.RemoteLibraryProviders.Add(remoteProvider2.Object);
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add("source2", new List<string>() { "z" });
+            namespaces.Add("source1", new List<string>() { "y" });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            context.PackageNamespaces = namespacesConfiguration;
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token));
+            Assert.Equal(0, downloadCount);
         }
     }
 }

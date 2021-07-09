@@ -511,7 +511,7 @@ namespace NuGet.DependencyResolver
             {
                 IReadOnlyList<string> sources = context.PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
 
-                if (sources.Count == 0)
+                if (sources == null || sources.Count == 0)
                     throw new Exception("something went wrong in namespaces work");
 
                 remoteDependencyProviders = context.RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name));
