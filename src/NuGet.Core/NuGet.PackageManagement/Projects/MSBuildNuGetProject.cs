@@ -678,16 +678,16 @@ namespace NuGet.ProjectManagement
                 metadata.ProjectName = ProjectSystem.ProjectName;
                 metadata.ProjectUniqueName = ProjectSystem.ProjectFileFullPath;
 
+                // Add framework group
+                var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(ProjectSystem.TargetFramework);
+                metadata.TargetFrameworks.Add(frameworkGroup);
+
                 var references = (await ProjectServices
                     .ReferencesReader
                     .GetProjectReferencesAsync(context.Logger, CancellationToken.None))
                     .ToList();
                 if (references != null && references.Count > 0)
                 {
-                    // Add framework group
-                    var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(ProjectSystem.TargetFramework);
-                    metadata.TargetFrameworks.Add(frameworkGroup);
-
                     foreach (var reference in references)
                     {
                         // This reference applies to all frameworks

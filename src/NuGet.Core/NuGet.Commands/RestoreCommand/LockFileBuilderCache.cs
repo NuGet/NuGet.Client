@@ -2,28 +2,34 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
-using NuGet.Packaging.Core;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
+
     /// <summary>
     /// Cache objects used for building the lock file.
     /// </summary>
     public class LockFileBuilderCache
     {
         // Package files
-        private readonly Dictionary<PackageIdentity, ContentItemCollection> _contentItems
-            = new Dictionary<PackageIdentity, ContentItemCollection>();
+        private readonly ConcurrentDictionary<(string Id, NuGetVersion Version, string sha512), ContentItemCollection> _contentItems
+            = new();
 
         // OrderedCriteria is stored per target graph + override framework.
-        private readonly Dictionary<CriteriaKey, List<List<SelectionCriteria>>> _criteriaSets =
-            new Dictionary<CriteriaKey, List<List<SelectionCriteria>>>();
+        private readonly ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>> _criteriaSets =
+            new();
+
+        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags), Lazy<LockFileTargetLibrary>> _lockFileTargetLibraryCache =
+            new();
 
         /// <summary>
         /// Get ordered selection criteria.
@@ -32,14 +38,7 @@ namespace NuGet.Commands
         {
             // Criteria are unique on graph and framework override.
             var key = new CriteriaKey(graph.TargetGraphName, framework);
-
-            if (!_criteriaSets.TryGetValue(key, out var criteria))
-            {
-                criteria = LockFileUtils.CreateOrderedCriteriaSets(graph, framework);
-                _criteriaSets.Add(key, criteria);
-            }
-
-            return criteria;
+            return _criteriaSets.GetOrAdd(key, _ => LockFileUtils.CreateOrderedCriteriaSets(graph, framework));
         }
 
         /// <summary>
@@ -53,11 +52,9 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(package));
             }
 
-            var identity = new PackageIdentity(package.Id, package.Version);
-
-            if (!_contentItems.TryGetValue(identity, out var collection))
+            return _contentItems.GetOrAdd((package.Id, package.Version, package.Sha512), _ =>
             {
-                collection = new ContentItemCollection();
+                var collection = new ContentItemCollection();
 
                 if (library == null)
                 {
@@ -70,22 +67,48 @@ namespace NuGet.Commands
                     collection.Load(library.Files);
                 }
 
-                _contentItems.Add(identity, collection);
-            }
+                return collection;
+            });
+        }
 
-            return collection;
+        /// <summary>
+        /// Try to get a LockFileTargetLibrary from the cache.
+        /// </summary>
+        internal LockFileTargetLibrary GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, string aliases, LibraryIncludeFlags libraryIncludeFlags, Func<LockFileTargetLibrary> valueFactory)
+        {
+            // Comparing RuntimeGraph for equality is very expensive,
+            // so in case of a request where the RuntimeGraph is not empty we avoid using the cache.
+            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
+                return valueFactory();
+
+            localPackageInfo = localPackageInfo ?? throw new ArgumentNullException(nameof(localPackageInfo));
+            var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
+            var packagePath = localPackageInfo.ExpandedPath;
+            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, packagePath, aliases, libraryIncludeFlags),
+                key => new Lazy<LockFileTargetLibrary>(valueFactory)).Value;
         }
 
         private class CriteriaKey : IEquatable<CriteriaKey>
         {
             public string TargetGraphName { get; }
 
-            public NuGetFramework FrameworkOverride { get; }
+            public NuGetFramework Framework { get; }
+
+            public AssetTargetFallbackFramework AssetTargetFallbackFramework { get; }
 
             public CriteriaKey(string targetGraphName, NuGetFramework frameworkOverride)
             {
                 TargetGraphName = targetGraphName;
-                FrameworkOverride = frameworkOverride;
+                if (frameworkOverride is AssetTargetFallbackFramework assetTargetFallbackFramework)
+                {
+                    Framework = null;
+                    AssetTargetFallbackFramework = assetTargetFallbackFramework;
+                }
+                else
+                {
+                    Framework = frameworkOverride;
+                    AssetTargetFallbackFramework = null;
+                }
             }
 
             public bool Equals(CriteriaKey other)
@@ -101,8 +124,9 @@ namespace NuGet.Commands
                 }
 
                 return StringComparer.Ordinal.Equals(TargetGraphName, other.TargetGraphName)
-                    && FrameworkOverride.Equals(other.FrameworkOverride)
-                    && other.FrameworkOverride.Equals(FrameworkOverride);
+                       && NuGetFramework.Comparer.Equals(Framework, other.Framework)
+                       && (AssetTargetFallbackFramework == null && other.AssetTargetFallbackFramework == null ||
+                           AssetTargetFallbackFramework != null && AssetTargetFallbackFramework.Equals(other.AssetTargetFallbackFramework));
             }
 
             public override bool Equals(object obj)
@@ -115,7 +139,8 @@ namespace NuGet.Commands
                 var combiner = new HashCodeCombiner();
 
                 combiner.AddObject(StringComparer.Ordinal.GetHashCode(TargetGraphName));
-                combiner.AddObject(FrameworkOverride);
+                combiner.AddObject(Framework);
+                combiner.AddObject(AssetTargetFallbackFramework);
 
                 return combiner.CombinedHash;
             }

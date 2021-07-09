@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
@@ -13,6 +12,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGetVersion = NuGet.Versioning.NuGetVersion;
 
 namespace NuGet.Commands
 {
@@ -32,11 +32,27 @@ namespace NuGet.Commands
             _includeFlagGraphs = includeFlagGraphs;
         }
 
+        [Obsolete("Use method with LockFileBuilderCache parameter")]
         public LockFile CreateLockFile(LockFile previousLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             RemoteWalkContext context)
+        {
+            return CreateLockFile(previousLockFile,
+                project,
+                targetGraphs,
+                localRepositories,
+                context,
+                new LockFileBuilderCache());
+        }
+
+        public LockFile CreateLockFile(LockFile previousLockFile,
+            PackageSpec project,
+            IEnumerable<RestoreTargetGraph> targetGraphs,
+            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
+            RemoteWalkContext context,
+            LockFileBuilderCache lockFileBuilderCache)
         {
             var lockFile = new LockFile()
             {
@@ -148,14 +164,11 @@ namespace NuGet.Commands
                 }
             }
 
-            var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
+            Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> libraries = EnsureUniqueLockFileLibraries(lockFile);
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
             var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
-
-            // Cache package data and selection criteria across graphs.
-            var builderCache = new LockFileBuilderCache();
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
@@ -176,6 +189,9 @@ namespace NuGet.Commands
                 bool warnForImportsOnGraph = tfi.Warn
                     && (target.TargetFramework is FallbackFramework
                         || target.TargetFramework is AssetTargetFallbackFramework);
+
+                // This is used for a special-case warning we need to do when net6.0-maccatalyst selects a xamarin.ios asset.
+                MaccatalystFallback maccatalystFallback = MaccatalystFallback.FallbackIfNeeded(targetGraph.Framework);
 
                 foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
@@ -201,10 +217,10 @@ namespace NuGet.Commands
                             library,
                             includeFlags,
                             targetGraph,
-                            rootProjectStyle);
+                            rootProjectStyle,
+                            maccatalystFallback);
 
                         target.Libraries.Add(projectLib);
-                        continue;
                     }
                     else if (library.Type == LibraryType.Package)
                     {
@@ -219,14 +235,15 @@ namespace NuGet.Commands
                         var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
                         var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
-                            libraryDependency,
+                            libraryDependency?.Aliases,
                             libraries[Tuple.Create(library.Name, library.Version)],
                             package,
                             targetGraph,
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
-                            cache: builderCache);
+                            cache: lockFileBuilderCache,
+                            maccatalystFallback);
 
                         target.Libraries.Add(targetLibrary);
 
@@ -236,14 +253,15 @@ namespace NuGet.Commands
                             var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
 
                             var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
-                                libraryDependency,
+                                libraryDependency?.Aliases,
                                 libraries[Tuple.Create(library.Name, library.Version)],
                                 package,
                                 targetGraph,
                                 targetFrameworkOverride: nonFallbackFramework,
                                 dependencyType: includeFlags,
                                 dependencies: graphItem.Data.Dependencies,
-                                cache: builderCache);
+                                cache: lockFileBuilderCache,
+                                maccatalystFallback: maccatalystFallback);
 
                             if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
@@ -268,8 +286,32 @@ namespace NuGet.Commands
                             }
                         }
                     }
+
+                    if (maccatalystFallback != null && maccatalystFallback._usedXamarinIOs)
+                    {
+                        var libraryName = DiagnosticUtility.FormatIdentity(library);
+
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                            Strings.Warning_MacCatalystXamarinIOSCompat,
+                            libraryName,
+                            project.Name,
+                            targetGraph.Framework);
+
+                        var logMessage = RestoreLogMessage.CreateWarning(
+                            NuGetLogCode.NU1703,
+                            message,
+                            library.Name,
+                            targetGraph.TargetGraphName);
+
+                        _logger.Log(logMessage);
+
+                        // only log the warning once per library
+                        librariesWithWarnings.Add(library);
+                    }
+
                 }
 
+                EnsureUniqueLockFileTargetLibraries(target);
                 lockFile.Targets.Add(target);
             }
 
@@ -281,6 +323,99 @@ namespace NuGet.Commands
             lockFile.PackageSpec = project;
 
             return lockFile;
+        }
+
+        private Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary> EnsureUniqueLockFileLibraries(LockFile lockFile)
+        {
+            IList<LockFileLibrary> libraries = lockFile.Libraries;
+            var libraryReferences = new Dictionary<Tuple<string, NuGetVersion>, LockFileLibrary>();
+
+            foreach (LockFileLibrary lib in libraries)
+            {
+                var libraryKey = Tuple.Create(lib.Name, lib.Version);
+
+                if (libraryReferences.TryGetValue(libraryKey, out LockFileLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(lib.Type))
+                    {
+                        // Prefer project reference over package reference, so replace the the package reference.
+                        libraryReferences[libraryKey] = lib;
+                    }
+                }
+                else
+                {
+                    libraryReferences[libraryKey] = lib;
+                }
+            }
+
+            if (lockFile.Libraries.Count != libraryReferences.Count)
+            {
+                lockFile.Libraries = new List<LockFileLibrary>(libraryReferences.Count);
+                foreach (KeyValuePair<Tuple<string, NuGetVersion>, LockFileLibrary> pair in libraryReferences)
+                {
+                    lockFile.Libraries.Add(pair.Value);
+                }
+            }
+
+            return libraryReferences;
+        }
+
+        private void EnsureUniqueLockFileTargetLibraries(LockFileTarget lockFileTarget)
+        {
+            IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
+            var libraryReferences = new Dictionary<string, LockFileTargetLibrary>();
+
+            foreach (LockFileTargetLibrary library in libraries)
+            {
+                var libraryKey = library.Name + " " + library.Version;
+
+                if (libraryReferences.TryGetValue(libraryKey, out LockFileTargetLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
+                    {
+                        // Prefer project reference over package reference, so replace the the package reference.
+                        libraryReferences[libraryKey] = library;
+                    }
+                }
+                else
+                {
+                    libraryReferences[libraryKey] = library;
+                }
+            }
+
+            if (lockFileTarget.Libraries.Count == libraryReferences.Count)
+            {
+                return;
+            }
+
+            lockFileTarget.Libraries = new List<LockFileTargetLibrary>(libraryReferences.Count);
+            foreach (KeyValuePair<string, LockFileTargetLibrary> pair in libraryReferences)
+            {
+                lockFileTarget.Libraries.Add(pair.Value);
+            }
+        }
+
+        /// <summary>
+        /// Prefer projects over packages
+        /// </summary>
+        /// <param name="referenceType"></param>
+        /// <returns></returns>
+        private static int RankReferences(string referenceType)
+        {
+            if (referenceType == "project")
+            {
+                return 0;
+            }
+            else if (referenceType == "externalProject")
+            {
+                return 1;
+            }
+            else if (referenceType == "package")
+            {
+                return 2;
+            }
+
+            return 5;
         }
 
         private static string GetFallbackFrameworkString(NuGetFramework framework)
@@ -370,7 +505,7 @@ namespace NuGet.Commands
             }
 
             // Do not pack anything from the runtime graphs
-            // The runtime graphs are added in addition to the graphs without a runtime 
+            // The runtime graphs are added in addition to the graphs without a runtime
             foreach (var targetGraph in targetGraphs.Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier)))
             {
                 var centralPackageVersionsForFramework = project.TargetFrameworks.Where(tfmi => tfmi.FrameworkName.Equals(targetGraph.Framework)).FirstOrDefault()?.CentralPackageVersions;

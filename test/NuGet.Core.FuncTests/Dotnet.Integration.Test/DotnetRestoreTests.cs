@@ -832,6 +832,37 @@ EndGlobal";
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void DotnetRestore_LockedMode_Net5WithAndWithoutPlatform()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                // Arrange
+                string projectFileContents =
+@"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>net5.0;net5.0-windows</TargetFrameworks>
+    </PropertyGroup>
+</Project>";
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "a.csproj"), projectFileContents);
+
+                _msbuildFixture.RestoreProject(pathContext.SolutionRoot, "a", args: "--use-lock-file");
+                string lockFilePath = Path.Combine(pathContext.SolutionRoot, PackagesLockFileFormat.LockFileName);
+                Assert.True(File.Exists(lockFilePath));
+                Directory.Delete(Path.Combine(pathContext.SolutionRoot, "obj"), recursive: true);
+
+                // Act
+                _msbuildFixture.RestoreProject(pathContext.SolutionRoot, "a", args: "--locked-mode");
+
+                // Assert
+                PackagesLockFile lockFile = PackagesLockFileFormat.Read(lockFilePath);
+                Assert.Equal(2, lockFile.Targets.Count);
+                Assert.Contains(lockFile.Targets, target => target.TargetFramework == FrameworkConstants.CommonFrameworks.Net50);
+                NuGetFramework net5win7 = NuGetFramework.Parse("net5.0-windows7.0");
+                Assert.Contains(lockFile.Targets, target => target.TargetFramework == net5win7);
+            }
+        }
+
         /// <summary>
         /// Create 3 projects, each with their own nuget.config file and source.
         /// When restoring in PackageReference the settings should be found from the project folder.
@@ -1509,6 +1540,83 @@ EndGlobal";
                 newResult.Success.Should().BeTrue(because: newResult.AllOutput);
                 Assert.True(File.Exists(Path.Combine(solutionDirectory, "obj", "project.assets.json")));
                 // Pack doesn't work because `IsPackable` is set to false.
+            }
+        }
+
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_SameNameSameKeyProjectPackageReferencing_Succeeds()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                // Set up solution, and project
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projFramework = FrameworkConstants.CommonFrameworks.Net462;
+                var projectPackageName = "projectA";
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   projectPackageName,
+                   pathContext.SolutionRoot,
+                   projFramework);
+                var projectIntermed = SimpleTestProjectContext.CreateNETCore(
+                   "projectIntermed",
+                   pathContext.SolutionRoot,
+                   projFramework);
+                var projectMain = SimpleTestProjectContext.CreateNETCore(
+                   "projectMain",
+                   pathContext.SolutionRoot,
+                   projFramework);
+
+                //Setup packages and feed
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = projectPackageName,
+                    Version = "1.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+
+                //add the packe to the project
+                projectIntermed.AddPackageToAllFrameworks(packageA);
+                projectMain.AddProjectToAllFrameworks(projectA);
+                projectMain.AddProjectToAllFrameworks(projectIntermed);
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectIntermed);
+                solution.Projects.Add(projectMain);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var args = $" --source \"{pathContext.PackageSource}\" ";
+                var reader = new LockFileFormat();
+
+                var projdir = Path.GetDirectoryName(projectA.ProjectPath);
+                var projfilename = Path.GetFileNameWithoutExtension(projectA.ProjectName);
+                _msbuildFixture.RestoreProject(projdir, projfilename, args);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                projdir = Path.GetDirectoryName(projectIntermed.ProjectPath);
+                projfilename = Path.GetFileNameWithoutExtension(projectIntermed.ProjectName);
+                _msbuildFixture.RestoreProject(projdir, projfilename, args);
+                Assert.True(File.Exists(projectIntermed.AssetsFileOutputPath));
+                var lockFile = reader.Read(projectIntermed.AssetsFileOutputPath);
+                IList<LockFileTargetLibrary> libraries = lockFile.Targets[0].Libraries;
+                Assert.True(libraries.Any(l => l.Type == "package" && l.Name == projectA.ProjectName));
+
+                projdir = Path.GetDirectoryName(projectMain.ProjectPath);
+                projfilename = Path.GetFileNameWithoutExtension(projectMain.ProjectName);
+                _msbuildFixture.RestoreProject(projdir, projfilename, args);
+                Assert.True(File.Exists(projectMain.AssetsFileOutputPath));
+                lockFile = reader.Read(projectMain.AssetsFileOutputPath);
+                var errors = lockFile.LogMessages.Where(m => m.Level == LogLevel.Error);
+                var warnings = lockFile.LogMessages.Where(m => m.Level == LogLevel.Warning);
+                Assert.Equal(0, errors.Count());
+                Assert.Equal(0, warnings.Count());
+                libraries = lockFile.Targets[0].Libraries;
+                Assert.Equal(2, libraries.Count);
+                Assert.True(libraries.Any(l => l.Type == "project" && l.Name == projectA.ProjectName));
+                Assert.True(libraries.Any(l => l.Type == "project" && l.Name == projectIntermed.ProjectName));
             }
         }
 

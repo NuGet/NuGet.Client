@@ -37,8 +37,6 @@ namespace NuGet.Common
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
 
-        public static bool IsDev14 { get; set; }
-
         public static bool IsWindows
         {
             get => _isWindows.Value;

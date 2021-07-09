@@ -32,20 +32,21 @@ namespace NuGet.Commands
             LibraryIncludeFlags dependencyType)
         {
             return CreateLockFileTargetLibrary(
-                libraryDependency: null,
+                aliases: null,
                 library,
                 package,
                 targetGraph,
                 dependencyType: dependencyType,
                 targetFrameworkOverride: null,
                 dependencies: null,
-                cache: new LockFileBuilderCache());
+                cache: new LockFileBuilderCache(),
+                maccatalystFallback: null);
         }
 
         /// <summary>
         /// Create a lock file target library for the given <paramref name="library"/>
         /// </summary>
-        /// <param name="libraryDependency">The library dependency equivalent to <paramref name="library"/>. The library dependency contains metadata applicable during asset selection. Can be null.</param>
+        /// <param name="aliases">When an alias is specified, all assemblies coming from the library will need to be referenced with an alias.</param>
         /// <param name="library">The lock file library, expected to be for the equivalent package as <paramref name="library"/> and <paramref name="package"/>. </param>
         /// <param name="package">The local package info.</param>
         /// <param name="targetGraph">The target graph for which the asset selection needs to happen.</param>
@@ -55,73 +56,79 @@ namespace NuGet.Commands
         /// <param name="cache">The lock file build cache.</param>
         /// <returns>The LockFileTargetLibrary</returns>
         internal static LockFileTargetLibrary CreateLockFileTargetLibrary(
-                LibraryDependency libraryDependency,
+                string aliases,
                 LockFileLibrary library,
                 LocalPackageInfo package,
                 RestoreTargetGraph targetGraph,
                 LibraryIncludeFlags dependencyType,
                 NuGetFramework targetFrameworkOverride,
                 List<LibraryDependency> dependencies,
-                LockFileBuilderCache cache)
+                LockFileBuilderCache cache,
+                MaccatalystFallback maccatalystFallback)
         {
-            LockFileTargetLibrary lockFileLib = null;
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
 
-            // This will throw an appropriate error if the nuspec is missing
-            var nuspec = package.Nuspec;
-
-            var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
-            var contentItems = cache.GetContentItems(library, package);
-
-            var packageTypes = nuspec.GetPackageTypes().AsList();
-
-            for (var i = 0; i < orderedCriteriaSets.Count; i++)
-            {
-                // Create a new library each time to avoid 
-                // assets being added from other criteria.
-                lockFileLib = new LockFileTargetLibrary()
+            return cache.GetLockFileTargetLibrary(targetGraph, framework, package, aliases, dependencyType,
+                () =>
                 {
-                    Name = package.Id,
-                    Version = package.Version,
-                    Type = LibraryType.Package,
-                    PackageType = packageTypes
-                };
+                    LockFileTargetLibrary lockFileLib = null;
+                    // This will throw an appropriate error if the nuspec is missing
+                    var nuspec = package.Nuspec;
 
-                // Populate assets
+                    var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
+                    var contentItems = cache.GetContentItems(library, package);
 
-                if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
-                {
-                    AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
-                    if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                    var packageTypes = nuspec.GetPackageTypes().AsList();
+
+                    for (var i = 0; i < orderedCriteriaSets.Count; i++)
                     {
-                        break;
+                        // Create a new library each time to avoid
+                        // assets being added from other criteria.
+                        lockFileLib = new LockFileTargetLibrary()
+                        {
+                            Name = package.Id,
+                            Version = package.Version,
+                            Type = LibraryType.Package,
+                            PackageType = packageTypes
+                        };
+
+                        // Populate assets
+
+                        if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
+                        {
+                            AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework,
+                                runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i], maccatalystFallback);
+                            if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            AddAssets(aliases, library, package, targetGraph, dependencyType, lockFileLib,
+                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i], maccatalystFallback);
+                            // Check if compatible assets were found.
+                            // If no compatible assets were found and this is the last check
+                            // continue on with what was given, this will fail in the normal
+                            // compat verification.
+                            if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
+                            {
+                                // Stop when compatible assets are found.
+                                break;
+                            }
+                        }
+
                     }
-                }
-                else
-                {
-                    AddAssets(libraryDependency, library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
-                    // Check if compatile assets were found.
-                    // If no compatible assets were found and this is the last check
-                    // continue on with what was given, this will fail in the normal
-                    // compat verification.
-                    if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
-                    {
-                        // Stop when compatible assets are found.
-                        break;
-                    }
-                }
 
-            }
+                    // Add dependencies
+                    AddDependencies(dependencies, lockFileLib, framework, nuspec, maccatalystFallback);
 
+                    // Exclude items
+                    ExcludeItems(lockFileLib, dependencyType);
 
-            // Add dependencies
-            AddDependencies(dependencies, lockFileLib, framework, nuspec);
-
-            // Exclude items
-            ExcludeItems(lockFileLib, dependencyType);
-
-            return lockFileLib;
+                    return lockFileLib;
+                });
         }
 
         internal static List<List<SelectionCriteria>> CreateOrderedCriteriaSets(RestoreTargetGraph targetGraph, NuGetFramework framework)
@@ -162,11 +169,11 @@ namespace NuGet.Commands
             return orderedCriteriaSets;
         }
 
-        private static void ApplyAliases(LibraryDependency libraryDependency, LockFileItem item)
+        private static void ApplyAliases(string aliases, LockFileItem item)
         {
-            if (!string.IsNullOrEmpty(libraryDependency?.Aliases))
+            if (!string.IsNullOrEmpty(aliases))
             {
-                item.Properties.Add(LockFileItem.AliasesProperty, libraryDependency.Aliases);
+                item.Properties.Add(LockFileItem.AliasesProperty, aliases);
             }
         }
 
@@ -174,7 +181,7 @@ namespace NuGet.Commands
         /// Populate assets for a <see cref="LockFileLibrary"/>.
         /// </summary>
         private static void AddAssets(
-            LibraryDependency libraryDependency,
+            string aliases,
             LockFileLibrary library,
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
@@ -184,20 +191,22 @@ namespace NuGet.Commands
             string runtimeIdentifier,
             ContentItemCollection contentItems,
             NuspecReader nuspec,
-            IReadOnlyList<SelectionCriteria> orderedCriteria)
+            IReadOnlyList<SelectionCriteria> orderedCriteria,
+            MaccatalystFallback maccatalystFallback)
         {
             // Add framework references for desktop projects.
             AddFrameworkReferences(lockFileLib, framework, nuspec);
 
             // Compile
             // Set-up action to update the compile time items.
-            Action<LockFileItem> applyAliases = (item) => ApplyAliases(libraryDependency, item);
+            Action<LockFileItem> applyAliases = (item) => ApplyAliases(aliases, item);
 
             // ref takes precedence over lib
             var compileGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
                 applyAliases,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.CompileRefAssemblies,
                 targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
@@ -207,6 +216,7 @@ namespace NuGet.Commands
             var runtimeGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.RuntimeAssemblies);
 
             lockFileLib.RuntimeAssemblies.AddRange(runtimeGroup);
@@ -215,6 +225,7 @@ namespace NuGet.Commands
             var embedGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.EmbedAssemblies);
 
             lockFileLib.EmbedAssemblies.AddRange(embedGroup);
@@ -223,6 +234,7 @@ namespace NuGet.Commands
             var resourceGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.ResourceAssemblies);
 
             lockFileLib.ResourceAssemblies.AddRange(resourceGroup);
@@ -231,20 +243,21 @@ namespace NuGet.Commands
             var nativeGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.NativeLibraries);
 
             lockFileLib.NativeLibraries.AddRange(nativeGroup);
 
             // Add MSBuild files
-            AddMSBuildAssets(library, targetGraph, lockFileLib, orderedCriteria, contentItems);
+            AddMSBuildAssets(library, targetGraph, lockFileLib, orderedCriteria, contentItems, maccatalystFallback);
 
             // Add content files
-            AddContentFiles(targetGraph, lockFileLib, framework, contentItems, nuspec);
+            AddContentFiles(targetGraph, lockFileLib, framework, contentItems, nuspec, maccatalystFallback);
 
             // Runtime targets
             // These are applied only to non-RID target graphs.
             // They are not used for compatibility checks.
-            AddRuntimeTargets(targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems);
+            AddRuntimeTargets(targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, maccatalystFallback);
 
             // COMPAT: Support lib/contract so older packages can be consumed
             ApplyLibContract(package, lockFileLib, framework, contentItems);
@@ -258,12 +271,14 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             LockFileTargetLibrary lockFileLib,
             IReadOnlyList<SelectionCriteria> orderedCriteria,
-            ContentItemCollection contentItems)
+            ContentItemCollection contentItems,
+            MaccatalystFallback maccatalystFallback)
         {
             // Build Transitive
             var btGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.MSBuildTransitiveFiles);
 
             var filteredBTGroup = GetBuildItemsForPackageId(btGroup, library.Name);
@@ -273,6 +288,7 @@ namespace NuGet.Commands
             var buildGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.MSBuildFiles);
 
             // filter any build asset already being added as part of build transitive
@@ -286,6 +302,7 @@ namespace NuGet.Commands
             var buildMultiTargetingGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.MSBuildMultiTargetingFiles);
 
             lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
@@ -300,17 +317,19 @@ namespace NuGet.Commands
             string runtimeIdentifier,
             ContentItemCollection contentItems,
             NuspecReader nuspec,
-            IReadOnlyList<SelectionCriteria> orderedCriteria)
+            IReadOnlyList<SelectionCriteria> orderedCriteria,
+            MaccatalystFallback maccatalystFallback)
         {
             var toolsGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                maccatalystFallback,
                 targetGraph.Conventions.Patterns.ToolsAssemblies);
 
             lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
         }
 
-        private static void AddContentFiles(RestoreTargetGraph targetGraph, LockFileTargetLibrary lockFileLib, NuGetFramework framework, ContentItemCollection contentItems, NuspecReader nuspec)
+        private static void AddContentFiles(RestoreTargetGraph targetGraph, LockFileTargetLibrary lockFileLib, NuGetFramework framework, ContentItemCollection contentItems, NuspecReader nuspec, MaccatalystFallback maccatalystFallback)
         {
             // content v2 items
             var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles).ToList();
@@ -321,7 +340,8 @@ namespace NuGet.Commands
                 var contentFileGroupsForFramework = ContentFileUtils.GetContentGroupsForFramework(
                     lockFileLib,
                     framework,
-                    contentFileGroups);
+                    contentFileGroups,
+                    maccatalystFallback);
 
                 lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
                     framework,
@@ -341,13 +361,14 @@ namespace NuGet.Commands
             LockFileTargetLibrary lockFileLib,
             NuGetFramework framework,
             string runtimeIdentifier,
-            ContentItemCollection contentItems)
+            ContentItemCollection contentItems,
+            MaccatalystFallback maccatalystFallback)
         {
             if (string.IsNullOrEmpty(runtimeIdentifier))
             {
                 // Runtime targets contain all the runtime specific assets
                 // that could be contained in the runtime specific target graphs.
-                // These items are contained in a flat list and have additional properties 
+                // These items are contained in a flat list and have additional properties
                 // for the RID and lock file section the assembly would belong to.
                 var runtimeTargetItems = new List<LockFileRuntimeTarget>();
 
@@ -358,7 +379,8 @@ namespace NuGet.Commands
                     dependencyType,
                     LibraryIncludeFlags.Runtime,
                     targetGraph.Conventions.Patterns.RuntimeAssemblies,
-                    "runtime"));
+                    "runtime",
+                    maccatalystFallback));
 
                 // Resource
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
@@ -367,7 +389,8 @@ namespace NuGet.Commands
                     dependencyType,
                     LibraryIncludeFlags.Runtime,
                     targetGraph.Conventions.Patterns.ResourceAssemblies,
-                    "resource"));
+                    "resource",
+                    maccatalystFallback));
 
                 // Native
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
@@ -376,7 +399,8 @@ namespace NuGet.Commands
                     dependencyType,
                     LibraryIncludeFlags.Native,
                     targetGraph.Conventions.Patterns.NativeLibraries,
-                    "native"));
+                    "native",
+                    maccatalystFallback));
 
                 lockFileLib.RuntimeTargets = runtimeTargetItems;
             }
@@ -451,7 +475,12 @@ namespace NuGet.Commands
             }
         }
 
-        private static void AddDependencies(IEnumerable<LibraryDependency> dependencies, LockFileTargetLibrary lockFileLib, NuGetFramework framework, NuspecReader nuspec)
+        private static void AddDependencies(
+            IEnumerable<LibraryDependency> dependencies,
+            LockFileTargetLibrary lockFileLib,
+            NuGetFramework framework,
+            NuspecReader nuspec,
+            MaccatalystFallback maccatalystFallback)
         {
             if (dependencies == null)
             {
@@ -502,6 +531,20 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             ProjectStyle rootProjectStyle)
         {
+            return CreateLockFileTargetProject(graphItem, library, dependencyType, targetGraph, rootProjectStyle, maccatalystFallback: null);
+        }
+
+        /// <summary>
+        /// Create a library for a project.
+        /// </summary>
+        internal static LockFileTargetLibrary CreateLockFileTargetProject(
+            GraphItem<RemoteResolveResult> graphItem,
+            LibraryIdentity library,
+            LibraryIncludeFlags dependencyType,
+            RestoreTargetGraph targetGraph,
+            ProjectStyle rootProjectStyle,
+            MaccatalystFallback maccatalystFallback)
+        {
             var localMatch = (LocalMatch)graphItem.Data.Match;
 
             // Target framework information is optional and may not exist for csproj projects
@@ -515,7 +558,16 @@ namespace NuGet.Commands
                 // Retrieve the resolved framework name, if this is null it means that the
                 // project is incompatible. This is marked as Unsupported.
                 var targetFrameworkInformation = (TargetFrameworkInformation)frameworkInfoObject;
-                projectFramework = targetFrameworkInformation.FrameworkName?.DotNetFrameworkName
+                var fwName = targetFrameworkInformation.FrameworkName;
+                if (maccatalystFallback != null && fwName != null)
+                {
+                    if (fwName.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, StringComparison.OrdinalIgnoreCase))
+                    {
+                        maccatalystFallback._usedXamarinIOs = true;
+                    }
+                }
+
+                projectFramework = fwName?.DotNetFrameworkName
                     ?? NuGetFramework.UnsupportedFramework.DotNetFrameworkName;
             }
 
@@ -529,7 +581,7 @@ namespace NuGet.Commands
 
                 // Find all dependencies which would be in the nuspec
                 // Include dependencies with no constraints, or package/project/external
-                // Exclude suppressed dependencies, the top level project is not written 
+                // Exclude suppressed dependencies, the top level project is not written
                 // as a target so the node depth does not matter.
                 Dependencies = graphItem.Data.Dependencies
                     .Where(
@@ -604,6 +656,7 @@ namespace NuGet.Commands
                     var compileGroup = GetLockFileItems(
                         orderedCriteria,
                         contentItems,
+                        maccatalystFallback,
                         targetGraph.Conventions.Patterns.CompileRefAssemblies,
                         targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
@@ -614,6 +667,7 @@ namespace NuGet.Commands
                     var runtimeGroup = GetLockFileItems(
                         orderedCriteria,
                         contentItems,
+                        maccatalystFallback,
                         targetGraph.Conventions.Patterns.RuntimeAssemblies);
 
                     projectLib.RuntimeAssemblies.AddRange(
@@ -674,6 +728,7 @@ namespace NuGet.Commands
             IReadOnlyList<SelectionCriteria> criteria,
             ContentItemCollection items,
             Action<LockFileItem> additionalAction,
+            MaccatalystFallback maccatalystFallback,
             params PatternSet[] patterns)
         {
             // Loop through each criteria taking the first one that matches one or more items.
@@ -685,6 +740,8 @@ namespace NuGet.Commands
 
                 if (group != null)
                 {
+                    MaccatalystFallback.CheckFallback(maccatalystFallback, group.Properties);
+
                     foreach (var item in group.Items)
                     {
                         var newItem = new LockFileItem(item.Path);
@@ -712,9 +769,10 @@ namespace NuGet.Commands
         private static IEnumerable<LockFileItem> GetLockFileItems(
             IReadOnlyList<SelectionCriteria> criteria,
             ContentItemCollection items,
+            MaccatalystFallback maccatalystFallback,
             params PatternSet[] patterns)
         {
-            return GetLockFileItems(criteria, items, additionalAction: null, patterns);
+            return GetLockFileItems(criteria, items, additionalAction: null, maccatalystFallback, patterns);
         }
 
         /// <summary>
@@ -814,9 +872,8 @@ namespace NuGet.Commands
             return managedCriteria;
         }
 
-
         /// <summary>
-        /// Clears a lock file group and replaces the first item with _._ if 
+        /// Clears a lock file group and replaces the first item with _._ if
         /// the group has items. Empty groups are left alone.
         /// </summary>
         private static void ClearIfExists<T>(IList<T> group) where T : LockFileItem
@@ -845,7 +902,7 @@ namespace NuGet.Commands
                 // Create a new item with the _._ path
                 var emptyItem = (T)Activator.CreateInstance(typeof(T), new[] { emptyDir });
 
-                // Copy over the properties from the first 
+                // Copy over the properties from the first
                 foreach (var pair in firstItem.Properties)
                 {
                     emptyItem.Properties.Add(pair.Key, pair.Value);
@@ -864,14 +921,15 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Group all items by the primary key, then select the nearest TxM 
+        /// Group all items by the primary key, then select the nearest TxM
         /// within each group.
         /// Items that do not contain the primaryKey will be filtered out.
         /// </summary>
         private static List<ContentItemGroup> GetContentGroupsForFramework(
             NuGetFramework framework,
             List<ContentItemGroup> contentGroups,
-            string primaryKey)
+            string primaryKey,
+            MaccatalystFallback maccatalystFallback)
         {
             var groups = new List<ContentItemGroup>();
 
@@ -919,6 +977,7 @@ namespace NuGet.Commands
                 // If a compatible group exists within the secondary key add it to the results
                 if (nearestGroup != null)
                 {
+                    MaccatalystFallback.CheckFallback(maccatalystFallback, nearestGroup.Properties);
                     groups.Add(nearestGroup);
                 }
             }
@@ -932,14 +991,16 @@ namespace NuGet.Commands
             LibraryIncludeFlags dependencyType,
             LibraryIncludeFlags groupType,
             PatternSet patternSet,
-            string assetType)
+            string assetType,
+            MaccatalystFallback maccatalystFallback)
         {
             var groups = contentItems.FindItemGroups(patternSet).ToList();
 
             var groupsForFramework = GetContentGroupsForFramework(
                 framework,
                 groups,
-                ManagedCodeConventions.PropertyNames.RuntimeIdentifier);
+                ManagedCodeConventions.PropertyNames.RuntimeIdentifier,
+                maccatalystFallback);
 
             var items = GetRuntimeTargetItems(groupsForFramework, assetType);
 

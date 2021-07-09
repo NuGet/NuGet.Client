@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
@@ -22,15 +23,27 @@ namespace NuGet.Commands
 
         private Lazy<LockFile> _lockFileLazy;
 
+        [Obsolete("Use constructor with LockFileBuilderCache parameter")]
         public RestoreRequest(
             PackageSpec project,
             RestoreCommandProviders dependencyProviders,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
-            ILogger log)
+            ILogger log) : this(project, dependencyProviders, cacheContext, clientPolicyContext, packageNamespaces: null, log, new LockFileBuilderCache())
         {
+        }
 
+        public RestoreRequest(
+            PackageSpec project,
+            RestoreCommandProviders dependencyProviders,
+            SourceCacheContext cacheContext,
+            ClientPolicyContext clientPolicyContext,
+            PackageNamespacesConfiguration packageNamespaces,
+            ILogger log,
+            LockFileBuilderCache lockFileBuilderCache)
+        {
             CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
+            LockFileBuilderCache = lockFileBuilderCache ?? throw new ArgumentNullException(nameof(lockFileBuilderCache));
             Log = log ?? throw new ArgumentNullException(nameof(log));
             Project = project ?? throw new ArgumentNullException(nameof(project));
             DependencyProviders = dependencyProviders ?? throw new ArgumentNullException(nameof(dependencyProviders));
@@ -50,6 +63,8 @@ namespace NuGet.Commands
         public bool AllowNoOp { get; set; }
 
         public SourceCacheContext CacheContext { get; set; }
+
+        internal LockFileBuilderCache LockFileBuilderCache { get; }
 
         public ILogger Log { get; set; }
 
@@ -166,8 +181,8 @@ namespace NuGet.Commands
         public bool HideWarningsAndErrors { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the <see cref="Packaging.PackageSaveMode"/>. 
-        /// </summary> 
+        /// Gets or sets the <see cref="Packaging.PackageSaveMode"/>.
+        /// </summary>
         public PackageSaveMode PackageSaveMode { get; set; } = PackageSaveMode.Defaultv3;
 
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;

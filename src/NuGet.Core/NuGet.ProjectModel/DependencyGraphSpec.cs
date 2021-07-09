@@ -8,9 +8,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.LibraryModel;
 using NuGet.Packaging;
-using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -18,8 +16,8 @@ namespace NuGet.ProjectModel
     {
         private const string DGSpecFileNameExtension = "{0}.nuget.dgspec.json";
 
-        private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
-        private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+        private readonly SortedSet<string> _restore = new(PathUtility.GetStringComparerBasedOnOS());
+        private readonly SortedDictionary<string, PackageSpec> _projects = new(PathUtility.GetStringComparerBasedOnOS());
 
         private const int Version = 1;
 
@@ -43,24 +41,12 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Projects to restore.
         /// </summary>
-        public IReadOnlyList<string> Restore
-        {
-            get
-            {
-                return _restore.ToList();
-            }
-        }
+        public IReadOnlyList<string> Restore => _restore.ToList();
 
         /// <summary>
         /// All project specs.
         /// </summary>
-        public IReadOnlyList<PackageSpec> Projects
-        {
-            get
-            {
-                return _projects.Values.ToList();
-            }
-        }
+        public IReadOnlyList<PackageSpec> Projects => _projects.Values.ToList();
 
         public PackageSpec GetProjectSpec(string projectUniqueName)
         {
@@ -163,9 +149,6 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(rootUniqueName));
             }
 
-            var projectsByUniqueName = _projects
-                .ToDictionary(t => t.Value.RestoreMetadata.ProjectUniqueName, t => t.Value, PathUtility.GetStringComparerBasedOnOS());
-
             var closure = new List<PackageSpec>();
 
             var added = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
@@ -184,7 +167,7 @@ namespace NuGet.ProjectModel
                     closure.Add(spec);
 
                     // Find children
-                    foreach (var projectName in GetProjectReferenceNames(spec, projectsByUniqueName))
+                    foreach (var projectName in GetProjectReferenceNames(spec, _projects))
                     {
                         if (added.Add(projectName))
                         {
@@ -197,7 +180,7 @@ namespace NuGet.ProjectModel
             return closure;
         }
 
-        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, Dictionary<string, PackageSpec> projectsByUniqueName)
+        private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, SortedDictionary<string, PackageSpec> projectsByUniqueName)
         {
             // Handle projects which may not have specs, and which may not have references
             return spec?.RestoreMetadata?
@@ -243,56 +226,55 @@ namespace NuGet.ProjectModel
 
         public static DependencyGraphSpec Load(string path)
         {
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var streamReader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(streamReader);
+
+            var dgspec = new DependencyGraphSpec();
+            bool wasObjectRead;
+
+            try
             {
-                var dgspec = new DependencyGraphSpec();
-                bool wasObjectRead;
-
-                try
+                wasObjectRead = jsonReader.ReadObject(propertyName =>
                 {
-                    wasObjectRead = jsonReader.ReadObject(propertyName =>
+                    switch (propertyName)
                     {
-                        switch (propertyName)
-                        {
-                            case "restore":
-                                jsonReader.ReadObject(restorePropertyName =>
+                        case "restore":
+                            jsonReader.ReadObject(restorePropertyName =>
+                            {
+                                if (!string.IsNullOrEmpty(restorePropertyName))
                                 {
-                                    if (!string.IsNullOrEmpty(restorePropertyName))
-                                    {
-                                        dgspec._restore.Add(restorePropertyName);
-                                    }
-                                });
-                                break;
+                                    dgspec._restore.Add(restorePropertyName);
+                                }
+                            });
+                            break;
 
-                            case "projects":
-                                jsonReader.ReadObject(projectsPropertyName =>
-                                {
-                                    PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
+                        case "projects":
+                            jsonReader.ReadObject(projectsPropertyName =>
+                            {
+                                PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
 
-                                    dgspec._projects.Add(projectsPropertyName, packageSpec);
-                                });
-                                break;
+                                dgspec._projects.Add(projectsPropertyName, packageSpec);
+                            });
+                            break;
 
-                            default:
-                                jsonReader.Skip();
-                                break;
-                        }
-                    });
-                }
-                catch (JsonReaderException ex)
-                {
-                    throw FileFormatException.Create(ex, path);
-                }
-
-                if (!wasObjectRead || jsonReader.TokenType != JsonToken.EndObject)
-                {
-                    throw new InvalidDataException();
-                }
-
-                return dgspec;
+                        default:
+                            jsonReader.Skip();
+                            break;
+                    }
+                });
             }
+            catch (JsonReaderException ex)
+            {
+                throw FileFormatException.Create(ex, path);
+            }
+
+            if (!wasObjectRead || jsonReader.TokenType != JsonToken.EndObject)
+            {
+                throw new InvalidDataException();
+            }
+
+            return dgspec;
         }
 
         public void Save(string path)
@@ -305,22 +287,6 @@ namespace NuGet.ProjectModel
                 jsonWriter.Formatting = Formatting.Indented;
 
                 Write(writer, compressed: false, PackageSpecWriter.Write);
-            }
-        }
-
-        private static JObject ReadJson(string packageSpecPath)
-        {
-            using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var reader = new StreamReader(stream))
-            {
-                try
-                {
-                    return JsonUtility.LoadJson(reader);
-                }
-                catch (JsonReaderException ex)
-                {
-                    throw FileFormatException.Create(ex, packageSpecPath);
-                }
             }
         }
 

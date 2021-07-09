@@ -360,6 +360,10 @@ namespace NuGet.Packaging
         /// <summary>
         /// Frameworks mentioned in the package.
         /// </summary>
+        /// <remarks>
+        /// This method returns the target frameworks supported for packages.config projects.
+        /// For PackageReference compatibility, use <see cref="NuGet.Client.ManagedCodeConventions"/>
+        /// </remarks>
         public virtual IEnumerable<NuGetFramework> GetSupportedFrameworks()
         {
             var frameworks = new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer());
@@ -377,6 +381,13 @@ namespace NuGet.Packaging
             return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, new NuGetFrameworkSorter());
         }
 
+        /// <summary>
+        /// Frameworks mentioned in the package.
+        /// </summary>
+        /// <remarks>
+        /// This method returns the target frameworks supported for packages.config projects.
+        /// For PackageReference compatibility, use <see cref="NuGet.Client.ManagedCodeConventions"/>
+        /// </remarks>
         public virtual Task<IEnumerable<NuGetFramework>> GetSupportedFrameworksAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(GetSupportedFrameworks());
