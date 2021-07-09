@@ -1,0 +1,2 @@
+static NuGet.Build.Tasks.Strings.Log_NoProjectsForRestore.get -> string
+static NuGet.Build.Tasks.Strings.Log_ProjectsInSolutionNotKnowntoMSBuild.get -> string
