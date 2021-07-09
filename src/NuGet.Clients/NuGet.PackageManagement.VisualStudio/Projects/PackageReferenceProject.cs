@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SlidingExpiration = ObjectCache.NoSlidingExpiration,
             AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
         };
-        private static readonly ObjectCache TransitiveOriginsCache = new MemoryCache("TransitiveOriginsCache", new NameValueCollection
+        private protected readonly ObjectCache TransitiveOriginsCache = new MemoryCache("TransitiveOriginsCache", new NameValueCollection
         {
             { "cacheMemoryLimitMegabytes", "4" },
             { "physicalMemoryLimitPercentage", "0" },
@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private protected DateTime _lastTimeAssetsModified;
         private protected IList<LockFileTarget> _lastTargets;
-        private protected WeakReference<PackageSpec> _lastPackgeSpec;
+        private protected WeakReference<PackageSpec> _lastPackageSpec;
 
         protected PackageReferenceProject(
             string projectName,
@@ -127,11 +127,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             PackageSpec lastPackageSpec = null;
             bool cacheHitTargets = _lastTargets != null;
-            bool cacheHitPackageSpec = _lastPackgeSpec != null && _lastPackgeSpec.TryGetTarget(out lastPackageSpec);
+            bool cacheHitPackageSpec = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out lastPackageSpec);
             bool isCacheHit = false;
             IList<LockFileTarget> targetsList = null;
 
-            if (IsCacheHit(cacheHitTargets, cacheHitPackageSpec, currentPackageSpec, lastPackageSpec, fileInfo))
+            if (IsCacheUpToDate(cacheHitTargets, cacheHitPackageSpec, currentPackageSpec, lastPackageSpec, fileInfo))
             {
                 if (fileInfo.Exists)
                 {
@@ -143,7 +143,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
                 _lastTargets = targetsList;
-                _lastPackgeSpec = new WeakReference<PackageSpec>(currentPackageSpec);
+                _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
             }
             else if (cacheHitTargets && cacheHitPackageSpec && lastPackageSpec != null && _lastTargets != null)
             {
@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal string GetTransitiveCacheKey(PackageIdentity transitivePackage)
         {
-            return _projectUniqueName + transitivePackage.ToString();
+            return _projectUniqueName + "/" + transitivePackage.ToString();
         }
 
         internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
@@ -303,7 +303,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
 
-        internal abstract bool IsCacheHit(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets);
+        internal abstract bool IsCacheUpToDate(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets);
 
         internal abstract void CleanCache();
     }

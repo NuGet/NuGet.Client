@@ -490,7 +490,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        internal override bool IsCacheHit(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets)
+        internal override bool IsCacheUpToDate(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets)
         {
             return (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec;
         }
