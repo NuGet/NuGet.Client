@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.ContentModel;
+using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -1572,8 +1572,8 @@ namespace NuGet.DependencyResolver.Tests
 
         /// <summary>
         /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0(this will be downgraded due to central 1.0.0) -> E 1.0.0
-        ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
-        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0
+        ///   -> F 1.0.0 -> C 2.0.0
+        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 2.0.0 (this will be downgraded due to central 1.0.0)
         ///
         ///  D has version defined centrally 1.0.0
         ///  D 1.0.0 -> I 1.0.0
@@ -1603,16 +1603,14 @@ namespace NuGet.DependencyResolver.Tests
                     .DependsOn("F", version100);
             provider.Package("F", version100)
                     .DependsOn("C", version200);
-            provider.Package("C", version200)
-                    .DependsOn("H", version200);
 
-            // A -> -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0
+            // A -> -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 2.0.0 (this will be downgraded)
             provider.Package("A", version100)
                     .DependsOn("G", version100);
             provider.Package("G", version100)
                     .DependsOn("H", version200);
             provider.Package("H", version200)
-                    .DependsOn("D", version100);
+                    .DependsOn("D", version200);
 
             // D 1.0.0 -> I 1.0.0
             provider.Package("D", version100)
@@ -1807,6 +1805,39 @@ namespace NuGet.DependencyResolver.Tests
                 AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 2.0.0");
                 AssertPath(downgradedBy, "A 1.0.0", "C 1.0.0");
             }
+        }
+
+
+        /// A 1.0.0 -> C 1.0.0 -> D 1.1.0
+        /// B 1.0.0 -> C 1.1.0 -> D 1.0.0
+        /// D 1.0.0
+        [Fact]
+        public async Task WalkAsync_WithDowngradeInPrunedSubgraph_DoesNotReportDowngrades()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("Project", "1.0")
+                    .DependsOn("A", "1.0")
+                    .DependsOn("B", "1.0")
+                    .DependsOn("D", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("C", "1.0");
+
+            provider.Package("B", "1.0")
+                    .DependsOn("C", "1.1");
+
+            provider.Package("C", "1.0")
+                    .DependsOn("D", "1.1");
+            provider.Package("C", "1.1")
+                    .DependsOn("D", "1.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "Project");
+
+            var result = node.Analyze();
+            result.Downgrades.Should().BeEmpty();
         }
 
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
