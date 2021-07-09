@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Protocol;
@@ -42,7 +43,7 @@ namespace NuGet.DependencyResolver
             GraphItem<RemoteResolveResult> graphItem = null;
             var currentCacheContext = context.CacheContext;
 
-            IEnumerable<IRemoteDependencyProvider> remoteDependencyProviders = FilterSources(context, libraryRange);
+            IEnumerable<IRemoteDependencyProvider> remoteDependencyProviders = FilterSourcesForPackageLibrary(libraryRange, context.RemoteLibraryProviders, context.PackageNamespaces);
 
             // Try up to two times to get the package. The second
             // retry will refresh the cache if a package is listed 
@@ -233,7 +234,7 @@ namespace NuGet.DependencyResolver
 
         private static async Task<Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchAsync(LibraryRange libraryRange, RemoteWalkContext remoteWalkContext, ILogger logger, CancellationToken cancellationToken)
         {
-            IEnumerable<IRemoteDependencyProvider> remoteDependencyProviders = FilterSources(remoteWalkContext, libraryRange);
+            IEnumerable<IRemoteDependencyProvider> remoteDependencyProviders = FilterSourcesForPackageLibrary(libraryRange, remoteWalkContext.RemoteLibraryProviders, remoteWalkContext.PackageNamespaces);
 
             var match = await FindPackageLibraryMatchAsync(libraryRange, NuGetFramework.AnyFramework, remoteDependencyProviders, remoteWalkContext.LocalLibraryProviders, remoteWalkContext.CacheContext, logger, cancellationToken);
             if (match == null)
@@ -502,21 +503,19 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        private static IEnumerable<IRemoteDependencyProvider> FilterSources(RemoteWalkContext context, LibraryRange libraryRange)
+        internal static IEnumerable<IRemoteDependencyProvider> FilterSourcesForPackageLibrary(LibraryRange libraryRange, IEnumerable<IRemoteDependencyProvider> remoteDependencyProviders,
+                                                                                                                                                PackageNamespacesConfiguration namespacesConfiguration)
         {
-            // filter package namespaces if enabled
-            IEnumerable<IRemoteDependencyProvider> remoteDependencyProviders = context.RemoteLibraryProviders;
-
-            if (libraryRange.TypeConstraint == LibraryDependencyTarget.Package && context?.PackageNamespaces?.AreNamespacesEnabled == true)
+            // filter package namespaces if enabled            
+            if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && namespacesConfiguration?.AreNamespacesEnabled == true)
             {
-                IReadOnlyList<string> sources = context.PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
+                IReadOnlyList<string> sources = namespacesConfiguration.GetConfiguredPackageSources(libraryRange.Name);
 
                 if (sources == null || sources.Count == 0)
                     throw new Exception("something went wrong in namespaces work");
 
-                remoteDependencyProviders = context.RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name));
+                remoteDependencyProviders = remoteDependencyProviders.Where(p => sources.Contains(p.Source.Name));
             }
-
             return remoteDependencyProviders;
         }
     }
