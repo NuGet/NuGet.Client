@@ -519,6 +519,7 @@ namespace NuGet.PackageManagement.UI
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
                         nuGetUI?.RecommenderVersion,
+                        nuGetUI?.VulnerablePackagesCount ?? 0,
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -543,6 +544,7 @@ namespace NuGet.PackageManagement.UI
             int? recommendedCount,
             bool? recommendPackages,
             (string modelVersion, string vsixVersion)? recommenderVersion,
+            int vulnerablePackagesCount,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -586,6 +588,11 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
                 actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
+            }
+
+            if (vulnerablePackagesCount > 0)
+            {
+                actionTelemetryEvent["VulnerablePackagesCount"] = vulnerablePackagesCount;
             }
 
             // log the installed package state
