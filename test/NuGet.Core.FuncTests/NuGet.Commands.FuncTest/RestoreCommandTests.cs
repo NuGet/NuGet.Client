@@ -19,8 +19,10 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility.Commands;
 using Xunit;
 
 namespace NuGet.Commands.FuncTest
@@ -3177,6 +3179,96 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Libraries.Should().HaveCount(2);
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithPackageNamesacesConfiguredDownloadsPackageFromExpectedSource_Succeeds()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA100 = new SimpleTestPackageContext
+            {
+                Id = "PackageA",
+                Version = "1.0.0",
+            };
+
+            var packageB100 = new SimpleTestPackageContext
+            {
+                Id = "PackageB",
+                Version = "1.0.0",
+            };
+
+            var projectSpec = PackageReferenceSpecBuilder.Create("Library1", pathContext.SolutionRoot)
+            .WithTargetFrameworks(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net5.0"),
+                    Dependencies = new List<LibraryDependency>(
+                        new[]
+                        {
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
+                                    LibraryDependencyTarget.Package)
+                            },
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange("PackageB", VersionRange.Parse("1.0.0"),
+                                    LibraryDependencyTarget.Package)
+                            },
+                        })
+                }
+            })
+            .Build();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var packageSource2 = Path.Combine(pathContext.WorkingDirectory, "source2");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                packageSource2,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var sources = new[] { new PackageSource(pathContext.PackageSource),
+                                                   new PackageSource(packageSource2) };
+
+            var log = new TestLogger();
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add(packageSource2, new List<string>() { "packageA" });
+            namespaces.Add(pathContext.PackageSource, new List<string>() { "packageB" });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+
+            var request = new TestRestoreRequest(projectSpec, sources, pathContext.UserPackagesFolder, new TestSourceCacheContext(),namespacesConfiguration, log);
+
+            var command1 = new RestoreCommand(request);
+            var result = await command1.ExecuteAsync();
+
+            Assert.True(result.Success);
+
+            NupkgMetadataFile file;
+            string packageANupkgFile = Path.Combine(pathContext.UserPackagesFolder, packageA100.Id, packageA100.Version, ".nupkg.metadata");
+            using (var reader = new StringReader(File.ReadAllText(packageANupkgFile)))
+            {
+                file = NupkgMetadataFileFormat.Read(reader, NullLogger.Instance, string.Empty);
+            }
+            //packageA should be downloaded from source2
+            Assert.Equal(packageSource2, file.Source);
+
+            string packageBNupkgFile = Path.Combine(pathContext.UserPackagesFolder, packageB100.Id, packageB100.Version, ".nupkg.metadata");
+            using (var reader = new StringReader(File.ReadAllText(packageBNupkgFile)))
+            {
+                file = NupkgMetadataFileFormat.Read(reader, NullLogger.Instance, string.Empty);
+            }
+            //packageB should be downloaded from source
+            Assert.Equal(pathContext.PackageSource, file.Source);
         }
 
         private static byte[] GetTestUtilityResource(string name)
