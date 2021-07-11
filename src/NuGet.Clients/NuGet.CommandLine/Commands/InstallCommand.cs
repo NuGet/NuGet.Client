@@ -331,7 +331,7 @@ namespace NuGet.CommandLine
                 var packageIdentity = new PackageIdentity(packageId, version);
 
                 // Check if the package already exists or a higher version exists already.
-                var skipInstall = project.PackageExists(packageIdentity);
+                var skipInstall = project.PackageExists(packageIdentity, EffectivePackageSaveMode);
 
                 // For SxS allow other versions to install. For non-SxS skip if a higher version exists.
                 skipInstall |= (ExcludeVersion && alreadyInstalledVersions.Any(e => e >= version));

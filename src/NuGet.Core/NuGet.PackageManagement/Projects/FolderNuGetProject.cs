@@ -296,7 +296,7 @@ namespace NuGet.ProjectManagement
                 if (manifestExists)
                 {
                     var reader = new NuspecReader(nuspecPath);
-                    packageExists = packageIdentity.Equals(reader.GetIdentity());
+                    manifestExists = packageIdentity.Equals(reader.GetIdentity());
                 }
             }
 
