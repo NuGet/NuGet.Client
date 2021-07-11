@@ -303,14 +303,14 @@ namespace NuGet.Commands
             if (!graphSuccess)
             {
                 // Log message for any unresolved dependencies
-                await UnresolvedMessages.LogAsync(graphs, context, context.Logger, token);
+                await UnresolvedMessages.LogAsync(graphs, context, token);
             }
 
             var ddSuccess = downloadDependencyResults.All(e => e.Unresolved.Count == 0);
 
             if (!ddSuccess)
             {
-                await UnresolvedMessages.LogAsync(downloadDependencyResults, context.RemoteLibraryProviders, context.CacheContext, context.Logger, token);
+                await UnresolvedMessages.LogAsync(downloadDependencyResults, context, token);
             }
 
             return graphSuccess && ddSuccess;

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -50,5 +51,20 @@ namespace NuGet.DependencyResolver
         /// True if this is a csproj or similar project. Xproj should be false.
         /// </summary>
         public bool IsMsBuildBased { get; set; }
+
+        public IList<IRemoteDependencyProvider> FilteredRemoteLibraryProviders(LibraryRange libraryRange)
+        {
+            // filter package namespaces if enabled            
+            if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && PackageNamespaces?.AreNamespacesEnabled == true)
+            {
+                IReadOnlyList<string> sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
+
+                if (sources == null || sources.Count == 0)
+                    throw new Exception("something went wrong in namespaces work");
+
+                return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name)).ToList();
+            }
+            return RemoteLibraryProviders;
+        }
     }
 }

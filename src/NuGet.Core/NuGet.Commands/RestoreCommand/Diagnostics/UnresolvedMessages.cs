@@ -25,16 +25,15 @@ namespace NuGet.Commands
         /// <summary>
         /// Log errors for missing dependencies.
         /// </summary>
-        public static async Task LogAsync(IEnumerable<IRestoreTargetGraph> graphs, RemoteWalkContext context, ILogger logger, CancellationToken token)
+        public static async Task LogAsync(IEnumerable<IRestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
         {
-            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph.TargetGraphName, e, context.RemoteLibraryProviders, context.CacheContext, logger, token))).ToArray();
+            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph.TargetGraphName, e, context.FilteredRemoteLibraryProviders(e), context.CacheContext, context.Logger, token))).ToArray();
             var messages = await Task.WhenAll(tasks);
 
-            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
+            await context.Logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
         }
 
-        public static async Task LogAsync(IList<DownloadDependencyResolutionResult> downloadDependencyResults, IList<IRemoteDependencyProvider> remoteLibraryProviders, SourceCacheContext sourceCacheContext,
-            ILogger logger, CancellationToken token)
+        public static async Task LogAsync(IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
         {
             var messageTasks = new List<Task<RestoreLogMessage>>();
 
@@ -45,14 +44,14 @@ namespace NuGet.Commands
                     messageTasks.Add(GetMessageAsync(
                         ddi.Framework.ToString(),
                         unresolved,
-                        remoteLibraryProviders, sourceCacheContext,
-                        logger,
+                        context.FilteredRemoteLibraryProviders(unresolved), context.CacheContext,
+                        context.Logger,
                         token));
                 }
             }
 
             var messages = await Task.WhenAll(messageTasks);
-            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
+            await context.Logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
         }
 
         /// <summary>
