@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Error_NoMatchingSourceFoundForPackage" xml:space="preserve">
+    <value>Package Namespaces are configured but no matching source found for '{0}' package. Update the namespaces configuration and run the restore again.</value>
+    <comment>{0} - Package name</comment>
+  </data>
   <data name="Error_PackageNotFoundWhenExpected" xml:space="preserve">
     <value>The feed '{0}' lists package '{1}' but multiple attempts to download the nupkg have failed. The feed is either invalid or required packages were removed while the current operation was in progress. Verify the package exists on the feed and try again.</value>
   </data>

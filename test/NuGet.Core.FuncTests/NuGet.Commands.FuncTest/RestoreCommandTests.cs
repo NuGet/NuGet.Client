@@ -3247,28 +3247,19 @@ namespace NuGet.Commands.FuncTest
             PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
 
             var request = new TestRestoreRequest(projectSpec, sources, pathContext.UserPackagesFolder, new TestSourceCacheContext(), namespacesConfiguration, log);
-
             var command1 = new RestoreCommand(request);
             var result = await command1.ExecuteAsync();
 
             Assert.True(result.Success);
+            Assert.Equal(0, result.RestoreGraphs.ElementAt(0).Unresolved.Count);
 
-            NupkgMetadataFile file;
-            string packageANupkgFile = Path.Combine(pathContext.UserPackagesFolder, packageA100.Id.ToLower(), packageA100.Version, ".nupkg.metadata");
-            using (var reader = new StringReader(File.ReadAllText(packageANupkgFile)))
-            {
-                file = NupkgMetadataFileFormat.Read(reader, NullLogger.Instance, string.Empty);
-            }
-            //packageA should be downloaded from source2
-            Assert.Equal(packageSource2, file.Source);
+            //packageA should be installed from source2
+            string packageASource = result.RestoreGraphs.ElementAt(0).Install.Where(p => p.Library.Name.Equals("packageA", StringComparison.OrdinalIgnoreCase)).Select(p => p.Provider.Source.Name).FirstOrDefault();
+            Assert.Equal(packageSource2, packageASource);
 
-            string packageBNupkgFile = Path.Combine(pathContext.UserPackagesFolder, packageB100.Id.ToLower(), packageB100.Version, ".nupkg.metadata");
-            using (var reader = new StringReader(File.ReadAllText(packageBNupkgFile)))
-            {
-                file = NupkgMetadataFileFormat.Read(reader, NullLogger.Instance, string.Empty);
-            }
-            //packageB should be downloaded from source
-            Assert.Equal(pathContext.PackageSource, file.Source);
+            //packageB should be installed from source
+            string packageBSource = result.RestoreGraphs.ElementAt(0).Install.Where(p => p.Library.Name.Equals("packageB", StringComparison.OrdinalIgnoreCase)).Select(p => p.Provider.Source.Name).FirstOrDefault();
+            Assert.Equal(pathContext.PackageSource, packageBSource);
         }
 
         private static byte[] GetTestUtilityResource(string name)

@@ -27,7 +27,7 @@ namespace NuGet.Commands
         /// </summary>
         public static async Task LogAsync(IEnumerable<IRestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
         {
-            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph.TargetGraphName, e, context.FilteredRemoteLibraryProviders(e), context.CacheContext, context.Logger, token))).ToArray();
+            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph.TargetGraphName, e, context.FilterDependencyProvidersForLibrary(e), context.CacheContext, context.Logger, token))).ToArray();
             var messages = await Task.WhenAll(tasks);
 
             await context.Logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
@@ -44,7 +44,7 @@ namespace NuGet.Commands
                     messageTasks.Add(GetMessageAsync(
                         ddi.Framework.ToString(),
                         unresolved,
-                        context.FilteredRemoteLibraryProviders(unresolved), context.CacheContext,
+                        context?.FilterDependencyProvidersForLibrary(unresolved), context.CacheContext,
                         context.Logger,
                         token));
                 }

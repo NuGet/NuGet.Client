@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -52,15 +53,25 @@ namespace NuGet.DependencyResolver
         /// </summary>
         public bool IsMsBuildBased { get; set; }
 
-        public IList<IRemoteDependencyProvider> FilteredRemoteLibraryProviders(LibraryRange libraryRange)
+        /// <summary>
+        /// Applies Package namespace filtering for a given package
+        /// </summary>
+        /// <param name="libraryRange"></param>
+        /// <returns> Returns a subset of sources when namespaces are configured otherwise returns all the sources</returns>
+        public IList<IRemoteDependencyProvider> FilterDependencyProvidersForLibrary(LibraryRange libraryRange)
         {
+            if(libraryRange == default)
+                throw new ArgumentNullException(nameof(libraryRange));
+
             // filter package namespaces if enabled            
-            if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && PackageNamespaces?.AreNamespacesEnabled == true)
+            if (PackageNamespaces?.AreNamespacesEnabled == true && libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
             {
                 IReadOnlyList<string> sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
 
                 if (sources == null || sources.Count == 0)
-                    throw new Exception("something went wrong in namespaces work");
+                    throw new Exception(string.Format(CultureInfo.CurrentCulture,
+                            Strings.Error_NoMatchingSourceFoundForPackage,
+                             libraryRange.Name));
 
                 return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name)).ToList();
             }
