@@ -51,7 +51,6 @@ namespace NuGet.Tests.Apex
         public void InstallPackageFromUI()
         {
             // Arrange
-            System.Diagnostics.Debugger.Launch();
             EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
@@ -165,7 +164,6 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
-            System.Diagnostics.Debugger.Launch();
             string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
 
@@ -213,7 +211,6 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
-            System.Diagnostics.Debugger.Launch();
             string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
 
@@ -262,7 +259,6 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
-            System.Diagnostics.Debugger.Launch();
             string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
 
@@ -317,7 +313,6 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
-            System.Diagnostics.Debugger.Launch();
             string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
 
@@ -372,7 +367,6 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
-            System.Diagnostics.Debugger.Launch();
             string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
 
@@ -429,7 +423,6 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
-            System.Diagnostics.Debugger.Launch();
             string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
 

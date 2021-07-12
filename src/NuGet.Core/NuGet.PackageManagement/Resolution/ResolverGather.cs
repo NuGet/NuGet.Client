@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement
 
             set
             {
-                _maxDegreeOfParallelism = 1;// Math.Max(1, value);
+                _maxDegreeOfParallelism = Math.Max(1, value);
             }
         }
 
@@ -81,7 +81,6 @@ namespace NuGet.PackageManagement
 
         private async Task<HashSet<SourcePackageDependencyInfo>> GatherAsync(CancellationToken token)
         {
-            Debugger.Launch();
             // preserve start time of gather api
             var stopWatch = new Stopwatch();
             stopWatch.Start();
