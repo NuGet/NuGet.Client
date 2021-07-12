@@ -27,15 +27,11 @@ namespace NuGet.DependencyResolver.Core.Tests
             var context = new TestRemoteWalkContext();
 
             // Source1
-            var remoteProvider1 = new Mock<IRemoteDependencyProvider>();
-            remoteProvider1.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider1.SetupGet(e => e.Source).Returns(new PackageSource("Source1"));
+            var remoteProvider1 = CreateRemoteDependencyProvider("Source1");
             context.RemoteLibraryProviders.Add(remoteProvider1.Object);
 
             // Source2
-            var remoteProvider2 = new Mock<IRemoteDependencyProvider>();
-            remoteProvider2.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider2.SetupGet(e => e.Source).Returns(new PackageSource("Source2"));
+            var remoteProvider2 = CreateRemoteDependencyProvider("Source2");
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
             var libraryRange = new LibraryRange("packageA", Versioning.VersionRange.None, LibraryDependencyTarget.Package);
@@ -52,15 +48,11 @@ namespace NuGet.DependencyResolver.Core.Tests
             var context = new TestRemoteWalkContext();
 
             // Source1
-            var remoteProvider1 = new Mock<IRemoteDependencyProvider>();
-            remoteProvider1.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider1.SetupGet(e => e.Source).Returns(new PackageSource("Source1"));
+            var remoteProvider1 = CreateRemoteDependencyProvider("Source1");
             context.RemoteLibraryProviders.Add(remoteProvider1.Object);
 
             // Source2
-            var remoteProvider2 = new Mock<IRemoteDependencyProvider>();
-            remoteProvider2.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider2.SetupGet(e => e.Source).Returns(new PackageSource("Source2"));
+            var remoteProvider2 = CreateRemoteDependencyProvider("Source2");
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
             var libraryRange = new LibraryRange("x", Versioning.VersionRange.None, LibraryDependencyTarget.Package);
@@ -84,15 +76,11 @@ namespace NuGet.DependencyResolver.Core.Tests
             var context = new TestRemoteWalkContext();
 
             // Source1
-            var remoteProvider1 = new Mock<IRemoteDependencyProvider>();
-            remoteProvider1.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider1.SetupGet(e => e.Source).Returns(new PackageSource("Source1"));
+            var remoteProvider1 = CreateRemoteDependencyProvider("Source1");
             context.RemoteLibraryProviders.Add(remoteProvider1.Object);
 
             // Source2
-            var remoteProvider2 = new Mock<IRemoteDependencyProvider>();
-            remoteProvider2.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider2.SetupGet(e => e.Source).Returns(new PackageSource("Source2"));
+            var remoteProvider2 = CreateRemoteDependencyProvider("Source2");
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
             var libraryRange = new LibraryRange("x", Versioning.VersionRange.None, LibraryDependencyTarget.Package);
@@ -107,6 +95,14 @@ namespace NuGet.DependencyResolver.Core.Tests
             var exception = Assert.Throws<Exception>(() => context.FilterDependencyProvidersForLibrary(libraryRange));
 
             Assert.Equal("Package Namespaces are configured but no matching source found for 'x' package. Update the namespaces configuration and run the restore again.", exception.Message);
+        }
+
+        private Mock<IRemoteDependencyProvider> CreateRemoteDependencyProvider(string source)
+        {
+            var remoteProvider = new Mock<IRemoteDependencyProvider>();
+            remoteProvider.SetupGet(e => e.Source).Returns(new PackageSource(source));
+
+            return remoteProvider;
         }
     }
 }
