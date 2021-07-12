@@ -60,7 +60,7 @@ namespace NuGet.DependencyResolver
         /// <returns> Returns a subset of sources when namespaces are configured otherwise returns all the sources</returns>
         public IList<IRemoteDependencyProvider> FilterDependencyProvidersForLibrary(LibraryRange libraryRange)
         {
-            if(libraryRange == default)
+            if (libraryRange == default)
                 throw new ArgumentNullException(nameof(libraryRange));
 
             // filter package namespaces if enabled            
