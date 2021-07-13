@@ -1460,7 +1460,6 @@ namespace NuGet.Test
                     new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0),  new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
-
             var providers1 = new List<Lazy<INuGetResourceProvider>>();
             providers1.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages1)));
 
@@ -1471,9 +1470,9 @@ namespace NuGet.Test
             providers3.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages3)));
 
             var repos = new List<SourceRepository>();
-            repos.Add(new SourceRepository(new Configuration.PackageSource("http://1", "someRepository1"), providers1));
-            repos.Add(new SourceRepository(new Configuration.PackageSource("http://2", "someRepository2"), providers2));
-            repos.Add(new SourceRepository(new Configuration.PackageSource("http://3", configuredSources[0]), providers3));
+            repos.Add(new SourceRepository(new PackageSource("http://1", "someRepository1"), providers1));
+            repos.Add(new SourceRepository(new PackageSource("http://2", "someRepository2"), providers2));
+            repos.Add(new SourceRepository(new PackageSource("http://3", configuredSources[0]), providers3));
 
             var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
 
@@ -1484,7 +1483,7 @@ namespace NuGet.Test
                 TargetFramework = framework,
                 PrimarySources = repos,
                 AllSources = repos,
-                PackagesFolderSource = repos[2],
+                PackagesFolderSource = repos[2], // Since it's configuredSource it'll succeed finding the packageId.
                 ResolutionContext = new ResolutionContext(),
                 ProjectContext = testNuGetProjectContext
             };
@@ -1543,7 +1542,6 @@ namespace NuGet.Test
                     new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0),  new Packaging.Core.PackageDependency[] { }, true, null)
                 };
 
-
             var providers1 = new List<Lazy<INuGetResourceProvider>>();
             providers1.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages1)));
 
@@ -1554,9 +1552,9 @@ namespace NuGet.Test
             providers3.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages3)));
 
             var repos = new List<SourceRepository>();
-            repos.Add(new SourceRepository(new Configuration.PackageSource("http://1", "nuget.org"), providers1));
-            repos.Add(new SourceRepository(new Configuration.PackageSource("http://2", "nuget.org"), providers2));
-            repos.Add(new SourceRepository(new Configuration.PackageSource("http://3", "privateRepository"), providers3));
+            repos.Add(new SourceRepository(new PackageSource("http://1", "nuget.org"), providers1));
+            repos.Add(new SourceRepository(new PackageSource("http://2", "nuget.org"), providers2));
+            repos.Add(new SourceRepository(new PackageSource("http://3", "privateRepository"), providers3));
 
             var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
 
@@ -1567,7 +1565,7 @@ namespace NuGet.Test
                 TargetFramework = framework,
                 PrimarySources = repos,
                 AllSources = repos,
-                PackagesFolderSource = repos[2],
+                PackagesFolderSource = repos[2],// Since it's not configuredSource it'll fail finding the packageId.
                 ResolutionContext = new ResolutionContext(),
                 ProjectContext = testNuGetProjectContext
             };
