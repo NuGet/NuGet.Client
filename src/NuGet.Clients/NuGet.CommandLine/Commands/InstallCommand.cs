@@ -330,8 +330,14 @@ namespace NuGet.CommandLine
 
                 var packageIdentity = new PackageIdentity(packageId, version);
 
+                var PackageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+                if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                {
+                    PackageSaveMode = EffectivePackageSaveMode;
+                }
+
                 // Check if the package already exists or a higher version exists already.
-                var skipInstall = project.PackageExists(packageIdentity, EffectivePackageSaveMode);
+                var skipInstall = project.PackageExists(packageIdentity, PackageSaveMode);
 
                 // For SxS allow other versions to install. For non-SxS skip if a higher version exists.
                 skipInstall |= (ExcludeVersion && alreadyInstalledVersions.Any(e => e >= version));
@@ -352,16 +358,11 @@ namespace NuGet.CommandLine
                     var projectContext = new ConsoleProjectContext(Console)
                     {
                         PackageExtractionContext = new PackageExtractionContext(
-                            Packaging.PackageSaveMode.Defaultv2,
+                            PackageSaveMode,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             clientPolicyContext,
                             Console)
                     };
-
-                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
-                    {
-                        projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
-                    }
 
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
