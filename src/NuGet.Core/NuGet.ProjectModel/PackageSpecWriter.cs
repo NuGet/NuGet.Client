@@ -46,6 +46,7 @@ namespace NuGet.ProjectModel
 
             SetValue(writer, "title", packageSpec.Title);
 
+#pragma warning disable CS0612 // Type or member is obsolete
             if (!packageSpec.IsDefaultVersion)
             {
                 SetValue(writer, "version", packageSpec.Version?.ToFullString());
@@ -58,8 +59,10 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
-            SetMSBuildMetadata(writer, packageSpec);
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
+#pragma warning restore CS0612 // Type or member is obsolete
+
+            SetMSBuildMetadata(writer, packageSpec);
 
             if (packageSpec.Dependencies.Any())
             {
@@ -316,6 +319,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete]
         private static void SetPackOptions(IObjectWriter writer, PackageSpec packageSpec)
         {
             var packOptions = packageSpec.PackOptions;

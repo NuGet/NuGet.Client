@@ -34,11 +34,12 @@ namespace NuGet.CommandLine
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
 
-        private Common.ILogger _logger;
+        private ILogger _logger;
+        // TODO NK - Obsolete this.
         private bool _usingJsonFile;
 
         // Files we want to always exclude from the resulting package
-        private static readonly HashSet<string> _excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+        private static readonly HashSet<string> ExcludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             NuGetConstants.PackageReferenceFile,
             "Web.Debug.config",
             "Web.Release.config"
@@ -128,7 +129,7 @@ namespace NuGet.CommandLine
             AddSolutionDir();
             // Get the target framework of the project
             string targetFrameworkMoniker = _project.GetPropertyValue("TargetFrameworkMoniker");
-            if (!String.IsNullOrEmpty(targetFrameworkMoniker))
+            if (!string.IsNullOrEmpty(targetFrameworkMoniker))
             {
                 TargetFramework = NuGetFramework.Parse(targetFrameworkMoniker);
             }
@@ -275,10 +276,12 @@ namespace NuGet.CommandLine
                 }
             }
 
-            Packaging.Manifest manifest = null;
+            Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
+#pragma warning disable CS0612 // Type or member is obsolete
             if (!PackCommandRunner.ProcessProjectJsonFile(builder, _project.DirectoryPath as string, builder.Id, version, suffix, GetPropertyValue))
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 // If the package contains a nuspec file then use it for metadata
                 manifest = ProcessNuspec(builder, basePath);
@@ -290,6 +293,7 @@ namespace NuGet.CommandLine
                         string.Format(NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
                         NuGetLogCode.NU5126));
                 _usingJsonFile = true;
+                return null;
             }
 
             // Remove the extra author
@@ -324,7 +328,7 @@ namespace NuGet.CommandLine
             ProcessDependencies(builder);
 
             // Set defaults if some required fields are missing
-            if (String.IsNullOrEmpty(builder.Description))
+            if (string.IsNullOrEmpty(builder.Description))
             {
                 builder.Description = "Description";
                 Logger.Log(PackagingLogMessage.CreateWarning(string.Format(
@@ -365,23 +369,23 @@ namespace NuGet.CommandLine
 
             _properties.Add("Version", metadata.Version.ToFullString());
 
-            if (!String.IsNullOrEmpty(metadata.Title))
+            if (!string.IsNullOrEmpty(metadata.Title))
             {
                 _properties.Add("Title", metadata.Title);
             }
 
-            if (!String.IsNullOrEmpty(metadata.Description))
+            if (!string.IsNullOrEmpty(metadata.Description))
             {
                 _properties.Add("Description", metadata.Description);
             }
 
-            if (!String.IsNullOrEmpty(metadata.Copyright))
+            if (!string.IsNullOrEmpty(metadata.Copyright))
             {
                 _properties.Add("Copyright", metadata.Copyright);
             }
 
             string projectAuthor = metadata.Authors.FirstOrDefault();
-            if (!String.IsNullOrEmpty(projectAuthor))
+            if (!string.IsNullOrEmpty(projectAuthor))
             {
                 _properties.Add("Author", projectAuthor);
             }
@@ -696,6 +700,7 @@ namespace NuGet.CommandLine
             }
         }
 
+        [Obsolete]
         private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
         {
             return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
@@ -703,7 +708,6 @@ namespace NuGet.CommandLine
 
         // Creates a package dependency from the given project, which has a corresponding
         // nuspec file.
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
         private PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, Packaging.Core.PackageDependency> dependencies)
         {
             try
@@ -1175,7 +1179,7 @@ namespace NuGet.CommandLine
             // Add a path separator for Visual Studio macro compatibility
             solutionDir += Path.DirectorySeparatorChar;
 
-            if (!String.IsNullOrEmpty(solutionDir))
+            if (!string.IsNullOrEmpty(solutionDir))
             {
                 if (ProjectProperties.ContainsKey("SolutionDir"))
                 {
@@ -1202,7 +1206,7 @@ namespace NuGet.CommandLine
         {
             string nuspecFile = GetNuspec();
 
-            if (String.IsNullOrEmpty(nuspecFile))
+            if (string.IsNullOrEmpty(nuspecFile))
             {
                 return null;
             }
@@ -1221,7 +1225,7 @@ namespace NuGet.CommandLine
 
                 if (manifest.HasFilesNode)
                 {
-                    basePath = String.IsNullOrEmpty(basePath) ? Path.GetDirectoryName(nuspecFile) : basePath;
+                    basePath = string.IsNullOrEmpty(basePath) ? Path.GetDirectoryName(nuspecFile) : basePath;
                     builder.PopulateFiles(basePath, manifest.Files);
                 }
 
@@ -1280,7 +1284,7 @@ namespace NuGet.CommandLine
             foreach (var item in _project.GetItems(itemType))
             {
                 string fullPath = item.GetMetadataValue("FullPath");
-                if (_excludeFiles.Contains(Path.GetFileName(fullPath)))
+                if (ExcludeFiles.Contains(Path.GetFileName(fullPath)))
                 {
                     continue;
                 }
