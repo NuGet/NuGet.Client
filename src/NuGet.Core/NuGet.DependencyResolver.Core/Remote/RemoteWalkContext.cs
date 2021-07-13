@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.DependencyResolver
 {
@@ -69,11 +70,13 @@ namespace NuGet.DependencyResolver
                 IReadOnlyList<string> sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
 
                 if (sources == null || sources.Count == 0)
-                    throw new Exception(string.Format(CultureInfo.CurrentCulture,
-                            Strings.Error_NoMatchingSourceFoundForPackage,
-                             libraryRange.Name));
+                {
+                    Logger.LogError(string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Error_NoMatchingSourceFoundForPackage, libraryRange.Name));
 
-                return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name)).ToList();
+                    return Enumerable.Empty<IRemoteDependencyProvider>().AsList();
+                }
+                return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name)).AsList();
             }
             return RemoteLibraryProviders;
         }

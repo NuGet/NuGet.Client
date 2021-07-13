@@ -307,9 +307,14 @@ namespace NuGet.DependencyResolver.Core.Tests
             PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
             context.PackageNamespaces = namespacesConfiguration;
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token));
+            // Act
+            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token);
+
             Assert.Equal(0, downloadCount);
+            Assert.Equal(1, testLogger.Errors);
+            testLogger.ErrorMessages.TryDequeue(out string message);
+            Assert.Equal("Package Namespaces are configured but no matching source found for 'x' package. " +
+                "Update the namespaces configuration and run the restore again.", message);
         }
     }
 }

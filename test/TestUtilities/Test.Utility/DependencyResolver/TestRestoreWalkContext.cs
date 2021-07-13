@@ -12,5 +12,8 @@ namespace Test.Utility
         public TestRemoteWalkContext() : base(new TestSourceCacheContext(), NullLogger.Instance)
         {
         }
+        public TestRemoteWalkContext(ILogger logger) : base(new TestSourceCacheContext(), logger)
+        {
+        }
     }
 }
