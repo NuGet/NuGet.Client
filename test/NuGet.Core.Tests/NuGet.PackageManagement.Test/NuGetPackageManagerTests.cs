@@ -7321,7 +7321,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManPreview_Install__InstallForPC_PackageNamespace_WithMultipleFeeds_Fails()
+        public async Task TestPacManPreview_Install_InstallForPC_PackageNamespace_WithMultipleFeeds_Fails()
         {
             // Arrange
             using (var testSolutionManager = new TestSolutionManager())
