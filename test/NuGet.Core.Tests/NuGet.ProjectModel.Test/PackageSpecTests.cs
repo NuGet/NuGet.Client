@@ -130,7 +130,6 @@ namespace NuGet.ProjectModel.Test
         {
             var dependency = new LibraryDependency(
                 libraryRange: new LibraryRange(Guid.NewGuid().ToString(), LibraryDependencyTarget.Package),
-                type: LibraryDependencyType.Default,
                 includeType: LibraryIncludeFlags.None,
                 suppressParent: LibraryIncludeFlags.ContentFiles,
                 noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001, NuGetLogCode.NU1002 },
@@ -607,7 +606,6 @@ namespace NuGet.ProjectModel.Test
             var framework = NuGetFramework.Parse(tfm);
             var dependency = new LibraryDependency(
                 libraryRange: new LibraryRange("Dependency", LibraryDependencyTarget.Package),
-                type: LibraryDependencyType.Default,
                 includeType: LibraryIncludeFlags.None,
                 suppressParent: LibraryIncludeFlags.ContentFiles,
                 noWarn: new List<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1001 },

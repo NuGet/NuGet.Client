@@ -8,6 +8,7 @@ using System.Linq;
 
 namespace NuGet.LibraryModel
 {
+    [Obsolete("This type is not used in the current implementation of restore. It is a remnant of a original project.json attempt. This type will go away soon.")]
     public class LibraryDependencyTypeKeyword
     {
         private static readonly ConcurrentDictionary<string, LibraryDependencyTypeKeyword> Keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>(StringComparer.OrdinalIgnoreCase);
@@ -101,6 +102,7 @@ namespace NuGet.LibraryModel
             DeclareOnOff("BecomesNupkgDependency", LibraryDependencyTypeFlag.BecomesNupkgDependency, emptyFlags);
         }
 
+        [Obsolete]
         public LibraryDependencyType CreateType()
         {
             return LibraryDependencyType.Default.Combine(FlagsToAdd, FlagsToRemove);

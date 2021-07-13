@@ -7,6 +7,7 @@ using NuGet.Shared;
 
 namespace NuGet.LibraryModel
 {
+    [Obsolete("This type is not used in the current implementation of restore. It is a remnant of an original project.json attempt. This type will go away soon.")]
     public class LibraryDependencyTypeFlag
     {
         private static readonly ConcurrentDictionary<string, LibraryDependencyTypeFlag> Flags = new ConcurrentDictionary<string, LibraryDependencyTypeFlag>();

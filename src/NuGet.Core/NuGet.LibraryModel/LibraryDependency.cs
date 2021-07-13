@@ -14,6 +14,7 @@ namespace NuGet.LibraryModel
     {
         public LibraryRange LibraryRange { get; set; }
 
+        [Obsolete("The internal type is deprecated as this field is currently unused.")]
         public LibraryDependencyType Type { get; set; } = LibraryDependencyType.Default;
 
         public LibraryIncludeFlags IncludeType { get; set; } = LibraryIncludeFlags.All;
@@ -47,7 +48,6 @@ namespace NuGet.LibraryModel
 
         internal LibraryDependency(
             LibraryRange libraryRange,
-            LibraryDependencyType type,
             LibraryIncludeFlags includeType,
             LibraryIncludeFlags suppressParent,
             IList<NuGetLogCode> noWarn,
@@ -58,7 +58,6 @@ namespace NuGet.LibraryModel
             string aliases)
         {
             LibraryRange = libraryRange;
-            Type = type;
             IncludeType = includeType;
             SuppressParent = suppressParent;
             NoWarn = noWarn;
@@ -74,8 +73,6 @@ namespace NuGet.LibraryModel
             var sb = new StringBuilder();
             sb.Append(LibraryRange);
             sb.Append(" ");
-            sb.Append(Type);
-            sb.Append(" ");
             sb.Append(LibraryIncludeFlagUtils.GetFlagString(IncludeType));
             return sb.ToString();
         }
@@ -83,6 +80,7 @@ namespace NuGet.LibraryModel
         /// <summary>
         /// Type property flag
         /// </summary>
+        [Obsolete("The internal type is deprecated as this field is currently unused.")]
         public bool HasFlag(LibraryDependencyTypeFlag flag)
         {
             return Type.Contains(flag);
@@ -93,7 +91,6 @@ namespace NuGet.LibraryModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(LibraryRange);
-            hashCode.AddObject(Type);
             hashCode.AddObject(IncludeType);
             hashCode.AddObject(SuppressParent);
             hashCode.AddObject(AutoReferenced);
@@ -125,7 +122,6 @@ namespace NuGet.LibraryModel
 
             return AutoReferenced == other.AutoReferenced &&
                    EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
-                   EqualityUtility.EqualsWithNullCheck(Type, other.Type) &&
                    IncludeType == other.IncludeType &&
                    SuppressParent == other.SuppressParent &&
                    NoWarn.SequenceEqualWithNullCheck(other.NoWarn) &&
@@ -140,7 +136,7 @@ namespace NuGet.LibraryModel
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, Type, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases);
+            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases);
         }
 
         /// <summary>

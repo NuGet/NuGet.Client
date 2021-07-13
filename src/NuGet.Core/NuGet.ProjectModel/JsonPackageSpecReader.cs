@@ -339,13 +339,10 @@ namespace NuGet.ProjectModel
                     var versionLine = 0;
                     var versionColumn = 0;
 
-                    var dependencyTypeValue = LibraryDependencyType.Default;
                     var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
                     List<NuGetLogCode> noWarn = null;
-                    var wasDependencyIncludeFlagsValueSet = false;
-                    var wasSuppressParentFlagsValueSet = false;
 
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
@@ -388,7 +385,6 @@ namespace NuGet.ProjectModel
                                 case "include":
                                     values = jsonReader.ReadDelimitedString();
                                     dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                    wasDependencyIncludeFlagsValueSet = true;
                                     break;
 
                                 case "noWarn":
@@ -398,37 +394,10 @@ namespace NuGet.ProjectModel
                                 case "suppressParent":
                                     values = jsonReader.ReadDelimitedString();
                                     suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                    wasSuppressParentFlagsValueSet = true;
                                     break;
 
                                 case "target":
                                     targetFlagsValue = ReadTarget(jsonReader, packageSpecPath, targetFlagsValue);
-                                    break;
-
-                                case "type":
-                                    values = jsonReader.ReadDelimitedString();
-                                    dependencyTypeValue = LibraryDependencyType.Parse(values);
-
-                                    // Types are used at pack time, they should be translated to suppressParent to 
-                                    // provide a matching effect for project to project references.
-                                    // This should be set before suppressParent is checked.
-                                    if (!dependencyTypeValue.Contains(LibraryDependencyTypeFlag.BecomesNupkgDependency))
-                                    {
-                                        if (!wasSuppressParentFlagsValueSet)
-                                        {
-                                            suppressParentFlagsValue = LibraryIncludeFlags.All;
-                                        }
-                                    }
-                                    else if (dependencyTypeValue.Contains(LibraryDependencyTypeFlag.SharedFramework))
-                                    {
-                                        if (!wasDependencyIncludeFlagsValueSet)
-                                        {
-                                            dependencyIncludeFlagsValue =
-                                                LibraryIncludeFlags.Build |
-                                                LibraryIncludeFlags.Compile |
-                                                LibraryIncludeFlags.Analyzers;
-                                        }
-                                    }
                                     break;
 
                                 case "version":
@@ -498,7 +467,6 @@ namespace NuGet.ProjectModel
                             TypeConstraint = targetFlagsValue,
                             VersionRange = dependencyVersionRange
                         },
-                        Type = dependencyTypeValue,
                         IncludeType = includeFlags,
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
