@@ -25,7 +25,7 @@ namespace NuGet.Common
             {
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
                     string machineWideBaseDir;
-                    if (!RuntimeEnvironmentHelper.IsDev14 && RuntimeEnvironmentHelper.IsWindows)
+                    if (RuntimeEnvironmentHelper.IsWindows)
                     {
                         machineWideBaseDir = GetFolderPath(SpecialFolder.ProgramFilesX86);
                         if (string.IsNullOrEmpty(machineWideBaseDir))

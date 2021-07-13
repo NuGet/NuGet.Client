@@ -172,11 +172,7 @@ namespace NuGet.SolutionRestoreManager
 
                     _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
                     Assumes.Present(_vsSolution);
-#if VS15
-                    // these properties are specific to VS15 since they are use to attach to solution events
-                    // which is further used to start bg job runner to schedule auto restore
                     Advise(_vsSolution);
-#endif
                 });
 
                 // Signal the background job runner solution is loaded
@@ -219,9 +215,7 @@ namespace NuGet.SolutionRestoreManager
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-#if VS15
                     Unadvise();
-#endif
                 });
             }
         }

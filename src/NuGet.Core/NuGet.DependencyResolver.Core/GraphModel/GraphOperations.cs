@@ -31,10 +31,37 @@ namespace NuGet.DependencyResolver
             root.TryResolveConflicts(result.VersionConflicts);
 
             // Remove all downgrades that didn't result in selecting the node we actually downgraded to
-            result.Downgrades.RemoveAll(d => d.DowngradedTo.Disposition != Disposition.Accepted);
+            result.Downgrades.RemoveAll(d => !IsRelevantDowngrade(d));
 
             return result;
         }
+
+        /// <summary>
+        /// A downgrade is relevant if the node itself was `Accepted`.
+        /// A node that itself wasn't `Accepted`, or has a parent that wasn't accepted is not relevant.
+        /// </summary>
+        /// <param name="d">Downgrade result to analyze</param>
+        /// <returns>Whether the downgrade is relevant.</returns>
+        private static bool IsRelevantDowngrade(DowngradeResult<RemoteResolveResult> d)
+        {
+            return d.DowngradedTo.Disposition == Disposition.Accepted && AreAllParentsAccepted(d);
+
+            static bool AreAllParentsAccepted(DowngradeResult<RemoteResolveResult> d)
+            {
+                GraphNode<RemoteResolveResult> resultToCheck = d.DowngradedFrom.OuterNode;
+
+                while (resultToCheck != null)
+                {
+                    if (resultToCheck.Disposition != Disposition.Accepted)
+                    {
+                        return false;
+                    }
+                    resultToCheck = resultToCheck.OuterNode;
+                }
+                return true;
+            }
+        }
+
 
         private static void CheckCycleAndNearestWins(
             this GraphNode<RemoteResolveResult> root,
@@ -45,14 +72,12 @@ namespace NuGet.DependencyResolver
 
             root.ForEach((node, context) => WalkTreeCheckCycleAndNearestWins(context, node), CreateState(cycles, workingDowngrades));
 
-#if IS_DESKTOP || NETSTANDARD2_0
             // Increase List size for items to be added, if too small
             var requiredCapacity = downgrades.Count + workingDowngrades.Count;
             if (downgrades.Capacity < requiredCapacity)
             {
                 downgrades.Capacity = requiredCapacity;
             }
-#endif
             foreach (var p in workingDowngrades)
             {
                 downgrades.Add(new DowngradeResult<RemoteResolveResult>

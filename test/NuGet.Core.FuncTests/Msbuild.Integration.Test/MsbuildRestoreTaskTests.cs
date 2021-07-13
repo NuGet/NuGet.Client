@@ -704,6 +704,68 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public Task MsbuildRestore_WithStaticGraphRestore_MessageLoggedAtDefaultVerbosityWhenThereAreNoProjectsToRestore()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var project = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestoreUseStaticGraphEvaluation=true",
+                    ignoreExitCode: true);
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain("The solution did not have any projects to restore, ensure that all projects are known to " +
+                    "be MSBuild and that the projects exist.", because: result.AllOutput);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public Task MsbuildRestore_WithStaticGraphRestore_MessageLoggedAtDefaultVerbosityWhenAProjectIsNotKnownToMSBuild()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var project = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                solution.Projects.Add(project);
+                solution.Create(pathContext.SolutionRoot);
+
+                string newSlnFileContent = File.ReadAllText(solution.SolutionPath);
+                newSlnFileContent = newSlnFileContent.Replace("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC", Guid.Empty.ToString());
+                File.WriteAllText(solution.SolutionPath, newSlnFileContent);
+
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestoreUseStaticGraphEvaluation=true",
+                    ignoreExitCode: true);
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().Contain($"The solution contains '{solution.Projects.Count}' project(s) '{project.ProjectName}' that are not known to MSBuild. " +
+                    "Ensure that all projects are known to be MSBuild before running restore on the solution.", because: result.AllOutput);
+            }
+
+            return Task.CompletedTask;
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]

@@ -104,6 +104,13 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
+            if (string.Equals(Path.GetExtension(entryProjectFilePath), ".sln", StringComparison.OrdinalIgnoreCase)
+                    && dependencyGraphSpec.Restore.Count == 0)
+            {
+                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
+                return true;
+            }
+
             try
             {
                 return await BuildTasksUtility.RestoreAsync(
@@ -534,14 +541,26 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="entryProjectPath">The full path to the main project or solution file.</param>
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> representing the global properties for the project.</param>
         /// <returns></returns>
-        private static List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, IDictionary<string, string> globalProperties)
+        private List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, IDictionary<string, string> globalProperties)
         {
             // If the project's extension is .sln, parse it as a Visual Studio solution and return the projects it contains
             if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
             {
                 var solutionFile = SolutionFile.Parse(entryProjectPath);
 
-                return solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat).Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
+                IEnumerable<ProjectInSolution> projectsKnownToMSBuild = solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat);
+                IEnumerable<ProjectInSolution> projectsNotKnownToMSBuild = solutionFile.ProjectsInOrder.Except(projectsKnownToMSBuild);
+
+                if (projectsNotKnownToMSBuild.Any())
+                {
+                    IList<string> projects = projectsNotKnownToMSBuild.Select(project => project.ProjectName).ToList();
+
+                    MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ProjectsInSolutionNotKnowntoMSBuild,
+                        projects.Count, string.Join(",", projects)));
+                }
+
+                return projectsKnownToMSBuild.Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
             }
 
             // Return just the main project in a list if its not a solution file
