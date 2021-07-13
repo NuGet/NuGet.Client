@@ -1475,16 +1475,19 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://2", "someRepository2"), providers2));
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://3", configuredSources[0]), providers3));
 
-            var context = new GatherContext(namespacesConfiguration);
-            context.PrimaryTargets = targets.ToList();
-            context.InstalledPackages = new List<PackageIdentity>();
-            context.TargetFramework = framework;
-            context.PrimarySources = repos;
-            context.AllSources = repos;
-            context.PackagesFolderSource = repos[2];
-            context.ResolutionContext = new ResolutionContext();
             var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-            context.ProjectContext = testNuGetProjectContext;
+
+            var context = new GatherContext(namespacesConfiguration)
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = new List<PackageIdentity>(),
+                TargetFramework = framework,
+                PrimarySources = repos,
+                AllSources = repos,
+                PackagesFolderSource = repos[2],
+                ResolutionContext = new ResolutionContext(),
+                ProjectContext = testNuGetProjectContext
+            };
 
             // Act
             HashSet<SourcePackageDependencyInfo> results = await ResolverGather.GatherAsync(context, CancellationToken.None);
@@ -1555,16 +1558,19 @@ namespace NuGet.Test
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://2", "nuget.org"), providers2));
             repos.Add(new SourceRepository(new Configuration.PackageSource("http://3", "privateRepository"), providers3));
 
-            var context = new GatherContext(namespacesConfiguration);
-            context.PrimaryTargets = targets.ToList();
-            context.InstalledPackages = new List<PackageIdentity>();
-            context.TargetFramework = framework;
-            context.PrimarySources = repos;
-            context.AllSources = repos;
-            context.PackagesFolderSource = repos[2];
-            context.ResolutionContext = new ResolutionContext();
             var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
-            context.ProjectContext = testNuGetProjectContext;
+
+            var context = new GatherContext(namespacesConfiguration)
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = new List<PackageIdentity>(),
+                TargetFramework = framework,
+                PrimarySources = repos,
+                AllSources = repos,
+                PackagesFolderSource = repos[2],
+                ResolutionContext = new ResolutionContext(),
+                ProjectContext = testNuGetProjectContext
+            };
 
             // Act
             HashSet<SourcePackageDependencyInfo> results = await ResolverGather.GatherAsync(context, CancellationToken.None);
