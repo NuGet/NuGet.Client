@@ -74,7 +74,7 @@ namespace NuGet.DependencyResolver
                     Logger.LogError(string.Format(CultureInfo.CurrentCulture,
                                     Strings.Error_NoMatchingSourceFoundForPackage, libraryRange.Name));
 
-                    return Enumerable.Empty<IRemoteDependencyProvider>().AsList();
+                    return Array.Empty<IRemoteDependencyProvider>();
                 }
                 return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name)).AsList();
             }
