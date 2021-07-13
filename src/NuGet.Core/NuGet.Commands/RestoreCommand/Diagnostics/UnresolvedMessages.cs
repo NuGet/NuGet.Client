@@ -33,7 +33,7 @@ namespace NuGet.Commands
             await context.Logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
         }
 
-        internal  static async Task LogAsync(IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
+        internal static async Task LogAsync(IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
         {
             var messageTasks = new List<Task<RestoreLogMessage>>();
 
@@ -57,7 +57,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Create a specific error message for the unresolved dependency.
         /// </summary>
-        internal  static async Task<RestoreLogMessage> GetMessageAsync(string targetGraphName,
+        internal static async Task<RestoreLogMessage> GetMessageAsync(string targetGraphName,
             LibraryRange unresolved,
             IList<IRemoteDependencyProvider> remoteLibraryProviders,
             SourceCacheContext sourceCacheContext,
