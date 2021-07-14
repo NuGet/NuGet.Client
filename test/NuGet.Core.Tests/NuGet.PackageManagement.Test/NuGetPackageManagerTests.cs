@@ -7368,11 +7368,6 @@ namespace NuGet.Test
                 };
                 ExternalContosoA.AddFile("lib/net461/externalA.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    externalRepositoryPath,
-                    PackageSaveMode.Defaultv3,
-                    ExternalContosoA);
-
                 var ExternalDirectA = new SimpleTestPackageContext()
                 {
                     Id = directPackageIdentity.Id, // Package Id not filtered by package namespace.
@@ -7384,7 +7379,7 @@ namespace NuGet.Test
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     externalRepositoryPath,
                     PackageSaveMode.Defaultv3,
-                    ExternalDirectA);
+                    ExternalContosoA, ExternalDirectA);
 
                 var primarySource = new PackageSource(externalRepositoryPath, "ExternalRepository");
 
