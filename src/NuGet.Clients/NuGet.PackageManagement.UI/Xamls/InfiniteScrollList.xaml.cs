@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -162,7 +163,7 @@ namespace NuGet.PackageManagement.UI
         // Load items using the specified loader
         internal async Task LoadItemsAsync(
             IPackageItemLoader loader,
-            string loadingMessage,
+            string searchText,
             INuGetUILogger logger,
             Task<SearchResultContextInfo> searchResultTask,
             CancellationToken token)
@@ -170,11 +171,6 @@ namespace NuGet.PackageManagement.UI
             if (loader == null)
             {
                 throw new ArgumentNullException(nameof(loader));
-            }
-
-            if (string.IsNullOrEmpty(loadingMessage))
-            {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(loadingMessage));
             }
 
             if (searchResultTask == null)
@@ -187,9 +183,19 @@ namespace NuGet.PackageManagement.UI
             _loader = loader;
             _logger = logger;
             _initialSearchResultTask = searchResultTask;
-            ViewModel.LoadingStatusIndicator.LoadingMessage = loadingMessage;
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var searchingMessage = string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
+                ViewModel.LoadingStatusIndicator.LoadingMessage = searchingMessage;
+            }
+            else
+            {
+                ViewModel.LoadingStatusIndicator.LoadingMessage = Resx.Resources.Text_Loading;
+            }
+
             _loadingStatusBar.Visibility = Visibility.Hidden;
-            _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
+            _loadingStatusBar.Reset(searchText, loader.IsMultiSource);
 
             var selectedPackageItem = SelectedPackageItem;
 
@@ -436,7 +442,9 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Shows the Loading status bar, if necessary. Also, it inserts the Loading... indicator, if necesary
+        /// Shows the <see cref="LoadingStatusBar"/>, if necessary.
+        /// The <see cref="LoadingStatusIndicator"/> State will be updated only for <see cref="LoadingStatus.Cancelled"/> or <see cref="LoadingStatus.ErrorOccurred"/>,
+        /// so to reflect those conditions as early as possible. Other states will be updated as late as possible: when the loader completes.
         /// </summary>
         /// <param name="loader">Current loader</param>
         /// <param name="state">Progress reported by the <c>Progress</c> callback</param>
@@ -459,7 +467,11 @@ namespace NuGet.PackageManagement.UI
                         _loadingStatusBar.Visibility = desiredVisibility;
                     }
 
-                    ViewModel.LoadingStatusIndicator.Status = state.LoadingStatus;
+                    // Change the status as soon as a cancellation or an Error occurs.
+                    if (state.LoadingStatus == LoadingStatus.Cancelled || state.LoadingStatus == LoadingStatus.ErrorOccurred)
+                    {
+                        ViewModel.LoadingStatusIndicator.Status = state.LoadingStatus;
+                    }
                 }
             });
         }
@@ -527,7 +539,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Clear <c>Items</c> list and removes the event handlers for each element
         /// </summary>
-        private void ClearPackageList()
+        internal void ClearPackageList()
         {
             foreach (PackageItemViewModel package in ViewModel.Collection)
             {
@@ -729,9 +741,10 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Visibility = Visibility.Hidden;
         }
 
-        public void ResetLoadingStatusIndicator()
+        public void LoadingIndicator_Begin()
         {
-            ViewModel.LoadingStatusIndicator.Reset(string.Empty);
+            ViewModel.LoadingStatusIndicator.LoadingMessage = Resx.Resources.Text_Loading;
+            ViewModel.LoadingStatusIndicator.Status = LoadingStatus.Loading;
         }
     }
 }

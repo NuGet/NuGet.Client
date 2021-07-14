@@ -852,18 +852,15 @@ namespace NuGet.PackageManagement.UI
                     includePrerelease: IncludePrerelease,
                     useRecommender: useRecommender);
 
-                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
-                    ? Resx.Resources.Text_Loading
-                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
                 _loadCts = new CancellationTokenSource();
 
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
+
                 // this will wait for searchResultTask to complete instead of creating a new task
-                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+                await _packageList.LoadItemsAsync(loader, searchText, _uiLogger, searchResultTask, _loadCts.Token);
 
                 if (pSearchCallback != null && searchTask != null)
                 {
@@ -1092,8 +1089,9 @@ namespace NuGet.PackageManagement.UI
         {
             if (_initialized)
             {
+                _packageList.LoadingIndicator_Begin();
+                _packageList.ClearPackageList();
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
-                _packageList.ResetLoadingStatusIndicator();
 
                 // Collapse the Update controls when the current tab is not "Updates".
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;

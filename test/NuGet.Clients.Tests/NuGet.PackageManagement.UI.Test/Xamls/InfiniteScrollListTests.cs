@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.UI.Test
                 {
                     await list.LoadItemsAsync(
                         loader: null,
-                        loadingMessage: "a",
+                        searchText: "a",
                         logger: null,
                         searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
                         token: CancellationToken.None);
@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.UI.Test
                 {
                     await list.LoadItemsAsync(
                         Mock.Of<IPackageItemLoader>(),
-                        loadingMessage: "a",
+                        searchText: "a",
                         logger: null,
                         searchResultTask: null,
                         token: CancellationToken.None);
@@ -155,7 +155,7 @@ namespace NuGet.PackageManagement.UI.Test
                 {
                     await list.LoadItemsAsync(
                         Mock.Of<IPackageItemLoader>(),
-                        loadingMessage: "a",
+                        searchText: "a",
                         logger: null,
                         searchResultTask: Task.FromResult<SearchResultContextInfo>(null),
                         token: new CancellationToken(canceled: true));
@@ -249,7 +249,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             await list.LoadItemsAsync(
                 loader.Object,
-                loadingMessage: "a",
+                searchText: "a",
                 logger: logger.Object,
                 searchResultTask: searchResultTask,
                 token: CancellationToken.None);
@@ -313,7 +313,7 @@ namespace NuGet.PackageManagement.UI.Test
             _output.WriteLine("1. Init act");
             await list.LoadItemsAsync(
                 loader: loaderMock.Object,
-                loadingMessage: "Test loading",
+                searchText: "Test loading",
                 logger: testLogger,
                 searchResultTask: searchTask,
                 token: CancellationToken.None);
