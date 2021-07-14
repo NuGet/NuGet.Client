@@ -51,7 +51,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private Stopwatch _sinceLastRefresh;
         private CancellationTokenSource _refreshCts;
-        private bool _forceRecommender;
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
@@ -172,16 +171,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
-
-            // check if environment variable RecommendNuGetPackages to turn on recommendations is set to 1
-            try
-            {
-                _forceRecommender = (Environment.GetEnvironmentVariable("NUGET_RECOMMEND_PACKAGES") == "1");
-            }
-            catch (SecurityException)
-            {
-                // don't make recommendations if we are not able to read the environment variable
-            }
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -807,10 +796,9 @@ namespace NuGet.PackageManagement.UI
                 searchTask: null);
         }
 
-        // Check if user has environment variable of NUGET_RECOMMEND_PACKAGES set to 1 or is in A/B experiment.
-        public bool IsRecommenderFlightEnabled()
+        public static bool IsRecommenderFlightEnabled()
         {
-            return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+            return NuGetExperimentationService.Instance.IsExperimentEnabled(ExperimentationConstants.PackageRecommender);
         }
 
         /// <summary>

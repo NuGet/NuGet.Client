@@ -7,6 +7,7 @@ using System.Windows;
 using Microsoft.VisualStudio.Experimentation;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -261,21 +262,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         private static bool IsBackgroundColorFlightEnabled() =>
-            ExperimentationService.Default.IsCachedFlightEnabled(ExperimentationConstants.FlightFlags.PackageManagerBackgroundColor)
-            || IsForceBackgroundColorFlightEnabled();
-
-        private static bool IsForceBackgroundColorFlightEnabled()
-        {
-            var forceFlightEnabled = false;
-            try
-            {
-                forceFlightEnabled = Environment.GetEnvironmentVariable(ExperimentationConstants.EnvironmentVariables.PackageManagerBackgroundColor) == "1";
-            }
-            catch (SecurityException)
-            {
-                // Don't force the flight to be enabled if we are not able to read the environment variable
-            }
-            return forceFlightEnabled;
-        }
+            NuGetExperimentationService.Instance.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
     }
 }
