@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,7 +13,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Experimentation;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -31,7 +29,6 @@ using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
-using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -191,6 +188,9 @@ namespace NuGet.PackageManagement.UI
         internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
+
+        public INuGetExperimentationService NuGetExperimentationService { get; private set; }
+
 
         private void OnProjectUpdated(object sender, IProjectContextInfo project)
         {
@@ -796,9 +796,9 @@ namespace NuGet.PackageManagement.UI
                 searchTask: null);
         }
 
-        public static bool IsRecommenderFlightEnabled()
+        public static bool IsRecommenderFlightEnabled(INuGetExperimentationService nuGetExperimentationService)
         {
-            return NuGetExperimentationService.Instance.IsExperimentEnabled(ExperimentationConstants.PackageRecommender);
+            return nuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.PackageRecommender);
         }
 
         /// <summary>
@@ -823,7 +823,7 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
+                bool useRecommender = await GetUseRecommendedPackagesAsync(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
                     Model.Context.ReconnectingSearchService,
@@ -866,7 +866,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool GetUseRecommendedPackages(PackageLoadContext loadContext, string searchText)
+        private async Task<bool> GetUseRecommendedPackagesAsync(PackageLoadContext loadContext, string searchText)
         {
             // only make recommendations when
             //   the single source repository is nuget.org,
@@ -882,8 +882,9 @@ namespace NuGet.PackageManagement.UI
                 _recommendPackages = true;
             }
 
+            NuGetExperimentationService = await ServiceLocator.GetInstanceAsync<INuGetExperimentationService>();
             // Check for A/B experiment here. For control group, return false instead of _recommendPackages
-            if (IsRecommenderFlightEnabled())
+            if (IsRecommenderFlightEnabled(NuGetExperimentationService))
             {
                 return _recommendPackages;
             }

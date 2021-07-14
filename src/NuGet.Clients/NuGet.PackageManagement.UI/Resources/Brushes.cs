@@ -1,10 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Security;
 using System.Windows;
-using Microsoft.VisualStudio.Experimentation;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
@@ -172,9 +169,9 @@ namespace NuGet.PackageManagement.UI
 
         public static object ListItemTextSelectedColorKey { get; private set; } = SystemColors.HighlightTextColorKey;
 
-        public static void LoadVsBrushes()
+        public static void LoadVsBrushes(INuGetExperimentationService nuGetExperimentationService)
         {
-            bool isBgColorFlightEnabled = IsBackgroundColorFlightEnabled();
+            bool isBgColorFlightEnabled = IsBackgroundColorFlightEnabled(nuGetExperimentationService);
 
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
             ActiveBorderKey = VsBrushes.ActiveBorderKey;
@@ -261,7 +258,7 @@ namespace NuGet.PackageManagement.UI
             ListItemTextSelectedColorKey = CommonDocumentColors.ListItemTextSelectedColorKey;
         }
 
-        private static bool IsBackgroundColorFlightEnabled() =>
-            NuGetExperimentationService.Instance.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
+        private static bool IsBackgroundColorFlightEnabled(INuGetExperimentationService nuGetExperimentationService) =>
+            nuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
     }
 }

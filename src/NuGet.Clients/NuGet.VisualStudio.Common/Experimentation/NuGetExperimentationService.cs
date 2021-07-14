@@ -2,18 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Experimentation;
 using NuGet.Common;
 
 namespace NuGet.VisualStudio
 {
-    public class NuGetExperimentationService
+    [Export(typeof(INuGetExperimentationService))]
+    [PartCreationPolicy(CreationPolicy.Shared)]
+    public class NuGetExperimentationService : INuGetExperimentationService
     {
-        public static readonly NuGetExperimentationService Instance = new();
-
         private readonly IEnvironmentVariableReader _environmentVariableReader;
         private readonly IExperimentationService _experimentationService;
-        internal NuGetExperimentationService()
+
+        public NuGetExperimentationService()
             : this(EnvironmentVariableWrapper.Instance, ExperimentationService.Default)
         {
             // ensure uniqueness.
@@ -27,7 +29,6 @@ namespace NuGet.VisualStudio
 
         public bool IsExperimentEnabled(ExperimentationConstants experimentation)
         {
-
             return _environmentVariableReader.GetEnvironmentVariable(experimentation.FlightEnvironmentVariable) == "1"
                 || _experimentationService.IsCachedFlightEnabled(experimentation.FlightFlag);
         }

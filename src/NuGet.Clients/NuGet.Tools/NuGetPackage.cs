@@ -145,6 +145,9 @@ namespace NuGetVSExtension
         [Import]
         private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
+        [Import]
+        private Lazy<INuGetExperimentationService> NuGetExperimentationService { get; set; }
+
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -212,7 +215,7 @@ namespace NuGetVSExtension
 
                 SolutionManager.Value.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
 
-                Brushes.LoadVsBrushes();
+                Brushes.LoadVsBrushes(NuGetExperimentationService.Value);
 
                 _dte = (DTE)await GetServiceAsync(typeof(SDTE));
                 Assumes.Present(_dte);
