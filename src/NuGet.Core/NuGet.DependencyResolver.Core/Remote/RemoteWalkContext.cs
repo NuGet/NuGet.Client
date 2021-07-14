@@ -58,7 +58,7 @@ namespace NuGet.DependencyResolver
         /// Applies Package namespace filtering for a given package
         /// </summary>
         /// <param name="libraryRange"></param>
-        /// <returns> Returns a subset of sources when namespaces are configured otherwise returns all the sources</returns>
+        /// <returns>Returns a subset of sources when namespaces are configured otherwise returns all the sources</returns>
         public IList<IRemoteDependencyProvider> FilterDependencyProvidersForLibrary(LibraryRange libraryRange)
         {
             if (libraryRange == default)
@@ -71,11 +71,9 @@ namespace NuGet.DependencyResolver
 
                 if (sources == null || sources.Count == 0)
                 {
-                    Logger.LogError(string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Error_NoMatchingSourceFoundForPackage, libraryRange.Name));
-
                     return Array.Empty<IRemoteDependencyProvider>();
                 }
+
                 return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name)).AsList();
             }
             return RemoteLibraryProviders;

@@ -44,7 +44,8 @@ namespace NuGet.Commands
                     messageTasks.Add(GetMessageAsync(
                         ddi.Framework.ToString(),
                         unresolved,
-                        context?.FilterDependencyProvidersForLibrary(unresolved), context.CacheContext,
+                        context.FilterDependencyProvidersForLibrary(unresolved),
+                        context.CacheContext,
                         context.Logger,
                         token));
                 }

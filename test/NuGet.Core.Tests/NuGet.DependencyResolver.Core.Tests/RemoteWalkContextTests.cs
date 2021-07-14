@@ -72,7 +72,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public void FilterDependencyProvidersForLibrary_WhenPackageNamespacesAreConfiguredReturnsAndNoMatchingSourceFound_Throws()
+        public void FilterDependencyProvidersForLibrary_WhenPackageNamespaceToSourceMappingIsNotConfiguredReturnsNoProviders_Success()
         {
             var logger = new TestLogger();
             var context = new TestRemoteWalkContext(logger);
@@ -96,10 +96,7 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             IList<IRemoteDependencyProvider> providers = context.FilterDependencyProvidersForLibrary(libraryRange);
 
-            Assert.Equal(1, logger.Errors);
-            logger.ErrorMessages.TryDequeue(out string message);
-            Assert.Equal("Package Namespaces are configured but no matching source found for 'x' package. " +
-                "Update the namespaces configuration and run the restore again.", message);
+            Assert.Empty(providers);
         }
 
         private Mock<IRemoteDependencyProvider> CreateRemoteDependencyProvider(string source)

@@ -3186,16 +3186,20 @@ namespace NuGet.Commands.FuncTest
         {
             using var pathContext = new SimpleTestPathContext();
 
+            const string packageA = "PackageA";
+            const string packageB = "PackageB";
+            const string version = "1.0.0";
+
             var packageA100 = new SimpleTestPackageContext
             {
-                Id = "PackageA",
-                Version = "1.0.0",
+                Id = packageA,
+                Version = version,
             };
 
             var packageB100 = new SimpleTestPackageContext
             {
-                Id = "PackageB",
-                Version = "1.0.0",
+                Id = packageB,
+                Version = version,
             };
 
             var projectSpec = PackageReferenceSpecBuilder.Create("Library1", pathContext.SolutionRoot)
@@ -3209,12 +3213,12 @@ namespace NuGet.Commands.FuncTest
                         {
                             new LibraryDependency
                             {
-                                LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
+                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
                                     LibraryDependencyTarget.Package)
                             },
                             new LibraryDependency
                             {
-                                LibraryRange = new LibraryRange("PackageB", VersionRange.Parse("1.0.0"),
+                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
                                     LibraryDependencyTarget.Package)
                             },
                         })
@@ -3237,29 +3241,125 @@ namespace NuGet.Commands.FuncTest
 
             var sources = new[] { new PackageSource(pathContext.PackageSource),
                                                    new PackageSource(packageSource2) };
-
             var log = new TestLogger();
 
             //package namespaces configuration
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add(packageSource2, new List<string>() { "packageA" });
-            namespaces.Add(pathContext.PackageSource, new List<string>() { "packageB" });
+            namespaces.Add(packageSource2, new List<string>() { packageA });
+            namespaces.Add(pathContext.PackageSource, new List<string>() { packageB });
             PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
 
-            var request = new TestRestoreRequest(projectSpec, sources, pathContext.UserPackagesFolder, new TestSourceCacheContext(), namespacesConfiguration, log);
-            var command1 = new RestoreCommand(request);
-            var result = await command1.ExecuteAsync();
+            var request = new TestRestoreRequest(projectSpec,
+                sources,
+                pathContext.UserPackagesFolder,
+                new TestSourceCacheContext(),
+                namespacesConfiguration,
+                log);
+
+            var command = new RestoreCommand(request);
+            var result = await command.ExecuteAsync();
 
             Assert.True(result.Success);
-            Assert.Equal(0, result.RestoreGraphs.ElementAt(0).Unresolved.Count);
+
+            var restoreGraph = result.RestoreGraphs.ElementAt(0);
+            Assert.Equal(0, restoreGraph.Unresolved.Count);
+            //packageA should be installed from source2
+            string packageASource = restoreGraph.Install.ElementAt(0).Provider.Source.Name;
+            Assert.Equal(packageSource2, packageASource);
+            //packageB should be installed from source
+            string packageBSource = restoreGraph.Install.ElementAt(1).Provider.Source.Name;
+            Assert.Equal(pathContext.PackageSource, packageBSource);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithPackageNamesacesConfiguredAndNoMatchingSourceForAPackage_Fails()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            const string packageA = "PackageA";
+            const string packageB = "PackageB";
+            const string version = "1.0.0";
+
+            var packageA100 = new SimpleTestPackageContext
+            {
+                Id = packageA,
+                Version = version,
+            };
+
+            var packageB100 = new SimpleTestPackageContext
+            {
+                Id = packageB,
+                Version = version,
+            };
+
+            var projectSpec = PackageReferenceSpecBuilder.Create("Library1", pathContext.SolutionRoot)
+            .WithTargetFrameworks(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net5.0"),
+                    Dependencies = new List<LibraryDependency>(
+                        new[]
+                        {
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
+                                    LibraryDependencyTarget.Package)
+                            },
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
+                                    LibraryDependencyTarget.Package)
+                            },
+                        })
+                }
+            })
+            .Build();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var packageSource2 = Path.Combine(pathContext.WorkingDirectory, "source2");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                packageSource2,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var sources = new[] { new PackageSource(pathContext.PackageSource),
+                                                   new PackageSource(packageSource2) };
+            var log = new TestLogger();
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add(packageSource2, new List<string>() { packageA });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+
+            var request = new TestRestoreRequest(projectSpec,
+                sources,
+                pathContext.UserPackagesFolder,
+                new TestSourceCacheContext(),
+                namespacesConfiguration,
+                log);
+
+            var command = new RestoreCommand(request);
+            var result = await command.ExecuteAsync();
+
+            Assert.False(result.Success);
+
+            var restoreGraph = result.RestoreGraphs.ElementAt(0);
+            Assert.Equal(1, restoreGraph.Unresolved.Count);
+
+            Assert.Equal(1, log.Errors);
+            log.ErrorMessages.TryPeek(out string message);
+            Assert.Equal("NU1100: Unable to resolve 'PackageB (>= 1.0.0)' for 'net5.0'.", message);
 
             //packageA should be installed from source2
-            string packageASource = result.RestoreGraphs.ElementAt(0).Install.Where(p => p.Library.Name.Equals("packageA", StringComparison.OrdinalIgnoreCase)).Select(p => p.Provider.Source.Name).FirstOrDefault();
+            string packageASource = restoreGraph.Install.ElementAt(0).Provider.Source.Name;
             Assert.Equal(packageSource2, packageASource);
-
-            //packageB should be installed from source
-            string packageBSource = result.RestoreGraphs.ElementAt(0).Install.Where(p => p.Library.Name.Equals("packageB", StringComparison.OrdinalIgnoreCase)).Select(p => p.Provider.Source.Name).FirstOrDefault();
-            Assert.Equal(pathContext.PackageSource, packageBSource);
         }
 
         private static byte[] GetTestUtilityResource(string name)
