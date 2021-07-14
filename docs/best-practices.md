@@ -4,13 +4,13 @@ Please check discussion [here](https://github.com/NuGet/Client.Engineering/issue
 Since env var name is case sensitive in Linux, so please use all uppercase (separated by underscore) naming convention for best practice.  But value doesn't have to case sensitive, we can convert to [uppercase](https://github.com/NuGet/NuGet.Client/blob/680f9bd4e97db7cd7482584276886764de69d3cb/src/NuGet.Core/NuGet.Packaging/PackageArchiveReader.cs#L530) and compare to validate value.
 We selected in DOTNET_NUGET_SIGNATURE_VERIFICATION for 'Add an environment variable to opt-in to the package signing verification on .NET 5+'. Let's dissect part of env var name.
 
-<span style="color: red;">DOTNET</span> _ <span style="color: blue;">NUGET</span> _ <span style="color: green;">SIGNATURE</span> _ <span style="color: orange;">VERIFICATION</span>
+<b>DOTNET_NUGET_SIGNATURE_VERIFICATION</b>
 
-When selecting name first/second parts indicate where this env variable applies. In this case it applies to <span style="color: red;">DOTNET</span> and more specifically for <span style="color: blue;">NUGET</span>. 
+When selecting name first/second parts indicate where this env variable applies. In this case it applies to <b>DOTNET</b> and more specifically for <b>NUGET</b> use cases. 
 
-Next part <span style="color: green;">SIGNATURE</span> what feature (noun) it applies.
+Next part <b>SIGNATURE</b> what feature (noun) it applies.
 
-Last part <span style="color: orange;">VERIFICATION</span>  what operation (verb) it enable or disable.
+Last part <b>VERIFICATION</b>  what operation (verb) it enable or disable.
 
 Please note above is not hard rule, it can change depending on circumstance.
 
