@@ -154,6 +154,9 @@
     <Compile Include="Xamls\NuGetProjectUpgradeWindow.xaml.cs">
       <DependentUpon>NuGetProjectUpgradeWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\PackageItemDeprecationLabel.xaml.cs">
+      <DependentUpon>PackageItemDeprecationLabel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\PackageManagementFormatWindow.xaml.cs">
       <DependentUpon>PackageManagementFormatWindow.xaml</DependentUpon>
     </Compile>
@@ -321,6 +324,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\NuGetProjectUpgradeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PackageItemDeprecationLabel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

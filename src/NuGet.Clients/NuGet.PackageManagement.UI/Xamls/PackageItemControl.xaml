@@ -198,7 +198,9 @@
                         Grid.Row="0"
                         FormatString="{x:Static nuget:Resources.Label_UseInstead}"
                         DataContext="{Binding Providers}" />
-
+          <nuget:PackageItemDeprecationLabel
+                        Grid.Row="0"
+                        DataContext="{Binding DeprecationMetadata}" />
           <!-- Summary -->
           <TextBlock
                         Grid.Row="2"

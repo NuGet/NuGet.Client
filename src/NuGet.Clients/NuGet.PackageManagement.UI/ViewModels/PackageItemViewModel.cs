@@ -514,6 +514,25 @@ namespace NuGet.PackageManagement.UI
             return _detailedPackageSearchMetadata.Value;
         }
 
+        public PackageDeprecationMetadataContextInfo DeprecationMetadata
+        {
+            get
+            {
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run( async delegate {
+                    var t = GetDetailedPackageSearchMetadataAsync();
+                    var x = await t;
+
+                    return x.Item2;
+                });
+            }
+
+            set
+            {
+                
+            }
+        }
+
+
         public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
