@@ -129,6 +129,13 @@ namespace NuGet.VisualStudio.Common.Test
 
             service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeTrue();
         }
+
+        [Fact]
+        public void IsEnabled_WithNullEnvironmentVariableForConstant_HandlesGracefully()
+        {
+            var service = new NuGetExperimentationService(new EnvironmentVariableWrapper(), new TestVisualStudioExperimentalService());
+            service.IsExperimentEnabled(new ExperimentationConstants("flag", null)).Should().BeFalse();
+        }
     }
 
     public class TestVisualStudioExperimentalService : IExperimentationService

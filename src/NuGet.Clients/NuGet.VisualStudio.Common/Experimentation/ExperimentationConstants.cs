@@ -10,12 +10,19 @@ namespace NuGet.VisualStudio
         internal ExperimentationConstants(string flightFlag, string flightEnvironmentVariable)
         {
             FlightFlag = flightFlag ?? throw new ArgumentNullException(nameof(flightFlag));
-            FlightEnvironmentVariable = flightEnvironmentVariable ?? throw new ArgumentNullException(nameof(flightEnvironmentVariable));
+            FlightEnvironmentVariable = flightEnvironmentVariable;
         }
 
+        /// <summary>
+        /// The value defined for the VS experimentation service.
+        /// </summary>
         internal string FlightFlag { get; }
-        internal string FlightEnvironmentVariable { get; }
 
+        /// <summary>
+        /// The environment variable means of enabled this feature.
+        /// Might be <see cref="null"/>.
+        /// </summary>
+        internal string FlightEnvironmentVariable { get; }
 
         public static readonly ExperimentationConstants PackageManagerBackgroundColor = new("nuGetPackageManagerBackgroundColor", "NUGET_PACKAGE_MANAGER_BACKGROUND_COLOR");
         public static readonly ExperimentationConstants PackageRecommender = new("nugetrecommendpkgs", "NUGET_RECOMMEND_PACKAGES");
