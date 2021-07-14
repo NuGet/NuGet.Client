@@ -1109,7 +1109,9 @@ namespace NuGet.PackageManagement
                     }
                 }
 
-                var gatherContext = new GatherContext()
+                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+
+                var gatherContext = new GatherContext(packageNamespacesConfiguration)
                 {
                     InstalledPackages = oldListOfInstalledPackages.ToList(),
                     PrimaryTargetIds = primaryTargetIds.ToList(),
