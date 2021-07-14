@@ -30,6 +30,10 @@ namespace NuGet
         /// </summary>
         public static readonly StringBuilderPool Shared = new();
 
+        private StringBuilderPool()
+        {
+        }
+
         /// <summary>
         /// Retrieves a <see cref="StringBuilder"/> that is at least the requested length.
         /// </summary>
