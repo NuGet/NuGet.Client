@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement
         private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _maxDegreeOfParallelism;
         private readonly ConcurrentDictionary<string, TimeSpan> _timeTaken = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
-        private readonly bool _isPackageNamespaceEnabled;
+        private readonly bool _areNamespacesEnabled;
 
         private ResolverGather(GatherContext context)
         {
@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement
             _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
 
             _cache = _context.ResolutionContext?.GatherCache;
-            _isPackageNamespaceEnabled = _context.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
+            _areNamespacesEnabled = _context.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
         }
 
         /// <summary>
@@ -537,7 +537,7 @@ namespace NuGet.PackageManagement
         {
             IReadOnlyList<string> configuredPackageSources = null;
 
-            if (_isPackageNamespaceEnabled)
+            if (_areNamespacesEnabled)
             {
 
                 configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(package.Id);
@@ -560,7 +560,7 @@ namespace NuGet.PackageManagement
             {
                 foreach (SourceResource source in sources)
                 {
-                    if (_isPackageNamespaceEnabled && configuredPackageSources != null && !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                    if (_areNamespacesEnabled && configuredPackageSources != null && !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
                     {
                         // This package's id prefix is not defined in current package source, let's skip.
                         continue;
