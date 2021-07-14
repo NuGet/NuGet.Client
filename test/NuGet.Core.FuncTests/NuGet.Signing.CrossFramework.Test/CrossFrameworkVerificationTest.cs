@@ -33,7 +33,6 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
 
             using (var dir = TestDirectory.Create())
@@ -59,9 +58,7 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
-
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var dir = TestDirectory.Create())
@@ -88,11 +85,9 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
 
             using (var dir = TestDirectory.Create())
-
             using (var repositoryCertificate = new X509Certificate2(defaultRepositoryCertificate))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
@@ -116,9 +111,7 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var dir = TestDirectory.Create())
@@ -146,7 +139,6 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
             var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
 
@@ -180,10 +172,8 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
             var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var dir = TestDirectory.Create())
@@ -217,10 +207,8 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
             var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var dir = TestDirectory.Create())
@@ -254,10 +242,8 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-
             var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
             var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
             using (var dir = TestDirectory.Create())
