@@ -10704,6 +10704,150 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public async Task RestoreNetCore_WhenPackageNamespacesConfiguredInstallsPackagesFromExpectedSources_Success()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+                "a",
+                pathContext.SolutionRoot,
+                NuGetFramework.Parse("net5.0"));
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageY = "Y", packageZ = "Z";
+
+            var packageX100 = new SimpleTestPackageContext(packageX, version);
+            var packageY100 = new SimpleTestPackageContext(packageY, version);
+            var packageZ100 = new SimpleTestPackageContext(packageZ, version);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            projectA.AddPackageToAllFrameworks(packageX100);
+            projectA.AddPackageToAllFrameworks(packageY100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""{packageY}*"" />
+                <namespace id=""{packageZ}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />                                                
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
+
+            var result = Util.Restore(pathContext, projectA.ProjectPath);
+
+            Assert.True(result.Success);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_WhenPackageNamespacesConfiguredAndNoMatchingSourceFound_Fails()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+                "a",
+                pathContext.SolutionRoot,
+                NuGetFramework.Parse("net5.0"));
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageY = "Y", packageZ = "Z";
+
+            var packageX100 = new SimpleTestPackageContext(packageX, version);
+            var packageY100 = new SimpleTestPackageContext(packageY, version);
+            var packageZ100 = new SimpleTestPackageContext(packageZ, version);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            projectA.AddPackageToAllFrameworks(packageX100);
+            projectA.AddPackageToAllFrameworks(packageY100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""{packageY}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />                                                
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
+
+            var result = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
+
+            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})'", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
