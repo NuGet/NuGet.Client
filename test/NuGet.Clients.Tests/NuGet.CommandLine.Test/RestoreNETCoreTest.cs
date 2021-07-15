@@ -10705,7 +10705,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_WhenPackageNamespacesConfiguredInstallsPackagesFromExpectedSources_Success()
+        public async Task RestoreNetCore_WhenPackageNamespacesConfiguredInstallsPackageReferencesAndDownloadsFromExpectedSources_Success()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -10719,16 +10719,18 @@ namespace NuGet.CommandLine.Test
                 NuGetFramework.Parse("net5.0"));
 
             const string version = "1.0.0";
-            const string packageX = "X", packageY = "Y", packageZ = "Z";
+            const string packageX = "X", packageY = "Y", packageZ = "Z", packageK = "K";
 
             var packageX100 = new SimpleTestPackageContext(packageX, version);
             var packageY100 = new SimpleTestPackageContext(packageY, version);
             var packageZ100 = new SimpleTestPackageContext(packageZ, version);
+            var packageK100 = new SimpleTestPackageContext(packageK, version);
 
             packageX100.Dependencies.Add(packageZ100);
 
             projectA.AddPackageToAllFrameworks(packageX100);
             projectA.AddPackageToAllFrameworks(packageY100);
+            projectA.AddPackageDownloadToAllFrameworks(packageK100);
 
             solution.Projects.Add(projectA);
             solution.Create(pathContext.SolutionRoot);
@@ -10741,14 +10743,16 @@ namespace NuGet.CommandLine.Test
                     PackageSaveMode.Defaultv3,
                     packageX100,
                     packageY100,
-                    packageZ100);
+                    packageZ100,
+                    packageK100);
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSource2.FullName,
                     PackageSaveMode.Defaultv3,
                     packageX100,
                     packageY100,
-                    packageZ100);
+                    packageZ100,
+                    packageK100);
 
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -10761,7 +10765,8 @@ namespace NuGet.CommandLine.Test
                 <namespace id=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />                                                
+                <namespace id=""{packageX}*"" />
+                <namespace id=""{packageK}*"" /> 
             </packageSource>
     </packageNamespaces>
 </configuration>
@@ -10775,6 +10780,7 @@ namespace NuGet.CommandLine.Test
             Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
             Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
             Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
         }
 
         [Fact]
