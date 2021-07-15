@@ -97,6 +97,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         [Import]
         private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
+        [Import]
+        private Lazy<INuGetExperimentationService> NuGetExperimentationService { get; set; }
+
         private void Initialize()
         {
             _vsMonitorSelection = new AsyncLazy<vsShellInterop.IVsMonitorSelection>(
@@ -157,10 +160,10 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             var componentModel = await _asyncServiceProvider.GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
-
+            var experimentationService = NuGetExperimentationService.Value;
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            Brushes.LoadVsBrushes();
+            Brushes.LoadVsBrushes(experimentationService);
 
             _dte = (DTE)await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SDTE));
             Assumes.Present(_dte);

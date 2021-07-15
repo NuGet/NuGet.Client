@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,7 +13,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Experimentation;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -31,7 +29,6 @@ using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
-using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -51,7 +48,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private Stopwatch _sinceLastRefresh;
         private CancellationTokenSource _refreshCts;
-        private bool _forceRecommender;
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
@@ -172,16 +168,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
-
-            // check if environment variable RecommendNuGetPackages to turn on recommendations is set to 1
-            try
-            {
-                _forceRecommender = (Environment.GetEnvironmentVariable("NUGET_RECOMMEND_PACKAGES") == "1");
-            }
-            catch (SecurityException)
-            {
-                // don't make recommendations if we are not able to read the environment variable
-            }
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -202,6 +188,9 @@ namespace NuGet.PackageManagement.UI
         internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
+
+        public INuGetExperimentationService NuGetExperimentationService { get; private set; }
+
 
         private void OnProjectUpdated(object sender, IProjectContextInfo project)
         {
@@ -807,10 +796,9 @@ namespace NuGet.PackageManagement.UI
                 searchTask: null);
         }
 
-        // Check if user has environment variable of NUGET_RECOMMEND_PACKAGES set to 1 or is in A/B experiment.
-        public bool IsRecommenderFlightEnabled()
+        public static bool IsRecommenderFlightEnabled(INuGetExperimentationService nuGetExperimentationService)
         {
-            return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+            return nuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.PackageRecommender);
         }
 
         /// <summary>
@@ -835,7 +823,7 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
+                bool useRecommender = await GetUseRecommendedPackagesAsync(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
                     Model.Context.ReconnectingSearchService,
@@ -878,7 +866,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool GetUseRecommendedPackages(PackageLoadContext loadContext, string searchText)
+        private async Task<bool> GetUseRecommendedPackagesAsync(PackageLoadContext loadContext, string searchText)
         {
             // only make recommendations when
             //   the single source repository is nuget.org,
@@ -894,8 +882,9 @@ namespace NuGet.PackageManagement.UI
                 _recommendPackages = true;
             }
 
+            NuGetExperimentationService = await ServiceLocator.GetInstanceAsync<INuGetExperimentationService>();
             // Check for A/B experiment here. For control group, return false instead of _recommendPackages
-            if (IsRecommenderFlightEnabled())
+            if (IsRecommenderFlightEnabled(NuGetExperimentationService))
             {
                 return _recommendPackages;
             }

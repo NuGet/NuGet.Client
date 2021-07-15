@@ -70,7 +70,6 @@
     <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
     <Compile Include="Converters\NotNullOrTrueToBooleanConverter.cs" />
     <Compile Include="DisplayVersion.cs" />
-    <Compile Include="Experimentation\ExperimentationConstants.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IPackageItemLoader.cs" />
     <Compile Include="Models\FreeText.cs" />
