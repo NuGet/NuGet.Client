@@ -262,7 +262,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public async Task FindPackage_WhenNoPackageNamespacesAreConfigured_Throws()
+        public async Task FindPackage_WhenNoPackageNamespacesAreConfigured_Fails()
         {
             // Arrange
             var range = new LibraryRange("x", VersionRange.Parse("1.0.0-beta.1"), LibraryDependencyTarget.Package);
@@ -311,10 +311,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token);
 
             Assert.Equal(0, downloadCount);
-            Assert.Equal(1, testLogger.Errors);
-            testLogger.ErrorMessages.TryDequeue(out string message);
-            Assert.Equal("Package Namespaces are configured but no matching source found for 'x' package. " +
-                "Update the namespaces configuration and run the restore again.", message);
+            Assert.Equal(0, testLogger.Errors);
         }
     }
 }
