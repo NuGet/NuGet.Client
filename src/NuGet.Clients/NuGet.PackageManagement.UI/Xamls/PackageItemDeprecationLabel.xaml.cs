@@ -31,6 +31,8 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
+        public string FormatStringSingle { get { return "The package is deprecated."; } }
+
         public string FormatString
         {
             get { return "The package is deprecated. Use {0} instead"; }
@@ -66,12 +68,24 @@ namespace NuGet.PackageManagement.UI
                             NavigateUri = linkBuilder.Uri,
                         };
 
+                        _textBlock.Inlines.Clear();
                         _textBlock.Inlines.Add(new Run(begin));
                         _textBlock.Inlines.Add(link);
                         _textBlock.Inlines.Add(new Run(end));
                         Visibility = Visibility.Visible;
                     }
                 }
+                else
+                {
+                    _textBlock.Inlines.Clear();
+                    _textBlock.Inlines.Add(new Run(FormatStringSingle));
+                    Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                _textBlock.Inlines.Clear();
+                Visibility = Visibility.Collapsed;
             }
         }
     }

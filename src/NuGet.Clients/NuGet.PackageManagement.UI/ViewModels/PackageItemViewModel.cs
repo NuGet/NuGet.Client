@@ -519,8 +519,8 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run( async delegate {
-                    var t = GetDetailedPackageSearchMetadataAsync();
-                    var x = await t;
+                    var t = _detailedPackageSearchMetadata;
+                    var x = await t.Value;
 
                     return x.Item2;
                 });
