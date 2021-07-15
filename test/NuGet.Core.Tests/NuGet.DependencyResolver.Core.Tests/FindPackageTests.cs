@@ -209,15 +209,16 @@ namespace NuGet.DependencyResolver.Core.Tests
         public async Task FindPackage_VerifyPackageSourcesAreFilteredWhenPackageNamespacesAreConfigured_Success()
         {
             // Arrange
-            var range = new LibraryRange("x", VersionRange.Parse("1.0.0-beta.1"), LibraryDependencyTarget.Package);
+            const string packageX = "x", packageY = "y", version = "1.0.0-beta.1", source1 = "source1", source2 = "source2";
+            var range = new LibraryRange(packageX, VersionRange.Parse(version), LibraryDependencyTarget.Package);
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
             var context = new RemoteWalkContext(cacheContext, testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
-            var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta.1"), LibraryType.Package);
-            var dependencies = new[] { new LibraryDependency() { LibraryRange = new LibraryRange("y", VersionRange.All, LibraryDependencyTarget.Package) } };
+            var actualIdentity = new LibraryIdentity(packageX, NuGetVersion.Parse(version), LibraryType.Package);
+            var dependencies = new[] { new LibraryDependency() { LibraryRange = new LibraryRange(packageY, VersionRange.All, LibraryDependencyTarget.Package) } };
             var dependencyInfo = LibraryDependencyInfo.Create(actualIdentity, framework, dependencies);
 
             var downloadCount = 0;
@@ -227,7 +228,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             remoteProvider.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
                 .ReturnsAsync(actualIdentity);
             remoteProvider.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider.SetupGet(e => e.Source).Returns(new PackageSource("source1"));
+            remoteProvider.SetupGet(e => e.Source).Returns(new PackageSource(source1));
             remoteProvider.Setup(e => e.GetDependenciesAsync(It.IsAny<LibraryIdentity>(), It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
                 .ReturnsAsync(dependencyInfo)
                 .Callback(() => ++downloadCount);
@@ -238,7 +239,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             remoteProvider2.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
                 .ReturnsAsync(actualIdentity);
             remoteProvider2.SetupGet(e => e.IsHttp).Returns(true);
-            remoteProvider2.SetupGet(e => e.Source).Returns(new PackageSource("source2"));
+            remoteProvider2.SetupGet(e => e.Source).Returns(new PackageSource(source2));
             remoteProvider2.Setup(e => e.GetDependenciesAsync(It.IsAny<LibraryIdentity>(), It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
                 .ReturnsAsync(dependencyInfo)
                 .Callback(() => ++downloadCount);
@@ -246,8 +247,8 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             //package namespaces configuration
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("source2", new List<string>() { "x" });
-            namespaces.Add("source1", new List<string>() { "y" });
+            namespaces.Add(source2, new List<string>() { packageX });
+            namespaces.Add(source1, new List<string>() { packageY });
             PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
             context.PackageNamespaces = namespacesConfiguration;
 
@@ -257,22 +258,26 @@ namespace NuGet.DependencyResolver.Core.Tests
             // Assert
             // Verify only one download happened from the expected source i.e. source2
             Assert.Equal(1, downloadCount);
-            Assert.Equal("1.0.0-beta.1", result.Key.Version.ToString());
-            Assert.Equal("source2", result.Data.Match.Provider.Source.Name);
+            Assert.Equal(1, testLogger.DebugMessages.Count);
+            testLogger.DebugMessages.TryPeek(out string message);
+            Assert.Equal($"Package namespace matches found for package ID '{packageX}' are: '{source2}'", message);
+            Assert.Equal(version, result.Key.Version.ToString());
+            Assert.Equal(source2, result.Data.Match.Provider.Source.Name);
         }
 
         [Fact]
-        public async Task FindPackage_WhenNoPackageNamespacesAreConfigured_Fails()
+        public async Task FindPackage_WhenNoPackageNamespacesAreConfiguredForAPackage_Fails()
         {
             // Arrange
-            var range = new LibraryRange("x", VersionRange.Parse("1.0.0-beta.1"), LibraryDependencyTarget.Package);
+            const string packageX = "x", version = "1.0.0-beta.1";
+            var range = new LibraryRange(packageX, VersionRange.Parse(version), LibraryDependencyTarget.Package);
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
             var context = new RemoteWalkContext(cacheContext, testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
-            var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta.1"), LibraryType.Package);
+            var actualIdentity = new LibraryIdentity(packageX, NuGetVersion.Parse(version), LibraryType.Package);
             var dependencies = new[] { new LibraryDependency() { LibraryRange = new LibraryRange("y", VersionRange.All, LibraryDependencyTarget.Package) } };
             var dependencyInfo = LibraryDependencyInfo.Create(actualIdentity, framework, dependencies);
 
@@ -312,6 +317,9 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             Assert.Equal(0, downloadCount);
             Assert.Equal(0, testLogger.Errors);
+            Assert.Equal(1, testLogger.DebugMessages.Count);
+            testLogger.DebugMessages.TryPeek(out string message);
+            Assert.Equal($"Package Namespaces are configured but no matching source found for '{packageX}' package.", message);
         }
     }
 }
