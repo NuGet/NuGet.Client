@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Configuration.Test
@@ -34,7 +35,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_WithOneSource_Match(string packageNamespaces, string term)
         {
             // Arrange
-            PackageNamespacesConfiguration configuration = GetPackageNamespacesConfiguration(packageNamespaces);
+            PackageNamespacesConfiguration configuration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -67,7 +68,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_WithMultipleSources_Match(string packageNamespaces, string term)
         {
             // Arrange
-            PackageNamespacesConfiguration configuration = GetPackageNamespacesConfiguration(packageNamespaces);
+            PackageNamespacesConfiguration configuration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -188,7 +189,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_InvalidSearchInput_Throws(string packageNamespaces, string term)
         {
             // Arrange
-            PackageNamespacesConfiguration configuration = GetPackageNamespacesConfiguration(packageNamespaces);
+            PackageNamespacesConfiguration configuration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
 
             // Act & Assert
             configuration.AreNamespacesEnabled.Should().BeTrue();
@@ -201,34 +202,7 @@ namespace NuGet.Configuration.Test
 
         private SearchTree GetSearchTree(string packageNamespaces)
         {
-            return new SearchTree(GetPackageNamespacesConfiguration(packageNamespaces));
-        }
-
-        private PackageNamespacesConfiguration GetPackageNamespacesConfiguration(string packageNamespaces)
-        {
-            string[] sections = packageNamespaces.Split('|');
-            var namespaces = new Dictionary<string, IReadOnlyList<string>>();
-
-            foreach (string section in sections)
-            {
-                string[] parts = section.Split(',');
-                string sourceKey = parts[0];
-
-                if (string.IsNullOrWhiteSpace(sourceKey))
-                {
-                    continue;
-                }
-
-                var namespaceList = new List<string>();
-                for (int i = 1; i < parts.Length; i++)
-                {
-                    namespaceList.Add(parts[i]);
-                }
-
-                namespaces[sourceKey] = namespaceList;
-            }
-
-            return new PackageNamespacesConfiguration(namespaces);
+            return new SearchTree(PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces));
         }
     }
 }

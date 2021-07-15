@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
+using FileSystemUtility = NuGet.ProjectManagement.FileSystemUtility;
 
 namespace Test.Utility
 {

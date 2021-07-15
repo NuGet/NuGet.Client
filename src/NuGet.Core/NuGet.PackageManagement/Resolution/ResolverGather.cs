@@ -31,6 +31,7 @@ namespace NuGet.PackageManagement
         private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _maxDegreeOfParallelism;
         private readonly ConcurrentDictionary<string, TimeSpan> _timeTaken = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
+        private readonly bool _areNamespacesEnabled;
 
         private ResolverGather(GatherContext context)
         {
@@ -42,6 +43,7 @@ namespace NuGet.PackageManagement
             _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
 
             _cache = _context.ResolutionContext?.GatherCache;
+            _areNamespacesEnabled = _context.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
         }
 
         /// <summary>
@@ -533,13 +535,37 @@ namespace NuGet.PackageManagement
 
         private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage)
         {
+            IReadOnlyList<string> configuredPackageSources = null;
+
+            if (_areNamespacesEnabled)
+            {
+
+                configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(package.Id);
+
+                if (configuredPackageSources != null)
+                {
+                    var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                    _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound((package.Id), packageSourcesAtPrefix));
+                }
+                else
+                {
+                    _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound((package.Id)));
+                }
+            }
+
             // No-op if the id has already been searched for
             // Exact versions are not added to the list since we may need to search for the full
             // set of packages for that id later if it becomes part of the closure later.
             if (package.HasVersion || _idsSearched.Add(package.Id))
             {
-                foreach (var source in sources)
+                foreach (SourceResource source in sources)
                 {
+                    if (_areNamespacesEnabled && configuredPackageSources != null && !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                    {
+                        // This package's id prefix is not defined in current package source, let's skip.
+                        continue;
+                    }
+
                     // Keep track of the order in which these were made
                     var requestId = GetNextRequestId();
 

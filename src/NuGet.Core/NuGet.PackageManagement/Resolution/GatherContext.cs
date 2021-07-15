@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -17,6 +18,11 @@ namespace NuGet.PackageManagement
         {
             // Defaults
             AllowDowngrades = true;
+        }
+
+        public GatherContext(PackageNamespacesConfiguration packageNamespacesConfiguration) : this()
+        {
+            PackageNamespacesConfiguration = packageNamespacesConfiguration;
         }
 
         /// <summary>
@@ -73,6 +79,11 @@ namespace NuGet.PackageManagement
         /// If true, missing primary targets will be ignored.
         /// </summary>
         public bool IsUpdateAll { get; set; }
+
+        /// <summary>
+        /// PackageNamespacesConfiguration section value from nuget.config file, if section doesn't exist then it's null.
+        /// </summary>
+        public PackageNamespacesConfiguration PackageNamespacesConfiguration { get; }
 
         /// <summary>
         /// Logging adapter
