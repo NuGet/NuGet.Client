@@ -78,6 +78,11 @@ namespace NuGet.Tests.Apex
             var authorSignedPackage = AuthorSignPackage(package, authorCertificate, timestampProviderUrl);
             return RepositoryCountersignPackage(authorSignedPackage, repoCertificate, v3ServiceIndexUrl, packageOwners, timestampProviderUrl);
         }
+        public static async Task CreateCustomPackageInSourceAsync(string packageSource, string packageName, string packageVersion, string requestAdditionalContent)
+        {
+            var package = CreateCustomPackage(packageName, packageVersion, requestAdditionalContent);
+            await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
+        }
 
         public static SimpleTestPackageContext AuthorSignPackage(
             SimpleTestPackageContext package,
@@ -145,6 +150,17 @@ namespace NuGet.Tests.Apex
             package.Files.Clear();
             package.AddFile("lib/net45/_._");
             package.AddFile("lib/netstandard1.0/_._");
+
+            return package;
+        }
+
+        public static SimpleTestPackageContext CreateCustomPackage(string packageName, string packageVersion, string requestAdditionalContent)
+        {
+            var package = new SimpleTestPackageContext(packageName, packageVersion);
+            package.Files.Clear();
+            package.AddFile("lib/net45/_._");
+            package.AddFile("lib/netstandard1.0/_._");
+            package.AddFile("lib/netstandard1.0/" + requestAdditionalContent);
 
             return package;
         }

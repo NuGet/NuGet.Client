@@ -22,10 +22,10 @@ namespace NuGet.Tests.Apex
 
         public NuGetApexTestService NuGetApexTestService { get; }
 
-        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ILogger logger, bool noAutoRestore = false, bool addNetStandardFeeds = false)
+        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ILogger logger, bool noAutoRestore = false, bool addNetStandardFeeds = false, SimpleTestPathContext simpleTestPathContext = null)
         {
             logger.LogInformation("Creating test context");
-            _pathContext = new SimpleTestPathContext();
+            _pathContext = simpleTestPathContext ?? new SimpleTestPathContext();
 
             if (noAutoRestore)
             {
