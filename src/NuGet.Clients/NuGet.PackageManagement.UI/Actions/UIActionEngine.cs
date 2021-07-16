@@ -520,6 +520,7 @@ namespace NuGet.PackageManagement.UI
                         nuGetUI?.RecommendPackages,
                         nuGetUI?.RecommenderVersion,
                         nuGetUI?.VulnerablePackagesCount ?? 0,
+                        nuGetUI?.HighestVulnerability ?? -1,
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -545,6 +546,7 @@ namespace NuGet.PackageManagement.UI
             bool? recommendPackages,
             (string modelVersion, string vsixVersion)? recommenderVersion,
             int vulnerablePackagesCount,
+            int highestVulnerability,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -593,6 +595,7 @@ namespace NuGet.PackageManagement.UI
             if (vulnerablePackagesCount > 0)
             {
                 actionTelemetryEvent["VulnerablePackagesCount"] = vulnerablePackagesCount;
+                actionTelemetryEvent["HighestVulnerability"] = highestVulnerability;
             }
 
             // log the installed package state

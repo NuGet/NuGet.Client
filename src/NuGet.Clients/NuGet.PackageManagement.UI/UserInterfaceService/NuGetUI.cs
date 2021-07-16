@@ -317,6 +317,8 @@ namespace NuGet.PackageManagement.UI
 
         public int VulnerablePackagesCount { get; set; }
 
+        public int HighestVulnerability { get; set; }
+
         public PackageSourceMoniker ActivePackageSourceMoniker
         {
             get
