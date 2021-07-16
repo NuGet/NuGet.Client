@@ -294,7 +294,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task InstallPackageFromPMCForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -339,7 +339,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task UpdatePackageFromPMCForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -387,7 +387,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task InstallPackageFromPMCForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -401,14 +401,14 @@ namespace NuGet.Tests.Apex
             var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
             Directory.CreateDirectory(opensourceRepositoryPath);
 
-            await CommonUtility.CreateCustomPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion1, "Thisisfromopensourcerepo1.txt");
-            await CommonUtility.CreateCustomPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion2, "Thisisfromopensourcerepo2.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion1, "Thisisfromopensourcerepo1.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion2, "Thisisfromopensourcerepo2.txt");
 
             var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
-            await CommonUtility.CreateCustomPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1, "Thisisfromprivaterepo1.txt");
-            await CommonUtility.CreateCustomPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2, "Thisisfromprivaterepo2.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1, "Thisisfromprivaterepo1.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2, "Thisisfromprivaterepo2.txt");
 
             //Create nuget.config with Package namespace filtering rules.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -439,10 +439,10 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
 
                 // Assert
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
 
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "netstandard1.0", "Thisisfromprivaterepo1.txt");
+                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "net5.0", "Thisisfromprivaterepo1.txt");
                 // Make sure name squatting package not restored from  opensource repository.
                 Assert.True(File.Exists(uniqueContentFile));
             }
@@ -450,7 +450,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task UpdatePackageFromPMCForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -464,14 +464,14 @@ namespace NuGet.Tests.Apex
             var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
             Directory.CreateDirectory(opensourceRepositoryPath);
 
-            await CommonUtility.CreateCustomPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion1, "Thisisfromopensourcerepo1.txt");
-            await CommonUtility.CreateCustomPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion2, "Thisisfromopensourcerepo2.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion1, "Thisisfromopensourcerepo1.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion2, "Thisisfromopensourcerepo2.txt");
 
             var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
-            await CommonUtility.CreateCustomPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1, "Thisisfromprivaterepo1.txt");
-            await CommonUtility.CreateCustomPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2, "Thisisfromprivaterepo2.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1, "Thisisfromprivaterepo1.txt");
+            await CommonUtility.CreateNetCorePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2, "Thisisfromprivaterepo2.txt");
 
             //Create nuget.config with Package namespace filtering rules.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -503,10 +503,10 @@ namespace NuGet.Tests.Apex
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
                 // Assert
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
 
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "netstandard1.0", "Thisisfromprivaterepo2.txt");
+                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion2, "lib", "net5.0", "Thisisfromprivaterepo2.txt");
                 // Make sure name squatting package not restored from  opensource repository.
                 Assert.True(File.Exists(uniqueContentFile));
             }
