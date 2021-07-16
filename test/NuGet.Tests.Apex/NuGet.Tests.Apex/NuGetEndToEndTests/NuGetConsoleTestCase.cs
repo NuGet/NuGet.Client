@@ -437,13 +437,12 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
-                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
                 // Assert
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, XunitLogger);
 
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "netstandard1.0", "Thisisfromprivaterepo2.txt");
+                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "netstandard1.0", "Thisisfromprivaterepo1.txt");
                 // Make sure name squatting package not restored from  opensource repository.
                 Assert.True(File.Exists(uniqueContentFile));
             }
@@ -501,12 +500,13 @@ namespace NuGet.Tests.Apex
 
                 // Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+                nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
                 // Assert
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, XunitLogger);
 
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "netstandard1.0", "Thisisfromprivaterepo1.txt");
+                var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "netstandard1.0", "Thisisfromprivaterepo2.txt");
                 // Make sure name squatting package not restored from  opensource repository.
                 Assert.True(File.Exists(uniqueContentFile));
             }
