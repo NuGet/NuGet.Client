@@ -3,12 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.ProjectModel;
 using Xunit;
 
 namespace NuGet.Commands.Test

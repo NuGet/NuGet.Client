@@ -991,7 +991,6 @@ namespace NuGet.Commands.Test
                     ""dependencies"": {
                         ""packageX"": {
                             ""version"": ""1.0.0"",
-                            ""type"": ""build""
                         }
                     },
                     ""frameworks"": {
@@ -1009,6 +1008,7 @@ namespace NuGet.Commands.Test
                     ""runtimes"": { ""any"": { } }
                 }";
 
+                await CreateXYZAsync(Path.Combine(workingDir, "repository"), "all", string.Empty);
                 var result = await ProjectToProjectSetupAsync(workingDir, logger, configJson1, configJson2);
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
                 var dependencies = target.Libraries.Single(lib => lib.Name == "TestProject2").Dependencies;
@@ -1017,9 +1017,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(0, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
-                Assert.Equal(0, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
-                Assert.Equal(0, dependencies.Count());
+                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(1, dependencies.Count());
             }
         }
 

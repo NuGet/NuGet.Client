@@ -100,7 +100,6 @@ namespace NuGet.LibraryModel.Tests
                     VersionRange = new VersionRange(new NuGetVersion("4.0.0-rc2"))
                 },
                 SuppressParent = LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.ContentFiles,
-                Type = LibraryDependencyType.Platform,
                 Aliases = "stuff",
             };
         }

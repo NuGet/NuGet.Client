@@ -1473,7 +1473,6 @@ namespace NuGet.Commands.Test
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
-                        LibraryDependencyType.Default,
                         LibraryIncludeFlags.All,
                         LibraryIncludeFlags.All,
                         new List<NuGetLogCode>(),
@@ -1533,7 +1532,6 @@ namespace NuGet.Commands.Test
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var outputPath = Path.Combine(projectPath, "obj");
                 var dependencyBar = new LibraryDependency(new LibraryRange(autoreferencedpackageId, VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
-               LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
                new List<NuGetLogCode>(),

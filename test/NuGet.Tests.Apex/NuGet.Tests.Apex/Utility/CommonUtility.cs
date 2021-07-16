@@ -200,7 +200,6 @@ namespace NuGet.Tests.Apex
                 .Select(e => new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange(e.Attribute(XName.Get("Include")).Value, VersionRange.Parse(e.Attribute(XName.Get("Version")).Value), LibraryDependencyTarget.Package),
-                    Type = LibraryDependencyType.Default,
                     IncludeType = LibraryIncludeFlags.All,
                     SuppressParent = LibraryIncludeFlags.None,
                     NoWarn = new List<NuGetLogCode>(),

@@ -22,7 +22,6 @@ namespace NuGet.ProjectModel.Test
             var logger = new TestLogger();
             var dependencyFoo = new LibraryDependency(
                 libraryRange: new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
-                type: LibraryDependencyType.Default,
                 includeType: LibraryIncludeFlags.All,
                 suppressParent: LibraryIncludeFlags.None,
                 noWarn: new List<Common.NuGetLogCode>(),

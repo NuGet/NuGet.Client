@@ -577,7 +577,6 @@ namespace NuGet.ProjectModel.Test
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
             var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.All, LibraryDependencyTarget.All),
-                LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),

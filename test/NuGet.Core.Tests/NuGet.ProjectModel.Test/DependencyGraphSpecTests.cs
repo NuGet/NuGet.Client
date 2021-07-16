@@ -449,7 +449,6 @@ namespace NuGet.ProjectModel.Test
             // Arrange
             var dependencyFoo = new LibraryDependency(
                 new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
-                LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
@@ -460,7 +459,6 @@ namespace NuGet.ProjectModel.Test
                 aliases: null);
             var dependencyBar = new LibraryDependency(
                 new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
-                LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
@@ -471,7 +469,6 @@ namespace NuGet.ProjectModel.Test
                aliases: null);
             var dependencyBoom = new LibraryDependency(
                 new LibraryRange("boom", versionRange: null, LibraryDependencyTarget.Package),
-                LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
@@ -512,7 +509,6 @@ namespace NuGet.ProjectModel.Test
             // Arrange
             var dependencyFoo = new LibraryDependency(
                 new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
-                LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
@@ -523,7 +519,6 @@ namespace NuGet.ProjectModel.Test
                 aliases: null);
             var dependencyBar = new LibraryDependency(
                 new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
-                LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
@@ -713,7 +708,6 @@ namespace NuGet.ProjectModel.Test
             var nugetFramework = new NuGetFramework("net40");
             var dependencyFoo = new LibraryDependency(
                 new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
-                LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),

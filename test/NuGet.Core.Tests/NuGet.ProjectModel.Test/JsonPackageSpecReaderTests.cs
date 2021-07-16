@@ -160,60 +160,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void PackageSpecReader_SetsPlatformDependencyFlagsCorrectly()
-        {
-            // Arrange
-            var json = @"{
-                           ""dependencies"": {
-                             ""redist"": {
-                               ""version"": ""1.0.0"",
-                               ""type"": ""platform""
-                             }
-                           }
-                         }";
-
-            // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
-            Assert.NotNull(dep);
-            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
-
-            var expected = LibraryIncludeFlags.Build |
-                LibraryIncludeFlags.Compile |
-                LibraryIncludeFlags.Analyzers;
-            Assert.Equal(expected, dep.IncludeType);
-        }
-
-        [Fact]
-        public void PackageSpecReader_ExplicitExcludesAddToTypePlatform()
-        {
-            // Arrange
-            var json = @"{
-                           ""dependencies"": {
-                             ""redist"": {
-                               ""version"": ""1.0.0"",
-                               ""type"": ""platform"",
-                               ""exclude"": ""analyzers""
-                             }
-                           }
-                         }";
-
-            // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
-            Assert.NotNull(dep);
-            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
-
-            var expected = LibraryIncludeFlags.Build |
-                LibraryIncludeFlags.Compile;
-            Assert.Equal(expected, dep.IncludeType);
-        }
-
-        [Fact]
         public void PackageSpecReader_ExplicitIncludesOverrideTypePlatform()
         {
             // Arrange
@@ -233,7 +179,6 @@ namespace NuGet.ProjectModel.Test
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
             Assert.NotNull(dep);
-            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
 
             var expected = LibraryIncludeFlags.Analyzers;
             Assert.Equal(expected, dep.IncludeType);
@@ -1298,7 +1243,6 @@ namespace NuGet.ProjectModel.Test
         [InlineData("exclude")]
         [InlineData("include")]
         [InlineData("suppressParent")]
-        [InlineData("type")]
         public void GetPackageSpec_WhenDependenciesDependencyValueIsArray_Throws(string propertyName)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"{propertyName}\":[\"b\"]}}}}}}";
@@ -1793,7 +1737,6 @@ namespace NuGet.ProjectModel.Test
         [InlineData("exclude")]
         [InlineData("include")]
         [InlineData("suppressParent")]
-        [InlineData("type")]
         public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsArray_Throws(string propertyName)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"{propertyName}\":[\"c\"]}}}}}}}}}}";

@@ -385,7 +385,6 @@ namespace NuGet.ProjectModel
             {
                 var expandedMode = dependency.IncludeType != LibraryIncludeFlags.All
                     || dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent
-                    || dependency.Type != LibraryDependencyType.Default
                     || dependency.AutoReferenced
                     || (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
                         && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference))
@@ -408,11 +407,6 @@ namespace NuGet.ProjectModel
                     if (dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
                     {
                         SetValue(writer, "suppressParent", dependency.SuppressParent.ToString());
-                    }
-
-                    if (dependency.Type != LibraryDependencyType.Default)
-                    {
-                        SetValue(writer, "type", dependency.Type.ToString());
                     }
 
                     if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference

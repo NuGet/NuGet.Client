@@ -71,7 +71,6 @@ namespace NuGet.Commands
                             SuppressParent = LibraryIncludeFlags.All,
                             AutoReferenced = true,
                             IncludeType = LibraryIncludeFlags.None,
-                            Type = LibraryDependencyType.Build
                         }
                     },
                     RestoreMetadata = new ProjectRestoreMetadata

@@ -1971,7 +1971,6 @@ namespace NuGet.ProjectModel.Test
 
             var newtonSoftDependency = new LibraryDependency(
                         libraryRange: new LibraryRange("Newtonsoft.Json", VersionRange.Parse("[12.0.3, )"), LibraryDependencyTarget.Package),
-                        type: LibraryDependencyType.Default,
                         includeType: LibraryIncludeFlags.Compile | LibraryIncludeFlags.BuildTransitive | LibraryIncludeFlags.Native,
                         suppressParent: LibraryIncludeFlags.All,
                         noWarn: new List<NuGetLogCode>(),
