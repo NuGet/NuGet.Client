@@ -160,56 +160,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void PackageSpecReader_SetsPlatformDependencyFlagsCorrectly()
-        {
-            // Arrange
-            var json = @"{
-                           ""dependencies"": {
-                             ""redist"": {
-                               ""version"": ""1.0.0"",
-                             }
-                           }
-                         }";
-
-            // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
-            Assert.NotNull(dep);
-
-            var expected = LibraryIncludeFlags.Build |
-                LibraryIncludeFlags.Compile |
-                LibraryIncludeFlags.Analyzers;
-            Assert.Equal(expected, dep.IncludeType);
-        }
-
-        [Fact]
-        public void PackageSpecReader_ExplicitExcludesAddToTypePlatform()
-        {
-            // Arrange
-            var json = @"{
-                           ""dependencies"": {
-                             ""redist"": {
-                               ""version"": ""1.0.0"",
-                               ""exclude"": ""analyzers""
-                             }
-                           }
-                         }";
-
-            // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
-            Assert.NotNull(dep);
-
-            var expected = LibraryIncludeFlags.Build |
-                LibraryIncludeFlags.Compile;
-            Assert.Equal(expected, dep.IncludeType);
-        }
-
-        [Fact]
         public void PackageSpecReader_ExplicitIncludesOverrideTypePlatform()
         {
             // Arrange

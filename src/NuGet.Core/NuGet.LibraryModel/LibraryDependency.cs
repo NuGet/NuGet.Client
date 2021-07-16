@@ -14,9 +14,6 @@ namespace NuGet.LibraryModel
     {
         public LibraryRange LibraryRange { get; set; }
 
-        [Obsolete("The internal type is deprecated as this field is currently unused.")]
-        public LibraryDependencyType Type { get; set; } = LibraryDependencyType.Default;
-
         public LibraryIncludeFlags IncludeType { get; set; } = LibraryIncludeFlags.All;
 
         public LibraryIncludeFlags SuppressParent { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
@@ -75,15 +72,6 @@ namespace NuGet.LibraryModel
             sb.Append(" ");
             sb.Append(LibraryIncludeFlagUtils.GetFlagString(IncludeType));
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Type property flag
-        /// </summary>
-        [Obsolete("The internal type is deprecated as this field is currently unused.")]
-        public bool HasFlag(LibraryDependencyTypeFlag flag)
-        {
-            return Type.Contains(flag);
         }
 
         public override int GetHashCode()
