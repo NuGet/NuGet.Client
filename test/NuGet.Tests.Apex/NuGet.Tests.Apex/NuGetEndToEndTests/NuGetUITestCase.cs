@@ -318,7 +318,6 @@ namespace NuGet.Tests.Apex
         public async Task UpdatePackageFromUI_PackageNamespace_WithSingleFeed_Succeeds()
         {
             // Arrange
-            // Arrange
             EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
             string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
