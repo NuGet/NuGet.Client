@@ -189,7 +189,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();
@@ -236,7 +236,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             var nuProject = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "NuProject");
@@ -297,7 +297,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();
@@ -347,7 +347,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();

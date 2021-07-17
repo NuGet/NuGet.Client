@@ -323,7 +323,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
@@ -370,7 +370,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
@@ -429,7 +429,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
@@ -492,7 +492,7 @@ namespace NuGet.Tests.Apex
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
-//</configuration>");
+</configuration>");
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
