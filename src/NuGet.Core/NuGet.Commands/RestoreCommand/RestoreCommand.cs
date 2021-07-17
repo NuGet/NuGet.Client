@@ -1165,6 +1165,7 @@ namespace NuGet.Commands
         {
             var context = new RemoteWalkContext(
                 request.CacheContext,
+                request.PackageNameSpaces,
                 logger);
 
             foreach (var provider in request.DependencyProviders.LocalProviders)
@@ -1179,8 +1180,6 @@ namespace NuGet.Commands
 
             // Determine if the targets and props files should be written out.
             context.IsMsBuildBased = request.ProjectStyle != ProjectStyle.DotnetCliTool;
-
-            context.PackageNamespaces = request.PackageNameSpaces;
 
             return context;
         }

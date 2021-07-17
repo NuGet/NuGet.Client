@@ -31,13 +31,18 @@ namespace NuGet.DependencyResolver
             LockFileLibraries = new Dictionary<LockFileCacheKey, IList<LibraryIdentity>>();
         }
 
+        public RemoteWalkContext(SourceCacheContext cacheContext, PackageNamespacesConfiguration packageNamespaces, ILogger logger) :
+            this(cacheContext, logger)
+        {
+            PackageNamespaces = packageNamespaces ?? throw new ArgumentNullException(nameof(packageNamespaces));
+        }
+
         public SourceCacheContext CacheContext { get; }
         public ILogger Logger { get; }
-
         public IList<IDependencyProvider> ProjectLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> LocalLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> RemoteLibraryProviders { get; }
-        public PackageNamespacesConfiguration PackageNamespaces { get; set; }
+        public PackageNamespacesConfiguration PackageNamespaces { get; }
 
         /// <summary>
         /// Packages lock file libraries to be used while generating restore graph.

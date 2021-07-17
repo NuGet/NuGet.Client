@@ -214,7 +214,6 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity(packageX, NuGetVersion.Parse(version), LibraryType.Package);
@@ -222,6 +221,13 @@ namespace NuGet.DependencyResolver.Core.Tests
             var dependencyInfo = LibraryDependencyInfo.Create(actualIdentity, framework, dependencies);
 
             var downloadCount = 0;
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add(source2, new List<string>() { packageX });
+            namespaces.Add(source1, new List<string>() { packageY });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1
             var remoteProvider = new Mock<IRemoteDependencyProvider>();
@@ -245,13 +251,6 @@ namespace NuGet.DependencyResolver.Core.Tests
                 .Callback(() => ++downloadCount);
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add(source2, new List<string>() { packageX });
-            namespaces.Add(source1, new List<string>() { packageY });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
-            context.PackageNamespaces = namespacesConfiguration;
-
             // Act
             var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token);
 
@@ -274,7 +273,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, testLogger);
+
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity(packageX, NuGetVersion.Parse(version), LibraryType.Package);
@@ -282,6 +281,13 @@ namespace NuGet.DependencyResolver.Core.Tests
             var dependencyInfo = LibraryDependencyInfo.Create(actualIdentity, framework, dependencies);
 
             var downloadCount = 0;
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add("source2", new List<string>() { "z" });
+            namespaces.Add("source1", new List<string>() { "y" });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1
             var remoteProvider = new Mock<IRemoteDependencyProvider>();
@@ -304,13 +310,6 @@ namespace NuGet.DependencyResolver.Core.Tests
                 .ReturnsAsync(dependencyInfo)
                 .Callback(() => ++downloadCount);
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
-
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("source2", new List<string>() { "z" });
-            namespaces.Add("source1", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
-            context.PackageNamespaces = namespacesConfiguration;
 
             // Act
             var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token);

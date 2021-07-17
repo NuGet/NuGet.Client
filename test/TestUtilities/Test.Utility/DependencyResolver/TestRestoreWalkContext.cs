@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Protocol.Test;
 
@@ -12,7 +13,9 @@ namespace Test.Utility
         public TestRemoteWalkContext() : base(new TestSourceCacheContext(), NullLogger.Instance)
         {
         }
-        public TestRemoteWalkContext(ILogger logger) : base(new TestSourceCacheContext(), logger)
+
+        public TestRemoteWalkContext(PackageNamespacesConfiguration packageNamespaces, ILogger logger) :
+            base(new TestSourceCacheContext(), packageNamespaces, logger)
         {
         }
     }

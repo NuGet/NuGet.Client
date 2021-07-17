@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Moq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.Test.Utility;
@@ -46,7 +47,13 @@ namespace NuGet.DependencyResolver.Core.Tests
         [Fact]
         public void FilterDependencyProvidersForLibrary_WhenPackageNamespacesAreConfiguredReturnsOnlyApplicableProviders_Success()
         {
-            var context = new TestRemoteWalkContext();
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add("Source1", new List<string>() { "x" });
+            namespaces.Add("Source2", new List<string>() { "y" });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+
+            var context = new TestRemoteWalkContext(namespacesConfiguration, NullLogger.Instance);
 
             // Source1
             var remoteProvider1 = CreateRemoteDependencyProvider("Source1");
@@ -57,13 +64,6 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
             var libraryRange = new LibraryRange("x", Versioning.VersionRange.None, LibraryDependencyTarget.Package);
-
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("Source1", new List<string>() { "x" });
-            namespaces.Add("Source2", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
-            context.PackageNamespaces = namespacesConfiguration;
 
             IList<IRemoteDependencyProvider> providers = context.FilterDependencyProvidersForLibrary(libraryRange);
 
@@ -75,7 +75,14 @@ namespace NuGet.DependencyResolver.Core.Tests
         public void FilterDependencyProvidersForLibrary_WhenPackageNamespaceToSourceMappingIsNotConfiguredReturnsNoProviders_Success()
         {
             var logger = new TestLogger();
-            var context = new TestRemoteWalkContext(logger);
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add("Source1", new List<string>() { "y" });
+            namespaces.Add("Source2", new List<string>() { "z" });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+
+            var context = new TestRemoteWalkContext(namespacesConfiguration, logger);
 
             // Source1
             var remoteProvider1 = CreateRemoteDependencyProvider("Source1");
@@ -86,13 +93,6 @@ namespace NuGet.DependencyResolver.Core.Tests
             context.RemoteLibraryProviders.Add(remoteProvider2.Object);
 
             var libraryRange = new LibraryRange("x", Versioning.VersionRange.None, LibraryDependencyTarget.Package);
-
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("Source1", new List<string>() { "y" });
-            namespaces.Add("Source2", new List<string>() { "z" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
-            context.PackageNamespaces = namespacesConfiguration;
 
             IList<IRemoteDependencyProvider> providers = context.FilterDependencyProvidersForLibrary(libraryRange);
 
