@@ -220,25 +220,23 @@ namespace NuGet.DependencyResolver
         /// <param name="cache">Cache of requests per library</param>
         /// <param name="libraryRange">The library requested</param>
         /// <param name="remoteWalkContext">remote Providers (all sources, including file sources)</param>
-        /// <param name="logger">logger</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns>The requested range and remote match.</returns>
         public static Task<Tuple<LibraryRange, RemoteMatch>> FindPackageLibraryMatchCachedAsync(
             ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> cache,
             LibraryRange libraryRange,
            RemoteWalkContext remoteWalkContext,
-            ILogger logger,
             CancellationToken cancellationToken)
         {
-            return cache.GetOrAdd(libraryRange, (cacheKey) => ResolvePackageLibraryMatchAsync(libraryRange, remoteWalkContext, logger, cancellationToken));
+            return cache.GetOrAdd(libraryRange, (cacheKey) => ResolvePackageLibraryMatchAsync(libraryRange, remoteWalkContext, cancellationToken));
         }
 
-        private static async Task<Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchAsync(LibraryRange libraryRange, RemoteWalkContext remoteWalkContext, ILogger logger, CancellationToken cancellationToken)
+        private static async Task<Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchAsync(LibraryRange libraryRange, RemoteWalkContext remoteWalkContext, CancellationToken cancellationToken)
         {
             IList<IRemoteDependencyProvider> remoteDependencyProviders = remoteWalkContext.FilterDependencyProvidersForLibrary(libraryRange);
             LogSourcesIfPackageNamespacesAreEnabled(libraryRange.Name, remoteWalkContext, remoteDependencyProviders);
 
-            var match = await FindPackageLibraryMatchAsync(libraryRange, NuGetFramework.AnyFramework, remoteDependencyProviders, remoteWalkContext.LocalLibraryProviders, remoteWalkContext.CacheContext, logger, cancellationToken);
+            var match = await FindPackageLibraryMatchAsync(libraryRange, NuGetFramework.AnyFramework, remoteDependencyProviders, remoteWalkContext.LocalLibraryProviders, remoteWalkContext.CacheContext, remoteWalkContext.Logger, cancellationToken);
             if (match == null)
             {
                 match = CreateUnresolvedMatch(libraryRange);

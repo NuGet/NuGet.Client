@@ -224,7 +224,7 @@ namespace NuGet.Commands
         private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependenciesAsync(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
         {
             var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency =>
-            ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependenciesCache, downloadDependency, context, _logger, token));
+            ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependenciesCache, downloadDependency, context, token));
 
             var packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
 
