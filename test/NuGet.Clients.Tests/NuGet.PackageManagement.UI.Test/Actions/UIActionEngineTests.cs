@@ -7,8 +7,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
@@ -119,6 +121,57 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(packageIdentityA.Id, addedResults[0].Id);
             Assert.Equal(packageIdentityB.Id, addedResults[1].Id);
             Assert.Equal(packageIdentityC.Id, addedResults[2].Id);
+        }
+
+        [Fact]
+        public void AddUiActionEngineTelemetryProperties_AddsVulnerabilityInfo_Succeeds()
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+
+            var operationId = Guid.NewGuid().ToString();
+
+            var actionTelemetryData = new VSActionsTelemetryEvent(
+                operationId,
+                projectIds: new[] { Guid.NewGuid().ToString() },
+                operationType: NuGetOperationType.Install,
+                source: OperationSource.PMC,
+                startTime: DateTimeOffset.Now.AddSeconds(-1),
+                status: NuGetOperationStatus.NoOp,
+                packageCount: 1,
+                endTime: DateTimeOffset.Now,
+                duration: .40);
+
+            UIActionEngine.AddUiActionEngineTelemetryProperties(
+                actionTelemetryEvent: actionTelemetryData,
+                continueAfterPreview: true,
+                acceptedLicense: true,
+                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0)),
+                selectedIndex: 0,
+                recommendedCount: 0,
+                recommendPackages: 0,
+                recommenderVersion: null,
+                topLevelVulnerablePackagesCount: 1,
+                topLevelVulnerableMaxSeverity: 1,
+                existingPackages: null,
+                addedPackages: null,
+                removedPackages: null,
+                updatedPackagesOld: null,
+                updatedPackagesNew: null,
+                targetFrameworks: null);
+
+            // Act
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
+            service.EmitTelemetryEvent(actionTelemetryData);
+
+            // Assert
+            Assert.NotNull(lastTelemetryEvent);
+            Assert.Equal(1, lastTelemetryEvent["topLevelVulnerableMaxSeverity"]);
+            Assert.Equal(1, lastTelemetryEvent["topLevelVulnerableMaxSeverity"]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity

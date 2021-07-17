@@ -315,9 +315,9 @@ namespace NuGet.PackageManagement.UI
 
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
 
-        public int VulnerablePackagesCount { get; set; }
+        public int TopLevelPackagesVulnerableCount { get; set; }
 
-        public int HighestVulnerability { get; set; }
+        public int TopLevelPackagesVulnerableMaxSeverity { get; set; }
 
         public PackageSourceMoniker ActivePackageSourceMoniker
         {

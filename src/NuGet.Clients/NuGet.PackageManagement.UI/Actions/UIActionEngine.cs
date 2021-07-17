@@ -519,8 +519,8 @@ namespace NuGet.PackageManagement.UI
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
                         nuGetUI?.RecommenderVersion,
-                        nuGetUI?.VulnerablePackagesCount ?? 0,
-                        nuGetUI?.HighestVulnerability ?? -1,
+                        nuGetUI?.TopLevelPackagesVulnerableCount ?? 0,
+                        nuGetUI?.TopLevelPackagesVulnerableMaxSeverity ?? -1,
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -536,7 +536,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
-        private static void AddUiActionEngineTelemetryProperties(
+        internal static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
             bool continueAfterPreview,
             bool acceptedLicense,
@@ -545,8 +545,8 @@ namespace NuGet.PackageManagement.UI
             int? recommendedCount,
             bool? recommendPackages,
             (string modelVersion, string vsixVersion)? recommenderVersion,
-            int vulnerablePackagesCount,
-            int highestVulnerability,
+            int topLevelVulnerablePackagesCount,
+            int topLevelVulnerableMaxSeverity,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -592,11 +592,8 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
             }
 
-            if (vulnerablePackagesCount > 0)
-            {
-                actionTelemetryEvent["VulnerablePackagesCount"] = vulnerablePackagesCount;
-                actionTelemetryEvent["HighestVulnerability"] = highestVulnerability;
-            }
+            actionTelemetryEvent["TopLevelPackagesVulnerableCount"] = topLevelVulnerablePackagesCount;
+            actionTelemetryEvent["TopLevelPackagesVulnerableMaxSeverity "] = topLevelVulnerableMaxSeverity;
 
             // log the installed package state
             if (existingPackages?.Count > 0)
