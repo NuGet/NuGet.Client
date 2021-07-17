@@ -79,7 +79,7 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 clientPolicyContext,
-                packageNamespaces: null,
+                packageNamespaces: PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance),
                 log,
                 new LockFileBuilderCache())
         {
@@ -196,7 +196,7 @@ namespace NuGet.Commands.Test
                 log: log),
             cacheContext,
             clientPolicyContext,
-            packageNamespaces: null,
+            packageNamespaces: PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance),
             log,
             lockFileBuilderCache)
         {
