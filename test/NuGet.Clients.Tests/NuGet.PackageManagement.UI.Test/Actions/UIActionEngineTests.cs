@@ -153,10 +153,10 @@ namespace NuGet.PackageManagement.UI.Test
                 userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0)),
                 selectedIndex: 0,
                 recommendedCount: 0,
-                recommendPackages: 0,
+                recommendPackages: false,
                 recommenderVersion: null,
                 topLevelVulnerablePackagesCount: 1,
-                topLevelVulnerableMaxSeverity: 1,
+                topLevelVulnerablePackagesMaxSeverity: 3,
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,
@@ -170,8 +170,8 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal(1, lastTelemetryEvent["topLevelVulnerableMaxSeverity"]);
-            Assert.Equal(1, lastTelemetryEvent["topLevelVulnerableMaxSeverity"]);
+            Assert.Equal(1, lastTelemetryEvent["TopLevelVulnerablePackagesCount"]);
+            Assert.Equal(3, lastTelemetryEvent["TopLevelVulnerablePackagesMaxSeverity"]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity

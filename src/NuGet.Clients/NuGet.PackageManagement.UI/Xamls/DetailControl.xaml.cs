@@ -165,8 +165,8 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RecommendedCount = model.RecommendedCount;
                     nugetUi.RecommendPackages = model.RecommendPackages;
                     nugetUi.RecommenderVersion = model.RecommenderVersion;
-                    nugetUi.TopLevelPackagesVulnerableCount = model.IsPackageVulnerable ? 1 : 0;
-                    nugetUi.TopLevelPackagesVulnerableMaxSeverity = model.PackageVulnerabilityMaxSeverity;
+                    nugetUi.TopLevelVulnerablePackagesCount = model.IsPackageVulnerable ? 1 : 0;
+                    nugetUi.TopLevelVulnerablePackagesMaxSeverity = model.PackageVulnerabilityMaxSeverity;
                 });
         }
     }

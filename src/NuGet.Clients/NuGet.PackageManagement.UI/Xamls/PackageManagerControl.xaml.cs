@@ -1436,8 +1436,8 @@ namespace NuGet.PackageManagement.UI
             nugetUi.ForceRemove = options.ForceRemove;
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
-            nugetUi.TopLevelPackagesVulnerableCount = vulnerablePkgs.Count();
-            nugetUi.TopLevelPackagesVulnerableMaxSeverity = vulnerablePkgs.SelectMany(x => x.Vulnerabilities).Max(y => y.Severity);
+            nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgs.Count();
+            nugetUi.TopLevelVulnerablePackagesMaxSeverity = vulnerablePkgs.SelectMany(x => x.Vulnerabilities).Max(y => y.Severity);
             nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
         }
