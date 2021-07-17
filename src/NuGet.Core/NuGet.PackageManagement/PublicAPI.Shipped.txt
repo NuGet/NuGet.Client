@@ -76,7 +76,6 @@ NuGet.PackageManagement.IDEExecutionContext.CollapseAllNodes(NuGet.PackageManage
 NuGet.PackageManagement.IDEExecutionContext.CommonOperations.get -> NuGet.PackageManagement.ICommonOperations
 NuGet.PackageManagement.IDEExecutionContext.IDEDirectInstall.get -> NuGet.Packaging.Core.PackageIdentity
 NuGet.PackageManagement.IDEExecutionContext.IDEDirectInstall.set -> void
-NuGet.PackageManagement.IDEExecutionContext.IDEExecutionContext(NuGet.PackageManagement.ICommonOperations commonOperations) -> void
 NuGet.PackageManagement.IDEExecutionContext.SaveExpandedNodeStates(NuGet.PackageManagement.ISolutionManager solutionManager) -> System.Threading.Tasks.Task
 NuGet.PackageManagement.IDeleteOnRestartManager
 NuGet.PackageManagement.IDeleteOnRestartManager.CheckAndRaisePackageDirectoriesMarkedForDeletion() -> void

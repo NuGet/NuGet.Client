@@ -116,5 +116,10 @@ namespace Test.Utility
             FilesOpened.Add(fullPath);
             return Task.FromResult(0);
         }
+
+        public override Task RenderMarkDownFile(string fullPath)
+        {
+            return Task.FromResult(0); //TODO: will write unit test
+        }
     }
 }

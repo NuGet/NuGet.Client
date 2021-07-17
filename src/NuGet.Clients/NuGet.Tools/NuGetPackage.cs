@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -84,7 +85,7 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.PackageFileServiceName, BrokeredServicesUtilities.PackageFileServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [Guid(GuidList.guidNuGetPkgString)]
-    public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
+    public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts, IReadMeMarkdownToolWindowOpener
     {
         // It is displayed in the Help - About box of Visual Studio
         public const string ProductVersion = "6.0.0";
@@ -165,6 +166,8 @@ namespace NuGetVSExtension
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);
+
+            AddService(typeof(IReadMeMarkdownToolWindowOpener), (container, ct, serviceType) => Task.FromResult<object>(this), promote: true);
 
             _vsMonitorSelection = new AsyncLazy<IVsMonitorSelection>(
                 async () =>
@@ -639,26 +642,24 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            /*
             string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString));
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
-            */
-
-            ShowReadMeMarkdownToolWindow();
         }
 
         private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+
+
             if (ShouldMEFBeInitialized())
             {
                 await InitializeMEFAsync();
             }
+
 
             // *** temp code
             var project = VsMonitorSelection.GetActiveProject();
@@ -1021,48 +1022,25 @@ namespace NuGetVSExtension
             packageManagerControl?.ShowUpdatePackages(updatePackageOptions);
         }
 
-        public void ShowReadMeMarkdownToolWindow()
+        public async Task ShowReadMeMarkdownToolWindowAsync(string filePath)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            //TODO: check that the key-value pair exists
-            /*
-            
-            ProvideToolWindowAttribute toolWindowAttribute;
-
-          
-
-            if (!_toolWindowTypes.TryGetValue(persistenceSlot, out toolWindowAttribute))
-            {
-                return null; //TODO: write error message
-            }
-            */
-
-            //IEnumerable<Attribute> attributes = Attribute.GetCustomAttributes(this.GetType());
-            //ProvideToolWindowAttribute readmeToolWindowAttribute = null;
-            //foreach (var attribute in attributes)
-            //{
-            //    if (attribute is ProvideToolWindowAttribute toolWindowAttribute)
-            //    {
-            //        if (toolWindowAttribute.ToolType == typeof(ReadMeMarkdownToolWindow))
-            //        {
-            //            readmeToolWindowAttribute = toolWindowAttribute;
-            //        }
-            //    }
-            //}
-
-            //if (readmeToolWindowAttribute != null)
-            //{
-            //    FindToolWindow(readmeToolWindowAttribute.ToolType)
-            //}
+            await JoinableTaskFactory.SwitchToMainThreadAsync(DisposalToken);
 
             var toolWindow = FindToolWindow(typeof(ReadMeMarkdownToolWindow), 0, create: true);
+
+            if (!(toolWindow is ReadMeMarkdownToolWindow markdownToolWindow))
+            {
+                return;
+            }
+
+            await markdownToolWindow.UpdateAsync(filePath);
+
             Guid persistenceSlot = typeof(ReadMeMarkdownToolWindow).GUID;
 
             IVsUIShell vsUIShell = (IVsUIShell)GetService(typeof(SVsUIShell));
             if (vsUIShell != null)
             {
                 IVsWindowFrame windowFrame;
-                //go to toolwindow created
                 ErrorHandler.ThrowOnFailure(vsUIShell.FindToolWindow(0, persistenceSlot, out windowFrame));
                 if (windowFrame != null)
                 {
@@ -1070,35 +1048,8 @@ namespace NuGetVSExtension
                     ErrorHandler.ThrowOnFailure(windowFrame.Show());
                 }
             }
-
-
-            //ProvideToolWindowAttribute attribute = new ProvideToolWindowAttribute(typeof(ReadMeMarkdownToolWindow));
-
-            ////get the ability to create tool windows
-            //FindToolWindow();
-
-            //IVsToolWindowFactory toolWindowFactory = (IVsToolWindowFactory) GetService(typeof(IVsToolWindowFactory));
-
-            //if(toolWindowFactory != null)
-            //{
-            //    //create tool window
-     
-            //    Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(toolWindowFactory.CreateToolWindow(persistenceSlot, 0)); // 0 since its a single instance window
-            //    IVsUIShell vsUIShell = (IVsUIShell) GetService(typeof(SVsUIShell));
-
-            //    if(vsUIShell != null)
-            //    {
-            //        IVsWindowFrame windowFrame;
-            //        //go to toolwindow created
-            //        ErrorHandler.ThrowOnFailure(vsUIShell.FindToolWindow(0, persistenceSlot, out windowFrame));
-            //        if(windowFrame != null)
-            //        {
-            //            //show tool window
-            //            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-            //        }
-            //    }
-            //}
         }
+
 
         // For PowerShell, it's okay to query from the worker thread.
         private void BeforeQueryStatusForPowerConsole(object sender, EventArgs args)

@@ -12,6 +12,8 @@ namespace NuGet.ProjectManagement
         // Should only be in PackageManagement
         public abstract Task OpenFile(string fullPath);
 
+        public abstract Task RenderMarkDownFile(string fullPath);
+
         public PackageIdentity DirectInstall { get; protected set; }
     }
 }

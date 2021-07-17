@@ -27,6 +27,9 @@ namespace NuGet.PackageManagement.UI
         private ICommonOperations CommonOperations { get; set; }
 
         [Import]
+        private IRenderReadMeMarkdownToolWindow RenderReadMeMarkdown { get; set;}
+
+        [Import]
         private Lazy<IDeleteOnRestartManager> DeleteOnRestartManager { get; set; }
 
         [Import]
@@ -63,12 +66,14 @@ namespace NuGet.PackageManagement.UI
         public NuGetUIFactory(
             ICommonOperations commonOperations,
             INuGetUILogger logger,
-            ISourceControlManagerProvider sourceControlManagerProvider)
+            ISourceControlManagerProvider sourceControlManagerProvider,
+            IRenderReadMeMarkdownToolWindow renderReadMeMarkdownToolWindow)
         {
             ProjectContext = new NuGetUIProjectContext(
                 commonOperations,
                 logger,
-                sourceControlManagerProvider);
+                sourceControlManagerProvider,
+                renderReadMeMarkdownToolWindow);
         }
 
         /// <summary>

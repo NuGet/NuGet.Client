@@ -21,7 +21,8 @@ namespace NuGet.PackageManagement.UI
         public NuGetUIProjectContext(
             ICommonOperations commonOperations,
             INuGetUILogger logger,
-            ISourceControlManagerProvider sourceControlManagerProvider)
+            ISourceControlManagerProvider sourceControlManagerProvider,
+            IRenderReadMeMarkdownToolWindow renderReadMeMarkdownToolWindow)
         {
             if (logger == null)
             {
@@ -36,9 +37,9 @@ namespace NuGet.PackageManagement.UI
             _logger = logger;
             SourceControlManagerProvider = sourceControlManagerProvider;
 
-            if (commonOperations != null)
+            if (commonOperations != null && renderReadMeMarkdownToolWindow != null)
             {
-                ExecutionContext = new IDEExecutionContext(commonOperations);
+                ExecutionContext = new IDEExecutionContext(commonOperations, renderReadMeMarkdownToolWindow);
             }
         }
 

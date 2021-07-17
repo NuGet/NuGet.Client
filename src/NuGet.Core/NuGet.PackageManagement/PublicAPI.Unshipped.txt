@@ -1,1 +1,8 @@
+NuGet.PackageManagement.IDEExecutionContext.IDEExecutionContext(NuGet.PackageManagement.ICommonOperations commonOperations, NuGet.PackageManagement.IRenderReadMeMarkdownToolWindow renderReadMeMarkdownToolWindow) -> void
+NuGet.PackageManagement.IDEExecutionContext.Render.get -> NuGet.PackageManagement.IRenderReadMeMarkdownToolWindow
+NuGet.PackageManagement.IRenderReadMeMarkdownToolWindow
+NuGet.PackageManagement.IRenderReadMeMarkdownToolWindow.DisplayReadMeMarkdownToolWindowAsync(string filePath) -> System.Threading.Tasks.Task
+abstract NuGet.ProjectManagement.ExecutionContext.RenderMarkDownFile(string fullPath) -> System.Threading.Tasks.Task
 const NuGet.ProjectManagement.ProjectBuildProperties.CLRSupport = "CLRSupport" -> string
+override NuGet.PackageManagement.IDEExecutionContext.RenderMarkDownFile(string fullPath) -> System.Threading.Tasks.Task
+static readonly NuGet.ProjectManagement.Constants.ReadmeFileNameMarkdown -> string

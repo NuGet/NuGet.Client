@@ -12,18 +12,31 @@ namespace NuGet.PackageManagement
     {
         public ICommonOperations CommonOperations { get; }
 
-        public IDEExecutionContext(ICommonOperations commonOperations)
+        public IRenderReadMeMarkdownToolWindow Render { get; }
+
+        public IDEExecutionContext(ICommonOperations commonOperations, IRenderReadMeMarkdownToolWindow renderReadMeMarkdownToolWindow)
         {
             if (commonOperations == null)
             {
                 throw new ArgumentNullException(nameof(commonOperations));
             }
+
+            if (renderReadMeMarkdownToolWindow == null)
+            {
+                throw new ArgumentNullException(nameof(renderReadMeMarkdownToolWindow));
+            }
             CommonOperations = commonOperations;
+            Render = renderReadMeMarkdownToolWindow;
         }
 
         public override async Task OpenFile(string fullPath)
         {
             await CommonOperations.OpenFile(fullPath);
+        }
+
+        public override async Task RenderMarkDownFile(string fullPath)
+        {
+            await Render.DisplayReadMeMarkdownToolWindowAsync(fullPath);
         }
 
         public async Task SaveExpandedNodeStates(ISolutionManager solutionManager)

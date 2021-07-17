@@ -34,5 +34,7 @@ NuGet.Versioning.dll
 
 # 3rd party dlls to keep
 Lucene.Net.dll
+Markdig.Signed.dll 
+Markdig.Wpf.dll
 Microsoft.Web.XmlTransform.dll
 Newtonsoft.Json.dll

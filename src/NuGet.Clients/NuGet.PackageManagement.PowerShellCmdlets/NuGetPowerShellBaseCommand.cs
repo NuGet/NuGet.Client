@@ -47,6 +47,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private readonly Semaphore _flushSemaphore = new Semaphore(0, int.MaxValue);
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
+        private readonly IRenderReadMeMarkdownToolWindow _render;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private Guid _operationId;
 
@@ -74,6 +75,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             DTE = ServiceLocator.GetInstance<DTE>();
             SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
             _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
+            _render = ServiceLocator.GetInstance<IRenderReadMeMarkdownToolWindow>();
             PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
 
@@ -86,7 +88,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (_commonOperations != null)
             {
-                ExecutionContext = new IDEExecutionContext(_commonOperations);
+                ExecutionContext = new IDEExecutionContext(_commonOperations, _render);
             }
 
             ActivityCorrelationId.StartNew();

@@ -23,6 +23,8 @@
         <PackageDownload Update="NuGet.Core" Version="[$(NuGetCoreV2Version)]" />
         <!-- PackageReference -->
         <PackageReference Update="Lucene.Net" Version="3.0.3" />
+        <PackageReference Update="Markdig.Signed" Version="0.22.0" />
+        <PackageReference Update="Markdig.Wpf.Signed" Version="0.5.0.1" />
         <PackageReference Update="MessagePack" Version="2.2.60" />
         <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />

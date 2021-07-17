@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -46,6 +46,7 @@
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="IReadMeMarkdownToolWindowOpener.cs" />
     <Compile Include="NuGetBrokeredServiceFactory.cs" />
     <Compile Include="NuGetPackage.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProvideExpressLoadKeyAttribute.cs" />
     <Compile Include="ProvideSearchProviderAttribute.cs" />
+    <Compile Include="RenderReadMeMarkdownToolWindow.cs" />
     <Compile Include="Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -143,7 +145,6 @@
       <SubType>Designer</SubType>
     </VSCTCompile>
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

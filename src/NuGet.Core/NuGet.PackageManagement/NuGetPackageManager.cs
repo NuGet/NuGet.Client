@@ -3329,6 +3329,7 @@ namespace NuGet.PackageManagement
                 //packagesPath is different for project.json vs Packages.config scenarios. So check if the project is a build-integrated project
                 var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
                 var readmeFilePath = string.Empty;
+                var readmeFileMarkdownPath = string.Empty;
 
                 if (buildIntegratedProject != null)
                 {
@@ -3340,6 +3341,7 @@ namespace NuGet.PackageManagement
                     if (!string.IsNullOrEmpty(packageFolderPath))
                     {
                         readmeFilePath = Path.Combine(packageFolderPath, Constants.ReadmeFileName);
+                        readmeFileMarkdownPath = Path.Combine(packageFolderPath, Constants.ReadmeFileNameMarkdown);
                     }
                 }
                 else
@@ -3349,14 +3351,21 @@ namespace NuGet.PackageManagement
                     if (!string.IsNullOrEmpty(packagePath))
                     {
                         readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);
+                        readmeFileMarkdownPath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileNameMarkdown);
                     }
                 }
 
-                if (!token.IsCancellationRequested &&
-                    !string.IsNullOrEmpty(readmeFilePath) &&
-                    File.Exists(readmeFilePath))
+                if (!token.IsCancellationRequested)
                 {
-                    return executionContext.OpenFile(readmeFilePath);
+                    if (!string.IsNullOrEmpty(readmeFilePath) && File.Exists(readmeFilePath))
+                    {
+                        return executionContext.OpenFile(readmeFilePath);
+                    }
+
+                    else if (!string.IsNullOrEmpty(readmeFileMarkdownPath) && File.Exists(readmeFileMarkdownPath))
+                    {
+                        return executionContext.RenderMarkDownFile(readmeFileMarkdownPath);
+                    }
                 }
             }
 

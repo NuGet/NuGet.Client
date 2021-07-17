@@ -158,7 +158,8 @@ namespace NuGet.PackageManagement.UI.Test
                 new NuGetUIProjectContext(
                     Mock.Of<ICommonOperations>(),
                     projectLogger,
-                    Mock.Of<ISourceControlManagerProvider>()),
+                    Mock.Of<ISourceControlManagerProvider>(),
+                    Mock.Of<IRenderReadMeMarkdownToolWindow>()),
                 defaultLogger,
                 uiContext);
         }

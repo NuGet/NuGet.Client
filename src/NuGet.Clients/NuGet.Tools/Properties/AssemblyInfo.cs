@@ -11,6 +11,8 @@ using Microsoft.VisualStudio.Shell;
 [assembly: ComVisible(false)]
 
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Lucene.Net.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Markdig.Signed.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Markdig.Wpf.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Web.XmlTransform.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Newtonsoft.Json.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Commands.dll")]
