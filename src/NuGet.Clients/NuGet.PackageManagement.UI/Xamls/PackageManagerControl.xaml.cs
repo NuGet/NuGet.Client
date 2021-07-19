@@ -1425,7 +1425,7 @@ namespace NuGet.PackageManagement.UI
             UninstallPackage(package);
         }
 
-        private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, PackageItemViewModel[] packages)
+        private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> packages)
         {
             var options = _detailModel.Options;
             var vulnerablePkgs = packages.Where(x => x.Vulnerabilities.Any());
@@ -1475,6 +1475,19 @@ namespace NuGet.PackageManagement.UI
             await RefreshConsolidatablePackagesCountAsync();
         }
 
+
+        /// <summary>
+        /// For Apex tests
+        /// </summary>
+        /// <param name="packageId"></param>
+        /// <param name="version"></param>
+        internal void InstallPackage(string packageId, NuGetVersion version)
+        {
+            var item = _packageList.PackageItems.First(p => p.Id == packageId);
+
+            InstallPackage(item, version);
+        }
+
         internal void InstallPackage(PackageItemViewModel package, NuGetVersion version)
         {
             var action = UserAction.CreateInstallAction(package.Id, version);
@@ -1490,6 +1503,17 @@ namespace NuGet.PackageManagement.UI
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Install, new[] { package }));;
         }
 
+        /// <summary>
+        /// For Apex Tests
+        /// </summary>
+        /// <param name="packageId"></param>
+        internal void UninstallPackage(string packageId)
+        {
+            var item = _packageList.PackageItems.First(p => p.Id == packageId);
+
+            UninstallPackage(item);
+        }
+
         internal void UninstallPackage(PackageItemViewModel package)
         {
             var action = UserAction.CreateUnInstallAction(package.Id);
@@ -1503,6 +1527,21 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                 },
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall, new[] { package }));
+        }
+
+        /// <summary>
+        /// For Apex tests
+        /// </summary>
+        /// <param name="packages"></param>
+        internal void UpdatePackage(List<PackageIdentity> packages)
+        {
+            var items = _packageList.PackageItems.Join(
+                packages,
+                p => new PackageIdentity(p.Id, p.Version),
+                i => i,
+                (p, i) => p);
+
+            UpdatePackage(items.ToArray());
         }
 
         internal void UpdatePackage(PackageItemViewModel[] packages)
