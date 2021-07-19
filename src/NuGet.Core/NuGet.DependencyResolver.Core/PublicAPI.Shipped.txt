@@ -109,7 +109,6 @@ NuGet.DependencyResolver.RemoteWalkContext.LockFileLibraries.get -> System.Colle
 NuGet.DependencyResolver.RemoteWalkContext.Logger.get -> NuGet.Common.ILogger
 NuGet.DependencyResolver.RemoteWalkContext.ProjectLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IDependencyProvider>
 NuGet.DependencyResolver.RemoteWalkContext.RemoteLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider>
-NuGet.DependencyResolver.RemoteWalkContext.RemoteWalkContext(NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger) -> void
 NuGet.DependencyResolver.ResolverUtility
 NuGet.DependencyResolver.Tracker<TItem>
 NuGet.DependencyResolver.Tracker<TItem>.GetDisputes(NuGet.DependencyResolver.GraphItem<TItem> item) -> System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphItem<TItem>>

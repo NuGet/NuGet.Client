@@ -10,7 +10,8 @@ namespace Test.Utility
 {
     public class TestRemoteWalkContext : RemoteWalkContext
     {
-        public TestRemoteWalkContext() : base(new TestSourceCacheContext(), NullLogger.Instance)
+        public TestRemoteWalkContext() :
+            base(new TestSourceCacheContext(), PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), NullLogger.Instance)
         {
         }
 

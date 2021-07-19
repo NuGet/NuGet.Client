@@ -29,7 +29,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta.1"), LibraryType.Package);
@@ -79,7 +79,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package);
@@ -120,7 +120,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package);
@@ -156,7 +156,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("X", NuGetVersion.Parse("1.0.0-bEta"), LibraryType.Package);
@@ -190,7 +190,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
 
             var remoteProvider = new Mock<IRemoteDependencyProvider>();

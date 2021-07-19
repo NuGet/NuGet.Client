@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -17,7 +16,7 @@ namespace NuGet.DependencyResolver
 {
     public class RemoteWalkContext
     {
-        public RemoteWalkContext(SourceCacheContext cacheContext, ILogger logger)
+        public RemoteWalkContext(SourceCacheContext cacheContext, PackageNamespacesConfiguration packageNamespaces, ILogger logger)
         {
             CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -25,16 +24,11 @@ namespace NuGet.DependencyResolver
             ProjectLibraryProviders = new List<IDependencyProvider>();
             LocalLibraryProviders = new List<IRemoteDependencyProvider>();
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
+            PackageNamespaces = packageNamespaces ?? throw new ArgumentNullException(nameof(packageNamespaces));
 
             FindLibraryEntryCache = new ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>>();
 
             LockFileLibraries = new Dictionary<LockFileCacheKey, IList<LibraryIdentity>>();
-        }
-
-        public RemoteWalkContext(SourceCacheContext cacheContext, PackageNamespacesConfiguration packageNamespaces, ILogger logger) :
-            this(cacheContext, logger)
-        {
-            PackageNamespaces = packageNamespaces ?? throw new ArgumentNullException(nameof(packageNamespaces));
         }
 
         public SourceCacheContext CacheContext { get; }
