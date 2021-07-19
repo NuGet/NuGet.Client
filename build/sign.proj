@@ -23,6 +23,12 @@
       <FilesToSign Include="$(SolutionPackagesFolder)lucene.net\3.0.3\lib\NET40\Lucene.Net.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
+      <FilesToSign Include="$(SolutionPackagesFolder)markdig.signed\0.22.0\lib\net452\Markdig.Signed.dll">
+        <Authenticode>3PartySHA2</Authenticode>
+      </FilesToSign>
+      <FilesToSign Include="$(SolutionPackagesFolder)markdig.wpf.signed\0.5.0.1\lib\net452\Markdig.Wpf.dll">
+        <Authenticode>3PartySHA2</Authenticode>
+      </FilesToSign>
       <FilesToSign Include="$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\Newtonsoft.Json.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
