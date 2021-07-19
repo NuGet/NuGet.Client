@@ -399,6 +399,7 @@ namespace NuGet.Test
                 // Assert
                 Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
                 Assert.True(File.Exists(lockFile));
+                Assert.Equal(0, testNuGetProjectContext.TestExecutionContext.MarkdownFilesOpened.Count);
                 Assert.Equal(1, testNuGetProjectContext.TestExecutionContext.FilesOpened.Count);
             }
         }

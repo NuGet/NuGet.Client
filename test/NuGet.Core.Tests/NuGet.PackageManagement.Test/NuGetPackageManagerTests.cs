@@ -3494,6 +3494,7 @@ namespace NuGet.Test
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
                 Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 Assert.Equal(1, testNuGetProjectContext.TestExecutionContext.FilesOpened.Count);
+                Assert.Equal(0, testNuGetProjectContext.TestExecutionContext.MarkdownFilesOpened.Count);
                 Assert.True(string.Equals(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), "ReadMe.txt"),
                     testNuGetProjectContext.TestExecutionContext.FilesOpened.First(), StringComparison.OrdinalIgnoreCase));
             }

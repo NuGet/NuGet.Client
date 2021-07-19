@@ -106,10 +106,13 @@ namespace Test.Utility
         public TestExecutionContext(PackageIdentity directInstall)
         {
             FilesOpened = new HashSet<string>();
+            MarkdownFilesOpened = new HashSet<string>();
             DirectInstall = directInstall;
         }
 
         public HashSet<string> FilesOpened { get; }
+
+        public HashSet<string> MarkdownFilesOpened { get; }
 
         public override Task OpenFile(string fullPath)
         {
@@ -119,7 +122,8 @@ namespace Test.Utility
 
         public override Task RenderMarkDownFile(string fullPath)
         {
-            return Task.FromResult(0); //TODO: will write unit test
+            MarkdownFilesOpened.Add(fullPath);
+            return Task.FromResult(0);
         }
     }
 }

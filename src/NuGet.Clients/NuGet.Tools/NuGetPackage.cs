@@ -58,6 +58,7 @@ namespace NuGetVSExtension
         Style = VsDockStyle.MDI,
         MultiInstances = false,
         DocumentLikeTool = true)]
+    [ProvideService(typeof(IReadMeMarkdownToolWindowOpener))]
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
