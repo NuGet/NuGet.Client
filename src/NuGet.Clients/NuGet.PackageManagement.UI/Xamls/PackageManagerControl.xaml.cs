@@ -1422,7 +1422,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            UninstallPackage(package);
+            UninstallPackage(package.Id, new[] { package });
         }
 
         private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> packages)
@@ -1450,7 +1450,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
             var versionToInstall = package.LatestVersion ?? package.Version;
-            InstallPackage(package, versionToInstall);
+            InstallPackage(package.Id, versionToInstall, new[] { package });
         }
 
         private void PackageList_UpdateButtonClicked(PackageItemViewModel[] selectedPackages)
@@ -1459,7 +1459,7 @@ namespace NuGet.PackageManagement.UI
                 .Select(package => new PackageIdentity(package.Id, package.Version))
                 .ToList();
 
-            UpdatePackage(selectedPackages);
+            UpdatePackage(packagesToUpdate, selectedPackages);
         }
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
@@ -1483,14 +1483,13 @@ namespace NuGet.PackageManagement.UI
         /// <param name="version"></param>
         internal void InstallPackage(string packageId, NuGetVersion version)
         {
-            var item = _packageList.PackageItems.First(p => p.Id == packageId);
-
-            InstallPackage(item, version);
+            var items = _packageList.PackageItems.Where(p => p.Id == packageId);
+            InstallPackage(packageId, version, items);
         }
 
-        internal void InstallPackage(PackageItemViewModel package, NuGetVersion version)
+        internal void InstallPackage(string package, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateInstallAction(package.Id, version);
+            var action = UserAction.CreateInstallAction(package, version);
 
             ExecuteAction(
                 () =>
@@ -1500,7 +1499,7 @@ namespace NuGet.PackageManagement.UI
                         action,
                         CancellationToken.None);
                 },
-                nugetUi => SetOptions(nugetUi, NuGetActionType.Install, new[] { package }));;
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Install, packagesInfo));
         }
 
         /// <summary>
@@ -1509,14 +1508,14 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packageId"></param>
         internal void UninstallPackage(string packageId)
         {
-            var item = _packageList.PackageItems.First(p => p.Id == packageId);
+            var items = _packageList.PackageItems.Where(p => p.Id == packageId);
 
-            UninstallPackage(item);
+            UninstallPackage(packageId, items);
         }
 
-        internal void UninstallPackage(PackageItemViewModel package)
+        internal void UninstallPackage(string packageId, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateUnInstallAction(package.Id);
+            var action = UserAction.CreateUnInstallAction(packageId);
 
             ExecuteAction(
                 () =>
@@ -1526,7 +1525,7 @@ namespace NuGet.PackageManagement.UI
                         action,
                         CancellationToken.None);
                 },
-                nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall, new[] { package }));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall, packagesInfo));
         }
 
         /// <summary>
@@ -1541,12 +1540,12 @@ namespace NuGet.PackageManagement.UI
                 i => i,
                 (p, i) => p);
 
-            UpdatePackage(items.ToArray());
+            UpdatePackage(packages, items);
         }
 
-        internal void UpdatePackage(PackageItemViewModel[] packages)
+        internal void UpdatePackage(List<PackageIdentity> packages, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            if (packages.Length == 0)
+            if (packages.Count == 0)
             {
                 return;
             }
@@ -1556,10 +1555,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     return Model.Context.UIActionEngine.PerformUpdateAsync(
                         Model.UIController,
-                        packages.Select(p => new PackageIdentity(p.Id, p.Version)).ToList(),
+                        packages,
                         CancellationToken.None);
                 },
-                nugetUi => SetOptions(nugetUi, NuGetActionType.Update, packages));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Update, packagesInfo));
         }
 
         private void UpgradeButton_Click(object sender, RoutedEventArgs e)
