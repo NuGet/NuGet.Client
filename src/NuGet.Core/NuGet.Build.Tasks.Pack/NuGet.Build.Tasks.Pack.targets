@@ -210,7 +210,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="GenerateNuspec"
-          Condition="$(IsPackable) == 'true'"
+          Condition="'$(IsPackable)' == 'true'"
           Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)"
           DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions;_InitializeNuspecRepositoryInformationProperties">
 
