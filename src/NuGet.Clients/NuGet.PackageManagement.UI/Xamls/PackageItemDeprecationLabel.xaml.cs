@@ -22,7 +22,9 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageItemDeprecationLabel.xaml
     ///
-    /// This is very similar to <see cref="PackageManagerProvidersLabel"/>
+    /// DataContext is <see cref="PackageDeprecationMetadataContextInfo"/>
+    /// 
+    /// Similar to <see cref="PackageManagerProvidersLabel"/>
     /// </summary>
     public partial class PackageItemDeprecationLabel : UserControl
     {
@@ -31,20 +33,42 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        public string FormatStringSingle { get { return "The package is deprecated."; } }
-
-        public string FormatString
+        private string _formatStringSingle;
+        public string FormatStringSingle
         {
-            get { return "The package is deprecated. Use {0} instead"; }
-            set { FillTexts(); }
+            get => _formatStringSingle;
+
+            set
+            {
+                if (_formatStringSingle != value)
+                {
+                    _formatStringSingle = value;
+                    FillTextBlock();
+                }
+            }
+        }
+
+        private string _formatStringAlternative;
+        public string FormatStringAlternative
+        {
+            get => _formatStringAlternative;
+
+            set
+            {
+                if (_formatStringAlternative != value)
+                {
+                    _formatStringAlternative = value;
+                    FillTextBlock();
+                }
+            }
         }
 
         private void UserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            FillTexts();
+            FillTextBlock();
         }
 
-        private void FillTexts()
+        private void FillTextBlock()
         {
             var deprecationMeta = DataContext as PackageDeprecationMetadataContextInfo;
 
@@ -53,16 +77,16 @@ namespace NuGet.PackageManagement.UI
                 if (deprecationMeta.AlternatePackage != null)
                 {
                     var alternatePackage = deprecationMeta.AlternatePackage;
-                    var index = FormatString.IndexOf("{0}", StringComparison.Ordinal);
+                    var index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
 
                     if (index != -1)
                     {
-                        var begin = FormatString.Substring(0, index);
-                        var end = FormatString.Substring(index + "{0}".Length);
+                        var begin = FormatStringAlternative.Substring(0, index);
+                        var end = FormatStringAlternative.Substring(index + "{0}".Length);
 
                         var link = new Hyperlink(new Run(alternatePackage.PackageId))
                         {
-                            ToolTip = "Click to search package",
+                            ToolTip = UI.Resources.Deprecation_LinkTooltip,
                             Command = Commands.MakeSearchAlternative,
                             CommandParameter = alternatePackage.PackageId,
                         };

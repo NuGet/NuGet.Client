@@ -709,11 +709,38 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Click to search alternative package.
+        /// </summary>
+        public static string Deprecation_LinkTooltip {
+            get {
+                return ResourceManager.GetString("Deprecation_LinkTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to More info.
         /// </summary>
         public static string Deprecation_MoreInfo {
             get {
                 return ResourceManager.GetString("Deprecation_MoreInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package is deprecated..
+        /// </summary>
+        public static string Deprecation_PackageItemMessage {
+            get {
+                return ResourceManager.GetString("Deprecation_PackageItemMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package is deprecated. Use {0} instead..
+        /// </summary>
+        public static string Deprecation_PackageItemMessageAlternative {
+            get {
+                return ResourceManager.GetString("Deprecation_PackageItemMessageAlternative", resourceCulture);
             }
         }
         

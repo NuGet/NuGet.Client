@@ -1002,4 +1002,14 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Deprecation_MoreInfo" xml:space="preserve">
     <value>More info</value>
   </data>
+  <data name="Deprecation_LinkTooltip" xml:space="preserve">
+    <value>Click to search alternative package</value>
+  </data>
+  <data name="Deprecation_PackageItemMessage" xml:space="preserve">
+    <value>The package is deprecated.</value>
+  </data>
+  <data name="Deprecation_PackageItemMessageAlternative" xml:space="preserve">
+    <value>The package is deprecated. Use {0} instead.</value>
+    <comment>{0} is a NuGet package id (string)</comment>
+  </data>
 </root>
