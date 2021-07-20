@@ -64,9 +64,9 @@
               VerticalAlignment="Center"
               AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}">
               <Hyperlink
-                NavigateUri="{Binding Path=PackageDeprecationAlternatePackageUri}"
                 ToolTip="Click to search alternative package"
-                Command="{x:Static nuget:PackageManagerControlCommands.MakeSearchLink}">
+                Command="{x:Static nuget:Commands.MakeSearchAlternative}"
+                CommandParameter="{Binding Path=PackageDeprecationAlternatePackageId}">
                 <Run Text="{Binding Path=PackageDeprecationAlternatePackageText}" />
               </Hyperlink>
             </TextBlock>

@@ -69,10 +69,10 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteSearchForPackage(object sender, ExecutedRoutedEventArgs e)
         {
-            var hyperlink = e.OriginalSource as Hyperlink;
+            var packageId = e.Parameter as string;
             if (Control != null)
             {
-                Control.Search(hyperlink.NavigateUri.Host);
+                Control.Search(packageId);
             }
         }
 

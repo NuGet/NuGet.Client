@@ -59,13 +59,12 @@ namespace NuGet.PackageManagement.UI
                     {
                         var begin = FormatString.Substring(0, index);
                         var end = FormatString.Substring(index + "{0}".Length);
-                        var linkBuilder = new UriBuilder("nugetpm", alternatePackage.PackageId);
 
                         var link = new Hyperlink(new Run(alternatePackage.PackageId))
                         {
                             ToolTip = "Click to search package",
-                            Command = PackageManagerControlCommands.MakeSearchLink,
-                            NavigateUri = linkBuilder.Uri,
+                            Command = Commands.MakeSearchAlternative,
+                            CommandParameter = alternatePackage.PackageId,
                         };
 
                         _textBlock.Inlines.Clear();

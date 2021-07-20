@@ -1488,6 +1488,15 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
+        private void ExecuteMakeSearchCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            var alternatePackageId = e.Parameter as string;
+            if (!string.IsNullOrWhiteSpace(alternatePackageId))
+            {
+                Search(alternatePackageId);
+            }
+        }
+
         private async Task ExecuteRestartSearchCommandAsync()
         {
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
