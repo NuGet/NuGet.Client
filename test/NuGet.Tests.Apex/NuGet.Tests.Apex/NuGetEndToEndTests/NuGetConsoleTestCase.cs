@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
 using NuGet.Test.Utility;
@@ -510,6 +511,45 @@ namespace NuGet.Tests.Apex
                 // Make sure name squatting package not restored from  opensource repository.
                 Assert.True(File.Exists(uniqueContentFile));
             }
+        }
+
+        [NuGetWpfTheory]
+        [InlineData(ProjectTemplate.ClassLibrary, false)]
+        [InlineData(ProjectTemplate.NetCoreConsoleApp, true)]
+        public async Task UpdateAllReinstall_WithPackageReferenceProject_WarnsAsync(ProjectTemplate projectTemplate, bool warns)
+        {
+            EnsureVisualStudioHost();
+            var packageName = "TestPackage";
+            var packageVersion1 = "1.0.0";
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true);
+            // Arrange
+            var solutionService = VisualStudio.Get<SolutionService>();
+            testContext.SolutionService.Build();
+
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
+
+            var nugetTestService = GetNuGetTestService();
+            var nugetConsole = GetConsole(testContext.Project);
+
+            // Pre-conditions
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+            testContext.SolutionService.Build();
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();
+            nugetConsole.Clear();
+
+            // Act
+            nugetConsole.Execute("Update-Package -Reinstall");
+
+            // Assert
+            var expectedMessage = $"The `-Reinstall` parameter does not apply to PackageReference based projects `{Path.GetFileNameWithoutExtension(testContext.Project.UniqueName)}`.";
+            nugetConsole.IsMessageFoundInPMC(expectedMessage).Should().Be(warns, because: nugetConsole.GetText());
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();
+
+            nugetConsole.Clear();
+            solutionService.Save();
         }
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
