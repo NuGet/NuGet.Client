@@ -7,11 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.Packaging;
-using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -31,43 +29,65 @@ namespace NuGet.CommandLine.XPlat
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
-            if (!File.Exists(listPackageArgs.Path))
+            var isSolution = Path.GetExtension(listPackageArgs.Path).Equals(".sln");
+            var repositoryAdapter = new ListPackageRepositoryAdapter();
+            var fileAdapter = new FileAdapter();
+            var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
+            var lockFileFormatAdapter = new LockFileFormatAdapter();
+            var projectCollection = new ProjectCollectionAdapter();
+            var reportWriter = new ListPackageConsoleWriter();
+            await ExecuteReportAsync(listPackageArgs, isSolution, repositoryAdapter, fileAdapter, msBuild, lockFileFormatAdapter, projectCollection, reportWriter);
+        }
+
+        /// <summary>
+        /// Collates and formats all data for report and writes it to report writer
+        /// </summary>
+        /// <param name="listPackageArgs">List args for the token and source provider</param>
+        /// <param name="isSolution">Whether the target project/solution is a solution</param>
+        /// <param name="repository">An adapter for Repository operations</param>
+        /// <param name="fileAdapter">An adapter for File operations</param>
+        /// <param name="msBuild">An adapter for MSBuild operations</param>
+        /// <param name="lockFileFormatAdapter">An adapter for LockFileFormat operations</param>
+        /// <param name="projectCollection">An adapter for ProjectCollection operations</param>
+        /// <param name="reportWriter">Writes the outputs of the report</param>
+        /// <returns>A data structure like packages, but includes the latest versions</returns>
+        internal async Task ExecuteReportAsync(ListPackageArgs listPackageArgs,
+            bool isSolution,
+            IListPackageRepositoryAdapter repository,
+            IFileAdapter fileAdapter,
+            IMSBuildAPIUtility msBuild,
+            ILockFileFormatAdapter lockFileFormatAdapter,
+            IProjectCollectionAdapter projectCollection,
+            IListPackageReportWriter reportWriter)
+        {
+            if (!fileAdapter.Exists(listPackageArgs.Path))
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.ListPkg_ErrorFileNotFound,
-                        listPackageArgs.Path));
+                reportWriter.WriteProjectOrSolutionFileNotFound(listPackageArgs.Path);
                 return;
             }
-            //If the given file is a solution, get the list of projects
-            //If not, then it's a project, which is put in a list
-            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln") ?
-                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)) :
+
+            // If the given file is a solution, get the list of projects
+            // If not, then it's a project, which is put in a list
+            var projectsPaths = isSolution ?
+                           msBuild.GetProjectsFromSolution(listPackageArgs.Path).Where(f => fileAdapter.Exists(f)) :
                            new List<string>(new string[] { listPackageArgs.Path });
 
             var autoReferenceFound = false;
-            var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
-            //Print sources, but not for generic list (which is offline)
+            // Print sources, but not for generic list (which is offline)
             if (listPackageArgs.ReportType != ReportType.Default)
             {
-                Console.WriteLine();
-                Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
-                ProjectPackagesPrintUtility.PrintSources(listPackageArgs.PackageSources);
-                Console.WriteLine();
+                ProjectPackagesPrintUtility.PrintSources(listPackageArgs.PackageSources, reportWriter);
             }
 
             foreach (var projectPath in projectsPaths)
             {
-                //Open project to evaluate properties for the assets
-                //file and the name of the project
-                var project = MSBuildAPIUtility.GetProject(projectPath);
+                // Open project to evaluate properties for the assets file and the name of the project
+                var project = msBuild.GetProject(projectPath);
 
-                if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
+                if (!msBuild.IsPackageReferenceProject(project))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_NotPRProject,
-                        projectPath));
-                    Console.WriteLine();
+                    reportWriter.WriteNotPRProject(projectPath);
                     continue;
                 }
 
@@ -76,16 +96,13 @@ namespace NuGet.CommandLine.XPlat
                 var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
 
                 // If the file was not found, print an error message and continue to next project
-                if (!File.Exists(assetsPath))
+                if (!fileAdapter.Exists(assetsPath))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_AssetsFileNotFound,
-                        projectPath));
-                    Console.WriteLine();
+                    reportWriter.WriteAssetsFileNotFound(projectPath);
                 }
                 else
                 {
-                    var lockFileFormat = new LockFileFormat();
+                    var lockFileFormat = lockFileFormatAdapter.Create();
                     var assetsFile = lockFileFormat.Read(assetsPath);
 
                     // Assets file validation
@@ -94,7 +111,9 @@ namespace NuGet.CommandLine.XPlat
                         assetsFile.Targets.Count != 0)
                     {
                         // Get all the packages that are referenced in a project
-                        var packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive, includeProjects: listPackageArgs.ReportType == ReportType.Default);
+                        var packages = msBuild.GetResolvedVersions(
+                            project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive,
+                            includeProjects: listPackageArgs.ReportType == ReportType.Default);
 
                         // If packages equals null, it means something wrong happened
                         // with reading the packages and it was handled and message printed
@@ -104,7 +123,7 @@ namespace NuGet.CommandLine.XPlat
                             // No packages means that no package references at all were found in the current framework
                             if (!packages.Any())
                             {
-                                Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
+                                reportWriter.WriteNoPackagesFound(projectName);
                             }
                             else
                             {
@@ -112,8 +131,8 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     PopulateSourceRepositoryCache(listPackageArgs);
                                     WarnForHttpSources(listPackageArgs);
-                                    await GetRegistrationMetadataAsync(packages, listPackageArgs);
-                                    await AddLatestVersionsAsync(packages, listPackageArgs);
+                                    await GetRegistrationMetadataAsync(packages, listPackageArgs, repository);
+                                    await AddLatestVersionsAsync(packages, listPackageArgs, repository);
                                 }
 
                                 bool printPackages = FilterPackages(packages, listPackageArgs);
@@ -124,13 +143,13 @@ namespace NuGet.CommandLine.XPlat
                                     switch (listPackageArgs.ReportType)
                                     {
                                         case ReportType.Outdated:
-                                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, projectName));
+                                            reportWriter.WriteNoUpdatesForProject(projectName);
                                             break;
                                         case ReportType.Deprecated:
-                                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
+                                            reportWriter.WriteNoDeprecatedPackagesForProject(projectName);
                                             break;
                                         case ReportType.Vulnerable:
-                                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, projectName));
+                                            reportWriter.WriteNoVulnerablePackagesForProject(projectName);
                                             break;
                                     }
                                 }
@@ -139,7 +158,7 @@ namespace NuGet.CommandLine.XPlat
                                 if (printPackages)
                                 {
                                     var hasAutoReference = false;
-                                    ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs, ref hasAutoReference);
+                                    ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs, ref hasAutoReference, reportWriter);
                                     autoReferenceFound = autoReferenceFound || hasAutoReference;
                                 }
                             }
@@ -147,18 +166,18 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
+                        reportWriter.WriteErrorReadingAssetsFile(assetsPath);
                     }
 
                     // Unload project
-                    ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+                    projectCollection.UnloadProject(project);
                 }
             }
 
             // Print a legend message for auto-reference markers used
             if (autoReferenceFound)
             {
-                Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+                reportWriter.WriteAutoReferenceDescription();
             }
         }
 
@@ -271,17 +290,19 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="packages">The packages found in a project</param>
         /// <param name="listPackageArgs">List args for the token and source provider</param>
+        /// <param name="repository">An adapter for Repository operations</param>
         /// <returns>A data structure like packages, but includes the latest versions</returns>
         private async Task AddLatestVersionsAsync(
             IEnumerable<FrameworkPackages> packages,
-            ListPackageArgs listPackageArgs)
+            ListPackageArgs listPackageArgs,
+            IListPackageRepositoryAdapter repository)
         {
             //Unique Dictionary for packages and list of latest versions to handle different sources
             var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
             AddPackagesToDict(packages, packagesVersionsDict);
 
             //Prepare requests for each of the packages
-            var providers = Repository.Provider.GetCoreV3();
+            var providers = repository.GetCoreV3Provider();
             var getLatestVersionsRequests = new List<Task>();
             foreach (var package in packagesVersionsDict)
             {
@@ -290,7 +311,8 @@ namespace NuGet.CommandLine.XPlat
                         package.Key,
                         listPackageArgs,
                         providers,
-                        packagesVersionsDict));
+                        packagesVersionsDict,
+                        repository));
             }
 
             // Make requests in parallel.
@@ -305,9 +327,11 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="packages">The packages found in a project.</param>
         /// <param name="listPackageArgs">List args for the token and source provider</param>
+        /// <param name="repository">An adapter for Repository operations</param>
         private async Task GetRegistrationMetadataAsync(
             IEnumerable<FrameworkPackages> packages,
-            ListPackageArgs listPackageArgs)
+            ListPackageArgs listPackageArgs,
+            IListPackageRepositoryAdapter repository)
         {
             // Unique dictionary for packages and list of versions to handle different sources
             var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
@@ -318,6 +342,7 @@ namespace NuGet.CommandLine.XPlat
             var distinctPackageVersionsDict = GetUniqueResolvedPackages(packages);
 
             // Prepare requests for each of the packages
+            var providers = repository.GetCoreV3Provider();
             var resourceRequestTasks = new List<Task>();
             foreach (var packageIdAndVersions in distinctPackageVersionsDict)
             {
@@ -328,7 +353,9 @@ namespace NuGet.CommandLine.XPlat
                             packageIdAndVersions.Key,
                             packageVersion,
                             listPackageArgs,
-                            packagesVersionsDict));
+                            providers,
+                            packagesVersionsDict,
+                            repository));
                 }
             }
 
@@ -571,19 +598,22 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">List args for the token and source provider></param>
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
+        /// <param name="repository">An adapter for Repository operations</param>
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>A list of tasks for all latest versions for packages from all sources</returns>
         private IList<Task> PrepareLatestVersionsRequests(
             string package,
             ListPackageArgs listPackageArgs,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
+            IListPackageRepositoryAdapter repository)
         {
             var latestVersionsRequests = new List<Task>();
             var sources = listPackageArgs.PackageSources;
             foreach (var packageSource in sources)
             {
-                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, packagesVersionsDict));
+                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(
+                    packageSource, listPackageArgs, package, providers, packagesVersionsDict, repository));
             }
             return latestVersionsRequests;
         }
@@ -595,14 +625,18 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageId">The package ID to get the current version metadata for</param>
         /// <param name="requestedVersion">The version of the requested package</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
+        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
+        /// <param name="repository">An adapter for Repository operations</param>
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>A list of tasks for all current versions for packages from all sources</returns>
         private IList<Task> PrepareCurrentVersionsRequests(
             string packageId,
             NuGetVersion requestedVersion,
             ListPackageArgs listPackageArgs,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
+            IEnumerable<Lazy<INuGetResourceProvider>> providers,
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
+            IListPackageRepositoryAdapter repository)
         {
             var requests = new List<Task>();
             var sources = listPackageArgs.PackageSources;
@@ -615,7 +649,9 @@ namespace NuGet.CommandLine.XPlat
                         listPackageArgs,
                         packageId,
                         requestedVersion,
-                        packagesVersionsDict));
+                        providers,
+                        packagesVersionsDict,
+                        repository));
             }
 
             return requests;
@@ -629,6 +665,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="package">Package to look for updates for</param>
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
+        /// <param name="repository">An adapter for Repository operations</param>
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated package with the highest version at a single source</returns>
         private async Task GetLatestVersionPerSourceAsync(
@@ -636,9 +673,10 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs,
             string package,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
+            IListPackageRepositoryAdapter repository)
         {
-            var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
+            var sourceRepository = repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
             using var sourceCacheContext = new SourceCacheContext();
@@ -661,7 +699,9 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="packageId">Package to look for</param>
         /// <param name="requestedVersion">Requested package version</param>
+        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
+        /// <param name="repository">An adapter for Repository operations</param>
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated package with the resolved version metadata from a single source</returns>
         private async Task GetPackageMetadataFromSourceAsync(
@@ -669,9 +709,11 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs,
             string packageId,
             NuGetVersion requestedVersion,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
+            IEnumerable<Lazy<INuGetResourceProvider>> providers,
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
+            IListPackageRepositoryAdapter repository)
         {
-            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
+            var sourceRepository = repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var packageMetadataResource = await sourceRepository
                 .GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 

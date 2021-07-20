@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -23,22 +22,26 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="projectName">The project name</param>
         /// <param name="listPackageArgs">Command line options</param>
         /// <param name="hasAutoReference">At least one discovered package is autoreference</param>
-        internal static void PrintPackages(
-            IEnumerable<FrameworkPackages> packages, string projectName, ListPackageArgs listPackageArgs, ref bool hasAutoReference)
+        /// <param name="reportWriter">Writes the outputs of the report</param>
+        internal static void PrintPackages(IEnumerable<FrameworkPackages> packages,
+            string projectName,
+            ListPackageArgs listPackageArgs,
+            ref bool hasAutoReference,
+            IListPackageReportWriter reportWriter)
         {
             switch (listPackageArgs.ReportType)
             {
                 case ReportType.Outdated:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectUpdatesHeaderLog, projectName));
+                    reportWriter.WriteProjectUpdatesHeaderLog(projectName);
                     break;
                 case ReportType.Deprecated:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName));
+                    reportWriter.WriteProjectDeprecationsHeaderLog(projectName);
                     break;
                 case ReportType.Vulnerable:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName));
+                    reportWriter.WriteProjectVulnerabilitiesHeaderLog(projectName);
                     break;
                 case ReportType.Default:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
+                    reportWriter.WriteProjectHeaderLog(projectName);
                     break;
             }
 
@@ -52,32 +55,25 @@ namespace NuGet.CommandLine.XPlat.Utility
                 // appropriate message
                 if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
                 {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-
                     switch (listPackageArgs.ReportType)
                     {
                         case ReportType.Outdated:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
+                            reportWriter.WriteNoUpdatesForFramework(frameworkPackages.Framework);
                             break;
                         case ReportType.Deprecated:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoDeprecationsForFramework, frameworkPackages.Framework));
+                            reportWriter.WriteNoDeprecationsForFramework(frameworkPackages.Framework);
                             break;
                         case ReportType.Vulnerable:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoVulnerabilitiesForFramework, frameworkPackages.Framework));
+                            reportWriter.WriteNoVulnerabilitiesForFramework(frameworkPackages.Framework);
                             break;
                         case ReportType.Default:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
+                            reportWriter.WriteNoPackagesForFramework(frameworkPackages.Framework);
                             break;
                     }
-
-                    Console.ResetColor();
                 }
                 else
                 {
-                    // Print name of the framework
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.Framework));
-                    Console.ResetColor();
+                    reportWriter.WriteFrameworkName(frameworkPackages.Framework);
 
                     // Print top-level packages
                     if (frameworkTopLevelPackages.Any())
@@ -87,7 +83,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                             frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
-                            PrintPackagesTable(tableToPrint);
+                            PrintPackagesTable(tableToPrint, reportWriter);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
@@ -100,7 +96,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                             frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
-                            PrintPackagesTable(tableToPrint);
+                            PrintPackagesTable(tableToPrint, reportWriter);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
@@ -173,20 +169,14 @@ namespace NuGet.CommandLine.XPlat.Utility
             return tableToPrint;
         }
 
-        internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint)
+        internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint, IListPackageReportWriter reportWriter)
         {
             foreach (var formattedCell in tableToPrint)
             {
-                if (formattedCell.ForegroundColor.HasValue)
-                {
-                    Console.ForegroundColor = formattedCell.ForegroundColor.Value;
-                }
-
-                Console.Write(formattedCell.Value);
-                Console.ResetColor();
+                reportWriter.WriteStringWithForegroundColor(formattedCell.ForegroundColor, formattedCell.Value);
             }
 
-            Console.WriteLine();
+            reportWriter.WriteEmptyLine();
         }
 
         internal static IEnumerable<FormattedCell> PrintVulnerabilitiesSeverities(
@@ -325,12 +315,15 @@ namespace NuGet.CommandLine.XPlat.Utility
             return result.ToArray();
         }
 
-        internal static void PrintSources(IEnumerable<PackageSource> packageSources)
+        internal static void PrintSources(IEnumerable<PackageSource> packageSources, IListPackageReportWriter reportWriter)
         {
+            reportWriter.WriteSourcesDescription();
             foreach (var source in packageSources)
             {
-                Console.WriteLine("   " + source.Source);
+                reportWriter.WriteSource(source);
             }
+
+            reportWriter.WriteEmptyLine();
         }
     }
 }

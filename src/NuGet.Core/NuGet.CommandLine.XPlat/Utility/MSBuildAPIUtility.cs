@@ -18,7 +18,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class MSBuildAPIUtility
+    internal class MSBuildAPIUtility : IMSBuildAPIUtility
     {
         private const string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
         private const string VERSION_TAG = "Version";
@@ -40,12 +40,9 @@ namespace NuGet.CommandLine.XPlat
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// Opens an MSBuild.Evaluation.Project type from a csproj file.
-        /// </summary>
-        /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
-        /// <returns>MSBuild.Evaluation.Project</returns>
-        internal static Project GetProject(string projectCSProjPath)
+        #region IMSBuildAPIUtility
+
+        public Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -54,6 +51,176 @@ namespace NuGet.CommandLine.XPlat
             }
             return new Project(projectRootElement);
         }
+
+        public IEnumerable<string> GetProjectsFromSolution(string solutionPath)
+        {
+            var sln = SolutionFile.Parse(solutionPath);
+            return sln.ProjectsInOrder.Select(p => p.AbsolutePath);
+        }
+
+        public bool IsPackageReferenceProject(Project project)
+        {
+            return (project.GetPropertyValue(RESTORE_STYLE_TAG) == "PackageReference" ||
+                    project.GetItems(PACKAGE_REFERENCE_TYPE_TAG).Count != 0 ||
+                    project.GetPropertyValue(NUGET_STYLE_TAG) == "PackageReference" ||
+                    project.GetPropertyValue(ASSETS_FILE_PATH_TAG) != "");
+        }
+
+        public IEnumerable<FrameworkPackages> GetResolvedVersions(
+            string projectPath, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive, bool includeProjects)
+        {
+            if (userInputFrameworks == null)
+            {
+                throw new ArgumentNullException(nameof(userInputFrameworks));
+            }
+
+            if (projectPath == null)
+            {
+                throw new ArgumentNullException(nameof(projectPath));
+            }
+
+            if (assetsFile == null)
+            {
+                throw new ArgumentNullException(nameof(assetsFile));
+            }
+
+            var resultPackages = new List<FrameworkPackages>();
+            var requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
+            var requestedTargets = assetsFile.Targets;
+
+            // If the user has entered frameworks, we want to filter
+            // the targets and frameworks from the assets file
+            if (userInputFrameworks.Any())
+            {
+                //Target frameworks filtering
+                var parsedUserFrameworks = userInputFrameworks.Select(f =>
+                                               NuGetFramework.Parse(f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray()[0]));
+                requestedTargetFrameworks = requestedTargetFrameworks.Where(tfm => parsedUserFrameworks.Contains(tfm.FrameworkName)).ToList();
+
+                //Assets file targets filtering by framework and RID
+                var filteredTargets = new List<LockFileTarget>();
+                foreach (var frameworkAndRID in userInputFrameworks)
+                {
+                    var splitFrameworkAndRID = frameworkAndRID.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+                    // If a / is not present in the string, we get all of the targets that
+                    // have matching framework regardless of RID.
+                    if (splitFrameworkAndRID.Count() == 1)
+                    {
+                        filteredTargets.AddRange(requestedTargets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(splitFrameworkAndRID[0]))));
+                    }
+                    else
+                    {
+                        //RID is present in the user input, so we filter using it as well
+                        filteredTargets.AddRange(requestedTargets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(splitFrameworkAndRID[0])) &&
+                                                                                  target.RuntimeIdentifier != null && target.RuntimeIdentifier.Equals(splitFrameworkAndRID[1], StringComparison.OrdinalIgnoreCase)));
+                    }
+                }
+                requestedTargets = filteredTargets;
+            }
+
+            // Filtering the Targets to ignore TargetFramework + RID combination, only keep TargetFramework in requestedTargets.
+            // So that only one section will be shown for each TFM.
+            requestedTargets = requestedTargets.Where(target => target.RuntimeIdentifier == null).ToList();
+
+            foreach (var target in requestedTargets)
+            {
+                // Find the tfminformation corresponding to the target to
+                // get the top-level dependencies
+                TargetFrameworkInformation tfmInformation;
+
+                try
+                {
+                    tfmInformation = requestedTargetFrameworks.First(tfm => tfm.FrameworkName.Equals(target.TargetFramework));
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsFile.Path));
+                    return null;
+                }
+
+                //The packages for the framework that were retrieved with GetRequestedVersions
+                var frameworkDependencies = tfmInformation.Dependencies;
+                var projPackages = GetPackageReferencesFromTargets(projectPath, tfmInformation.ToString());
+                var topLevelPackages = new List<InstalledPackageReference>();
+                var transitivePackages = new List<InstalledPackageReference>();
+
+                foreach (var library in target.Libraries)
+                {
+                    var matchingPackages = frameworkDependencies.Where(d =>
+                        d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                    var resolvedVersion = library.Version.ToString();
+
+                    //In case we found a matching package in requestedVersions, the package will be
+                    //top level.
+                    if (matchingPackages.Any())
+                    {
+                        var topLevelPackage = matchingPackages.Single();
+                        InstalledPackageReference installedPackage;
+
+                        //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
+                        if (!topLevelPackage.AutoReferenced)
+                        {
+                            try
+                            { // In case proj and assets file are not in sync and some refs were deleted
+                                installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
+                                return null;
+                            }
+                        }
+                        else
+                        {
+                            var projectFileVersion = topLevelPackage.LibraryRange.VersionRange.ToString();
+                            installedPackage = new InstalledPackageReference(library.Name)
+                            {
+                                OriginalRequestedVersion = projectFileVersion
+                            };
+                        }
+
+                        installedPackage.ResolvedPackageMetadata = PackageSearchMetadataBuilder
+                            .FromIdentity(new PackageIdentity(library.Name, library.Version))
+                            .Build();
+
+                        installedPackage.AutoReference = topLevelPackage.AutoReferenced;
+
+                        if (library.Type != "project" || includeProjects)
+                        {
+                            topLevelPackages.Add(installedPackage);
+                        }
+                    }
+                    // If no matching packages were found, then the package is transitive,
+                    // and include-transitive must be used to add the package
+                    else if (transitive) // be sure to exclude "project" references here as these are irrelevant
+                    {
+                        var installedPackage = new InstalledPackageReference(library.Name)
+                        {
+                            ResolvedPackageMetadata = PackageSearchMetadataBuilder
+                                .FromIdentity(new PackageIdentity(library.Name, library.Version))
+                                .Build()
+                        };
+
+                        if (library.Type != "project" || includeProjects)
+                        {
+                            transitivePackages.Add(installedPackage);
+                        }
+                    }
+                }
+
+                var frameworkPackages = new FrameworkPackages(
+                    target.TargetFramework.GetShortFolderName(),
+                    topLevelPackages,
+                    transitivePackages);
+
+                resultPackages.Add(frameworkPackages);
+            }
+
+            return resultPackages;
+        }
+
+        #endregion
 
         /// <summary>
         /// Opens an MSBuild.Evaluation.Project type from a csproj file with the given global properties.
@@ -69,12 +236,6 @@ namespace NuGet.CommandLine.XPlat
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
-        }
-
-        internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
-        {
-            var sln = SolutionFile.Parse(solutionPath);
-            return sln.ProjectsInOrder.Select(p => p.AbsolutePath);
         }
 
         /// <summary>
@@ -299,186 +460,6 @@ namespace NuGet.CommandLine.XPlat
                     errors));
             }
         }
-
-        /// <summary>
-        /// A simple check for some of the evaluated properties to check
-        /// if the project is package reference project or not
-        /// </summary>
-        /// <param name="project"></param>
-        /// <returns></returns>
-        internal static bool IsPackageReferenceProject(Project project)
-        {
-            return (project.GetPropertyValue(RESTORE_STYLE_TAG) == "PackageReference" ||
-                    project.GetItems(PACKAGE_REFERENCE_TYPE_TAG).Count != 0 ||
-                    project.GetPropertyValue(NUGET_STYLE_TAG) == "PackageReference" ||
-                    project.GetPropertyValue(ASSETS_FILE_PATH_TAG) != "");
-        }
-
-        /// <summary>
-        /// Prepares the dictionary that maps frameworks to packages top-level
-        /// and transitive.
-        /// </summary>
-        /// <param name="projectPath"> Path to the project to get versions for its packages </param>
-        /// <param name="userInputFrameworks">A list of frameworks</param>
-        /// <param name="assetsFile">Assets file for all targets and libraries</param>
-        /// <param name="transitive">Include transitive packages/projects in the result</param>
-        /// <param name="includeProjects">Include project references in top-level and transitive package lists</param>
-        /// <returns>FrameworkPackages collection with top-level and transitive package/project
-        /// references for each framework, or null on error</returns>
-        internal IEnumerable<FrameworkPackages> GetResolvedVersions(
-            string projectPath, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive, bool includeProjects)
-        {
-            if (userInputFrameworks == null)
-            {
-                throw new ArgumentNullException(nameof(userInputFrameworks));
-            }
-
-            if (projectPath == null)
-            {
-                throw new ArgumentNullException(nameof(projectPath));
-            }
-
-            if (assetsFile == null)
-            {
-                throw new ArgumentNullException(nameof(assetsFile));
-            }
-
-            var resultPackages = new List<FrameworkPackages>();
-            var requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
-            var requestedTargets = assetsFile.Targets;
-
-            // If the user has entered frameworks, we want to filter
-            // the targets and frameworks from the assets file
-            if (userInputFrameworks.Any())
-            {
-                //Target frameworks filtering
-                var parsedUserFrameworks = userInputFrameworks.Select(f =>
-                                               NuGetFramework.Parse(f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray()[0]));
-                requestedTargetFrameworks = requestedTargetFrameworks.Where(tfm => parsedUserFrameworks.Contains(tfm.FrameworkName)).ToList();
-
-                //Assets file targets filtering by framework and RID
-                var filteredTargets = new List<LockFileTarget>();
-                foreach (var frameworkAndRID in userInputFrameworks)
-                {
-                    var splitFrameworkAndRID = frameworkAndRID.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
-                    // If a / is not present in the string, we get all of the targets that
-                    // have matching framework regardless of RID.
-                    if (splitFrameworkAndRID.Count() == 1)
-                    {
-                        filteredTargets.AddRange(requestedTargets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(splitFrameworkAndRID[0]))));
-                    }
-                    else
-                    {
-                        //RID is present in the user input, so we filter using it as well
-                        filteredTargets.AddRange(requestedTargets.Where(target => target.TargetFramework.Equals(NuGetFramework.Parse(splitFrameworkAndRID[0])) &&
-                                                                                  target.RuntimeIdentifier != null && target.RuntimeIdentifier.Equals(splitFrameworkAndRID[1], StringComparison.OrdinalIgnoreCase)));
-                    }
-                }
-                requestedTargets = filteredTargets;
-            }
-
-            // Filtering the Targets to ignore TargetFramework + RID combination, only keep TargetFramework in requestedTargets.
-            // So that only one section will be shown for each TFM.
-            requestedTargets = requestedTargets.Where(target => target.RuntimeIdentifier == null).ToList();
-
-            foreach (var target in requestedTargets)
-            {
-                // Find the tfminformation corresponding to the target to
-                // get the top-level dependencies
-                TargetFrameworkInformation tfmInformation;
-
-                try
-                {
-                    tfmInformation = requestedTargetFrameworks.First(tfm => tfm.FrameworkName.Equals(target.TargetFramework));
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsFile.Path));
-                    return null;
-                }
-
-                //The packages for the framework that were retrieved with GetRequestedVersions
-                var frameworkDependencies = tfmInformation.Dependencies;
-                var projPackages = GetPackageReferencesFromTargets(projectPath, tfmInformation.ToString());
-                var topLevelPackages = new List<InstalledPackageReference>();
-                var transitivePackages = new List<InstalledPackageReference>();
-
-                foreach (var library in target.Libraries)
-                {
-                    var matchingPackages = frameworkDependencies.Where(d =>
-                        d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)).ToList();
-
-                    var resolvedVersion = library.Version.ToString();
-
-                    //In case we found a matching package in requestedVersions, the package will be
-                    //top level.
-                    if (matchingPackages.Any())
-                    {
-                        var topLevelPackage = matchingPackages.Single();
-                        InstalledPackageReference installedPackage;
-
-                        //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
-                        if (!topLevelPackage.AutoReferenced)
-                        {
-                            try
-                            { // In case proj and assets file are not in sync and some refs were deleted
-                                installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
-                            }
-                            catch (Exception)
-                            {
-                                Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
-                                return null;
-                            }
-                        }
-                        else
-                        {
-                            var projectFileVersion = topLevelPackage.LibraryRange.VersionRange.ToString();
-                            installedPackage = new InstalledPackageReference(library.Name)
-                            {
-                                OriginalRequestedVersion = projectFileVersion
-                            };
-                        }
-
-                        installedPackage.ResolvedPackageMetadata = PackageSearchMetadataBuilder
-                            .FromIdentity(new PackageIdentity(library.Name, library.Version))
-                            .Build();
-
-                        installedPackage.AutoReference = topLevelPackage.AutoReferenced;
-
-                        if (library.Type != "project" || includeProjects)
-                        {
-                            topLevelPackages.Add(installedPackage);
-                        }
-                    }
-                    // If no matching packages were found, then the package is transitive,
-                    // and include-transitive must be used to add the package
-                    else if (transitive) // be sure to exclude "project" references here as these are irrelevant
-                    {
-                        var installedPackage = new InstalledPackageReference(library.Name)
-                        {
-                            ResolvedPackageMetadata = PackageSearchMetadataBuilder
-                                .FromIdentity(new PackageIdentity(library.Name, library.Version))
-                                .Build()
-                        };
-
-                        if (library.Type != "project" || includeProjects)
-                        {
-                            transitivePackages.Add(installedPackage);
-                        }
-                    }
-                }
-
-                var frameworkPackages = new FrameworkPackages(
-                    target.TargetFramework.GetShortFolderName(),
-                    topLevelPackages,
-                    transitivePackages);
-
-                resultPackages.Add(frameworkPackages);
-            }
-
-            return resultPackages;
-        }
-
 
         /// <summary>
         /// Returns all package references after evaluating the condition on the item groups.
