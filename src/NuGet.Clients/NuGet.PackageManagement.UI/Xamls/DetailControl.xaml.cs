@@ -67,15 +67,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void ExecuteSearchForPackage(object sender, ExecutedRoutedEventArgs e)
-        {
-            var packageId = e.Parameter as string;
-            if (Control != null)
-            {
-                Control.Search(packageId);
-            }
-        }
-
         public void ScrollToHome()
         {
             _root.ScrollToHome();
