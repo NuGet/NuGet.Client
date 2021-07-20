@@ -20,10 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="SigningTests\CrossFrameworkVerificationTest.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="compiler\resources\UntrustedTimestampPackage.nupkg" />
     <None Remove="compiler\resources\TimestampInvalidGenTimePackage.nupkg" />
   </ItemGroup>

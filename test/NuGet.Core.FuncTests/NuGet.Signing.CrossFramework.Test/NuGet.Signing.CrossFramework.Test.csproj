@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibraryForCrossVerificationTests)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>

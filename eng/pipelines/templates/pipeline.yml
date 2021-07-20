@@ -96,7 +96,6 @@ jobs:
 
 - job: CrossFramework_Tests_On_Windows
   dependsOn:
-  - Build_and_UnitTest_NonRTM
   - Initialize_Build
   timeoutInMinutes: 30
   variables:
@@ -105,10 +104,10 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunCrossFrameworkTestsOnWindows'], 'true')) "
   pool:
-    name: VSEngSS-MicroBuild2019
+    vmImage: windows-latest
     demands:
-        - DotNetFramework
-        - msbuild
+      - DotNetFramework
+      - msbuild
 
   steps:
   - template: CrossFramework_Tests_On_Windows.yml
