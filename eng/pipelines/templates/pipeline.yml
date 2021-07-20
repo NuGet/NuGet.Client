@@ -104,10 +104,10 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunCrossFrameworkTestsOnWindows'], 'true')) "
   pool:
-    vmImage: windows-latest
+    name: VSEngSS-MicroBuild2019
     demands:
-      - DotNetFramework
-      - msbuild
+        - DotNetFramework
+        - msbuild
 
   steps:
   - template: CrossFramework_Tests_On_Windows.yml
