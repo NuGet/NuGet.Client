@@ -412,6 +412,7 @@ namespace NuGet.SolutionRestoreManager
                             restoreReason: ImplicitRestoreReason.None,
                             requestCount: 1,
                             isBulkRestoreCoordinationEnabled: true,
+                            projectRestoreInfoSourcesCount: -1,
                             bulkRestoreCoordinationCheckStartTime: default,
                             projectsReadyCheckCount: 0,
                             projectReadyTimings: new List<TimeSpan>());
