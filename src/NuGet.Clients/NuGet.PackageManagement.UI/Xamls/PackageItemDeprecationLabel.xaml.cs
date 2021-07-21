@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.UI
                             ToolTip = UI.Resources.Deprecation_LinkTooltip,
                             Command = Commands.MakeSearchAlternative,
                             CommandParameter = alternatePackage.PackageId,
-                            Style = (Style)Resources["HyperlinkStyle"],
+                            Style = (Style)Resources["HyperlinkStyleNoUri"],
                         };
 
                         _textBlock.Inlines.Clear();

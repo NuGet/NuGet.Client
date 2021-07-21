@@ -43,7 +43,8 @@
           <Hyperlink
             NavigateUri="{Binding Path=PackageMetadata.PackageDetailsUrl}"
             ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
-            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+            Style="{StaticResource HyperlinkStyleNoUri}">
             <Run Text="{x:Static nuget:Resources.Deprecation_MoreInfo}" />
           </Hyperlink>
         </TextBlock>
@@ -58,7 +59,6 @@
           <StackPanel
             Orientation="Horizontal"
             VerticalAlignment="Center">
-            <!-- Style="{DynamicResource SelectableTextBlockStyle}" -->
             <TextBlock
               TextWrapping="Wrap"
               VerticalAlignment="Center"
@@ -66,8 +66,7 @@
               <Hyperlink
                 ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
                 Command="{x:Static nuget:Commands.MakeSearchAlternative}"
-                Style="{StaticResource HyperlinkStyle}"
-                NavigateUri="#"
+                Style="{StaticResource HyperlinkStyleNoUri}"
                 CommandParameter="{Binding Path=PackageDeprecationAlternatePackageId}">
                 <Run Text="{Binding Path=PackageDeprecationAlternatePackageText}" />
               </Hyperlink>
