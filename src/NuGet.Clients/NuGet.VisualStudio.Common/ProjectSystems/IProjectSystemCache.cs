@@ -134,7 +134,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="projectNames">The names for the projectNames in question.</param>
         /// <param name="restoreInfoSource">The restore info source object.</param>
-        /// <returns></returns>
+        /// <returns>True if operation succeeded.</returns>
         bool AddProjectRestoreInfoSource(ProjectNames projectNames, object restoreInfoSource);
 
         /// <summary>

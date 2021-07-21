@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -10,8 +11,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -41,6 +44,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly ISolutionRestoreWorker _restoreWorker;
         private readonly ILogger _logger;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> _vsSolution2;
+        private readonly ConcurrentQueue<(IVsProjectRestoreInfoSource, CancellationToken, TaskCompletionSource<bool>)> _projectRestoreInfoSources = new();
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
@@ -89,6 +93,7 @@ namespace NuGet.SolutionRestoreManager
             dgSpec.AddRestore(packageSpec.Name);
             _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, new List<IAssetsLogMessage>());
 
+            await PopulateRestoreInfoSourcesAsync();
             // returned task completes when scheduled restore operation completes.
             var restoreTask = _restoreWorker.ScheduleRestoreAsync(
                 SolutionRestoreRequest.OnUpdate(),
@@ -180,6 +185,8 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, nominationErrors);
+
+                await PopulateRestoreInfoSourcesAsync();
 
                 // returned task completes when scheduled restore operation completes.
                 var restoreTask = _restoreWorker.ScheduleRestoreAsync(
@@ -332,11 +339,12 @@ namespace NuGet.SolutionRestoreManager
             {
                 throw new ArgumentNullException(Resources.Argument_Cannot_Be_Null_Or_Empty, $"{nameof(restoreInfoSource)}.{nameof(restoreInfoSource.Name)}");
             }
+            token.ThrowIfCancellationRequested();
 
-            string projectUniqueName = restoreInfoSource.Name;
-            ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
-
-            _projectSystemCache.AddProjectRestoreInfoSource(projectNames, restoreInfoSource);
+            // This is called early in the project loading process, so as such the project info may not be available yet. The data will be processed before the restore itself is started.
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            _projectRestoreInfoSources.Enqueue((restoreInfoSource, token, taskCompletionSource));
+            await taskCompletionSource.Task;
         }
 
         private async Task<ProjectNames> GetProjectNamesAsync(string projectUniqueName, CancellationToken token)
@@ -349,5 +357,84 @@ namespace NuGet.SolutionRestoreManager
 
             return projectNames;
         }
+
+        /// <summary>
+        /// Populates restore info sources.
+        /// </summary>
+        private async Task PopulateRestoreInfoSourcesAsync()
+        {
+            List<(IVsProjectRestoreInfoSource, CancellationToken, TaskCompletionSource<bool>)> failedInits = new List<(IVsProjectRestoreInfoSource, CancellationToken, TaskCompletionSource<bool>)>();
+            while (_projectRestoreInfoSources.TryDequeue(out var source))
+            {
+                IVsProjectRestoreInfoSource projectRestoreInfoSource = source.Item1;
+                string projectUniqueName = source.Item1.Name;
+                CancellationToken token = source.Item2;
+                TaskCompletionSource<bool> taskCompletionSource = source.Item3;
+
+                if (!_projectSystemCache.TryGetProjectNames(projectUniqueName, out ProjectNames projectNames))
+                {
+                    IVsSolution2 vsSolution2 = await _vsSolution2.GetValueAsync(token);
+
+                    try
+                    {
+                        token.ThrowIfCancellationRequested();
+                        projectNames = await ProjectNames.FromIVsSolution2(projectUniqueName, vsSolution2, token);
+                        _projectSystemCache.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+                        taskCompletionSource.SetResult(true);
+                    }
+                    catch (OperationCanceledException oce)
+                    {
+                        taskCompletionSource.SetException(oce);
+                    }
+                    catch (Exception ex)
+                    {
+                        bool solutionFullyLoaded = false;
+                        try
+                        {
+                            solutionFullyLoaded = await IsSolutionFullyLoadedAsync(vsSolution2);
+                        }
+                        catch
+                        {
+                            // Do nothing.
+                        }
+
+                        if (solutionFullyLoaded)
+                        {
+                            taskCompletionSource.SetException(ex);
+                        }
+                        else
+                        {
+                            failedInits.Add(source);
+                        }
+                    }
+                }
+
+                _projectSystemCache.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+            }
+
+            // If the solution is not yet fully initialized, failed inits are *acceptable*. 
+            foreach (var source in failedInits)
+            {
+                _projectRestoreInfoSources.Enqueue(source);
+            }
+
+            async Task<bool> IsSolutionFullyLoadedAsync(IVsSolution2 vsSolution)
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (vsSolution == null)
+                {
+                    // Initialization may not have completed yet.
+                    return false;
+                }
+
+                object value;
+                var hr = vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out value);
+                ErrorHandler.ThrowOnFailure(hr);
+
+                return (bool)value;
+            }
+        }
+
     }
 }
