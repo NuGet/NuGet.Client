@@ -416,7 +416,7 @@ namespace NuGet.SolutionRestoreManager
                             bulkRestoreCoordinationCheckStartTime: default,
                             projectsReadyCheckCount: 0,
                             projectReadyTimings: new List<TimeSpan>());
-                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, new(), token);
+                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, restoreTrackingData, token);
 
                         return result;
                     }
