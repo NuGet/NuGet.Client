@@ -115,6 +115,217 @@ function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-Res
     }
 }
 
+function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-Succeed {
+    param(
+        $context
+    )
+
+    # Arrange
+    $repoDirectory = $context.RepositoryRoot
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
+
+    $settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="ReadyPackages" value="{0}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="ReadyPackages">
+            <namespace id="Soluti*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+  
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $repoDirectory | Out-File -Encoding "UTF8" $nugetConfigPath
+    
+        # $p = New-ConsoleApplication
+        # Arrange
+        $p = New-ClassLibrary
+
+        # Act
+        [API.Test.InternalAPITestHook]::InstallLatestPackageApi("SolutionLevelPkg", $false)
+
+        # Assert
+        Assert-Package $p SolutionLevelPkg 1.0.0
+
+        $errorlist = Get-Errors
+        Assert-AreEqual 0 $errorlist.Count
+    }
+    finally {
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-Fails {
+    param(
+        $context
+    )
+
+    # Arrange
+    $repoDirectory = $context.RepositoryRoot
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
+
+    $settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="ReadyPackages" value="{0}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="SecretPackages">
+            <namespace id="Soluti*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+  
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $repoDirectory | Out-File -Encoding "UTF8" $nugetConfigPath
+    
+        # $p = New-ConsoleApplication
+        # Arrange
+        $p = New-ClassLibrary
+
+        # Act & Assert
+        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from SecretPackages repository so it'll fail.
+        $exceptionMessage = "Exception calling `"InstallLatestPackageApi`" with `"2`" argument(s): `"Package 'SolutionLevelPkg 1.0.0' is not found in the following primary source(s): '"+ $repoDirectory + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly.`""
+        Assert-Throws { [API.Test.InternalAPITestHook]::InstallLatestPackageApi("SolutionLevelPkg", $false)  } $exceptionMessage
+        Assert-NoPackage $p SolutionLevelPkg 1.0.0
+    }
+    finally {
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithSpecifiedVersion
+{
+    param($context)
+
+    # Arrange
+    $repoDirectory = Join-Path $OutputPath "CustomPackages"
+    $opensourceRepo = Join-Path $repoDirectory "opensourceRepo"
+    $privateRepo = Join-Path $repoDirectory "privateRepo"
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="OpensourceRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PrivateRepository">
+            <namespace id="Contoso.MVC.*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $privateRepo "Thisisfromprivaterepo2.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $opensourceRepo "Thisisfromopensourcerepo2.txt"
+
+        # Act
+        [API.Test.InternalAPITestHook]::InstallPackageApi("Contoso.MVC.ASP", "1.0.0")
+
+        # Assert   
+        $packagesFolder = Join-Path $solutionDirectory "packages"
+        $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
+        Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
+        # Make sure name squatting package from public repo not restored.
+        $contentFolder = Join-Path $contosoNupkgFolder "content"
+        Assert-PathExists(Join-Path $contentFolder "Thisisfromprivaterepo1.txt")
+
+        $errorlist = Get-Errors
+        Assert-AreEqual 0 $errorlist.Count
+    }
+    finally {
+        Remove-Item -Recurse -Force $repoDirectory
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithLatestVersion
+{
+    param($context)
+
+    # Arrange
+    $repoDirectory = Join-Path $OutputPath "CustomPackages"
+    $opensourceRepo = Join-Path $repoDirectory "opensourceRepo"
+    $privateRepo = Join-Path $repoDirectory "privateRepo"
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="OpensourceRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PrivateRepository">
+            <namespace id="Contoso.MVC.*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $privateRepo "Thisisfromprivaterepo2.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $opensourceRepo "Thisisfromopensourcerepo2.txt"
+
+        # Act
+        [API.Test.InternalAPITestHook]::InstallLatestPackageApi("Contoso.MVC.ASP", $false)
+
+        # Assert   
+        $packagesFolder = Join-Path $solutionDirectory "packages"
+        $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.2.0.0"
+        Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.2.0.0.nupkg")
+        # Make sure name squatting package from public repo not restored.
+        $contentFolder = Join-Path $contosoNupkgFolder "content"
+        Assert-PathExists(Join-Path $contentFolder "Thisisfromprivaterepo2.txt")
+
+        $errorlist = Get-Errors
+        Assert-AreEqual 0 $errorlist.Count
+    }
+    finally {
+        Remove-Item -Recurse -Force $repoDirectory
+        Remove-Item $nugetConfigPath
+    }
+}
+
 # Create a custom test package 
 function CreateCustomTestPackage {
     param(

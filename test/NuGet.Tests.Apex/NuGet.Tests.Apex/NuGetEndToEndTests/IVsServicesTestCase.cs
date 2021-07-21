@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -79,6 +81,238 @@ namespace NuGet.Tests.Apex
                 // The global packages folder should not be the one configured by the test context!
                 userPackagesFolder.Should().NotBe(testContext.UserPackagesFolder);
             }
+        }
+
+        [StaFact]
+        public async Task SimpleInstallFromIVsInstaller_PackageNamespace_WithSingleFeed()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            string mainDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
+            string solutionDirectory = Path.Combine(mainDirectory, "Solution");
+            var solutionService = VisualStudio.Get<SolutionService>();
+            var nugetTestService = GetNuGetTestService();
+
+            var privateRepositoryPath = Path.Combine(mainDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            var packageName = "Contoso.A";
+            var packageVersion = "1.0.0";
+
+            await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
+
+            // Create nuget.config with Package namespace filtering rules before project is created.
+            CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PrivateRepository"">
+            <namespace id=""Contoso.*"" />             
+            <namespace id=""Test.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+            solutionService.SaveAll();
+            var project = dte.Solution.Projects.Item(1);
+
+            // Act
+            nugetTestService.InstallPackage(project.UniqueName, "contoso.a");
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+        }
+
+        [StaFact]
+        public async Task SimpleUpdateFromIVsInstaller_PackageNamespace_WithSingleFeed()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            string mainDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
+            string solutionDirectory = Path.Combine(mainDirectory, "Solution");
+            var solutionService = VisualStudio.Get<SolutionService>();
+            var nugetTestService = GetNuGetTestService();
+
+            var privateRepositoryPath = Path.Combine(mainDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            var packageName = "Contoso.A";
+            var packageVersionV1 = "1.0.0";
+            var packageVersionV2 = "2.0.0";
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV1, "Thisisfromprivaterepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2, "Thisisfromprivaterepo2.txt");
+
+            // Create nuget.config with Package namespace filtering rules before project is created.
+            CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PrivateRepository"">
+            <namespace id=""Contoso.*"" />             
+            <namespace id=""Test.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+            solutionService.SaveAll();
+            var project = dte.Solution.Projects.Item(1);
+
+            // Act
+            nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "1.0.0");
+            nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "2.0.0");
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+
+            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+            var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
+            // Make sure version 2 is restored.
+            Assert.True(File.Exists(uniqueContentFile));
+        }
+
+        [StaFact]
+        public async Task SimpleInstallFromIVsInstaller_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            string mainDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
+            string solutionDirectory = Path.Combine(mainDirectory, "Solution");
+            var solutionService = VisualStudio.Get<SolutionService>();
+            var nugetTestService = GetNuGetTestService();
+
+            var packageName = "Contoso.A";
+            var packageVersionV1 = "1.0.0";
+            var packageVersionV2 = "2.0.0";
+
+            var opensourceRepositoryPath = Path.Combine(mainDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersionV1, "Thisisfromopensourcerepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersionV2, "Thisisfromopensourcerepo2.txt");
+
+            var privateRepositoryPath = Path.Combine(mainDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV1, "Thisisfromprivaterepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2, "Thisisfromprivaterepo2.txt");
+
+            // Create nuget.config with Package namespace filtering rules before project is created.
+            CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""externalRepository"">
+            <namespace id=""External.*"" />
+            <namespace id=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <namespace id=""Contoso.*"" />             
+            <namespace id=""Test.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+            solutionService.SaveAll();
+            var project = dte.Solution.Projects.Item(1);
+
+            // Act
+            nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "1.0.0");
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+
+            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+            var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersionV1, "lib", "net45", "Thisisfromprivaterepo1.txt");
+            // Make sure name squatting package not restored from  opensource repository.
+            Assert.True(File.Exists(uniqueContentFile));
+        }
+
+        [StaFact]
+        public async Task SimpleUpdateFromIVsInstaller_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            string mainDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
+            string solutionDirectory = Path.Combine(mainDirectory, "Solution");
+            var solutionService = VisualStudio.Get<SolutionService>();
+            var nugetTestService = GetNuGetTestService();
+
+            var packageName = "Contoso.A";
+            var packageVersionV1 = "1.0.0";
+            var packageVersionV2 = "2.0.0";
+
+            var opensourceRepositoryPath = Path.Combine(mainDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersionV1, "Thisisfromopensourcerepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersionV2, "Thisisfromopensourcerepo2.txt");
+
+            var privateRepositoryPath = Path.Combine(mainDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV1, "Thisisfromprivaterepo1.txt");
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2, "Thisisfromprivaterepo2.txt");
+
+            // Create nuget.config with Package namespace filtering rules before project is created.
+            CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""externalRepository"">
+            <namespace id=""External.*"" />
+            <namespace id=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <namespace id=""Contoso.*"" />             
+            <namespace id=""Test.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+            solutionService.SaveAll();
+            var project = dte.Solution.Projects.Item(1);
+
+            // Act
+            nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "1.0.0");
+            nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "2.0.0");
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+
+            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+            var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
+            // Make sure name squatting package not restored from  opensource repository.
+            Assert.True(File.Exists(uniqueContentFile));
         }
     }
 }
