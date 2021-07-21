@@ -1497,6 +1497,7 @@ namespace NuGet.PackageManagement.UI
                 if (_windowSearchHost.IsEnabled)
                 {
                     _windowSearchHost.SearchTask?.Stop();
+                    ActiveFilter = ItemFilter.All;
                     Search(alternatePackageId);
                 }
             }
