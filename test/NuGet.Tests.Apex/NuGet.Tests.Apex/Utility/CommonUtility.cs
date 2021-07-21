@@ -79,9 +79,9 @@ namespace NuGet.Tests.Apex
             return RepositoryCountersignPackage(authorSignedPackage, repoCertificate, v3ServiceIndexUrl, packageOwners, timestampProviderUrl);
         }
 
-        public static async Task CreateNetCorePackageInSourceAsync(string packageSource, string packageName, string packageVersion, string requestAdditionalContent = null)
+        public static async Task CreateNetFrameworkPackageInSourceAsync(string packageSource, string packageName, string packageVersion, string requestAdditionalContent = null)
         {
-            var package = CreateNetCorePackage(packageName, packageVersion, requestAdditionalContent);
+            var package = CreatePackage(packageName, packageVersion, requestAdditionalContent);
             await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
         }
 
@@ -145,25 +145,16 @@ namespace NuGet.Tests.Apex
             return package;
         }
 
-        public static SimpleTestPackageContext CreatePackage(string packageName, string packageVersion)
+        public static SimpleTestPackageContext CreatePackage(string packageName, string packageVersion, string requestAdditionalContent = null)
         {
             var package = new SimpleTestPackageContext(packageName, packageVersion);
             package.Files.Clear();
             package.AddFile("lib/net45/_._");
             package.AddFile("lib/netstandard1.0/_._");
 
-            return package;
-        }
-
-        public static SimpleTestPackageContext CreateNetCorePackage(string packageName, string packageVersion, string requestAdditionalContent)
-        {
-            var package = new SimpleTestPackageContext(packageName, packageVersion);
-            package.Files.Clear();
-            package.AddFile("lib/net5.0/_._");
-
-            if(!string.IsNullOrWhiteSpace(requestAdditionalContent))
+            if (!string.IsNullOrWhiteSpace(requestAdditionalContent))
             {
-                package.AddFile("lib/net5.0/" + requestAdditionalContent);
+                package.AddFile("lib/net45/" + requestAdditionalContent);
             }
 
             return package;
