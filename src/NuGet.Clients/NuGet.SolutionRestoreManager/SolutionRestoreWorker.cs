@@ -408,10 +408,11 @@ namespace NuGet.SolutionRestoreManager
                     using (var restoreOperation = new BackgroundRestoreOperation())
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, token);
+                        var isBulkRestoreCoordinationEnabled = _nuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.BulkRestoreCoordination);
                         var restoreTrackingData = GetRestoreTrackingData(
                             restoreReason: ImplicitRestoreReason.None,
                             requestCount: 1,
-                            isBulkRestoreCoordinationEnabled: true,
+                            isBulkRestoreCoordinationEnabled: isBulkRestoreCoordinationEnabled,
                             projectRestoreInfoSourcesCount: -1,
                             bulkRestoreCoordinationCheckStartTime: default,
                             projectsReadyCheckCount: 0,
@@ -610,6 +611,7 @@ namespace NuGet.SolutionRestoreManager
                             ref _pendingRestore, new BackgroundRestoreOperation(), restoreOperation);
 
                         token.ThrowIfCancellationRequested();
+
                         Dictionary<string, object> restoreStartTrackingData = GetRestoreTrackingData(
                             restoreReason,
                             requestCount,
