@@ -42,7 +42,6 @@
   </UserControl.InputBindings>
 
   <ScrollViewer
-    DataContext="{Binding ViewModel}"
     VerticalScrollBarVisibility="Disabled"
     HorizontalScrollBarVisibility="Auto">
     <DockPanel

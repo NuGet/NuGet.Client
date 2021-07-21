@@ -164,7 +164,7 @@ namespace NuGet.PackageManagement.UI
         internal async Task LoadItemsAsync(
             IPackageItemLoader loader,
             string searchText,
-            INuGetUILogger logger,
+            INuGetUILogger logger,  
             Task<SearchResultContextInfo> searchResultTask,
             CancellationToken token)
         {
@@ -352,7 +352,7 @@ namespace NuGet.PackageManagement.UI
             // makes sure we update using the relevant one.
             if (currentLoader == _loader)
             {
-                await UpdatePackageList(loadedItems, refresh: true);
+                await AppendPackages(loadedItems);
             }
 
             token.ThrowIfCancellationRequested();
@@ -375,7 +375,7 @@ namespace NuGet.PackageManagement.UI
                 && !loadedItems.Any()
                 && currentLoader.State.LoadingStatus == LoadingStatus.Ready)
             {
-                await UpdatePackageList(currentLoader.GetCurrent(), refresh: false);
+                await AppendPackages(currentLoader.GetCurrent());
             }
 
             token.ThrowIfCancellationRequested();
@@ -504,11 +504,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Appends <c>packages</c> to the internal <see cref="Items"> list
+        /// Appends <c>packages</c> to the internal <see cref="Items"> list. 
         /// </summary>
         /// <param name="packages">Packages collection to add</param>
-        /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
-        private async Task UpdatePackageList(IEnumerable<PackageItemViewModel> packages, bool refresh)
+        private async Task AppendPackages(IEnumerable<PackageItemViewModel> packages)
         {
             // Synchronize updating Items list
             await _list.ItemsLock.ExecuteAsync(async () =>
@@ -517,11 +516,6 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.WithPriority(Dispatcher, DispatcherPriority.Background).Run(() =>
                 {
-                    if (refresh)
-                    {
-                        ClearPackageList();
-                    }
-
                     // add newly loaded items
                     foreach (var package in packages)
                     {
@@ -549,6 +543,7 @@ namespace NuGet.PackageManagement.UI
 
             ViewModel.Collection.Clear();
             _scrollViewer.ScrollToHome();
+            _selectedCount = 0;
             _loadingStatusBar.ItemsLoaded = 0;
         }
 
@@ -674,17 +669,20 @@ namespace NuGet.PackageManagement.UI
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            //Scrolled down to the bottom of the viewport and there's more to load.
-            if (!e.Handled
-                && e.VerticalChange > 0
-                && _scrollViewer.VerticalOffset == _scrollViewer.ScrollableHeight
-                && _loader?.State.LoadingStatus == LoadingStatus.Ready)
+            if (ViewModel.FetchPageOnScroll)
             {
-                e.Handled = true;
+                //Scrolled down to the bottom of the viewport and there's more to load.
+                if (!e.Handled
+                    && e.VerticalChange > 0
+                    && _scrollViewer.VerticalOffset == _scrollViewer.ScrollableHeight
+                    && _loader?.State.LoadingStatus == LoadingStatus.Ready)
+                {
+                    e.Handled = true;
 
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
-                    LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
-                ).PostOnFailure(nameof(InfiniteScrollList));
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
+                        LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
+                    ).PostOnFailure(nameof(InfiniteScrollList));
+                }
             }
         }
 
@@ -726,7 +724,7 @@ namespace NuGet.PackageManagement.UI
         private void _loadingStatusBar_ShowMoreResultsClick(object sender, RoutedEventArgs e)
         {
             var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemViewModel>();
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => UpdatePackageList(packageItems, refresh: true));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => AppendPackages(packageItems));
             _loadingStatusBar.ItemsLoaded = _loader?.State.ItemsCount ?? 0;
 
             var desiredVisibility = EvaluateStatusBarVisibility(_loader, _loader.State);

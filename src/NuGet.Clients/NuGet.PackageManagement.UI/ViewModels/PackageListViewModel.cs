@@ -15,6 +15,7 @@ namespace NuGet.PackageManagement.UI
     {
         public ObservableCollection<PackageItemViewModel> Collection { get; private set; }
         public LoadingStatusIndicator LoadingStatusIndicator { get; private set; }
+
         public bool HasStatusToDisplay
         {
             get
@@ -38,6 +39,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private readonly bool _fetchPageOnScroll;
+
+        /// <summary>
+        /// When enabled, configures controls such that scrolling down fetches a page of data, if supported by the loader.
+        /// Otherwise, all items are fetched at load time.
+        /// </summary>
+        public bool FetchPageOnScroll { get => _fetchPageOnScroll; }
+
         public ICollectionView CollectionView
         {
             get
@@ -49,9 +58,12 @@ namespace NuGet.PackageManagement.UI
         private PackageListViewModel()
         { }
 
-        public PackageListViewModel(ObservableCollection<PackageItemViewModel> collection)
+        public PackageListViewModel(ObservableCollection<PackageItemViewModel> collection, bool fetchPageOnScroll)
         {
             Collection = collection;
+
+            _fetchPageOnScroll = fetchPageOnScroll;
+
             LoadingStatusIndicator = new LoadingStatusIndicator();
             LoadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
         }

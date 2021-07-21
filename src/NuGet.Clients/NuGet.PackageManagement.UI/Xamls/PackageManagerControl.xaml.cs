@@ -68,12 +68,10 @@ namespace NuGet.PackageManagement.UI
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
 
-        public PackageManagerViewModel ViewModel { get; private set; }
+        public PackageManagerViewModel ViewModel { get; set; }
 
         private PackageManagerControl()
         {
-            ViewModel = new PackageManagerViewModel();
-
             DataContext = this;
 
             InitializeComponent();
@@ -93,6 +91,7 @@ namespace NuGet.PackageManagement.UI
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
 
+            ViewModel = new PackageManagerViewModel();
             Model = model;
             _uiLogger = uiLogger;
             Settings = await ServiceLocator.GetInstanceAsync<ISettings>();
@@ -147,10 +146,12 @@ namespace NuGet.PackageManagement.UI
             _initialized = true;
 
             // UI is initialized. Start the first search
+            ViewModel.SetActivePackageListViewModel(_topPanel.Filter);
+            _packageList.DataContext = ViewModel.PackageListViewModel;
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
-            Loaded += PackageManagerLoaded;
+            //Loaded += PackageManagerLoaded;
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -404,12 +405,14 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
+            //TODO: remove
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageManagerLoaded));
         }
 
         private async Task PackageManagerLoadedAsync()
         {
+            //TODO: remove and move telemetry to VM.
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not trigger a refresh if this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
@@ -1089,6 +1092,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (_initialized)
             {
+                ViewModel.SetActivePackageListViewModel(_topPanel.Filter);
                 _packageList.LoadingIndicator_Begin();
                 _packageList.ClearPackageList();
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
