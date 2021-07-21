@@ -236,16 +236,37 @@
         </Grid.ColumnDefinitions>
 
         <!-- row 0: -->
-        <!-- deprecation indicator -->
+
+        <!-- warnings indicator -->
         <imaging:CrispImage
-                      x:Name="_deprecationIndicator"
+                      x:Name="_warningIndicator"
                       Grid.Row="0"
                       Grid.Column="0"
-                      Visibility="{Binding IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Visibility="{Binding IsPackageWithWarnings,Converter={StaticResource BooleanToVisibilityConverter}}"
                       VerticalAlignment="Center"
-                      ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
                       AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
-                      Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
+                      Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
+          <imaging:CrispImage.ToolTip>
+            <StackPanel>
+              <TextBlock
+                Margin="0, 0, 0, 8"
+                Visibility="{Binding IsPackageVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock.Text>
+                  <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                    <Binding Source="{x:Static nuget:Resources.Label_PackageVulnerableToolTip}" />
+                    <Binding Path="VulnerabilityMaxSeverity" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
+                  </MultiBinding>
+                </TextBlock.Text>
+              </TextBlock>
+              <TextBlock
+                Text="{x:Static nuget:Resources.Label_PackageDeprecatedToolTip}"
+                Margin="0, 0, 0, 8"
+                Visibility="{Binding IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}" />
+              <TextBlock
+                Text="{x:Static nuget:Resources.Label_PackageSelectForInfoToolTip}" />
+            </StackPanel>
+          </imaging:CrispImage.ToolTip>
+        </imaging:CrispImage>
 
         <!-- installed version -->
         <TextBlock

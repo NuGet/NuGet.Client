@@ -1,2 +1,8 @@
+NuGet.Protocol.Core.Types.IPackageSearchMetadata.GetVulnerabilityMetadataAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>>
 NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload, NuGet.Configuration.PackageNamespacesConfiguration packageNamespacesConfiguration) -> void
 NuGet.Protocol.Core.Types.PackageDownloadContext.PackageNamespacesConfiguration.get -> NuGet.Configuration.PackageNamespacesConfiguration
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.GetVulnerabilityMetadataAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>>
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.WithVulnerabilities(NuGet.Common.AsyncLazy<System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>> lazyVulnerabilitiesFactory) -> NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder
+NuGet.Protocol.LocalPackageSearchMetadata.GetVulnerabilityMetadataAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>>
+NuGet.Protocol.PackageSearchMetadata.GetVulnerabilityMetadataAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>>
+NuGet.Protocol.PackageSearchMetadataV2Feed.GetVulnerabilityMetadataAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata>>

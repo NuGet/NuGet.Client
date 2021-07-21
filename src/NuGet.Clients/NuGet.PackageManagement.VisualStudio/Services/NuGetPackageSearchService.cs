@@ -199,6 +199,31 @@ namespace NuGet.PackageManagement.VisualStudio
             return PackageDeprecationMetadataContextInfo.Create(deprecationMetadata);
         }
 
+        public async ValueTask<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>> GetVulnerabilityMetadataAsync(
+            PackageIdentity identity,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(identity);
+            Assumes.NotNullOrEmpty(packageSources);
+
+            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
+            if (backgroundDataCache != null)
+            {
+                PackageSearchMetadataCacheItemEntry cacheItem = await backgroundDataCache.GetPackageSearchMetadataCacheVersionedItemAsync(identity, cancellationToken);
+                return (await cacheItem.PackageVulnerabilityMetadataContextInfo).ToList();
+            }
+
+            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
+            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata = await packageMetadata.GetVulnerabilityMetadataAsync();
+
+            return vulnerabilityMetadata.Select(m => new PackageVulnerabilityMetadataContextInfo(m.AdvisoryUrl, m.Severity)).ToList()
+                ?? Enumerable.Empty<PackageVulnerabilityMetadataContextInfo>().ToList();
+        }
+
         public async ValueTask<SearchResultContextInfo> RefreshSearchAsync(CancellationToken cancellationToken)
         {
             Assumes.NotNull(_searchObject);

@@ -4,6 +4,8 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -30,6 +32,9 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public ValueTask<PackageDeprecationMetadataContextInfo?> PackageDeprecationMetadataContextInfo => GetPackageDeprecationMetadataContextInfoAsync();
+
+        public ValueTask<IEnumerable<PackageVulnerabilityMetadataContextInfo>> PackageVulnerabilityMetadataContextInfo => GetPackageVulnerabilityMetadataContextInfoAsync();
+
         public ValueTask<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo => GetDetailedPackageSearchMetadataContextInfoAsync();
 
         private async ValueTask<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationMetadataContextInfoAsync()
@@ -53,6 +58,23 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             IPackageSearchMetadata detailedMetadata = await _detailedPackageSearchMetadata.Value;
             return PackageSearchMetadataContextInfo.Create(detailedMetadata);
+        }
+
+        private async ValueTask<IEnumerable<PackageVulnerabilityMetadataContextInfo>> GetPackageVulnerabilityMetadataContextInfoAsync()
+        {
+            // If PackageSearchMetadata was added to the cache directly from search then deprecation data could be null even if it exists, we need
+            // to check the package metadata provider to be certain
+            IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata = await _packageSearchMetadata.GetVulnerabilityMetadataAsync();
+            if (vulnerabilityMetadata == null || !vulnerabilityMetadata.Any())
+            {
+                IPackageSearchMetadata detailedMetadata = await _detailedPackageSearchMetadata.Value;
+                vulnerabilityMetadata = await detailedMetadata.GetVulnerabilityMetadataAsync();
+                if(vulnerabilityMetadata == null || !vulnerabilityMetadata.Any())
+                {
+                    return Enumerable.Empty<PackageVulnerabilityMetadataContextInfo>();
+                }
+            }
+            return vulnerabilityMetadata.Select(m => new PackageVulnerabilityMetadataContextInfo(m.AdvisoryUrl, m.Severity));
         }
     }
 }

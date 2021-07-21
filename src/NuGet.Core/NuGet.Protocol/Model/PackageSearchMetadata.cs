@@ -213,5 +213,7 @@ namespace NuGet.Protocol
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
+
+        public Task<IEnumerable<PackageVulnerabilityMetadata>> GetVulnerabilityMetadataAsync() => Task.FromResult(Vulnerabilities);
     }
 }

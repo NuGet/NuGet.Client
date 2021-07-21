@@ -332,6 +332,13 @@ namespace NuGet.PackageManagement.UI
             return await _searchService.GetPackageVersionsAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
         }
 
+        private async Task<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>> GetVulnerabilityMetadataAsync(PackageIdentity identity)
+        {
+            Assumes.NotNull(identity);
+
+            return await _searchService.GetVulnerabilityMetadataAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
+        }
+
         private async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataContextInfoAsync(PackageIdentity identity)
         {
             Assumes.NotNull(identity);

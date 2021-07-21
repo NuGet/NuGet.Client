@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.Protocol;
@@ -19,12 +21,15 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
             Version = version;
             DownloadCount = downloadCount;
+            PackageVulnerabilityMetadata = Enumerable.Empty<PackageVulnerabilityMetadataContextInfo>().ToList();
         }
 
         public NuGetVersion Version { get; }
         public long? DownloadCount { get; }
 
         public PackageDeprecationMetadataContextInfo? PackageDeprecationMetadata { get; internal set; }
+
+        public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> PackageVulnerabilityMetadata { get; internal set; }
 
         public PackageSearchMetadataContextInfo? PackageSearchMetadata { get; internal set; }
 
@@ -42,6 +47,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 if (packageDeprecationMetadata != null)
                 {
                     versionContextInfo.PackageDeprecationMetadata = PackageDeprecationMetadataContextInfo.Create(packageDeprecationMetadata);
+                }
+
+                IEnumerable<PackageVulnerabilityMetadata> packageVulnerabilityMetadata = await versionInfo.PackageSearchMetadata.GetVulnerabilityMetadataAsync();
+                if (packageVulnerabilityMetadata != null)
+                {
+                    versionContextInfo.PackageVulnerabilityMetadata = packageVulnerabilityMetadata.Select(m => new PackageVulnerabilityMetadataContextInfo(m.AdvisoryUrl, m.Severity)).ToList();
                 }
             }
 

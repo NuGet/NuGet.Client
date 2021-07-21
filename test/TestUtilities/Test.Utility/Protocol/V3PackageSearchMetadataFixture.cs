@@ -105,6 +105,11 @@ namespace NuGet.Test.Utility
                 throw new NotImplementedException();
             }
 
+            public Task<IEnumerable<PackageVulnerabilityMetadata>> GetVulnerabilityMetadataAsync()
+            {
+                throw new NotImplementedException();
+            }
+
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; internal set; }
         }
     }

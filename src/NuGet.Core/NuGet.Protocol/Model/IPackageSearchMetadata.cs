@@ -60,5 +60,7 @@ namespace NuGet.Protocol.Core.Types
         /// <see cref="PackageSearchResource" /> results, only through <see cref="PackageMetadataResource" /> or <see cref= "FindPackageByIdResource" />.
         /// </remarks>
         IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; }
+
+        Task<IEnumerable<PackageVulnerabilityMetadata>> GetVulnerabilityMetadataAsync();
     }
 }

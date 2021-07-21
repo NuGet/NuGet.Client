@@ -55,6 +55,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool includePrerelease,
             CancellationToken cancellationToken);
 
+        ValueTask<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>> GetVulnerabilityMetadataAsync(
+            PackageIdentity identity,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease,
+            CancellationToken cancellationToken);
+
         ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetPackageMetadataListAsync(
             string id,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
