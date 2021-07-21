@@ -78,5 +78,9 @@ namespace NuGet.Tests.Apex
             _uiproject.ActiveFilter = ItemFilter.UpdatesAvailable;
         }
 
+        public void SetPackageSourceOptionToAll()
+        {
+            _uiproject.SetPackageSourceOptionToAll();
+        }
     }
 }

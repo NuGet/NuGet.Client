@@ -125,6 +125,8 @@ namespace NuGet.PackageManagement.UI.TestContract
             }
         }
 
+        public void SetPackageSourceOptionToAll() => _packageManagerControl.SetPackageSourceOptionToAll();
+
         private void UIInvoke(Action action)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
