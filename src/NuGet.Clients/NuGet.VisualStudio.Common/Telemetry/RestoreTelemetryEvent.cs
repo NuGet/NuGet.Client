@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.PackageManagement;
 
@@ -17,6 +18,13 @@ namespace NuGet.VisualStudio
         public const string SolutionDependencyGraphSpecCreation = nameof(SolutionDependencyGraphSpecCreation);
         public const string PackageReferenceRestoreDuration = nameof(PackageReferenceRestoreDuration);
         public const string SolutionUpToDateCheck = nameof(SolutionUpToDateCheck);
+        public const string ImplicitRestoreReason = nameof(ImplicitRestoreReason);
+        public const string RequestCount = nameof(RequestCount);
+        public const string IsBulkFileRestoreCoordinationEnabled = nameof(IsBulkFileRestoreCoordinationEnabled);
+        public const string ProjectsReadyCheckCount = nameof(ProjectsReadyCheckCount);
+        public const string ProjectReadyCheckTimings = nameof(ProjectReadyCheckTimings);
+        public const string ProjectsReadyCheckTotalTime = nameof(ProjectsReadyCheckTotalTime);
+        public const string ProjectRestoreInfoSourcesCount = nameof(ProjectRestoreInfoSourcesCount);
 
         public RestoreTelemetryEvent(
             string operationId,
@@ -37,7 +45,7 @@ namespace NuGet.VisualStudio
             int packagesConfigProjectsCount,
             DateTimeOffset endTime,
             double duration,
-            bool isSolutionLoadRestore,
+            IDictionary<string, object> additionalTrackingData,
             IntervalTracker intervalTimingTracker) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
@@ -51,7 +59,11 @@ namespace NuGet.VisualStudio
             base[nameof(DotnetCliToolProjectsCount)] = dotnetCliToolProjectsCount;
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
-            base[nameof(IsSolutionLoadRestore)] = isSolutionLoadRestore;
+
+            foreach (KeyValuePair<string, object> data in additionalTrackingData)
+            {
+                base[data.Key] = data.Value;
+            }
 
             foreach (var (intervalName, intervalDuration) in intervalTimingTracker.GetIntervals())
             {

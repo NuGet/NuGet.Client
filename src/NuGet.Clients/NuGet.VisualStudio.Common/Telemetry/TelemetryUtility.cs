@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -208,5 +210,34 @@ namespace NuGet.VisualStudio.Telemetry
                 return null;
             }
         });
+
+        /// <summary>
+        /// Converts a collection of timings to a json array formatted string.
+        /// Empty if the collection is null or empty.
+        /// </summary>
+        /// <param name="sourceTimings">The timings to convert.</param>
+        /// <returns>A json array of timings, returns string.empty if the collection is null or empty.</returns>
+        public static string ToJsonArrayOfTimingsInSeconds(IEnumerable<TimeSpan> sourceTimings)
+        {
+            if (sourceTimings?.Any() != true)
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("[");
+            foreach (var item in sourceTimings)
+            {
+                sb.Append(item.TotalSeconds);
+                sb.Append(",");
+            }
+            if (sb[sb.Length - 1] == ',')
+            {
+                sb.Length--;
+            }
+            sb.Append("]");
+
+            return sb.ToString();
+        }
     }
 }

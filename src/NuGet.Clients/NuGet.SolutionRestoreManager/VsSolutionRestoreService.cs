@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
@@ -27,7 +26,7 @@ using Task = System.Threading.Tasks.Task;
 namespace NuGet.SolutionRestoreManager
 {
     /// <summary>
-    /// Implementation of the <see cref="IVsSolutionRestoreService"/> and <see cref="IVsSolutionRestoreService2"/>.
+    /// Implementation of the <see cref="IVsSolutionRestoreService"/>, <see cref="IVsSolutionRestoreService2"/>, <see cref="IVsSolutionRestoreService3"/> and <see cref="IVsSolutionRestoreService4"/>.
     /// Provides extension API for project restore nomination triggered by 3rd party component.
     /// Configured as a single-instance MEF part.
     /// </summary>
@@ -56,7 +55,9 @@ namespace NuGet.SolutionRestoreManager
                   projectSystemCache,
                   restoreWorker,
                   logger,
-                  new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => serviceProvider.GetServiceAsync<SVsSolution, IVsSolution2>(), NuGetUIThreadHelper.JoinableTaskFactory))
+                  new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() =>
+                  serviceProvider.GetServiceAsync<SVsSolution, IVsSolution2>(), NuGetUIThreadHelper.JoinableTaskFactory)
+                  )
         {
         }
 
@@ -78,11 +79,7 @@ namespace NuGet.SolutionRestoreManager
         {
             Assumes.NotNullOrEmpty(projectUniqueName);
 
-            if (!_projectSystemCache.TryGetProjectNames(projectUniqueName, out ProjectNames projectNames))
-            {
-                IVsSolution2 vsSolution2 = await _vsSolution2.GetValueAsync(token);
-                projectNames = await ProjectNames.FromIVsSolution2(projectUniqueName, vsSolution2, token);
-            }
+            ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
             var dgSpec = new DependencyGraphSpec();
             var packageSpec = new PackageSpec()
             {
@@ -156,11 +153,7 @@ namespace NuGet.SolutionRestoreManager
                 _logger.LogInformation(
                     $"The nominate API is called for '{projectUniqueName}'.");
 
-                if (!_projectSystemCache.TryGetProjectNames(projectUniqueName, out ProjectNames projectNames))
-                {
-                    IVsSolution2 vsSolution2 = await _vsSolution2.GetValueAsync(token);
-                    projectNames = await ProjectNames.FromIVsSolution2(projectUniqueName, vsSolution2, token);
-                }
+                ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
 
                 DependencyGraphSpec dgSpec;
                 IReadOnlyList<IAssetsLogMessage> nominationErrors = null;
@@ -309,14 +302,18 @@ namespace NuGet.SolutionRestoreManager
 
         internal static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
         {
-            var packageSpec = new PackageSpec();
-            packageSpec.FilePath = projectPath;
-            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
-            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
-            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
-            packageSpec.RestoreMetadata.ProjectPath = projectPath;
-            packageSpec.RestoreMetadata.OutputPath = outputPath;
-            packageSpec.RestoreMetadata.CacheFilePath = Path.Combine(outputPath, "project.nuget.cache");
+            var packageSpec = new PackageSpec
+            {
+                FilePath = projectPath,
+                RestoreMetadata = new ProjectRestoreMetadata()
+                {
+                    ProjectUniqueName = projectPath,
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    ProjectPath = projectPath,
+                    OutputPath = outputPath,
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath),
+                }
+            };
 
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddProject(packageSpec);
@@ -324,10 +321,33 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        public Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken cancellationToken)
+        public async Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken token)
         {
-            return Task.CompletedTask;
-            // TODO: https://github.com/NuGet/Home/issues/10678
+            if (restoreInfoSource == null)
+            {
+                throw new ArgumentNullException(nameof(restoreInfoSource));
+            }
+
+            if (string.IsNullOrEmpty(restoreInfoSource.Name))
+            {
+                throw new ArgumentNullException(Resources.Argument_Cannot_Be_Null_Or_Empty, $"{nameof(restoreInfoSource)}.{nameof(restoreInfoSource.Name)}");
+            }
+
+            string projectUniqueName = restoreInfoSource.Name;
+            ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
+
+            _projectSystemCache.AddProjectRestoreInfoSource(projectNames, restoreInfoSource);
+        }
+
+        private async Task<ProjectNames> GetProjectNamesAsync(string projectUniqueName, CancellationToken token)
+        {
+            if (!_projectSystemCache.TryGetProjectNames(projectUniqueName, out ProjectNames projectNames))
+            {
+                IVsSolution2 vsSolution2 = await _vsSolution2.GetValueAsync(token);
+                projectNames = await ProjectNames.FromIVsSolution2(projectUniqueName, vsSolution2, token);
+            }
+
+            return projectNames;
         }
     }
 }

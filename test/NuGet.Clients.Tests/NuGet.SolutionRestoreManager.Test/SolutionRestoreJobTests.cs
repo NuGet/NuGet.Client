@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
@@ -69,7 +70,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 request: restoreRequest,
                 jobContext: restoreJobContext,
                 logger: logger,
-                isSolutionLoadRestore: true,
+                trackingData: new Dictionary<string, object>(),
                 token: CancellationToken.None);
 
             Assert.Equal(NuGetOperationStatus.NoOp, job.Status);
@@ -118,7 +119,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 request: restoreRequest,
                 jobContext: restoreJobContext,
                 logger: logger,
-                isSolutionLoadRestore: true,
+                trackingData: new Dictionary<string, object>(),
                 token: cts.Token);
 
             Assert.Equal(NuGetOperationStatus.Cancelled, job.Status);

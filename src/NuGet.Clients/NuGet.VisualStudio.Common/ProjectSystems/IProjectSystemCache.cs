@@ -54,7 +54,6 @@ namespace NuGet.VisualStudio
         bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo, out IReadOnlyList<IAssetsLogMessage> nominationMessages);
 
         /// <summary>
-        /// Finds a project name by short name, unique name, unique name, or project id (guid).
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
         /// <param name="projectNames">Primary key if found.</param>
@@ -129,5 +128,19 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <returns><code>true</code> if the cache was dirty before and <code>false</code> otherwise</returns>
         bool TestResetDirtyFlag();
+
+        /// <summary>
+        /// Adds a project restore info source.
+        /// </summary>
+        /// <param name="projectNames">The names for the projectNames in question.</param>
+        /// <param name="restoreInfoSource">The restore info source object.</param>
+        /// <returns></returns>
+        bool AddProjectRestoreInfoSource(ProjectNames projectNames, object restoreInfoSource);
+
+        /// <summary>
+        /// Retrieves collection of all project info sources stored in the cache.
+        /// </summary>
+        /// <returns>Collection of project restore info sources.</returns>
+        IReadOnlyList<object> GetProjectRestoreInfoSources();
     }
 }

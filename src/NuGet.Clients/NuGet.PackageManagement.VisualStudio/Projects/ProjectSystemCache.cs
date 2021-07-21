@@ -493,6 +493,7 @@ namespace NuGet.PackageManagement.VisualStudio
             public DependencyGraphSpec ProjectRestoreInfo { get; set; }
             public ProjectNames ProjectNames { get; set; }
             public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
+            public object ProjectRestoreInfoSource { get; set; }
         }
 
         private void FireCacheUpdatedEvent(string projectFullName)
@@ -546,6 +547,75 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public bool AddProjectRestoreInfoSource(ProjectNames projectNames, object restoreInfoSource)
+        {
+            if (projectNames == null)
+            {
+                throw new ArgumentNullException(nameof(projectNames));
+            }
+
+            if (projectNames.FullName == null)
+            {
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(projectNames.FullName)),
+                    paramName: nameof(projectNames));
+            }
+
+            if (restoreInfoSource == null)
+            {
+                throw new ArgumentNullException(nameof(restoreInfoSource));
+            }
+
+            _readerWriterLock.EnterWriteLock();
+
+            try
+            {
+                if (!_projectNamesCache.ContainsKey(projectNames.FullName))
+                {
+                    UpdateProjectNamesCache(projectNames);
+                }
+
+                AddOrUpdateCacheEntry(
+                    projectNames.FullName,
+                    addEntryFactory: k => new CacheEntry
+                    {
+                        ProjectNames = projectNames,
+                        ProjectRestoreInfoSource = restoreInfoSource,
+                    },
+                    updateEntryFactory: (k, e) =>
+                    {
+                        e.ProjectRestoreInfoSource = restoreInfoSource;
+                        return e;
+                    });
+            }
+            finally
+            {
+                _readerWriterLock.ExitWriteLock();
+            }
+            // Do not fire a cache update event when the restore project info source is updated
+            // as it provides no value to any other components other than restore.
+
+            return true;
+        }
+
+        // Returns the project restore info sources available.
+        public IReadOnlyList<object> GetProjectRestoreInfoSources()
+        {
+            _readerWriterLock.EnterReadLock();
+
+            try
+            {
+                return _primaryCache
+                    .Select(kv => kv.Value.ProjectRestoreInfoSource)
+                    .Where(e => e != null)
+                    .ToList();
+            }
+            finally
+            {
+                _readerWriterLock.ExitReadLock();
+            }
         }
     }
 }
