@@ -79,7 +79,7 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 clientPolicyContext,
-                packageNamespaces: null,
+                packageNamespaces: PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance),
                 log,
                 new LockFileBuilderCache())
         {
@@ -148,9 +148,32 @@ namespace NuGet.Commands.Test
             packagesDirectory,
             fallbackPackageFolders,
             new TestSourceCacheContext(),
-            ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
+            clientPolicyContext,
             log,
             new LockFileBuilderCache())
+        {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
+            SourceCacheContext cacheContext,
+            PackageNamespacesConfiguration packageNamespacesConfiguration,
+            ILogger log) : base(
+                project,
+                RestoreCommandProviders.Create(
+                    packagesDirectory,
+                    Enumerable.Empty<string>(),
+                    sources: sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                    cacheContext: cacheContext,
+                    packageFileCache: new LocalPackageFileCache(),
+                    log: log),
+                cacheContext,
+                ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
+                packageNamespacesConfiguration,
+                log,
+                new LockFileBuilderCache())
         {
         }
 
@@ -173,7 +196,7 @@ namespace NuGet.Commands.Test
                 log: log),
             cacheContext,
             clientPolicyContext,
-            packageNamespaces: null,
+            packageNamespaces: PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance),
             log,
             lockFileBuilderCache)
         {

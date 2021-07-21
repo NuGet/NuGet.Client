@@ -893,7 +893,6 @@ NuGet.Commands.TrustedSignersCommandRunner
 NuGet.Commands.TrustedSignersCommandRunner.ExecuteCommandAsync(NuGet.Commands.TrustedSignersArgs trustedSignersArgs) -> System.Threading.Tasks.Task<int>
 NuGet.Commands.TrustedSignersCommandRunner.TrustedSignersCommandRunner(NuGet.Packaging.Signing.ITrustedSignersProvider trustedSignersProvider, NuGet.Configuration.IPackageSourceProvider packageSourceProvider) -> void
 NuGet.Commands.UnexpectedDependencyMessages
-NuGet.Commands.UnresolvedMessages
 NuGet.Commands.UpdateClientCertArgs
 NuGet.Commands.UpdateClientCertArgs.Configfile.get -> string
 NuGet.Commands.UpdateClientCertArgs.Configfile.set -> void
@@ -1163,9 +1162,6 @@ static NuGet.Commands.UnexpectedDependencyMessages.GetMissingLowerBounds(System.
 static NuGet.Commands.UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(NuGet.ProjectModel.PackageSpec project) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
 static NuGet.Commands.UnexpectedDependencyMessages.HasMissingLowerBound(NuGet.Versioning.VersionRange range) -> bool
 static NuGet.Commands.UnexpectedDependencyMessages.LogAsync(System.Collections.Generic.IEnumerable<NuGet.Commands.IRestoreTargetGraph> graphs, NuGet.ProjectModel.PackageSpec project, NuGet.Common.ILogger logger) -> System.Threading.Tasks.Task
-static NuGet.Commands.UnresolvedMessages.GetMessageAsync(string targetGraphName, NuGet.LibraryModel.LibraryRange unresolved, System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider> remoteLibraryProviders, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Common.RestoreLogMessage>
-static NuGet.Commands.UnresolvedMessages.LogAsync(System.Collections.Generic.IEnumerable<NuGet.Commands.IRestoreTargetGraph> graphs, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-static NuGet.Commands.UnresolvedMessages.LogAsync(System.Collections.Generic.IList<NuGet.Commands.DownloadDependencyResolutionResult> downloadDependencyResults, System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider> remoteLibraryProviders, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
 static NuGet.Commands.UpdateClientCertRunner.Run(NuGet.Commands.UpdateClientCertArgs args, System.Func<NuGet.Common.ILogger> getLogger) -> void
 static NuGet.Commands.UpdateSourceRunner.Run(NuGet.Commands.UpdateSourceArgs args, System.Func<NuGet.Common.ILogger> getLogger) -> void
 static NuGet.Commands.WarningPropertiesCollection.ApplyProjectWideNoWarnProperties(NuGet.Common.ILogMessage message, NuGet.ProjectModel.WarningProperties warningProperties) -> bool

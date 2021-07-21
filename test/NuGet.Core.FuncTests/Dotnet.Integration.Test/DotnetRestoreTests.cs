@@ -1620,6 +1620,162 @@ EndGlobal";
             }
         }
 
+        [Fact]
+        public async Task WhenPackageNamespacesConfiguredInstallsPackageReferencesAndDownloadsFromExpectedSources_Success()
+        {
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projFramework = FrameworkConstants.CommonFrameworks.Net50;
+            var projectPackageName = "projectA";
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+               projectPackageName,
+               pathContext.SolutionRoot,
+               projFramework);
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageY = "Y", packageZ = "Z", packageK = "K";
+
+            var packageX100 = new SimpleTestPackageContext(packageX, version);
+            var packageY100 = new SimpleTestPackageContext(packageY, version);
+            var packageZ100 = new SimpleTestPackageContext(packageZ, version);
+            var packageK100 = new SimpleTestPackageContext(packageK, version);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            projectA.AddPackageToAllFrameworks(packageX100);
+            projectA.AddPackageToAllFrameworks(packageY100);
+            projectA.AddPackageDownloadToAllFrameworks(packageK100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100,
+                    packageK100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100,
+                    packageK100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""{packageY}*"" />
+                <namespace id=""{packageZ}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />
+                <namespace id=""{packageK}*"" /> 
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _msbuildFixture.RunDotnet(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} -v n", ignoreExitCode: true);
+
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task WhenPackageNamespacesConfiguredAndNoMatchingSourceFound_Fails()
+        {
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projFramework = FrameworkConstants.CommonFrameworks.Net50;
+            var projectPackageName = "projectA";
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+               projectPackageName,
+               pathContext.SolutionRoot,
+               projFramework);
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageY = "Y", packageZ = "Z", packageK = "K";
+
+            var packageX100 = new SimpleTestPackageContext(packageX, version);
+            var packageY100 = new SimpleTestPackageContext(packageY, version);
+            var packageZ100 = new SimpleTestPackageContext(packageZ, version);
+            var packageK100 = new SimpleTestPackageContext(packageK, version);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            projectA.AddPackageToAllFrameworks(packageX100);
+            projectA.AddPackageToAllFrameworks(packageY100);
+            projectA.AddPackageDownloadToAllFrameworks(packageK100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100,
+                    packageK100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100,
+                    packageK100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""{packageY}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _msbuildFixture.RunDotnet(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} -v n", ignoreExitCode: true);
+
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})'", result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageK} (= {version})'", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+        }
+
         private static SimpleTestPackageContext CreateNetstandardCompatiblePackage(string id, string version)
         {
             var pkgX = new SimpleTestPackageContext(id, version);

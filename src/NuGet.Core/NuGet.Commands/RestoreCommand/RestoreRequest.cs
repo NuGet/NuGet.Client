@@ -48,6 +48,7 @@ namespace NuGet.Commands
             Project = project ?? throw new ArgumentNullException(nameof(project));
             DependencyProviders = dependencyProviders ?? throw new ArgumentNullException(nameof(dependencyProviders));
             ClientPolicyContext = clientPolicyContext;
+            PackageNameSpaces = packageNamespaces;
 
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
@@ -188,6 +189,8 @@ namespace NuGet.Commands
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
 
         public ClientPolicyContext ClientPolicyContext { get; }
+
+        public PackageNamespacesConfiguration PackageNameSpaces { get; }
 
         /// <remarks>
         /// This property should only be used to override the default verifier on tests.

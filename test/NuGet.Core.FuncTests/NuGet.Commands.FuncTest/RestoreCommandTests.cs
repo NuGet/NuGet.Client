@@ -19,8 +19,10 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility.Commands;
 using Xunit;
 
 namespace NuGet.Commands.FuncTest
@@ -2065,7 +2067,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2114,7 +2116,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2163,7 +2165,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2212,7 +2214,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2261,7 +2263,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2310,7 +2312,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2359,7 +2361,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2408,7 +2410,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, packageNamespaces: null, log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -3177,6 +3179,187 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Libraries.Should().HaveCount(2);
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithPackageNamesacesConfiguredDownloadsPackageFromExpectedSource_Succeeds()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            const string packageA = "PackageA";
+            const string packageB = "PackageB";
+            const string version = "1.0.0";
+
+            var packageA100 = new SimpleTestPackageContext
+            {
+                Id = packageA,
+                Version = version,
+            };
+
+            var packageB100 = new SimpleTestPackageContext
+            {
+                Id = packageB,
+                Version = version,
+            };
+
+            var projectSpec = PackageReferenceSpecBuilder.Create("Library1", pathContext.SolutionRoot)
+            .WithTargetFrameworks(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net5.0"),
+                    Dependencies = new List<LibraryDependency>(
+                        new[]
+                        {
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
+                                    LibraryDependencyTarget.Package)
+                            },
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
+                                    LibraryDependencyTarget.Package)
+                            },
+                        })
+                }
+            })
+            .Build();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var packageSource2 = Path.Combine(pathContext.WorkingDirectory, "source2");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                packageSource2,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var sources = new[] { new PackageSource(pathContext.PackageSource),
+                                                   new PackageSource(packageSource2) };
+            var log = new TestLogger();
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add(packageSource2, new List<string>() { packageA });
+            namespaces.Add(pathContext.PackageSource, new List<string>() { packageB });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+
+            var request = new TestRestoreRequest(projectSpec,
+                sources,
+                pathContext.UserPackagesFolder,
+                new TestSourceCacheContext(),
+                namespacesConfiguration,
+                log);
+
+            var command = new RestoreCommand(request);
+            var result = await command.ExecuteAsync();
+
+            Assert.True(result.Success);
+
+            var restoreGraph = result.RestoreGraphs.ElementAt(0);
+            Assert.Equal(0, restoreGraph.Unresolved.Count);
+            //packageA should be installed from source2
+            string packageASource = restoreGraph.Install.ElementAt(0).Provider.Source.Name;
+            Assert.Equal(packageSource2, packageASource);
+            //packageB should be installed from source
+            string packageBSource = restoreGraph.Install.ElementAt(1).Provider.Source.Name;
+            Assert.Equal(pathContext.PackageSource, packageBSource);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithPackageNamesacesConfiguredAndNoMatchingSourceForAPackage_Fails()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            const string packageA = "PackageA";
+            const string packageB = "PackageB";
+            const string version = "1.0.0";
+
+            var packageA100 = new SimpleTestPackageContext
+            {
+                Id = packageA,
+                Version = version,
+            };
+
+            var packageB100 = new SimpleTestPackageContext
+            {
+                Id = packageB,
+                Version = version,
+            };
+
+            var projectSpec = PackageReferenceSpecBuilder.Create("Library1", pathContext.SolutionRoot)
+            .WithTargetFrameworks(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net5.0"),
+                    Dependencies = new List<LibraryDependency>(
+                        new[]
+                        {
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
+                                    LibraryDependencyTarget.Package)
+                            },
+                            new LibraryDependency
+                            {
+                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
+                                    LibraryDependencyTarget.Package)
+                            },
+                        })
+                }
+            })
+            .Build();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var packageSource2 = Path.Combine(pathContext.WorkingDirectory, "source2");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                packageSource2,
+                PackageSaveMode.Defaultv3,
+                packageA100,
+                packageB100);
+
+            var sources = new[] { new PackageSource(pathContext.PackageSource),
+                                                   new PackageSource(packageSource2) };
+            var log = new TestLogger();
+
+            //package namespaces configuration
+            Dictionary<string, IReadOnlyList<string>> namespaces = new();
+            namespaces.Add(packageSource2, new List<string>() { packageA });
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+
+            var request = new TestRestoreRequest(projectSpec,
+                sources,
+                pathContext.UserPackagesFolder,
+                new TestSourceCacheContext(),
+                namespacesConfiguration,
+                log);
+
+            var command = new RestoreCommand(request);
+            var result = await command.ExecuteAsync();
+
+            Assert.False(result.Success);
+
+            var restoreGraph = result.RestoreGraphs.ElementAt(0);
+            Assert.Equal(1, restoreGraph.Unresolved.Count);
+
+            Assert.Equal(1, log.Errors);
+            log.ErrorMessages.TryPeek(out string message);
+            Assert.Equal("NU1100: Unable to resolve 'PackageB (>= 1.0.0)' for 'net5.0'.", message);
+
+            //packageA should be installed from source2
+            string packageASource = restoreGraph.Install.ElementAt(0).Provider.Source.Name;
+            Assert.Equal(packageSource2, packageASource);
         }
 
         private static byte[] GetTestUtilityResource(string name)
