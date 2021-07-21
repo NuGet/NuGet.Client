@@ -7,7 +7,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
             DataContextChanged="UserControl_DataContextChanged">
-    <UserControl.Resources>
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <local:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
       <Style x:Key="DeprecationControlStyle" TargetType="UserControl">
         <Style.Triggers>
           <DataTrigger Binding="{Binding StringFormat}" Value="{x:Null}">
@@ -18,7 +22,7 @@
           </DataTrigger>
         </Style.Triggers>
       </Style>
-    </UserControl.Resources>
-    <TextBlock x:Name="_textBlock" FontWeight="Bold">
-    </TextBlock>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <TextBlock x:Name="_textBlock" FontWeight="Bold" />
 </UserControl>

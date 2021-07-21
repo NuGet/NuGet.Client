@@ -1490,10 +1490,21 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteMakeSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var alternatePackageId = e.Parameter as string;
-            if (!string.IsNullOrWhiteSpace(alternatePackageId))
+
+            if(!string.IsNullOrWhiteSpace(alternatePackageId))
             {
-                Search(alternatePackageId);
+                if (_windowSearchHost.IsEnabled)
+                {
+                    if (_windowSearchHost.SearchTask != null)
+                    {
+                        _windowSearchHost.SearchTask.Stop();
+                    }
+
+                    Search(alternatePackageId);
+                }
             }
         }
 

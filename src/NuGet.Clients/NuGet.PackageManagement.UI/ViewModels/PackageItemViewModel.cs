@@ -514,24 +514,19 @@ namespace NuGet.PackageManagement.UI
             return _detailedPackageSearchMetadata.Value;
         }
 
+        private PackageDeprecationMetadataContextInfo _deprecationMetadata;
         public PackageDeprecationMetadataContextInfo DeprecationMetadata
         {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run( async delegate {
-                    var t = _detailedPackageSearchMetadata;
-                    var x = await t.Value;
-
-                    return x.Item2;
-                });
-            }
-
+            get => _deprecationMetadata;
             set
             {
-                
+                if (_deprecationMetadata != value)
+                {
+                    _deprecationMetadata = value;
+                    OnPropertyChanged(nameof(DeprecationMetadata));
+                }
             }
         }
-
 
         public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
@@ -717,6 +712,7 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
+                DeprecationMetadata = deprecationMetadata;
                 IsPackageDeprecated = deprecationMetadata != null;
                 VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.Max(v => v.Severity) ?? -1;
             }
