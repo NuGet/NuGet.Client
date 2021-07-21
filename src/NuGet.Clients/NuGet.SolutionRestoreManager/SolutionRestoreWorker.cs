@@ -522,7 +522,7 @@ namespace NuGet.SolutionRestoreManager
                                         }
                                         projectsReadyCheckCount++;
                                         // If we are about to start restore, we should run through all the projects to ensure there isn't a pending nomination.
-                                        var restoreProjectInfoSources = _solutionManager.Value.GetAllProjectRestoreInfoSources();
+                                        IReadOnlyList<object> restoreProjectInfoSources = _solutionManager.Value.GetAllProjectRestoreInfoSources();
                                         projectRestoreInfoSourcesCount = restoreProjectInfoSources.Count;
                                         var allProjectsReady = true;
                                         var bulkCheckTimeout = false;
