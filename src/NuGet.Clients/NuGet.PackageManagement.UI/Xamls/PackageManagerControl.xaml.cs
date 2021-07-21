@@ -1257,8 +1257,8 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _windowSearchHost.Activate();
-                _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
+                _windowSearchHost?.Activate();
+                _windowSearchHost?.SearchAsync(new SearchQuery { SearchString = searchText });
             });
         }
 
@@ -1491,18 +1491,12 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteMakeSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
             var alternatePackageId = e.Parameter as string;
-
-            if(!string.IsNullOrWhiteSpace(alternatePackageId))
+            if (!string.IsNullOrWhiteSpace(alternatePackageId))
             {
                 if (_windowSearchHost.IsEnabled)
                 {
-                    if (_windowSearchHost.SearchTask != null)
-                    {
-                        _windowSearchHost.SearchTask.Stop();
-                    }
-
+                    _windowSearchHost.SearchTask?.Stop();
                     Search(alternatePackageId);
                 }
             }
