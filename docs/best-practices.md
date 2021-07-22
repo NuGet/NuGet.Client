@@ -18,7 +18,7 @@ We selected in DOTNET_NUGET_SIGNATURE_VERIFICATION for 'Add an environment varia
 
 * Next part <b>SIGNATURE</b> what `FEATURE` (noun) it applies.
 
-* Last part <b>VERIFICATION</b>  what `OPERATION` (verb) it enable or disable.
+* Last part <b>VERIFICATION</b>  what `OPERATION` (verb) it applies, in our case enable signature verification.
 
 #### Good examples of env var names:
 
