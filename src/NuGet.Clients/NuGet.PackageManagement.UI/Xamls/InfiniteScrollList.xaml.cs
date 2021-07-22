@@ -164,7 +164,7 @@ namespace NuGet.PackageManagement.UI
         internal async Task LoadItemsAsync(
             IPackageItemLoader loader,
             string searchText,
-            INuGetUILogger logger,  
+            INuGetUILogger logger,
             Task<SearchResultContextInfo> searchResultTask,
             CancellationToken token)
         {

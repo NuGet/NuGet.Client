@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
-            //Loaded += PackageManagerLoaded;
+            Loaded += PackageManagerLoaded;
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -403,30 +403,34 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// The <see cref="FrameworkElement.Loaded"/> event handler for <see cref="PackageManagerControl"/>.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
-            //TODO: remove
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageManagerLoaded));
         }
 
         private async Task PackageManagerLoadedAsync()
         {
-            //TODO: remove and move telemetry to VM.
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            TimeSpan timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
+
             // Do not trigger a refresh if this is not the first load of the control.
-            // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
+            // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search.
             if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
+                _packageList.LoadingIndicator_Begin();
+                await ExecutePackageSearchAsync();
+                EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp);
+                EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp);
             }
-            await RefreshConsolidatablePackagesCountAsync();
         }
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
@@ -1480,14 +1484,21 @@ namespace NuGet.PackageManagement.UI
             UpdatePackage(packagesToUpdate);
         }
 
+        /// <summary>
+        /// The <see cref="CommandBinding"/> for the refresh search command.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecutePackageSearchAsync())
                 .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
-        private async Task ExecuteRestartSearchCommandAsync()
+        private async Task ExecutePackageSearchAsync()
         {
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
             await RefreshConsolidatablePackagesCountAsync();
