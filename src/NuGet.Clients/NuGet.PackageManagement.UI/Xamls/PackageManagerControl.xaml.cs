@@ -1192,6 +1192,17 @@ namespace NuGet.PackageManagement.UI
             public string SearchString { get; set; }
         }
 
+        // Returns the text to be displayed in the search box.
+        private string GetSearchText()
+        {
+            var focusOnSearchKeyGesture = (KeyGesture)InputBindings.OfType<KeyBinding>().First(
+                x => x.Command == Commands.FocusOnSearchBox).Gesture;
+            return string.Format(CultureInfo.CurrentCulture,
+                Resx.Resources.Text_SearchBoxText,
+                focusOnSearchKeyGesture.GetDisplayStringForCulture(CultureInfo.CurrentCulture));
+        }
+
+        #region IVsWindowSearch implementation
         public Guid Category
         {
             get { return Guid.Empty; }
@@ -1229,16 +1240,6 @@ namespace NuGet.PackageManagement.UI
             settings.SearchWatermark = GetSearchText();
         }
 
-        // Returns the text to be displayed in the search box.
-        private string GetSearchText()
-        {
-            var focusOnSearchKeyGesture = (KeyGesture)InputBindings.OfType<KeyBinding>().First(
-                x => x.Command == Commands.FocusOnSearchBox).Gesture;
-            return string.Format(CultureInfo.CurrentCulture,
-                Resx.Resources.Text_SearchBoxText,
-                focusOnSearchKeyGesture.GetDisplayStringForCulture(CultureInfo.CurrentCulture));
-        }
-
         public bool SearchEnabled
         {
             get { return true; }
@@ -1253,6 +1254,7 @@ namespace NuGet.PackageManagement.UI
         {
             get { return null; }
         }
+        #endregion
 
         private void FocusOnSearchBox_Executed(object sender, ExecutedRoutedEventArgs e)
         {
