@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Test.Apex.Services;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.TestContract;

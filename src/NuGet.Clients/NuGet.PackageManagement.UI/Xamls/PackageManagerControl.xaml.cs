@@ -1282,19 +1282,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        /// <summary>
-        /// Used for package namespace Apex tests which require All option in package sources.
-        /// </summary>
-        internal void SetPackageSourceOptionToAll()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                // First one is always 'All' option
-                SelectedSource = PackageSources.First();
-            });
-        }
-
         private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
