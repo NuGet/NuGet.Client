@@ -515,6 +515,10 @@ namespace NuGet.PackageManagement.UI
             // _sourceRepoList_SelectionChanged(). This method will start the new
             // search when needed by itself.
             _dontStartNewSearch = true;
+
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
+
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
@@ -1077,6 +1081,9 @@ namespace NuGet.PackageManagement.UI
 
             if (SelectedSource != null)
             {
+                _packageList.LoadingIndicator_Begin();
+                _packageList.ClearPackageList();
+
                 _topPanel.SourceToolTip.Visibility = Visibility.Visible;
                 _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
