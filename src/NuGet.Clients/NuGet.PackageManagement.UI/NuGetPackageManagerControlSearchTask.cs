@@ -31,6 +31,9 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                _packageManagerControl._packageList.LoadingIndicator_Begin();
+                _packageManagerControl._packageList.ClearPackageList();
+
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
                 var loadCts = new CancellationTokenSource();
