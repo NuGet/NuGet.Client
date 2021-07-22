@@ -59,17 +59,17 @@ namespace NuGet.PackageManagement.UI.TestContract
 
         public void InstallPackage(string packageId, string version)
         {
-            UIInvoke(() => _packageManagerControl.InstallPackage(packageId, NuGetVersion.Parse(version)));
+            UIInvoke(() => _packageManagerControl.InstallPackage(packageId, NuGetVersion.Parse(version), null));
         }
 
         public void UninstallPackage(string packageId)
         {
-            UIInvoke(() => _packageManagerControl.UninstallPackage(packageId));
+            UIInvoke(() => _packageManagerControl.UninstallPackage(packageId, null));
         }
 
         public void UpdatePackage(List<PackageIdentity> packages)
         {
-            UIInvoke(() => _packageManagerControl.UpdatePackage(packages));
+            UIInvoke(() => _packageManagerControl.UpdatePackage(packages, null));
         }
 
         public bool WaitForActionComplete(Action action, TimeSpan timeout)

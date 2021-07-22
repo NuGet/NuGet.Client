@@ -1428,7 +1428,7 @@ namespace NuGet.PackageManagement.UI
         private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> packages)
         {
             var options = _detailModel.Options;
-            var vulnerablePkgs = packages.Where(x => x.Vulnerabilities.Any());
+            IEnumerable<PackageItemViewModel> vulnerablePkgs = packages?.Where(x => x.Vulnerabilities.Any());
 
             nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
@@ -1436,10 +1436,10 @@ namespace NuGet.PackageManagement.UI
             nugetUi.ForceRemove = options.ForceRemove;
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
-            nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgs.Count();
-            nugetUi.TopLevelVulnerablePackagesMaxSeverity = vulnerablePkgs.SelectMany(x => x.Vulnerabilities).Max(y => y.Severity);
             nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
+            nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgs?.Count() ?? 0;
+            nugetUi.TopLevelVulnerablePackagesMaxSeverity = nugetUi.TopLevelVulnerablePackagesCount > 0 ? vulnerablePkgs.Max(pkgItem => pkgItem.Vulnerabilities?.Count() ?? -1) : -1;
         }
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
@@ -1475,18 +1475,12 @@ namespace NuGet.PackageManagement.UI
             await RefreshConsolidatablePackagesCountAsync();
         }
 
-
         /// <summary>
-        /// For Apex tests
+        /// Install a package in open project(s)
         /// </summary>
-        /// <param name="packageId"></param>
-        /// <param name="version"></param>
-        internal void InstallPackage(string packageId, NuGetVersion version)
-        {
-            var items = _packageList.PackageItems.Where(p => p.Id == packageId);
-            InstallPackage(packageId, version, items);
-        }
-
+        /// <param name="package">Package ID to install</param>
+        /// <param name="version">Package Version to install</param>
+        /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void InstallPackage(string package, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
             var action = UserAction.CreateInstallAction(package, version);
@@ -1503,16 +1497,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// For Apex Tests
+        /// Uninstall a package in open project(s)
         /// </summary>
-        /// <param name="packageId"></param>
-        internal void UninstallPackage(string packageId)
-        {
-            var items = _packageList.PackageItems.Where(p => p.Id == packageId);
-
-            UninstallPackage(packageId, items);
-        }
-
+        /// <param name="packageId">Package ID to uninstall</param>
+        /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void UninstallPackage(string packageId, IEnumerable<PackageItemViewModel> packagesInfo)
         {
             var action = UserAction.CreateUnInstallAction(packageId);
@@ -1529,20 +1517,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// For Apex tests
+        /// Updates packages in open project(s)
         /// </summary>
-        /// <param name="packages"></param>
-        internal void UpdatePackage(List<PackageIdentity> packages)
-        {
-            var items = _packageList.PackageItems.Join(
-                packages,
-                p => new PackageIdentity(p.Id, p.Version),
-                i => i,
-                (p, i) => p);
-
-            UpdatePackage(packages, items);
-        }
-
+        /// <param name="packages">Packages identities to update</param>
+        /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void UpdatePackage(List<PackageIdentity> packages, IEnumerable<PackageItemViewModel> packagesInfo)
         {
             if (packages.Count == 0)
