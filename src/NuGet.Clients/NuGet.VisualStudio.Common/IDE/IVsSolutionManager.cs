@@ -91,5 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns whether the solution is open.
         /// </summary>
         Task<bool> IsSolutionOpenAsync();
+
+        IReadOnlyList<object> GetAllProjectRestoreInfoSources();
     }
 }

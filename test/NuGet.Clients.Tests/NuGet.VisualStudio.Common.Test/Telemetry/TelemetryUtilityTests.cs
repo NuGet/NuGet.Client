@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using FluentAssertions;
 using NuGet.Configuration;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
@@ -170,6 +172,32 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
 
             Assert.True(actualResult);
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithEmptyArray_ReturnsEmptyString()
+        {
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(Enumerable.Empty<TimeSpan>()).Should().Be(string.Empty);
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithNullArgument_ReturnsEmptyString()
+        {
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(null).Should().Be(string.Empty);
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithOneValue_ReturnsTimingsInSeconds()
+        {
+            TimeSpan[] values = new[] { new TimeSpan(hours: 0, minutes: 0, seconds: 5) };
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(values).Should().Be("[5]");
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithMultipleValues_AppendsValuesWithComma()
+        {
+            TimeSpan[] values = new[] { new TimeSpan(hours: 0, minutes: 0, seconds: 5), new TimeSpan(days: 0, hours: 0, minutes: 1, seconds: 0, milliseconds: 500) };
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(values).Should().Be("[5,60.5]");
         }
     }
 }

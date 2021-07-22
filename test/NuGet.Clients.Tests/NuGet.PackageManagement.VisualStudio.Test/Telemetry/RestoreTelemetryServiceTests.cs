@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Moq;
 using NuGet.Common;
 using NuGet.VisualStudio;
@@ -61,7 +62,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packagesConfigProjectsCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                isSolutionLoadRestore: true,
+                additionalTrackingData: new Dictionary<string, object>()
+                {
+                    { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
+                },
                 new IntervalTracker("Activity"));
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
@@ -114,7 +118,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packagesConfigProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                isSolutionLoadRestore: true,
+                additionalTrackingData: new Dictionary<string, object>()
+                {
+                    { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
+                },
                 tracker
                 );
             var service = new NuGetVSTelemetryService(telemetrySession.Object);

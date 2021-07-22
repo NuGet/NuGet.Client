@@ -26,5 +26,6 @@ namespace NuGet.VisualStudio
 
         public static readonly ExperimentationConstants PackageManagerBackgroundColor = new("nuGetPackageManagerBackgroundColor", "NUGET_PACKAGE_MANAGER_BACKGROUND_COLOR");
         public static readonly ExperimentationConstants PackageRecommender = new("nugetrecommendpkgs", "NUGET_RECOMMEND_PACKAGES");
+        public static readonly ExperimentationConstants BulkRestoreCoordination = new("nugetBulkRestoreCoordination", "NUGET_BULK_RESTORE_COORDINATION");
     }
 }

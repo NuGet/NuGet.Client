@@ -785,6 +785,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 throw new NotImplementedException();
             }
+
+            public IReadOnlyList<object> GetAllProjectRestoreInfoSources()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

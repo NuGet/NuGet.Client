@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
@@ -342,6 +343,58 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Assert
             Assert.Equal(target.IsCacheDirty, 0);
             Assert.Equal(eventCount, 0);
+        }
+
+        [Fact]
+        public void AddProjectRestoreInfoSource_AfterAddProject_UpdatesCacheEntry()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = GetTestProjectNames();
+            object projectRestoreInfoSource = new();
+
+            target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
+
+            // Act
+            target.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+
+            // Assert
+            var getProjectRestoreInfoSources = target.GetProjectRestoreInfoSources();
+            var getProjectNameFromUniqueNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names1);
+            var getProjectNameFromFullNameSuccess = target.TryGetProjectNames(projectNames.FullName, out var names2);
+
+            Assert.True(getProjectRestoreInfoSources.Any());
+            Assert.Equal(projectRestoreInfoSource, getProjectRestoreInfoSources.Single());
+            Assert.True(getProjectNameFromUniqueNameSuccess);
+            Assert.True(getProjectNameFromFullNameSuccess);
+            Assert.Equal(@"folder\project", names1.CustomUniqueName);
+            Assert.Equal(@"folder\project", names2.CustomUniqueName);
+        }
+
+        [Fact]
+        public void AddProjectRestoreInfoSource_Succeeds()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = GetTestProjectNames();
+            object projectRestoreInfoSource = new();
+
+            // Act
+            var result = target.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+
+            // Assert
+            Assert.True(result);
+
+            var getProjectRestoreInfoSources = target.GetProjectRestoreInfoSources();
+            var getProjectNameFromUniqueNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names1);
+            var getProjectNameFromFullNameSuccess = target.TryGetProjectNames(projectNames.FullName, out var names2);
+
+            Assert.True(getProjectRestoreInfoSources.Any());
+            Assert.Equal(projectRestoreInfoSource, getProjectRestoreInfoSources.Single());
+            Assert.True(getProjectNameFromUniqueNameSuccess);
+            Assert.True(getProjectNameFromFullNameSuccess);
+            Assert.Equal(@"folder\project", names1.CustomUniqueName);
+            Assert.Equal(@"folder\project", names2.CustomUniqueName);
         }
 
         private ProjectNames GetTestProjectNames()
