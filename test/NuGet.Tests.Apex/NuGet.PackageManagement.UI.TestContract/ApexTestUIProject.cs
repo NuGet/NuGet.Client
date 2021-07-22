@@ -125,6 +125,14 @@ namespace NuGet.PackageManagement.UI.TestContract
             }
         }
 
+        /// <summary>
+        /// Used for package namespace Apex tests which require All option in package sources.
+        /// </summary>
+        public void SetPackageSourceOptionToAll() => UIInvoke(() => {
+            // First one is always 'All' option
+            _packageManagerControl.SelectedSource = _packageManagerControl.PackageSources.First();
+        });
+
         private void UIInvoke(Action action)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
