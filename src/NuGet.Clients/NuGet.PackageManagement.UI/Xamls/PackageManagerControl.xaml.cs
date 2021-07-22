@@ -1210,6 +1210,9 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
+
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
