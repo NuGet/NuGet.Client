@@ -1164,6 +1164,9 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
+
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
             EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
