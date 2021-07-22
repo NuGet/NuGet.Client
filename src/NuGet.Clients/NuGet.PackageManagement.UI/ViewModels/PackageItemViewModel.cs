@@ -512,12 +512,6 @@ namespace NuGet.PackageManagement.UI
             return _detailedPackageSearchMetadata.Value;
         }
 
-        public async Task<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>> GetVulnerabilitiesAsync()
-        {
-            var identity = new PackageIdentity(Id, Version);
-            return await _searchService.GetVulnerabilityMetadataAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
-        }
-
         public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
@@ -709,24 +703,24 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task ReloadPackageVulnerabilitiesAsync()
-        {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
-            try
-            {
-                var identity = new PackageIdentity(Id, Version);
-                IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> vulnerabilities = await _searchService.GetVulnerabilityMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+        //private async Task ReloadPackageVulnerabilitiesAsync()
+        //{
+        //    CancellationToken cancellationToken = _cancellationTokenSource.Token;
+        //    try
+        //    {
+        //        var identity = new PackageIdentity(Id, Version);
+        //        IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> vulnerabilities = await _searchService.GetVulnerabilityMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+        //        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+        //        cancellationToken.ThrowIfCancellationRequested();
 
-                VulnerabilityMaxSeverity = vulnerabilities?.Max(v => v.Severity) ?? -1;
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                // UI requested cancellation
-            }
-        }
+        //        VulnerabilityMaxSeverity = vulnerabilities?.Max(v => v.Severity) ?? -1;
+        //    }
+        //    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        //    {
+        //        // UI requested cancellation
+        //    }
+        //}
 
         private async Task ReloadPackageMetadataAsync()
         {
@@ -777,8 +771,8 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageDeprecationAsync));
 
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageVulnerabilitiesAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVulnerabilitiesAsync));
+                .RunAsync(ReloadPackageMetadataAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
 
             OnPropertyChanged(nameof(Status));
         }

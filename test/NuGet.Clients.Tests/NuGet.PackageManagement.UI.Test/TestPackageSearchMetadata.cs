@@ -69,10 +69,5 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-
-        public Task<IEnumerable<PackageVulnerabilityMetadata>> GetVulnerabilityMetadataAsync()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -19,7 +19,6 @@ namespace NuGet.Protocol.Core.Types
         private readonly IPackageSearchMetadata _metadata;
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
         private AsyncLazy<PackageDeprecationMetadata> _lazyDeprecationFactory;
-        private AsyncLazy<IEnumerable<PackageVulnerabilityMetadata>> _lazyVulnerabilitiesFactory;
 
         public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
@@ -28,9 +27,6 @@ namespace NuGet.Protocol.Core.Types
 
             private static readonly AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
                 AsyncLazy.New((PackageDeprecationMetadata)null);
-
-            private static readonly AsyncLazy<IEnumerable<PackageVulnerabilityMetadata>> LazyEmptyVulnerabilityMetadata =
-                AsyncLazy.New(Enumerable.Empty<PackageVulnerabilityMetadata>);
 
             public string Authors { get; set; }
             public IEnumerable<PackageDependencyGroup> DependencySets { get; set; }
@@ -58,8 +54,6 @@ namespace NuGet.Protocol.Core.Types
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-            internal AsyncLazy<IEnumerable<PackageVulnerabilityMetadata>> LazyVulnerabilitiesFactory { get; set; }
-            public async Task<IEnumerable<PackageVulnerabilityMetadata>> GetVulnerabilityMetadataAsync() => await (LazyVulnerabilitiesFactory ?? LazyEmptyVulnerabilityMetadata);
             public bool IsListed { get; set; }
             [Obsolete("PackagePath is recommended in place of PackageReader")]
             public Func<PackageReaderBase> PackageReader { get; set; }
@@ -84,12 +78,6 @@ namespace NuGet.Protocol.Core.Types
         public PackageSearchMetadataBuilder WithDeprecation(AsyncLazy<PackageDeprecationMetadata> lazyDeprecationFactory)
         {
             _lazyDeprecationFactory = lazyDeprecationFactory;
-            return this;
-        }
-
-        public PackageSearchMetadataBuilder WithVulnerabilities(AsyncLazy<IEnumerable<PackageVulnerabilityMetadata>> lazyVulnerabilitiesFactory)
-        {
-            _lazyVulnerabilitiesFactory = lazyVulnerabilitiesFactory;
             return this;
         }
 
@@ -120,7 +108,6 @@ namespace NuGet.Protocol.Core.Types
                 LicenseMetadata = _metadata.LicenseMetadata,
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
                 Vulnerabilities = _metadata.Vulnerabilities,
-                LazyVulnerabilitiesFactory = _lazyVulnerabilitiesFactory ?? AsyncLazy.New(_metadata.GetVulnerabilityMetadataAsync),
 #pragma warning disable CS0618 // Type or member is obsolete
                 PackageReader =
                     (_metadata as LocalPackageSearchMetadata)?.PackageReader ??

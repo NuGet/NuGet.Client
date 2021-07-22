@@ -21,15 +21,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
         {
             Version = version;
             DownloadCount = downloadCount;
-            PackageVulnerabilityMetadata = Enumerable.Empty<PackageVulnerabilityMetadataContextInfo>().ToList();
         }
 
         public NuGetVersion Version { get; }
         public long? DownloadCount { get; }
 
         public PackageDeprecationMetadataContextInfo? PackageDeprecationMetadata { get; internal set; }
-
-        public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> PackageVulnerabilityMetadata { get; internal set; }
 
         public PackageSearchMetadataContextInfo? PackageSearchMetadata { get; internal set; }
 
@@ -47,12 +44,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 if (packageDeprecationMetadata != null)
                 {
                     versionContextInfo.PackageDeprecationMetadata = PackageDeprecationMetadataContextInfo.Create(packageDeprecationMetadata);
-                }
-
-                IEnumerable<PackageVulnerabilityMetadata> packageVulnerabilityMetadata = await versionInfo.PackageSearchMetadata.GetVulnerabilityMetadataAsync();
-                if (packageVulnerabilityMetadata != null)
-                {
-                    versionContextInfo.PackageVulnerabilityMetadata = packageVulnerabilityMetadata.Select(m => new PackageVulnerabilityMetadataContextInfo(m.AdvisoryUrl, m.Severity)).ToList();
                 }
             }
 
