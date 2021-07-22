@@ -530,7 +530,7 @@ namespace NuGet.SolutionRestoreManager
                                         var bulkCheckTimeout = false;
                                         for (int i = 0; i < restoreProjectInfoSources.Count && !bulkCheckTimeout; i++)
                                         {
-                                            var restoreInfoSource = (IVsProjectRestoreInfoSource)restoreProjectInfoSources[i]; 
+                                            var restoreInfoSource = (IVsProjectRestoreInfoSource)restoreProjectInfoSources[i];
                                             if (restoreInfoSource.HasPendingNomination)
                                             {
                                                 allProjectsReady = false;
@@ -546,6 +546,13 @@ namespace NuGet.SolutionRestoreManager
                                             }
                                         }
 
+                                        projectReadyCheckMeasurement.Stop();
+                                        if (projectReadyTimings == null)
+                                        {
+                                            projectReadyTimings = new();
+                                        }
+                                        projectReadyTimings.Add(projectReadyCheckMeasurement.Elapsed);
+
                                         if (allProjectsReady)
                                         {
                                             restoreReason = ImplicitRestoreReason.ProjectsReady;
@@ -556,12 +563,6 @@ namespace NuGet.SolutionRestoreManager
                                             restoreReason = ImplicitRestoreReason.ProjectsReadyCheckTimeout;
                                             break;
                                         }
-                                        projectReadyCheckMeasurement.Stop();
-                                        if (projectReadyTimings == null)
-                                        {
-                                            projectReadyTimings = new();
-                                        }
-                                        projectReadyTimings.Add(projectReadyCheckMeasurement.Elapsed);
                                     }
                                     else
                                     {
