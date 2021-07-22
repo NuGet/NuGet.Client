@@ -309,7 +309,7 @@ namespace NuGet.Tests.Apex
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
 
-            // Set option to package source option All
+            // Set option to package source option to All
             uiwindow.SetPackageSourceOptionToAll();
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
 
@@ -479,7 +479,7 @@ namespace NuGet.Tests.Apex
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
 
-            // Set option to package source option All
+            // Set option to package source option to All
             uiwindow.SetPackageSourceOptionToAll();
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
 
