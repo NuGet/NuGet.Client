@@ -70,6 +70,35 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             [Fact]
+            public async Task GetLocalPackageMetadataAsync_WhenGlobalSourceHasPackage_WithoutVulnerabilityMetadata()
+            {
+                // Arrange
+                var emptyTestMetadata = PackageSearchMetadataBuilder.FromIdentity(TestPackageIdentity).Build();
+
+                Mock.Get(_globalMetadataResource)
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { emptyTestMetadata });
+
+                Mock.Get(_metadataResource)
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { emptyTestMetadata });
+
+                // Act
+                var metadata = await _target.GetLocalPackageMetadataAsync(
+                    TestPackageIdentity,
+                    includePrerelease: true,
+                    cancellationToken: CancellationToken.None);
+
+                // Assert
+                Mock.Get(_metadataResource).Verify(
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    Times.Once);
+
+                Assert.Equal(new[] { "1.0.0" }, (await metadata.GetVersionsAsync()).Select(v => v.Version.ToString()).OrderBy(v => v));
+                Assert.Null(metadata.Vulnerabilities);
+            }
+
+            [Fact]
             public async Task GetLocalPackageMetadataAsync_WhenLocalSourceHasPackage_CombinesMetadata()
             {
                 // Arrange
@@ -109,6 +138,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Same(deprecationMetadata, await metadata.GetDeprecationMetadataAsync());
             }
         }
+    }
 
         public class NoLocalProviderTests : SourceRepositoryCreator
         {
