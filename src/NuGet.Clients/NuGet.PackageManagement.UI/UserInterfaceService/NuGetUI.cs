@@ -18,7 +18,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
@@ -318,7 +317,7 @@ namespace NuGet.PackageManagement.UI
 
         public int TopLevelVulnerablePackagesCount { get; set; }
 
-        public IEnumerable<SeverityLevel> TopLevelVulnerablePackagesMaxSeverities { get; set; }
+        public int TopLevelVulnerablePackagesMaxSeverity { get; set; }
 
         public PackageSourceMoniker ActivePackageSourceMoniker
         {

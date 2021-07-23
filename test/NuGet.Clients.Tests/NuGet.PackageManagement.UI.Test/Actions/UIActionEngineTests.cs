@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
-using NuGet.Protocol;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -157,7 +156,7 @@ namespace NuGet.PackageManagement.UI.Test
                 recommendPackages: false,
                 recommenderVersion: null,
                 topLevelVulnerablePackagesCount: 1,
-                topLevelVulnerablePackagesMaxSeverities: new SeverityLevel[] {  SeverityLevel.Moderate, SeverityLevel.Low },
+                topLevelVulnerablePackagesMaxSeverity: 3,
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,
@@ -172,10 +171,7 @@ namespace NuGet.PackageManagement.UI.Test
             // Assert
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(1, lastTelemetryEvent["TopLevelVulnerablePackagesCount"]);
-            Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"]);
-            Assert.IsType(typeof(IEnumerable<SeverityLevel>), lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"]);
-            var severities = (IEnumerable<SeverityLevel>)lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"];
-            Assert.Equal(3, severities.Count());
+            Assert.Equal(3, lastTelemetryEvent["TopLevelVulnerablePackagesMaxSeverity"]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity
