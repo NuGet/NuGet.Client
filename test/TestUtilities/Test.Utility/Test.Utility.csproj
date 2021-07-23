@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="Portable.BouncyCastle" />
     <PackageReference Include="xunit" />
   </ItemGroup>
