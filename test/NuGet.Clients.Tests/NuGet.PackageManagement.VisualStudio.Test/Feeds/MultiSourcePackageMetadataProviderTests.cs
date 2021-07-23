@@ -12,6 +12,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
+using static NuGet.Test.Utility.V3PackageSearchMetadataFixture;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -67,6 +68,110 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 Assert.Equal(new[] { "1.0.0" }, (await metadata.GetVersionsAsync()).Select(v => v.Version.ToString()).OrderBy(v => v));
                 Assert.Null(await metadata.GetDeprecationMetadataAsync());
+            }
+
+            [Fact]
+            public async Task GetLocalPackageMetadataAsync_WhenGlobalSourceHasPackage_WithoutVulnerabilityMetadata()
+            {
+                // Arrange
+                var emptyTestMetadata = PackageSearchMetadataBuilder.FromIdentity(TestPackageIdentity).Build();
+
+                Mock.Get(_globalMetadataResource)
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { emptyTestMetadata });
+
+                Mock.Get(_metadataResource)
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { emptyTestMetadata });
+
+                // Act
+                var metadata = await _target.GetLocalPackageMetadataAsync(
+                    TestPackageIdentity,
+                    includePrerelease: true,
+                    cancellationToken: CancellationToken.None);
+
+                // Assert
+                Mock.Get(_metadataResource).Verify(
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    Times.Once);
+
+                Assert.Equal(new[] { "1.0.0" }, (await metadata.GetVersionsAsync()).Select(v => v.Version.ToString()).OrderBy(v => v));
+                Assert.Null(metadata.Vulnerabilities);
+            }
+
+            [Fact]
+            public async Task GetLocalPackageMetadataAsync_WhenMultipleSourcesHavePackage_WithVulnerabilityMetadata()
+            {
+                // Arrange
+                var vulnerabilities1 = new PackageVulnerabilityMetadata[]
+                {
+                    new PackageVulnerabilityMetadata() { AdvisoryUrl = new Uri("https://example/advisory/1"), Severity = 2 },
+                    new PackageVulnerabilityMetadata() { AdvisoryUrl = new Uri("https://example/advisory/2"), Severity = 1 }
+                };
+
+                var vulnerabilities2 = new PackageVulnerabilityMetadata[]
+                {
+                    new PackageVulnerabilityMetadata() { AdvisoryUrl = new Uri("https://example/advisory/3"), Severity = 0 },
+                    new PackageVulnerabilityMetadata() { AdvisoryUrl = new Uri("https://example/advisory/4"), Severity = 1 }
+                };
+
+                IPackageSearchMetadata metadata1 = new MockPackageSearchMetadata() { Identity = TestPackageIdentity, Vulnerabilities = vulnerabilities1 };
+                IPackageSearchMetadata metadata2 = new MockPackageSearchMetadata() { Identity = TestPackageIdentity, Vulnerabilities = vulnerabilities2 };
+
+                Mock.Get(_globalMetadataResource)
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { metadata1 });
+
+                Mock.Get(_metadataResource)
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { metadata2 });
+
+                // Act
+                var metadata = await _target.GetLocalPackageMetadataAsync(
+                    TestPackageIdentity,
+                    includePrerelease: true,
+                    cancellationToken: CancellationToken.None);
+
+                // Assert
+                Mock.Get(_metadataResource).Verify(
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    Times.Once);
+
+                Assert.NotNull(metadata.Vulnerabilities);
+                Assert.Collection(metadata.Vulnerabilities,
+                    item =>
+                    {
+                        Assert.Equal(item.AdvisoryUrl, new Uri("https://example/advisory/1"));
+                        Assert.Equal(item.Severity, 2);
+                    },
+                    item =>
+                    {
+                        Assert.Equal(item.AdvisoryUrl, new Uri("https://example/advisory/2"));
+                        Assert.Equal(item.Severity, 1);
+                    });
+            }
+
+            [Fact]
+            public async Task GetPackageMetadataListAsync_WithMultipleSources_UnifiesVersions()
+            {
+                // Arrange
+                var testPackageId = "FakePackage";
+                SetupRemotePackageMetadata(testPackageId, "1.0.0", "2.0.0", "2.0.1", "1.0.1", "2.0.0", "1.0.0", "1.0.1");
+
+                // Act
+                var packages = await _target.GetPackageMetadataListAsync(
+                    testPackageId,
+                    includePrerelease: true,
+                    includeUnlisted: false,
+                    cancellationToken: CancellationToken.None);
+
+                // Assert
+                Assert.NotEmpty(packages);
+
+                var actualVersions = packages.Select(p => p.Identity.Version.ToString()).ToArray();
+                Assert.Equal(
+                    new[] { "1.0.0", "2.0.0", "2.0.1", "1.0.1" },
+                    actualVersions);
             }
 
             [Fact]

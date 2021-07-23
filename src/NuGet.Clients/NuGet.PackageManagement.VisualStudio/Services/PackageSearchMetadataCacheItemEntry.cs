@@ -30,6 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public ValueTask<PackageDeprecationMetadataContextInfo?> PackageDeprecationMetadataContextInfo => GetPackageDeprecationMetadataContextInfoAsync();
+
         public ValueTask<PackageSearchMetadataContextInfo> DetailedPackageSearchMetadataContextInfo => GetDetailedPackageSearchMetadataContextInfoAsync();
 
         private async ValueTask<PackageDeprecationMetadataContextInfo?> GetPackageDeprecationMetadataContextInfoAsync()

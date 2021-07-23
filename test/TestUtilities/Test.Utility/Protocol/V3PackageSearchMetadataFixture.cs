@@ -56,6 +56,11 @@ namespace NuGet.Test.Utility
 
         public class MockPackageSearchMetadata : IPackageSearchMetadata
         {
+            public MockPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("nuget.psm.test", new NuGetVersion(0, 0, 1));
+            }
+
             public string Authors => string.Empty;
 
             public IEnumerable<PackageDependencyGroup> DependencySets => null;
@@ -66,7 +71,7 @@ namespace NuGet.Test.Utility
 
             public Uri IconUrl => null;
 
-            public PackageIdentity Identity => new PackageIdentity("nuget.psm.test", new NuGetVersion(0, 0, 1));
+            public PackageIdentity Identity { get; set; }
 
             public Uri ReadmeUrl => null;
 
@@ -105,7 +110,7 @@ namespace NuGet.Test.Utility
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; internal set; }
+            public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
         }
     }
 }

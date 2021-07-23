@@ -400,8 +400,35 @@ namespace NuGet.PackageManagement.UI
                 {
                     _isPackageDeprecated = value;
                     OnPropertyChanged(nameof(IsPackageDeprecated));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
                 }
             }
+        }
+
+        public bool IsPackageVulnerable
+        {
+            get => VulnerabilityMaxSeverity > -1;
+        }
+
+        private int _vulnerabilityMaxSeverity = -1;
+        public int VulnerabilityMaxSeverity
+        {
+            get { return _vulnerabilityMaxSeverity; }
+            set
+            {
+                if (_vulnerabilityMaxSeverity != value)
+                {
+                    _vulnerabilityMaxSeverity = value;
+                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
+                    OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
+                }
+            }
+        }
+
+        public bool IsPackageWithWarnings
+        {
+            get => IsPackageDeprecated || IsPackageVulnerable;
         }
 
         private Uri _iconUrl;
@@ -659,18 +686,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
+        private async Task ReloadPackageMetadataAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
                 var identity = new PackageIdentity(Id, Version);
-                PackageDeprecationMetadataContextInfo result = await _searchService.GetDeprecationMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+                (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
+                    await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                IsPackageDeprecated = result != null;
+                IsPackageDeprecated = deprecationMetadata != null;
+                VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.Max(v => v.Severity) ?? -1;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -702,8 +731,8 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
 
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageDeprecationAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageDeprecationAsync));
+                .RunAsync(ReloadPackageMetadataAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
 
             OnPropertyChanged(nameof(Status));
         }
@@ -734,11 +763,7 @@ namespace NuGet.PackageManagement.UI
 
         private void OnPropertyChanged(string propertyName)
         {
-            if (PropertyChanged != null)
-            {
-                var e = new PropertyChangedEventArgs(propertyName);
-                PropertyChanged(this, e);
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public string PackagePath { get; set; }

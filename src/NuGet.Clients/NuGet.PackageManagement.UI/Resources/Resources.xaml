@@ -57,6 +57,8 @@
     x:Key="SubstractionConverter" />
   <nuget:AdditionConverter
     x:Key="AdditionConverter" />
+  <nuget:IntToVulnerabilitySeverityConverter
+    x:Key="IntToVulnerabilitySeverityConverter" />
   <ui:BrushToColorConverter
     x:Key="BrushToColorConverter" />
 

@@ -209,10 +209,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return deprecationMetadatas.FirstOrDefault(d => d != null);
         }
 
-        private static IEnumerable<PackageVulnerabilityMetadata> MergeVulnerabilityMetadata(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)
+        private static IEnumerable<PackageVulnerabilityMetadata> MergeVulnerabilityMetadata(IEnumerable<IPackageSearchMetadata> packages)
         {
             var vulnerabilityMetadatas = packages.Select(m => m.Vulnerabilities);
-            return vulnerabilityMetadatas.FirstOrDefault(v => v != null);
+            return vulnerabilityMetadatas.FirstOrDefault(v => v != null && v.Any());
         }
 
         private async Task<(IEnumerable<VersionInfo> versions,
@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return (await MergeVersionsAsync(identity, metadatas),
                 await MergeDeprecationMetadataAsync(identity, metadatas),
-                MergeVulnerabilityMetadata(identity, metadatas));
+                MergeVulnerabilityMetadata(metadatas));
         }
 
         internal async Task<T> GetMetadataTaskSafeAsync<T>(Func<Task<T>> getMetadataTask) where T : class

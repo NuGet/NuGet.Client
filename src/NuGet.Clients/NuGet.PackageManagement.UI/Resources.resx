@@ -945,4 +945,26 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_ColumnSortedDescendingHelpText" xml:space="preserve">
     <value>Sorted descending, press space to sort ascending</value>
   </data>
+  <data name="Label_PackageDeprecatedToolTip" xml:space="preserve">
+    <value>This package version is deprecated.</value>
+  </data>
+  <data name="Label_PackageSelectForInfoToolTip" xml:space="preserve">
+    <value>Select to view package details for more information.</value>
+  </data>
+  <data name="Label_PackageVulnerableToolTip" xml:space="preserve">
+    <value>This package version has a vulnerability with {0} severity.</value>
+    <comment>{0} is the severity of the vulnerability</comment>
+  </data>
+  <data name="VulnerabilitySeverity_Critical" xml:space="preserve">
+    <value>Critical</value>
+  </data>
+  <data name="VulnerabilitySeverity_High" xml:space="preserve">
+    <value>High</value>
+  </data>
+  <data name="VulnerabilitySeverity_Low" xml:space="preserve">
+    <value>Low</value>
+  </data>
+  <data name="VulnerabilitySeverity_Moderate" xml:space="preserve">
+    <value>Moderate</value>
+  </data>
 </root>
