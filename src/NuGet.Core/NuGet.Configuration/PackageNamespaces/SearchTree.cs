@@ -25,7 +25,11 @@ namespace NuGet.Configuration
                 foreach (string namespaceId in namespacePerSource.Value)
                 {
                     PackageSource packageSource = configuration.GetPackageSource(namespacePerSource.Key);
-                    Add(packageSource.Source, namespaceId);
+
+                    if (packageSource != null)
+                    {
+                        Add(packageSource.Source, namespaceId);
+                    }
                 }
             }
         }

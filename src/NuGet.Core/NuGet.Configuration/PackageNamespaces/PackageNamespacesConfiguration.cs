@@ -50,21 +50,18 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
 
-        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces, PackageNamespacesProvider packageNamespacesProvider = null)
+        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces, PackageNamespacesProvider packageNamespacesProvider)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
 
-            if (packageNamespacesProvider != null)
-            {
-                IReadOnlyList<PackageSource> packageSources = packageNamespacesProvider.GetPackageSources();
-                PackageSourceLookup = new Dictionary<string, PackageSource>();
+            IReadOnlyList<PackageSource> packageSources = packageNamespacesProvider.GetPackageSources();
+            PackageSourceLookup = new Dictionary<string, PackageSource>();
 
-                foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
-                {
-                    PackageSourceLookup[namespacePerSource.Key] = packageSources.FirstOrDefault(s => s.Name == namespacePerSource.Key);
-                }
+            foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
+            {
+                PackageSourceLookup[namespacePerSource.Key] = packageSources.FirstOrDefault(s => s.Name == namespacePerSource.Key);
             }
         }
 

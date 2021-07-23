@@ -15,6 +15,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.DependencyResolver.Core.Tests
@@ -223,10 +224,8 @@ namespace NuGet.DependencyResolver.Core.Tests
             var downloadCount = 0;
 
             //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add(source2, new List<string>() { packageX });
-            namespaces.Add(source1, new List<string>() { packageY });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration($"{source2},{packageX}|{source1},{packageY}");
+
             var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1
@@ -283,10 +282,8 @@ namespace NuGet.DependencyResolver.Core.Tests
             var downloadCount = 0;
 
             //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("source2", new List<string>() { "z" });
-            namespaces.Add("source1", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration("source2,z | source1,y");
+
             var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1

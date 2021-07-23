@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Common;
@@ -22,6 +23,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Test.Utility.Commands;
 using Xunit;
 
@@ -3244,10 +3246,7 @@ namespace NuGet.Commands.FuncTest
             var log = new TestLogger();
 
             //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add(packageSource2, new List<string>() { packageA });
-            namespaces.Add(pathContext.PackageSource, new List<string>() { packageB });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration($"{packageSource2},{packageA}|{pathContext.PackageSource},{packageB}");
 
             var request = new TestRestoreRequest(projectSpec,
                 sources,
@@ -3334,9 +3333,7 @@ namespace NuGet.Commands.FuncTest
             var log = new TestLogger();
 
             //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add(packageSource2, new List<string>() { packageA });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration($"{packageSource2},{packageA}");
 
             var request = new TestRestoreRequest(projectSpec,
                 sources,
