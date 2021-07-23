@@ -1478,12 +1478,12 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Install a package in open project(s)
         /// </summary>
-        /// <param name="package">Package ID to install</param>
+        /// <param name="packageId">Package ID to install</param>
         /// <param name="version">Package Version to install</param>
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
-        internal void InstallPackage(string package, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
+        internal void InstallPackage(string packageId, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateInstallAction(package, version);
+            var action = UserAction.CreateInstallAction(packageId, version);
 
             ExecuteAction(
                 () =>
