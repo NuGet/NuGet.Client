@@ -400,6 +400,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _isPackageDeprecated = value;
                     OnPropertyChanged(nameof(IsPackageDeprecated));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
                 }
             }
         }
@@ -420,6 +421,7 @@ namespace NuGet.PackageManagement.UI
                     _vulnerabilityMaxSeverity = value;
                     OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
                 }
             }
         }
@@ -681,25 +683,6 @@ namespace NuGet.PackageManagement.UI
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // UI requested cancellation
-            }
-        }
-
-        private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
-        {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
-            try
-            {
-                var identity = new PackageIdentity(Id, Version);
-                PackageDeprecationMetadataContextInfo result = await _searchService.GetDeprecationMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
-
-                IsPackageDeprecated = result != null;
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                // UI requested cancellation.
             }
         }
 
