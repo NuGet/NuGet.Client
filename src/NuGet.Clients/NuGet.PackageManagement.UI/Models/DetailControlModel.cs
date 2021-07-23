@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -410,11 +411,11 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageVulnerable
         {
-            get { return PackageVulnerabilityMaxSeverity > -1; }
+            get { return PackageVulnerabilityMaxSeverity != SeverityLevel.None; }
         }
 
-        private int _packageVulnerabilityMaxSeverity = -1;
-        public int PackageVulnerabilityMaxSeverity
+        private SeverityLevel _packageVulnerabilityMaxSeverity = SeverityLevel.None;
+        public SeverityLevel PackageVulnerabilityMaxSeverity
         {
             get { return _packageVulnerabilityMaxSeverity; }
             set
@@ -490,10 +491,10 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
                     // vulnerability metadata
-                    int newVulnerabilityMaxSeverity = -1;
+                    SeverityLevel newVulnerabilityMaxSeverity = SeverityLevel.None;
                     if (_packageMetadata?.Vulnerabilities != null)
                     {
-                        newVulnerabilityMaxSeverity = _packageMetadata.Vulnerabilities.Max(v => v.Severity);
+                        newVulnerabilityMaxSeverity = _packageMetadata.Vulnerabilities.Max(v => SeverityLevelExtensions.FromValue(v.Severity));
                     }
 
                     PackageVulnerabilityMaxSeverity = newVulnerabilityMaxSeverity;

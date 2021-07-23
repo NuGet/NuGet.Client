@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Moq;
 using NuGet.PackageManagement.UI.Utility;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -122,7 +123,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public void MaxVulnerabilitySeverityWhenMetadataHasVulnerability_Calculated()
         {
-            Assert.Equal(_testInstance.PackageVulnerabilityMaxSeverity, _testData.TestData.Vulnerabilities.Max(v => v.Severity));
+            Assert.Equal(_testInstance.PackageVulnerabilityMaxSeverity, _testData.TestData.Vulnerabilities.Max(v => SeverityLevelExtensions.FromValue(v.Severity)));
         }
 
         [Fact]
