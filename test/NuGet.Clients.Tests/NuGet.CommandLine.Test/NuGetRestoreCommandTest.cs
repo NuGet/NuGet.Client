@@ -3052,7 +3052,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_PassSingleSource_LongerMatches_Succeed()
+        public void RestoreCommand_PackageNamespace_PassSingleSource_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3090,7 +3090,6 @@ EndProject";
 @"<packages>
   <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
-  <package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
                 var configPath = Path.Combine(workingPath, "nuget.config");
@@ -3108,7 +3107,7 @@ EndProject";
             <namespace id=""Contoso.MVC.*"" /> 
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
+            <namespace id=""Contoso.MVC.*"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
         </packageSource>
     </packageNamespaces>
 </configuration>");
@@ -3122,9 +3121,9 @@ EndProject";
                         "-solutionDir",
                         workingPath,
                         "-source",
-                        "C:\\NuGetProj\\IssueRepro\\10948\\MyPackages"
-                        //"-Verbosity",
-                        //"d"
+                        sharedRepositoryPath,
+                        "-Verbosity",
+                        "d"
                     };
 
                 // Act
@@ -3136,7 +3135,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                //Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{opensourceRepositoryPath}, {sharedRepositoryPath}'", r.Output);
             }
         }
 
