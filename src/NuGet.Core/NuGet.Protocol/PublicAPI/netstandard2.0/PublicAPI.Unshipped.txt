@@ -6,3 +6,5 @@ NuGet.Protocol.SeverityLevel.High = 2 -> NuGet.Protocol.SeverityLevel
 NuGet.Protocol.SeverityLevel.Low = 0 -> NuGet.Protocol.SeverityLevel
 NuGet.Protocol.SeverityLevel.Moderate = 1 -> NuGet.Protocol.SeverityLevel
 NuGet.Protocol.SeverityLevel.None = -1 -> NuGet.Protocol.SeverityLevel
+NuGet.Protocol.SeverityLevelExtensions
+static NuGet.Protocol.SeverityLevelExtensions.FromValue(int value) -> NuGet.Protocol.SeverityLevel
