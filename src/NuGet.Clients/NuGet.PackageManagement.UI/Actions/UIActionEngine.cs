@@ -520,7 +520,7 @@ namespace NuGet.PackageManagement.UI
                         nuGetUI?.RecommendPackages,
                         nuGetUI?.RecommenderVersion,
                         nuGetUI?.TopLevelVulnerablePackagesCount ?? 0,
-                        nuGetUI?.TopLevelVulnerablePackagesMaxSeverity ?? -1,
+                        nuGetUI?.TopLevelVulnerablePackagesMaxSeverities?.ToList() ?? new List<int>(),
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -546,7 +546,7 @@ namespace NuGet.PackageManagement.UI
             bool? recommendPackages,
             (string modelVersion, string vsixVersion)? recommenderVersion,
             int topLevelVulnerablePackagesCount,
-            int topLevelVulnerablePackagesMaxSeverity,
+            List<int> topLevelVulnerablePackagesMaxSeverities,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -593,7 +593,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;
-            actionTelemetryEvent["TopLevelVulnerablePackagesMaxSeverity"] = topLevelVulnerablePackagesMaxSeverity;
+            actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = topLevelVulnerablePackagesMaxSeverities;
 
             // log the installed package state
             if (existingPackages?.Count > 0)

@@ -317,7 +317,7 @@ namespace NuGet.PackageManagement.UI
 
         public int TopLevelVulnerablePackagesCount { get; set; }
 
-        public int TopLevelVulnerablePackagesMaxSeverity { get; set; }
+        public IEnumerable<int> TopLevelVulnerablePackagesMaxSeverities { get; set; }
 
         public PackageSourceMoniker ActivePackageSourceMoniker
         {

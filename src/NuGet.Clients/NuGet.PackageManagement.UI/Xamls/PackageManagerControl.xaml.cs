@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1428,7 +1429,12 @@ namespace NuGet.PackageManagement.UI
         private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> packages)
         {
             var options = _detailModel.Options;
-            IEnumerable<PackageItemViewModel> vulnerablePkgs = packages?.Where(x => x.Vulnerabilities.Any());
+            IEnumerable<PackageItemViewModel> vulnerablePkgs = packages?
+                .Where(x => x.Vulnerabilities?.Any() ?? false) ??
+                Enumerable.Empty< PackageItemViewModel>();
+            int vulnerablePkgsCount = vulnerablePkgs.Count();
+            IEnumerable<int> vulnerablePkgsMaxSeverities = vulnerablePkgs
+                .Select(pkg => pkg.Vulnerabilities.Max(v => v.Severity));
 
             nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
@@ -1438,8 +1444,8 @@ namespace NuGet.PackageManagement.UI
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
             nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
-            nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgs?.Count() ?? 0;
-            nugetUi.TopLevelVulnerablePackagesMaxSeverity = nugetUi.TopLevelVulnerablePackagesCount > 0 ? vulnerablePkgs.Max(pkgItem => pkgItem.Vulnerabilities?.Count() ?? -1) : -1;
+            nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgsCount;
+            nugetUi.TopLevelVulnerablePackagesMaxSeverities = vulnerablePkgsMaxSeverities.ToList();
         }
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)

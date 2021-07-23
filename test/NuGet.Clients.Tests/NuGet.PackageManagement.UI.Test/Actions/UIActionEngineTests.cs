@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI.Test
                 recommendPackages: false,
                 recommenderVersion: null,
                 topLevelVulnerablePackagesCount: 1,
-                topLevelVulnerablePackagesMaxSeverity: 3,
+                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3  },
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,
@@ -171,7 +171,9 @@ namespace NuGet.PackageManagement.UI.Test
             // Assert
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(1, lastTelemetryEvent["TopLevelVulnerablePackagesCount"]);
-            Assert.Equal(3, lastTelemetryEvent["TopLevelVulnerablePackagesMaxSeverity"]);
+            Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>);
+            var pkgSeverities = lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>;
+            Assert.Equal(3, pkgSeverities.Count());
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity

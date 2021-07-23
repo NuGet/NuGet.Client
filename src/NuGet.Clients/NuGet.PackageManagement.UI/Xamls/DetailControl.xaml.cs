@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -166,7 +167,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RecommendPackages = model.RecommendPackages;
                     nugetUi.RecommenderVersion = model.RecommenderVersion;
                     nugetUi.TopLevelVulnerablePackagesCount = model.IsPackageVulnerable ? 1 : 0;
-                    nugetUi.TopLevelVulnerablePackagesMaxSeverity = model.PackageVulnerabilityMaxSeverity;
+                    nugetUi.TopLevelVulnerablePackagesMaxSeverities = new List<int>() { model.PackageVulnerabilityMaxSeverity };
                 });
         }
     }
