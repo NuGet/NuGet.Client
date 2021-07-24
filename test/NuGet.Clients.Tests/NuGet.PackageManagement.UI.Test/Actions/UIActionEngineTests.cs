@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI.Test
                 recommendPackages: false,
                 recommenderVersion: null,
                 topLevelVulnerablePackagesCount: 1,
-                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3  },
+                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 },
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,

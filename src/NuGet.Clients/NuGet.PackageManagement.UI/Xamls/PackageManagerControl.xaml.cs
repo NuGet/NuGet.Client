@@ -1431,7 +1431,7 @@ namespace NuGet.PackageManagement.UI
             var options = _detailModel.Options;
             IEnumerable<PackageItemViewModel> vulnerablePkgs = packages?
                 .Where(x => x.Vulnerabilities?.Any() ?? false) ??
-                Enumerable.Empty< PackageItemViewModel>();
+                Enumerable.Empty<PackageItemViewModel>();
             int vulnerablePkgsCount = vulnerablePkgs.Count();
             IEnumerable<int> vulnerablePkgsMaxSeverities = vulnerablePkgs
                 .Select(pkg => pkg.Vulnerabilities.Max(v => v.Severity));
