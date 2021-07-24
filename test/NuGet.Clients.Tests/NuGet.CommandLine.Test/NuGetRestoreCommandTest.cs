@@ -3052,7 +3052,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_PassSingleSource_Succeed()
+        public void RestoreCommand_PackageNamespace_Pass_JustEnoughSource_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3080,7 +3080,6 @@ EndProject";
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
                 Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
-                Util.CreateTestPackage("Contoso.Opensource.Buffers", "1.0.0", opensourceRepositoryPath);
 
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
                 Directory.CreateDirectory(sharedRepositoryPath);
@@ -3107,7 +3106,7 @@ EndProject";
             <namespace id=""Contoso.MVC.*"" /> 
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.*"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
+            <namespace id=""Contoso.MVC.*"" />
         </packageSource>
     </packageNamespaces>
 </configuration>");
@@ -3121,7 +3120,7 @@ EndProject";
                         "-solutionDir",
                         workingPath,
                         "-source",
-                        sharedRepositoryPath,
+                        sharedRepositoryPath,  // Even though both sources are allowed by package namespace filter only 1 is passed, so privateRepository one is only used.
                         "-Verbosity",
                         "d"
                     };
@@ -3135,12 +3134,13 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
+                // Below message implies both repositories are allowd by package namespace filter, but actually only privateRepository is used for restore.
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{opensourceRepositoryPath}, {sharedRepositoryPath}'", r.Output);
             }
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_WithNecessarySourceOption_Succeed()
+        public void RestoreCommand_PackageNamespace_Pass_AllSourceOptions_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3165,16 +3165,17 @@ EndProject";
   </ItemGroup>
 </Project>");
 
+                var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource.A", "1.0.0", opensourceRepositoryPath);
+
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
                 Directory.CreateDirectory(sharedRepositoryPath);
                 Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
 
-                var someRepositoryPath = Path.Combine(workingPath, "Some");
-                Directory.CreateDirectory(someRepositoryPath);
-                Util.CreateTestPackage("SomePackage", "1.0.0", sharedRepositoryPath);
-
                 Util.CreateFile(proj1Directory, "packages.config",
 @"<packages>
+  <package id=""Contoso.Opensource.A"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
@@ -3184,11 +3185,15 @@ EndProject";
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
+    <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageNamespaces>
+        <packageSource key=""PublicRepository""> 
+            <namespace id=""Contoso.Opensource.*"" />
+        </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
+            <namespace id=""Contoso.MVC.*"" />
         </packageSource>
     </packageNamespaces>
 </configuration>");
@@ -3204,7 +3209,7 @@ EndProject";
                         "-Verbosity",
                         "d",
                         "-source",
-                        sharedRepositoryPath + ';' + someRepositoryPath
+                        sharedRepositoryPath + ';' + opensourceRepositoryPath
                     };
 
                 // Act
@@ -3218,11 +3223,12 @@ EndProject";
                 Assert.Equal(_successCode, r.ExitCode);
                 // If we pass source then log include actual path to repository instead of repository name.
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{sharedRepositoryPath}'", r.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: '{opensourceRepositoryPath}'", r.Output);
             }
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_WithMissingSourceOption_Fails()
+        public void RestoreCommand_PackageNamespace_Pass_NotEnoughSources_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3247,16 +3253,18 @@ EndProject";
   </ItemGroup>
 </Project>");
 
+                var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(opensourceRepositoryPath);
+                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", opensourceRepositoryPath);
+
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
                 Directory.CreateDirectory(sharedRepositoryPath);
                 Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
 
-                var someRepositoryPath = Path.Combine(workingPath, "Some");
-                Directory.CreateDirectory(someRepositoryPath);
-                Util.CreateTestPackage("SomePackage", "1.0.0", sharedRepositoryPath);
-
                 Util.CreateFile(proj1Directory, "packages.config",
 @"<packages>
+  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
@@ -3266,11 +3274,15 @@ EndProject";
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
+    <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageNamespaces>
+        <packageSource key=""PublicRepository""> 
+            <namespace id=""Contoso.Opensource.*"" />
+        </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
+            <namespace id=""Contoso.MVC.*"" />
         </packageSource>
     </packageNamespaces>
 </configuration>");
@@ -3283,10 +3295,10 @@ EndProject";
                         proj1File,
                         "-solutionDir",
                         workingPath,
-                        "-Verbosity",
-                        "d",
                         "-source",
-                        someRepositoryPath
+                        opensourceRepositoryPath, // Package namespace filter doesn't allow Contoso.MVC.ASP to be restore from here.
+                        "-Verbosity",
+                        "d"
                     };
 
                 // Act
@@ -3297,10 +3309,10 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_failureCode, r.ExitCode);
-                // If we pass source then log include actual path to repository instead of repository name.
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{sharedRepositoryPath}'", r.Output);
-                Assert.Contains($"WARNING: Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.", r.Output);
+                // Even though there is eligible source SharedRepository exist but only opensourceRepositoryPath passed as option it'll fail to restore.
+                Assert.Equal(_failureCode, r.ExitCode);
+                Assert.Contains("WARNING: Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.", r.Output);
             }
         }
 

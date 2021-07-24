@@ -73,7 +73,7 @@ namespace NuGet.DependencyResolver
                     return Array.Empty<IRemoteDependencyProvider>();
                 }
 
-                return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Name)).AsList();
+                return RemoteLibraryProviders.Where(p => sources.Contains(p.Source.Source)).AsList();
             }
             return RemoteLibraryProviders;
         }
