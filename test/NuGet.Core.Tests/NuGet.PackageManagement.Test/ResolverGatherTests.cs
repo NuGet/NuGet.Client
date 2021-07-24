@@ -1472,7 +1472,7 @@ namespace NuGet.Test
             var repos = new List<SourceRepository>();
             repos.Add(new SourceRepository(new PackageSource("http://1", "someRepository1"), providers1));
             repos.Add(new SourceRepository(new PackageSource("http://2", "someRepository2"), providers2));
-            repos.Add(new SourceRepository(new PackageSource("http://3", configuredSources[0]), providers3));
+            repos.Add(new SourceRepository(new PackageSource(configuredSources[0], configuredSources[0]), providers3));
 
             var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
 
