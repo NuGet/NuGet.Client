@@ -48,6 +48,8 @@
           Height="Auto" />
         <RowDefinition
           Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
       </Grid.RowDefinitions>
 
       <!-- Icon and Id -->
@@ -171,7 +173,7 @@
 
       <!-- deprecation info -->
       <Border
-        Grid.Row="3"
+        Grid.Row="4"
         Margin="0,11,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         Visibility="{Binding Path=IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
