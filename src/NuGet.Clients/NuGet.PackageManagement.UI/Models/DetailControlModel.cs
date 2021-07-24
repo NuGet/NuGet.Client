@@ -411,7 +411,7 @@ namespace NuGet.PackageManagement.UI
         private IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> _packageVulnerabilities;
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> PackageVulnerabilities
         {
-            get { return _packageVulnerabilities; }
+            get => _packageVulnerabilities;
             private set
             {
                 _packageVulnerabilities = value;
@@ -426,7 +426,7 @@ namespace NuGet.PackageManagement.UI
         private int _packageVulnerabilityMaxSeverity = -1;
         public int PackageVulnerabilityMaxSeverity
         {
-            get { return _packageVulnerabilityMaxSeverity; }
+            get => _packageVulnerabilityMaxSeverity;
             private set
             {
                 if (_packageVulnerabilityMaxSeverity != value)
