@@ -289,6 +289,9 @@
     <Compile Include="Xamls\LicenseAcceptanceWindow.xaml.cs">
       <DependentUpon>LicenseAcceptanceWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\VulnerabilitiesControl.xaml.cs">
+      <DependentUpon>VulnerabilitiesControl.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <DesignDataWithDesignTimeCreatableTypes Include="Design\LoadingStatusViewModelSampleData.xaml">
@@ -424,6 +427,10 @@
     <Page Include="Xamls\UpdateAvailableIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\VulnerabilitiesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

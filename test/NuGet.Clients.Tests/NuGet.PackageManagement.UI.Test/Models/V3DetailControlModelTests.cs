@@ -126,6 +126,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
+        public void VulnerabilityCountWhenMetadataHasVulnerability_Calculated()
+        {
+            Assert.Equal(_testInstance.PackageVulnerabilityCount, _testData.TestData.Vulnerabilities.Count());
+        }
+
+        [Fact]
         public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
         {
             // Arrange

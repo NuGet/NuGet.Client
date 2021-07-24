@@ -154,6 +154,21 @@
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1" />
 
+      <!-- vulnerabilities info -->
+      <Border
+        Grid.Row="3"
+        Margin="0,11,0,0"
+        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+        Visibility="{Binding Path=IsPackageVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
+        BorderThickness="0,1,0,0">
+        <Grid>
+          <nuget:VulnerabilitiesControl
+            x:Name="_vulnerabilitiesControl"
+            DataContext="{Binding}"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageVulnerabilities}" />
+        </Grid>
+      </Border>
+
       <!-- deprecation info -->
       <Border
         Grid.Row="3"
