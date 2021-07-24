@@ -155,8 +155,8 @@ namespace NuGet.PackageManagement.UI.Test
                 recommendedCount: 0,
                 recommendPackages: false,
                 recommenderVersion: null,
-                topLevelVulnerablePackagesCount: 1,
-                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 },
+                topLevelVulnerablePackagesCount: 3,
+                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 }, // each package has its own max severity
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,
@@ -170,9 +170,13 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal(1, lastTelemetryEvent["TopLevelVulnerablePackagesCount"]);
             Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>);
             var pkgSeverities = lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>;
+            Assert.Equal(lastTelemetryEvent["TopLevelVulnerablePackagesCount"], pkgSeverities.Count());
+            Assert.Collection(pkgSeverities,
+                item => Assert.Equal(1, item),
+                item => Assert.Equal(1, item),
+                item => Assert.Equal(3, item));
             Assert.Equal(3, pkgSeverities.Count());
         }
 
