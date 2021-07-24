@@ -902,7 +902,7 @@ namespace NuGet.PackageManagement.UI
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
+            _topPanel.UpdateWarningStatusOnInstalledTab(installedVulnerablePackagesCount: 0, installedDeprecatedPackagesCount: 0);
             _topPanel.UpdateCountOnUpdatesTab(count: 0);
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
             var loader = await PackageItemLoader.CreateAsync(
@@ -919,9 +919,8 @@ namespace NuGet.PackageManagement.UI
             Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
             // Update installed tab warning icon
-            var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(loadContext, refreshCts.Token);
-
-            _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount);
+            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, refreshCts.Token);
+            _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
             // Update updates tab count
             Model.CachedUpdates = new PackageSearchMetadataCache
@@ -934,26 +933,40 @@ namespace NuGet.PackageManagement.UI
             _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
         }
 
-        private async Task<int> GetInstalledDeprecatedPackagesCountAsync(PackageLoadContext loadContext, CancellationToken token)
+        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, CancellationToken token)
         {
             // Switch off the UI thread before fetching installed packages and deprecation metadata.
             await TaskScheduler.Default;
 
             PackageCollection installedPackages = await loadContext.GetInstalledPackagesAsync();
 
-            var installedPackageDeprecationMetadata = await Task.WhenAll(
-                installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, token)));
+            var installedPackageMetadata = await Task.WhenAll(
+                installedPackages.Select(p => GetPackageMetadataAsync(p, token)));
 
-            return installedPackageDeprecationMetadata.Count(d => d != null);
+            int vulnerablePackagesCount = 0;
+            int deprecatedPackagesCount = 0;
+            foreach ((PackageSearchMetadataContextInfo s, PackageDeprecationMetadataContextInfo d) in installedPackageMetadata)
+            {
+                if (s.Vulnerabilities != null && s.Vulnerabilities.Any())
+                {
+                    vulnerablePackagesCount++;
+                }
+                if (d != null)
+                {
+                    deprecatedPackagesCount++;
+                }
+            }
+
+            return (vulnerablePackagesCount, deprecatedPackagesCount);
         }
 
-        private async Task<PackageDeprecationMetadataContextInfo> GetPackageDeprecationMetadataAsync(PackageCollectionItem package, CancellationToken cancellationToken)
+        private async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetPackageMetadataAsync(PackageCollectionItem package, CancellationToken cancellationToken)
         {
             using (INuGetSearchService searchService = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(searchService);
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return await searchService.GetDeprecationMetadataAsync(package, SelectedSource.PackageSources, true, cancellationToken);
+                return await searchService.GetPackageMetadataAsync(package, SelectedSource.PackageSources, true, cancellationToken);
             }
         }
 

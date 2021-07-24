@@ -107,22 +107,45 @@ namespace NuGet.PackageManagement.UI
             tabConsolidate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, automationString);
         }
 
-        public void UpdateDeprecationStatusOnInstalledTab(int installedDeprecatedPackagesCount)
+        public void UpdateWarningStatusOnInstalledTab(int installedVulnerablePackagesCount, int installedDeprecatedPackagesCount)
         {
+            bool hasInstalledVulnerablePackages = installedVulnerablePackagesCount > 0;
             bool hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
-            if (hasInstalledDeprecatedPackages)
-            {
-                _warningIcon.Visibility = Visibility.Visible;
-                _warningIcon.ToolTip = string.Format(
-                    CultureInfo.CurrentCulture,
-                    NuGet.PackageManagement.UI.Resources.Label_Installed_DeprecatedWarning,
-                    installedDeprecatedPackagesCount);
-            }
-            else
+            bool warningIconShouldBeVisible = hasInstalledVulnerablePackages || hasInstalledDeprecatedPackages;
+
+            if (!warningIconShouldBeVisible)
             {
                 _warningIcon.Visibility = Visibility.Collapsed;
                 _warningIcon.ToolTip = null;
+                return;
             }
+
+            string warningTooltip = null;
+            if (hasInstalledVulnerablePackages && hasInstalledDeprecatedPackages)
+            {
+                warningTooltip = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resx.Label_Installed_VulnerableAndDeprecatedWarning,
+                    installedVulnerablePackagesCount,
+                    installedDeprecatedPackagesCount);
+            }
+            else if (hasInstalledVulnerablePackages)
+            {
+                warningTooltip = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resx.Label_Installed_VulnerableWarning,
+                    installedVulnerablePackagesCount);
+            }
+            else if (hasInstalledDeprecatedPackages)
+            {
+                warningTooltip = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resx.Label_Installed_DeprecatedWarning,
+                    installedDeprecatedPackagesCount);
+            }
+
+            _warningIcon.Visibility = Visibility.Visible;
+            _warningIcon.ToolTip = warningTooltip;
         }
 
         public void UpdateCountOnConsolidateTab(int count)

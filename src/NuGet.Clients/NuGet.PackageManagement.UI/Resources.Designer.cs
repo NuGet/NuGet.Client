@@ -1006,6 +1006,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have {0} vulnerable package(s) and {1} deprecated package(s) installed..
+        /// </summary>
+        public static string Label_Installed_VulnerableAndDeprecatedWarning {
+            get {
+                return ResourceManager.GetString("Label_Installed_VulnerableAndDeprecatedWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have {0} vulnerable package(s) installed..
+        /// </summary>
+        public static string Label_Installed_VulnerableWarning {
+            get {
+                return ResourceManager.GetString("Label_Installed_VulnerableWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installed:.
         /// </summary>
         public static string Label_InstalledColon {
