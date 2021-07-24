@@ -519,6 +519,8 @@ namespace NuGet.PackageManagement.UI
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
                         nuGetUI?.RecommenderVersion,
+                        nuGetUI?.TopLevelVulnerablePackagesCount ?? 0,
+                        nuGetUI?.TopLevelVulnerablePackagesMaxSeverities?.ToList() ?? new List<int>(),
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -534,7 +536,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
-        private static void AddUiActionEngineTelemetryProperties(
+        internal static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
             bool continueAfterPreview,
             bool acceptedLicense,
@@ -543,6 +545,8 @@ namespace NuGet.PackageManagement.UI
             int? recommendedCount,
             bool? recommendPackages,
             (string modelVersion, string vsixVersion)? recommenderVersion,
+            int topLevelVulnerablePackagesCount,
+            List<int> topLevelVulnerablePackagesMaxSeverities,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -587,6 +591,9 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
             }
+
+            actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;
+            actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = topLevelVulnerablePackagesMaxSeverities;
 
             // log the installed package state
             if (existingPackages?.Count > 0)

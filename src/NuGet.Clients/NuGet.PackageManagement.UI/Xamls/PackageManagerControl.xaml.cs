@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1422,12 +1423,18 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            UninstallPackage(package.Id);
+            UninstallPackage(package.Id, new[] { package });
         }
 
-        private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType)
+        private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> packages)
         {
             var options = _detailModel.Options;
+            IEnumerable<PackageItemViewModel> vulnerablePkgs = packages?
+                .Where(x => x.Vulnerabilities?.Any() ?? false) ??
+                Enumerable.Empty<PackageItemViewModel>();
+            int vulnerablePkgsCount = vulnerablePkgs.Count();
+            IEnumerable<int> vulnerablePkgsMaxSeverities = vulnerablePkgs
+                .Select(pkg => pkg.Vulnerabilities.Max(v => v.Severity));
 
             nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
@@ -1435,9 +1442,10 @@ namespace NuGet.PackageManagement.UI
             nugetUi.ForceRemove = options.ForceRemove;
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
-
             nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
+            nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgsCount;
+            nugetUi.TopLevelVulnerablePackagesMaxSeverities = vulnerablePkgsMaxSeverities.ToList();
         }
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
@@ -1447,9 +1455,8 @@ namespace NuGet.PackageManagement.UI
             {
                 return;
             }
-
             var versionToInstall = package.LatestVersion ?? package.Version;
-            InstallPackage(package.Id, versionToInstall);
+            InstallPackage(package.Id, versionToInstall, new[] { package });
         }
 
         private void PackageList_UpdateButtonClicked(PackageItemViewModel[] selectedPackages)
@@ -1458,7 +1465,7 @@ namespace NuGet.PackageManagement.UI
                 .Select(package => new PackageIdentity(package.Id, package.Version))
                 .ToList();
 
-            UpdatePackage(packagesToUpdate);
+            UpdatePackage(packagesToUpdate, selectedPackages);
         }
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
@@ -1474,7 +1481,13 @@ namespace NuGet.PackageManagement.UI
             await RefreshConsolidatablePackagesCountAsync();
         }
 
-        internal void InstallPackage(string packageId, NuGetVersion version)
+        /// <summary>
+        /// Install a package in open project(s)
+        /// </summary>
+        /// <param name="packageId">Package ID to install</param>
+        /// <param name="version">Package Version to install</param>
+        /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
+        internal void InstallPackage(string packageId, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
             var action = UserAction.CreateInstallAction(packageId, version);
 
@@ -1486,10 +1499,15 @@ namespace NuGet.PackageManagement.UI
                         action,
                         CancellationToken.None);
                 },
-                nugetUi => SetOptions(nugetUi, NuGetActionType.Install));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Install, packagesInfo));
         }
 
-        internal void UninstallPackage(string packageId)
+        /// <summary>
+        /// Uninstall a package in open project(s)
+        /// </summary>
+        /// <param name="packageId">Package ID to uninstall</param>
+        /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
+        internal void UninstallPackage(string packageId, IEnumerable<PackageItemViewModel> packagesInfo)
         {
             var action = UserAction.CreateUnInstallAction(packageId);
 
@@ -1501,10 +1519,15 @@ namespace NuGet.PackageManagement.UI
                         action,
                         CancellationToken.None);
                 },
-                nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall, packagesInfo));
         }
 
-        internal void UpdatePackage(List<PackageIdentity> packages)
+        /// <summary>
+        /// Updates packages in open project(s)
+        /// </summary>
+        /// <param name="packages">Packages identities to update</param>
+        /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
+        internal void UpdatePackage(List<PackageIdentity> packages, IEnumerable<PackageItemViewModel> packagesInfo)
         {
             if (packages.Count == 0)
             {
@@ -1519,7 +1542,7 @@ namespace NuGet.PackageManagement.UI
                         packages,
                         CancellationToken.None);
                 },
-                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Update, packagesInfo));
         }
 
         private void UpgradeButton_Click(object sender, RoutedEventArgs e)
