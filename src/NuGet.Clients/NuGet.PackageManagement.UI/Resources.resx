@@ -976,7 +976,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} is the severity of the vulnerability</comment>
   </data>
   <data name="Label_VulnerabilityAdvisory" xml:space="preserve">
-    <value>Advisory ({0} severity)</value>
+    <value>Advisory ({0} severity):</value>
     <comment>{0} is the severity of the vulnerability</comment>
   </data>
   <data name="Accessibility_PackageVulnerabilities" xml:space="preserve">
@@ -986,7 +986,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Package vulnerability description</value>
   </data>
   <data name="Hyperlink_AdvisoryUrl" xml:space="preserve">
-    <value>Advisory Url</value>
+    <value>Advisory URL</value>
   </data>
   <data name="Label_Details" xml:space="preserve">
     <value>Details</value>

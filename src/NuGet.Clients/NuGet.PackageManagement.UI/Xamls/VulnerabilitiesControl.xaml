@@ -28,7 +28,7 @@
         <imaging:CrispImage
           x:Name="_warningIcon"
           Margin="0,0,5,0"
-          AutomationProperties.LabeledBy="{Binding ElementName=__vulnerabilityLabel}"
+          AutomationProperties.LabeledBy="{Binding ElementName=_vulnerabilityLabel}"
           Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"
           ToolTip="{Binding ElementName=_vulnerabilityLabel, Path=Text}" />
         <TextBlock
@@ -81,7 +81,8 @@
                 </TextBlock>
                 <TextBlock
                   Grid.Column="1"
-                  Margin="8,1,0,1">
+                  Margin="8,1,0,1"
+                  ToolTip="{Binding AdvisoryUrl}">
                   <Hyperlink
                     NavigateUri="{Binding Path=AdvisoryUrl}"
                     Style="{StaticResource HyperlinkStyle}"

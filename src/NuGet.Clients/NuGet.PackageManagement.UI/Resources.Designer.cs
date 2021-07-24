@@ -799,7 +799,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Advisory Url.
+        ///   Looks up a localized string similar to Advisory URL.
         /// </summary>
         public static string Hyperlink_AdvisoryUrl {
             get {
@@ -1321,7 +1321,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Advisory ({0} severity).
+        ///   Looks up a localized string similar to Advisory ({0} severity):.
         /// </summary>
         public static string Label_VulnerabilityAdvisory {
             get {
