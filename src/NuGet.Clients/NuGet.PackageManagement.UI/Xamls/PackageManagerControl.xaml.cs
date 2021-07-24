@@ -1488,16 +1488,16 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
-        private void ExecuteMakeSearchCommand(object sender, ExecutedRoutedEventArgs e)
+        private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var alternatePackageId = e.Parameter as string;
             if (!string.IsNullOrWhiteSpace(alternatePackageId))
             {
-                if (_windowSearchHost.IsEnabled)
+                if (_windowSearchHost != null && _windowSearchHost.IsEnabled)
                 {
                     _windowSearchHost.SearchTask?.Stop();
-                    ActiveFilter = ItemFilter.All;
+                    _topPanel.SelectFilter(ItemFilter.All);
                     Search(alternatePackageId);
                 }
             }

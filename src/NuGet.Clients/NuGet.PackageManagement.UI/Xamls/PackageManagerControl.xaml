@@ -35,8 +35,8 @@
       Command="{x:Static nuget:Commands.RestartSearchCommand}" 
       Executed="ExecuteRestartSearchCommand"/>
     <CommandBinding
-      Command="{x:Static nuget:Commands.MakeSearchAlternative}" 
-      Executed="ExecuteMakeSearchCommand"/>
+      Command="{x:Static nuget:Commands.SearchPackageCommand}"
+      Executed="ExecuteSearchPackageCommand"/>
   </UserControl.CommandBindings>
   <UserControl.InputBindings>
     <KeyBinding

@@ -65,7 +65,7 @@
               AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}">
               <Hyperlink
                 ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
-                Command="{x:Static nuget:Commands.MakeSearchAlternative}"
+                Command="{x:Static nuget:Commands.SearchPackageCommand}"
                 Style="{StaticResource HyperlinkStyleNoUri}"
                 CommandParameter="{Binding Path=PackageDeprecationAlternatePackageId}">
                 <Run Text="{Binding Path=PackageDeprecationAlternatePackageText}" />

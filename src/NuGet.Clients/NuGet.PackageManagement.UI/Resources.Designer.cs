@@ -709,7 +709,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Click to search alternative package.
+        ///   Looks up a localized string similar to Select to view the alternative package..
         /// </summary>
         public static string Deprecation_LinkTooltip {
             get {

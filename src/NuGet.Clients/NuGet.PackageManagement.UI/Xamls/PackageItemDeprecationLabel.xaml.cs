@@ -2,19 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -76,18 +66,18 @@ namespace NuGet.PackageManagement.UI
             {
                 if (deprecationMeta.AlternatePackage != null)
                 {
-                    var alternatePackage = deprecationMeta.AlternatePackage;
-                    var index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
+                    AlternatePackageMetadataContextInfo alternatePackage = deprecationMeta.AlternatePackage;
+                    int index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
 
                     if (index != -1)
                     {
-                        var begin = FormatStringAlternative.Substring(0, index);
-                        var end = FormatStringAlternative.Substring(index + "{0}".Length);
+                        string begin = FormatStringAlternative.Substring(0, index);
+                        string end = FormatStringAlternative.Substring(index + "{0}".Length);
 
                         var link = new Hyperlink(new Run(alternatePackage.PackageId))
                         {
                             ToolTip = UI.Resources.Deprecation_LinkTooltip,
-                            Command = Commands.MakeSearchAlternative,
+                            Command = Commands.SearchPackageCommand,
                             CommandParameter = alternatePackage.PackageId,
                             Style = (Style)Resources["HyperlinkStyleNoUri"],
                         };
