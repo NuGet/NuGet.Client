@@ -415,7 +415,7 @@ namespace NuGet.PackageManagement.UI
             private set
             {
                 _packageVulnerabilities = value;
-                PackageVulnerabilityMaxSeverity = _packageMetadata?.Vulnerabilities?.Max(v => v.Severity) ?? -1;
+                PackageVulnerabilityMaxSeverity = value?.Max(v => v.Severity) ?? -1;
 
                 OnPropertyChanged(nameof(PackageVulnerabilities));
                 OnPropertyChanged(nameof(IsPackageVulnerable));

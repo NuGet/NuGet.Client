@@ -1312,7 +1312,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version..
+        ///   Looks up a localized string similar to This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version..
         /// </summary>
         public static string Label_VulnerabilitiesDescription {
             get {

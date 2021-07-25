@@ -972,7 +972,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} is the number of vulnerabilities</comment>
   </data>
   <data name="Label_VulnerabilitiesDescription" xml:space="preserve">
-    <value>This package has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</value>
+    <value>This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</value>
     <comment>{0} is the severity of the vulnerability</comment>
   </data>
   <data name="Label_VulnerabilityAdvisory" xml:space="preserve">
