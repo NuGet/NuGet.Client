@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
 
             var alternative = new PackageDeprecationMetadataContextInfo("deprecated", new List<string> { "old APIs" }, alternatePackageContextInfo: new AlternatePackageMetadataContextInfo("alternatePackage", VersionRange.Parse("[1.0, 2.0)")));
 
-            yield return new object[] { alternative, PackageItemDeprecationLabelState.Deprecation };
+            yield return new object[] { alternative, PackageItemDeprecationLabelState.AlternativeAvailable };
         }
 
         [Theory]

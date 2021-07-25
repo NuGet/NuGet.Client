@@ -15,19 +15,17 @@ namespace NuGet.PackageManagement.UI
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var deprecation = value as PackageDeprecationMetadataContextInfo;
-
-            if (deprecation == null)
+            if (value is PackageDeprecationMetadataContextInfo deprecation)
             {
-                return PackageItemDeprecationLabelState.Invisible;
-            }
+                if (deprecation.AlternatePackage != null && !string.IsNullOrEmpty(deprecation.AlternatePackage.PackageId))
+                {
+                    return PackageItemDeprecationLabelState.AlternativeAvailable;
+                }
 
-            if (deprecation.AlternatePackage != null && !string.IsNullOrEmpty(deprecation.AlternatePackage.PackageId))
-            {
-                return PackageItemDeprecationLabelState.AlternativeAvailable;
+                return PackageItemDeprecationLabelState.Deprecation;
             }
-
-            return PackageItemDeprecationLabelState.Deprecation;
+            
+            return PackageItemDeprecationLabelState.Invisible;            
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
