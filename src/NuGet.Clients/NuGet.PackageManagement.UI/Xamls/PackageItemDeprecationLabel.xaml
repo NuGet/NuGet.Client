@@ -14,7 +14,7 @@
       </ResourceDictionary.MergedDictionaries>
 
       <nuget:DeprecationToDeprecationLabelStateConverter x:Key="DataToStateConverter" />
-      <nuget:FormatedStringPartConverter x:Key="FormatedStringPartConverter " />
+      <nuget:FormatedStringPartConverter x:Key="FormatedStringPartConverter" />
 
       <Style x:Key="StyleLink" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Bold" />
