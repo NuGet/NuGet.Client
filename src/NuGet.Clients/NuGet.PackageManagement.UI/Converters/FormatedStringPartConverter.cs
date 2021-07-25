@@ -2,18 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
-using static Lucene.Net.Documents.Field;
 
 namespace NuGet.PackageManagement.UI
 {
+    /// <summary>
+    /// Extracts from a formated string with one '{0}' placeholder to either left or right side of the placeholder
+    /// </summary>
     public class FormatedStringPartConverter : IValueConverter
     {
+        /// <summary>
+        /// Extracts either left or right side of a string with one placeholder '{0}'
+        /// </summary>
+        /// <param name="value">string with placeholder</param>
+        /// <param name="targetType">Not used</param>
+        /// <param name="parameter">0 for left side, 2 for right side</param>
+        /// <param name="culture">Not used</param>
+        /// <returns><c>null </c> if invalid value or parameter, otherwise a string with either left or right side</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string formattedString = value as string;
@@ -30,15 +36,21 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            int index2 = formattedString.IndexOf("{0}", StringComparison.Ordinal);
+            int placeholderIndex = formattedString.IndexOf("{0}", StringComparison.Ordinal);
+
+            if (placeholderIndex < 0)
+            {
+                return null;
+            }
+
             if (mode == 0)
             {
-                return formattedString.Substring(0, index2);
+                return formattedString.Substring(0, placeholderIndex);
             }
 
             if (mode == 2)
             {
-                return formattedString.Substring(index2 + "{0}".Length);
+                return formattedString.Substring(placeholderIndex + "{0}".Length);
             }
 
             return null;

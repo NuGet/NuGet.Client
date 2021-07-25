@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.VisualStudio.Internal.Contracts;
-using System.Windows.Data;
 using System.Globalization;
+using System.Windows.Data;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class DataToStateConverter : IValueConverter
+    /// <summary>
+    /// Converts from <see cref="PackageDeprecationMetadataContextInfo"/> to <see cref="PackageItemDeprecationLabelState"/>
+    /// </summary>
+    public class DeprecationToDeprecationLabelStateConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -20,15 +19,15 @@ namespace NuGet.PackageManagement.UI
 
             if (deprecation == null)
             {
-                return MyControlState.Invisible;
+                return PackageItemDeprecationLabelState.Invisible;
             }
 
             if (deprecation.AlternatePackage != null && !string.IsNullOrEmpty(deprecation.AlternatePackage.PackageId))
             {
-                return MyControlState.WithAlternative;
+                return PackageItemDeprecationLabelState.AlternativeAvailable;
             }
 
-            return MyControlState.Deprecation;
+            return PackageItemDeprecationLabelState.Deprecation;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

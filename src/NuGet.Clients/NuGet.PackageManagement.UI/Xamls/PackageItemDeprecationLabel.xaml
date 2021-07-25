@@ -13,7 +13,7 @@
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
 
-      <nuget:DataToStateConverter x:Key="DataToStateConverter" />
+      <nuget:DeprecationToDeprecationLabelStateConverter x:Key="DataToStateConverter" />
       <nuget:FormatedStringPartConverter x:Key="FormatedStringPartConverter " />
 
       <Style x:Key="StyleLink" TargetType="TextBlock">
@@ -51,15 +51,15 @@
   <UserControl.Style>
     <Style TargetType="{x:Type nuget:PackageItemDeprecationLabel}">
       <Style.Triggers>
-        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:MyControlState.WithAlternative}">
+        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:PackageItemDeprecationLabelState.AlternativeAvailable}">
           <Setter Property="Visibility" Value="Visible" />
           <Setter Property="Template" Value="{StaticResource TemplateDeprecatedAlternative}" />
         </DataTrigger>
-        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:MyControlState.Deprecation}">
+        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:PackageItemDeprecationLabelState.Deprecation}">
           <Setter Property="Visibility" Value="Visible" />
           <Setter Property="Template" Value="{StaticResource TemplateDeprecated}" />
         </DataTrigger>
-        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:MyControlState.Invisible}">
+        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:PackageItemDeprecationLabelState.Invisible}">
           <Setter Property="Visibility" Value="Collapsed" />
         </DataTrigger>
       </Style.Triggers>

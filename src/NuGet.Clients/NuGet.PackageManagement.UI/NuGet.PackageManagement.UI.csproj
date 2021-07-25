@@ -59,8 +59,8 @@
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
+    <Compile Include="Converters\DeprecationToDeprecationLabelStateConverter.cs" />
     <Compile Include="Converters\AccessibleConverter.cs" />
-    <Compile Include="Converters\DataToStateConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\IntToVulnerabilitySeverityConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
@@ -79,7 +79,7 @@
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
-    <Compile Include="Models\MyControlState.cs" />
+    <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
