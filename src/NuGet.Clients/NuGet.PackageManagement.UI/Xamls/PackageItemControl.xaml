@@ -208,7 +208,6 @@
           <!-- Deprecation message -->
           <nuget:PackageItemDeprecationLabel
                         Grid.Row="2"
-                        Visibility="{Binding IsPackageDeprecated, Converter={StaticResource BooleanToVisibilityConverter}}"
                         FormatStringSingle="{x:Static nuget:Resources.Deprecation_PackageItemMessage}"
                         FormatStringAlternative="{x:Static nuget:Resources.Deprecation_PackageItemMessageAlternative}"
                         DataContext="{Binding DeprecationMetadata}" />

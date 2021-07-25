@@ -4,25 +4,64 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-            DataContextChanged="UserControl_DataContextChanged">
+             d:DesignHeight="300" d:DesignWidth="300">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <local:SharedResources />
+        <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <Style x:Key="DeprecationControlStyle" TargetType="UserControl">
-        <Style.Triggers>
-          <DataTrigger Binding="{Binding StringFormat}" Value="{x:Null}">
-            <Setter Property="Visibility" Value="Collapsed" />
-          </DataTrigger>
-          <DataTrigger Binding="{Binding DataContext}" Value="{x:Null}">
-            <Setter Property="Visibility" Value="Collapsed" />
-          </DataTrigger>
-        </Style.Triggers>
+
+      <nuget:DataToStateConverter x:Key="DataToStateConverter" />
+
+      <Style x:Key="StyleLink" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Bold" />
       </Style>
+
+      <ControlTemplate x:Key="TemplateDeprecated" TargetType="{x:Type nuget:PackageItemDeprecationLabel}">
+        <TextBlock Style="{StaticResource StyleLink}">
+          <Run Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringSingle, Mode=OneWay}" />
+        </TextBlock>
+      </ControlTemplate>
+
+      <ControlTemplate x:Key="TemplateDeprecatedAlternative" TargetType="{x:Type nuget:PackageItemDeprecationLabel}">
+        <DockPanel>
+          <TextBlock
+            Style="{StaticResource StyleLink}"
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=LeftPart, Mode=OneWay}" />
+          <TextBlock
+            Style="{StaticResource StyleLink}">
+            <Hyperlink
+              Style="{StaticResource HyperlinkStyleNoUri}"
+              ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
+              Command="{x:Static nuget:Commands.SearchPackageCommand}"
+              CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=DataContext.AlternatePackage.PackageId, Mode=OneWay}">
+              <Run Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=DataContext.AlternatePackage.PackageId, Mode=OneWay}" />
+            </Hyperlink>
+          </TextBlock>
+          <TextBlock
+            Style="{StaticResource StyleLink}"
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=RightPart, Mode=OneWay}" />
+        </DockPanel>
+      </ControlTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
-  <TextBlock x:Name="_textBlock" FontWeight="Bold" />
+  <UserControl.Style>
+    <Style TargetType="{x:Type nuget:PackageItemDeprecationLabel}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:MyControlState.WithAlternative}">
+          <Setter Property="Visibility" Value="Visible" />
+          <Setter Property="Template" Value="{StaticResource TemplateDeprecatedAlternative}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:MyControlState.Deprecation}">
+          <Setter Property="Visibility" Value="Visible" />
+          <Setter Property="Template" Value="{StaticResource TemplateDeprecated}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Converter={StaticResource DataToStateConverter}, Mode=OneWay}" Value="{x:Static nuget:MyControlState.Invisible}">
+          <Setter Property="Visibility" Value="Collapsed" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </UserControl.Style>
 </UserControl>

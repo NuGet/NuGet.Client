@@ -4,6 +4,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -23,84 +24,30 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        private string _formatStringSingle;
-        public string FormatStringSingle
-        {
-            get => _formatStringSingle;
+        public string FormatStringSingle { get; set; }
 
-            set
+        public string FormatStringAlternative { get; set; }
+
+        public string LeftPart
+        {
+            get
             {
-                if (_formatStringSingle != value)
-                {
-                    _formatStringSingle = value;
-                    FillTextBlock();
-                }
+                int index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
+                string begin = FormatStringAlternative.Substring(0, index);
+                return begin;
             }
+            set { }
         }
 
-        private string _formatStringAlternative;
-        public string FormatStringAlternative
+        public string RightPart
         {
-            get => _formatStringAlternative;
-
-            set
+            get
             {
-                if (_formatStringAlternative != value)
-                {
-                    _formatStringAlternative = value;
-                    FillTextBlock();
-                }
+                int index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
+                string end = FormatStringAlternative.Substring(index + "{0}".Length);
+                return end;
             }
-        }
-
-        private void UserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            FillTextBlock();
-        }
-
-        private void FillTextBlock()
-        {
-            var deprecationMeta = DataContext as PackageDeprecationMetadataContextInfo;
-
-            if (deprecationMeta != null)
-            {
-                if (deprecationMeta.AlternatePackage != null)
-                {
-                    AlternatePackageMetadataContextInfo alternatePackage = deprecationMeta.AlternatePackage;
-                    int index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
-
-                    if (index != -1)
-                    {
-                        string begin = FormatStringAlternative.Substring(0, index);
-                        string end = FormatStringAlternative.Substring(index + "{0}".Length);
-
-                        var link = new Hyperlink(new Run(alternatePackage.PackageId))
-                        {
-                            ToolTip = UI.Resources.Deprecation_LinkTooltip,
-                            Command = Commands.SearchPackageCommand,
-                            CommandParameter = alternatePackage.PackageId,
-                            Style = (Style)Resources["HyperlinkStyleNoUri"],
-                        };
-
-                        _textBlock.Inlines.Clear();
-                        _textBlock.Inlines.Add(new Run(begin));
-                        _textBlock.Inlines.Add(link);
-                        _textBlock.Inlines.Add(new Run(end));
-                        Visibility = Visibility.Visible;
-                    }
-                }
-                else
-                {
-                    _textBlock.Inlines.Clear();
-                    _textBlock.Inlines.Add(new Run(FormatStringSingle));
-                    Visibility = Visibility.Visible;
-                }
-            }
-            else
-            {
-                _textBlock.Inlines.Clear();
-                Visibility = Visibility.Collapsed;
-            }
+            set { }
         }
     }
 }
