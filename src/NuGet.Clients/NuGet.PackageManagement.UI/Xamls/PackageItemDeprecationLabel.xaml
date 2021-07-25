@@ -14,6 +14,7 @@
       </ResourceDictionary.MergedDictionaries>
 
       <nuget:DataToStateConverter x:Key="DataToStateConverter" />
+      <nuget:FormatedStringPartConverter x:Key="FormatedStringPartConverter " />
 
       <Style x:Key="StyleLink" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Bold" />
@@ -29,7 +30,7 @@
         <DockPanel>
           <TextBlock
             Style="{StaticResource StyleLink}"
-            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=LeftPart, Mode=OneWay}" />
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormatedStringPartConverter}, ConverterParameter=0}" />
           <TextBlock
             Style="{StaticResource StyleLink}">
             <Hyperlink
@@ -42,7 +43,7 @@
           </TextBlock>
           <TextBlock
             Style="{StaticResource StyleLink}"
-            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=RightPart, Mode=OneWay}" />
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormatedStringPartConverter}, ConverterParameter=2}" />
         </DockPanel>
       </ControlTemplate>
     </ResourceDictionary>

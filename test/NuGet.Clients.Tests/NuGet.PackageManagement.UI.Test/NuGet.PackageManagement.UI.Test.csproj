@@ -32,6 +32,7 @@
     <Compile Include="Actions\UpdatePreviewResultTests.cs" />
     <Compile Include="Converters\DateTimeConverterTests.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverterTests.cs" />
+    <Compile Include="Converters\FormatedStringPartConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />

@@ -8,12 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using NuGet.VisualStudio.Internal.Contracts;
 using System.Windows.Data;
+using System.Globalization;
 
 namespace NuGet.PackageManagement.UI
 {
     public class DataToStateConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var deprecation = value as PackageDeprecationMetadataContextInfo;
 
@@ -30,7 +31,7 @@ namespace NuGet.PackageManagement.UI
             return MyControlState.Deprecation;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return null;
         }

@@ -27,27 +27,5 @@ namespace NuGet.PackageManagement.UI
         public string FormatStringSingle { get; set; }
 
         public string FormatStringAlternative { get; set; }
-
-        public string LeftPart
-        {
-            get
-            {
-                int index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
-                string begin = FormatStringAlternative.Substring(0, index);
-                return begin;
-            }
-            set { }
-        }
-
-        public string RightPart
-        {
-            get
-            {
-                int index = FormatStringAlternative.IndexOf("{0}", StringComparison.Ordinal);
-                string end = FormatStringAlternative.Substring(index + "{0}".Length);
-                return end;
-            }
-            set { }
-        }
     }
 }

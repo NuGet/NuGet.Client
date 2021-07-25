@@ -1501,6 +1501,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (_windowSearchHost.SearchTask != null)
                     {
+                        // Terminate current search by reporting it as complete
                         _currentCallback?.ReportComplete(_windowSearchHost.SearchTask, dwResultsFound: 0);
                     }
                     if (_windowSearchHost.SearchTask == null)
