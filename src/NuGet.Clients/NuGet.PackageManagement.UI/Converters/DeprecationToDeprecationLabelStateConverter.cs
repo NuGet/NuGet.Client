@@ -24,8 +24,8 @@ namespace NuGet.PackageManagement.UI
 
                 return PackageItemDeprecationLabelState.Deprecation;
             }
-            
-            return PackageItemDeprecationLabelState.Invisible;            
+
+            return PackageItemDeprecationLabelState.Invisible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

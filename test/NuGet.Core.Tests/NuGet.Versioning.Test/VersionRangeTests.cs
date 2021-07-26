@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Xunit;
 using Moq;
+using Xunit;
 
 namespace NuGet.Versioning.Test
 {
