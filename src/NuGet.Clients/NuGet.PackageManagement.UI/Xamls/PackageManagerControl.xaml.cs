@@ -64,6 +64,7 @@ namespace NuGet.PackageManagement.UI
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
+        private IVsSearchCallback _currentSearchCallback;
 
         private PackageManagerControl()
         {
@@ -1187,11 +1188,9 @@ namespace NuGet.PackageManagement.UI
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ClearSearch));
         }
 
-        private IVsSearchCallback _currentCallback;
-
         public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
-            _currentCallback = pSearchCallback;
+            _currentSearchCallback = pSearchCallback;
             var searchTask = new NuGetPackageManagerControlSearchTask(this, dwCookie, pSearchQuery, pSearchCallback);
             return searchTask;
         }
@@ -1502,12 +1501,12 @@ namespace NuGet.PackageManagement.UI
                     if (_windowSearchHost.SearchTask != null)
                     {
                         // Terminate current search by reporting it as complete
-                        _currentCallback?.ReportComplete(_windowSearchHost.SearchTask, dwResultsFound: 0);
+                        _currentSearchCallback?.ReportComplete(_windowSearchHost.SearchTask, dwResultsFound: 0);
                     }
                     if (_windowSearchHost.SearchTask == null)
                     {
                         _topPanel.SelectFilter(ItemFilter.All);
-                        Search(alternatePackageId);
+                        Search("packageid:" + alternatePackageId);
                     }
                 }
             }

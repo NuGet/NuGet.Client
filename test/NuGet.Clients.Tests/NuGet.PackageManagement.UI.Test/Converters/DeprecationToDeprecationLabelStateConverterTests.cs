@@ -12,8 +12,6 @@ namespace NuGet.PackageManagement.UI.Test.Converters
     {
         public static IEnumerable<object[]> GetData()
         {
-            yield return new object[] { "a string", PackageItemDeprecationLabelState.Invisible };
-            yield return new object[] { 1, PackageItemDeprecationLabelState.Invisible };
             yield return new object[] { null, PackageItemDeprecationLabelState.Invisible };
 
             var deprecation = new PackageDeprecationMetadataContextInfo("deprecated", new List<string> { "old APIs" }, alternatePackageContextInfo: null);
@@ -27,7 +25,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
 
         [Theory]
         [MemberData(nameof(GetData))]
-        public void ValueToControlStateConverter_NullData_Invisible(PackageDeprecationMetadataContextInfo input, PackageItemDeprecationLabelState expected)
+        public void ValueToControlStateConverter_MultipleCases_Succeeds(PackageDeprecationMetadataContextInfo input, PackageItemDeprecationLabelState expected)
         {
             var converter = new DeprecationToDeprecationLabelStateConverter();
 
