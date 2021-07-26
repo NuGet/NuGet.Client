@@ -967,4 +967,12 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="VulnerabilitySeverity_Moderate" xml:space="preserve">
     <value>Moderate</value>
   </data>
+  <data name="Label_Installed_VulnerableAndDeprecatedWarning" xml:space="preserve">
+    <value>You have {0} vulnerable package(s) and {1} deprecated package(s) installed.</value>
+    <comment>{0} and {1} are numbers of installed packages</comment>
+  </data>
+  <data name="Label_Installed_VulnerableWarning" xml:space="preserve">
+    <value>You have {0} vulnerable package(s) installed.</value>
+    <comment>{0} is the number of installed packages</comment>
+  </data>
 </root>
