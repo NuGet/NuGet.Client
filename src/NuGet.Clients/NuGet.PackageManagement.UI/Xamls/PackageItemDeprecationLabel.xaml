@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <UserControl.Resources>
@@ -15,6 +16,8 @@
 
       <nuget:DeprecationToDeprecationLabelStateConverter x:Key="DataToStateConverter" />
       <nuget:FormatedStringPartConverter x:Key="FormatedStringPartConverter" />
+      <sys:Int32 x:Key="ParamPrefix">0</sys:Int32>
+      <sys:Int32 x:Key="ParamSuffix">2</sys:Int32>
 
       <Style x:Key="StyleLink" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Bold" />
@@ -30,7 +33,7 @@
         <DockPanel>
           <TextBlock
             Style="{StaticResource StyleLink}"
-            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormatedStringPartConverter}, ConverterParameter=0}" />
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormatedStringPartConverter}, ConverterParameter={StaticResource ParamPrefix}}" />
           <TextBlock
             Style="{StaticResource StyleLink}">
             <Hyperlink
@@ -43,7 +46,7 @@
           </TextBlock>
           <TextBlock
             Style="{StaticResource StyleLink}"
-            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormatedStringPartConverter}, ConverterParameter=2}" />
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormatedStringPartConverter}, ConverterParameter={StaticResource ParamSuffix}}" />
         </DockPanel>
       </ControlTemplate>
     </ResourceDictionary>
