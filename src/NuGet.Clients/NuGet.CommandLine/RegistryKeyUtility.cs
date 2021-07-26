@@ -9,7 +9,7 @@ namespace NuGet.CommandLine
 {
     public static class RegistryKeyUtility
     {
-        public static object GetValueFromRegistryKey(string name, string registryKeyPath, RegistryKey registryKey, ILogger logger)
+        public static object GetValueFromRegistryKey(string name, RegistryKey registryKey, ILogger logger)
         {
             try
             {

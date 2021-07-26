@@ -396,21 +396,21 @@ namespace NuGet.CommandLine
 
         private static bool IsWindows10(ILogger logger)
         {
-            var productName = (string)RegistryKeyUtility.GetValueFromRegistryKey("ProductName", OSVersionRegistryKey, Registry.LocalMachine, logger);
+            var productName = (string)RegistryKeyUtility.GetValueFromRegistryKey("ProductName", Registry.LocalMachine, logger);
 
             return productName != null && productName.StartsWith("Windows 10");
         }
 
         private static bool IsSupportLongPathEnabled(ILogger logger)
         {
-            var longPathsEnabled = RegistryKeyUtility.GetValueFromRegistryKey("LongPathsEnabled", FilesystemRegistryKey, Registry.LocalMachine, logger);
+            var longPathsEnabled = RegistryKeyUtility.GetValueFromRegistryKey("LongPathsEnabled", Registry.LocalMachine, logger);
 
             return longPathsEnabled != null && (int)longPathsEnabled > 0;
         }
 
         private static bool IsRuntimeGreaterThanNet462(ILogger logger)
         {
-            var release = RegistryKeyUtility.GetValueFromRegistryKey("Release", DotNetSetupRegistryKey, Registry.LocalMachine, logger);
+            var release = RegistryKeyUtility.GetValueFromRegistryKey("Release", Registry.LocalMachine, logger);
 
             return release != null && (int)release >= Net462ReleasedVersion;
         }
