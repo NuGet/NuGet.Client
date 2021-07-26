@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Converters
 {
-    public class FormatedStringPartConverterTests
+    public class FormattedStringPartConverterTests
     {
         [Theory]
         [InlineData("Package deprecated. Alternative {0}", "Package deprecated. Alternative ", "")]
@@ -15,9 +15,9 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         [InlineData("包装被弃用。改用{0}", "包装被弃用。改用", "")]
         [InlineData("No placeholder ", null, null)]
         [InlineData(1, null, null)]
-        public void FormatedStringPartConverter_HappyPaths_Succeeds(object resourceString, string expectedLeft, string expectedRight)
+        public void FormattedStringPartConverter_HappyPaths_Succeeds(object resourceString, string expectedLeft, string expectedRight)
         {
-            var converter = new FormatedStringPartConverter();
+            var converter = new FormattedStringPartConverter();
 
             object partLeft = converter.Convert(resourceString, targetType: null, parameter: 0, culture: null);
             object partRight = converter.Convert(resourceString, targetType: null, parameter: 2, culture: null);

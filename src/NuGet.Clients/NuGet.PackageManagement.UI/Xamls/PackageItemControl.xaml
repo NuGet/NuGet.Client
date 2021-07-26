@@ -211,7 +211,6 @@
                         FormatStringSingle="{x:Static nuget:Resources.Deprecation_PackageItemMessage}"
                         FormatStringAlternative="{x:Static nuget:Resources.Deprecation_PackageItemMessageAlternative}"
                         DataContext="{Binding DeprecationMetadata}" />
-
         </Grid>
 
         <Grid.ToolTip>

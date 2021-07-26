@@ -8,16 +8,25 @@ using System.Windows.Data;
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
-    /// Extracts from a formated string with one '{0}' placeholder to either left or right side of the placeholder
+    /// Parameter for <see cref="FormattedStringPartConverter"/>
     /// </summary>
-    public class FormatedStringPartConverter : IValueConverter
+    public enum FormattedStringPart
+    {
+        Prefix,
+        Suffix,
+    }
+
+    /// <summary>
+    /// Extracts from a formatted string with one '{0}' placeholder to either left or right side of the placeholder
+    /// </summary>
+    public class FormattedStringPartConverter : IValueConverter
     {
         /// <summary>
         /// Extracts either left or right side of a string with one placeholder '{0}'
         /// </summary>
         /// <param name="value">string with placeholder</param>
         /// <param name="targetType">Not used</param>
-        /// <param name="parameter">0 for left side, 2 for right side</param>
+        /// <param name="parameter">A <see cref="FormattedStringPart"/> value</param>
         /// <param name="culture">Not used</param>
         /// <returns><c>null </c> if invalid value or parameter, otherwise a string with either left or right side</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -29,9 +38,9 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            int? mode = parameter as int?;
+            var mode = parameter as FormattedStringPart?;
 
-            if (mode == null)
+            if (!mode.HasValue)
             {
                 return null;
             }
@@ -43,12 +52,12 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            if (mode == 0)
+            if (mode == FormattedStringPart.Prefix)
             {
                 return formattedString.Substring(0, placeholderIndex);
             }
 
-            if (mode == 2)
+            if (mode == FormattedStringPart.Suffix)
             {
                 return formattedString.Substring(placeholderIndex + "{0}".Length);
             }

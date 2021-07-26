@@ -15,17 +15,15 @@ namespace NuGet.PackageManagement.UI.Test.Converters
             yield return new object[] { null, PackageItemDeprecationLabelState.Invisible };
 
             var deprecation = new PackageDeprecationMetadataContextInfo("deprecated", new List<string> { "old APIs" }, alternatePackageContextInfo: null);
-
             yield return new object[] { deprecation, PackageItemDeprecationLabelState.Deprecation };
 
             var alternative = new PackageDeprecationMetadataContextInfo("deprecated", new List<string> { "old APIs" }, alternatePackageContextInfo: new AlternatePackageMetadataContextInfo("alternatePackage", VersionRange.Parse("[1.0, 2.0)")));
-
             yield return new object[] { alternative, PackageItemDeprecationLabelState.AlternativeAvailable };
         }
 
         [Theory]
         [MemberData(nameof(GetData))]
-        public void ValueToControlStateConverter_MultipleCases_Succeeds(PackageDeprecationMetadataContextInfo input, PackageItemDeprecationLabelState expected)
+        public void DeprecationToDeprecationLabelStateConverter_MultipleCases_Succeeds(PackageDeprecationMetadataContextInfo input, PackageItemDeprecationLabelState expected)
         {
             var converter = new DeprecationToDeprecationLabelStateConverter();
 
