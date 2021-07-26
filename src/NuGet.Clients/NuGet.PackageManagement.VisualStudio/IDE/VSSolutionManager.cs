@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IVsSolutionEvents, IDisposable
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IVsSolutionEvents, IVsSolutionLoadEvents, IDisposable
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private const string VSNuGetClientName = "NuGet VS VSIX";
@@ -171,6 +171,9 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger;
             _settings = settings;
             _initLock = new NuGetLockService(joinableTaskContext);
+
+            IsSolutionOpen = false;
+            SolutionDirectory = null;
         }
 
         private async Task InitializeAsync()
@@ -178,6 +181,14 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
+
+            int hr = _vsSolution.GetSolutionInfo(out string soltuionDirectory, out string soltuionFile, out string userOptsFile);
+            if (hr == VSConstants.S_OK && !string.IsNullOrEmpty(soltuionDirectory))
+            {
+                IsSolutionOpen = true;
+                SolutionDirectory = soltuionDirectory.TrimEnd('\\');
+            }
+
             var dte = await _asyncServiceProvider.GetDTEAsync();
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
@@ -195,7 +206,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
 
-            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
+            hr = _vsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
             ErrorHandler.ThrowOnFailure(hr);
             hr = _vsSolution.AdviseSolutionEvents(this, out _solutionEventsCookie);
             ErrorHandler.ThrowOnFailure(hr);
@@ -326,25 +337,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// IsSolutionOpen is true, if the dte solution is open
         /// and is saved as required
         /// </summary>
-        public bool IsSolutionOpen
-        {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    return await IsSolutionOpenAsync();
-                });
-            }
-        }
+        public bool IsSolutionOpen { get; private set; }
 
-        public async Task<bool> IsSolutionOpenAsync()
+        public Task<bool> IsSolutionOpenAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var dte = await _asyncServiceProvider.GetDTEAsync();
-            return dte != null &&
-                   dte.Solution != null &&
-                   dte.Solution.IsOpen;
+            return Task.FromResult(IsSolutionOpen);
         }
 
         public async Task<bool> IsSolutionAvailableAsync()
@@ -416,26 +413,7 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        public string SolutionDirectory
-        {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    if (!await IsSolutionOpenAsync())
-                    {
-                        return null;
-                    }
-                    var solutionFilePath = await GetSolutionFilePathAsync();
-
-                    if (string.IsNullOrEmpty(solutionFilePath))
-                    {
-                        return null;
-                    }
-                    return Path.GetDirectoryName(solutionFilePath);
-                });
-            }
-        }
+        public string SolutionDirectory { get; private set; }
 
         public async Task<string> GetSolutionFilePathAsync()
         {
@@ -1067,6 +1045,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
+            IsSolutionOpen = true;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(OnAfterOpenSolution));
             return VSConstants.S_OK;
@@ -1079,10 +1058,46 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnBeforeCloseSolution(object pUnkReserved)
         {
+            IsSolutionOpen = false;
+            SolutionDirectory = null;
             return VSConstants.S_OK;
         }
 
         public int OnAfterCloseSolution(object pUnkReserved)
+        {
+            return VSConstants.S_OK;
+        }
+        #endregion
+
+        #region IVsSolutionLoadEvents
+        int IVsSolutionLoadEvents.OnBeforeOpenSolution(string pszSolutionFilename)
+        {
+            SolutionDirectory = Path.GetDirectoryName(pszSolutionFilename);
+            return VSConstants.S_OK;
+        }
+
+        int IVsSolutionLoadEvents.OnBeforeBackgroundSolutionLoadBegins()
+        {
+            return VSConstants.S_OK;
+        }
+
+        int IVsSolutionLoadEvents.OnQueryBackgroundLoadProjectBatch(out bool pfShouldDelayLoadToNextIdle)
+        {
+            pfShouldDelayLoadToNextIdle = false;
+            return VSConstants.S_OK;
+        }
+
+        int IVsSolutionLoadEvents.OnBeforeLoadProjectBatch(bool fIsBackgroundIdleBatch)
+        {
+            return VSConstants.S_OK;
+        }
+
+        int IVsSolutionLoadEvents.OnAfterLoadProjectBatch(bool fIsBackgroundIdleBatch)
+        {
+            return VSConstants.S_OK;
+        }
+
+        int IVsSolutionLoadEvents.OnAfterBackgroundSolutionLoadComplete()
         {
             return VSConstants.S_OK;
         }
