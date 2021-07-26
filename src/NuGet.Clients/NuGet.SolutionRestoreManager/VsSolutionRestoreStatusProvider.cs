@@ -38,7 +38,7 @@ namespace NuGet.SolutionRestoreManager
             var complete = true;
 
             // Check if the solution is open, if there are no projects then consider it restored.
-            if (await _solutionManager.Value.IsSolutionOpenAsync())
+            if (_solutionManager.Value.IsSolutionOpen)
             {
                 var graphContext = new DependencyGraphCacheContext();
                 var projects = (await _solutionManager.Value.GetNuGetProjectsAsync()).AsList();

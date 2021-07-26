@@ -179,7 +179,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             // when NuGet loads, if the current solution has some package
             // folders marked for deletion (because a previous uninstalltion didn't succeed),
             // delete them now.
-            if (await SolutionManager.Value.IsSolutionOpenAsync())
+            if (SolutionManager.Value.IsSolutionOpen)
             {
                 await DeleteOnRestartManager.Value.DeleteMarkedPackageDirectoriesAsync(ProjectContext.Value);
             }

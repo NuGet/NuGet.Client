@@ -339,20 +339,15 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public bool IsSolutionOpen { get; private set; }
 
-        public Task<bool> IsSolutionOpenAsync()
-        {
-            return Task.FromResult(IsSolutionOpen);
-        }
-
         public async Task<bool> IsSolutionAvailableAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (!await IsSolutionOpenAsync())
+            if (!IsSolutionOpen)
             {
                 // Solution is not open. Return false.
                 return false;
             }
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             await EnsureInitializeAsync();
 
@@ -484,7 +479,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
-            if (!await IsSolutionOpenAsync())
+            if (!IsSolutionOpen)
             {
                 return;
             }
@@ -552,7 +547,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                if (!string.IsNullOrEmpty(oldName) && await IsSolutionOpenAsync() && _solutionOpenedRaised)
+                if (!string.IsNullOrEmpty(oldName) && IsSolutionOpen && _solutionOpenedRaised)
                 {
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
 
@@ -607,7 +602,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                if (await IsSolutionOpenAsync()
+                if (IsSolutionOpen
                     && await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject)
                     && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
                     && _solutionOpenedRaised)
@@ -661,7 +656,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (!_cacheInitialized && await IsSolutionOpenAsync())
+                if (!_cacheInitialized && IsSolutionOpen)
                 {
                     try
                     {
