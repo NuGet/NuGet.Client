@@ -45,9 +45,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task<bool> SupportsBindingRedirectsAsync(EnvDTE.Project Project)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             return (Project.Kind != null && ProjectType.IsSupportedForBindingRedirects(Project.Kind))
                 && !await Project.IsWindowsStoreAppAsync();
         }
@@ -68,7 +68,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 frameworkMultiTargeting, dependentEnvDTEProjectsDictionary, nuGetProjectContext);
         }
 
-        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task AddBindingRedirectsAsync(VSSolutionManager vsSolutionManager,
             IVsProjectAdapter vsProjectAdapter,
             AppDomain domain,
@@ -81,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapter);
 
             // Need to be on the UI thread
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var envDTEProjectUniqueName = vsProjectAdapter.UniqueName;
             if (visitedProjects.Contains(envDTEProjectUniqueName))

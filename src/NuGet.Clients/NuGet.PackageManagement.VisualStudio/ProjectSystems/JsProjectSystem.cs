@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using Task = System.Threading.Tasks.Task;
 
@@ -27,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (String.IsNullOrEmpty(_projectName))
+                if (string.IsNullOrEmpty(_projectName))
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
@@ -74,7 +72,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         protected override async Task AddFileToProjectAsync(string path)
         {
             if (ExcludeFile(path))
@@ -85,8 +82,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var folderPath = Path.GetDirectoryName(path);
             var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Add the file to project or folder
-            var container = await GetProjectItemsAsync(folderPath, createIfNotExists: true);
+            EnvDTEProjectItems container = await GetProjectItemsAsync(folderPath, createIfNotExists: true);
             if (container == null)
             {
                 throw new ArgumentException(

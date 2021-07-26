@@ -93,9 +93,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private static async Task<bool> IsProjectPackageReferenceCompatibleAsync(Project project)
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var projectGuids = await project.GetProjectTypeGuidsAsync();
 
             if (projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
@@ -108,9 +109,9 @@ namespace NuGet.PackageManagement.VisualStudio
                    projectGuids.All(projectTypeGuid => !ProjectType.IsUnsupported(projectTypeGuid));
         }
 
-        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public static bool IsPackagesConfigSelected(IVsMonitorSelection vsMonitorSelection)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var selectedFileName = GetSelectedFileName(vsMonitorSelection);
             return !string.IsNullOrEmpty(selectedFileName) && Path.GetFileName(selectedFileName).Equals("packages.config", StringComparison.OrdinalIgnoreCase);
         }

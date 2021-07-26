@@ -42,7 +42,6 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         protected abstract bool TryUpdateItem(TItem item, AssetsFileTarget targetData, AssetsFileTargetLibrary library);
 
-        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         protected override bool TryCreateCollectionSource(
             IVsHierarchyItem hierarchyItem,
             string flagsString,
@@ -50,6 +49,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
             IRelationProvider relationProvider,
             [NotNullWhen(returnValue: true)] out AggregateRelationCollectionSource? containsCollectionSource)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             TIdentity identity;
 
             if (!ErrorHandler.Succeeded(hierarchyItem.HierarchyIdentity.Hierarchy.GetProperty(

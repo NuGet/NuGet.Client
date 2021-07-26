@@ -168,7 +168,6 @@ namespace NuGet.VisualStudio
         /// An action that accepts an error message and presents it to the user, allowing
         /// execution to continue.
         /// </param>
-        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         internal async Task PerformPackageInstallAsync(
             IVsPackageInstaller packageInstaller,
             EnvDTE.Project project,
@@ -177,7 +176,7 @@ namespace NuGet.VisualStudio
             Action<string> warningHandler,
             Action<string> errorHandler)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var repositoryPath = configuration.RepositoryPath;
             var repositorySource = new Configuration.PackageSource(repositoryPath);

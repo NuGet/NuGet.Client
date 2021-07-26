@@ -252,11 +252,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task AddProjectItemAsync(string filePath)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             var folderPath = Path.GetDirectoryName(filePath);
             var fullPath = filePath;
 
@@ -276,6 +273,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists: true);
+
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             container.AddFromFileCopy(fullPath);
         }
