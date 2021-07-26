@@ -19,23 +19,16 @@ namespace NuGet.PackageManagement.UI
 
         public ReadMeMarkdownToolWindow() : base(null)
         {
-            _viewModel = new OpenReadMeMarkdownViewModel(string.Empty);
+            var filePath = string.Empty;
+            _viewModel = new OpenReadMeMarkdownViewModel(filePath);
 
             Content = new OpenReadMeMarkdownView(_viewModel);
         }
-
-        //public string FilePath { get; set;}
 
         public Task UpdateAsync(string filePath)
         {
             Caption = filePath;
             return _viewModel.ReadMarkdownFileContentsAsync(filePath);
         }
-        /*
-        public void SetContent(string content)
-        {
-            Content = new OpenReadMeMarkdownView(new OpenReadMeMarkdownViewModel(content));
-        }
-        */
     }
 }

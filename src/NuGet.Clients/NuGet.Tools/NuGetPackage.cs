@@ -654,13 +654,10 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-
-
             if (ShouldMEFBeInitialized())
             {
                 await InitializeMEFAsync();
             }
-
 
             // *** temp code
             var project = VsMonitorSelection.GetActiveProject();

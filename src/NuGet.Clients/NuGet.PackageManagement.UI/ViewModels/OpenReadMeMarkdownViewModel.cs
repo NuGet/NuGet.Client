@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 });
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException)  //If a readme file does not exist then no further action should be taken as no file will be opened
             {
 
             }

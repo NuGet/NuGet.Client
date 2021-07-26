@@ -3361,7 +3361,6 @@ namespace NuGet.PackageManagement
                     {
                         return executionContext.OpenFile(readmeFilePath);
                     }
-
                     else if (!string.IsNullOrEmpty(readmeFileMarkdownPath) && File.Exists(readmeFileMarkdownPath))
                     {
                         return executionContext.RenderMarkDownFile(readmeFileMarkdownPath);
