@@ -32,7 +32,7 @@
         <DockPanel>
           <TextBlock
             Style="{StaticResource DeprecationTextBlockStyle}"
-            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormattedStringPartConverter}, ConverterParameter={StaticResource ParamPrefix}}" />
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormattedStringPartConverter}, ConverterParameter={x:Static nuget:FormattedStringPart.Prefix}}" />
           <TextBlock
             Style="{StaticResource DeprecationTextBlockStyle}">
             <Hyperlink
@@ -45,7 +45,7 @@
           </TextBlock>
           <TextBlock
             Style="{StaticResource DeprecationTextBlockStyle}"
-            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormattedStringPartConverter}, ConverterParameter={StaticResource ParamSuffix}}" />
+            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FormatStringAlternative, Mode=OneWay, Converter={StaticResource FormattedStringPartConverter}, ConverterParameter={x:Static nuget:FormattedStringPart.Suffix}}" />
         </DockPanel>
       </ControlTemplate>
     </ResourceDictionary>
