@@ -1543,7 +1543,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 Assert.True(result.ExitCode == 0);
-                Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", result.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{sharedRepositoryPath}'", result.Output);
             }
         }
 
