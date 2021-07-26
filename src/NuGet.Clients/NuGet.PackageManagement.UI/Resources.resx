@@ -956,16 +956,40 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} is the severity of the vulnerability</comment>
   </data>
   <data name="VulnerabilitySeverity_Critical" xml:space="preserve">
-    <value>Critical</value>
+    <value>critical</value>
   </data>
   <data name="VulnerabilitySeverity_High" xml:space="preserve">
-    <value>High</value>
+    <value>high</value>
   </data>
   <data name="VulnerabilitySeverity_Low" xml:space="preserve">
-    <value>Low</value>
+    <value>low</value>
   </data>
   <data name="VulnerabilitySeverity_Moderate" xml:space="preserve">
-    <value>Moderate</value>
+    <value>moderate</value>
+  </data>
+  <data name="Label_Vulnerabilities" xml:space="preserve">
+    <value>Vulnerabilities detected ({0})</value>
+    <comment>{0} is the number of vulnerabilities</comment>
+  </data>
+  <data name="Label_VulnerabilitiesDescription" xml:space="preserve">
+    <value>This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</value>
+    <comment>{0} is the severity of the vulnerability</comment>
+  </data>
+  <data name="Label_VulnerabilityAdvisory" xml:space="preserve">
+    <value>Advisory ({0} severity):</value>
+    <comment>{0} is the severity of the vulnerability</comment>
+  </data>
+  <data name="Accessibility_PackageVulnerabilities" xml:space="preserve">
+    <value>Package vulnerabilities</value>
+  </data>
+  <data name="Accessibility_VulnerabilitiesDescriptionName" xml:space="preserve">
+    <value>Package vulnerability description</value>
+  </data>
+  <data name="Hyperlink_AdvisoryUrl" xml:space="preserve">
+    <value>Advisory URL</value>
+  </data>
+  <data name="Label_Details" xml:space="preserve">
+    <value>Details</value>
   </data>
   <data name="Label_Installed_VulnerableAndDeprecatedWarning" xml:space="preserve">
     <value>You have {0} vulnerable package(s) and {1} deprecated package(s) installed.</value>

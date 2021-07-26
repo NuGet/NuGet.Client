@@ -408,16 +408,26 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsPackageVulnerable
+        private IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> _packageVulnerabilities;
+        public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> PackageVulnerabilities
         {
-            get { return PackageVulnerabilityMaxSeverity > -1; }
+            get => _packageVulnerabilities;
+            private set
+            {
+                _packageVulnerabilities = value;
+                PackageVulnerabilityMaxSeverity = value?.Max(v => v.Severity) ?? -1;
+
+                OnPropertyChanged(nameof(PackageVulnerabilities));
+                OnPropertyChanged(nameof(IsPackageVulnerable));
+                OnPropertyChanged(nameof(PackageVulnerabilityCount));
+            }
         }
 
         private int _packageVulnerabilityMaxSeverity = -1;
         public int PackageVulnerabilityMaxSeverity
         {
-            get { return _packageVulnerabilityMaxSeverity; }
-            set
+            get => _packageVulnerabilityMaxSeverity;
+            private set
             {
                 if (_packageVulnerabilityMaxSeverity != value)
                 {
@@ -426,6 +436,16 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                 }
             }
+        }
+
+        public bool IsPackageVulnerable
+        {
+            get => PackageVulnerabilities?.Count > 0;
+        }
+
+        public int PackageVulnerabilityCount
+        {
+            get => PackageVulnerabilities?.Count ?? 0;
         }
 
         public string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
@@ -489,18 +509,14 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationReasons = newDeprecationReasons;
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
-                    // vulnerability metadata
-                    int newVulnerabilityMaxSeverity = -1;
-                    if (_packageMetadata?.Vulnerabilities != null)
-                    {
-                        newVulnerabilityMaxSeverity = _packageMetadata.Vulnerabilities.Max(v => v.Severity);
-                    }
-
-                    PackageVulnerabilityMaxSeverity = newVulnerabilityMaxSeverity;
+                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities = _packageMetadata?.Vulnerabilities;
+                    PackageVulnerabilities = vulnerabilities?.ToList();
 
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(PackageVulnerabilityCount));
+                    OnPropertyChanged(nameof(PackageVulnerabilities));
                     OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                 }
             }

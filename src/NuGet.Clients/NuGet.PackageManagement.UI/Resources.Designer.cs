@@ -178,6 +178,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package vulnerabilities.
+        /// </summary>
+        public static string Accessibility_PackageVulnerabilities {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageVulnerabilities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Prefix reserved.
         /// </summary>
         public static string Accessibility_PrefixReserved {
@@ -219,6 +228,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Accessibility_ThumbName {
             get {
                 return ResourceManager.GetString("Accessibility_ThumbName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package vulnerability description.
+        /// </summary>
+        public static string Accessibility_VulnerabilitiesDescriptionName {
+            get {
+                return ResourceManager.GetString("Accessibility_VulnerabilitiesDescriptionName", resourceCulture);
             }
         }
         
@@ -781,6 +799,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Advisory URL.
+        /// </summary>
+        public static string Hyperlink_AdvisoryUrl {
+            get {
+                return ResourceManager.GetString("Hyperlink_AdvisoryUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to License.
         /// </summary>
         public static string Hyperlink_License {
@@ -957,6 +984,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Description {
             get {
                 return ResourceManager.GetString("Label_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        public static string Label_Details {
+            get {
+                return ResourceManager.GetString("Label_Details", resourceCulture);
             }
         }
         
@@ -1281,6 +1317,33 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Version {
             get {
                 return ResourceManager.GetString("Label_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vulnerabilities detected ({0}).
+        /// </summary>
+        public static string Label_Vulnerabilities {
+            get {
+                return ResourceManager.GetString("Label_Vulnerabilities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version..
+        /// </summary>
+        public static string Label_VulnerabilitiesDescription {
+            get {
+                return ResourceManager.GetString("Label_VulnerabilitiesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Advisory ({0} severity):.
+        /// </summary>
+        public static string Label_VulnerabilityAdvisory {
+            get {
+                return ResourceManager.GetString("Label_VulnerabilityAdvisory", resourceCulture);
             }
         }
         
@@ -2432,7 +2495,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Critical.
+        ///   Looks up a localized string similar to critical.
         /// </summary>
         public static string VulnerabilitySeverity_Critical {
             get {
@@ -2441,7 +2504,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to High.
+        ///   Looks up a localized string similar to high.
         /// </summary>
         public static string VulnerabilitySeverity_High {
             get {
@@ -2450,7 +2513,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Low.
+        ///   Looks up a localized string similar to low.
         /// </summary>
         public static string VulnerabilitySeverity_Low {
             get {
@@ -2459,7 +2522,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Moderate.
+        ///   Looks up a localized string similar to moderate.
         /// </summary>
         public static string VulnerabilitySeverity_Moderate {
             get {
