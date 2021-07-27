@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (value is PackageDeprecationMetadataContextInfo deprecation)
             {
-                if (deprecation.AlternatePackage != null && !string.IsNullOrEmpty(deprecation.AlternatePackage.PackageId))
+                if (!string.IsNullOrEmpty(deprecation.AlternatePackage?.PackageId))
                 {
                     return PackageItemDeprecationLabelState.AlternativeAvailable;
                 }
