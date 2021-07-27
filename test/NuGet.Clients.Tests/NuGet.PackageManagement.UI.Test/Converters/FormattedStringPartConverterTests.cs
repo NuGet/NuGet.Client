@@ -19,8 +19,8 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         {
             var converter = new FormattedStringPartConverter();
 
-            object partLeft = converter.Convert(resourceString, targetType: null, parameter: 0, culture: null);
-            object partRight = converter.Convert(resourceString, targetType: null, parameter: 2, culture: null);
+            object partLeft = converter.Convert(resourceString, targetType: null, parameter: FormattedStringPart.Prefix, culture: null);
+            object partRight = converter.Convert(resourceString, targetType: null, parameter: FormattedStringPart.Suffix, culture: null);
             object unknownPart = converter.Convert(resourceString, targetType: null, parameter: "whatever", culture: null);
             object numberPart = converter.Convert(resourceString, targetType: null, parameter: 50, culture: null);
             Assert.Equal(expectedLeft, partLeft);
