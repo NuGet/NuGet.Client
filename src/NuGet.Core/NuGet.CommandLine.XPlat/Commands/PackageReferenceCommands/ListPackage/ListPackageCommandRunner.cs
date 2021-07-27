@@ -102,6 +102,12 @@ namespace NuGet.CommandLine.XPlat
                             }
                             else
                             {
+                                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                                {
+                                    await GetRegistrationMetadataAsync(packages, listPackageArgs);
+                                    await AddLatestVersionsAsync(packages, listPackageArgs);
+                                }
+
                                 bool printPackages = FilterPackages(packages, listPackageArgs);
 
                                 // Filter packages for dedicated reports, inform user if none
@@ -119,12 +125,6 @@ namespace NuGet.CommandLine.XPlat
                                             Console.WriteLine(string.Format(Strings.ListPkg_NoVulnerablePackagesForProject, projectName));
                                             break;
                                     }
-                                }
-
-                                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
-                                {
-                                    await GetRegistrationMetadataAsync(packages, listPackageArgs);
-                                    await AddLatestVersionsAsync(packages, listPackageArgs);
                                 }
 
                                 printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
