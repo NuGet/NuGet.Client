@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            switch(mode)
+            switch (mode)
             {
                 case FormattedStringPart.Prefix:
                     return formattedString.Substring(0, placeholderIndex);
