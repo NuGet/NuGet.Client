@@ -495,7 +495,6 @@ namespace NuGet.PackageManagement.UI
                     // deprecation metadata
                     string newDeprecationReasons = null;
                     string newAlternatePackageText = null;
-                    string newAlternatePackageId = null;
                     if (_packageMetadata?.DeprecationMetadata != null)
                     {
                         newDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons?.ToList());
@@ -504,7 +503,6 @@ namespace NuGet.PackageManagement.UI
                         if (alternatePackage != null)
                         {
                             newAlternatePackageText = GetPackageDeprecationAlternatePackageText(alternatePackage);
-                            newAlternatePackageId = alternatePackage.PackageId;
                         }
                     }
 
