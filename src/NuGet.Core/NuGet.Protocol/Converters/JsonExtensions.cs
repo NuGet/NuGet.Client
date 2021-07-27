@@ -7,6 +7,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace NuGet.Protocol
 {
@@ -23,7 +24,7 @@ namespace NuGet.Protocol
             {
                 new NuGetVersionConverter(),
                 new VersionInfoConverter(),
-                new StringEnumConverter { CamelCaseText = false },
+                new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
                 new FingerprintsConverter(),
                 new VersionRangeConverter()
