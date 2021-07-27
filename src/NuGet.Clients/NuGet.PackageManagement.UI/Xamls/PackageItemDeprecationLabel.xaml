@@ -15,8 +15,6 @@
 
       <nuget:DeprecationToDeprecationLabelStateConverter x:Key="DataToStateConverter" />
       <nuget:FormattedStringPartConverter x:Key="FormattedStringPartConverter" />
-      <sys:Int32 x:Key="ParamPrefix">0</sys:Int32>
-      <sys:Int32 x:Key="ParamSuffix">2</sys:Int32>
 
       <Style x:Key="DeprecationTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Bold" />

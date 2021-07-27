@@ -32,38 +32,34 @@ namespace NuGet.PackageManagement.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string formattedString = value as string;
-
             if (formattedString == null)
             {
                 return null;
             }
 
             var mode = parameter as FormattedStringPart?;
-
             if (!mode.HasValue)
             {
                 return null;
             }
 
             int placeholderIndex = formattedString.IndexOf("{0}", StringComparison.Ordinal);
-
             if (placeholderIndex < 0)
             {
                 return null;
             }
 
-            if (mode == FormattedStringPart.Prefix)
+            switch(mode)
             {
-                return formattedString.Substring(0, placeholderIndex);
-            }
-
-            if (mode == FormattedStringPart.Suffix)
-            {
-                return formattedString.Substring(placeholderIndex + "{0}".Length);
+                case FormattedStringPart.Prefix:
+                    return formattedString.Substring(0, placeholderIndex);
+                case FormattedStringPart.Suffix:
+                    return formattedString.Substring(placeholderIndex + "{0}".Length);
             }
 
             return null;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return null;
