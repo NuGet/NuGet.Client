@@ -67,7 +67,7 @@
                 ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
                 Command="{x:Static nuget:Commands.SearchPackageCommand}"
                 Style="{StaticResource HyperlinkStyleNoUri}"
-                CommandParameter="{Binding Path=PackageDeprecationAlternatePackageId}">
+                CommandParameter="{Binding Path=PackageMetadata.DeprecationMetadata.AlternatePackage.PackageId}">
                 <Run Text="{Binding Path=PackageDeprecationAlternatePackageText}" />
               </Hyperlink>
             </TextBlock>

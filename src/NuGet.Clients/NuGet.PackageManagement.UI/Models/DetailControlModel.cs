@@ -408,21 +408,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _packageDeprecationAlternatePackageId;
-        public string PackageDeprecationAlternatePackageId
-        {
-            get => _packageDeprecationAlternatePackageId;
-            set
-            {
-                if (_packageDeprecationAlternatePackageId != value)
-                {
-                    _packageDeprecationAlternatePackageId = value;
-
-                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageId));
-                }
-            }
-        }
-
         private IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> _packageVulnerabilities;
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> PackageVulnerabilities
         {
@@ -525,7 +510,6 @@ namespace NuGet.PackageManagement.UI
 
                     PackageDeprecationReasons = newDeprecationReasons;
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
-                    PackageDeprecationAlternatePackageId = newAlternatePackageId;
 
                     IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities = _packageMetadata?.Vulnerabilities;
                     PackageVulnerabilities = vulnerabilities?.ToList();
