@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement
             return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
         }
 
-        private static bool IsLocal(string currentSource)
+        internal static bool IsLocal(string currentSource)
         {
             Uri currentURI;
             if (Uri.TryCreate(currentSource, UriKind.RelativeOrAbsolute, out currentURI))

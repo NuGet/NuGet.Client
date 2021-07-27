@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using NuGet.Configuration;
+using NuGet.PackageManagement;
 
 namespace Test.Utility
 {
@@ -40,7 +41,7 @@ namespace Test.Utility
             }
 
             var packageSourcesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageSources,
-                sourceKeys.Select(ns => new SourceItem(ns, ns.Trim() + ".com")).ToArray()
+                sourceKeys.Select(ns => UriHelper.IsLocal(ns) ? new SourceItem(ns, ns.Trim()) : new SourceItem(ns, ns.Trim() + ".com")).ToArray()
                 );
 
             var packageNamespacesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageNamespaces,

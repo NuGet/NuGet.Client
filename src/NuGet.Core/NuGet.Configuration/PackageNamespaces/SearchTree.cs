@@ -26,10 +26,7 @@ namespace NuGet.Configuration
                 {
                     PackageSource packageSource = configuration.GetPackageSource(namespacePerSource.Key);
 
-                    if (packageSource != null)
-                    {
-                        Add(packageSource.Source, namespaceId);
-                    }
+                    Add(packageSource?.Source, namespaceId);
                 }
             }
         }
@@ -49,7 +46,7 @@ namespace NuGet.Configuration
                 throw new ArgumentOutOfRangeException(nameof(namespaceId));
             }
 
-            packageSourceKey = packageSourceKey.Trim();
+            packageSourceKey = packageSourceKey?.Trim();
             namespaceId = namespaceId.ToLower(CultureInfo.CurrentCulture).Trim();
 
             for (int i = 0; i < namespaceId.Length; i++)
