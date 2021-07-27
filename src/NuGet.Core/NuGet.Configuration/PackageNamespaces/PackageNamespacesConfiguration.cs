@@ -57,11 +57,11 @@ namespace NuGet.Configuration
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
 
             IReadOnlyList<PackageSource> packageSources = packageNamespacesProvider.GetPackageSources();
-            PackageSourceLookup = new Dictionary<string, PackageSource>();
+            PackageSourceLookup = new Dictionary<string, PackageSource>(StringComparer.CurrentCultureIgnoreCase);
 
             foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
             {
-                PackageSourceLookup[namespacePerSource.Key] = packageSources.FirstOrDefault(s => s.Name == namespacePerSource.Key);
+                PackageSourceLookup[namespacePerSource.Key] = packageSources.FirstOrDefault(s => s.Name.Equals(namespacePerSource.Key, StringComparison.CurrentCultureIgnoreCase));
             }
         }
 

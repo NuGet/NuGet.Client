@@ -2717,7 +2717,7 @@ EndProject";
             <namespace id=""Contoso.MVC.*"" /> 
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
+            <namespace id=""Contoso.MVC.ASP"" />
         </packageSource>
     </packageNamespaces>
 </configuration>");
@@ -2743,7 +2743,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{sharedRepositoryPath}'", r.Output);
             }
         }
 
