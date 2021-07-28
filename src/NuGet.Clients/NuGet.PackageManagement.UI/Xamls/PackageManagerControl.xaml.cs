@@ -1494,7 +1494,7 @@ namespace NuGet.PackageManagement.UI
             var alternatePackageId = e.Parameter as string;
             if (!string.IsNullOrWhiteSpace(alternatePackageId))
             {
-                if (_windowSearchHost != null && _windowSearchHost.IsEnabled)
+                if (_windowSearchHost?.IsEnabled == true)
                 {
                     if (_windowSearchHost.SearchTask != null)
                     {
