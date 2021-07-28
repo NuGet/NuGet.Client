@@ -43,7 +43,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <HideWarningsAndErrors Condition=" '$(HideWarningsAndErrors)' == '' ">false</HideWarningsAndErrors>
     <!-- Recurse by default -->
     <RestoreRecursive Condition=" '$(RestoreRecursive)' == '' ">true</RestoreRecursive>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <RestoreUseSkipNonexistentTargets Condition=" '$(RestoreUseSkipNonexistentTargets)' == '' ">true</RestoreUseSkipNonexistentTargets>
     <!-- RuntimeIdentifier compatibility check -->
     <ValidateRuntimeIdentifierCompatibility Condition=" '$(ValidateRuntimeIdentifierCompatibility)' == '' ">false</ValidateRuntimeIdentifierCompatibility>
