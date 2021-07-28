@@ -459,13 +459,19 @@ steps:
 - task: CmdLine@2
   displayName: "Publish to the .NET Core build asset registry (BAR)"
   inputs:
-    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /p:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken)
+    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /p:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken) /bl:$(Build.StagingDirectory)\binlog\PublishToBuildAssetRegistry.binlog
     workingDirectory: cli
     failOnStderr: true
   env:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_MULTILEVEL_LOOKUP: true
   condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish binlogs"
+  inputs:
+    artifactName: binlog - $(System.JobName) - Attempt $(System.JobAttempt)
+    targetPath: $(Build.StagingDirectory)\binlog
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"
