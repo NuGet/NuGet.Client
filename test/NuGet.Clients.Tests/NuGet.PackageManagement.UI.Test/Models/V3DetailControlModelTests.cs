@@ -132,6 +132,20 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
+        public void PackageVulnerabilitiesWhenMetadataHasVulnerability_OrderedBySeverityDescending()
+        {
+            Assert.Collection(_testInstance.PackageVulnerabilities,
+                item =>
+                {
+                    Assert.Equal(3, item.Severity);
+                },
+                item =>
+                {
+                    Assert.Equal(2, item.Severity);
+                });
+        }
+
+        [Fact]
         public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
         {
             // Arrange

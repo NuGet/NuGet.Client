@@ -15,6 +15,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
+using static Microsoft.TeamFoundation.Client.CommandLine.Options;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
@@ -415,7 +416,6 @@ namespace NuGet.PackageManagement.UI
             private set
             {
                 _packageVulnerabilities = value;
-                PackageVulnerabilityMaxSeverity = value?.Max(v => v.Severity) ?? -1;
 
                 OnPropertyChanged(nameof(PackageVulnerabilities));
                 OnPropertyChanged(nameof(IsPackageVulnerable));
@@ -423,19 +423,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private int _packageVulnerabilityMaxSeverity = -1;
         public int PackageVulnerabilityMaxSeverity
         {
-            get => _packageVulnerabilityMaxSeverity;
-            private set
-            {
-                if (_packageVulnerabilityMaxSeverity != value)
-                {
-                    _packageVulnerabilityMaxSeverity = value;
-
-                    OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
-                }
-            }
+            get => PackageVulnerabilities?.FirstOrDefault()?.Severity ?? -1;
         }
 
         public bool IsPackageVulnerable
@@ -509,8 +499,7 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationReasons = newDeprecationReasons;
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
-                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities = _packageMetadata?.Vulnerabilities;
-                    PackageVulnerabilities = vulnerabilities?.ToList();
+                    PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
 
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));

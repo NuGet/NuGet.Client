@@ -73,7 +73,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 IsListed = packageSearchMetadata.IsListed,
                 DependencySets = packageSearchMetadata.DependencySets?.ToList(),
                 DownloadCount = packageSearchMetadata.DownloadCount,
-                Vulnerabilities = packageSearchMetadata.Vulnerabilities?.Select(vulnerability => new PackageVulnerabilityMetadataContextInfo(vulnerability.AdvisoryUrl, vulnerability.Severity)).ToArray(),
+                Vulnerabilities = packageSearchMetadata.Vulnerabilities?.Select(vulnerability => new PackageVulnerabilityMetadataContextInfo(vulnerability.AdvisoryUrl, vulnerability.Severity)).OrderByDescending(v => v.Severity).ToArray(),
             };
         }
     }
