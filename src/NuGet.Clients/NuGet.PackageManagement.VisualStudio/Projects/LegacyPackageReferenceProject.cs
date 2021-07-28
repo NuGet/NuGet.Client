@@ -129,6 +129,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
+        private async Task<string> GetSpecifiedAssemblyName()
+        {
+            return await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.AssemblyName);
+        }
+
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
             IEnumerable<(string PackageId, string Version)> packageVersions =
@@ -429,6 +434,13 @@ namespace NuGet.PackageManagement.VisualStudio
             var tfis = new TargetFrameworkInformation[] { projectTfi };
 
             var projectName = _projectName ?? _projectUniqueName;
+
+            string specifiedAssemblyName = await GetSpecifiedAssemblyName();
+
+            if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
+            {
+                projectName = specifiedAssemblyName;
+            }
 
             return new PackageSpec(tfis)
             {

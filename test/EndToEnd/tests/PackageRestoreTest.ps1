@@ -328,6 +328,61 @@ function Test-PackageRestore-AllSourcesAreUsed {
     }
 }
 
+# Test that during legacy packagereference project restore, AssemblyName property is considered for asset file creation. msbuild restore already does it.
+function Test-VSRestore-CustomAssemblyName-Considered {
+    param($context)
+
+    # Arrange
+    $customAssemblyName = "MySpecialAssemblyName"
+    $MSBuildExe = Get-MSBuildExe    
+    $p1 = New-Project PackageReferenceClassLibrary
+    $solutionFile = Get-SolutionFullName
+    $projectDirectoryPath = $p1.Properties.Item("FullPath").Value
+    $projectPath = $p1.FullName
+    $binDirectory = Join-Path $projectDirectoryPath "bin"
+    $debugDirectory = Join-Path $binDirectory "debug"    
+    SaveAs-Solution($solutionFile)
+
+    # Change assembly name in .csproj file
+    $doc = [xml](Get-Content $projectPath)
+    $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
+    $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
+    $node = $doc.SelectSingleNode("//ns:AssemblyName",$ns)
+    $node.InnerText = $customAssemblyName
+    $doc.Save($projectPath)
+    Close-Solution
+
+    Open-Solution $solutionFile    
+    $project = Get-Project
+
+    # Act VS restore
+    Build-Solution  # generate asset file
+    
+    # Assert VS restore
+    # Make sure assembly file with correct name is created.
+    Assert-PathExists(Join-Path $debugDirectory $customAssemblyName".dll")
+    $assetFilePath = Get-NetCoreLockFilePath $project
+    $vsRestoredAsset = Get-Content -Raw -Path $assetFilePath
+    $vsRestoredAssetJson = $vsRestoredAsset | ConvertFrom-Json
+    $projectNameInAssetFile = $vsRestoredAssetJson.Project.Restore | Select-Object projectName
+    # Assert generated asset file contains correct projectName = AssemblyName
+    Assert-True $projectNameInAssetFile.projectName -eq $customAssemblyName
+
+    # Arange MSBuild restore
+    # Remove VS asset file.
+    Write-Host $assetFilePath
+    Remove-Item -Force $assetFilePath
+
+    # Act MSBuild restore
+    & "$MSBuildExe" /t:restore $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
+
+    # Main Assert
+    $msBuildRestoredAsset = Get-Content -Raw -Path $assetFilePath
+    # Assert msbuild and VS restore result in same asset file.
+    Assert-True ($vsRestoredAsset -eq $msBuildRestoredAsset)
+}
+
 # Create a test package 
 function CreateTestPackage {
     param(
