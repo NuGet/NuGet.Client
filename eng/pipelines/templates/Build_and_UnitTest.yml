@@ -472,6 +472,7 @@ steps:
   inputs:
     artifactName: binlog - $(System.JobName) - Attempt $(System.JobAttempt)
     targetPath: $(Build.StagingDirectory)\binlog
+  condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"
