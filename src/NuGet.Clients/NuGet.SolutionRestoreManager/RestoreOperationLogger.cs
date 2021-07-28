@@ -382,7 +382,7 @@ namespace NuGet.SolutionRestoreManager
             Func<RestoreOperationLogger, RestoreOperationProgressUI, CancellationToken, Task> asyncRunMethod,
             CancellationToken token)
         {
-            using (var progress = await _progressFactory(token))
+            await using (var progress = await _progressFactory(token))
             using (var ctr = progress.RegisterUserCancellationAction(() => _externalCts.Cancel()))
             {
                 // Save the progress instance in the current execution context.
@@ -505,13 +505,10 @@ namespace NuGet.SolutionRestoreManager
                 return new WaitDialogProgress(session, jtf);
             }
 
-            public override void Dispose()
+            public async override ValueTask DisposeAsync()
             {
-                _taskFactory.Run(async () =>
-                {
-                    await _taskFactory.SwitchToMainThreadAsync();
-                    _session.Dispose();
-                });
+                await _taskFactory.SwitchToMainThreadAsync();
+                _session.Dispose();
             }
 
             public override async Task ReportProgressAsync(
@@ -575,17 +572,14 @@ namespace NuGet.SolutionRestoreManager
                 return progress;
             }
 
-            public override void Dispose()
+            public override async ValueTask DisposeAsync()
             {
-                _taskFactory.Run(async () =>
-                {
-                    await _taskFactory.SwitchToMainThreadAsync();
+                await _taskFactory.SwitchToMainThreadAsync();
 
-                    _statusBar.Animation(0, ref Icon);
-                    _statusBar.Progress(ref _cookie, 0, "", 0, 0);
-                    _statusBar.FreezeOutput(0);
-                    _statusBar.Clear();
-                });
+                _statusBar.Animation(0, ref Icon);
+                _statusBar.Progress(ref _cookie, 0, "", 0, 0);
+                _statusBar.FreezeOutput(0);
+                _statusBar.Clear();
             }
 
             public override async Task ReportProgressAsync(
