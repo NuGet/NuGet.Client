@@ -135,7 +135,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\about_NuGet.Cmdlets.help.txt">

@@ -33,9 +33,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-  </ItemGroup>
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="Microsoft.Net.Compilers.netcore" />
   </ItemGroup>

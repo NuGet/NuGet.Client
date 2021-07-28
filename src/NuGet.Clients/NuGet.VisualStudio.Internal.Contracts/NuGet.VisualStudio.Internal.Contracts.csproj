@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

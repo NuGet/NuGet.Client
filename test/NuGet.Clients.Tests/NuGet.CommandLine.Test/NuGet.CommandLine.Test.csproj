@@ -41,7 +41,6 @@
   <ItemGroup>
     <PackageDownload Include="NuGet.Core" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 
   <ItemGroup>

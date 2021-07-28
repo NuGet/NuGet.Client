@@ -25,7 +25,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
     <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />
-    <PackageReference Include="Newtonsoft.Json" PrivateAssets="all" NoWarn="NU1605" />
   </ItemGroup>
 
   <ItemGroup>

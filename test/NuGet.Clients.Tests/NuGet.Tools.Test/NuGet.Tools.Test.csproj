@@ -18,7 +18,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="VsWebSite.Interop" />
   </ItemGroup>
 

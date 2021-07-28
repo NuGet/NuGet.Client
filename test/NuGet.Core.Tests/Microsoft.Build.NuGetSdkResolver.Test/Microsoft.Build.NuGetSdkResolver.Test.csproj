@@ -12,7 +12,6 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
     <PackageReference Include="Microsoft.Build.Framework" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

@@ -288,7 +288,6 @@
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
     <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="VsWebSite.Interop" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />

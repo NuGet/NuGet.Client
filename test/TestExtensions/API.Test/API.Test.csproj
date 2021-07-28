@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
 </ItemGroup>
 
   <ItemGroup>

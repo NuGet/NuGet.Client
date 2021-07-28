@@ -24,7 +24,6 @@
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" ExcludeAssets="build" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
