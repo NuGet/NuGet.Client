@@ -15,7 +15,6 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
-using static Microsoft.TeamFoundation.Client.CommandLine.Options;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
@@ -418,6 +417,7 @@ namespace NuGet.PackageManagement.UI
                 _packageVulnerabilities = value;
 
                 OnPropertyChanged(nameof(PackageVulnerabilities));
+                OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                 OnPropertyChanged(nameof(IsPackageVulnerable));
                 OnPropertyChanged(nameof(PackageVulnerabilityCount));
             }
