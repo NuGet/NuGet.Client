@@ -359,8 +359,6 @@ function Test-VSRestore-CustomAssemblyName-Considered {
     Build-Solution  # generate asset file
     
     # Assert VS restore
-    # Make sure assembly file with correct name is created.
-    Assert-PathExists(Join-Path $debugDirectory $customAssemblyName".dll")
     $assetFilePath = Get-NetCoreLockFilePath $project
     $vsRestoredAsset = Get-Content -Raw -Path $assetFilePath
     $vsRestoredAssetJson = $vsRestoredAsset | ConvertFrom-Json
