@@ -105,6 +105,7 @@ namespace NuGetVSExtension
         private uint _solutionExistsCookie;
         private bool _powerConsoleCommandExecuting;
         private bool _initialized;
+        private bool _openPackageDetail = false;
         private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
 
         public NuGetPackage()
