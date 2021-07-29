@@ -101,6 +101,7 @@ namespace NuGetVSExtension
         private uint _solutionExistsCookie;
         private bool _powerConsoleCommandExecuting;
         private bool _initialized;
+        private bool _openPackageDetail = false;
         private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
 
         public NuGetPackage()
@@ -636,13 +637,31 @@ namespace NuGetVSExtension
             }
         }
 
-        private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
+        public void AutomaticallySearchPackages(string packageName)
         {
-            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
+            if (packageName == null)
+            {
+                throw new ArgumentNullException(nameof(packageName));
+            }
+            packageName = "packageid: " + packageName;
+            _openPackageDetail = true;
+            //await ShowManageLibraryPackageDialogAsync(packageName);
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString));
-            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
+                await ShowManageLibraryPackageDialogAsync(packageName);
+            }).PostOnFailure(nameof(NuGetPackage), nameof(AutomaticallySearchPackages));
+        }
+
+        private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
+        {
+            AutomaticallySearchPackages("newtonsoft.json");
+
+            //string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
+            //NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            //{
+            //    await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString));
+            //}).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
         }
 
         private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null)
@@ -673,6 +692,12 @@ namespace NuGetVSExtension
                 {
                     ShowUpdatePackages(windowFrame, updatePackageOptions);
                     Search(windowFrame, searchText);
+                    if (_openPackageDetail)
+                    {
+                        var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
+                        packageManagerControl?.AutomaticallySelectFirstPackage();
+                        _openPackageDetail = false;
+                    }
                     windowFrame.Show();
                 }
             }

@@ -52,6 +52,7 @@
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Actions\UpgradeLogger.cs" />
+    <Compile Include="AutomaticOpenPackageDetails.cs" />
     <Compile Include="Automation\ISelectableItem.cs" />
     <Compile Include="Automation\ISelectableItemsControl.cs" />
     <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />

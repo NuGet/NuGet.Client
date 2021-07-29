@@ -1292,7 +1292,21 @@ namespace NuGet.PackageManagement.UI
                     SelectMatchingUpdatePackages(updatePackageOptions);
                 };
                 _packageList.LoadItemsCompleted += handler;
-            }
+            }  
+        }
+
+        public void AutomaticallySelectFirstPackage()
+        {
+            _topPanel.SelectFilter(ItemFilter.All);
+            EventHandler handler = null;
+            handler = (s, e) =>
+            {
+                _packageList.LoadItemsCompleted -= handler;
+                _packageList.UpdateSelectedItem(null); //null makes it select the first item in the list
+            };
+            _packageList.LoadItemsCompleted += handler;
+            
+            //_packageList.SelectedItem = (PackageItemViewModel)_packageList.Items.FirstOrDefault();
         }
 
         private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
