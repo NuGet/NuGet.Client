@@ -1006,10 +1006,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Select to view the alternative package.</value>
   </data>
   <data name="Deprecation_PackageItemMessage" xml:space="preserve">
-    <value>The package is deprecated.</value>
+    <value>This package version is deprecated.</value>
   </data>
   <data name="Deprecation_PackageItemMessageAlternative" xml:space="preserve">
-    <value>The package is deprecated. Use {0} instead.</value>
+    <value>This package version is deprecated. Use {0} instead.</value>
     <comment>{0} is a NuGet package id (string)</comment>
   </data>
 </root>

@@ -1501,7 +1501,7 @@ namespace NuGet.PackageManagement.UI
                         // Terminate current PM UI search task
                         _windowSearchHost.SearchAsync(pSearchQuery: null);
                     }
-                    if (_windowSearchHost.SearchTask == null)
+                    else
                     {
                         _topPanel.SelectFilter(ItemFilter.All);
                         Search("packageid:" + alternatePackageId);
