@@ -28,17 +28,12 @@ namespace NuGet.DependencyResolver
         {
             var key = new LibraryRangeCacheKey(libraryRange, framework);
 
-            if (!cache.TryGetValue(key, out var graphItem))
-            {
-                graphItem = FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken);
+            if (cache.TryGetValue(key, out var graphItem))
+                return graphItem;
 
-                if (!cache.TryAdd(key, graphItem))
-                {
-                    graphItem = cache[key];
-                }
-            }
+            _ = cache.TryAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken));
 
-            return graphItem;
+            return cache[key];
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
