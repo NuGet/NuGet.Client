@@ -514,6 +514,20 @@ namespace NuGet.PackageManagement.UI
             return _detailedPackageSearchMetadata.Value;
         }
 
+        private PackageDeprecationMetadataContextInfo _deprecationMetadata;
+        public PackageDeprecationMetadataContextInfo DeprecationMetadata
+        {
+            get => _deprecationMetadata;
+            set
+            {
+                if (_deprecationMetadata != value)
+                {
+                    _deprecationMetadata = value;
+                    OnPropertyChanged(nameof(DeprecationMetadata));
+                }
+            }
+        }
+
         public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
@@ -698,6 +712,7 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
+                DeprecationMetadata = deprecationMetadata;
                 IsPackageDeprecated = deprecationMetadata != null;
                 VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.Max(v => v.Severity) ?? -1;
             }

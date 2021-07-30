@@ -1488,6 +1488,28 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
+        private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var alternatePackageId = e.Parameter as string;
+            if (!string.IsNullOrWhiteSpace(alternatePackageId))
+            {
+                if (_windowSearchHost?.IsEnabled == true)
+                {
+                    if (_windowSearchHost.SearchTask != null)
+                    {
+                        // Terminate current PM UI search task
+                        _windowSearchHost.SearchAsync(pSearchQuery: null);
+                    }
+                    if (_windowSearchHost.SearchTask == null)
+                    {
+                        _topPanel.SelectFilter(ItemFilter.All);
+                        Search("packageid:" + alternatePackageId);
+                    }
+                }
+            }
+        }
+
         private async Task ExecuteRestartSearchCommandAsync()
         {
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);

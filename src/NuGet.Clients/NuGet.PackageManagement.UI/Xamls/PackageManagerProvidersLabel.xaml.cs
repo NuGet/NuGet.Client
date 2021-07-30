@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for PackageManagerProvidersLabel.xaml. Its DataContext is
-    /// <see cref="PackageItemViewModel"/>.
+    /// <see cref="AlternativePackageManagerProviders"/> from <see cref="PackageItemViewModel"/>.
     /// </summary>
     public partial class PackageManagerProvidersLabel : UserControl
     {
@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
-            this.DataContextChanged += PackageManagerProvidersLabel_DataContextChanged;
+            DataContextChanged += PackageManagerProvidersLabel_DataContextChanged;
         }
 
         private string _formatString;

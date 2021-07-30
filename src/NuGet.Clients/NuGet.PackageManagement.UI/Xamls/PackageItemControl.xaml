@@ -190,22 +190,27 @@
                       Grid.Row="2">
           <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
-            <RowDefinition Height="4" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
           </Grid.RowDefinitions>
           <!-- providers -->
           <nuget:PackageManagerProvidersLabel
                         Grid.Row="0"
                         FormatString="{x:Static nuget:Resources.Label_UseInstead}"
                         DataContext="{Binding Providers}" />
-
           <!-- Summary -->
           <TextBlock
-                        Grid.Row="2"
+                        Grid.Row="1"
                         Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
                         FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap" />
+          <!-- Deprecation message -->
+          <nuget:PackageItemDeprecationLabel
+                        Grid.Row="2"
+                        FormatStringSingle="{x:Static nuget:Resources.Deprecation_PackageItemMessage}"
+                        FormatStringAlternative="{x:Static nuget:Resources.Deprecation_PackageItemMessageAlternative}"
+                        DataContext="{Binding DeprecationMetadata}" />
         </Grid>
 
         <Grid.ToolTip>

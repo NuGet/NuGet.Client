@@ -623,9 +623,10 @@
 
   <Style
     TargetType="{x:Type Hyperlink}"
-    x:Key="HyperlinkStyle">
+    x:Key="HyperlinkStyleNoUri">
     <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextKey}}" />
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
+
     <Style.Triggers>
       <Trigger
         Property="IsMouseOver"
@@ -642,7 +643,15 @@
           Property="TextBlock.TextDecorations"
           Value="{x:Null}" />
       </Trigger>
+    </Style.Triggers>
+  </Style>
 
+  <Style
+    TargetType="{x:Type Hyperlink}"
+    x:Key="HyperlinkStyle"
+    BasedOn="{StaticResource HyperlinkStyleNoUri}">
+
+    <Style.Triggers>
       <Trigger
         Property="NavigateUri"
         Value="{x:Null}">

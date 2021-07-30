@@ -24,5 +24,10 @@ namespace NuGet.PackageManagement.UI
 
         // no parameters. Overridable by hosting app.
         public static ICommand ShowErrorsCommand { get; set; } = new RoutedCommand();
+
+        /// <summary>
+        /// Command parameter is search string
+        /// </summary>
+        public static ICommand SearchPackageCommand { get; set; } = new RoutedCommand();
     }
 }

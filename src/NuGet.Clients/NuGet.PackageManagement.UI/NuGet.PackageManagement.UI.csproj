@@ -59,6 +59,7 @@
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
+    <Compile Include="Converters\DeprecationToDeprecationLabelStateConverter.cs" />
     <Compile Include="Converters\AccessibleConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\IntToVulnerabilitySeverityConverter.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
+    <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
@@ -154,6 +156,9 @@
     <Compile Include="Xamls\NuGetProjectUpgradeWindow.xaml.cs">
       <DependentUpon>NuGetProjectUpgradeWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\PackageItemDeprecationLabel.xaml.cs">
+      <DependentUpon>PackageItemDeprecationLabel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\PackageManagementFormatWindow.xaml.cs">
       <DependentUpon>PackageManagementFormatWindow.xaml</DependentUpon>
     </Compile>
@@ -171,6 +176,7 @@
       <DependentUpon>ProductUpdateBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\MessageLevelToBrushConverter.cs" />
+    <Compile Include="Converters\FormattedStringPartConverter.cs" />
     <Compile Include="Converters\NotEqualConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
@@ -321,6 +327,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\NuGetProjectUpgradeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PackageItemDeprecationLabel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
