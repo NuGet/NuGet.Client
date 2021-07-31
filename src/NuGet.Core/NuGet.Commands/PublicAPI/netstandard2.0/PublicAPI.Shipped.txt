@@ -371,7 +371,6 @@ NuGet.Commands.LocalsCommandRunner
 NuGet.Commands.LocalsCommandRunner.ExecuteCommand(NuGet.Commands.LocalsArgs localsArgs) -> void
 NuGet.Commands.LocalsCommandRunner.LocalsCommandRunner() -> void
 NuGet.Commands.LockFileBuilder
-NuGet.Commands.LockFileBuilder.CreateLockFile(NuGet.ProjectModel.LockFile previousLockFile, NuGet.ProjectModel.PackageSpec project, System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> targetGraphs, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> localRepositories, NuGet.DependencyResolver.RemoteWalkContext context) -> NuGet.ProjectModel.LockFile
 NuGet.Commands.LockFileBuilder.LockFileBuilder(int lockFileVersion, NuGet.Common.ILogger logger, System.Collections.Generic.Dictionary<NuGet.Commands.RestoreTargetGraph, System.Collections.Generic.Dictionary<string, NuGet.LibraryModel.LibraryIncludeFlags>> includeFlagGraphs) -> void
 NuGet.Commands.LockFileBuilderCache
 NuGet.Commands.LockFileBuilderCache.GetContentItems(NuGet.ProjectModel.LockFileLibrary library, NuGet.Repositories.LocalPackageInfo package) -> NuGet.ContentModel.ContentItemCollection
@@ -1039,7 +1038,6 @@ static NuGet.Commands.BuildAssetsUtils.GenerateProperty(string propertyName, str
 static NuGet.Commands.BuildAssetsUtils.GetLanguage(string nugetLanguage) -> string
 static NuGet.Commands.BuildAssetsUtils.GetMSBuildFilePath(NuGet.ProjectModel.PackageSpec project, string extension) -> string
 static NuGet.Commands.BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(NuGet.ProjectModel.PackageSpec project, string extension) -> string
-static NuGet.Commands.BuildAssetsUtils.GetMSBuildOutputFiles(NuGet.ProjectModel.PackageSpec project, NuGet.ProjectModel.LockFile assetsFile, System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> targetGraphs, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> repositories, NuGet.Commands.RestoreRequest request, string assetsFilePath, bool restoreSuccess, NuGet.Common.ILogger log) -> System.Collections.Generic.List<NuGet.Commands.MSBuildOutputFile>
 static NuGet.Commands.BuildAssetsUtils.GetPathWithMacros(string absolutePath, string repositoryRoot) -> string
 static NuGet.Commands.BuildAssetsUtils.HasChanges(System.Xml.Linq.XDocument newFile, string path, NuGet.Common.ILogger log) -> bool
 static NuGet.Commands.BuildAssetsUtils.ReadExisting(string path, NuGet.Common.ILogger log) -> System.Xml.Linq.XDocument
@@ -1103,7 +1101,6 @@ static NuGet.Commands.MSBuildRestoreUtility.NormalizePathCasings(System.Collecti
 static NuGet.Commands.MSBuildRestoreUtility.RemoveMissingProjects(NuGet.ProjectModel.DependencyGraphSpec graphSpec) -> void
 static NuGet.Commands.MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.IAssetsLogMessage> messages, NuGet.Common.ILogger logger) -> System.Threading.Tasks.Task
 static NuGet.Commands.NoOpRestoreUtilities.GetProjectCacheFilePath(string cacheRoot) -> string
-static NuGet.Commands.NoOpRestoreUtilities.GetProjectCacheFilePath(string cacheRoot, string projectPath) -> string
 static NuGet.Commands.PackArgs.GetSymbolPackageFormat(string symbolPackageFormat) -> NuGet.Commands.SymbolPackageFormat
 static NuGet.Commands.PackCommandRunner.AddDependencyGroups(System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, NuGet.Frameworks.NuGetFramework framework, NuGet.Packaging.PackageBuilder builder) -> void
 static NuGet.Commands.PackCommandRunner.AddLibraryDependency(NuGet.LibraryModel.LibraryDependency dependency, System.Collections.Generic.ISet<NuGet.LibraryModel.LibraryDependency> list) -> void
@@ -1133,7 +1130,6 @@ static NuGet.Commands.RestoreSpecException.Create(string message, System.Collect
 static NuGet.Commands.RestoreSpecException.Create(string message, System.Collections.Generic.IEnumerable<string> files, System.Exception innerException) -> NuGet.Commands.RestoreSpecException
 static NuGet.Commands.RestoreSummary.Log(NuGet.Common.ILogger logger, System.Collections.Generic.IReadOnlyList<NuGet.Commands.RestoreSummary> restoreSummaries, bool logErrors = false) -> void
 static NuGet.Commands.RestoreTargetGraph.Create(NuGet.RuntimeModel.RuntimeGraph runtimeGraph, System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>> graphs, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Common.ILogger log, NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> NuGet.Commands.RestoreTargetGraph
-static NuGet.Commands.RestoreTargetGraph.Create(System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>> graphs, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Common.ILogger logger, NuGet.Frameworks.NuGetFramework framework) -> NuGet.Commands.RestoreTargetGraph
 static NuGet.Commands.SpecValidationUtility.ValidateDependencySpec(NuGet.ProjectModel.DependencyGraphSpec spec) -> void
 static NuGet.Commands.SpecValidationUtility.ValidateDependencySpec(NuGet.ProjectModel.DependencyGraphSpec spec, System.Collections.Generic.HashSet<string> projectsToSkip) -> void
 static NuGet.Commands.SpecValidationUtility.ValidateProjectSpec(NuGet.ProjectModel.PackageSpec spec) -> void
@@ -1154,7 +1150,6 @@ static NuGet.Commands.TransitiveNoWarnUtils.MergePackageSpecificWarningPropertie
 static NuGet.Commands.TransitiveNoWarnUtils.TryMergeNullObjects<T>(T first, T second, out T merged) -> bool
 static NuGet.Commands.UnexpectedDependencyMessages.DependencyRangeHasMissingExactMatch(NuGet.Commands.ResolvedDependencyKey dependency) -> bool
 static NuGet.Commands.UnexpectedDependencyMessages.GetBumpedUpDependencies(System.Collections.Generic.List<NuGet.Commands.IndexedRestoreTargetGraph> graphs, NuGet.ProjectModel.PackageSpec project, System.Collections.Generic.ISet<string> ignoreIds) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
-static NuGet.Commands.UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(System.Collections.Generic.List<NuGet.Commands.IndexedRestoreTargetGraph> graphs, NuGet.Common.ILogger logger) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
 static NuGet.Commands.UnexpectedDependencyMessages.GetMissingLowerBoundMessage(NuGet.Commands.ResolvedDependencyKey dependency, params string[] targetGraphs) -> NuGet.Common.RestoreLogMessage
 static NuGet.Commands.UnexpectedDependencyMessages.GetMissingLowerBounds(System.Collections.Generic.IEnumerable<NuGet.Commands.IRestoreTargetGraph> graphs, System.Collections.Generic.ISet<string> ignoreIds) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
 static NuGet.Commands.UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(NuGet.ProjectModel.PackageSpec project) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
