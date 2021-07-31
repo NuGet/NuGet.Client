@@ -553,7 +553,6 @@ NuGet.Packaging.PackageArchiveReader.GetEntry(string packageFile) -> System.IO.C
 NuGet.Packaging.PackageArchiveReader.PackageArchiveReader(System.IO.Compression.ZipArchive zipArchive) -> void
 NuGet.Packaging.PackageArchiveReader.PackageArchiveReader(System.IO.Compression.ZipArchive zipArchive, NuGet.Frameworks.IFrameworkNameProvider frameworkProvider, NuGet.Frameworks.IFrameworkCompatibilityProvider compatibilityProvider) -> void
 NuGet.Packaging.PackageArchiveReader.PackageArchiveReader(System.IO.Stream stream) -> void
-NuGet.Packaging.PackageArchiveReader.PackageArchiveReader(System.IO.Stream stream, NuGet.Frameworks.IFrameworkNameProvider frameworkProvider, NuGet.Frameworks.IFrameworkCompatibilityProvider compatibilityProvider) -> void
 NuGet.Packaging.PackageArchiveReader.PackageArchiveReader(System.IO.Stream stream, bool leaveStreamOpen) -> void
 NuGet.Packaging.PackageArchiveReader.PackageArchiveReader(System.IO.Stream stream, bool leaveStreamOpen, NuGet.Frameworks.IFrameworkNameProvider frameworkProvider, NuGet.Frameworks.IFrameworkCompatibilityProvider compatibilityProvider) -> void
 NuGet.Packaging.PackageArchiveReader.PackageArchiveReader(string filePath, NuGet.Frameworks.IFrameworkNameProvider frameworkProvider = null, NuGet.Frameworks.IFrameworkCompatibilityProvider compatibilityProvider = null) -> void

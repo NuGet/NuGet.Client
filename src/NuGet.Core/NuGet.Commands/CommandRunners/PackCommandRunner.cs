@@ -323,15 +323,15 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Loads project.json info to create a package
+        /// Loads project.json info into a given <see cref="PackageBuilder"/> object
         /// </summary>
-        /// <remarks>It's strongly encourage to use PackageReference over project.json</remarks>
+        /// <remarks>It's strongly encouraged to use PackageReference over other NuGet project restore formats</remarks>
         /// <param name="builder">Builder object to fill in with project.json info (side effects)</param>
         /// <param name="basePath">Path where project.json file lives</param>
-        /// <param name="id">Package id of the package to be generated</param>
-        /// <param name="version">Package version of the package to be to be generated</param>
-        /// <param name="suffix">Package suffix (i.e. 1.0.0-suffix)</param>
-        /// <returns><code>true</code> if a project.json file is found, <code>false</code> otherwise</returns>
+        /// <param name="id">To-be-loaded Package ID</param>
+        /// <param name="version">To-be-loaded Package Version</param>
+        /// <param name="suffix">To-be-loaded Package suffix (i.e. 1.0.0-suffix)</param>
+        /// <returns><c>true</c> if a project.json file is found, <c>false</c> otherwise</returns>
         public static bool ProcessProjectJsonFile(
             PackageBuilder builder,
             string basePath,
