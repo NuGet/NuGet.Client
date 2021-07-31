@@ -49,18 +49,6 @@ namespace NuGet.Commands
         /// Combines <paramref name="cacheRoot"/> + "project.nuget.cache"
         /// </summary>
         /// <param name="cacheRoot">Path to cache root</param>
-        /// <param name="projectPath">Not used</param>
-        /// <returns>The combined path</returns>
-        [Obsolete("Use overload withou projectPath argument")]
-        public static string GetProjectCacheFilePath(string cacheRoot, string projectPath)
-        {
-            return GetProjectCacheFilePath(cacheRoot);
-        }
-
-        /// <summary>
-        /// Combines <paramref name="cacheRoot"/> + "project.nuget.cache"
-        /// </summary>
-        /// <param name="cacheRoot">Path to cache root</param>
         /// <returns>The combined path</returns>
         public static string GetProjectCacheFilePath(string cacheRoot)
         {

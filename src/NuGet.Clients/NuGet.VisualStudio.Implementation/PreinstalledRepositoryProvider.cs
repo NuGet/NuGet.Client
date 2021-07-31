@@ -74,18 +74,6 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Adds a NuGet package source from a Visual Studio Extension
         /// </summary>
-        /// <param name="provider">Not Used</param>
-        /// <param name="extensionId">VSPackage Extension GUID</param>
-        /// <remarks>https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/visual-studio-templates</remarks>
-        [Obsolete("Use overload without provider argument instead")]
-        public void AddFromExtension(ISourceRepositoryProvider provider, string extensionId)
-        {
-            AddFromExtension(extensionId);
-        }
-
-        /// <summary>
-        /// Adds a NuGet package source from a Visual Studio Extension
-        /// </summary>
         /// <param name="extensionId">VSPackage Extension GUID</param>
         /// <remarks>https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/visual-studio-templates</remarks>
         public void AddFromExtension(string extensionId)

@@ -227,18 +227,6 @@ namespace NuGet.Commands
         /// Logs upgrade warnings from the graphs.
         /// </summary>
         /// <param name="graphs">Flattened restore graphs with error and warning info</param>
-        /// <param name="logger">Not used</param>
-        /// <returns>A collection of log messages</returns>
-        [Obsolete("Use GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph>) instead")]
-        public static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs, ILogger logger)
-        {
-            return GetDependenciesAboveUpperBounds(graphs);
-        }
-
-        /// <summary>
-        /// Logs upgrade warnings from the graphs.
-        /// </summary>
-        /// <param name="graphs">Flattened restore graphs with error and warning info</param>
         /// <returns>A collection of log messages</returns>
         public static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs)
         {

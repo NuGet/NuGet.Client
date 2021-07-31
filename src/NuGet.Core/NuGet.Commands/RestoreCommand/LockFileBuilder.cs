@@ -32,21 +32,6 @@ namespace NuGet.Commands
             _includeFlagGraphs = includeFlagGraphs;
         }
 
-        [Obsolete("Use method with LockFileBuilderCache parameter")]
-        public LockFile CreateLockFile(LockFile previousLockFile,
-            PackageSpec project,
-            IEnumerable<RestoreTargetGraph> targetGraphs,
-            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
-            RemoteWalkContext context)
-        {
-            return CreateLockFile(previousLockFile,
-                project,
-                targetGraphs,
-                localRepositories,
-                context,
-                new LockFileBuilderCache());
-        }
-
         public LockFile CreateLockFile(LockFile previousLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
