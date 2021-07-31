@@ -60,7 +60,7 @@ namespace NuGet.CommandLine
         /// <param name="lockfile">LockFile model to analyze</param>
         /// <param name="targetName">NuGet Target Framework name/Runtime Identifier</param>
         /// <param name="library">Library name</param>
-        /// <returns>0 if there's no error. Otherwise, returns a valure different than 0</returns>
+        /// <returns>0 if there's no error. Otherwise, returns a value different than 0</returns>
         private int LibraryDetail(LockFile lockfile, string targetName, string library)
         {
             var lib = lockfile.Libraries.FirstOrDefault(l => l.Name.Equals(library, StringComparison.OrdinalIgnoreCase));

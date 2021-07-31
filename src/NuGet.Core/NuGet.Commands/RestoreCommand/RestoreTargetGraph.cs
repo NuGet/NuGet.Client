@@ -103,28 +103,6 @@ namespace NuGet.Commands
         /// <param name="runtimeGraph">Runtime graph with package/project dependencies</param>
         /// <param name="graphs">Resolved depdencies graphs collection</param>
         /// <param name="context">Restore context</param>
-        /// <param name="log">Not used</param>
-        /// <param name="framework">Target NuGet framework to restore</param>
-        /// <param name="runtimeIdentifier">Ru</param>
-        /// <returns>A <see cref="RestoreTargetGraph "/> object built from arguments</returns>
-        [Obsolete("Use Create() overload without log argument instead")]
-        public static RestoreTargetGraph Create(
-            RuntimeGraph runtimeGraph,
-            IEnumerable<GraphNode<RemoteResolveResult>> graphs,
-            RemoteWalkContext context,
-            ILogger log,
-            NuGetFramework framework,
-            string runtimeIdentifier)
-        {
-            return Create(runtimeGraph, graphs, context, framework, runtimeIdentifier);
-        }
-
-        /// <summary>
-        /// Creates a restore graph for one project/package
-        /// </summary>
-        /// <param name="runtimeGraph">Runtime graph with package/project dependencies</param>
-        /// <param name="graphs">Resolved depdencies graphs collection</param>
-        /// <param name="context">Restore context</param>
         /// <param name="framework">Target NuGet framework to restore</param>
         /// <param name="runtimeIdentifier">Ru</param>
         /// <returns>A <see cref="RestoreTargetGraph "/> object built from arguments</returns>
