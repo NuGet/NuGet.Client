@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IVsSolutionEvents, IVsSolutionLoadEvents, IDisposable
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IVsSolutionEvents, IDisposable
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         private const string VSNuGetClientName = "NuGet VS VSIX";
@@ -791,8 +791,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     await InitializeAsync();
 
-                    var dte = await _asyncServiceProvider.GetDTEAsync();
-                    if (dte.Solution.IsOpen)
+                    if (IsSolutionOpen)
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
                     }
@@ -1040,9 +1039,29 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
-            IsSolutionOpen = true;
+            ThreadHelper.ThrowIfNotOnUIThread();
+            try
+            {
+                var result = _vsSolution.GetSolutionInfo(out string solutionDirectory, out _, out _);
+                if (result != VSConstants.S_OK)
+                {
+                    throw new Exception("IVsSolution.GetSolutionInfo returned " + result + " during IVsSolutionEvents.OnAfterOpenSolution");
+                }
+                else if (string.IsNullOrEmpty(solutionDirectory))
+                {
+                    throw new Exception("No solution directory despite OnAfterOpenSolution callback");
+                }
+                SolutionDirectory = solutionDirectory.TrimEnd('\\');
+                IsSolutionOpen = true;
+            }
+            catch (Exception ex)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => TelemetryUtility.PostFaultAsync(ex, nameof(VSSolutionManager)));
+            }
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(OnAfterOpenSolution));
+            {
+                await OnSolutionExistsAndFullyLoadedAsync();
+            }).PostOnFailure(nameof(OnAfterOpenSolution));
             return VSConstants.S_OK;
         }
 
@@ -1059,40 +1078,6 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public int OnAfterCloseSolution(object pUnkReserved)
-        {
-            return VSConstants.S_OK;
-        }
-        #endregion
-
-        #region IVsSolutionLoadEvents
-        int IVsSolutionLoadEvents.OnBeforeOpenSolution(string pszSolutionFilename)
-        {
-            SolutionDirectory = Path.GetDirectoryName(pszSolutionFilename);
-            return VSConstants.S_OK;
-        }
-
-        int IVsSolutionLoadEvents.OnBeforeBackgroundSolutionLoadBegins()
-        {
-            return VSConstants.S_OK;
-        }
-
-        int IVsSolutionLoadEvents.OnQueryBackgroundLoadProjectBatch(out bool pfShouldDelayLoadToNextIdle)
-        {
-            pfShouldDelayLoadToNextIdle = false;
-            return VSConstants.S_OK;
-        }
-
-        int IVsSolutionLoadEvents.OnBeforeLoadProjectBatch(bool fIsBackgroundIdleBatch)
-        {
-            return VSConstants.S_OK;
-        }
-
-        int IVsSolutionLoadEvents.OnAfterLoadProjectBatch(bool fIsBackgroundIdleBatch)
-        {
-            return VSConstants.S_OK;
-        }
-
-        int IVsSolutionLoadEvents.OnAfterBackgroundSolutionLoadComplete()
         {
             return VSConstants.S_OK;
         }
