@@ -84,10 +84,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _threadingService = GetGlobalService<IVsProjectThreadingService>();
             Assumes.Present(_threadingService);
 
-            _asVSProject4 = new Lazy<VSProject4>(() => {
+            _asVSProject4 = new Lazy<VSProject4>(() =>
+            {
                 _threadingService.ThrowIfNotOnUIThread();
                 return vsProjectAdapter.Project.Object as VSProject4;
-                });
+            });
 
             ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
 
