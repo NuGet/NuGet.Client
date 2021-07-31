@@ -277,22 +277,7 @@ namespace NuGet.ProjectManagement.Projects
         }
 
         /// <summary>
-        /// Uninstalls a package from the config file.
-        /// </summary>
-        /// <param name="packageId">NuGet package ID, i.e., my.package</param>
-        /// <param name="nuGetProjectContext">Not used</param>
-        /// <param name="token">Cancellation token</param>
-        /// <returns>A task returning true if te depdencency nis removed successfully</returns>
-        [Obsolete("Use RemoveDependencyAsync(string, CancellationToken) instead")]
-        public async Task<bool> RemoveDependencyAsync(string packageId,
-            INuGetProjectContext nuGetProjectContext,
-            CancellationToken token)
-        {
-            return await RemoveDependencyAsync(packageId, token);
-        }
-
-        /// <summary>
-        /// Uninstalls a package from the config file.
+        /// Uninstalls a package from the project.json file.
         /// </summary>
         /// <param name="packageId">NuGet package ID, i.e., my.package</param>
         /// <param name="token">Cancellation token</param>

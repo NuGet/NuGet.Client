@@ -325,13 +325,13 @@ namespace NuGet.DependencyResolver
         }
 
         /// <summary>
-        /// Finds a matching library in by looking project provides under a given framework 
+        /// Finds a matching library in by looking at project providers with a given framework 
         /// </summary>
         /// <param name="libraryRange">Desired library</param>
-        /// <param name="framework">Target framework for library and </param>
-        /// <param name="projectProviders">A collection od</param>
+        /// <param name="framework">NuGet Target framework for library</param>
+        /// <param name="projectProviders">A collection of project providers</param>
         /// <param name="cancellationToken">Token that throws if it is cancelled</param>
-        /// <returns>A <see cref="RemoteMatch"/> object with matching details, otherwise <code>null</code></returns>
+        /// <returns>An awaitable <see cref="RemoteMatch"/> object with matching details, otherwise <code>null</code></returns>
         public static Task<RemoteMatch> FindProjectMatchAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,

@@ -400,16 +400,16 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Generates the props/target files content from packages just before completing a restore operation
+        /// Generates MSBuild .props/.targets file contents from packages just before completing a restore operation
         /// </summary>
         /// <param name="project">Project/package specification</param>
         /// <param name="assetsFile">project.assets.json model object</param>
         /// <param name="targetGraphs"></param>
         /// <param name="repositories">NuGet package sources</param>
         /// <param name="request">Restore request model</param>
-        /// <param name="assetsFilePath">File Path from  <paramref name="assetsFile"/> is loaded</param>
+        /// <param name="assetsFilePath">File Path from loaded <paramref name="assetsFile"/></param>
         /// <param name="restoreSuccess">Indicates if packages were restored successfully</param>
-        /// <returns>A collection of props/targets files generated from restored packages</returns>
+        /// <returns>A collection of .props/.targets file contents generated from restored packages</returns>
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
             IEnumerable<RestoreTargetGraph> targetGraphs,

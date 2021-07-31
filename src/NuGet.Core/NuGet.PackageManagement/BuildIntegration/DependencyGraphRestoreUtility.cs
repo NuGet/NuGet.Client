@@ -30,57 +30,12 @@ namespace NuGet.PackageManagement
         /// executes a restore operation on an open solution and
         /// caches the Dependency Graph model (DGSpec) into the context object
         /// </summary>
-        /// <param name="solutionManager">Not used</param>
         /// <param name="dgSpec">NuGet Dependency Graph model</param>
         /// <param name="context">Additional context for the NuGet Dependency Graph model</param>
         /// <param name="providerCache">A cache holding objects from NuGet sources (feeds)</param>
         /// <param name="cacheContextModifier">An action that mutates the cache context for NuGet sources</param>
         /// <param name="sources">NuGet package sources (feeds)</param>
-        /// <param name="parentId">GUID to correlate this operation to the actual restore initator</param>
-        /// <param name="forceRestore">Indices if a restore must be executed. Busts a No-Op restore</param>
-        /// <param name="isRestoreOriginalAction">Indicate if this call is the first restore operation</param>
-        /// <param name="log">Logging object to write messages</param>
-        /// <param name="token">Cancelation token</param>
-        /// <returns>A task to run the Restore operation</returns>
-        [Obsolete("Use RestoreAsync() without solutionManager argument")]
-        public static Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
-            ISolutionManager solutionManager,
-            DependencyGraphSpec dgSpec,
-            DependencyGraphCacheContext context,
-            RestoreCommandProvidersCache providerCache,
-            Action<SourceCacheContext> cacheContextModifier,
-            IEnumerable<SourceRepository> sources,
-            Guid parentId,
-            bool forceRestore,
-            bool isRestoreOriginalAction,
-            ILogger log,
-            CancellationToken token)
-        {
-            return RestoreAsync(dgSpec,
-                context,
-                providerCache,
-                cacheContextModifier,
-                sources,
-                parentId,
-                forceRestore,
-                isRestoreOriginalAction,
-                additionalMessages: null,
-                log,
-                token);
-        }
-
-
-        /// <summary>
-        /// Creates a task that
-        /// executes a restore operation on an open solution and
-        /// caches the Dependency Graph model (DGSpec) into the context object
-        /// </summary>
-        /// <param name="dgSpec">NuGet Dependency Graph model</param>
-        /// <param name="context">Additional context for the NuGet Dependency Graph model</param>
-        /// <param name="providerCache">A cache holding objects from NuGet sources (feeds)</param>
-        /// <param name="cacheContextModifier">An action that mutates the cache context for NuGet sources</param>
-        /// <param name="sources">NuGet package sources (feeds)</param>
-        /// <param name="parentId">GUID to correlate this operation to the actual restore initator</param>
+        /// <param name="parentId">GUID to correlate this operation to the actual restore initiator</param>
         /// <param name="forceRestore">Indices if a restore must be executed. Busts a No-Op restore</param>
         /// <param name="isRestoreOriginalAction">Indicate if this call is the first restore operation</param>
         /// <param name="log">Logging object to write messages</param>
@@ -110,43 +65,6 @@ namespace NuGet.PackageManagement
                 log,
                 token);
         }
-
-
-        /// <summary>
-        /// Executes a restore operation on an open solution and
-        /// caches the Dependency Graph model (DGSpec) into the context object
-        /// </summary>
-        /// <param name="solutionManager">Not used</param>
-        /// <param name="dgSpec">NuGet Dependency Graph model</param>
-        /// <param name="context">Additional context for the NuGet Dependency Graph model</param>
-        /// <param name="providerCache">A cache holding objects from NuGet sources (feeds)</param>
-        /// <param name="cacheContextModifier">An action that mutates the cache context for NuGet sources</param>
-        /// <param name="sources">NuGet package sources (feeds)</param>
-        /// <param name="parentId">GUID to correlate this operation to the actual restore initator</param>
-        /// <param name="forceRestore">Indices if a restore must be executed. Busts a No-Op restore</param>
-        /// <param name="isRestoreOriginalAction">Indicate if this call is the first restore operation</param>
-        /// <param name="additionalMessages">Messages read from assets file (project.assets.json)</param>
-        /// <param name="log">Logging object to write messages</param>
-        /// <param name="token">Cancelation token</param>
-        /// <returns>A collection of RestoreSummary objects, one for each project and tool found in DGSpec</returns>
-        [Obsolete("Use RestoreAsync() without solutionManager argument")]
-        public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
-            ISolutionManager solutionManager,
-            DependencyGraphSpec dgSpec,
-            DependencyGraphCacheContext context,
-            RestoreCommandProvidersCache providerCache,
-            Action<SourceCacheContext> cacheContextModifier,
-            IEnumerable<SourceRepository> sources,
-            Guid parentId,
-            bool forceRestore,
-            bool isRestoreOriginalAction,
-            IReadOnlyList<IAssetsLogMessage> additionalMessages,
-            ILogger log,
-            CancellationToken token)
-        {
-            return await RestoreAsync(dgSpec, context, providerCache, cacheContextModifier, sources, parentId, forceRestore, isRestoreOriginalAction, additionalMessages, log, token);
-        }
-
 
         /// <summary>
         /// Executes a restore operation on an open solution and
@@ -204,7 +122,7 @@ namespace NuGet.PackageManagement
 
                     RestoreSummary.Log(log, restoreSummaries);
 
-                    await PersistDGSpec(dgSpec);
+                    await PersistDGSpecAsync(dgSpec);
 
                     return restoreSummaries;
                 }
@@ -213,7 +131,7 @@ namespace NuGet.PackageManagement
             return new List<RestoreSummary>();
         }
 
-        private static async Task PersistDGSpec(DependencyGraphSpec dgSpec)
+        private static async Task PersistDGSpecAsync(DependencyGraphSpec dgSpec)
         {
             try
             {

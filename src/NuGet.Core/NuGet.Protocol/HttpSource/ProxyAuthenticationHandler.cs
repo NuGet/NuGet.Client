@@ -111,10 +111,10 @@ namespace NuGet.Protocol
 
 #if !IS_CORECLR
         /// <summary>
-        /// Returns true if the cause of the exception is a proxy authentication failure
+        /// Returns <c>true</c> if the exception cause is a proxy authentication required failure
         /// </summary>
         /// <param name="ex">Exception to evaluate</param>
-        /// <returns>true if Proxy Auth required</returns>
+        /// <returns><c>true</c> if the exception indicates that Proxy authentication is required</returns>
         private static bool ProxyAuthenticationRequired(Exception ex)
         {
             // HACK!!! : This is a hack to workaround Xamarin Bug 19594
