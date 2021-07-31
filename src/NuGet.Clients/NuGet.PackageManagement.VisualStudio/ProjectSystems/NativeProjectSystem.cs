@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -54,8 +53,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override void RemoveFile(string path)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (string.IsNullOrEmpty(path))
             {
                 return;
@@ -65,7 +62,11 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
             bool succeeded;
-            succeeded = VCProjectHelper.RemoveFileFromProject(VsProjectAdapter.Project.Object, fullPath, folderPath);
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+            // Since the C++ project system now uses CPS, it no longer needs to be on the UI thread.
+            object projectObject = VsProjectAdapter.Project.Object;
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
+            succeeded = VCProjectHelper.RemoveFileFromProject(projectObject, fullPath, folderPath);
             if (succeeded)
             {
                 // The RemoveFileFromProject() method only removes file from project.
