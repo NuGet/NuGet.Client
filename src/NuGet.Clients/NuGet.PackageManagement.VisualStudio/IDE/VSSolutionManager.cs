@@ -182,11 +182,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
 
-            int hr = _vsSolution.GetSolutionInfo(out string soltuionDirectory, out string soltuionFile, out string userOptsFile);
-            if (hr == VSConstants.S_OK && !string.IsNullOrEmpty(soltuionDirectory))
+            int hr = _vsSolution.GetSolutionInfo(out string solutionDirectory, out string soltuionFile, out string userOptsFile);
+            if (hr == VSConstants.S_OK && !string.IsNullOrEmpty(solutionDirectory))
             {
                 IsSolutionOpen = true;
-                SolutionDirectory = soltuionDirectory.TrimEnd('\\');
+                SolutionDirectory = solutionDirectory.TrimEnd('\\');
             }
 
             var dte = await _asyncServiceProvider.GetDTEAsync();
