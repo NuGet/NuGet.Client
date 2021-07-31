@@ -97,8 +97,7 @@ namespace NuGet.Commands
 
                         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
                         {
-                            AddToolsAssets(library, package, targetGraph, dependencyType, lockFileLib, framework,
-                                runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i], maccatalystFallback);
+                            AddToolsAssets(targetGraph, lockFileLib, contentItems, orderedCriteriaSets[i], maccatalystFallback);
                             if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
                             {
                                 break;
@@ -312,7 +311,6 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             LockFileTargetLibrary lockFileLib,
             ContentItemCollection contentItems,
-            NuspecReader nuspec,
             IReadOnlyList<SelectionCriteria> orderedCriteria,
             MaccatalystFallback maccatalystFallback)
         {
