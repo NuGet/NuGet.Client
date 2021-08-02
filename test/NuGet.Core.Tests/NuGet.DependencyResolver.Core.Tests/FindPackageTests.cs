@@ -224,7 +224,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var downloadCount = 0;
 
             //package namespaces configuration
-            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration($"{source2},{packageX}|{source1},{packageY}");
+            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration($"{source2},{packageX}|{source1},{packageY}", onlyLocalSources: true);
 
             var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
 

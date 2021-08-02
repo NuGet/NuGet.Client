@@ -48,7 +48,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         public void FilterDependencyProvidersForLibrary_WhenPackageNamespacesAreConfiguredReturnsOnlyApplicableProviders_Success()
         {
             //package namespaces configuration
-            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration("Source1,x | Source2,y");
+            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration("Source1,x | Source2,y", onlyLocalSources : true);
 
             var context = new TestRemoteWalkContext(namespacesConfiguration, NullLogger.Instance);
 
@@ -74,7 +74,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var logger = new TestLogger();
 
             //package namespaces configuration
-            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration("Source1,y | Source2,z");
+            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration("Source1,y | Source2,z", onlyLocalSources : true);
 
             var context = new TestRemoteWalkContext(namespacesConfiguration, logger);
 

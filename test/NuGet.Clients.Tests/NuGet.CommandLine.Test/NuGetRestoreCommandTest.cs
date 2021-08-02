@@ -3080,10 +3080,11 @@ EndProject";
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
                 Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", opensourceRepositoryPath); // This same package exist in both repo
 
-                var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
-                Directory.CreateDirectory(sharedRepositoryPath);
-                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
+                var privateRepositoryPath = Path.Combine(workingPath, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", privateRepositoryPath); // This same package exist in both repo
 
                 Util.CreateFile(proj1Directory, "packages.config",
 @"<packages>
@@ -3098,14 +3099,14 @@ EndProject";
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
-    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
     <packageNamespaces>
         <packageSource key=""PublicRepository""> 
             <namespace id=""Contoso.Opensource.*"" />
             <namespace id=""Contoso.MVC.*"" /> 
         </packageSource>
-        <packageSource key=""SharedRepository"">
+        <packageSource key=""PrivateRepository"">
             <namespace id=""Contoso.MVC.*"" />
         </packageSource>
     </packageNamespaces>
@@ -3120,7 +3121,7 @@ EndProject";
                         "-solutionDir",
                         workingPath,
                         "-source",
-                        sharedRepositoryPath,  // Even though both sources are allowed by package namespace filter only 1 is passed, so privateRepository one is only used.
+                        opensourceRepositoryPath,  // Even though both sources are allowed by package namespace filter only 1 source is passed, so publicRepository one is only used.
                         "-Verbosity",
                         "d"
                     };
@@ -3135,7 +3136,7 @@ EndProject";
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
                 // Below message implies both repositories are allowd by package namespace filter, but actually only privateRepository is used for restore.
-                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{opensourceRepositoryPath}, {sharedRepositoryPath}'", r.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{opensourceRepositoryPath}, {privateRepositoryPath}'", r.Output);
             }
         }
 

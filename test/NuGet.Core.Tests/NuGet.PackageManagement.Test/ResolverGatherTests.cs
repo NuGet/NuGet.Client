@@ -1515,7 +1515,6 @@ namespace NuGet.Test
         [InlineData("nuget.org,nuget|privateRepository,private*", "nuge")]
         [InlineData("nuget.org,nuget|privateRepository,private*", "nuget1")]
         [InlineData("nuget.org,nuget|privateRepository,private*", "privat")]
-        [InlineData("-", "privat")]
         [InlineData("public,nuget", "-")]
         public async Task ResolverGather_PackageNamespace_Fails(string packageNamespaces, string packageId)
         {

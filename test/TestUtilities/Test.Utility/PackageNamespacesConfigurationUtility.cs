@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Moq;
 using NuGet.Configuration;
-using NuGet.PackageManagement;
 
 namespace Test.Utility
 {
     public class PackageNamespacesConfigurationUtility
     {
-        public static PackageNamespacesConfiguration GetPackageNamespacesConfiguration(string packageNamespaces)
+        public static PackageNamespacesConfiguration GetPackageNamespacesConfiguration(string packageNamespaces, bool onlyLocalSources = false)
         {
             string[] sections = packageNamespaces.Split('|');
             var sourceKeys = new HashSet<string>();
@@ -41,7 +41,7 @@ namespace Test.Utility
             }
 
             var packageSourcesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageSources,
-                sourceKeys.Select(ns => UriHelper.IsLocal(ns) ? new SourceItem(ns, ns.Trim()) : new SourceItem(ns, ns.Trim() + ".com")).ToArray()
+                sourceKeys.Select(ns => onlyLocalSources || Directory.Exists(ns) ? new SourceItem(ns, ns.Trim()) : new SourceItem(ns, ns.Trim() + ".com")).ToArray()
                 );
 
             var packageNamespacesVirtualSection = new VirtualSettingSection(ConfigurationConstants.PackageNamespaces,
