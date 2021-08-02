@@ -31,9 +31,9 @@ namespace NuGet.DependencyResolver
             if (cache.TryGetValue(key, out var graphItem))
                 return graphItem;
 
-            _ = cache.TryAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken));
+            graphItem = cache.GetOrAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken));
 
-            return cache[key];
+            return graphItem;
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
