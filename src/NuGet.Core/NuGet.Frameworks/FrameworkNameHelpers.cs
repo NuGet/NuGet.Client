@@ -50,7 +50,7 @@ namespace NuGet.Frameworks
         {
             Version version = null;
 
-            if (String.IsNullOrEmpty(versionString))
+            if (string.IsNullOrEmpty(versionString))
             {
                 version = FrameworkConstants.EmptyVersion;
             }
@@ -59,7 +59,7 @@ namespace NuGet.Frameworks
                 if (versionString.IndexOf('.') > -1)
                 {
                     // parse the version as a normal dot delimited version
-                    Version.TryParse(versionString, out version);
+                    _ = Version.TryParse(versionString, out version);
                 }
                 else
                 {
@@ -72,7 +72,7 @@ namespace NuGet.Frameworks
                     // take only the first 4 digits and add dots
                     // 451 -> 4.5.1
                     // 81233 -> 8123
-                    Version.TryParse(String.Join(".", versionString.ToCharArray().Take(4)), out version);
+                    _ = Version.TryParse(string.Join(".", versionString.ToCharArray().Take(4)), out version);
                 }
             }
 

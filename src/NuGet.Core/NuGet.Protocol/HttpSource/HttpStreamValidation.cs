@@ -61,7 +61,7 @@ namespace NuGet.Protocol
                     leaveStreamOpen: true))
                 using (var nuspec = reader.GetNuspec()) // This method throws if no .nuspec exists.
                 {
-                    new NuspecReader(nuspec); // This method throws if reading the .nuspec fails
+                    _ = new NuspecReader(nuspec); // This method throws if reading the .nuspec fails
                 }
             }
             catch (Exception e)

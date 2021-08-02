@@ -55,10 +55,6 @@ namespace NuGet.PackageManagement.Utility
                     var projectUri = new Uri(msbuildProject.MSBuildProjectPath);
                     var lockFileUri = new Uri(lockFileName);
                     var lockFileRelativePath = projectUri.MakeRelativeUri(lockFileUri).OriginalString;
-                    if (Path.DirectorySeparatorChar != '/')
-                    {
-                        lockFileRelativePath.Replace('/', Path.DirectorySeparatorChar);
-                    }
                     msbuildProject.ProjectSystem.AddExistingFile(lockFileRelativePath);
                 }
             }

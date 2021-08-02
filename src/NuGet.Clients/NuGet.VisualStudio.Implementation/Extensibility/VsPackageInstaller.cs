@@ -348,7 +348,7 @@ namespace NuGet.VisualStudio
 
                 if (!string.IsNullOrEmpty(pair.Value))
                 {
-                    NuGetVersion.TryParse(pair.Value, out version);
+                    _ = NuGetVersion.TryParse(pair.Value, out version);
                 }
 
                 toInstall.Add(new PackageIdentity(pair.Key, version));

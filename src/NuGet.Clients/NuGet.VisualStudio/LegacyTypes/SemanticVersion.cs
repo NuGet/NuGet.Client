@@ -192,7 +192,7 @@ namespace NuGet
         public static SemanticVersion ParseOptionalVersion(string version)
         {
             SemanticVersion semVer;
-            TryParse(version, out semVer);
+            _ = TryParse(version, out semVer);
             return semVer;
         }
 

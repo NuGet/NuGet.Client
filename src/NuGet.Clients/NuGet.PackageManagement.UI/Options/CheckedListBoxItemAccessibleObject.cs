@@ -33,7 +33,7 @@ namespace NuGet.Options
                 var rect = ParentCheckedListBox.GetItemRectangle(_index);
 
                 var pt = new NativeMethods.POINT(rect.X, rect.Y);
-                NativeMethods.ClientToScreen(new HandleRef(ParentCheckedListBox, ParentCheckedListBox.Handle), pt);
+                _ = NativeMethods.ClientToScreen(new HandleRef(ParentCheckedListBox, ParentCheckedListBox.Handle), pt);
 
                 return new Rectangle(pt.x, pt.y, rect.Width, rect.Height);
             }

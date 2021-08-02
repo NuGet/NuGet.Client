@@ -184,7 +184,7 @@ namespace NuGet.Protocol
             get
             {
                 int x = 0;
-                Int32.TryParse(_downloadCount, out x);
+                _ = int.TryParse(_downloadCount, out x);
                 return x;
             }
         }

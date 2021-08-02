@@ -112,7 +112,7 @@ namespace NuGet.ProjectModel
                 var version = Path.GetFileName(versionDirectory);
 
                 NuGetVersion nugetVersion = null;
-                NuGetVersion.TryParse(version, out nugetVersion);
+                _ = NuGetVersion.TryParse(version, out nugetVersion);
 
                 if (nugetVersion != null)
                 {
