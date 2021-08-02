@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.SolutionRestoreManager
 {
-    internal abstract class RestoreOperationProgressUI : IDisposable
+    internal abstract class RestoreOperationProgressUI : IAsyncDisposable
     {
         protected static readonly AsyncLocal<RestoreOperationProgressUI> _instance = new AsyncLocal<RestoreOperationProgressUI>();
 
@@ -35,6 +35,6 @@ namespace NuGet.SolutionRestoreManager
             return UserCancellationToken.Register(callback);
         }
 
-        public abstract void Dispose();
+        public abstract ValueTask DisposeAsync();
     }
 }
