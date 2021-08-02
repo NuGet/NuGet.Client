@@ -348,7 +348,7 @@ namespace NuGetConsole.Implementation.Console
                     WpfTextView.ZoomLevelChanged += (sender, e) => ResetConsoleWidth();
 
                     // Create my Command Filter
-                    new WpfConsoleKeyProcessor(this);
+                    _ = new WpfConsoleKeyProcessor(this);
                 }
 
                 return _view;

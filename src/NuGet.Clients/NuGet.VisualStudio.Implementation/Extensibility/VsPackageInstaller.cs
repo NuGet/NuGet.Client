@@ -148,7 +148,7 @@ namespace NuGet.VisualStudio
 
                 if (!string.IsNullOrEmpty(version))
                 {
-                    NuGetVersion.TryParse(version, out semVer);
+                    _ = NuGetVersion.TryParse(version, out semVer);
                 }
 
                 RunJTFWithCorrectContext(project, () => InstallPackageAsync(
