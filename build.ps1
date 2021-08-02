@@ -74,10 +74,7 @@ Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
 
 $startTime = [DateTime]::UtcNow
-if (-not $BuildNumber) {
-    $BuildNumber = Get-BuildNumber
-}
-Trace-Log "Build #$BuildNumber started at $startTime"
+Trace-Log "Build started at $startTime"
 
 Test-BuildEnvironment -CI:$CI
 
@@ -103,22 +100,29 @@ $MSBuildExe = Get-MSBuildExe
 
 Invoke-BuildStep 'Running Restore' {
     # Restore
-    $args = "build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
+    $restoreArgs = "build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
     if ($Binlog)
     {
-        $args += "-bl:msbuild.ensurepr.binlog"
+        $restoreArgs += "-bl:msbuild.ensurepr.binlog"
     }
 
-    Trace-Log ". `"$MSBuildExe`" $args"
-    & $MSBuildExe @args
+    Trace-Log ". `"$MSBuildExe`" $restoreArgs"
+    & $MSBuildExe @restoreArgs
 
-    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:IncludeApex=$IncludeApex", "/v:m", "/m"
+    $restoreArgs = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:IncludeApex=$IncludeApex", "/v:m", "/m"
+
+    if ($BuildNumber)
+    {
+        $restoreArgs += "/p:BuildNumber=$BuildNumber"
+    }
+
     if ($Binlog)
     {
-        $args += "-bl:msbuild.restore.binlog"
+        $restoreArgs += "-bl:msbuild.restore.binlog"
     }
-    Trace-Log ". `"$MSBuildExe`" $args"
-    & $MSBuildExe @args
+
+    Trace-Log ". `"$MSBuildExe`" $restoreArgs"
+    & $MSBuildExe @restoreArgs
 
     if (-not $?)
     {
@@ -131,22 +135,27 @@ Invoke-BuildStep 'Running Restore' {
 
 Invoke-BuildStep $VSMessage {
 
-    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:IncludeApex=$IncludeApex", '/v:m', '/m:1'
+    $buildArgs = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:IncludeApex=$IncludeApex", '/v:m', '/m'
+
+    if ($BuildNumber)
+    {
+        $buildArgs += "/p:BuildNumber=$BuildNumber"
+    }
 
     If ($SkipDelaySigning)
     {
-        $args += "/p:MS_PFX_PATH="
-        $args += "/p:NUGET_PFX_PATH="
+        $buildArgs += "/p:MS_PFX_PATH="
+        $buildArgs += "/p:NUGET_PFX_PATH="
     }
 
     if ($Binlog)
     {
-        $args += "-bl:msbuild.build.binlog"
+        $buildArgs += "-bl:msbuild.build.binlog"
     }
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
-    Trace-Log ". `"$MSBuildExe`" $args"
-    & $MSBuildExe @args
+    Trace-Log ". `"$MSBuildExe`" $buildArgs"
+    & $MSBuildExe @buildArgs
 
     if (-not $?)
     {
@@ -170,15 +179,20 @@ Invoke-BuildStep 'Creating the EndToEnd test package' {
 Invoke-BuildStep 'Running Restore RTM' {
 
     # Restore for VS
-    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
+    $restoreArgs = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:ExcludeTestProjects=true", "/v:m", "/m"
+
+    if ($BuildNumber)
+    {
+        $restoreArgs += "/p:BuildNumber=$BuildNumber"
+    }
 
     if ($Binlog)
     {
-        $args += "-bl:msbuild.restore.binlog"
+        $restoreArgs += "-bl:msbuild.restore.binlog"
     }
 
-    Trace-Log ". `"$MSBuildExe`" $args"
-    & $MSBuildExe @args
+    Trace-Log ". `"$MSBuildExe`" $restoreArgs"
+    & $MSBuildExe @restoreArgs
 
     if (-not $?)
     {
@@ -193,14 +207,20 @@ Invoke-BuildStep 'Running Restore RTM' {
 Invoke-BuildStep 'Packing RTM' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
-    $args = "build\build.proj", "/t:BuildVS`;Pack", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
-    if ($Binlog)
+    $packArgs = "build\build.proj", "/t:BuildVS`;Pack", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:ExcludeTestProjects=true", "/v:m", "/m"
+
+    if ($BuildNumber)
     {
-        $args += "-bl:msbuild.pack.binlog"
+        $packArgs += "/p:BuildNumber=$BuildNumber"
     }
 
-    Trace-Log ". `"$MSBuildExe`" $args"
-    & $MSBuildExe @args
+    if ($Binlog)
+    {
+        $packArgs += "-bl:msbuild.pack.binlog"
+    }
+
+    Trace-Log ". `"$MSBuildExe`" $packArgs"
+    & $MSBuildExe @packArgs
 
     if (-not $?)
     {

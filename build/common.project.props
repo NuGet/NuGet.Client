@@ -112,7 +112,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PreReleaseVersion)' == '' ">
-    <PreReleaseVersion>0</PreReleaseVersion>
+    <PreReleaseVersion>32767</PreReleaseVersion>
   </PropertyGroup>
 
   <!--Setting the Pre-release/Build meta-data from CI if Version is set-->
