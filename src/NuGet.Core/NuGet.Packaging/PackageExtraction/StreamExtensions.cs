@@ -50,7 +50,6 @@ namespace NuGet.Packaging
             while ((bytesRead = inputStream.Read(buffer, offset: 0, buffer.Length)) != 0)
             {
                 outputStream.Write(buffer, offset: 0, bytesRead);
-                inputStream.CopyTo(outputStream);
             }
 
             ArrayPool<byte>.Shared.Return(buffer);
