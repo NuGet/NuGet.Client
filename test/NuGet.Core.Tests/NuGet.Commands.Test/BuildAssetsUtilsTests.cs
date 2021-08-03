@@ -23,18 +23,6 @@ namespace NuGet.Commands.Test
     public class BuildAssetsUtilsTests
     {
         [Fact]
-        public void BuildAssetsUtils_GenerateMSBuildAllProjectsProperty()
-        {
-            // Arrange & Act
-            var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
-
-            var props = TargetsUtility.GetMSBuildProperties(doc);
-
-            // Assert
-            Assert.Equal("$(MSBuildAllProjects);$(MSBuildThisFileFullPath)", props["MSBuildAllProjects"]);
-        }
-
-        [Fact]
         public void BuildAssetsUtils_GenerateProjectAssetsFilePath()
         {
             // Arrange
