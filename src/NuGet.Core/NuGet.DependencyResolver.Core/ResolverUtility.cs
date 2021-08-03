@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Protocol;
@@ -29,8 +28,12 @@ namespace NuGet.DependencyResolver
         {
             var key = new LibraryRangeCacheKey(libraryRange, framework);
 
-            return cache.GetOrAdd(key, (cacheKey) =>
-                FindLibraryEntryAsync(cacheKey.LibraryRange, framework, runtimeIdentifier, context, cancellationToken));
+            if (cache.TryGetValue(key, out var graphItem))
+                return graphItem;
+
+            graphItem = cache.GetOrAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken));
+
+            return graphItem;
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
