@@ -16,6 +16,17 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(IsCore)' == 'true'">
+    <PackageReference Include="System.Collections" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Threading" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Threading.Tasks" Version="$(SystemPackagesVersion)" />
+  </ItemGroup>
+
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
