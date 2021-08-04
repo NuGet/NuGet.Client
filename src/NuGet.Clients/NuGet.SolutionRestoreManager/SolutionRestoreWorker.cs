@@ -55,6 +55,8 @@ namespace NuGet.SolutionRestoreManager
         private Task<bool> _activeRestoreTask;
         private int _initialized;
         private bool _isFirstRestore = true;
+        private DateTimeOffset _lastRestoreCompletedTime;
+        private RestoreOperationSource _lastRestoreOperationSource;
 
         private IVsSolution _vsSolution;
 
@@ -687,8 +689,18 @@ namespace NuGet.SolutionRestoreManager
             // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
             var isSolutionLoadRestore = _isFirstRestore &&
                 request.RestoreSource == RestoreOperationSource.Implicit;
+            string timeSinceLastRestoreCompletedTime = _isFirstRestore ?
+                "0" :
+                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds.ToString();
+            string lastRestoreOperationSourcee = _isFirstRestore ?
+                "None" :
+                _lastRestoreOperationSource.ToString();
+
             _isFirstRestore = false;
+            _lastRestoreOperationSource = request.RestoreSource;
             restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), isSolutionLoadRestore);
+            restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.TimeSinceLastRestoreCompleted), timeSinceLastRestoreCompletedTime);
+            restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.LastRestoreOperationSource), lastRestoreOperationSourcee);
 
             // Start the restore job in a separate task on a background thread
             // it will switch into main thread when necessary.
@@ -699,7 +711,10 @@ namespace NuGet.SolutionRestoreManager
                 .Task
                 .ContinueWith(t => restoreOperation.ContinuationAction(t, JoinableTaskFactory));
 
-            return await joinableTask;
+            bool restoreTask = await joinableTask;
+            _lastRestoreCompletedTime = DateTimeOffset.UtcNow;
+
+            return restoreTask;
         }
 
         private async Task PromoteTaskToActiveAsync(BackgroundRestoreOperation restoreOperation, CancellationToken token)
