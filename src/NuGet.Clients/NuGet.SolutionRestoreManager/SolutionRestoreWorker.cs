@@ -688,11 +688,11 @@ namespace NuGet.SolutionRestoreManager
             // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
             var isSolutionLoadRestore = _isFirstRestore &&
                 request.RestoreSource == RestoreOperationSource.Implicit;
-            _isFirstRestore = false;
             string timeSinceLastRestoreCompletedTime = _isFirstRestore ?
-                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds.ToString() :
-                "0";
+                "0" :
+                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds.ToString();
 
+            _isFirstRestore = false;
             restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), isSolutionLoadRestore);
             restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.TimeSinceLastRestoreCompleted), timeSinceLastRestoreCompletedTime);
 
