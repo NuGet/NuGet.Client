@@ -689,9 +689,9 @@ namespace NuGet.SolutionRestoreManager
             var isSolutionLoadRestore = _isFirstRestore &&
                 request.RestoreSource == RestoreOperationSource.Implicit;
             _isFirstRestore = false;
-            string timeSinceLastRestoreCompletedTime = isSolutionLoadRestore ?
-                "0" :
-                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds.ToString();
+            string timeSinceLastRestoreCompletedTime = _isFirstRestore ?
+                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds.ToString() :
+                "0";
 
             restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), isSolutionLoadRestore);
             restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.TimeSinceLastRestoreCompleted), timeSinceLastRestoreCompletedTime);
