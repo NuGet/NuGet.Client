@@ -26,6 +26,7 @@ namespace NuGet.VisualStudio
         public const string ProjectsReadyCheckTotalTime = nameof(ProjectsReadyCheckTotalTime);
         public const string ProjectRestoreInfoSourcesCount = nameof(ProjectRestoreInfoSourcesCount);
         public const string TimeSinceLastRestoreCompleted = nameof(TimeSinceLastRestoreCompleted);
+        public const string LastRestoreOperationSource = nameof(LastRestoreOperationSource);
 
         public RestoreTelemetryEvent(
             string operationId,
