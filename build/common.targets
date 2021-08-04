@@ -403,6 +403,8 @@ Condition=" ('%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPl
   </Target>
 
   <Target Name="EnsurePackageReferenceVersionsForFramework">
+    <Message Importance="High" Text="+++++++++++++++ '$(TargetFramework)'    '$(IsCore)'"  />
+
     <Error
       Text="%(PackageReference.Identity) should not have a version declared outside of packages.targets but found '%(PackageReference.Version)'"
       Condition=" '%(PackageReference.Version)' != '' AND '%(PackageReference.IsImplicitlyDefined)' != 'true' AND '%(PackageReference.Identity)' != 'Microsoft.NET.Test.Sdk' " />
