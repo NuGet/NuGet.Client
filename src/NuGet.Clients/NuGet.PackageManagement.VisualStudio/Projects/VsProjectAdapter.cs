@@ -235,21 +235,27 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
-        public Task<IEnumerable<string>> GetReferencedProjectsAsync()
+        public async Task<IEnumerable<string>> GetReferencedProjectsAsync()
         {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             if (Project.Kind != null
                 && ProjectType.IsSupportedForAddingReferences(Project.Kind))
             {
-                return System.Threading.Tasks.Task.FromResult(EnvDTEProjectUtility.GetReferencedProjects(Project).Select(p => p.UniqueName));
+                return EnvDTEProjectUtility.GetReferencedProjects(Project)
+                    .Select(p =>
+                    {
+                        _threadingService.ThrowIfNotOnUIThread();
+                        return p.UniqueName;
+                    });
             }
 
-            return System.Threading.Tasks.Task.FromResult(Enumerable.Empty<string>());
+            return Enumerable.Empty<string>();
         }
 
         public async Task<IEnumerable<RuntimeDescription>> GetRuntimeIdentifiersAsync()
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var unparsedRuntimeIdentifer = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.RuntimeIdentifier);
@@ -278,7 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<IEnumerable<CompatibilityProfile>> GetRuntimeSupportsAsync()
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var unparsedRuntimeSupports = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.RuntimeSupports);

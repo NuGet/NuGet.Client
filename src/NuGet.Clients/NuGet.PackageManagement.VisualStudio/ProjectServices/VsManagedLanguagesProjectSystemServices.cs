@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -70,7 +71,6 @@ namespace NuGet.PackageManagement.VisualStudio
             ReferenceMetadata.SetValue(ProjectItemProperties.Aliases, 5);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public VsManagedLanguagesProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
             IComponentModel componentModel,
@@ -84,7 +84,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _threadingService = GetGlobalService<IVsProjectThreadingService>();
             Assumes.Present(_threadingService);
 
-            _asVSProject4 = new Lazy<VSProject4>(() => vsProjectAdapter.Project.Object as VSProject4);
+            _asVSProject4 = new Lazy<VSProject4>(() =>
+            {
+                _threadingService.ThrowIfNotOnUIThread();
+                return vsProjectAdapter.Project.Object as VSProject4;
+            });
 
             ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
 

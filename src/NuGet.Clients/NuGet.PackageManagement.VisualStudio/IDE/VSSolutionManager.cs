@@ -469,9 +469,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Checks whether the current solution is saved to disk, as opposed to be in memory.
         /// </summary>
-        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private bool DoesSolutionRequireAnInitialSaveAs()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Check if user is doing File - New File without saving the solution.
             var value = GetVSSolutionProperty((int)(__VSPROPID.VSPROPID_IsSolutionSaveAsRequired));
             if ((bool)value)
@@ -569,13 +570,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void OnEnvDTEProjectRenamed(Project envDTEProject, string oldName)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 if (!string.IsNullOrEmpty(oldName) && await IsSolutionOpenAsync() && _solutionOpenedRaised)
                 {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
 
                     if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
@@ -624,11 +626,12 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectRemoved?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void OnEnvDTEProjectAdded(Project envDTEProject)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 if (await IsSolutionOpenAsync()
                     && await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject)
                     && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
@@ -645,10 +648,9 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task SetDefaultProjectNameAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             IEnumerable<object> startupProjects;
 
@@ -1090,15 +1092,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _disposed = false;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public void Dispose()
         {
             if (!_disposed)
             {
                 _disposed = true;
 
-                if (ThreadHelper.JoinableTaskContext?.IsOnMainThread == true)
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                     if (_vsMonitorSelection != null && _selectionEventsCookie != 0)
                     {
                         _vsMonitorSelection.UnadviseSelectionEvents(_selectionEventsCookie);
@@ -1110,7 +1113,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         _vsSolution.UnadviseSolutionEvents(_solutionEventsCookie);
                         _solutionEventsCookie = 0;
                     }
-                }
+                });
 
                 _semaphoreLock?.Dispose();
             }

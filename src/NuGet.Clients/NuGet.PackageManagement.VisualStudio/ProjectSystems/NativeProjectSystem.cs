@@ -51,7 +51,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.CompletedTask;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public override void RemoveFile(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -63,7 +62,11 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
             bool succeeded;
-            succeeded = VCProjectHelper.RemoveFileFromProject(VsProjectAdapter.Project.Object, fullPath, folderPath);
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+            // Since the C++ project system now uses CPS, it no longer needs to be on the UI thread.
+            object projectObject = VsProjectAdapter.Project.Object;
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
+            succeeded = VCProjectHelper.RemoveFileFromProject(projectObject, fullPath, folderPath);
             if (succeeded)
             {
                 // The RemoveFileFromProject() method only removes file from project.

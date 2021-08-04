@@ -132,10 +132,11 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async System.Threading.Tasks.Task ShowWarningsForPackageReinstallationAsync(Solution solution)
         {
             Debug.Assert(solution != null);
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             foreach (Project project in solution.Projects)
             {

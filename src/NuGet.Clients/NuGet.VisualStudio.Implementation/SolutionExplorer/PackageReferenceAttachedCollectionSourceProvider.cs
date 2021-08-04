@@ -25,9 +25,10 @@ namespace NuGet.VisualStudio.SolutionExplorer
         {
         }
 
-        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         protected override bool TryGetIdentity(Properties properties, out (string Name, string Version) identity)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             try
             {
                 if (properties.Item("Name")?.Value is string name &&

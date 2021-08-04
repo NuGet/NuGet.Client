@@ -128,9 +128,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return results;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private IEnumerable<Reference> GetVSProjectReferences()
         {
+            _threadingService.ThrowIfNotOnUIThread();
+
             var langProject = _vsProjectAdapter.Project.Object as VSProject;
             if (langProject != null)
             {
@@ -143,7 +144,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Get the unique names of all references which have ReferenceOutputAssembly set to false.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private IList<string> GetExcludedReferences(
             IVsEnumHierarchyItemsFactory itemsFactory,
             Common.ILogger logger)

@@ -264,10 +264,10 @@ namespace NuGet.VisualStudio
             return TemplateFinishedGeneratingAsync(project);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
-        private Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
+        private async Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
         {
-            return TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
         }
 
         private async Task TemplateFinishedGeneratingAsync(Project project)
@@ -327,9 +327,10 @@ namespace NuGet.VisualStudio
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (runKind != WizardRunKind.AsNewProject
                 && runKind != WizardRunKind.AsNewItem)
             {
@@ -338,7 +339,11 @@ namespace NuGet.VisualStudio
             }
 
             _dte = (DTE)automationObject;
-            PreinstalledPackageInstaller.InfoHandler = message => _dte.StatusBar.Text = message;
+            PreinstalledPackageInstaller.InfoHandler = message =>
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                _dte.StatusBar.Text = message;
+            };
 
             if (customParams.Length > 0)
             {
@@ -352,9 +357,10 @@ namespace NuGet.VisualStudio
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void AddTemplateParameters(Dictionary<string, string> replacementsDictionary)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // add the $nugetpackagesfolder$ parameter which returns relative path to the solution's packages folder.
             // this is used by project templates to include assembly references directly inside the template project file
             // without relying on nuget to install the actual packages.

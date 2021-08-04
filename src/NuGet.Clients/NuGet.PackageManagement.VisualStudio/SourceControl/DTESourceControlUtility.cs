@@ -3,15 +3,17 @@
 
 using System.IO;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class DTESourceControlUtility
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public static void EnsureCheckedOutIfExists(SourceControl sourceControl, string fullPath)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (File.Exists(fullPath))
             {
                 FileSystemUtility.MakeWritable(fullPath);
@@ -27,20 +29,5 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
         }
-
-        //public static void AddOrCheckoutItems(SourceControl sourceControl, IEnumerable<string> files)
-        //{
-        //    if(sourceControl != null)
-        //    {
-        //        List<object> filesToAdd = new List<object>();
-        //        foreach(var path in files)
-        //        {
-        //            if(File.Exists(path))
-        //            {
-        //                sourceControl.CheckOutItem(path);
-        //            }
-        //        }
-        //    }
-        //}
     }
 }

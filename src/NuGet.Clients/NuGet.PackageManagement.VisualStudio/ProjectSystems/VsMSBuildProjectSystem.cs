@@ -190,13 +190,12 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
-        private Task AddFileCoreAsync(string path, Action addFile)
+        private async Task AddFileCoreAsync(string path, Action addFile)
         {
             // Do not try to add file to project, if the path is null or empty.
             if (string.IsNullOrEmpty(path))
             {
-                return Task.FromResult(false);
+                return;
             }
 
             var fileExistsInProject = FileExistsInProject(path);
@@ -220,15 +219,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 EnvDTEProjectUtility.EnsureCheckedOutIfExists(VsProjectAdapter.Project, ProjectFullPath, path);
                 addFile();
                 if (!fileExistsInProject)
                 {
-                    return AddFileToProjectAsync(path);
+                    await AddFileToProjectAsync(path);
                 }
             }
-
-            return Task.FromResult(false);
         }
 
         public void AddExistingFile(string path)
@@ -262,11 +261,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// This method should be on the UI thread. The overrides should ensure that
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         protected virtual async Task AddFileToProjectAsync(string path)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (ExcludeFile(path))
             {
                 return;
@@ -1002,10 +998,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return await EnvDTEProjectUtility.GetProjectItemAsync(VsProjectAdapter.Project, path);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task AddProjectItemAsync(string filePath, string folderPath, bool createFolderIfNotExists)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var container = await GetProjectItemsAsync(folderPath, createFolderIfNotExists);
 

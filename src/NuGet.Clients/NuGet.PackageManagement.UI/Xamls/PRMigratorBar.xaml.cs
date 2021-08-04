@@ -106,10 +106,9 @@ namespace NuGet.PackageManagement.UI
             }).PostOnFailure(nameof(PRMigratorBar));
         }
 
-        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private async Task<bool> ShouldShowUpgradeProjectAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // If user has turned it off, don't show
             if (RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUpgradePackagesConfigName))

@@ -80,7 +80,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        [SuppressMessage("Usage", "VSTHRD010:Invoke single-threaded types on Main thread", Justification = "https://github.com/NuGet/Home/issues/10933")]
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (_packageRestoreManager != null)
@@ -96,6 +95,7 @@ namespace NuGet.PackageManagement.UI
                     }
                     catch (Exception ex)
                     {
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         // By default, restore bar is invisible. So, in case of failure of RaisePackagesMissingEventForSolutionAsync, assume it is needed
                         UpdateRestoreBar(packagesMissing: true);
                         var unwrappedException = ExceptionUtility.Unwrap(ex);
@@ -138,10 +138,9 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None)).PostOnFailure(nameof(PackageRestoreBar));
         }
 
-        [SuppressMessage("Usage", "VSTHRD109:Switch instead of assert in async methods", Justification = "https://github.com/NuGet/Home/issues/10933")]
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             ShowProgressUI();
             OperationId = Guid.NewGuid();
 
