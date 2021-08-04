@@ -14,7 +14,7 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [ComImport]
     [Guid("72327117-6552-4685-BD7E-9C40A04B6EE5")]
-    public interface IVsSolutionRestoreService4
+    public interface IVsSolutionRestoreService4 : IVsSolutionRestoreService3
     {
         /// <summary>
         /// A project system can call this service (optionally) to register itself to coordinate restore. <br/>
