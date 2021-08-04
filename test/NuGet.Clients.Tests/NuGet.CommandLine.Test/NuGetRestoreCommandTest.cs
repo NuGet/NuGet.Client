@@ -3318,7 +3318,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_WithAllRestoreSources_Properies_Succeed()
+        public void RestoreCommand_PR_PackageNamespace_WithAllRestoreSources_Properies_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3401,7 +3401,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_WithNotEnoughRestoreSources_Propery_Fails()
+        public void RestoreCommand_PR_PackageNamespace_WithNotEnoughRestoreSources_Propery_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
