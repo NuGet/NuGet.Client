@@ -1169,7 +1169,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public async Task Restore_PackageNamespace_WithNecessarySourceOption_Succeed()
+        public async Task Restore_PackageNamespace_PassAllNecessarySourceOption_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1224,21 +1224,21 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     PackageSaveMode.Defaultv3,
                     ContosoReal);
 
-                var ExternalA = new SimpleTestPackageContext()
+                var ExternalContoso = new SimpleTestPackageContext()
                 {
-                    Id = "Contoso.A",  // Initial version had package id conflict with Contoso repository
+                    Id = "Contoso.A",  // This package exist both repo.
                     Version = "1.0.0"
                 };
-                ExternalA.AddFile("lib/net461/externalA.dll");
+                ExternalContoso.AddFile("lib/net461/externalA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     externalRepositoryPath,
                     PackageSaveMode.Defaultv3,
-                    ExternalA);
+                    ExternalContoso);
 
                 var ExternalB = new SimpleTestPackageContext()
                 {
-                    Id = "External.B",  // name conflict resolved.
+                    Id = "External.B",
                     Version = "2.0.0"
                 };
                 ExternalB.AddFile("lib/net461/externalB.dll");
@@ -1274,7 +1274,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public async Task Restore_PackageNamespace_WithMissingSourceOption_Fails()
+        public async Task Restore_PackageNamespace_PassNotEnoughSourceOption_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1329,21 +1329,21 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     PackageSaveMode.Defaultv3,
                     ContosoReal);
 
-                var ExternalA = new SimpleTestPackageContext()
+                var ExternalContoso = new SimpleTestPackageContext()
                 {
-                    Id = "Contoso.A",  // Initial version had package id conflict with Contoso repository
+                    Id = "Contoso.A",  // This package exist both repo.
                     Version = "1.0.0"
                 };
-                ExternalA.AddFile("lib/net461/externalA.dll");
+                ExternalContoso.AddFile("lib/net461/externalA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     externalRepositoryPath,
                     PackageSaveMode.Defaultv3,
-                    ExternalA);
+                    ExternalContoso);
 
                 var ExternalB = new SimpleTestPackageContext()
                 {
-                    Id = "External.B",  // name conflict resolved.
+                    Id = "External.B",
                     Version = "2.0.0"
                 };
                 ExternalB.AddFile("lib/net461/externalB.dll");
@@ -1363,6 +1363,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
+                // contosoRepositoryPath is not passed in source option so it should fail.
                 var result = RunRestore(pathContext, _failureExitCode, new string[] { "-source", $"{externalRepositoryPath}" });
 
                 // Assert
