@@ -1817,6 +1817,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
                 var workingPath = pathContext.WorkingDirectory;
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
@@ -1824,49 +1826,31 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var privateRepositoryPath = Path.Combine(workingPath, "PrivateRepository");
                 Directory.CreateDirectory(privateRepositoryPath);
 
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                Directory.CreateDirectory(proj1Directory);
-                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
-                // Below we set both repositories as RestoreSources property
-                File.WriteAllText(
-                    proj1File,
-                    $@"<Project Sdk='Microsoft.NET.Sdk'>
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <RestoreSources>{opensourceRepositoryPath};{privateRepositoryPath}</RestoreSources> 
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include = 'Contoso.Opensource.A' Version = '1.0.0' targetFramework='net461'/>
-    <PackageReference Include = 'Contoso.MVC.ASP' Version = '1.0.0' targetFramework='net461'/>
-  </ItemGroup>
-</Project>
-");
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackageReference,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+
+                // Add both repositories as RestoreSources
+                projectA.Properties.Add("RestoreSources", $"{opensourceRepositoryPath};{privateRepositoryPath}");
 
                 var packageOpenSourceA = new SimpleTestPackageContext()
                 {
                     Id = "Contoso.Opensource.A",
                     Version = "1.0.0"
                 };
-                packageOpenSourceA.Files.Clear();
-                packageOpenSourceA.AddFile("lib/net461/openA.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    opensourceRepositoryPath,
-                    packageOpenSourceA);
+                packageOpenSourceA.AddFile("lib/net461/openA.dll");
 
                 var packageOpenSourceContosoMvc = new SimpleTestPackageContext()
                 {
                     Id = "Contoso.MVC.ASP",  // Package Id conflict with internally created package
                     Version = "1.0.0"
                 };
-                packageOpenSourceContosoMvc.Files.Clear();
                 packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    opensourceRepositoryPath,
-                    packageOpenSourceContosoMvc);
 
                 var packageContosoMvcReal = new SimpleTestPackageContext()
                 {
@@ -1875,13 +1859,15 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 };
                 packageContosoMvcReal.AddFile("lib/net461/realA.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    privateRepositoryPath,
-                    packageContosoMvcReal);
+                projectA.AddPackageToAllFrameworks(packageOpenSourceA);
+                projectA.AddPackageToAllFrameworks(packageOpenSourceContosoMvc);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
 
                 // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
                 // so we go ahead and replace that config before running MSBuild.
-                var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
+                var configAPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "NuGet.Config");
                 var configText =
 $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1900,18 +1886,38 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         </packageSource>
     </packageNamespaces>
 </configuration>";
-                using (var writer = new StreamWriter(configPath))
+                using (var writer = new StreamWriter(configAPath))
                 {
                     writer.Write(configText);
                 }
 
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    opensourceRepositoryPath,
+                    packageOpenSourceA);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    opensourceRepositoryPath,
+                    packageOpenSourceContosoMvc);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    privateRepositoryPath,
+                    packageContosoMvcReal);
+
                 // Act
-                var r = _msbuildFixture.RunMsBuild(proj1Directory, $"/t:restore -v:d", ignoreExitCode: true);
+                var r = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot}", ignoreExitCode: true);
 
                 // Assert
                 Assert.True(r.ExitCode == 0);
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{privateRepositoryPath}'", r.Output);
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: '{opensourceRepositoryPath}'", r.Output);
+                var contosoRestorePath = Path.Combine(pathContext.UserPackagesFolder, packageContosoMvcReal.Id.ToString(), packageContosoMvcReal.Version.ToString(), packageContosoMvcReal.ToString() + ".nupkg");
+                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    // Assert correct Contoso package was restored.
+                    Assert.True(allFiles.Contains("lib/net461/realA.dll"));
+                }
             }
         }
 
@@ -1921,6 +1927,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
                 var workingPath = pathContext.WorkingDirectory;
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
@@ -1928,37 +1936,24 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var privateRepositoryPath = Path.Combine(workingPath, "PrivateRepository");
                 Directory.CreateDirectory(privateRepositoryPath);
 
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                Directory.CreateDirectory(proj1Directory);
-                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
-                // Below we set 1 repository as RestoreSources property
-                File.WriteAllText(
-                    proj1File,
-                    $@"<Project Sdk='Microsoft.NET.Sdk'>
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <RestoreSources>{opensourceRepositoryPath}</RestoreSources> 
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include = 'Contoso.Opensource.A' Version = '1.0.0' targetFramework='net461'/>
-    <PackageReference Include = 'Contoso.MVC.ASP' Version = '1.0.0' targetFramework='net461'/>
-  </ItemGroup>
-</Project>
-");
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackageReference,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+
+                // Add only 1 repository as RestoreSources
+                projectA.Properties.Add("RestoreSources", $"{opensourceRepositoryPath}");
 
                 var packageOpenSourceA = new SimpleTestPackageContext()
                 {
                     Id = "Contoso.Opensource.A",
                     Version = "1.0.0"
                 };
-                packageOpenSourceA.Files.Clear();
-                packageOpenSourceA.AddFile("lib/net461/openA.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    opensourceRepositoryPath,
-                    packageOpenSourceA);
+                packageOpenSourceA.AddFile("lib/net461/openA.dll");
 
                 var packageOpenSourceContosoMvc = new SimpleTestPackageContext()
                 {
@@ -1968,10 +1963,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 packageOpenSourceContosoMvc.Files.Clear();
                 packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    opensourceRepositoryPath,
-                    packageOpenSourceContosoMvc);
-
                 var packageContosoMvcReal = new SimpleTestPackageContext()
                 {
                     Id = "Contoso.MVC.ASP",
@@ -1979,13 +1970,15 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 };
                 packageContosoMvcReal.AddFile("lib/net461/realA.dll");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    privateRepositoryPath,
-                    packageContosoMvcReal);
+                projectA.AddPackageToAllFrameworks(packageOpenSourceA);
+                projectA.AddPackageToAllFrameworks(packageOpenSourceContosoMvc);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
 
                 // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
                 // so we go ahead and replace that config before running MSBuild.
-                var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
+                var configAPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "NuGet.Config");
                 var configText =
 $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -2004,13 +1997,26 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         </packageSource>
     </packageNamespaces>
 </configuration>";
-                using (var writer = new StreamWriter(configPath))
+                using (var writer = new StreamWriter(configAPath))
                 {
                     writer.Write(configText);
                 }
 
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    opensourceRepositoryPath,
+                    packageOpenSourceA);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    opensourceRepositoryPath,
+                    packageOpenSourceContosoMvc);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    privateRepositoryPath,
+                    packageContosoMvcReal);
+
                 // Act
-                var r = _msbuildFixture.RunMsBuild(proj1Directory, $"/t:restore -v:d", ignoreExitCode: true);
+                var r = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot}", ignoreExitCode: true);
 
                 // Assert
                 Assert.True(r.ExitCode == 1);

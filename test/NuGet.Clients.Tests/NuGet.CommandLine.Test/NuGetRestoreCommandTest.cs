@@ -3318,7 +3318,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PR_PackageNamespace_WithAllRestoreSources_Properies_Succeed()
+        public async Task RestoreCommand_PR_PackageNamespace_WithAllRestoreSources_Properies_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3330,11 +3330,43 @@ EndProject";
 
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("Contoso.Opensource.A", "1.0.0", opensourceRepositoryPath);
 
                 var privateRepositoryPath = Path.Combine(workingPath, "PrivateRepository");
                 Directory.CreateDirectory(privateRepositoryPath);
-                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", privateRepositoryPath);
+
+                var packageOpenSourceA = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.Opensource.A",
+                    Version = "1.0.0"
+                };
+
+                packageOpenSourceA.AddFile("lib/net461/openA.dll");
+
+                var packageOpenSourceContosoMvc = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.MVC.ASP",  // Package Id conflict with internally created package
+                    Version = "1.0.0"
+                };
+                packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
+
+                var packageContosoMvcReal = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.MVC.ASP",
+                    Version = "1.0.0"
+                };
+                packageContosoMvcReal.AddFile("lib/net461/realA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+    opensourceRepositoryPath,
+    packageOpenSourceA);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    opensourceRepositoryPath,
+                    packageOpenSourceContosoMvc);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    privateRepositoryPath,
+                    packageContosoMvcReal);
 
                 var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
                 // Below we set both repositories as RestoreSources property
@@ -3381,6 +3413,8 @@ EndProject";
                         proj1File,
                         "-solutionDir",
                         workingPath,
+                        "-OutputDirectory",
+                        "packages",
                         "-Verbosity",
                         "d"
                     };
@@ -3397,11 +3431,18 @@ EndProject";
                 // If we pass source then log include actual path to repository instead of repository name.
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{privateRepositoryPath}'", r.Output);
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: '{opensourceRepositoryPath}'", r.Output);
+                var contosoRestorePath = Path.Combine(packagePath, packageContosoMvcReal.Id.ToString(), packageContosoMvcReal.Version.ToString(), packageContosoMvcReal.ToString() + ".nupkg");
+                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    // Assert correct Contoso package was restored.
+                    Assert.True(allFiles.Contains("lib/net461/realA.dll"));
+                }
             }
         }
 
         [Fact]
-        public void RestoreCommand_PR_PackageNamespace_WithNotEnoughRestoreSources_Property_Fails()
+        public async Task RestoreCommand_PR_PackageNamespace_WithNotEnoughRestoreSources_Property_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3413,14 +3454,35 @@ EndProject";
 
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("Contoso.Opensource.A", "1.0.0", opensourceRepositoryPath);
 
                 var privateRepositoryPath = Path.Combine(workingPath, "PrivateRepository");
                 Directory.CreateDirectory(privateRepositoryPath);
-                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", privateRepositoryPath);
+
+                var packageOpenSourceA = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.Opensource.A",
+                    Version = "1.0.0"
+                };
+
+                packageOpenSourceA.AddFile("lib/net461/openA.dll");
+
+                var packageContosoMvcReal = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.MVC.ASP",
+                    Version = "1.0.0"
+                };
+                packageContosoMvcReal.AddFile("lib/net461/realA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+    opensourceRepositoryPath,
+    packageOpenSourceA);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    privateRepositoryPath,
+                    packageContosoMvcReal);
 
                 var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
-                // Below we set only opensourceRepositoryPath as RestoreSources property
+                // Below we set only 1 repository opensourceRepositoryPath as RestoreSources property
                 File.WriteAllText(
                     proj1File,
                     $@"<Project Sdk='Microsoft.NET.Sdk'>
@@ -3464,6 +3526,8 @@ EndProject";
                         proj1File,
                         "-solutionDir",
                         workingPath,
+                        "-OutputDirectory",
+                        "packages",
                         "-Verbosity",
                         "d"
                     };
