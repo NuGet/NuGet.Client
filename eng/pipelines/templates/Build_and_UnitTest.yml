@@ -19,7 +19,7 @@ steps:
     arguments: "-BuildRTM $(BuildRTM)"
   displayName: "Configure VSTS CI Environment"
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   displayName: 'Publish buildinfo.json as an artifact'
   inputs:
     ArtifactName: 'BuildInfo'
@@ -200,7 +200,7 @@ steps:
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.CommandLine.Test as artifact"
   inputs:
     PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
@@ -330,7 +330,7 @@ steps:
   continueOnError: true
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   displayName: 'OptProfV2:  publish BootstrapperInfo.json as a build artifact'
   inputs:
     PathtoPublish: $(Build.StagingDirectory)\MicroBuild\Output
@@ -380,7 +380,7 @@ steps:
     usePat: true
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
   inputs:
     PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\VS15"

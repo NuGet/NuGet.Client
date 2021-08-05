@@ -62,7 +62,7 @@ steps:
     testRunTitle: "NuGet.Client Functional Tests On Windows"
   condition: "succeededOrFailed()"
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   displayName: "Publish Test Freeze Dump"
   inputs:
     PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"

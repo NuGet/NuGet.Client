@@ -8,7 +8,7 @@ steps:
     failOnStderr: "true"
   condition: "always()"
 
-- task:  DownloadPipelineArtifact@2
+- task: DownloadBuildArtifacts@0
   displayName: "Download NuGet.CommandLine.Test artifacts"
   inputs:
     artifactName: "NuGet.CommandLine.Test"
@@ -42,7 +42,7 @@ steps:
     testRunTitle: "NuGet.Client Tests On Mac"
   condition: "succeededOrFailed()"
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   displayName: "Publish Test Freeze Dump"
   inputs:
     PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"

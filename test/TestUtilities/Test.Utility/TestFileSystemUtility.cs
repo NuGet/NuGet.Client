@@ -95,7 +95,7 @@ namespace NuGet.Test.Utility
         {
             var cliDirName = "cli";
             var dir = TestFileSystemUtility.ParentDirectoryLookup()
-                .FirstOrDefault(d => TestFileSystemUtility.DirectoryContains(d, cliDirName));
+                .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, cliDirName)));
             if (dir != null)
             {
                 var dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliExe);
@@ -117,7 +117,7 @@ namespace NuGet.Test.Utility
         public static string GetArtifactsDirectoryInRepo()
         {
             var repositoryRootDir = ParentDirectoryLookup()
-                .FirstOrDefault(d => DirectoryContains(d, "artifacts"));
+                .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, "artifacts")));
 
             return Path.Combine(repositoryRootDir?.FullName, "artifacts");
         }
@@ -198,13 +198,6 @@ namespace NuGet.Test.Utility
             }
 
             yield break;
-        }
-
-        public static bool DirectoryContains(DirectoryInfo directoryInfo, string subDirectory)
-        {
-            return directoryInfo
-                .EnumerateDirectories()
-                .Any(dir => StringComparer.OrdinalIgnoreCase.Equals(dir.Name, subDirectory));
         }
     }
 }

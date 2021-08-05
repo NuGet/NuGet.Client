@@ -66,7 +66,7 @@ namespace NuGet.XPlat.FuncTest
         public static string GetXplatDll()
         {
             var dir = TestFileSystemUtility.ParentDirectoryLookup()
-               .FirstOrDefault(d => TestFileSystemUtility.DirectoryContains(d, "src"));
+               .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, "src")));
 
             if (dir != null)
             {

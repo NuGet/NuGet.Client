@@ -16,7 +16,7 @@ steps:
       ./eng/source-build/build.sh
   condition: "always()"
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   displayName: Upload source-build log
   condition: "always()"
   continueOnError: true
