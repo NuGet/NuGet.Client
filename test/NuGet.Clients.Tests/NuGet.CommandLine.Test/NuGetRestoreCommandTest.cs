@@ -3210,7 +3210,7 @@ EndProject";
                         "-Verbosity",
                         "d",
                         "-source",
-                        sharedRepositoryPath + ';' + opensourceRepositoryPath
+                        sharedRepositoryPath + ';' + opensourceRepositoryPath  //We pass both repositories as source
                     };
 
                 // Act
@@ -3297,7 +3297,7 @@ EndProject";
                         "-solutionDir",
                         workingPath,
                         "-source",
-                        opensourceRepositoryPath, // Package namespace filter doesn't allow Contoso.MVC.ASP to be restore from here.
+                        opensourceRepositoryPath, // We only pass 1 source here
                         "-Verbosity",
                         "d"
                     };
@@ -3401,7 +3401,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PR_PackageNamespace_WithNotEnoughRestoreSources_Propery_Fails()
+        public void RestoreCommand_PR_PackageNamespace_WithNotEnoughRestoreSources_Property_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3476,6 +3476,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
+                Assert.True(r.ExitCode == 1);
                 Assert.Contains("Package namespace match not found for package ID 'Contoso.MVC.ASP'.", r.Output);
                 // Even though there is eligible source SharedRepository exist but only opensourceRepositoryPath passed as option it'll fail to restore.
                 Assert.Contains($"Failed to restore {proj1File}", r.Output);
