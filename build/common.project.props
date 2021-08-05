@@ -227,7 +227,6 @@
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.PackageManagement.Test\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Clients.FuncTests\*\*.csproj"
                           Exclude="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\*.csproj" />
-    <CrossVerifyProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\*.csproj" />
   </ItemGroup>
 
   <!-- start with only nuget.versioning for xplat -->

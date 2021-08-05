@@ -21,23 +21,40 @@ steps:
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
 - task: MSBuild@1
-  displayName: "Run Cross Verify Tests (continue on error)"
+  displayName: "BuildNoVSIX"
   continueOnError: "true"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CrossVerifyTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
     maximumCpuCount: true
+
+- task: PowerShell@1
+  displayName: "Run Cross Verify Tests (continue on error)"
+  continueOnError: "true"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      dotnet test --no-build --configuration Release `
+      $(Build.Repository.LocalPath)\test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\NuGet.Signing.CrossFramework.Test.csproj `
+      --test-adapter-path:$(Build.Repository.LocalPath)\packages\xunitxml.testlogger\2.0.0\build\_common `
+      --logger:"xunit;LogFileName=CrossVerifyTests-vsts.xml" `
+      --logger:"console;verbosity=detailed" `
+      --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: MSBuild@1
+- task: PowerShell@1
   displayName: "Run Cross Verify Tests (stop on error)"
   continueOnError: "false"
   inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CrossVerifyTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
-    maximumCpuCount: true
+    scriptType: "inlineScript"
+    inlineScript: |
+      dotnet test --no-build --configuration Release `
+      $(Build.Repository.LocalPath)\test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\NuGet.Signing.CrossFramework.Test.csproj `
+      --test-adapter-path:$(Build.Repository.LocalPath)\packages\xunitxml.testlogger\2.0.0\build\_common `
+      --logger:"xunit;LogFileName=CrossVerifyTests-vsts.xml" `
+      --logger:"console;verbosity=detailed" `
+      --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2
