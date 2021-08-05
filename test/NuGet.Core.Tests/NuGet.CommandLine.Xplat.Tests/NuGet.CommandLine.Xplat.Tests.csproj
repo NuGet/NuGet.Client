@@ -14,10 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
 

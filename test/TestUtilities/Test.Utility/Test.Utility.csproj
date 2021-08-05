@@ -51,7 +51,6 @@
 
   <ItemGroup>
     <PackageReference Include="Portable.BouncyCastle" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="xunit" />
   </ItemGroup>
 

@@ -63,7 +63,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Test.Apex.VisualStudio" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
   <ItemGroup>

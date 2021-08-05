@@ -11,9 +11,13 @@
   <ItemGroup>
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
