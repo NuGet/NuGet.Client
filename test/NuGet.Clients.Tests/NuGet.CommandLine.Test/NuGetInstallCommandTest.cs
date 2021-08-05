@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1826,7 +1826,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_FromPackagesConfigFile_Pass_AllSourceOptions_Succeed()
+        public void InstallCommand_Cli_Pass_AllSourceOptions_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1860,14 +1860,6 @@ namespace NuGet.CommandLine.Test
     </packageNamespaces>
 </configuration>");
 
-                var args = new string[]
-                {
-                    "-OutputDirectory",
-                    "outputDir",
-                    "-Source",
-                    $"{opensourceRepositoryPath};{sharedRepositoryPath}"  // We pass both repositories.
-                };
-
                 // Act
                 var r1 = RunInstall(pathContext, "Contoso.MVC.ASP", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Source",
                     $"{opensourceRepositoryPath};{sharedRepositoryPath}", "-Verbosity", "d");  // We pass both repositories.
@@ -1886,7 +1878,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_FromPackagesConfigFile_Pass_NotEnoughSources_Fails()
+        public void InstallCommand_Cli_Pass_NotEnoughSources_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1919,16 +1911,6 @@ namespace NuGet.CommandLine.Test
         </packageSource>
     </packageNamespaces>
 </configuration>");
-
-                var args = new string[]
-                {
-                    "-OutputDirectory",
-                    "outputDir",
-                    "-Source",
-                    $"{opensourceRepositoryPath};{sharedRepositoryPath}",  // We pass both repositories.
-                    "-Verbosity",
-                    "d"
-                };
 
                 // Act
                 var r = RunInstall(pathContext, "Contoso.MVC.ASP", 1, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Source",
@@ -2013,6 +1995,60 @@ namespace NuGet.CommandLine.Test
                 // If we pass source then log include actual path to repository instead of repository name.
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: '{opensourceRepositoryPath}'", r1.Output);
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{privateRepositoryPath}'", r2.Output);
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_FromPackagesConfigFile_Pass_AllSourceOptions_Succeed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+
+                var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
+                Directory.CreateDirectory(opensourceRepositoryPath);
+                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+
+                var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
+                Directory.CreateDirectory(sharedRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
+
+                Util.CreateFile(pathContext.SolutionRoot, "packages.config",
+@"<packages>
+  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                var configPath = Path.Combine(workingPath, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
+    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PublicRepository""> 
+            <namespace id=""测试更新包"" />
+        </packageSource>
+        <packageSource key=""SharedRepository"">
+            <namespace id=""Contoso.MVC.*"" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>");
+
+                // Act
+                var r = RunInstall(pathContext, Path.Combine(pathContext.SolutionRoot, "packages.config"), 0, "-OutputDirectory", "outputDir", "-Source",
+                    $"{opensourceRepositoryPath};{sharedRepositoryPath}");  // We pass both repositories.
+
+                // Assert
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{sharedRepositoryPath}'", r.Output);
+                var packageFileContosoMVCASP = Path.Combine(workingPath, "outputDir", "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
+                var packageFileInternational = Path.Combine(workingPath, "outputDir", "测试更新包.1.0.0", "测试更新包.1.0.0.nupkg");
+                Assert.True(File.Exists(packageFileContosoMVCASP));
+                Assert.True(File.Exists(packageFileInternational));
             }
         }
 

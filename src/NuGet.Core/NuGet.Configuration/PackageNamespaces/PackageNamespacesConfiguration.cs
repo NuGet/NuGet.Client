@@ -56,12 +56,12 @@ namespace NuGet.Configuration
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
 
-            IReadOnlyList<PackageSource> packageSources = packageNamespacesProvider?.GetPackageSources();
+            IReadOnlyList<PackageSource> packageSources = packageNamespacesProvider.GetPackageSources();
             PackageSourceLookup = new Dictionary<string, PackageSource>(StringComparer.CurrentCultureIgnoreCase);
 
             foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
             {
-                PackageSourceLookup[namespacePerSource.Key] = packageSources?.FirstOrDefault(s => s.Name.Equals(namespacePerSource.Key, StringComparison.CurrentCultureIgnoreCase));
+                PackageSourceLookup[namespacePerSource.Key] = packageSources.FirstOrDefault(s => s.Name.Equals(namespacePerSource.Key, StringComparison.CurrentCultureIgnoreCase));
             }
         }
 
