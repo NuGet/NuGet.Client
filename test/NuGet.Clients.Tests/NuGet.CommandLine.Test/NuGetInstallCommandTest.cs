@@ -690,6 +690,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
         public void InstallCommand_PackageSaveModeNuspec()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -713,7 +714,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 var nuspecFile = Path.Combine(
                     outputDirectory,
-                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
+                    "testPackage1.1.1.0", "testPackage1.nuspec");
 
                 Assert.True(File.Exists(nuspecFile));
                 var nupkgFiles = Directory.GetFiles(outputDirectory, "*.nupkg", SearchOption.AllDirectories);
@@ -721,6 +722,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
         public void InstallCommand_PackageSaveModeNupkg()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -743,7 +745,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 var nupkgFile = Path.Combine(
                     outputDirectory,
-                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
+                    "testPackage1.1.1.0", "testPackage1.1.1.0.nupkg");
 
                 Assert.True(File.Exists(nupkgFile));
                 var nuspecFiles = Directory.GetFiles(outputDirectory, "*.nuspec", SearchOption.AllDirectories);
@@ -751,6 +753,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
         public void InstallCommand_PackageSaveModeNuspecNupkg()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -773,8 +776,10 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 var nupkgFile = Path.Combine(
                     outputDirectory,
-                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
-                var nuspecFile = Path.ChangeExtension(nupkgFile, "nuspec");
+                    "testPackage1.1.1.0", "testPackage1.1.1.0.nupkg");
+                var nuspecFile = Path.Combine(
+                    outputDirectory,
+                    "testPackage1.1.1.0", "testPackage1.nuspec");
 
                 Assert.True(File.Exists(nupkgFile));
                 Assert.True(File.Exists(nuspecFile));
@@ -784,6 +789,7 @@ namespace NuGet.CommandLine.Test
         // Test that after a package is installed with -PackageSaveMode nuspec, nuget.exe
         // can detect that the package is already installed when trying to install the same
         // package.
+        [Fact]
         public void InstallCommand_PackageSaveModeNuspecReinstall()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -796,25 +802,31 @@ namespace NuGet.CommandLine.Test
                     "testPackage1", "1.1.0", source);
 
                 var args = new string[] {
+                    "-ForceEnglishOutput",
                     "-OutputDirectory", outputDirectory,
                     "-Source", source,
                     "-PackageSaveMode", "nuspec" };
-                var r = Program.Main(args);
-                Assert.Equal(0, r);
 
                 // Act
+                var r = RunInstall(pathContext, "testPackage1", 0, args);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+
+                // Act (Install a second time)
                 var result = RunInstall(pathContext, "testPackage1", 0, args);
 
                 var output = result.Item2;
 
                 // Assert
-                var expectedOutput = "'testPackage1 1.1.0' already installed." +
-                    Environment.NewLine;
-                Assert.Equal(expectedOutput, output);
+                var alreadyInstalledMessage = "Package \"testPackage1.1.1.0\" is already installed.";
+                Assert.Contains(alreadyInstalledMessage, output, StringComparison.OrdinalIgnoreCase);
+                r.ExitCode.Should().Be(0);
             }
         }
 
         // Test that PackageSaveMode specified in nuget.config file is used.
+        [Fact]
         public void InstallCommand_PackageSaveModeInConfigFile()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -847,7 +859,7 @@ namespace NuGet.CommandLine.Test
 
                 var nuspecFile = Path.Combine(
                     outputDirectory,
-                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
+                    "testPackage1.1.1.0", "testPackage1.nuspec");
 
                 Assert.True(File.Exists(nuspecFile));
                 var nupkgFiles = Directory.GetFiles(outputDirectory, "*.nupkg", SearchOption.AllDirectories);
