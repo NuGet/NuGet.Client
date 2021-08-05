@@ -540,7 +540,7 @@ namespace NuGet.SolutionRestoreManager
                                                 var timeoutTask = Task.Delay(timeoutTime, token);
                                                 var whenNominatedTask = restoreInfoSource.WhenNominated(token);
 
-                                                var result = Task.WhenAny(whenNominatedTask, timeoutTask);
+                                                var result = await Task.WhenAny(whenNominatedTask, timeoutTask);
                                                 if (result == timeoutTask)
                                                 {
                                                     bulkCheckTimeout = true;
