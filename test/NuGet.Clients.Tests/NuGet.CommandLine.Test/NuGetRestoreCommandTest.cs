@@ -3412,7 +3412,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     privateRepositoryPath,
                     packageContosoMvcReal);
 
-                var projectDir = Path.Combine(pathContext.SolutionRoot,"a");
+                var projectDir = Path.Combine(pathContext.SolutionRoot, "a");
                 var packagePath = Path.Combine(projectDir, "packages");
 
                 string[] args = new string[]
@@ -3423,7 +3423,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                         "packages",
                         "-Verbosity",
                         "d"
-                        ,"--debug"
                     };
 
                 // Act
@@ -3554,7 +3553,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                         "packages",
                         "-Verbosity",
                         "d"
-                        ,"--debug"
                     };
 
                 // Act
