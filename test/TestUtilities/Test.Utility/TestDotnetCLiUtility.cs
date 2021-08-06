@@ -25,7 +25,8 @@ namespace NuGet.Test.Utility
         internal static string CliDirSource { get; private set; }
         internal static string SdkDirSource { get; private set; }
 
-
+        // For non fullframework code path, we could dynamically determine which SDK version to copy by checking the TFM of TestDotnetCLiUtility.dll and the dotnet.dll,
+        // so there is no need to pass sdkVersion or sdkTfm.
         public static TestDirectory CopyAndPatchLatestDotnetCli(string sdkVersion = null, string sdkTfm = null)
         {
 
@@ -105,6 +106,7 @@ namespace NuGet.Test.Utility
         }
 
 #if !IS_DESKTOP
+        // Dynamically determine which SDK version to copy by checking the TFM of TestDotnetCLiUtility.dll and the dotnet.dll.
         private static string GetSdkToTest()
         {
             // The TFM we're testing
@@ -140,6 +142,7 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
             return selectedVersion;
         }
 #endif
+        // Use specified sdkVersion(could be just a major version) to determine which SDK version to copy.
         private static string GetSdkToTest(string sdkVersion)
         {
             var selectedVersion =
