@@ -1,13 +1,5 @@
 steps:
 - task: PowerShell@1
-  displayName: "Update Build Number"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
-- task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
     arguments: "-Force"
