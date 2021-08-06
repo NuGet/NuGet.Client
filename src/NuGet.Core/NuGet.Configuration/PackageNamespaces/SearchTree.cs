@@ -46,11 +46,6 @@ namespace NuGet.Configuration
                 throw new ArgumentOutOfRangeException(nameof(namespaceId));
             }
 
-            if (string.IsNullOrWhiteSpace(packageSourceKey))
-            {
-                return; // package namespace id didn't match any source id.
-            }
-
             packageSourceKey = packageSourceKey?.Trim();
 
             namespaceId = namespaceId.ToLower(CultureInfo.CurrentCulture).Trim();
