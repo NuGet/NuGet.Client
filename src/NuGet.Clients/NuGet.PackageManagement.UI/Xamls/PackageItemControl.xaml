@@ -139,21 +139,23 @@
       </Grid>
 
       <!-- title & summary-->
+      <Border Grid.Column="2">
       <Grid
-        Grid.Column="2"
         VerticalAlignment="Top"
-        MinHeight="48">
+        MinHeight="48"
+        MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="36" MaxHeight="36"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto"  />
         </Grid.ColumnDefinitions>
         <!-- Title/Author -->
 
-        <Grid Grid.Row="0" Grid.Column="0">
-          <Grid.ColumnDefinitions>
+          <Border Grid.Row="0" Grid.Column="0" Width="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1}}">
+            <Grid MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
+              <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
@@ -177,7 +179,8 @@
                         TextWrapping="NoWrap"
                         AutomationProperties.AutomationId="id"
                         VerticalAlignment="Top"
-                        Text="{Binding Id}" />
+                        Text="{Binding Id}"
+                        MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}"/>
           <!-- prefix reservation indicator -->
           <imaging:CrispImage
                         Grid.Column="2"
@@ -197,12 +200,12 @@
                         Author="{Binding Author}"
                         DownloadCount="{Binding DownloadCount}" />
         </Grid>
-        
+        </Border>
 
         <!-- Description below Title/Author -->
-
-        <Grid Grid.Row="1" Grid.Column="0">
-          <Grid.RowDefinitions>
+        <Border Grid.Row="1" Grid.Column="0">
+            <Grid MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
+              <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -226,7 +229,8 @@
                         FormatStringAlternative="{x:Static nuget:Resources.Deprecation_PackageItemMessageAlternative}"
                         DataContext="{Binding DeprecationMetadata}" />
         </Grid>
-
+        </Border>
+      
         <Grid.ToolTip>
           <TextBlock Style="{StaticResource TooltipStyle}">
             <Run Text="{Binding Id}" FontWeight="Bold" />
@@ -235,11 +239,13 @@
           </TextBlock>
         </Grid.ToolTip>
       </Grid>
+      </Border>
 
+      <Border Grid.Column="3">
       <Grid
-        Grid.Column="3"
         VerticalAlignment="Top"
-        Margin="10,0,0,0">
+        Margin="10,0,0,0"
+        MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
         <Grid.RowDefinitions>
           <RowDefinition />
           <RowDefinition />
@@ -340,7 +346,7 @@
                      * mouse hovers over the control;
                      Since there is no OR condition in triggers, we need to use two triggers instead.
                 -->
-                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}"
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type nuget:PackageItemControl}}}"
                       Value="false">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
@@ -352,7 +358,7 @@
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
+                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="true">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
@@ -386,7 +392,7 @@
                      * IsNotInstalled;
                      * IsSolution is false;
                 -->
-                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
@@ -396,7 +402,7 @@
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
+                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
@@ -438,7 +444,7 @@
                      * IsUpdateAvailable;
                      * IsSolution is false;
                 -->
-                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
@@ -448,7 +454,7 @@
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
+                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
@@ -473,6 +479,7 @@
           <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
         </Button>
       </Grid>
+      </Border>
     </Grid>
   </Border>
 </UserControl>
