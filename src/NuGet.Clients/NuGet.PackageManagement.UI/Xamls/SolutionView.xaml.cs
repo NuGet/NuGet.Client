@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -52,6 +53,7 @@ namespace NuGet.PackageManagement.UI
             _versions.ItemContainerStyle = style;
 
             _projectList.SizeChanged += ListView_SizeChanged;
+            ((GridView)_projectList.View).Columns.CollectionChanged += Columns_CollectionChanged;
 
             //Requested Version column may not be needed, but since saved Sorting Settings are being restored at initialization time,
             //we should go ahead and create the Header column for it here with its Sort property name.
@@ -66,6 +68,22 @@ namespace NuGet.PackageManagement.UI
             };
 
             SortByColumn(_projectColumnHeader);
+        }
+
+        private void Columns_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (sender is GridViewColumnCollection columnCollection)
+            {
+                for (int i = 0; i < columnCollection.Count; i++)
+                {
+                    if (columnCollection[i].Header is GridViewColumnHeader columnHeader)
+                    {
+                        // When the project list column header collection changes in any way, recalculate the tabindex
+                        // of each of the columns so the tab order is in the order they appear on screen.
+                        columnHeader.TabIndex = i;
+                    }
+                }
+            }
         }
 
         private void SolutionView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
