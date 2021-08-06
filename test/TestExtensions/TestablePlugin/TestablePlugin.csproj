@@ -17,14 +17,14 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsCore)' == 'true'">
-    <PackageReference Include="System.Collections" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Runtime.InteropServices" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Threading" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Threading.Tasks" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Collections" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" />
+    <PackageReference Include="System.Resources.ResourceManager" />
+    <PackageReference Include="System.Runtime.Extensions" />
+    <PackageReference Include="System.Runtime.InteropServices" />
+    <PackageReference Include="System.Text.Encoding.Extensions" />
+    <PackageReference Include="System.Threading" />
+    <PackageReference Include="System.Threading.Tasks" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

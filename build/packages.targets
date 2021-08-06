@@ -100,6 +100,14 @@
         <PackageReference Update="Moq" Version="4.16.1" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
         <PackageReference Update="Portable.BouncyCastle" Version="1.8.10" />
+        <PackageReference Update="System.Collections" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Runtime.InteropServices" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Threading" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Threading.Tasks" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="xunit" Version="$(XunitVersion)" />
         <PackageReference Update="xunit.runner.visualstudio" Version="$(XunitVersion)" />
         <PackageReference Update="Xunit.StaFact" Version="0.2.9" />
