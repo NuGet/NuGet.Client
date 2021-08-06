@@ -27,6 +27,8 @@ namespace NuGet.Test.Utility
 
         // For non fullframework code path, we could dynamically determine which SDK version to copy by checking the TFM of TestDotnetCLiUtility.dll and the dotnet.dll,
         // so there is no need to pass sdkVersion or sdkTfm.
+        // But for fullframework code path, the test project dll could not be used to dynamically determine which SDK version to copy,
+        // so we need to specify the sdkVersion and sdkTfm in order to patch the right version of SDK.
         public static TestDirectory CopyAndPatchLatestDotnetCli(string sdkVersion = null, string sdkTfm = null)
         {
 
