@@ -124,7 +124,9 @@ stages:
     - template: CrossFramework_Tests_On_Windows.yml
 
 - stage: MacTests
-  dependsOn: Build_Insertable
+  dependsOn:
+  - Initialize
+  - Build_Insertable
   condition: "and(succeeded(), eq(variables['RunTestsOnMac'], 'true'))"
   jobs:
   - job: Tests_On_Mac
@@ -138,7 +140,9 @@ stages:
     - template: Tests_On_Mac.yml
 
 - stage: EndToEnd
-  dependsOn: Build_Insertable
+  dependsOn:
+  - Initialize
+  - Build_Insertable
   condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
   jobs:
   - job: End_To_End_Tests_On_Windows
@@ -160,7 +164,9 @@ stages:
     - template: End_To_End_Tests_On_Windows.yml
 
 - stage: Apex
-  dependsOn: Build_Insertable
+  dependsOn:
+  - Initialize
+  - Build_Insertable
   condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
   jobs:
   - job: Apex_Tests_On_Windows
