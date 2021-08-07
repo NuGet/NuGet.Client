@@ -3052,96 +3052,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_Pass_JustEnoughSource_Succeed()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestDirectory.Create())
-            {
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                Directory.CreateDirectory(proj1Directory);
-
-                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
-                File.WriteAllText(
-                    proj1File,
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-
-                var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
-                Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
-                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", opensourceRepositoryPath); // This same package exist in both repo
-
-                var privateRepositoryPath = Path.Combine(workingPath, "PrivateRepository");
-                Directory.CreateDirectory(privateRepositoryPath);
-                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", privateRepositoryPath); // This same package exist in both repo
-
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
-  <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
-</packages>");
-
-                var configPath = Path.Combine(workingPath, "nuget.config");
-                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSources>
-    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
-    <clear />
-    <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
-    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
-    </packageSources>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
-            <namespace id=""Contoso.MVC.*"" /> 
-        </packageSource>
-        <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.MVC.*"" />
-        </packageSource>
-    </packageNamespaces>
-</configuration>");
-
-                var packagePath = Path.Combine(workingPath, "packages");
-
-                string[] args = new string[]
-                    {
-                        "restore",
-                        proj1File,
-                        "-solutionDir",
-                        workingPath,
-                        "-source",
-                        opensourceRepositoryPath,  // Even though both sources are allowed by package namespace filter only 1 source is passed, so publicRepository one is only used.
-                        "-Verbosity",
-                        "d"
-                    };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
-
-                // Assert
-                Assert.Equal(_successCode, r.ExitCode);
-                // Below message implies both repositories are allowd by package namespace filter, but actually only privateRepository is used for restore.
-                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{opensourceRepositoryPath}, {privateRepositoryPath}'", r.Output);
-            }
-        }
-
-        [Fact]
-        public void RestoreCommand_PackageNamespace_Pass_AllSourceOptions_Succeed()
+        public void RestoreCommand_NameSpaceFilter_Cli_Pass_AllSourceOptions_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3229,7 +3140,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_Pass_NotEnoughSources_Fails()
+        public void RestoreCommand_NameSpaceFilter_Cli_Pass_NotEnoughSources_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3318,7 +3229,7 @@ EndProject";
         }
 
         [Fact]
-        public async Task RestoreCommand_PR_PackageNamespace_WithAllRestoreSources_Properies_Succeed()
+        public async Task RestoreCommand_NameSpaceFilter_PR_WithAllRestoreSources_Properies_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3448,7 +3359,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [Fact]
-        public async Task RestoreCommand_PR_PackageNamespace_WithNotEnoughRestoreSources_Property_Fails()
+        public async Task RestoreCommand_NameSpaceFilter_PR_WithNotEnoughRestoreSources_Property_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3543,7 +3454,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     packageContosoMvcReal);
 
                 var projectDir = Path.Combine(pathContext.SolutionRoot, "a");
-                var packagePath = Path.Combine(projectDir, "packages");
 
                 string[] args = new string[]
                     {

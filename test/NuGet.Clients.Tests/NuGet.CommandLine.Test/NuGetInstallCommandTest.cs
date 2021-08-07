@@ -12,8 +12,10 @@ using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration.Test;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -1826,7 +1828,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_Cli_Pass_AllSourceOptions_Succeed()
+        public void InstallCommand_NameSpaceFilter_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1861,10 +1863,8 @@ namespace NuGet.CommandLine.Test
 </configuration>");
 
                 // Act
-                var r1 = RunInstall(pathContext, "Contoso.MVC.ASP", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Source",
-                    $"{opensourceRepositoryPath};{sharedRepositoryPath}", "-Verbosity", "d");  // We pass both repositories.
-                var r2 = RunInstall(pathContext, "测试更新包", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Source",
-                    $"{opensourceRepositoryPath};{sharedRepositoryPath}");  // We pass both repositories.
+                var r1 = RunInstall(pathContext, "Contoso.MVC.ASP", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Verbosity", "d");
+                var r2 = RunInstall(pathContext, "测试更新包", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Verbosity", "d");
 
                 // Assert
                 Assert.Equal(0, r1.Item1);
@@ -1878,7 +1878,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_Cli_Pass_NotEnoughSources_Fails()
+        public void InstallCommand_NameSpaceFilter_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1888,10 +1888,10 @@ namespace NuGet.CommandLine.Test
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
                 Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", opensourceRepositoryPath); //This package supposed to be restored from other repo.
 
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
                 Directory.CreateDirectory(sharedRepositoryPath);
-                Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", sharedRepositoryPath);
 
                 var configPath = Path.Combine(workingPath, "nuget.config");
                 SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1913,8 +1913,7 @@ namespace NuGet.CommandLine.Test
 </configuration>");
 
                 // Act
-                var r = RunInstall(pathContext, "Contoso.MVC.ASP", 1, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Source",
-                    $"{opensourceRepositoryPath}");  // We pass only 1 repository
+                var r = RunInstall(pathContext, "Contoso.MVC.ASP", 1, "-Version", "1.0.0", "-OutputDirectory", "outputDir");
 
                 // Assert
                 Assert.Equal(1, r.Item1);
@@ -1925,7 +1924,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_FromPackagesConfigFile_Pass_AllSourceOptions_Succeed()
+        public void InstallCommand_NameSpaceFilter_Cli_FromPackagesConfigFile_Pass_AllSourceOptions_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1979,7 +1978,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_FromPackagesConfigFile_Pass_NotEnoughSources_Fails()
+        public void InstallCommand_NameSpaceFilter_Cli_FromPackagesConfigFile_Pass_NotEnoughSources_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
