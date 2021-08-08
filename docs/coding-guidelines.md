@@ -514,8 +514,6 @@ restoreResult.Success.Should().BeTrue(because: restoreResult.AllOutput);
 
 By default all unit test assemblies should run in parallel mode, which is the default. Unit tests shouldn't depend on any shared state, and so should generally be runnable in parallel. If the tests fail in parallel, the first thing to do is to figure out *why*; do not just disable parallel tests!
 
-Issue tracking the re-enabling of the [paralelization](https://github.com/NuGet/Home/issues/8987) in the current unit tests.
-
 For functional tests it is reasonable to disable parallel tests.
 
 ### Use only complete words or common/standard abbreviations in public APIs
