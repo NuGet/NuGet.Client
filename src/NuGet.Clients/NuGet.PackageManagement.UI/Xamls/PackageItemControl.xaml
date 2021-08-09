@@ -151,16 +151,17 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto"  />
         </Grid.ColumnDefinitions>
-        <!-- Title/Author -->
 
-          <Border Grid.Row="0" Grid.Column="0" Width="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1}}">
-            <Grid MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
+        <!-- Title/Author -->
+          <Border Grid.Row="0" Grid.Column="0" Width="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"
+                  MaxWidth="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}">
+            <Grid>
               <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
           <TextBlock
                         Grid.Column="0"
                         FontWeight="Bold"
@@ -194,42 +195,46 @@
                         AutomationProperties.Name="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
                         Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
           <!-- author and download count -->
-          <nuget:AuthorAndDownloadCount
+
+              <TextBlock Grid.Column="3" Text="{Binding Author}"></TextBlock>
+
+              <!--<nuget:AuthorAndDownloadCount
                         Grid.Column="3"
+                        MaxWidth="{Binding ActualWidth, ElementName=columnAuthor}"
                         Margin="5,4,0,0"
                         Author="{Binding Author}"
-                        DownloadCount="{Binding DownloadCount}" />
+                        DownloadCount="{Binding DownloadCount}" />-->
         </Grid>
         </Border>
 
         <!-- Description below Title/Author -->
-        <Border Grid.Row="1" Grid.Column="0">
+          <!--<Border Grid.Row="1" Grid.Column="0" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}">
             <Grid MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
               <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
-          <!-- providers -->
+          --><!-- providers --><!--
           <nuget:PackageManagerProvidersLabel
                         Grid.Row="0"
                         FormatString="{x:Static nuget:Resources.Label_UseInstead}"
                         DataContext="{Binding Providers}" />
-          <!-- Summary -->
+          --><!-- Summary --><!--
           <TextBlock
                         Grid.Row="1"
                         Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
                         FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap" />
-          <!-- Deprecation message -->
+          --><!-- Deprecation message --><!--
           <nuget:PackageItemDeprecationLabel
                         Grid.Row="2"
                         FormatStringSingle="{x:Static nuget:Resources.Deprecation_PackageItemMessage}"
                         FormatStringAlternative="{x:Static nuget:Resources.Deprecation_PackageItemMessageAlternative}"
                         DataContext="{Binding DeprecationMetadata}" />
         </Grid>
-        </Border>
+        </Border>-->
       
         <Grid.ToolTip>
           <TextBlock Style="{StaticResource TooltipStyle}">

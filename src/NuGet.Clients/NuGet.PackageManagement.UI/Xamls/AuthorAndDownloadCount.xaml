@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              x:Name="_self"
              d:DesignHeight="300" d:DesignWidth="300">
-  <Grid>
+  <Grid MaxWidth="{Binding ActualWidth, ElementName=_self}">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="Auto" />
@@ -17,18 +17,21 @@
     <TextBlock
       Grid.Column="0"
       x:Name="_textBlockAuthor" 
-      Visibility="Collapsed"/>
+      Visibility="Collapsed"
+      MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"/>
     
     <TextBlock
       Grid.Column="1"
       x:Name="_separator" 
       xml:space="preserve" 
-      Visibility="Collapsed">, </TextBlock>
+      Visibility="Collapsed"
+      MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}">, </TextBlock>
     
     <!-- the download count -->
     <TextBlock
       Grid.Column="2"
       x:Name="_textBlockDownloadCount" 
-      Visibility="Collapsed"/>
+      Visibility="Collapsed"
+      MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"/>
   </Grid>
 </UserControl>
