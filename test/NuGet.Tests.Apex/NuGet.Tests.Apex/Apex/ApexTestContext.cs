@@ -4,9 +4,9 @@
 using System;
 using System.Threading;
 using Microsoft.Build.Utilities;
+using System.Diagnostics;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using NuGet.Common;
 using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
@@ -15,7 +15,6 @@ namespace NuGet.Tests.Apex
     {
 
         private VisualStudioHost _visualStudio;
-        private readonly ILogger _logger;
         private SimpleTestPathContext _pathContext;
 
         public SolutionService SolutionService { get; }
@@ -24,9 +23,9 @@ namespace NuGet.Tests.Apex
 
         public NuGetApexTestService NuGetApexTestService { get; }
 
-        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ILogger logger, bool noAutoRestore = false, bool addNetStandardFeeds = false, SimpleTestPathContext simpleTestPathContext = null)
+        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, bool noAutoRestore = false, bool addNetStandardFeeds = false, SimpleTestPathContext simpleTestPathContext = null)
         {
-            logger.LogInformation("Creating test context");
+            Trace.WriteLine("Creating test context");
             _pathContext = simpleTestPathContext ?? new SimpleTestPathContext();
 
             if (noAutoRestore)
@@ -40,20 +39,19 @@ namespace NuGet.Tests.Apex
             }
 
             _visualStudio = visualStudio;
-            _logger = logger;
             SolutionService = _visualStudio.Get<SolutionService>();
             NuGetApexTestService = _visualStudio.Get<NuGetApexTestService>();
 
             VisualStudioHostExtension.ClearWindows(_visualStudio);
 
-            Project = CommonUtility.CreateAndInitProject(projectTemplate, _pathContext, SolutionService, logger);
+            Project = CommonUtility.CreateAndInitProject(projectTemplate, _pathContext, SolutionService);
 
             NuGetApexTestService.WaitForAutoRestore();
         }
 
         public void Dispose()
         {
-            _logger.LogInformation("Test complete, closing solution.");
+            Trace.WriteLine("Test complete, closing solution.");
             for (int attempt = 1; attempt <= 3; attempt++)
             {
                 try
@@ -63,7 +61,7 @@ namespace NuGet.Tests.Apex
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogInformation($"Failed to close VS on dispose. Attempt #{attempt}");
+                    Trace.WriteLine($"Failed to close VS on dispose. Attempt #{attempt}");
                     Thread.Sleep(TimeSpan.FromSeconds(3));
                     ExceptionUtilities.LogException(ex, _logger);
                 }
