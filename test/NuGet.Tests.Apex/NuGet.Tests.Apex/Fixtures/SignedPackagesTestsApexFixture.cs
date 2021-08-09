@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
-using Xunit;
 
 namespace NuGet.Tests.Apex
 {

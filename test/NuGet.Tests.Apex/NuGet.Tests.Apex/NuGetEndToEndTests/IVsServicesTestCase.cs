@@ -5,21 +5,23 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NuGet.Test.Utility;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
-    public class IVsServicesTestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
+    [TestClass]
+    public class IVsServicesTestCase : SharedVisualStudioHostTestClass
     {
-        public IVsServicesTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory, ITestOutputHelper output)
-            : base(visualStudioHostFixtureFactory, output)
+        private const int Timeout = 5 * 60 * 1000; // 5 minutes
+
+        public IVsServicesTestCase()
+            : base()
         {
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(Timeout)]
         public void SimpleInstallFromIVsInstaller()
         {
             // Arrange
@@ -37,10 +39,11 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(Timeout)]
         public void SimpleUninstallFromIVsInstaller()
         {
             // Arrange
@@ -57,11 +60,12 @@ namespace NuGet.Tests.Apex
             nugetTestService.UninstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json");
         }
 
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(Timeout)]
         public void IVSPathContextProvider2_WithEmptySolution_WhenTryCreateUserWideContextIsCalled_SolutionWideConfigurationIsNotIncluded()
         {
             // Arrange
@@ -83,7 +87,8 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(Timeout)]
         public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithSingleFeed()
         {
             // Arrange
@@ -127,10 +132,11 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "contoso.a");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName);
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(Timeout)]
         public async Task SimpleUpdateFromIVsInstaller_PackageSourceMapping_WithSingleFeed()
         {
             // Arrange
@@ -177,15 +183,16 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "2.0.0");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName);
 
             var packagesDirectory = Path.Combine(solutionDirectory, "packages");
             var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
             // Make sure version 2 is restored.
-            Assert.True(File.Exists(uniqueContentFile));
+            Assert.IsTrue(File.Exists(uniqueContentFile));
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(Timeout)]
         public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage()
         {
             // Arrange
@@ -242,15 +249,16 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "1.0.0");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName);
 
             var packagesDirectory = Path.Combine(solutionDirectory, "packages");
             var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersionV1, "lib", "net45", "Thisisfromprivaterepo1.txt");
             // Make sure name squatting package not restored from  opensource repository.
-            Assert.True(File.Exists(uniqueContentFile));
+            Assert.IsTrue(File.Exists(uniqueContentFile));
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(Timeout)]
         public async Task SimpleUpdateFromIVsInstaller_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage()
         {
             // Arrange
@@ -307,12 +315,12 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "1.0.0");
             nugetTestService.InstallPackage(project.UniqueName, "contoso.a", "2.0.0");
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName, XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, packageName);
 
             var packagesDirectory = Path.Combine(solutionDirectory, "packages");
             var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
             // Make sure name squatting package not restored from  opensource repository.
-            Assert.True(File.Exists(uniqueContentFile));
+            Assert.IsTrue(File.Exists(uniqueContentFile));
         }
     }
 }

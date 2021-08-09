@@ -2,43 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using Test.Utility;
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NuGet.Tests.Apex
 {
-    [CollectionDefinition("SharedVSHost")]
-    public sealed class SharedVisualStudioHostTestCollectionDefinition : ICollectionFixture<VisualStudioHostFixtureFactory>
-    {
-        private SharedVisualStudioHostTestCollectionDefinition()
-        {
-            throw new InvalidOperationException("SharedVisualStudioHostTestCollectionDefinition only exists for metadata, it should never be constructed.");
-        }
-    }
-
-    [Collection("SharedVSHost")]
+    [TestClass]
     public abstract class SharedVisualStudioHostTestClass : ApexBaseTestClass
     {
-        private readonly IVisualStudioHostFixtureFactory _contextFixtureFactory;
+        private static IVisualStudioHostFixtureFactory _contextFixtureFactory = new VisualStudioHostFixtureFactory();
         private readonly Lazy<VisualStudioHostFixture> _hostFixture;
         private NuGetConsoleTestExtension _console;
         private string _packageManagerOutputWindowText;
 
-        /// <summary>
-        /// ITestOutputHelper wrapper
-        /// </summary>
-        public XunitLogger XunitLogger { get; }
-
-        protected SharedVisualStudioHostTestClass(IVisualStudioHostFixtureFactory contextFixtureFactory, ITestOutputHelper output)
+        protected SharedVisualStudioHostTestClass()
         {
-            XunitLogger = new XunitLogger(output);
-            _contextFixtureFactory = contextFixtureFactory;
-
             _hostFixture = new Lazy<VisualStudioHostFixture>(() =>
             {
                 return _contextFixtureFactory.GetVisualStudioHostFixture();
@@ -66,14 +48,14 @@ namespace NuGet.Tests.Apex
 
         protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
         {
-            XunitLogger.LogInformation("GetConsole");
+            Trace.WriteLine("GetConsole");
             VisualStudio.ClearWindows();
             NuGetApexTestService nugetTestService = GetNuGetTestService();
 
-            XunitLogger.LogInformation("EnsurePackageManagerConsoleIsOpen");
+            Trace.WriteLine("EnsurePackageManagerConsoleIsOpen");
             nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
 
-            XunitLogger.LogInformation("GetPackageManagerConsole");
+            Trace.WriteLine("GetPackageManagerConsole");
             _console = nugetTestService.GetPackageManagerConsole(project.Name);
 
             // This is not a magic number.
@@ -83,7 +65,8 @@ namespace NuGet.Tests.Apex
 
             nugetTestService.WaitForAutoRestore();
 
-            XunitLogger.LogInformation("GetConsole complete");
+            Trace.WriteLine("GetConsole complete");
+
 
             return _console;
         }
@@ -96,12 +79,12 @@ namespace NuGet.Tests.Apex
             {
                 string text = _console.GetText();
 
-                XunitLogger.LogInformation($"Package Manager Console contents:  {text}");
+                Trace.WriteLine($"Package Manager Console contents:  {text}");
             }
 
             _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
 
-            XunitLogger.LogInformation($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+            Trace.WriteLine($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
 
             base.Dispose();
         }

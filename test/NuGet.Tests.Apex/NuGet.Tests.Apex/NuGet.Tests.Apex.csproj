@@ -63,7 +63,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Test.Apex.VisualStudio" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
-    <PackageReference Include="Xunit.StaFact" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -78,11 +79,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <PropertyGroup>

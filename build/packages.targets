@@ -113,6 +113,8 @@
         <PackageReference Update="xunit" Version="$(XunitVersion)" />
         <PackageReference Update="xunit.runner.visualstudio" Version="$(XunitVersion)" />
         <PackageReference Update="Xunit.StaFact" Version="0.2.9" />
+        <PackageReference Update="MSTest.TestAdapter" Version="2.1.1" />
+        <PackageReference Update="MSTest.TestFramework" Version="2.1.1" />
     </ItemGroup>
 
   </Project>

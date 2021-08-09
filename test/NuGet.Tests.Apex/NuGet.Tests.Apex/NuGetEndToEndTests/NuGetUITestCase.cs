@@ -7,23 +7,25 @@ using System.IO;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using Test.Utility;
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NuGet.Tests.Apex
 {
-    public class NuGetUITestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
+    [TestClass]
+    public class NuGetUITestCase : SharedVisualStudioHostTestClass
     {
+        private const int TestTimeoutLimit = 5 * 60 * 1000; // 5 minutes
+
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan Interval = TimeSpan.FromSeconds(2);
 
-        public NuGetUITestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory, ITestOutputHelper output)
-            : base(visualStudioHostFixtureFactory, output)
+        public NuGetUITestCase()
+            : base()
         {
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void SearchPackageFromUI()
         {
             // Arrange
@@ -47,7 +49,8 @@ namespace NuGet.Tests.Apex
             VisualStudio.AssertNoErrors();
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void InstallPackageFromUI()
         {
             // Arrange
@@ -67,10 +70,11 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void InstallPackageToProjectsFromUI()
         {
             // Arrange
@@ -96,11 +100,12 @@ namespace NuGet.Tests.Apex
             uiwindow2.InstallPackageFromUI("newtonsoft.json", "9.0.1");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, nuProject, "newtonsoft.json", "9.0.1", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1");
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, nuProject, "newtonsoft.json", "9.0.1");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void UninstallPackageFromUI()
         {
             // Arrange
@@ -128,10 +133,11 @@ namespace NuGet.Tests.Apex
             WaitForFileNotExists(packagesConfigFile);
 
             // Assert
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "newtonsoft.json", XunitLogger);
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "newtonsoft.json");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void UpdatePackageFromUI()
         {
             // Arrange
@@ -155,10 +161,11 @@ namespace NuGet.Tests.Apex
             uiwindow.UpdatePackageFromUI("newtonsoft.json", "10.0.3");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "10.0.3", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "10.0.3");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
@@ -202,10 +209,11 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "Contoso.A", "1.0.0", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "Contoso.A", "1.0.0");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task InstallPackageToProjectsFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
@@ -256,11 +264,12 @@ namespace NuGet.Tests.Apex
             uiwindow2.InstallPackageFromUI("contoso.a", "1.0.0");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", "1.0.0", XunitLogger);
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, nuProject, "contoso.a", "1.0.0", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", "1.0.0");
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, nuProject, "contoso.a", "1.0.0");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
@@ -312,10 +321,11 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Fails()
         {
             // Arrange
@@ -365,11 +375,12 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
 
             // Assert
-            // Even though Contoso.a exist in ExternalRepository, but packageSourceMapping filter doesn't let restore from it.
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "contoso.a", XunitLogger);
+            // Even though Contoso.a exist in ExternalRepository, but PackageNamespaces filter doesn't let restore from it.
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "contoso.a");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Succeeds()
         {
             // Arrange
@@ -419,11 +430,12 @@ namespace NuGet.Tests.Apex
             uiwindow.UpdatePackageFromUI("contoso.a", "2.0.0");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", "2.0.0", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", "2.0.0");
         }
 
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
@@ -482,7 +494,7 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI("contoso.a", "2.0.0");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", "2.0.0", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", "2.0.0");
         }
 
         private void OpenNuGetPackageManagerWithDte()
@@ -510,7 +522,7 @@ namespace NuGet.Tests.Apex
                 System.Threading.Thread.Sleep(250);
             }
 
-            XunitLogger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
+            Trace.WriteLine($"Timed out waiting for {cmd.Name} to be available");
         }
 
         private static FileInfo GetPackagesConfigFile(ProjectTestExtension project)
