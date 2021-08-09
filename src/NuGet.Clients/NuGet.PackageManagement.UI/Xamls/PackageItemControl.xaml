@@ -196,7 +196,7 @@
                         Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
           <!-- author and download count -->
 
-              <TextBlock Grid.Column="3" Text="{Binding Author}"></TextBlock>
+              <TextBlock Grid.Column="3" TextTrimming="CharacterEllipsis" Text="{Binding Author}"></TextBlock>
 
               <!--<nuget:AuthorAndDownloadCount
                         Grid.Column="3"
