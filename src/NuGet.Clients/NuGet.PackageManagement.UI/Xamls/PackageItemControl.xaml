@@ -195,15 +195,11 @@
                         AutomationProperties.Name="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
                         Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
           <!-- author and download count -->
-
-              <TextBlock Grid.Column="3" TextTrimming="CharacterEllipsis" Text="{Binding Author}"></TextBlock>
-
-              <!--<nuget:AuthorAndDownloadCount
+              <nuget:AuthorAndDownloadCount
                         Grid.Column="3"
-                        MaxWidth="{Binding ActualWidth, ElementName=columnAuthor}"
                         Margin="5,4,0,0"
                         Author="{Binding Author}"
-                        DownloadCount="{Binding DownloadCount}" />-->
+                        DownloadCount="{Binding DownloadCount}" />
         </Grid>
         </Border>
 

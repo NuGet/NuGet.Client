@@ -7,31 +7,30 @@
              mc:Ignorable="d"
              x:Name="_self"
              d:DesignHeight="300" d:DesignWidth="300">
-  <Grid MaxWidth="{Binding ActualWidth, ElementName=_self}">
+  <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="Auto" />
-      <ColumnDefinition Width="Auto" />
-      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition />
+      <ColumnDefinition />
+      <ColumnDefinition />
     </Grid.ColumnDefinitions>
     <!-- text "by author" is shown here -->
     <TextBlock
       Grid.Column="0"
-      x:Name="_textBlockAuthor" 
-      Visibility="Collapsed"
-      MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"/>
+      x:Name="_textBlockAuthor"
+      TextTrimming="CharacterEllipsis"
+      Visibility="Collapsed"/>
     
     <TextBlock
       Grid.Column="1"
       x:Name="_separator" 
-      xml:space="preserve" 
-      Visibility="Collapsed"
-      MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}">, </TextBlock>
+      xml:space="preserve"
+      Visibility="Collapsed">, </TextBlock>
     
     <!-- the download count -->
     <TextBlock
       Grid.Column="2"
-      x:Name="_textBlockDownloadCount" 
-      Visibility="Collapsed"
-      MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"/>
+      x:Name="_textBlockDownloadCount"
+      TextTrimming="CharacterEllipsis"
+      Visibility="Collapsed"/>
   </Grid>
 </UserControl>
