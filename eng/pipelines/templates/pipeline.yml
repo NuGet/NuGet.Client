@@ -171,7 +171,7 @@ stages:
     testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part1
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
-    runSettingsURI: RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)
+    runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
     - name: VsBootstrapperUrl
@@ -192,7 +192,7 @@ stages:
     testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part2
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
-    runSettingsURI: RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)
+    runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
     - name: VsBootstrapperUrl
