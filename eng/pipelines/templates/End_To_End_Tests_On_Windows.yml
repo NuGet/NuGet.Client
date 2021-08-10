@@ -1,99 +1,133 @@
-steps:
-- task: PowerShell@1
-  displayName: "Define variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      $EndToEndTestCommandToRunPart = '"' + "Run-Test -Exclude '${env:PART}' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
-      Write-Host "##vso[task.setvariable variable=EndToEndTestCommandToRunPart]$EndToEndTestCommandToRunPart"
+parameters:
+- name: part
+  type: string
+- name: stageName
+  type: string
+- name: testMachineConfigurationJobName
+  type: string
+- name: testMachineDeploymentJobName
+  type: string
+- name: testExecutionJobName
+  type: string
+- name: testMachineCleanUpJobName
+  type: string
+- name: dependsOn
+  type: object
+- name: bootstrapperUrl
+  type: string
+- name: runSettingsURI
+  type: string
+- name: DartLabEnvironment
+  type: string
+- name: condition
+  type: string
+- name: variables
+  type: object
+- name: testExecutionJobTimeoutInMinutes
+  type: number
 
-- task: PowerShell@1
-  displayName: "Print Environment Variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+stages:
+- template: stages\visual-studio\base.yml@DartLabTemplates
+  parameters:
+    name: ${{parameters.stageName}}
+    condition: ${{parameters.condition}}
+    dependsOn: ${{parameters.dependsOn}}
+    testMachineConfigurationJobName: ${{parameters.testMachineConfigurationJobName}}
+    testMachineDeploymentJobName: ${{parameters.testMachineDeploymentJobName}}
+    testExecutionJobName: ${{parameters.testExecutionJobName}}
+    testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
+    testMachineCleanUpJobName: ${{parameters.testMachineCleanUpJobName}}
+    variables:
+    - name: bootstrapperUrl
+      value: ${{parameters.bootstrapperUrl}}
+    - name: runSettingsURI
+      value: ${{parameters.runSettingsURI}}
+    - name: Part
+      value: ${{parameters.part}}
+    - ${{parameters.variables}}
+    visualStudioBootstrapperURI: $(bootstrapperUrl)
+    visualStudioInstallationParameters: $(VisualStudio.InstallationUnderTest.SetupParameters)
+    testLabPoolName: VS-Platform
+    dartLabEnvironment: ${{parameters.DartLabEnvironment}}
+    visualStudioSigning: Test
+    preTestMachineConfigurationStepList:
+    - task: PowerShell@2
+      displayName: Set 'VisualStudio.InstallationUnderTest.SetupParameters'
+      inputs:
+        filePath: $(DartLab.Path)\Scripts\VisualStudio\Installation\Get-VisualStudioSetupParameters.ps1
+        arguments: -RunSettingsURI '$(runSettingsURI)' -InstallPath 'C:\Test\VisualStudio' -NoRestart -Quiet -Wait -OutVariableName 'VisualStudio.InstallationUnderTest.SetupParameters'
 
-- task: DownloadBuildArtifacts@0
-  displayName: "Download Build artifacts"
-  inputs:
-    artifactName: "VS15"
-    downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+    deployAndRunTestsStepList:
+    - task: PowerShell@1
+      displayName: "Define variables"
+      inputs:
+        scriptType: "inlineScript"
+        inlineScript: |
+          $EndToEndTestCommandToRunPart = '"' + "Run-Test -Exclude '${env:PART}' -Verbose *>&1 | Tee-Object $(System.DefaultWorkingDirectory)\artifacts\EndToEnd\FullLog_$(Build.BuildNumber).txt" +'"'
+          Write-Host "##vso[task.setvariable variable=EndToEndTestCommandToRunPart]$EndToEndTestCommandToRunPart"
 
-- task: PowerShell@1
-  displayName: "Bootstrap.ps1"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
+    - task: PowerShell@1
+      displayName: "Print Environment Variables"
+      inputs:
+        scriptType: "inlineScript"
+        inlineScript: |
+          Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-- task: PowerShell@1
-  displayName: "SetupFunctionalTests.ps1"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
+    - task: DownloadBuildArtifacts@0
+      displayName: "Download Build artifacts"
+      inputs:
+        artifactName: "VS15"
+        downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
-- task: PowerShell@1
-  displayName: "SetupMachine.ps1"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/SetupMachine.ps1"
+    - task: PowerShell@1
+      displayName: "Extract EndToEnd.zip"
+      inputs:
+        inlineScript: |
+          Expand-Archive -Path $(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip -DestinationPath $(System.DefaultWorkingDirectory)/artifacts/EndToEnd
 
-- task: PowerShell@1
-  displayName: "InstallNuGetVSIX.ps1"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/InstallNuGetVSIX.ps1"
-    arguments: "-NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -ProcessExitTimeoutInSeconds 180"
-    failOnStandardError: "false"
+    - task: PowerShell@1
+      displayName: "SetupFunctionalTests.ps1"
+      inputs:
+        scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
 
-- task: PowerShell@1
-  displayName: "Collect VS Logs"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
-      $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\e2e-collectlogs.zip
-  condition: "failed()"
+    - task: PowerShell@1
+      displayName: "SetupMachine.ps1"
+      inputs:
+        scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupMachine.ps1"
 
-- task: PowerShell@1
-  displayName: "RunFunctionalTests.ps1 (stop on error)"
-  timeoutInMinutes: 75
-  continueOnError: "false"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/RunFunctionalTests.ps1"
-    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber)"
-  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+    - task: PowerShell@1
+      displayName: "RunFunctionalTests.ps1 (stop on error)"
+      timeoutInMinutes: 75
+      continueOnError: "false"
+      inputs:
+        scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/RunFunctionalTests.ps1"
+        arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber)"
+      condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
-- task: PowerShell@1
-  displayName: "RunFunctionalTests.ps1 (continue on error)"
-  timeoutInMinutes: 75
-  continueOnError: "true"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/RunFunctionalTests.ps1"
-    arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber)"
-  condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+    - task: PowerShell@1
+      displayName: "RunFunctionalTests.ps1 (continue on error)"
+      timeoutInMinutes: 75
+      continueOnError: "true"
+      inputs:
+        scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/RunFunctionalTests.ps1"
+        arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber)"
+      condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: PublishTestResults@2
-  displayName: "Publish Test Results"
-  inputs:
-    testRunner: "JUnit"
-    testResultsFiles: "*.xml"
-    searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
-    mergeTestResults: "true"
-    testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
-  condition: "succeededOrFailed()"
+    - task: PublishTestResults@2
+      displayName: "Publish Test Results"
+      inputs:
+        testRunner: "JUnit"
+        testResultsFiles: "*.xml"
+        searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
+        mergeTestResults: "true"
+        testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
+      condition: "succeededOrFailed()"
 
-- task: PowerShell@1
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
-- task: PowerShell@1
-  displayName: "Kill running instances of DevEnv"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
-      KillRunningInstancesOfVS (Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig))
-  condition: "always()"
+    - task: PowerShell@1
+      displayName: "Initialize Git Commit Status on GitHub"
+      inputs:
+        scriptType: "inlineScript"
+        inlineScript: |
+          . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+          SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
+      condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"

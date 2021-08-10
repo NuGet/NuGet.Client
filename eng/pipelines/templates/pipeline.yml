@@ -1,3 +1,23 @@
+parameters:
+- name: DartLabEnvironment
+  displayName: DartLab Environment
+  type: string
+  default: Production
+  values:
+  - Production
+  - Staging
+
+resources:
+  pipelines:
+  - pipeline: DartLab
+    source: DartLab
+    branch: main
+  repositories:
+  - repository: DartLabTemplates
+    type: git
+    name: DartLab.Templates
+    ref: refs/heads/main
+
 variables:
   DOTNET_NOLOGO: 1
 
@@ -137,29 +157,47 @@ stages:
     steps:
     - template: Tests_On_Mac.yml
 
-- stage: EndToEnd
-  dependsOn:
-  - Initialize
-  - Build_Insertable
-  condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
-  jobs:
-  - job: End_To_End_Tests_On_Windows
-    timeoutInMinutes: 100
+# Dartlab's template defines this in its own stage
+- template: End_To_End_Tests_On_Windows.yml
+  parameters:
+    stageName: VS_EndToEnd_Part1
+    condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
+    dependsOn:
+    - Initialize
+    - Build_Insertable
+    testMachineConfigurationJobName: Configure_VM_EndToEnd_Part1
+    testMachineDeploymentJobName: Deploy_VM_EndToEnd_Part1
+    testExecutionJobName: RunTests_EndToEnd_Part1
+    testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part1
+    testExecutionJobTimeoutInMinutes: 100
+    bootstrapperUrl: $(VsBootstrapperUrl)
+    runSettingsURI: RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)
+    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
-      FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-    pool:
-      name: DDNuGet-Windows
-      demands:
-      - Allow_NuGet_E2E_Tests -equals true
-    strategy:
-      matrix:
-        Part1:
-          Part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1,PackageRestoreTest.ps1"
-        Part2:
-          Part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
-    steps:
-    - template: End_To_End_Tests_On_Windows.yml
+    - name: VsBootstrapperUrl
+      value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
+    part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1,PackageRestoreTest.ps1"
+
+# Dartlab's template defines this in its own stage
+- template: End_To_End_Tests_On_Windows.yml
+  parameters:
+    stageName: VS_EndToEnd_Part2
+    condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
+    dependsOn:
+    - Initialize
+    - Build_Insertable
+    testMachineConfigurationJobName: Configure_VM_EndToEnd_Part2
+    testMachineDeploymentJobName: Deploy_VM_EndToEnd_Part2
+    testExecutionJobName: RunTests_EndToEnd_Part2
+    testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part2
+    testExecutionJobTimeoutInMinutes: 100
+    bootstrapperUrl: $(VsBootstrapperUrl)
+    runSettingsURI: RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)
+    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+    variables:
+    - name: VsBootstrapperUrl
+      value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
+    part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
 
 - stage: Apex
   dependsOn:

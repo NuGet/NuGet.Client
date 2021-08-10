@@ -3,20 +3,19 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
-    <RunName>NuGet.OptProfV2</RunName>
-    <TestCaseFilter>TestCategory=OptProf</TestCaseFilter>
     <OutputPath Condition="'$(OutputPath)' == ''">$(ArtifactsDirectory)OptProfV2</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
     <MaxCpuCount>1</MaxCpuCount>
-    <TestSessionTimeout>21600000</TestSessionTimeout>
+    <TestSessionTimeout Condition=" '$(TestSessionTimeout)' == ''">9000000</TestSessionTimeout>
     <TestAdaptersPaths>C:\Test;C:\NuGet</TestAdaptersPaths>
     <ResultsDirectory>C:\Test\Results</ResultsDirectory>
-    <LingeringProcessCollector>enabled</LingeringProcessCollector>
-    <OptProfCollector>enabled</OptProfCollector>
-    <ScreenshotCollector>enabled</ScreenshotCollector>
-    <TestRunParametersLogger>enabled</TestRunParametersLogger>
-    <VideoRecorderCollector>enabled</VideoRecorderCollector>
+    <LingeringProcessCollector Condition=" '$(LingeringProcessCollector)' == '' ">enabled</LingeringProcessCollector>
+    <OptProfCollector Condition=" '$(OptProfCollector)' == '' ">disabled</OptProfCollector>
+    <ScreenshotCollector Condition=" '$(ScreenshotCollector)' == '' ">enabled</ScreenshotCollector>
+    <TestRunParametersLogger Condition=" '$(TestRunParametersLogger)' == '' ">enabled</TestRunParametersLogger>
+    <VideoRecorderCollector Condition=" '$(VideoRecorderCollector)' == '' ">enabled</VideoRecorderCollector>
     <TRXLogger>enabled</TRXLogger>
+    <VsConfigPath Condition=" '$(VsConfigPath)' == '' ">tests.dev$(VsTargetMajorVersion).vsconfig</VsConfigPath>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -28,16 +27,27 @@
     </Logger>
   </ItemDefinitionGroup>
 
+  <Target Name="ValidateTemplateInputs" BeforeTargets="Build">
+    <Error Condition=" '$(RunName)' == '' "
+      Text="RunName not specified" />
+    <Error Condition=" '$(FileName)' == '' "
+      Text="FileName not specified" />
+    <Error Condition=" '$(TestDrop)' == '' "
+      Text="TestDrop not specified" />
+    <Error Condition=" '$(IncludeProfilingInputs)' == 'true' AND '$(ProfilingInputsDrop)' == ''"
+      Text="ProfilingInputsDrop not specified" />
+  </Target>
+
   <ItemGroup Label="Test Stores">
-    <!-- This represents the build drop that contains NuGet.OptProf.dll. -->
+    <!-- This represents the location that contains the test container (test binary). -->
     <TestStore Include="vstsdrop:$(TestDrop)" />
     <!-- This represents the build drop that contains profiling inputs. -->
-    <TestStore Include="vstsdrop:$(ProfilingInputsDrop)" />
+    <TestStore Include="vstsdrop:$(ProfilingInputsDrop)" Condition=" '$(IncludeProfilingInputs)' == 'true' " />
   </ItemGroup>
 
   <ItemGroup Label="Test Containers">
-    <TestContainer Include="NuGet.OptProf.dll" />
-    <InstallationConfiguration Include="../.vsconfig" />
+    <TestContainer Include="$(FileName)" />
+    <InstallationConfiguration Include="$(VsConfigPath)" />
   </ItemGroup>
 
   <ItemGroup Label="Data Collectors">
