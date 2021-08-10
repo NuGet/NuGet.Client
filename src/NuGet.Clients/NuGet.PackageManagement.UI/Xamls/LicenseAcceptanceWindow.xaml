@@ -88,7 +88,7 @@
                     <Run
               Text="{Binding Authors, Mode=OneTime}" />
           </TextBlock>
-          <ItemsControl ItemsSource="{Binding License}">
+          <ItemsControl ItemsSource="{Binding License}" IsTabStop="False">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <WrapPanel Orientation="Horizontal" />
