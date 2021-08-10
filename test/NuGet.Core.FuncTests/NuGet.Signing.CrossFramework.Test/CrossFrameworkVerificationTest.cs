@@ -19,6 +19,8 @@ namespace NuGet.Signing.CrossFramework.Test
 
         private readonly string _successfullyVerified = "Successfully verified package 'packageA.1.0.0'";
         private readonly string _noTimestamperWarning = "NU3027: The signature should be timestamped to enable long-term signature validity after the certificate has expired";
+        private static readonly Uri ServiceIndexUrl = new Uri("https://v3serviceIndex.test/api/index.json");
+
         private readonly CrossVerifyTestFixture _testFixture;
 
         public CrossFrameworkVerificationTest(CrossVerifyTestFixture fixture)
@@ -31,18 +33,18 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
+            X509Certificate2 defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var authorCertificate = new X509Certificate2(defaultAuthorCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     authorCertificate,
                     nupkg,
                     dir);
 
                 // Act
-                var result = RunVerifyCommand(signedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(signedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -56,20 +58,20 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
-            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            X509Certificate2 defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
+            TimestampService timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var authorCertificate = new X509Certificate2(defaultAuthorCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     authorCertificate,
                     nupkg,
                     dir,
                     timestampService.Url);
 
                 // Act
-                var result = RunVerifyCommand(signedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(signedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -83,19 +85,19 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
+            X509Certificate2 defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var repositoryCertificate = new X509Certificate2(defaultRepositoryCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
                     repositoryCertificate,
                     nupkg,
                     dir,
-                    new Uri("https://v3serviceIndex.test/api/index.json"));
+                    ServiceIndexUrl);
 
                 // Act
-                var result = RunVerifyCommand(signedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(signedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -109,21 +111,21 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            X509Certificate2 defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
+            TimestampService timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var repositoryCertificate = new X509Certificate2(defaultRepositoryCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
                     repositoryCertificate,
                     nupkg,
                     dir,
-                    new Uri("https://v3serviceIndex.test/api/index.json"),
+                    ServiceIndexUrl,
                     timestampService.Url);
 
                 // Act
-                var result = RunVerifyCommand(signedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(signedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -137,26 +139,26 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
-            var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
+            X509Certificate2 defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
+            X509Certificate2 defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var authorCertificate = new X509Certificate2(defaultAuthorCertificate))
             using (var repositoryCertificate = new X509Certificate2(defaultRepositoryCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                    authorCertificate,
                    nupkg,
                    dir);
 
-                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                string countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
                     repositoryCertificate,
                     signedPackagePath,
                     dir,
-                    new Uri("https://v3serviceIndex.test/api/index.json"));
+                    ServiceIndexUrl);
 
                 // Act
-                var result = RunVerifyCommand(countersignedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(countersignedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -170,28 +172,28 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
-            var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            X509Certificate2 defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
+            X509Certificate2 defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
+            TimestampService timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var authorCertificate = new X509Certificate2(defaultAuthorCertificate))
             using (var repositoryCertificate = new X509Certificate2(defaultRepositoryCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                    authorCertificate,
                    nupkg,
                    dir,
                    timestampService.Url);
 
-                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                string countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
                     repositoryCertificate,
                     signedPackagePath,
                     dir,
-                    new Uri("https://v3serviceIndex.test/api/index.json"));
+                    ServiceIndexUrl);
 
                 // Act
-                var result = RunVerifyCommand(countersignedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(countersignedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -205,28 +207,28 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
-            var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            X509Certificate2 defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
+            X509Certificate2 defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
+            TimestampService timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var authorCertificate = new X509Certificate2(defaultAuthorCertificate))
             using (var repositoryCertificate = new X509Certificate2(defaultRepositoryCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                    authorCertificate,
                    nupkg,
                    dir);
 
-                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                string countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
                     repositoryCertificate,
                     signedPackagePath,
                     dir,
-                    new Uri("https://v3serviceIndex.test/api/index.json"),
+                    ServiceIndexUrl,
                     timestampService.Url);
 
                 // Act
-                var result = RunVerifyCommand(countersignedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(countersignedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -240,29 +242,29 @@ namespace NuGet.Signing.CrossFramework.Test
         {
             // Arrange
             var nupkg = new SimpleTestPackageContext();
-            var defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
-            var defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
-            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            X509Certificate2 defaultAuthorCertificate = await _testFixture.GetDefaultAuthorSigningCertificateAsync();
+            X509Certificate2 defaultRepositoryCertificate = await _testFixture.GetDefaultRepositorySigningCertificateAsync();
+            TimestampService timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
 
-            using (var dir = TestDirectory.Create())
+            using (TestDirectory dir = TestDirectory.Create())
             using (var authorCertificate = new X509Certificate2(defaultAuthorCertificate))
             using (var repositoryCertificate = new X509Certificate2(defaultRepositoryCertificate))
             {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                    authorCertificate,
                    nupkg,
                    dir,
                    timestampService.Url);
 
-                var countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
+                string countersignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
                     repositoryCertificate,
                     signedPackagePath,
                     dir,
-                    new Uri("https://v3serviceIndex.test/api/index.json"),
+                    ServiceIndexUrl,
                     timestampService.Url);
 
                 // Act
-                var result = RunVerifyCommand(countersignedPackagePath);
+                CommandRunnerResult result = RunVerifyCommand(countersignedPackagePath);
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -274,6 +276,7 @@ namespace NuGet.Signing.CrossFramework.Test
 #if IS_DESKTOP
         //The following tests are from NuGet.Core.FuncTests\NuGet.Packaging.FuncTest\SigningTests\SignatureUtilityTests.cs.
         //As timestamping in net5.0 is stricter, they could not be enabled in net5.0 code path. That's why we cross verify them.
+        //https://github.com/NuGet/Client.Engineering/issues/1091
         [Fact]
         public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
         {
@@ -290,16 +293,16 @@ namespace NuGet.Signing.CrossFramework.Test
                 var nupkg = new SimpleTestPackageContext();
 
                 using (var certificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
-                using (var directory = TestDirectory.Create())
+                using (TestDirectory directory = TestDirectory.Create())
                 {
-                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                         certificate,
                         nupkg,
                         directory,
                         timestampService.Url);
 
                     // Act
-                    var result = RunVerifyCommand(signedPackagePath);
+                    CommandRunnerResult result = RunVerifyCommand(signedPackagePath);
 
                     // Assert
                     result.Success.Should().BeFalse(because: result.AllOutput);
@@ -328,16 +331,16 @@ namespace NuGet.Signing.CrossFramework.Test
                 var nupkg = new SimpleTestPackageContext();
 
                 using (var certificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
-                using (var directory = TestDirectory.Create())
+                using (TestDirectory directory = TestDirectory.Create())
                 {
-                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                         certificate,
                         nupkg,
                         directory,
                         timestampService.Url);
 
                     // Act
-                    var result = RunVerifyCommand(signedPackagePath);
+                    CommandRunnerResult result = RunVerifyCommand(signedPackagePath);
 
                     // Assert
                     result.Success.Should().BeFalse(because: result.AllOutput);
@@ -366,16 +369,16 @@ namespace NuGet.Signing.CrossFramework.Test
                 var nupkg = new SimpleTestPackageContext();
 
                 using (var certificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
-                using (var directory = TestDirectory.Create())
+                using (TestDirectory directory = TestDirectory.Create())
                 {
-                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                         certificate,
                         nupkg,
                         directory,
                         timestampService.Url);
 
                     // Act
-                    var result = RunVerifyCommand(signedPackagePath);
+                    CommandRunnerResult result = RunVerifyCommand(signedPackagePath);
 
                     // Assert
                     result.Success.Should().BeTrue(because: result.AllOutput);
@@ -396,7 +399,7 @@ namespace NuGet.Signing.CrossFramework.Test
             string command = _testFixture._nugetExePath;
             string arguments = $"verify {packagePath} -Signatures";
 #endif
-            var verifyResult = CommandRunner.Run(
+            CommandRunnerResult verifyResult = CommandRunner.Run(
                 command,
                 workingDirectory: ".",
                 arguments,

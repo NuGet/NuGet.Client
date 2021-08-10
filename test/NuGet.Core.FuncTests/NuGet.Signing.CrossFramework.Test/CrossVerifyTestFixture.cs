@@ -19,6 +19,7 @@ namespace NuGet.Signing.CrossFramework.Test
 #if IS_DESKTOP
         private const string DotnetExe = "dotnet.exe";
         //In net472 code path, the SDK version and TFM could not be detected automatically, so we manually specified according to the sdk version we're testing against.
+        //https://github.com/NuGet/Client.Engineering/issues/1094
         private const string SdkVersion = "5";
         private const string SdkTfm = "net5.0";
         internal string _dotnetExePath;
