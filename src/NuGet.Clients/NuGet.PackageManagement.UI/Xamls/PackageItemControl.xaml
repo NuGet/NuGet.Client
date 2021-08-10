@@ -155,7 +155,8 @@
         <!-- Title/Author -->
           <Border Grid.Row="0" Grid.Column="0" Width="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"
                   MaxWidth="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}">
-            <Grid HorizontalAlignment="Left">
+            <Grid HorizontalAlignment="Left" Width="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}"
+                  MaxWidth="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -203,34 +204,35 @@
         </Grid>
         </Border>
 
-        <!-- Description below Title/Author -->
-          <!--<Border Grid.Row="1" Grid.Column="0" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}">
-            <Grid MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
+         <!--Description below Title/Author-->
+          <Border Grid.Row="1" Grid.Column="0" Width="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"
+                  MaxWidth="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}">
+            <Grid>
               <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
-          --><!-- providers --><!--
+           <!--providers--> 
           <nuget:PackageManagerProvidersLabel
                         Grid.Row="0"
                         FormatString="{x:Static nuget:Resources.Label_UseInstead}"
                         DataContext="{Binding Providers}" />
-          --><!-- Summary --><!--
+           <!--Summary--> 
           <TextBlock
                         Grid.Row="1"
                         Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
                         FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap" />
-          --><!-- Deprecation message --><!--
+           <!--Deprecation message--> 
           <nuget:PackageItemDeprecationLabel
                         Grid.Row="2"
                         FormatStringSingle="{x:Static nuget:Resources.Deprecation_PackageItemMessage}"
                         FormatStringAlternative="{x:Static nuget:Resources.Deprecation_PackageItemMessageAlternative}"
                         DataContext="{Binding DeprecationMetadata}" />
         </Grid>
-        </Border>-->
+        </Border>
       
         <Grid.ToolTip>
           <TextBlock Style="{StaticResource TooltipStyle}">

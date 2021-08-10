@@ -6,11 +6,14 @@
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d"
              x:Name="_self"
+             HorizontalAlignment="Stretch"
+             HorizontalContentAlignment="Left"
              d:DesignHeight="300" d:DesignWidth="300">
-  <Grid>
+  <Grid Width="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}"
+                  MaxWidth="{Binding MaxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Border}}}">
     <Grid.ColumnDefinitions>
       <ColumnDefinition />
-      <ColumnDefinition />
+      <ColumnDefinition Width="Auto" />
       <ColumnDefinition />
     </Grid.ColumnDefinitions>
     <!-- text "by author" is shown here -->
