@@ -227,6 +227,12 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
                         overwrite: true);
                 }
             }
+
+            // temp: delete once the .NET SDK ships Newtonsoft.Json 13.0.1 or higher. Tracked by https://github.com/NuGet/Home/issues/11135
+            File.Copy(
+                sourceFileName: typeof(Newtonsoft.Json.JsonSerializer).Assembly.Location,
+                destFileName: Path.Combine(pathToSdkInCli, "Newtonsoft.Json.dll"),
+                overwrite: true);
         }
 
         private static string GetTfmToCopy(string projectArtifactsBinFolder)
