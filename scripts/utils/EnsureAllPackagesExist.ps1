@@ -10,7 +10,6 @@ Param (
 [System.Collections.ArrayList]$PackageIDListShouldExist = @(
 "NuGet.CommandLine",
 "NuGet.Indexing",
-"NuGet.SolutionRestoreManager.Interop",
 "NuGet.VisualStudio.Contracts",
 "NuGet.VisualStudio",
 "Microsoft.Build.NuGetSdkResolver",
