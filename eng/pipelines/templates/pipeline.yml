@@ -165,10 +165,10 @@ stages:
     dependsOn:
     - Initialize
     - Build_Insertable
-    testMachineConfigurationJobName: Configure_VM_EndToEnd_Part1
-    testMachineDeploymentJobName: Deploy_VM_EndToEnd_Part1
-    testExecutionJobName: RunTests_EndToEnd_Part1
-    testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part1
+    # testMachineConfigurationJobName: Configure_VM_EndToEnd_Part1
+    # testMachineDeploymentJobName: Deploy_VM_EndToEnd_Part1
+    # testExecutionJobName: RunTests_EndToEnd_Part1
+    # testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part1
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
     runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
@@ -186,10 +186,10 @@ stages:
     dependsOn:
     - Initialize
     - Build_Insertable
-    testMachineConfigurationJobName: Configure_VM_EndToEnd_Part2
-    testMachineDeploymentJobName: Deploy_VM_EndToEnd_Part2
-    testExecutionJobName: RunTests_EndToEnd_Part2
-    testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part2
+    # testMachineConfigurationJobName: Configure_VM_EndToEnd_Part2
+    # testMachineDeploymentJobName: Deploy_VM_EndToEnd_Part2
+    # testExecutionJobName: RunTests_EndToEnd_Part2
+    # testMachineCleanUpJobName: Cleanup_VM_EndToEnd_Part2
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
     runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings

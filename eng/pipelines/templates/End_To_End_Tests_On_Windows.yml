@@ -3,14 +3,14 @@ parameters:
   type: string
 - name: stageName
   type: string
-- name: testMachineConfigurationJobName
-  type: string
-- name: testMachineDeploymentJobName
-  type: string
-- name: testExecutionJobName
-  type: string
-- name: testMachineCleanUpJobName
-  type: string
+# - name: testMachineConfigurationJobName
+#   type: string
+# - name: testMachineDeploymentJobName
+#   type: string
+# - name: testExecutionJobName
+#   type: string
+# - name: testMachineCleanUpJobName
+#   type: string
 - name: dependsOn
   type: object
 - name: bootstrapperUrl
@@ -32,11 +32,11 @@ stages:
     name: ${{parameters.stageName}}
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
-    testMachineConfigurationJobName: ${{parameters.testMachineConfigurationJobName}}
-    testMachineDeploymentJobName: ${{parameters.testMachineDeploymentJobName}}
-    testExecutionJobName: ${{parameters.testExecutionJobName}}
+    # testMachineConfigurationJobName: ${{parameters.testMachineConfigurationJobName}}
+    # testMachineDeploymentJobName: ${{parameters.testMachineDeploymentJobName}}
+    # testExecutionJobName: ${{parameters.testExecutionJobName}}
     testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
-    testMachineCleanUpJobName: ${{parameters.testMachineCleanUpJobName}}
+    # testMachineCleanUpJobName: ${{parameters.testMachineCleanUpJobName}}
     variables:
     - name: bootstrapperUrl
       value: ${{parameters.bootstrapperUrl}}
