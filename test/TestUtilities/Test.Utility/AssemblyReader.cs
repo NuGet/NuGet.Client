@@ -7,7 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using NuGet.Frameworks;
 
-namespace Dotnet.Integration.Test.Utils
+namespace NuGet.Test.Utility
 {
     internal static class AssemblyReader
     {

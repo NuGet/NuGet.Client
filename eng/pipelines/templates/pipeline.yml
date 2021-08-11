@@ -94,6 +94,24 @@ jobs:
   steps:
   - template: Functional_Tests_On_Windows.yml
 
+- job: CrossFramework_Tests_On_Windows
+  dependsOn:
+  - Initialize_Build
+  timeoutInMinutes: 30
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+  condition: "and(succeeded(),eq(variables['RunCrossFrameworkTestsOnWindows'], 'true')) "
+  pool:
+    name: VSEngSS-MicroBuild2019
+    demands:
+        - DotNetFramework
+        - msbuild
+
+  steps:
+  - template: CrossFramework_Tests_On_Windows.yml
+
 - job: Tests_On_Linux
   dependsOn: Initialize_Build
   timeoutInMinutes: 45

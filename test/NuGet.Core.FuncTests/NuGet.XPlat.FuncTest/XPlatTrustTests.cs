@@ -14,7 +14,7 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatTrustTests
     {
-        private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli();
+        private static readonly string DotnetCli = TestFileSystemUtility.GetDotnetCli();
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
         [Theory]
