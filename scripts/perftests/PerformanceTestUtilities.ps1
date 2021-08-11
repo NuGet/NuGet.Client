@@ -484,7 +484,7 @@ Function RunRestore(
     $logs = . $nugetClientFilePath $arguments | Out-String
     if($LASTEXITCODE -ne 0)
     { 
-        throw "The command `"$nugetClientFilePath $arguments`" finished with exit code $LASTEXITCODE" 
+        throw "The command `"$nugetClientFilePath $arguments`" finished with exit code $LASTEXITCODE.`n" + $logs
     }
 
     $totalTime = $stopwatch.Elapsed.TotalSeconds
