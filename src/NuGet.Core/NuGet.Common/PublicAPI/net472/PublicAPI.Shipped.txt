@@ -416,6 +416,7 @@ NuGet.Common.TelemetryActivity.Dispose() -> void
 NuGet.Common.TelemetryActivity.EndIntervalMeasure(string propertyName) -> void
 NuGet.Common.TelemetryActivity.OperationId.get -> System.Guid
 NuGet.Common.TelemetryActivity.ParentId.get -> System.Guid
+NuGet.Common.TelemetryActivity.StartIndependentInterval(string propertyName) -> System.IDisposable
 NuGet.Common.TelemetryActivity.StartIntervalMeasure() -> void
 NuGet.Common.TelemetryActivity.TelemetryActivity(System.Guid parentId) -> void
 NuGet.Common.TelemetryActivity.TelemetryActivity(System.Guid parentId, System.Guid operationId) -> void
