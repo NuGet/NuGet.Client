@@ -408,6 +408,23 @@ namespace NuGet.Configuration
             return RevocationMode.Online;
         }
 
+        public static NamespaceMode GetNamespaceMode(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var namespacesMode = GetConfigValue(settings, ConfigurationConstants.NamespacesMode);
+
+            if (!string.IsNullOrEmpty(namespacesMode) && Enum.TryParse(namespacesMode, ignoreCase: true, result: out NamespaceMode mode))
+            {
+                return mode;
+            }
+
+            return NamespaceMode.MultipleSourcesPerPackage;
+        }
+
         /// <summary>
         /// Throw if a path is relative.
         /// </summary>

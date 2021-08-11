@@ -130,5 +130,7 @@ namespace NuGet.Configuration
         public static readonly string ValueAttribute = "value";
 
         public static readonly string IdAttribute = "id";
+
+        public const string NamespacesMode = "namespaceMode";
     }
 }

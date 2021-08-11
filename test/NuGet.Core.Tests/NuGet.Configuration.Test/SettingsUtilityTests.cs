@@ -316,5 +316,66 @@ namespace NuGet.Configuration.Test
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
         }
+
+        [Fact]
+        public void GetNamespaceMode_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetNamespaceMode(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetNamespaceModeValueForAddItem_WithValidKeyValue_Success()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>
+        <add key=""namespaceMode"" value=""singleSourcePerPackage"" />
+    </config>
+</configuration>";
+
+            using var mockBaseDirectory = TestDirectory.Create();
+
+            SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+            var settings = new Settings(mockBaseDirectory);
+
+            // Act
+            var result = SettingsUtility.GetNamespaceMode(settings);
+
+            // Assert
+            result.Should().BeSameAs(NamespaceMode.SingleSourcePerPackage);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("bad value")]
+        [InlineData("multipleSourcesPerPackage")]
+        public void GetNamespaceModeValueForAddItem_WithInValidAndDefaultKeyValueReturnsDefaultMode_Success(string namespaceMode)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>
+        <add key=""namespaceMode"" value= ""{namespaceMode}"" />
+    </config>
+</configuration>";
+
+            using var mockBaseDirectory = TestDirectory.Create();
+
+            SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+            var settings = new Settings(mockBaseDirectory);
+
+            // Act
+            var result = SettingsUtility.GetNamespaceMode(settings);
+
+            // Assert
+            result.Should().BeSameAs(NamespaceMode.MultipleSourcesPerPackage);
+        }
     }
 }
