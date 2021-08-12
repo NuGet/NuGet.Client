@@ -482,7 +482,10 @@ Function RunRestore(
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     $logs = . $nugetClientFilePath $arguments | Out-String
-    # TODO https://github.com/NuGet/Home/issues/9968
+    if($LASTEXITCODE -ne 0)
+    { 
+        throw "The command `"$nugetClientFilePath $arguments`" finished with exit code $LASTEXITCODE.`n" + $logs
+    }
 
     $totalTime = $stopwatch.Elapsed.TotalSeconds
     $restoreCoreTime = ExtractRestoreElapsedTime $logs
