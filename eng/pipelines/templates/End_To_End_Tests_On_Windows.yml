@@ -3,14 +3,6 @@ parameters:
   type: string
 - name: stageName
   type: string
-# - name: testMachineConfigurationJobName
-#   type: string
-# - name: testMachineDeploymentJobName
-#   type: string
-# - name: testExecutionJobName
-#   type: string
-# - name: testMachineCleanUpJobName
-#   type: string
 - name: dependsOn
   type: object
 - name: bootstrapperUrl
@@ -32,11 +24,7 @@ stages:
     name: ${{parameters.stageName}}
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
-    # testMachineConfigurationJobName: ${{parameters.testMachineConfigurationJobName}}
-    # testMachineDeploymentJobName: ${{parameters.testMachineDeploymentJobName}}
-    # testExecutionJobName: ${{parameters.testExecutionJobName}}
     testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
-    # testMachineCleanUpJobName: ${{parameters.testMachineCleanUpJobName}}
     variables:
     - name: bootstrapperUrl
       value: ${{parameters.bootstrapperUrl}}
@@ -79,11 +67,10 @@ stages:
         artifactName: "VS15"
         downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
-    - task: PowerShell@1
+    - powershell: |
+        Expand-Archive -Path "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip" -DestinationPath "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd"
+        Copy-Item "$(Build.Repository.Localpath)/artifacts/VS15/NuGet.exe" -DestinationPath "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd"
       displayName: "Extract EndToEnd.zip"
-      inputs:
-        inlineScript: |
-          Expand-Archive -Path $(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip -DestinationPath $(System.DefaultWorkingDirectory)/artifacts/EndToEnd
 
     - task: PowerShell@1
       displayName: "SetupFunctionalTests.ps1"
