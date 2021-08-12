@@ -3,13 +3,13 @@
 
 namespace NuGet.Configuration
 {
-    public enum NamespaceMode
+    internal enum NamespaceMode
     {
         /// <summary>
         /// Relaxed mode for package namespaces.
         /// Any package id must be in one or more matching namespace declarations.
         /// </summary>
-        MultipleSourcesPerPackage,
+        AtLeastOneSourcePerPackage,
 
         /// <summary>
         /// Strict mode for package namespaces.

@@ -327,7 +327,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetNamespaceModeValueForAddItem_WithValidKeyValue_Success()
+        public void GetNamespaceMode_WithValidKeyValue_Success()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -354,8 +354,8 @@ namespace NuGet.Configuration.Test
         [InlineData("")]
         [InlineData(null)]
         [InlineData("bad value")]
-        [InlineData("multipleSourcesPerPackage")]
-        public void GetNamespaceModeValueForAddItem_WithInValidAndDefaultKeyValueReturnsDefaultMode_Success(string namespaceMode)
+        [InlineData("atLeastOneSourcePerPackage")]
+        public void GetNamespaceMode_WithInValidOrDefaultValueReturnsDefaultMode_Success(string namespaceMode)
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -375,7 +375,7 @@ namespace NuGet.Configuration.Test
             var result = SettingsUtility.GetNamespaceMode(settings);
 
             // Assert
-            Assert.Equal(NamespaceMode.MultipleSourcesPerPackage, result);
+            Assert.Equal(NamespaceMode.AtLeastOneSourcePerPackage, result);
         }
     }
 }

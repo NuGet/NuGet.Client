@@ -408,7 +408,7 @@ namespace NuGet.Configuration
             return RevocationMode.Online;
         }
 
-        public static NamespaceMode GetNamespaceMode(ISettings settings)
+        internal static NamespaceMode GetNamespaceMode(ISettings settings)
         {
             if (settings == null)
             {
@@ -422,7 +422,7 @@ namespace NuGet.Configuration
                 return mode;
             }
 
-            return NamespaceMode.MultipleSourcesPerPackage;
+            return NamespaceMode.AtLeastOneSourcePerPackage;
         }
 
         /// <summary>

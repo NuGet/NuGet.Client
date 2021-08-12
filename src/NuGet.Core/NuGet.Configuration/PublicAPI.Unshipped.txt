@@ -1,9 +1,6 @@
 NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
-NuGet.Configuration.NamespaceMode
-NuGet.Configuration.NamespaceMode.MultipleSourcesPerPackage = 0 -> NuGet.Configuration.NamespaceMode
-NuGet.Configuration.NamespaceMode.SingleSourcePerPackage = 1 -> NuGet.Configuration.NamespaceMode
 NuGet.Configuration.PackageNamespacesConfiguration
 NuGet.Configuration.PackageNamespacesConfiguration.AreNamespacesEnabled.get -> bool
 NuGet.Configuration.PackageNamespacesConfiguration.GetConfiguredPackageSources(string term) -> System.Collections.Generic.IReadOnlyList<string>
@@ -14,7 +11,6 @@ NuGet.Configuration.PackageNamespacesSourceItem.SetKey(string value) -> void
 NuGet.Configuration.SettingElementType.Namespace = 19 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageNamespaces = 17 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSource = 18 -> NuGet.Configuration.SettingElementType
-const NuGet.Configuration.ConfigurationConstants.NamespacesMode = "namespaceMode" -> string
 override NuGet.Configuration.NamespaceItem.Clone() -> NuGet.Configuration.SettingBase
 override NuGet.Configuration.NamespaceItem.ElementName.get -> string
 override NuGet.Configuration.NamespaceItem.Equals(object other) -> bool
@@ -26,7 +22,6 @@ override NuGet.Configuration.PackageNamespacesSourceItem.Equals(object other) ->
 override NuGet.Configuration.PackageNamespacesSourceItem.GetHashCode() -> int
 override NuGet.Configuration.PackageNamespacesSourceItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
 static NuGet.Configuration.PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageNamespacesConfiguration
-static NuGet.Configuration.SettingsUtility.GetNamespaceMode(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.NamespaceMode
 static readonly NuGet.Configuration.ConfigurationConstants.IdAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Namespace -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageNamespaces -> string
