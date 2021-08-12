@@ -228,6 +228,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ResetUI()
         {
+            //TODO: these visibilities need to set the Control Visible, and back to Collapsed when applicable.
             RevealRestoreBar();
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
