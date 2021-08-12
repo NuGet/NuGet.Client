@@ -68,8 +68,13 @@ stages:
         downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
     - powershell: |
-        Expand-Archive -Path "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip" -DestinationPath "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd"
-        Copy-Item "$(Build.Repository.Localpath)/artifacts/VS15/NuGet.exe" -DestinationPath "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd"
+        $zipPath = $(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip
+        $dest = $(System.DefaultWorkingDirectory)/artifacts/EndToEnd/
+        Write-Output "Extracting '$zipPath' to '$dest'"
+        Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
+        $nugetExePath = $(Build.Repository.Localpath)/artifacts/VS15/NuGet.exe
+        Write-Output "Copying '$nugetExePath' to '$dest'"
+        Copy-Item -Path "$nugetExePath" -Destination "$dest"
       displayName: "Extract EndToEnd.zip"
 
     - task: PowerShell@1
