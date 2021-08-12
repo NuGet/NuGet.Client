@@ -347,7 +347,7 @@ namespace NuGet.Configuration.Test
             var result = SettingsUtility.GetNamespaceMode(settings);
 
             // Assert
-            result.Should().BeSameAs(NamespaceMode.SingleSourcePerPackage);
+            Assert.Equal(NamespaceMode.SingleSourcePerPackage, result);
         }
 
         [Theory]
@@ -375,7 +375,7 @@ namespace NuGet.Configuration.Test
             var result = SettingsUtility.GetNamespaceMode(settings);
 
             // Assert
-            result.Should().BeSameAs(NamespaceMode.MultipleSourcesPerPackage);
+            Assert.Equal(NamespaceMode.MultipleSourcesPerPackage, result);
         }
     }
 }
