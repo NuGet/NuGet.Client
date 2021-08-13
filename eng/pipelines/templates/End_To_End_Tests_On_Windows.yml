@@ -82,10 +82,10 @@ stages:
       inputs:
         scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
 
-    - task: PowerShell@1
-      displayName: "SetupMachine.ps1"
-      inputs:
-        scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupMachine.ps1"
+    # - task: PowerShell@1
+    #   displayName: "SetupMachine.ps1"
+    #   inputs:
+    #     scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupMachine.ps1"
 
     - task: PowerShell@1
       displayName: "RunFunctionalTests.ps1 (stop on error)"
