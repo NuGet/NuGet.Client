@@ -55,7 +55,8 @@ Function SuppressNuGetUI([Parameter(Mandatory = $True)] [string] $registryValueN
 
 function  Set-VSINSTALLDIR
 {
-    $VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
+    # E2E CI agents should only have a single version of VS installed
+    $VSInstance = Get-LatestVSInstance
     $installationPath = $VSInstance.installationPath
     Write-Host "Setting $$env:VSINSTALLDIR = $installationPath"
     $env:VSINSTALLDIR = $installationPath

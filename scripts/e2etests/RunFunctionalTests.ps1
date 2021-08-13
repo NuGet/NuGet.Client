@@ -16,7 +16,12 @@ param (
 . "$PSScriptRoot\VSUtils.ps1"
 . "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
 
-$VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
+if ($env:CI -eq 1)
+{
+    $VSInstance = Get-LatestVSInstance
+} else {
+    $VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
+}
 
 trap
 {
