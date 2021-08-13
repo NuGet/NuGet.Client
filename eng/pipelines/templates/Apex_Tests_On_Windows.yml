@@ -8,7 +8,6 @@ steps:
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
-      Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
 - task: DownloadBuildArtifacts@0
