@@ -23,7 +23,7 @@ namespace NuGet.Commands.Test
             _fixture = fixture;
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithCertificateFileNotFound_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
@@ -41,7 +41,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithEmptyPkcs7File_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
@@ -67,7 +67,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithNoCertificateFound_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
@@ -87,7 +87,7 @@ namespace NuGet.Commands.Test
 
         // Skip the tests when signing is not supported.
 #if IS_SIGNING_SUPPORTED
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndNoPassword_Succeed()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
@@ -120,7 +120,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndCorrectPassword_Succeed()
         {
             const string password = "password";
@@ -156,7 +156,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithExistingCertificateFromPathAndWrongPassword_RaisesErrorsOnceAsync()
         {
             const string password = "password";
@@ -185,7 +185,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithExistingCertificateFromStoreAndNoPassword_Succeed()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetTrustedCertificate()))
@@ -214,7 +214,7 @@ namespace NuGet.Commands.Test
         }
 #endif
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithAmbiguousMatch_RaisesErrorsOnceAsync()
         {
             using (TestContext testContext = await TestContext.CreateAsync(_fixture.GetDefaultCertificate()))
@@ -235,7 +235,7 @@ namespace NuGet.Commands.Test
 
         //skip this test when signing is not supported.
 #if IS_SIGNING_SUPPORTED
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11134
+        [Fact]
         public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnceAsync()
         {
             const string password = "password";
