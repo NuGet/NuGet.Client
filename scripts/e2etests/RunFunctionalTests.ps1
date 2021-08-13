@@ -16,7 +16,7 @@ param (
 . "$PSScriptRoot\VSUtils.ps1"
 . "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
 
-if ($env:CI -eq 1)
+if ($env:CI -eq "true")
 {
     $VSInstance = Get-LatestVSInstance
 } else {
