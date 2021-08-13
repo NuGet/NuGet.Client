@@ -17,7 +17,13 @@ namespace NuGet.PackageManagement.UI
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new ListBoxToggleableItemsAutomationPeer(this);
+            var listViewPeer = new ListViewToggleableItemsAutomationPeer(this);
+            // Hook up an automation peer for the GridView. If the ProjectsListView ever uses a different view,
+            // this should be updated to create an AutomationPeer appropriate to that view.
+            // Unfortunately, we can't call GetAutomationPeer on the ViewBase due to its restricted access level so we
+            // create an automation peer for the appropriate view ourselves and hook it up.
+            listViewPeer.UpdateViewAutomationPeer(new GridViewAutomationPeer((GridView)View, this));
+            return listViewPeer;
         }
     }
 }
