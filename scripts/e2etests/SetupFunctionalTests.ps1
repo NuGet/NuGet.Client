@@ -89,7 +89,7 @@ DisableTextTemplateSecurityWarning $VSVersion
 SuppressNuGetUI -registryValueName 'DoNotShowPreviewWindow'
 SuppressNuGetUI -registryValueName 'SuppressUILegalDisclaimer'
 
-EnableWindowsDeveloperMode
+#EnableWindowsDeveloperMode
 Set-VSINSTALLDIR
 
 Write-Host 'THE END!'
