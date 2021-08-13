@@ -69,7 +69,7 @@ NuGet members may contribute directly to the main remote.
 
 1. Clone the NuGet.Client repository.
 
-1. Start PowerShell. CD into the cloned repository directory.
+1. Start PowerShell (Developer PowerShell for Visual Studio). CD into the cloned repository directory.
 
 1. Run the configuration script
 
