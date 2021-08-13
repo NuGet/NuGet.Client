@@ -350,12 +350,33 @@ namespace NuGet.Configuration.Test
             Assert.Equal(NamespaceMode.SingleSourcePerPackage, result);
         }
 
+        [Fact]
+        public void GetNamespaceMode_WhenNotConfiguredReturnsDefault_Success()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>        
+    </config>
+</configuration>";
+
+            using var mockBaseDirectory = TestDirectory.Create();
+
+            SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+            var settings = new Settings(mockBaseDirectory);
+
+            // Act
+            var result = SettingsUtility.GetNamespaceMode(settings);
+
+            // Assert
+            Assert.Equal(NamespaceMode.AtLeastOneSourcePerPackage, result);
+        }
+
         [Theory]
         [InlineData("")]
-        [InlineData(null)]
-        [InlineData("bad value")]
-        [InlineData("atLeastOneSourcePerPackage")]
-        public void GetNamespaceMode_WithInValidOrDefaultValueReturnsDefaultMode_Success(string namespaceMode)
+        [InlineData("invalid")]
+        public void GetNamespaceMode_WithInValidValueConfigured_Throws(string namespaceMode)
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -372,10 +393,12 @@ namespace NuGet.Configuration.Test
             var settings = new Settings(mockBaseDirectory);
 
             // Act
-            var result = SettingsUtility.GetNamespaceMode(settings);
+            var ex = Record.Exception(() => SettingsUtility.GetNamespaceMode(settings));
 
             // Assert
-            Assert.Equal(NamespaceMode.AtLeastOneSourcePerPackage, result);
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<NuGetConfigurationException>();
+            ex.Message.Should().Contain($"The attribute '{ConfigurationConstants.NamespacesMode}' has an unallowed value '{namespaceMode}' in element '{ConfigurationConstants.Config}'");
         }
     }
 }

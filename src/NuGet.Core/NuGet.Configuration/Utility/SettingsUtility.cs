@@ -408,6 +408,14 @@ namespace NuGet.Configuration
             return RevocationMode.Online;
         }
 
+        /// <summary>
+        /// Reads namespace mode from NuGet.Config
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns>Default value if no mode configured.
+        /// Throws excetion if the mode is invalid.
+        /// Otherwise returns the namespace mode.
+        /// </returns>
         internal static NamespaceMode GetNamespaceMode(ISettings settings)
         {
             if (settings == null)
@@ -417,12 +425,26 @@ namespace NuGet.Configuration
 
             var namespacesMode = GetConfigValue(settings, ConfigurationConstants.NamespacesMode);
 
-            if (!string.IsNullOrEmpty(namespacesMode) && Enum.TryParse(namespacesMode, ignoreCase: true, result: out NamespaceMode mode))
+            if (namespacesMode is null)
+            {
+                return NamespaceMode.AtLeastOneSourcePerPackage;
+            }
+            else if (Enum.TryParse(namespacesMode, ignoreCase: true, result: out NamespaceMode mode))
             {
                 return mode;
             }
 
-            return NamespaceMode.AtLeastOneSourcePerPackage;
+            var message1 = string.Format(CultureInfo.CurrentCulture,
+                Resources.AttributeValueNotAllowed,
+                ConfigurationConstants.NamespacesMode,
+                namespacesMode,
+                ConfigurationConstants.Config);
+
+            var message2 = string.Format(CultureInfo.CurrentCulture,
+                Resources.AttributeValuesAllowed,
+                string.Join(",", Enum.GetNames(typeof(NamespaceMode))));
+
+            throw new NuGetConfigurationException(string.Concat(message1, message2));
         }
 
         /// <summary>
