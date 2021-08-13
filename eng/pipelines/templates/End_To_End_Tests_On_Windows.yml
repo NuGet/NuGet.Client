@@ -25,6 +25,8 @@ stages:
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
     testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
+    testMachineCleanUpStrategy: stop
+    testMachineRetention: 0:6:0:0 # Retain the machine for 6 hours
     variables:
     - name: bootstrapperUrl
       value: ${{parameters.bootstrapperUrl}}
