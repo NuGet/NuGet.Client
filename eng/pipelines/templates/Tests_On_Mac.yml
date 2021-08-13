@@ -1,13 +1,4 @@
 steps:
-- task: PowerShell@2
-  displayName: "Update Build Number"
-  inputs:
-    targetType: "inline"
-    script: |
-      Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
-    failOnStderr: "true"
-  condition: "always()"
-
 - task: DownloadBuildArtifacts@0
   displayName: "Download NuGet.CommandLine.Test artifacts"
   inputs:

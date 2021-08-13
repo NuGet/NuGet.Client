@@ -1,13 +1,4 @@
 steps:
-- task: PowerShell@2
-  displayName: "Update Build Number"
-  inputs:
-    targetType: "inline"
-    script: |
-      Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
-    failOnStderr: "true"
-  condition: "always()"
-
 - task: ShellScript@2
   displayName: "Run Tests (continue on error)"
   continueOnError: "true"
