@@ -474,14 +474,6 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ToolTip_LatestVersion" xml:space="preserve">
     <value>Latest version: {0}</value>
   </data>
-  <data name="Label_UseInstead" xml:space="preserve">
-    <value>Incompatible: Use {0} instead</value>
-    <comment>The format string in the package list in the left pane. The string should contain exactly one instance of "{0}". No other formatting is supported.</comment>
-  </data>
-  <data name="Label_UseInsteadInSolutionPackageManager" xml:space="preserve">
-    <value>[Incompatible: Use {0} instead]</value>
-    <comment>The format string used for projects in the solution package manager. The string should contain exactly one instance of "{0}". No other formatting is supported.</comment>
-  </data>
   <data name="Label_SolutionNuGetWindowCaption" xml:space="preserve">
     <value>NuGet - Solution</value>
   </data>

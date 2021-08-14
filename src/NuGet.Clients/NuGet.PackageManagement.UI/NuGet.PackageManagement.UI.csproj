@@ -203,7 +203,6 @@
     <Compile Include="IItemLoader.cs" />
     <Compile Include="InfiniteScrollListItemStyleSelector.cs" />
     <Compile Include="LoadingStatusIndicator.cs" />
-    <Compile Include="Models\AlternativePackageManagerProviders.cs" />
     <Compile Include="ViewModels\PackageItemViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Converters\NotNullToBooleanConverter.cs" />
@@ -239,7 +238,6 @@
     <Compile Include="UserInterfaceService\NuGetUIContext.cs" />
     <Compile Include="UserInterfaceService\NuGetUIProjectContext.cs" />
     <Compile Include="UserSettings.cs" />
-    <Compile Include="Utility\PackageManagerProviderUtility.cs" />
     <Compile Include="Utility\UIUtility.cs" />
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">
@@ -250,9 +248,6 @@
     </Compile>
     <Compile Include="Xamls\LoadingStatusBar.xaml.cs">
       <DependentUpon>LoadingStatusBar.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Xamls\PackageManagerProvidersLabel.xaml.cs">
-      <DependentUpon>PackageManagerProvidersLabel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\ProjectView.xaml.cs">
       <DependentUpon>ProjectView.xaml</DependentUpon>
@@ -368,10 +363,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\LoadingStatusBar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Xamls\PackageManagerProvidersLabel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

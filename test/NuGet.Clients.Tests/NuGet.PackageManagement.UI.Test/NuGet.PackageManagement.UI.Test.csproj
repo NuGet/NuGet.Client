@@ -51,7 +51,6 @@
     <Compile Include="PackageLicenseUtilitiesTests.cs" />
     <Compile Include="PackageManagerListItemsTest.cs" />
     <Compile Include="TestNuGetUILogger.cs" />
-    <Compile Include="TestPackageManagerProviders.cs" />
     <Compile Include="TestPackageSearchMetadata.cs" />
     <Compile Include="UserInterfaceService\NuGetUIContextTests.cs" />
     <Compile Include="UserInterfaceService\NuGetUITests.cs" />

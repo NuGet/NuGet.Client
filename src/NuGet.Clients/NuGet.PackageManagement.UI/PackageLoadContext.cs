@@ -10,8 +10,6 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -25,7 +23,6 @@ namespace NuGet.PackageManagement.UI
             IsSolution = isSolution;
             PackageManager = uiContext.PackageManager;
             Projects = (uiContext.Projects ?? Enumerable.Empty<IProjectContextInfo>()).ToArray();
-            PackageManagerProviders = uiContext.PackageManagerProviders;
             SolutionManager = uiContext.SolutionManagerService;
             ServiceBroker = uiContext.ServiceBroker;
 
@@ -41,8 +38,6 @@ namespace NuGet.PackageManagement.UI
 
         // Indicates whether the loader is created by solution package manager.
         public bool IsSolution { get; }
-
-        public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
         public PackageSearchMetadataCache CachedPackages { get; set; }
 

@@ -74,7 +74,6 @@ namespace NuGet.PackageManagement.UI
             IOptionsPageActivator optionsPageActivator,
             IUserSettingsManager userSettingsManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-            IReadOnlyList<IVsPackageManagerProvider> packageManagerProviders,
             SolutionUserOptions solutionUserOptions,
             INuGetLockService lockService,
             INuGetUILogger logger,
@@ -91,7 +90,6 @@ namespace NuGet.PackageManagement.UI
             Assumes.NotNull(optionsPageActivator);
             Assumes.NotNull(userSettingsManager);
             Assumes.NotNull(deleteOnRestartManager);
-            Assumes.NotNull(packageManagerProviders);
             Assumes.NotNull(solutionUserOptions);
             Assumes.NotNull(lockService);
             Assumes.NotNull(logger);
@@ -112,7 +110,6 @@ namespace NuGet.PackageManagement.UI
                     optionsPageActivator,
                     solutionUserOptions,
                     deleteOnRestartManager,
-                    packageManagerProviders,
                     lockService,
                     cancellationToken)
             };

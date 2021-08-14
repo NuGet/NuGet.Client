@@ -184,7 +184,6 @@ namespace NuGet.PackageManagement.UI.Test
                 Mock.Of<IPackageRestoreManager>(),
                 Mock.Of<IOptionsPageActivator>(),
                 Mock.Of<IUserSettingsManager>(),
-                Enumerable.Empty<IVsPackageManagerProvider>(),
                 new NuGetSourcesServiceWrapper());
         }
     }

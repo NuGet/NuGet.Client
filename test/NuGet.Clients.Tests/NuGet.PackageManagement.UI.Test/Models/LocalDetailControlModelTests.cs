@@ -200,7 +200,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 _testInstance = await PackageSolutionDetailControlModel.CreateAsync(
                     solutionManager: solMgr.Object,
                     projects: new List<IProjectContextInfo>(),
-                    packageManagerProviders: new List<IVsPackageManagerProvider>(),
                     serviceBroker: serviceBroker.Object,
                     CancellationToken.None);
             });

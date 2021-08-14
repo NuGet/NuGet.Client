@@ -39,8 +39,6 @@ namespace NuGet.PackageManagement.UI
 
         IUserSettingsManager UserSettingsManager { get; }
 
-        IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
-
         Task<bool> IsNuGetProjectUpgradeableAsync(IProjectContextInfo project, CancellationToken cancellationToken);
 
         Task<IModalProgressDialogSession> StartModalProgressDialogAsync(string caption, ProgressDialogData initialData, INuGetUI uiService);
