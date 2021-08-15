@@ -1837,7 +1837,7 @@ namespace NuGet.CommandLine.Test
 
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource", "1.0.0", opensourceRepositoryPath);
 
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
                 Directory.CreateDirectory(sharedRepositoryPath);
@@ -1854,7 +1854,7 @@ namespace NuGet.CommandLine.Test
     </packageSources>
     <packageNamespaces>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""测试更新包"" />
+            <namespace id=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
             <namespace id=""Contoso.MVC.*"" />
@@ -1864,16 +1864,16 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r1 = RunInstall(pathContext, "Contoso.MVC.ASP", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Verbosity", "d");
-                var r2 = RunInstall(pathContext, "测试更新包", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Verbosity", "d");
+                var r2 = RunInstall(pathContext, "Contoso.Opensource", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Verbosity", "d");
 
                 // Assert
                 Assert.Equal(0, r1.Item1);
                 Assert.Equal(0, r2.Item1);
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{sharedRepositoryPath}'", r1.Output);
                 var packageFileContosoMVCASP = Path.Combine(workingPath, "outputDir", "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
-                var packageFileInternational = Path.Combine(workingPath, "outputDir", "测试更新包.1.0.0", "测试更新包.1.0.0.nupkg");
+                var packageFileContosoOpensource = Path.Combine(workingPath, "outputDir", "Contoso.Opensource.1.0.0", "Contoso.Opensource.1.0.0.nupkg");
                 Assert.True(File.Exists(packageFileContosoMVCASP));
-                Assert.True(File.Exists(packageFileInternational));
+                Assert.True(File.Exists(packageFileContosoOpensource));
             }
         }
 
@@ -1887,7 +1887,7 @@ namespace NuGet.CommandLine.Test
 
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource", "1.0.0", opensourceRepositoryPath);
                 Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", opensourceRepositoryPath); //This package supposed to be restored from other repo.
 
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
@@ -1933,7 +1933,7 @@ namespace NuGet.CommandLine.Test
 
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource", "1.0.0", opensourceRepositoryPath);
 
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
                 Directory.CreateDirectory(sharedRepositoryPath);
@@ -1941,7 +1941,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(pathContext.SolutionRoot, "packages.config",
 @"<packages>
-  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.Opensource"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
@@ -1956,7 +1956,7 @@ namespace NuGet.CommandLine.Test
     </packageSources>
     <packageNamespaces>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""测试更新包"" />
+            <namespace id=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
             <namespace id=""Contoso.MVC.*"" />
@@ -1971,9 +1971,9 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{sharedRepositoryPath}'", r.Output);
                 var packageFileContosoMVCASP = Path.Combine(workingPath, "outputDir", "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
-                var packageFileInternational = Path.Combine(workingPath, "outputDir", "测试更新包.1.0.0", "测试更新包.1.0.0.nupkg");
+                var packageFileContosoOpensource = Path.Combine(workingPath, "outputDir", "Contoso.Opensource.1.0.0", "Contoso.Opensource.1.0.0.nupkg");
                 Assert.True(File.Exists(packageFileContosoMVCASP));
-                Assert.True(File.Exists(packageFileInternational));
+                Assert.True(File.Exists(packageFileContosoOpensource));
             }
         }
 
@@ -1987,7 +1987,7 @@ namespace NuGet.CommandLine.Test
 
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource", "1.0.0", opensourceRepositoryPath);
 
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
                 Directory.CreateDirectory(sharedRepositoryPath);
@@ -1995,7 +1995,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(pathContext.SolutionRoot, "packages.config",
 @"<packages>
-  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.Opensource"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
@@ -2010,7 +2010,7 @@ namespace NuGet.CommandLine.Test
     </packageSources>
     <packageNamespaces>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""测试更新包"" />
+            <namespace id=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
             <namespace id=""Contoso.MVC.*"" />

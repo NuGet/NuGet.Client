@@ -3167,7 +3167,7 @@ EndProject";
 
                 var opensourceRepositoryPath = Path.Combine(workingPath, "PublicRepository");
                 Directory.CreateDirectory(opensourceRepositoryPath);
-                Util.CreateTestPackage("测试更新包", "1.0.0", opensourceRepositoryPath);
+                Util.CreateTestPackage("Contoso.Opensource", "1.0.0", opensourceRepositoryPath);
                 Util.CreateTestPackage("Contoso.MVC.ASP", "1.0.0", opensourceRepositoryPath);
 
                 var sharedRepositoryPath = Path.Combine(workingPath, "SharedRepository");
@@ -3176,7 +3176,7 @@ EndProject";
 
                 Util.CreateFile(proj1Directory, "packages.config",
 @"<packages>
-  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""Contoso.Opensource"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 

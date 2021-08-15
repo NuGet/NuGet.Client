@@ -50,13 +50,18 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
 
-        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces, PackageNamespacesProvider packageNamespacesProvider)
+        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces, IReadOnlyList<PackageSource> packageSources)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
+
+            if (packageSources == null)
+            {
+                throw new ArgumentNullException(nameof(packageSources));
+            }
+
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
 
-            IReadOnlyList<PackageSource> packageSources = packageNamespacesProvider.GetPackageSources();
             PackageSourceLookup = new Dictionary<string, PackageSource>(StringComparer.CurrentCultureIgnoreCase);
 
             foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
@@ -86,7 +91,9 @@ namespace NuGet.Configuration
                 namespaces.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Namespaces.Select(e => e.Id)));
             }
 
-            return new PackageNamespacesConfiguration(namespaces, packageNamespacesProvider);
+            var packageSourceProvider = new PackageSourceProvider(settings);
+
+            return new PackageNamespacesConfiguration(namespaces, packageSourceProvider.LoadPackageSources().ToList());
         }
 
         private SearchTree GetSearchTree()
