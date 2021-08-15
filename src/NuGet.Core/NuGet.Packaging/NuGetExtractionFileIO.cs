@@ -88,7 +88,7 @@ namespace NuGet.Packaging
         private static FileStream MonoPosixCreateFile(string path)
         {
             var fileStream = File.Create(path);
-            PosixChmod(path, _unixPermissions);
+            _ = PosixChmod(path, _unixPermissions);
             return fileStream;
         }
 
@@ -152,7 +152,7 @@ namespace NuGet.Packaging
             // read from running "sh -c umask", we're extremely unlikely to ever get here, so best-effort is good enough.
             var mask = Convert.ToInt32("700", 8);
             mask = PosixUMask(mask);
-            PosixUMask(mask);
+            _ = PosixUMask(mask);
 
             _unixPermissions = _unixPermissions & ~mask;
         }

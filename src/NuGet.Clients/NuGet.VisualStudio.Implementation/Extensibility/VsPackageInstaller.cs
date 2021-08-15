@@ -148,7 +148,7 @@ namespace NuGet.VisualStudio
 
                 if (!string.IsNullOrEmpty(version))
                 {
-                    NuGetVersion.TryParse(version, out semVer);
+                    _ = NuGetVersion.TryParse(version, out semVer);
                 }
 
                 RunJTFWithCorrectContext(project, () => InstallPackageAsync(
@@ -348,7 +348,7 @@ namespace NuGet.VisualStudio
 
                 if (!string.IsNullOrEmpty(pair.Value))
                 {
-                    NuGetVersion.TryParse(pair.Value, out version);
+                    _ = NuGetVersion.TryParse(pair.Value, out version);
                 }
 
                 toInstall.Add(new PackageIdentity(pair.Key, version));

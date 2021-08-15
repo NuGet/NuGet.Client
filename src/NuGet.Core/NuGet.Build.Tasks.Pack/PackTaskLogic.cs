@@ -536,7 +536,7 @@ namespace NuGet.Build.Tasks.Pack
                     if (packageTypeSplitInPart.Length > 1)
                     {
                         var versionString = packageTypeSplitInPart[1];
-                        Version.TryParse(versionString, out version);
+                        _ = Version.TryParse(versionString, out version);
                     }
                     listOfPackageTypes.Add(new PackageType(packageTypeName, version));
                 }

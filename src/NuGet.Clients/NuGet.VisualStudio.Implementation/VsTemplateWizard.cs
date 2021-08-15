@@ -112,7 +112,7 @@ namespace NuGet.VisualStudio
                 var isPreunzippedString = packagesElement.GetOptionalAttributeValue(IsPreunzippedAttributeName);
                 if (!string.IsNullOrEmpty(isPreunzippedString))
                 {
-                    Boolean.TryParse(isPreunzippedString, out isPreunzipped);
+                    _ = bool.TryParse(isPreunzippedString, out isPreunzipped);
                 }
 
                 var forceDesignTimeBuildString =
@@ -120,7 +120,7 @@ namespace NuGet.VisualStudio
 
                 if (!string.IsNullOrEmpty(forceDesignTimeBuildString))
                 {
-                    Boolean.TryParse(forceDesignTimeBuildString, out forceDesignTimeBuild);
+                    _ = bool.TryParse(forceDesignTimeBuildString, out forceDesignTimeBuild);
                 }
 
                 packages = GetPackages(packagesElement).ToList();

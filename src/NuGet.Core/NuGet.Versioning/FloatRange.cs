@@ -164,7 +164,7 @@ namespace NuGet.Versioning
         /// </summary>
         public static FloatRange Parse(string versionString)
         {
-            TryParse(versionString, out FloatRange range);
+            _ = TryParse(versionString, out FloatRange range);
 
             return range;
         }

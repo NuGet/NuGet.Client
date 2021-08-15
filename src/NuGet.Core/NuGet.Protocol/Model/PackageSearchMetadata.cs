@@ -128,7 +128,7 @@ namespace NuGet.Protocol
 
                 var trimmedLicenseExpression = LicenseExpression.Trim();
 
-                System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
+                _ = System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
                 effectiveVersion = effectiveVersion ?? LicenseMetadata.EmptyVersion;
 
                 List<string> errors = null;
