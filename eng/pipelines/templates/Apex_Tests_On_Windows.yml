@@ -19,6 +19,8 @@ steps:
 - task: MSBuild@1
   displayName: "Bootstrap NuGet packages"
   inputs:
+    msbuildVersion: "17.0"
+    msbuildArchitecture: "x64"
     solution: "build\\bootstrap.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Restore"
@@ -61,8 +63,11 @@ steps:
     arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
 
 - task: MSBuild@1
+  
   displayName: "Restore Apex Tests"
   inputs:
+    msbuildVersion: "17.0"
+    msbuildArchitecture: "x64"
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
@@ -73,6 +78,8 @@ steps:
   timeoutInMinutes: 120
   continueOnError: "true"
   inputs:
+    msbuildVersion: "17.0"
+    msbuildArchitecture: "x64"
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
@@ -85,6 +92,8 @@ steps:
   timeoutInMinutes: 120
   continueOnError: "false"
   inputs:
+    msbuildVersion: "17.0"
+    msbuildArchitecture: "x64"
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461

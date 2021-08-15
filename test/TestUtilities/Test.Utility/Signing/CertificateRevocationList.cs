@@ -100,8 +100,8 @@ namespace Test.Utility.Signing
             throw new NotImplementedException();
         }
 
-         public void ExportCrl()
-        { 
+        public void ExportCrl()
+        {
             throw new NotImplementedException();
         }
 #endif
