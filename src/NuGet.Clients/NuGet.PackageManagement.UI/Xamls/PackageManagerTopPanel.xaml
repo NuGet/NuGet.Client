@@ -62,7 +62,7 @@
                       <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
                       </MultiDataTrigger.Conditions>
-                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverBrushKey }}" />
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverTextBrushKey }}" />
                     </MultiDataTrigger>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
@@ -70,6 +70,12 @@
                       </MultiDataTrigger.Conditions>
                       <Setter Property="Visibility" TargetName="_underline" Value="Visible" />
                       <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey }}" />
+                    </MultiDataTrigger>
+                    <MultiDataTrigger>
+                      <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource Self}}" Value="true" />
+                      </MultiDataTrigger.Conditions>
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabFocusedTextBrushKey}}" />
                     </MultiDataTrigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>

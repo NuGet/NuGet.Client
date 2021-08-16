@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Windows;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
@@ -163,7 +164,9 @@ namespace NuGet.PackageManagement.UI
 
         public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrush;
 
-        public static object TabHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
+        public static object TabHoverTextBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
+
+        public static object TabFocusedTextBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
         public static object ListItemBackgroundSelectedColorKey { get; private set; } = SystemColors.HighlightColorKey;
 
@@ -171,6 +174,11 @@ namespace NuGet.PackageManagement.UI
 
         public static void LoadVsBrushes(INuGetExperimentationService nuGetExperimentationService)
         {
+            if (nuGetExperimentationService == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetExperimentationService));
+            }
+
             bool isBgColorFlightEnabled = IsBackgroundColorFlightEnabled(nuGetExperimentationService);
 
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
@@ -247,11 +255,12 @@ namespace NuGet.PackageManagement.UI
             ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextSelectedBrushKey;
 
             // Brushes/Colors for FilterLabel (Top Tabs)
-            TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-            TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-            TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
-            TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
-            TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
+            TabSelectedBrushKey = CommonDocumentColors.InnerTabSelectedIndicatorBrushKey; // underline
+            TabSelectedTextBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey; // text
+            TabHoverTextBrushKey = CommonDocumentColors.InnerTabTextHoverBrushKey; //text hover
+            TabFocusedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
+            TabPopupBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey;
+            TabPopupTextBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey;
 
             // Mapping color keys directly for use to create brushes using these colors
             ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;
