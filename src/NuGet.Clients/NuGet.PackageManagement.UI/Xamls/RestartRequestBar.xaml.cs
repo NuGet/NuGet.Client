@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.UI
                        CultureInfo.CurrentCulture,
                        UI.Resources.RequestRestartToCompleteUninstallSinglePackage, packagesMarkedForDeletion[0]);
                     RequestRestartMessage.Text = message;
-                    RestartBar.Visibility = Visibility.Visible;
+                    Visibility = Visibility.Visible;
                 }
                 else if (count > 1)
                 {
@@ -92,11 +92,11 @@ namespace NuGet.PackageManagement.UI
                        CultureInfo.CurrentCulture,
                        UI.Resources.RequestRestartToCompleteUninstallMultiplePackages);
                     RequestRestartMessage.Text = message;
-                    RestartBar.Visibility = Visibility.Visible;
+                    Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    RestartBar.Visibility = Visibility.Collapsed;
+                    Visibility = Visibility.Collapsed;
                 }
             }).PostOnFailure(nameof(RestartRequestBar));
         }
