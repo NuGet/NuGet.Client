@@ -513,7 +513,7 @@ namespace NuGet.DependencyResolver
                 if (remoteDependencyProviders.Count == 0)
                     context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoMatchingSourceFoundForPackage, packageName));
                 else
-                    context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_MatchingSourceFoundForPackage, packageName, string.Join(", ", remoteDependencyProviders.Select(provider => provider.Source.Source))));
+                    context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_MatchingSourceFoundForPackage, packageName, string.Join(",", remoteDependencyProviders.Select(provider => provider.Source.Name))));
             }
         }
     }
