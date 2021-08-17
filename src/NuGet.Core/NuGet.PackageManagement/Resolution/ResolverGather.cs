@@ -560,7 +560,7 @@ namespace NuGet.PackageManagement
             {
                 foreach (SourceResource source in sources)
                 {
-                    if (_areNamespacesEnabled && configuredPackageSources != null && !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                    if (_areNamespacesEnabled && configuredPackageSources != null && !configuredPackageSources.Contains(source.Source.PackageSource.Source, StringComparer.CurrentCultureIgnoreCase))
                     {
                         // This package's id prefix is not defined in current package source, let's skip.
                         continue;
