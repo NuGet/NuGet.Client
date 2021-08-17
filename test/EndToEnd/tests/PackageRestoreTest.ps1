@@ -329,9 +329,7 @@ function Test-PackageRestore-AllSourcesAreUsed {
 }
 
 # Test that during legacy packagereference project restore, AssemblyName property is considered for asset file creation. msbuild restore already does it.
-# Highest priority: PackageId
-# If PackageId does not exist use: AssemblyName
-# If AssemblyName does not exist fallback to the project file name without the extension
+# Priority: PackageId -> AssemblyName -> Project File Name.
 function Test-VSRestore-AssemblyName-Considered-Over-ProjectFileName {
     param($context)
 
@@ -384,9 +382,7 @@ function Test-VSRestore-AssemblyName-Considered-Over-ProjectFileName {
 }
 
 # Test that during legacy packagereference project restore, PackageId property is considered for asset file creation. msbuild restore already does it.
-# Highest priority: PackageId
-# If PackageId does not exist use: AssemblyName
-# If AssemblyName does not exist fallback to the project file name without the extension
+# Priority: PackageId -> AssemblyName -> Project File Name.
 function Test-VSRestore-PackageId-Considered-Over-AssemblyName {
     param($context)
 
