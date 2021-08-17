@@ -727,7 +727,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package is deprecated..
+        ///   Looks up a localized string similar to This package version is deprecated..
         /// </summary>
         public static string Deprecation_PackageItemMessage {
             get {
@@ -736,7 +736,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package is deprecated. Use {0} instead..
+        ///   Looks up a localized string similar to This package version is deprecated. Use {0} instead..
         /// </summary>
         public static string Deprecation_PackageItemMessageAlternative {
             get {
@@ -1326,24 +1326,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Updates {
             get {
                 return ResourceManager.GetString("Label_Updates", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Incompatible: Use {0} instead.
-        /// </summary>
-        public static string Label_UseInstead {
-            get {
-                return ResourceManager.GetString("Label_UseInstead", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [Incompatible: Use {0} instead].
-        /// </summary>
-        public static string Label_UseInsteadInSolutionPackageManager {
-            get {
-                return ResourceManager.GetString("Label_UseInsteadInSolutionPackageManager", resourceCulture);
             }
         }
         

@@ -97,7 +97,6 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
                     Model.Context.Projects,
-                    Model.Context.PackageManagerProviders,
                     CancellationToken.None);
             }
             else

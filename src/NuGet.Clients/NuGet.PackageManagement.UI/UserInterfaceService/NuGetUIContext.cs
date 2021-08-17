@@ -43,7 +43,6 @@ namespace NuGet.PackageManagement.UI
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
             IUserSettingsManager userSettingsManager,
-            IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             NuGetSourcesServiceWrapper sourceService)
         {
             ServiceBroker = serviceBroker;
@@ -56,7 +55,6 @@ namespace NuGet.PackageManagement.UI
             PackageRestoreManager = packageRestoreManager;
             OptionsPageActivator = optionsPageActivator;
             UserSettingsManager = userSettingsManager;
-            PackageManagerProviders = packageManagerProviders;
             _sourceService = sourceService;
 
             ServiceBroker.AvailabilityChanged += OnAvailabilityChanged;
@@ -96,8 +94,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         public IUserSettingsManager UserSettingsManager { get; }
-
-        public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
 
         public void Dispose()
         {
@@ -142,7 +138,6 @@ namespace NuGet.PackageManagement.UI
             IOptionsPageActivator optionsPageActivator,
             IUserSettingsManager userSettingsManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-            IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             INuGetLockService lockService,
             CancellationToken cancellationToken)
         {
@@ -154,7 +149,6 @@ namespace NuGet.PackageManagement.UI
             Assumes.NotNull(optionsPageActivator);
             Assumes.NotNull(userSettingsManager);
             Assumes.NotNull(deleteOnRestartManager);
-            Assumes.NotNull(packageManagerProviders);
             Assumes.NotNull(lockService);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -199,7 +193,6 @@ namespace NuGet.PackageManagement.UI
                 packageRestoreManager,
                 optionsPageActivator,
                 userSettingsManager,
-                packageManagerProviders,
                 sourceServiceWrapper);
         }
 

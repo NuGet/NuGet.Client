@@ -23,7 +23,6 @@ namespace NuGet.PackageManagement.UI
         private bool _autoReferenced;
         private bool _isSelected;
         private string _projectName;
-        private AlternativePackageManagerProviders _providers;
         private readonly IServiceBroker _serviceBroker;
 
         private PackageInstallationInfo(IServiceBroker serviceBroker, IProjectContextInfo project)
@@ -103,17 +102,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _projectName = value;
                 OnPropertyChanged(nameof(ProjectName));
-            }
-        }
-
-        public AlternativePackageManagerProviders Providers
-        {
-            get => _providers;
-
-            set
-            {
-                _providers = value;
-                OnPropertyChanged(nameof(Providers));
             }
         }
 

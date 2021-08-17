@@ -24,7 +24,6 @@ namespace NuGet.PackageManagement.UI
     {
         // This class does not own this instance, so do not dispose of it in this class.
         private INuGetSolutionManagerService _solutionManager;
-        private IEnumerable<IVsPackageManagerProvider> _packageManagerProviders;
         private string _installedVersions; // The text describing the installed versions information, such as "not installed", "multiple versions installed" etc.
         private int _installedVersionsCount; // the count of different installed versions
         private bool _canUninstall;
@@ -45,7 +44,6 @@ namespace NuGet.PackageManagement.UI
 
         private async ValueTask InitializeAsync(
             INuGetSolutionManagerService solutionManager,
-            IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             CancellationToken cancellationToken)
         {
             _solutionManager = solutionManager;
@@ -63,8 +61,6 @@ namespace NuGet.PackageManagement.UI
                 }
             };
 
-            _packageManagerProviders = packageManagerProviders;
-
             await CreateProjectListsAsync(cancellationToken);
         }
 
@@ -72,23 +68,21 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
-            IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             CancellationToken cancellationToken)
         {
             var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
-            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, cancellationToken);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
 
         internal static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
-            IEnumerable<IVsPackageManagerProvider> packageManagerProviders,
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
             var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
-            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, packageManagerProviders, cancellationToken);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
 
@@ -489,22 +483,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             await UpdateInstalledVersionsAsync(CancellationToken.None);
-
-            // update alternative package managers
-            if (_packageManagerProviders.Any())
-            {
-                // clear providers first
-                foreach (PackageInstallationInfo p in _projects)
-                {
-                    p.Providers = null;
-                }
-
-                // update the providers list async
-                foreach (PackageInstallationInfo p in _projects)
-                {
-                    p.Providers = await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_packageManagerProviders, Id, p.ProjectName);
-                }
-            }
         }
 
         // auto select projects based on the current tab and currently selected package

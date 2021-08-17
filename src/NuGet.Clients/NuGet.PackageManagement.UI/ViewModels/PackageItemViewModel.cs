@@ -330,52 +330,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _providersLoaderStarted;
-
-        private AlternativePackageManagerProviders _providers;
-        public AlternativePackageManagerProviders Providers
-        {
-            get
-            {
-                if (!_providersLoaderStarted && ProvidersLoader != null)
-                {
-                    _providersLoaderStarted = true;
-                    NuGetUIThreadHelper.JoinableTaskFactory
-                        .RunAsync(ReloadProvidersAsync)
-                        .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadProvidersAsync));
-                }
-
-                return _providers;
-            }
-
-            private set
-            {
-                _providers = value;
-                OnPropertyChanged(nameof(Providers));
-            }
-        }
-
-
-        private Lazy<Task<AlternativePackageManagerProviders>> _providersLoader;
-        internal Lazy<Task<AlternativePackageManagerProviders>> ProvidersLoader
-        {
-            get
-            {
-                return _providersLoader;
-            }
-
-            set
-            {
-                if (_providersLoader != value)
-                {
-                    _providersLoaderStarted = false;
-                }
-
-                _providersLoader = value;
-                OnPropertyChanged(nameof(Providers));
-            }
-        }
-
         private bool _prefixReserved;
         public bool PrefixReserved
         {
@@ -720,15 +674,6 @@ namespace NuGet.PackageManagement.UI
             {
                 // UI requested cancellation.
             }
-        }
-
-        private async System.Threading.Tasks.Task ReloadProvidersAsync()
-        {
-            var result = await ProvidersLoader.Value;
-
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            Providers = result;
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)
