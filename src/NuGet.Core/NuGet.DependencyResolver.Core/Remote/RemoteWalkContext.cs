@@ -74,7 +74,7 @@ namespace NuGet.DependencyResolver
                 }
                 catch (NuGetConfigurationException ex)
                 {
-                    Logger.LogError(ex.ToString());
+                    Logger.LogError(ex.Message);
                 }
 
                 if (sources == null || sources.Count == 0)
