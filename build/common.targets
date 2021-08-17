@@ -65,6 +65,11 @@
     <None Include="$(MSBuildThisFileDirectory)..\icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
+    <!-- Don't use PublicApiAnalyzer on source-build .NET -->
+  <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' == 'true' ">
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+  </PropertyGroup>
+
   <!-- Projects we pack become public APIs that others can use -->
   <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">
     <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >true</UsePublicApiAnalyzer>
