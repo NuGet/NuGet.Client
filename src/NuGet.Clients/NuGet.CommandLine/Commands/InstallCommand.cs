@@ -183,8 +183,14 @@ namespace NuGet.CommandLine
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 logger: Console);
 
+            var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+            if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+            {
+                packageSaveMode = EffectivePackageSaveMode;
+            }
+
             var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).Any();
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).Any();
 
             if (!missingPackageReferences)
             {
@@ -205,7 +211,7 @@ namespace NuGet.CommandLine
                 var projectContext = new ConsoleProjectContext(Console)
                 {
                     PackageExtractionContext = new PackageExtractionContext(
-                        Packaging.PackageSaveMode.Defaultv2,
+                        packageSaveMode,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         clientPolicyContext,
                         Console)

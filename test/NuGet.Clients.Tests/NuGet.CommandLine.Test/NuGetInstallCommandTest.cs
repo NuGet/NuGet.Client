@@ -690,6 +690,47 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData(PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Nupkg)]
+        [InlineData(PackageSaveMode.Nuspec | PackageSaveMode.Nupkg)]
+        public void InstallCommand_FromPackagesConfigFile_PackageSaveMode(PackageSaveMode saveMode)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var source = pathContext.PackageSource;
+                var outputDirectory = pathContext.SolutionRoot;
+                // Arrange
+                var packageFileName = PackageCreater.CreatePackage(
+                    "testPackage1", "1.1.0", source);
+
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+
+                // Act
+                var args = new string[] {
+                    "-OutputDirectory", outputDirectory,
+                    "-Source", source,
+                    "-PackageSaveMode", saveMode.ToString().Replace(", ", ";") };
+
+                var r = RunInstall(pathContext, "", 0, args);
+
+                // Assert
+                var nupkgFile = Path.Combine(
+                    outputDirectory,
+                    "testPackage1.1.1.0", "testPackage1.1.1.0.nupkg");
+                var nuspecFile = Path.Combine(
+                    outputDirectory,
+                    "testPackage1.1.1.0", "testPackage1.nuspec");
+
+                Assert.Equal(File.Exists(nupkgFile), saveMode.HasFlag(PackageSaveMode.Nupkg));
+                Assert.Equal(File.Exists(nuspecFile), saveMode.HasFlag(PackageSaveMode.Nuspec));
+            }
+        }
+
         [Fact]
         public void InstallCommand_PackageSaveModeNuspec()
         {
