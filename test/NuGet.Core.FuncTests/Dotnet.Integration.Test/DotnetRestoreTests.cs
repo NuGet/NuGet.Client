@@ -1855,10 +1855,10 @@ EndGlobal";
             Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
             Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
             Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Package namespace matches found for package ID 'Y' are: '{pathContext.PackageSource}'.", result.AllOutput);
-            Assert.Contains($"Package namespace matches found for package ID 'Z' are: '{pathContext.PackageSource}'.", result.AllOutput);
-            Assert.Contains($"Package namespace matches found for package ID 'X' are: '{packageSource2.FullName}'.", result.AllOutput);
-            Assert.Contains($"Package namespace matches found for package ID 'K' are: '{packageSource2.FullName}'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'Y' are: 'source1'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'Z' are: 'source1'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'X' are: 'source2'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'K' are: 'source2'.", result.AllOutput);
         }
 
         [Fact]
@@ -1927,7 +1927,7 @@ EndGlobal";
             result.Success.Should().BeFalse(because: result.AllOutput);
             Assert.Contains("Package namespace match not found for package ID 'Y'", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageY} (>= {version})'", result.AllOutput);
-            Assert.Contains($"Package namespace matches found for package ID 'X' are: '{packageSource2.FullName}'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'X' are: 'source2'.", result.AllOutput);
             Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
         }
 
