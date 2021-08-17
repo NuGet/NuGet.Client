@@ -66,7 +66,16 @@ namespace NuGet.DependencyResolver
             // filter package namespaces if enabled            
             if (PackageNamespaces?.AreNamespacesEnabled == true && libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
             {
-                IReadOnlyList<string> sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
+                IReadOnlyList<string> sources = default;
+
+                try
+                {
+                    sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
+                }
+                catch (NuGetConfigurationException ex)
+                {
+                    Logger.LogError(ex.ToString());
+                }
 
                 if (sources == null || sources.Count == 0)
                 {

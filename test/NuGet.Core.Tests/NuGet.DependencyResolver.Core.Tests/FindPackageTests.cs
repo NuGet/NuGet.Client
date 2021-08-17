@@ -315,7 +315,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token);
 
             Assert.Equal(0, downloadCount);
-            Assert.Equal(0, testLogger.Errors);
+            Assert.Equal(1, testLogger.Errors);
             Assert.Equal(1, testLogger.DebugMessages.Count);
             testLogger.DebugMessages.TryPeek(out string message);
             Assert.Equal($"Package namespace match not found for package ID '{packageX}'.", message);
