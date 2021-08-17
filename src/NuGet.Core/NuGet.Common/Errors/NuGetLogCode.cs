@@ -173,6 +173,11 @@ namespace NuGet.Common
         NU1110 = 1110,
 
         /// <summary>
+        /// Package namespace for a package id is not listed on any source. Any package id must be in one or more matching namespace declarations. 
+        /// </summary>
+        NU1111 = 1111,
+
+        /// <summary>
         /// Dependency project has an incompatible framework.
         /// </summary>
         NU1201 = 1201,

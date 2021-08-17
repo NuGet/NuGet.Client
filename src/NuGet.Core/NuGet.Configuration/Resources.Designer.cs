@@ -169,7 +169,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package namespace for &apos;{0}&apos; is not listed on any source..
+        ///   Looks up a localized string similar to {0}: Package namespace for &apos;{1}&apos; is not listed on any source. Any package id must be in one or more matching namespace declarations..
         /// </summary>
         internal static string Error_AtLeastOneSourcePerPackageMode {
             get {
@@ -259,7 +259,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package namespace for &apos;{0}&apos; is listed on the following sources: &apos;{1}&apos;. Only one unique package namespace can be defined across sources..
+        ///   Looks up a localized string similar to {0}: Package namespace for &apos;{0}&apos; is listed on the following sources: &apos;{1}&apos;. Only one unique package namespace can be defined across sources..
         /// </summary>
         internal static string Error_SingleSourcePerPackageMode {
             get {

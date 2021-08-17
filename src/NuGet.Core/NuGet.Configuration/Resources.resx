@@ -316,12 +316,14 @@
     <comment>{0} - list of allowed values for an attribute</comment>
   </data>
   <data name="Error_AtLeastOneSourcePerPackageMode" xml:space="preserve">
-    <value>Package namespace for '{0}' is not listed on any source.</value>
-    <comment>0 - package id</comment>
+    <value>{0}: Package namespace for '{1}' is not listed on any source. Any package id must be in one or more matching namespace declarations.</value>
+    <comment>0 - NU log code
+1 - package id</comment>
   </data>
   <data name="Error_SingleSourcePerPackageMode" xml:space="preserve">
-    <value>Package namespace for '{0}' is listed on the following sources: '{1}'. Only one unique package namespace can be defined across sources.</value>
-    <comment>0 - package id
-1- list of sources</comment>
+    <value>{0}: Package namespace for '{0}' is listed on the following sources: '{1}'. Only one unique package namespace can be defined across sources.</value>
+    <comment>0 - NU log code
+1 - package id
+2- list of sources</comment>
   </data>
 </root>

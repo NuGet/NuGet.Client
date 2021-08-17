@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -27,6 +28,7 @@ namespace NuGet.Configuration
 
             errormessage = string.Format(CultureInfo.CurrentCulture,
                     Resources.Error_AtLeastOneSourcePerPackageMode,
+                    NuGetLogCode.NU1111,
                     packageId);
 
             return false;
