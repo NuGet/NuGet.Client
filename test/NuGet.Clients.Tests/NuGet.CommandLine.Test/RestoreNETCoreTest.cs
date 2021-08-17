@@ -10959,8 +10959,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
             // Assert
             // If we pass source then log include actual path to repository instead of repository name.
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{privateRepositoryPath}'", r.Output);
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: '{opensourceRepositoryPath}'", r.Output);
+            Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'PrivateRepository'", r.Output);
+            Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
             var contosoRestorePath = Path.Combine(packagePath, packageContosoMvcReal.Id.ToString(), packageContosoMvcReal.Version.ToString(), packageContosoMvcReal.ToString() + ".nupkg");
             using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
             {

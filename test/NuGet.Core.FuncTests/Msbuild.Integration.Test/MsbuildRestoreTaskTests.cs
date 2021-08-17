@@ -1909,8 +1909,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(r.ExitCode == 0);
-                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: '{privateRepositoryPath}'", r.Output);
-                Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: '{opensourceRepositoryPath}'", r.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'PrivateRepository'", r.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
                 var contosoRestorePath = Path.Combine(pathContext.UserPackagesFolder, packageContosoMvcReal.Id.ToString(), packageContosoMvcReal.Version.ToString(), packageContosoMvcReal.ToString() + ".nupkg");
                 using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
                 {
@@ -2021,7 +2021,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 // Assert
                 Assert.True(r.ExitCode == 1);
                 Assert.Contains($"Package namespace match not found for package ID 'Contoso.MVC.ASP'.", r.Output);
-                Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: '{opensourceRepositoryPath}'", r.Output);
+                Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
             }
         }
     }
