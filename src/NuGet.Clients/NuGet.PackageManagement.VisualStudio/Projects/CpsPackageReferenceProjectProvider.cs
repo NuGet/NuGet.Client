@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullProjectPath = vsProject.FullProjectPath;
             var unconfiguredProject = GetUnconfiguredProject(vsProject.Project);
 
-            var projectServices = new NetCoreProjectSystemServices(vsProject, _scriptExecutor);
+            var projectServices = new CpsProjectSystemServices(vsProject, _scriptExecutor);
 
             return new CpsPackageReferenceProject(
                 vsProject.ProjectName,
