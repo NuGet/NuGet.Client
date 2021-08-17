@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.Configuration
@@ -100,7 +101,7 @@ namespace NuGet.Configuration
             {
                 NamespaceMode.SingleSourcePerPackage => new SingleSourcePerPackageNamespaceModeStrategy(),
                 NamespaceMode.AtLeastOneSourcePerPackage => new AtLeastOneSourcePerPackageNamespaceModeStrategy(),
-                _ => throw new ArgumentOutOfRangeException(nameof(namespaceMode), $"Not expected direction value: {namespaceMode}"),
+                _ => throw new ArgumentOutOfRangeException(string.Format(CultureInfo.CurrentCulture, Resources.Error_UnexpectedValue, namespaceMode.ToString())),
             };
         }
     }

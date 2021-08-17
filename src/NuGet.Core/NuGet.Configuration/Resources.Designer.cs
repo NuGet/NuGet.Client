@@ -277,6 +277,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unexpected value: &apos;{0}&apos;.
+        /// </summary>
+        internal static string Error_UnexpectedValue {
+            get {
+                return ResourceManager.GetString("Error_UnexpectedValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password and ClearTextPassword cannot be used at the same time..
         /// </summary>
         internal static string FileCertItemPasswordAndClearTextPasswordAtSameTime {
