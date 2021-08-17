@@ -259,8 +259,8 @@ namespace NuGet.PackageManagement.UI
             TabSelectedTextBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey; // text
             TabHoverTextBrushKey = CommonDocumentColors.InnerTabTextHoverBrushKey; //text hover
             TabFocusedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-            TabPopupBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey;
-            TabPopupTextBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey;
+            TabPopupBrushKey = CommonDocumentColors.InnerTabSelectedIndicatorBrushKey;
+            TabPopupTextBrushKey = EnvironmentColors.StatusBarDefaultTextBrushKey;
 
             // Mapping color keys directly for use to create brushes using these colors
             ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;
