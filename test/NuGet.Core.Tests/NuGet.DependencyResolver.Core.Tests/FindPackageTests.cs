@@ -226,7 +226,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
             namespaces.Add(source2, new List<string>() { packageX });
             namespaces.Add(source1, new List<string>() { packageY });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces, NamespaceMode.AtLeastOneSourcePerPackage);
             var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1
@@ -286,7 +286,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
             namespaces.Add("source2", new List<string>() { "z" });
             namespaces.Add("source1", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces, NamespaceMode.AtLeastOneSourcePerPackage);
             var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1

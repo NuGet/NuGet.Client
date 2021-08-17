@@ -32,7 +32,7 @@ namespace Test.Utility
                 namespaces[sourceKey] = namespaceList;
             }
             ;
-            return new PackageNamespacesConfiguration(namespaces);
+            return new PackageNamespacesConfiguration(namespaces, NamespaceMode.AtLeastOneSourcePerPackage);
         }
     }
 }

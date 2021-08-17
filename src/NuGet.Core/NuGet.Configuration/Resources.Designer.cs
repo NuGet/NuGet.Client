@@ -169,6 +169,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package namespace for &apos;{0}&apos; is not listed on any source..
+        /// </summary>
+        internal static string Error_AtLeastOneSourcePerPackageMode {
+            get {
+                return ResourceManager.GetString("Error_AtLeastOneSourcePerPackageMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Encryption is not supported on non-Windows platforms..
         /// </summary>
         internal static string Error_EncryptionUnsupported {
@@ -246,6 +255,15 @@ namespace NuGet.Configuration {
         internal static string Error_NoWritableConfig {
             get {
                 return ResourceManager.GetString("Error_NoWritableConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package namespace for &apos;{0}&apos; is listed on the following sources: &apos;{1}&apos;. Only one unique package namespace can be defined across sources..
+        /// </summary>
+        internal static string Error_SingleSourcePerPackageMode {
+            get {
+                return ResourceManager.GetString("Error_SingleSourcePerPackageMode", resourceCulture);
             }
         }
         

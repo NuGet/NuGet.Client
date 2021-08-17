@@ -3247,7 +3247,7 @@ namespace NuGet.Commands.FuncTest
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
             namespaces.Add(packageSource2, new List<string>() { packageA });
             namespaces.Add(pathContext.PackageSource, new List<string>() { packageB });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces, NamespaceMode.AtLeastOneSourcePerPackage);
 
             var request = new TestRestoreRequest(projectSpec,
                 sources,
@@ -3336,7 +3336,7 @@ namespace NuGet.Commands.FuncTest
             //package namespaces configuration
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
             namespaces.Add(packageSource2, new List<string>() { packageA });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces, NamespaceMode.AtLeastOneSourcePerPackage);
 
             var request = new TestRestoreRequest(projectSpec,
                 sources,

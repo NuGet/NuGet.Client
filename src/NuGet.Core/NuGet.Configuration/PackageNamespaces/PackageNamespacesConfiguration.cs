@@ -15,6 +15,8 @@ namespace NuGet.Configuration
         /// </summary>
         internal static int PackageIdMaxLength { get; } = 100;
 
+        internal readonly INamespaceModeStrategy _namespaceModeStrategy;
+
         /// <summary>
         /// Source name to package namespace list.
         /// </summary>
@@ -35,14 +37,22 @@ namespace NuGet.Configuration
         /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {
-            return SearchTree.Value?.GetConfiguredPackageSources(term);
+            IReadOnlyList<string> sources = SearchTree.Value?.GetConfiguredPackageSources(term);
+
+            if (!_namespaceModeStrategy.TryValidate(term, sources, out string errormessage))
+            {
+                throw new NuGetConfigurationException(errormessage);
+            }
+
+            return sources;
         }
 
-        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
+        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces, NamespaceMode namespaceMode)
         {
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
+            _namespaceModeStrategy = CreateNamespaceModeStrategy(namespaceMode);
         }
 
         /// <summary>
@@ -67,7 +77,9 @@ namespace NuGet.Configuration
                 namespaces.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Namespaces.Select(e => e.Id)));
             }
 
-            return new PackageNamespacesConfiguration(namespaces);
+            NamespaceMode mode = SettingsUtility.GetNamespaceMode(settings);
+
+            return new PackageNamespacesConfiguration(namespaces, mode);
         }
 
         private SearchTree GetSearchTree()
@@ -80,6 +92,16 @@ namespace NuGet.Configuration
             }
 
             return namespaceLookup;
+        }
+
+        private static INamespaceModeStrategy CreateNamespaceModeStrategy(NamespaceMode namespaceMode)
+        {
+            return namespaceMode switch
+            {
+                NamespaceMode.SingleSourcePerPackage => new SingleSourcePerPackageNamespaceModeStrategy(),
+                NamespaceMode.AtLeastOneSourcePerPackage => new AtLeastOneSourcePerPackageNamespaceModeStrategy(),
+                _ => throw new ArgumentOutOfRangeException(nameof(namespaceMode), $"Not expected direction value: {namespaceMode}"),
+            };
         }
     }
 }

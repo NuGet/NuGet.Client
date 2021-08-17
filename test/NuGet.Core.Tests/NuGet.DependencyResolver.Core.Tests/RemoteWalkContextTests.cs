@@ -51,7 +51,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
             namespaces.Add("Source1", new List<string>() { "x" });
             namespaces.Add("Source2", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces, NamespaceMode.AtLeastOneSourcePerPackage);
 
             var context = new TestRemoteWalkContext(namespacesConfiguration, NullLogger.Instance);
 
@@ -80,7 +80,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Dictionary<string, IReadOnlyList<string>> namespaces = new();
             namespaces.Add("Source1", new List<string>() { "y" });
             namespaces.Add("Source2", new List<string>() { "z" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces, NamespaceMode.AtLeastOneSourcePerPackage);
 
             var context = new TestRemoteWalkContext(namespacesConfiguration, logger);
 
