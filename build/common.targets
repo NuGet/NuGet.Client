@@ -6,7 +6,7 @@
     <IsDesktop>true</IsDesktop>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) ">
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('net6')) ">
     <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
     <IsCore>true</IsCore>
   </PropertyGroup>

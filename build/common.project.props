@@ -10,20 +10,24 @@
 
   <!-- Common -->
   <PropertyGroup>
+    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+    <NETCoreTargetFramework Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">net6.0</NETCoreTargetFramework>
     <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
-    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
+    <NetStandardVersion Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">net6.0</NetStandardVersion>
     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksExe Condition="'$(IsBuildOnlyXPLATProjects)' == 'true' OR '$(IsXPlat)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksExeForSigning>$(TargetFrameworksExe);netcoreapp5.0</TargetFrameworksExeForSigning>
-    <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);netcoreapp5.0</TargetFrameworksExeForSigning>
+    <TargetFrameworksExeForSigning Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(TargetFrameworksExe);net6.0</TargetFrameworksExeForSigning>
+    <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);net6.0</TargetFrameworksExeForSigning>
     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
     <TargetFrameworksLibrary Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NetStandardVersion)</TargetFrameworksLibrary>
     <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);netcoreapp5.0</TargetFrameworksLibraryForSigning>
+    <TargetFrameworksLibraryForSigning Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(TargetFrameworksLibrary);net6.0</TargetFrameworksLibraryForSigning>
     <TargetFrameworksLibraryForCrossVerificationTests>$(NETFXTargetFramework);netcoreapp5.0</TargetFrameworksLibraryForCrossVerificationTests>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
