@@ -675,7 +675,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       If PackageId does not exist use: AssemblyName
       If AssemblyName does not exist fallback to the project file name without the extension: $(MSBuildProjectName)
 
-      For non-NETCore projects use only: $(MSBuildProjectName)
+      For non-PackageReference projects use only: $(MSBuildProjectName)
     -->
     <PropertyGroup>
       <_RestoreProjectName>$(MSBuildProjectName)</_RestoreProjectName>
