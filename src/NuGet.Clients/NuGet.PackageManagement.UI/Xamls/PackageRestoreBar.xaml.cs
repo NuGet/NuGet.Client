@@ -47,8 +47,18 @@ namespace NuGet.PackageManagement.UI
 
         public Guid OperationId { get; set; }
 
+        public Visibility InnerVisibility
+        {
+            get { return (Visibility)GetValue(InnerVisibilityProperty); }
+            set { SetValue(InnerVisibilityProperty, value); }
+        }
+
+        public static readonly DependencyProperty InnerVisibilityProperty =
+            DependencyProperty.Register(nameof(InnerVisibility), typeof(Visibility), typeof(PackageRestoreBar), new PropertyMetadata(Visibility.Collapsed));
+
         public PackageRestoreBar(INuGetSolutionManagerService solutionManager, IPackageRestoreManager packageRestoreManager)
         {
+            DataContext = this;
             InitializeComponent();
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             _solutionManager = solutionManager;
