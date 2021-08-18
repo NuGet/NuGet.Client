@@ -52,7 +52,8 @@
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Actions\UpgradeLogger.cs" />
-    <Compile Include="AutomaticOpenPackageDetails.cs" />
+    <Compile Include="DeepLinkURIParser.cs" />
+    <Compile Include="NuGetPackageDetails.cs" />
     <Compile Include="Automation\ISelectableItem.cs" />
     <Compile Include="Automation\ISelectableItemsControl.cs" />
     <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />
@@ -533,5 +534,4 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
-  <ItemGroup />
 </Project>

@@ -396,7 +396,7 @@
         MinHeight="22"
         AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
         ItemsSource="{Binding Path=Versions}"
-        SelectedItem="{Binding Path=SelectedVersion}">
+        SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
 
         <ComboBox.ItemContainerStyle>
           <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">

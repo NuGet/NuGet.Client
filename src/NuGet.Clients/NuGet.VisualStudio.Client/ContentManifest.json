@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json.schemastore.org/vsix-manifestinjection",
+  "urlAssociations": [
+    {
+      "protocol": "vsph",
+      "displayName": "Visual Studio URI Handler",
+      "progId": "VisualStudio.vsph.[InstanceId]",
+      "defaultProgramRegistrationPath": "Software\\Microsoft\\VisualStudio_[InstanceId]\\Capabilities"
+    }
+  ],
+  "progIds": [
+    {
+      "id": "VisualStudio.vsph.[InstanceId]",
+      "displayName": "Visual Studio URI Handler",
+      "path": "[InstallDir]\\Common7\\IDE\\devenv.exe",
+      "arguments": "/OpenPackageDetails",
+      "defaultIconPath": "[InstallDir]\\Common7\\IDE\\devenv.exe"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Lucene.Net.Util;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
@@ -1295,18 +1296,59 @@ namespace NuGet.PackageManagement.UI
             }  
         }
 
-        public void AutomaticallySelectFirstPackage()
+        public void AutomaticallySelectFirstPackage(string packageVersion)
         {
             _topPanel.SelectFilter(ItemFilter.All);
+            SelectedSource = PackageSources.FirstOrDefault(psm => psm.IsAggregateSource);
             EventHandler handler = null;
             handler = (s, e) =>
             {
                 _packageList.LoadItemsCompleted -= handler;
-                _packageList.UpdateSelectedItem(null); //null makes it select the first item in the list
+
+                _packageList.UpdateSelectedItem((PackageItemViewModel)_packageList.Items.FirstOrDefault());
+                if(_packageList.SelectedItem == null)
+                {
+                    SelectionChangedEventHandler handle = null;
+                    handle = (send, events) =>
+                    {
+                        _packageList.SelectionChanged -= handle;
+                        FindSpecificPackageVersion(packageVersion);
+                    };
+                    _packageList.SelectionChanged += handle;
+                }
+                else
+                {
+                    FindSpecificPackageVersion(packageVersion);
+                }
             };
             _packageList.LoadItemsCompleted += handler;
-            
-            //_packageList.SelectedItem = (PackageItemViewModel)_packageList.Items.FirstOrDefault();
+        }
+
+        private void FindSpecificPackageVersion(string packageVersion)
+        {
+            NuGetVersion nugetPackageVersion = NuGetVersion.Parse(packageVersion);
+            IReadOnlyCollection<VersionInfoContextInfo> versions = null;
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                versions = await _packageList.SelectedItem.GetVersionsAsync();
+
+                //iterates through the list backwards as newer versions are more likely to be selected
+                if (versions != null)
+                {
+                    for (int i = versions.Count - 1; i >= 0; i--)
+                    {
+                        NuGetVersion version = versions.ElementAt(i).Version;
+                        if (version.Equals(nugetPackageVersion))
+                        {
+                            var displayVersion = new DisplayVersion(version, string.Empty);
+                            _detailModel.SelectedVersion = displayVersion;
+                            break;
+                        }
+                    }
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(AutomaticallySelectFirstPackage));
         }
 
         private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)
