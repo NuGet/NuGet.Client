@@ -5,6 +5,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
+    
     public class NuGetPackageDetails
     {
         public NuGetPackageDetails(string packageName, NuGetVersion versionNumber)
