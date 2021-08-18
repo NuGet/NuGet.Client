@@ -3,4 +3,7 @@ NuGet.Commands.RestoreRequest.PackageNameSpaces.get -> NuGet.Configuration.Packa
 NuGet.Commands.RestoreRequest.RestoreRequest(NuGet.ProjectModel.PackageSpec project, NuGet.Commands.RestoreCommandProviders dependencyProviders, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Packaging.Signing.ClientPolicyContext clientPolicyContext, NuGet.Configuration.PackageNamespacesConfiguration packageNamespaces, NuGet.Common.ILogger log, NuGet.Commands.LockFileBuilderCache lockFileBuilderCache) -> void
 NuGet.Commands.SignArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.Commands.SignArgs.PackagePaths.set -> void
+NuGet.Commands.StringFormatter
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion, string clrSupport) -> NuGet.Frameworks.NuGetFramework
+static NuGet.Commands.StringFormatter.Log_TrustedRepoAlreadyExists(string serviceIndex) -> string
+static NuGet.Commands.StringFormatter.Log_TrustedSignerAlreadyExists(string packageId) -> string

@@ -58,70 +58,106 @@ namespace NuGet.CommandLine.XPlat
 
                 trustedSignersCmd.OnExecute(async () =>
                 {
-                    TrustCommand action;
-
-                    if (!command.Values.Any() || string.IsNullOrEmpty(command.Values[0]))
-                    {
-                        action = TrustCommand.List;
-                    }
-                    else if (!Enum.TryParse(command.Values[0], ignoreCase: true, result: out action))
-                    {
-                        throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnknownAction, command.Values[0]));
-                    }
-
                     string name = null;
-
-                    if (command.Values.Count > 1)
-                    {
-                        name = command.Values[1];
-                    }
-
-                    string packagePath = null;
                     string sourceUrl = null;
-                    string fingerprint = null;
-                    if (command.Values.Count() > 2)
+                    ILogger logger = null;
+
+                    try
                     {
-                        if (action == TrustCommand.Author || action == TrustCommand.Repository)
-                        {
-                            packagePath = command.Values[2];
-                        }
-                        else if (action == TrustCommand.Source)
-                        {
-                            sourceUrl = command.Values[2];
-                        }
-                        else if (action == TrustCommand.Certificate)
-                        {
-                            fingerprint = command.Values[2];
-                        }
-                    }
+                        TrustCommand action;
 
-                    ISettings settings = ProcessConfigFile(configFile.Value());
+                        if (!command.Values.Any() || string.IsNullOrEmpty(command.Values[0]))
+                        {
+                            action = TrustCommand.List;
+                        }
+                        else if (!Enum.TryParse(command.Values[0], ignoreCase: true, result: out action))
+                        {
+                            throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnknownAction, command.Values[0]));
+                        }
 
-                    var trustedSignersArgs = new TrustedSignersArgs()
-                    {
-                        Action = MapTrustEnumAction(action),
-                        PackagePath = packagePath,
-                        Name = name,
-                        ServiceIndex = sourceUrl,
-                        CertificateFingerprint = fingerprint,
-                        FingerprintAlgorithm = algorithm.Value(),
-                        AllowUntrustedRoot = allowUntrustedRootOption.HasValue(),
-                        Author = action == TrustCommand.Author,
-                        Repository = action == TrustCommand.Repository,
-                        Owners = CommandLineUtility.SplitAndJoinAcrossMultipleValues(owners.Values),
-                        Logger = getLogger()
-                    };
+                        if (command.Values.Count > 1)
+                        {
+                            name = command.Values[1];
+                        }
 
-                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
+                        string packagePath = null;
+                        string fingerprint = null;
+                        if (command.Values.Count() > 2)
+                        {
+                            if (action == TrustCommand.Author || action == TrustCommand.Repository)
+                            {
+                                packagePath = command.Values[2];
+                            }
+                            else if (action == TrustCommand.Source)
+                            {
+                                sourceUrl = command.Values[2];
+                            }
+                            else if (action == TrustCommand.Certificate)
+                            {
+                                fingerprint = command.Values[2];
+                            }
+                        }
+
+                        ISettings settings = ProcessConfigFile(configFile.Value());
+                        logger = getLogger();
+
+                        var trustedSignersArgs = new TrustedSignersArgs()
+                        {
+                            Action = MapTrustEnumAction(action),
+                            PackagePath = packagePath,
+                            Name = name,
+                            ServiceIndex = sourceUrl,
+                            CertificateFingerprint = fingerprint,
+                            FingerprintAlgorithm = algorithm.Value(),
+                            AllowUntrustedRoot = allowUntrustedRootOption.HasValue(),
+                            Author = action == TrustCommand.Author,
+                            Repository = action == TrustCommand.Repository,
+                            Owners = CommandLineUtility.SplitAndJoinAcrossMultipleValues(owners.Values),
+                            Logger = logger
+                        };
+
+                        setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                    var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
+                        var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
 #pragma warning restore CS0618 // Type or member is obsolete
-                    var trustedSignersProvider = new TrustedSignersProvider(settings);
+                        var trustedSignersProvider = new TrustedSignersProvider(settings);
 
-                    var runner = new TrustedSignersCommandRunner(trustedSignersProvider, sourceProvider);
-                    Task<int> trustedSignTask = runner.ExecuteCommandAsync(trustedSignersArgs);
-                    return await trustedSignTask;
+                        var runner = new TrustedSignersCommandRunner(trustedSignersProvider, sourceProvider);
+                        Task<int> trustedSignTask = runner.ExecuteCommandAsync(trustedSignersArgs);
+                        return await trustedSignTask;
+                    }
+                    catch (Exception e)
+                    {
+                        // nuget trust command handled exceptions.
+                        if (e is InvalidOperationException)
+                        {
+                            if (!string.IsNullOrWhiteSpace(name))
+                            {
+                                var error_TrustedSignerAlreadyExistsMessage = StringFormatter.Log_TrustedSignerAlreadyExists(name);
+
+                                if (e.Message == error_TrustedSignerAlreadyExistsMessage)
+                                {
+                                    logger.LogError(error_TrustedSignerAlreadyExistsMessage);
+                                    return 1;
+                                }
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(sourceUrl))
+                            {
+                                var error_TrustedRepoAlreadyExists = StringFormatter.Log_TrustedRepoAlreadyExists(sourceUrl);
+
+                                if (e.Message == error_TrustedRepoAlreadyExists)
+                                {
+                                    logger.LogError(error_TrustedRepoAlreadyExists);
+                                    return 1;
+                                }
+                            }
+                        }
+
+                        // Unhandled exceptions bubble up.
+                        throw;
+                    }
                 });
             });
         }
