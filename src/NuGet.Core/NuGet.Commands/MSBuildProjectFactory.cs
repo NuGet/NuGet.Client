@@ -66,16 +66,6 @@ namespace NuGet.Commands
         /// <remarks>This methods is used in <see cref="PackCommandRunner.CreateProjectFactory"/> delegate</remarks>
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
-            return ProjectCreator(packArgs);
-        }
-
-        /// <summary>
-        /// Creates a MSBuild project factory with data from NuGet <see cref="Commands.PackArgs"/> object
-        /// </summary>
-        /// <param name="packArgs">NuGet arguments to create a package</param>
-        /// <returns>A <see cref="MSBuildProjectFactory"/> object</returns>
-        public static IProjectFactory ProjectCreator(PackArgs packArgs)
-        {
             return new MSBuildProjectFactory()
             {
                 PackArgs = packArgs,
