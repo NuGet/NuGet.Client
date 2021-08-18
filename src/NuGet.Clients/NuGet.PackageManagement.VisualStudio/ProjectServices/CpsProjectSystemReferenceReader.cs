@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    if (!await projectReference.GetReferenceOutputAssemblyAsync())
+                    if (await projectReference.GetReferenceOutputAssemblyAsync())
                     {
                         string childProjectPath = await projectReference.GetFullPathAsync();
                         var projectRestoreReference = new ProjectRestoreReference()
