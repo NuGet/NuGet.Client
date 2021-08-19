@@ -60,12 +60,6 @@
                   <ControlTemplate.Triggers>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
-                      </MultiDataTrigger.Conditions>
-                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverTextBrushKey }}" />
-                    </MultiDataTrigger>
-                    <MultiDataTrigger>
-                      <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
                       </MultiDataTrigger.Conditions>
                       <Setter Property="Visibility" TargetName="_underline" Value="Visible" />
@@ -76,6 +70,12 @@
                         <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource Self}}" Value="true" />
                       </MultiDataTrigger.Conditions>
                       <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabFocusedTextBrushKey}}" />
+                    </MultiDataTrigger>
+                    <MultiDataTrigger>
+                      <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
+                      </MultiDataTrigger.Conditions>
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverTextBrushKey }}" />
                     </MultiDataTrigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -114,8 +114,8 @@
             </MultiBinding>
           </AutomationProperties.Name>
           <TabItem.Header>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}"/>
+            <StackPanel Orientation="Horizontal" IsHitTestVisible="False" >
+              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}" />
               <imaging:CrispImage
                 Name="_warningIcon"
                 Margin="3,0"
@@ -132,8 +132,8 @@
             </MultiBinding>
           </AutomationProperties.Name>
           <TabItem.Header>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock x:Name="textUpdates" Text="{x:Static nuget:Resources.Label_Updates}"/>
+            <StackPanel Orientation="Horizontal" IsHitTestVisible="False">
+              <TextBlock x:Name="textUpdates" Text="{x:Static nuget:Resources.Label_Updates}" />
               <!-- the textblock that displays the count -->
               <Border
                 x:Name="_countUpdatesContainer"
