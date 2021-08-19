@@ -13,6 +13,25 @@ while [[ -h $source ]]; do
   [[ $source != /* ]] && source="$scriptroot/$source"
 done
 
+
+while [[ $# > 0 ]]; do
+    lowerI="$(echo $1 | awk '{print tolower($0)}')"
+    case $lowerI in
+        --configuration|-c)
+            configuration=$2
+            shift
+            ;;
+        -*)
+            # just eat this so we don't try to pass it along to MSBuild
+            export DOTNET_CORESDK_NOPRETTYPRINT=1
+            ;;
+        *)
+            args="$args $1"
+            ;;
+    esac
+    shift
+done
+
 function ReadGlobalVersion {
   local key=$1
   local global_json_file="$scriptroot/global.json"
@@ -40,8 +59,12 @@ function GetNuGetPackageCachePath {
   fi
 }
 
-export DOTNET=${DOTNET:-dotnet}
+if [[ "$DOTNET" == "" && "$DOTNET_PATH" != "" ]]; then
+  export DOTNET="$DOTNET_PATH/dotnet"
+else
+  export DOTNET=${DOTNET:-dotnet}
+fi
 
 ReadGlobalVersion Microsoft.DotNet.Arcade.Sdk
 export ARCADE_VERSION=$_ReadGlobalVersion
-"$DOTNET" msbuild "$scriptroot/source-build.proj" /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog"
+"$DOTNET" msbuild "$scriptroot/source-build.proj" /p:Configuration=$configuration /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog" $args
