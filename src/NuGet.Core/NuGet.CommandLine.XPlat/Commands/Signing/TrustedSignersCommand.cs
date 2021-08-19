@@ -59,7 +59,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     CommandArgument name = syncCommand.Argument("<NAME>",
-                                               "The name of the existing trusted signer to sync.");
+                                               Strings.TrustedSignerNameExists);
 
                     syncCommand.OnExecute(async () =>
                     {
@@ -83,7 +83,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     CommandArgument name = syncCommand.Argument("<NAME>",
-                                               "The name of the existing trusted signer to remove.");
+                                               Strings.TrustedSignerNameToRemove);
 
                     syncCommand.OnExecute(async () =>
                     {
@@ -113,9 +113,9 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     CommandArgument name = authorCommand.Argument("<NAME>",
-                                               "The name of the trusted signer to add. If NAME already exists in the configuration, the signature is appended.");
+                                               Strings.TrustedSignerNameToAdd);
                     CommandArgument package = authorCommand.Argument("<PACKAGE>",
-                                               "The given PACKAGE should be a local path to the signed .nupkg file.");
+                                               Strings.TrustLocalSignedNupkgPath);
 
                     authorCommand.OnExecute(async () =>
                     {
@@ -150,9 +150,9 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     CommandArgument name = repositoryCommand.Argument("<NAME>",
-                                               "The name of the trusted signer to add. If NAME already exists in the configuration, the signature is appended.");
+                                               Strings.TrustedSignerNameToAdd);
                     CommandArgument package = repositoryCommand.Argument("<PACKAGE>",
-                                               "The given PACKAGE should be a local path to the signed .nupkg file.");
+                                               Strings.TrustLocalSignedNupkgPath);
 
                     repositoryCommand.OnExecute(async () =>
                     {
@@ -187,9 +187,9 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     CommandArgument name = certificateCommand.Argument("<NAME>",
-                                               "The name of the trusted signer to add. If a trusted signer with the given name already exists, the certificate item is added to that signer. Otherwise a trusted author is created with a certificate item from the given certificate information.");
+                                               Strings.TrustedCertificateSignerNameToAdd);
                     CommandArgument fingerprint = certificateCommand.Argument("<FINGERPRINT>",
-                                               "The fingerprint of the certificate.");
+                                               Strings.TrustCertificateFingerprint);
 
                     certificateCommand.OnExecute(async () =>
                     {
@@ -215,7 +215,7 @@ namespace NuGet.CommandLine.XPlat
 
                     CommandOption sourceUrl = sourceCommand.Option(
                         "--source-url",
-                        "If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported.",
+                        Strings.TrustSourceUrl,
                         CommandOptionType.SingleValue);
 
                     CommandOption verbosity = sourceCommand.Option(
@@ -224,7 +224,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     CommandArgument name = sourceCommand.Argument("<NAME>",
-                                               "The name of the trusted signer to add. If only <NAME> is provided without --<source-url>, the package source from your NuGet configuration files with the same name is added to the trusted list. If <NAME> already exists in the configuration, the package source is appended to it.");
+                        Strings.TrustSourceSignerName);
 
                     sourceCommand.OnExecute(async () =>
                     {

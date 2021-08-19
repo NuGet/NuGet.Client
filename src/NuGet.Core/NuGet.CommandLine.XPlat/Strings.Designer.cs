@@ -1882,15 +1882,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported..
-        /// </summary>
-        internal static string String_Option_SourceUrl {
-            get {
-                return ResourceManager.GetString("String.Option_SourceUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
         /// </summary>
         internal static string Suffix_Description {
@@ -1954,6 +1945,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The fingerprint of the certificate..
+        /// </summary>
+        internal static string TrustCertificateFingerprint {
+            get {
+                return ResourceManager.GetString("TrustCertificateFingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Command actions allow you to specify only a specific subset of signers whose signatures will be accepted, while rejecting all others..
         /// </summary>
         internal static string TrustCommandActionDescription {
@@ -1999,11 +1999,56 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The name of the trusted signer to add. If a trusted signer with the given name already exists, the certificate item is added to that signer. Otherwise a trusted author is created with a certificate item from the given certificate information..
+        /// </summary>
+        internal static string TrustedCertificateSignerNameToAdd {
+            get {
+                return ResourceManager.GetString("TrustedCertificateSignerNameToAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the existing trusted signer to sync..
+        /// </summary>
+        internal static string TrustedSignerNameExists {
+            get {
+                return ResourceManager.GetString("TrustedSignerNameExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the trusted signer to add. If NAME already exists in the configuration, the signature is appended..
+        /// </summary>
+        internal static string TrustedSignerNameToAdd {
+            get {
+                return ResourceManager.GetString("TrustedSignerNameToAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the existing trusted signer to remove..
+        /// </summary>
+        internal static string TrustedSignerNameToRemove {
+            get {
+                return ResourceManager.GetString("TrustedSignerNameToRemove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lists all the trusted signers in the configuration..
         /// </summary>
         internal static string TrustListCommandDescription {
             get {
                 return ResourceManager.GetString("TrustListCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given PACKAGE should be a local path to the signed .nupkg file..
+        /// </summary>
+        internal static string TrustLocalSignedNupkgPath {
+            get {
+                return ResourceManager.GetString("TrustLocalSignedNupkgPath", resourceCulture);
             }
         }
         
@@ -2031,6 +2076,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string TrustSourceCommandDescription {
             get {
                 return ResourceManager.GetString("TrustSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;The name of the trusted signer to add. If only &lt;NAME&gt; is provided without --&lt;source-url&gt;, the package source from your NuGet configuration files with the same name is added to the trusted list. If &lt;NAME&gt; already exists in the configuration, the package source is appended to it.&quot;.
+        /// </summary>
+        internal static string TrustSourceSignerName {
+            get {
+                return ResourceManager.GetString("TrustSourceSignerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported..
+        /// </summary>
+        internal static string TrustSourceUrl {
+            get {
+                return ResourceManager.GetString("TrustSourceUrl", resourceCulture);
             }
         }
         

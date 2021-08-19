@@ -852,9 +852,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="SignCommandNoCertificateException" xml:space="preserve">
     <value>No certificate was provided.</value>
   </data>
-  <data name="String.Option_SourceUrl" xml:space="preserve">
-    <value>If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported.</value>
-  </data>
   <data name="TrustAuthorCommandDescription" xml:space="preserve">
     <value>Adds a trusted signer with the given name, based on the author signature of the package.</value>
   </data>
@@ -870,7 +867,31 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="TrustSyncCommandDescription" xml:space="preserve">
     <value>Deletes the current list of certificates and replaces them with an up-to-date list from the repository.</value>
   </data>
+  <data name="TrustCertificateFingerprint" xml:space="preserve">
+    <value>The fingerprint of the certificate.</value>
+  </data>
+  <data name="TrustedCertificateSignerNameToAdd" xml:space="preserve">
+    <value>The name of the trusted signer to add. If a trusted signer with the given name already exists, the certificate item is added to that signer. Otherwise a trusted author is created with a certificate item from the given certificate information.</value>
+  </data>
+  <data name="TrustedSignerNameExists" xml:space="preserve">
+    <value>The name of the existing trusted signer to sync.</value>
+  </data>
+  <data name="TrustedSignerNameToAdd" xml:space="preserve">
+    <value>The name of the trusted signer to add. If NAME already exists in the configuration, the signature is appended.</value>
+  </data>
+  <data name="TrustedSignerNameToRemove" xml:space="preserve">
+    <value>The name of the existing trusted signer to remove.</value>
+  </data>
+  <data name="TrustLocalSignedNupkgPath" xml:space="preserve">
+    <value>The given PACKAGE should be a local path to the signed .nupkg file.</value>
+  </data>
   <data name="TrustSourceCommandDescription" xml:space="preserve">
     <value>Adds a trusted signer based on a given package source.</value>
+  </data>
+  <data name="TrustSourceSignerName" xml:space="preserve">
+    <value>"The name of the trusted signer to add. If only &lt;NAME&gt; is provided without --&lt;source-url&gt;, the package source from your NuGet configuration files with the same name is added to the trusted list. If &lt;NAME&gt; already exists in the configuration, the package source is appended to it."</value>
+  </data>
+  <data name="TrustSourceUrl" xml:space="preserve">
+    <value>If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported.</value>
   </data>
 </root>
