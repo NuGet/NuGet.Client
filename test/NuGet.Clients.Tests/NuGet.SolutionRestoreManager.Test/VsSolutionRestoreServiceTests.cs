@@ -2119,7 +2119,7 @@ namespace NuGet.SolutionRestoreManager.Test
         // production code that needs to create the minimal DGSpec, hence the method to create the minimal DGSpec is in our VS assembly.
         //
         // For testing, we want to be able to test the minimal DGSpec in NuGet.Commands.Test and NuGet.PackageManagement.Test. There are a
-        // few problems here. First, NuGet.SolutionRestoreManager.dll is only net472, but NuGet.Commands.Test and NuGet.PackageManagement.Test
+        // few problems here. First, NuGet.SolutionRestoreManager.dll is only netfx, but NuGet.Commands.Test and NuGet.PackageManagement.Test
         // also target netstandard and net5. Additionally, NuGet.Commands is part of the NuGet SDK, meaning it only uses other NuGet SDK projects
         // and I don't want to add CreateMinimalDependencyGraphSpec to the public API.
         //

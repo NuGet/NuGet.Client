@@ -294,8 +294,6 @@
     <Compile Include="..\NuGet.Packaging\Sha512HashFunction.cs" Link="NuGet.Packaging\Sha512HashFunction.cs" />
     <Compile Include="..\NuGet.Packaging\StringFormatter.cs" Link="NuGet.Packaging\StringFormatter.cs" />
     <Compile Include="..\NuGet.Packaging\PackageCreation\Extensions\CollectionExtensions.cs" Link="NuGet.Packaging\PackageCreation\Extensions\CollectionExtensions.cs" />
-    <Compile Include="..\NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Link="NuGet.Packaging\Core\FrameworkReferenceGroup.cs" Condition="'$(TargetFramework)' == 'net472'" />
-    <Compile Include="..\NuGet.Packaging\Core\FrameworkReference.cs" Link="NuGet.Packaging\Core\FrameworkReference.cs" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 
   <ItemGroup>

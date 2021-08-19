@@ -58,7 +58,7 @@ Function Get-File([string[]] $pathParts)
 
 Function Get-GenerateTestPackagesFile()
 {
-    Return Get-File($repositoryRootDirectoryPath, 'artifacts', 'GenerateTestPackages', "$toolsetVersion.0", 'bin', $configuration, 'net472', 'GenerateTestPackages.exe')
+    Return Get-File($repositoryRootDirectoryPath, 'artifacts', 'GenerateTestPackages', "$toolsetVersion.0", 'bin', $configuration, 'net48', 'GenerateTestPackages.exe')
 }
 
 Function Get-NuGetFile()
