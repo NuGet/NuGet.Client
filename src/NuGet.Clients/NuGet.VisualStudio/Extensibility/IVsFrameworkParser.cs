@@ -20,6 +20,7 @@ namespace NuGet.VisualStudio
         /// (e.g. ".NETFramework,Version=v4.5") into a <see cref="FrameworkName"/>
         /// instance.
         /// </summary>
+        /// <remarks>This API is <a href="https://github.com/microsoft/vs-threading/blob/main/doc/cookbook_vs.md#how-do-i-effectively-verify-that-my-code-is-fully-free-threaded">free-threaded.</a></remarks>
         /// <param name="shortOrFullName">The framework string.</param>
         /// <exception cref="ArgumentNullException">If the provided string is null.</exception>
         /// <exception cref="ArgumentException">If the provided string cannot be parsed.</exception>
@@ -33,6 +34,7 @@ namespace NuGet.VisualStudio
         /// <remarks>
         /// For example, ".NETFramework,Version=v4.5" is converted to "net45". This is the value
         /// used inside of .nupkg folder structures as well as in project.json files.
+        /// <para>This API is <a href="https://github.com/microsoft/vs-threading/blob/main/doc/cookbook_vs.md#how-do-i-effectively-verify-that-my-code-is-fully-free-threaded">free-threaded.</a></para>
         /// </remarks>
         /// <param name="frameworkName">The framework name.</param>
         /// <exception cref="ArgumentNullException">If the input is null.</exception>

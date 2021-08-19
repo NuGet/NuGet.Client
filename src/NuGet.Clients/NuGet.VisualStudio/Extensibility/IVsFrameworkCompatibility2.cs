@@ -21,6 +21,7 @@ namespace NuGet.VisualStudio
         /// compatibility rules. <c>null</c> is returned of none of the frameworks
         /// are compatible.
         /// </summary>
+        /// <remarks>This API is <a href="https://github.com/microsoft/vs-threading/blob/main/doc/cookbook_vs.md#how-do-i-effectively-verify-that-my-code-is-fully-free-threaded">free-threaded.</a></remarks>
         /// <param name="targetFramework">The target framework.</param>
         /// <param name="fallbackTargetFrameworks">
         /// Target frameworks to use if the provided <paramref name="targetFramework"/> is not compatible.
