@@ -19,7 +19,7 @@ namespace NuGet.Commands {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -813,6 +813,15 @@ namespace NuGet.Commands {
         internal static string Error_TrustedSignerAlreadyExists {
             get {
                 return ResourceManager.GetString("Error_TrustedSignerAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate finger you&apos;re trying to add is already in certificate fingerprint list..
+        /// </summary>
+        internal static string Error_TrustFingerPrintAlreadyExist {
+            get {
+                return ResourceManager.GetString("Error_TrustFingerPrintAlreadyExist", resourceCulture);
             }
         }
         

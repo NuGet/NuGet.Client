@@ -39,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
 
                     listCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.List, algorithm : null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel);
+                        return await ExecuteCommand(TrustCommand.List, algorithm: null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel);
                     });
                 });
 
@@ -246,7 +246,7 @@ namespace NuGet.CommandLine.XPlat
                 trustedSignersCmd.OnExecute(async () =>
                 {
                     // If no command specified then default to List command.
-                    return await ExecuteCommand(TrustCommand.List, algorithm: null, allowUntrustedRootOption: false, owners : null, mainVerbosity, mainConfigFile, getLogger, setLogLevel);
+                    return await ExecuteCommand(TrustCommand.List, algorithm: null, allowUntrustedRootOption: false, owners: null, mainVerbosity, mainConfigFile, getLogger, setLogLevel);
                 });
             });
         }
@@ -277,7 +277,7 @@ namespace NuGet.CommandLine.XPlat
                     Name = name,
                     ServiceIndex = sourceUrl,
                     CertificateFingerprint = fingerprint,
-                    FingerprintAlgorithm = algorithm.Value(),
+                    FingerprintAlgorithm = algorithm?.Value(),
                     AllowUntrustedRoot = allowUntrustedRootOption,
                     Author = action == TrustCommand.Author,
                     Repository = action == TrustCommand.Repository,
