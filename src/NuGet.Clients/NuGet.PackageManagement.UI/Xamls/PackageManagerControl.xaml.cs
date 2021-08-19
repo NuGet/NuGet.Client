@@ -1296,7 +1296,7 @@ namespace NuGet.PackageManagement.UI
             }  
         }
 
-        public void AutomaticallySelectFirstPackage(string packageVersion)
+        public void SelectFirstPackage(string packageVersion)
         {
             _topPanel.SelectFilter(ItemFilter.All);
             SelectedSource = PackageSources.FirstOrDefault(psm => psm.IsAggregateSource);
@@ -1312,19 +1312,19 @@ namespace NuGet.PackageManagement.UI
                     handle = (send, events) =>
                     {
                         _packageList.SelectionChanged -= handle;
-                        FindSpecificPackageVersion(packageVersion);
+                        FindExactPackageVersion(packageVersion);
                     };
                     _packageList.SelectionChanged += handle;
                 }
                 else
                 {
-                    FindSpecificPackageVersion(packageVersion);
+                    FindExactPackageVersion(packageVersion);
                 }
             };
             _packageList.LoadItemsCompleted += handler;
         }
 
-        private void FindSpecificPackageVersion(string packageVersion)
+        private void FindExactPackageVersion(string packageVersion)
         {
             NuGetVersion nugetPackageVersion = NuGetVersion.Parse(packageVersion);
             IReadOnlyCollection<VersionInfoContextInfo> versions = null;
@@ -1348,7 +1348,7 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
                 }
-            }).PostOnFailure(nameof(PackageManagerControl), nameof(AutomaticallySelectFirstPackage));
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(SelectFirstPackage));
         }
 
         private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)

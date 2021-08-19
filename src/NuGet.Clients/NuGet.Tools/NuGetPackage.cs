@@ -676,7 +676,7 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
         }
 
-        private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null, bool openPackageDetail = false, string version = null)
+        private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null, bool isOpenedByURI = false, string version = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -705,10 +705,10 @@ namespace NuGetVSExtension
                     ShowUpdatePackages(windowFrame, updatePackageOptions);
                     Search(windowFrame, searchText);
 
-                    if (openPackageDetail)
+                    if (isOpenedByURI)
                     {
                         var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
-                        packageManagerControl?.AutomaticallySelectFirstPackage(version);
+                        packageManagerControl?.SelectFirstPackage(version);
                     }
 
                     windowFrame.Show();
@@ -993,11 +993,11 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
         }
 
-        private async Task ShowManageLibraryPackageForSolutionDialogAsync(string searchText, bool openPackageDetails = false, string version = null)
+        private async Task ShowManageLibraryPackageForSolutionDialogAsync(string searchText, bool isOpenedByURI = false, string version = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (ShouldMEFBeInitialized(openPackageDetails))
+            if (ShouldMEFBeInitialized(isOpenedByURI))
             {
                 await InitializeMEFAsync();
             }
@@ -1006,7 +1006,7 @@ namespace NuGetVSExtension
             if (windowFrame == null)
             {
                 //Create the window frame
-                if (openPackageDetails && !await SolutionManager.Value.IsSolutionAvailableAsync())
+                if (isOpenedByURI && !await SolutionManager.Value.IsSolutionAvailableAsync())
                 {
                     EventHandler handler = null;
                     handler = (s, e) =>
@@ -1017,7 +1017,7 @@ namespace NuGetVSExtension
                         {
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             windowFrame = await CreateDocWindowForSolutionAsync();
-                            ShowPMUISearch(windowFrame, searchText, openPackageDetails, version);
+                            DisplayPMUISearch(windowFrame, searchText, isOpenedByURI, version);
                         }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialogAsync));
                     };
                     SolutionManager.Value.SolutionOpened += handler;
@@ -1028,20 +1028,20 @@ namespace NuGetVSExtension
                     windowFrame = await CreateDocWindowForSolutionAsync();
                 }
             }
-            ShowPMUISearch(windowFrame, searchText, openPackageDetails, version);
+            DisplayPMUISearch(windowFrame, searchText, isOpenedByURI, version);
         }
 
-        private void ShowPMUISearch(IVsWindowFrame windowFrame, string searchText, bool openPackageDetails = false, string version = null)
+        private void DisplayPMUISearch(IVsWindowFrame windowFrame, string searchText, bool isOpenedByURI = false, string version = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (windowFrame != null)
             {
                 Search(windowFrame, searchText);
 
-                if (openPackageDetails)
+                if (isOpenedByURI)
                 {
                     var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
-                    packageManagerControl?.AutomaticallySelectFirstPackage(version);
+                    packageManagerControl?.SelectFirstPackage(version);
                 }
 
                 windowFrame.Show();
@@ -1302,7 +1302,7 @@ namespace NuGetVSExtension
                    && await EnvDTEProjectUtility.IsSupportedAsync(project);
         }
 
-        private bool ShouldMEFBeInitialized(bool openPackageDetails = false)
+        private bool ShouldMEFBeInitialized(bool isOpenedByURI = false)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -1311,7 +1311,7 @@ namespace NuGetVSExtension
                 var hr = VsMonitorSelection.IsCmdUIContextActive(
                 _solutionExistsCookie, out var pfActive);
 
-                if (openPackageDetails)
+                if (isOpenedByURI)
                 {
                     return ErrorHandler.Succeeded(hr);
                 }
