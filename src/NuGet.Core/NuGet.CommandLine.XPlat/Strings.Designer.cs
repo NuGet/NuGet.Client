@@ -2026,6 +2026,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Adds a trusted signer based on a given package source..
+        /// </summary>
+        internal static string TrustSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Deletes the current list of certificates and replaces them with an up-to-date list from the repository..
         /// </summary>
         internal static string TrustSyncCommandDescription {

@@ -870,4 +870,7 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="TrustSyncCommandDescription" xml:space="preserve">
     <value>Deletes the current list of certificates and replaces them with an up-to-date list from the repository.</value>
   </data>
+  <data name="TrustSourceCommandDescription" xml:space="preserve">
+    <value>Adds a trusted signer based on a given package source.</value>
+  </data>
 </root>

@@ -139,6 +139,11 @@ namespace NuGet.CommandLine.XPlat
 
                     repositoryCommand.HelpOption(XPlatUtility.HelpOption);
 
+                    CommandOption owners = repositoryCommand.Option(
+                        "--owners",
+                        Strings.TrustCommandOwners,
+                        CommandOptionType.MultipleValue);
+
                     CommandOption verbosity = repositoryCommand.Option(
                         "-v|--verbosity",
                         Strings.Verbosity_Description,
@@ -151,7 +156,7 @@ namespace NuGet.CommandLine.XPlat
 
                     repositoryCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.Repository, algorithm: null, allowUntrustedRootOption.HasValue(), owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
+                        return await ExecuteCommand(TrustCommand.Repository, algorithm: null, allowUntrustedRootOption.HasValue(), owners: owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
                     });
                 });
 
@@ -194,7 +199,7 @@ namespace NuGet.CommandLine.XPlat
 
                 trustedSignersCmd.Command("source", (sourceCommand) =>
                 {
-                    sourceCommand.Description = Strings.TrustRepositoryCommandDescription;
+                    sourceCommand.Description = Strings.TrustSourceCommandDescription;
 
                     CommandOption configFile = sourceCommand.Option(
                         "--configfile",
@@ -203,7 +208,7 @@ namespace NuGet.CommandLine.XPlat
 
                     sourceCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption owners = trustedSignersCmd.Option(
+                    CommandOption owners = sourceCommand.Option(
                         "--owners",
                         Strings.TrustCommandOwners,
                         CommandOptionType.MultipleValue);
