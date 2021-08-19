@@ -781,7 +781,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Specifies the hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256. Values supported are SHA256, SHA384 and SHA512.</value>
   </data>
   <data name="TrustCommandAllowUntrustedRoot" xml:space="preserve">
-    <value>Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root.</value>
+    <value>Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root. This is not recommended.</value>
   </data>
   <data name="TrustCommandDescription" xml:space="preserve">
     <value>Manage the trusted signers.</value>
@@ -851,5 +851,20 @@ The search is a case-insensitive string comparison using the supplied value, whi
   </data>
   <data name="SignCommandNoCertificateException" xml:space="preserve">
     <value>No certificate was provided.</value>
+  </data>
+  <data name="TrustAuthorCommandDescription" xml:space="preserve">
+    <value>Adds a trusted signer with the given name, based on the author signature of the package.</value>
+  </data>
+  <data name="TrustListCommandDescription" xml:space="preserve">
+    <value>Lists all the trusted signers in the configuration.</value>
+  </data>
+  <data name="TrustRemoveCommandDescription" xml:space="preserve">
+    <value>Removes any trusted signers that match the given name.</value>
+  </data>
+  <data name="TrustRepositoryCommandDescription" xml:space="preserve">
+    <value>Adds a trusted signer with the given name, based on the repository signature or countersignature of a signed package.</value>
+  </data>
+  <data name="TrustSyncCommandDescription" xml:space="preserve">
+    <value>Deletes the current list of certificates and replaces them with an up-to-date list from the repository.</value>
   </data>
 </root>
