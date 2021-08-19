@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
@@ -22,30 +21,7 @@ namespace NuGet.CommandLine.XPlat
         {
             app.Command("trust", trustedSignersCmd =>
             {
-
-                CommandOption algorithm = trustedSignersCmd.Option(
-                    "--algorithm",
-                    Strings.TrustCommandAlgorithm,
-                    CommandOptionType.SingleValue);
-
-                CommandOption owners = trustedSignersCmd.Option(
-                    "--owners",
-                    Strings.TrustCommandOwners,
-                    CommandOptionType.MultipleValue);
-
-                CommandOption verbosity = trustedSignersCmd.Option(
-                    "-v|--verbosity",
-                    Strings.Verbosity_Description,
-                    CommandOptionType.SingleValue);
-
-                CommandOption configFile = trustedSignersCmd.Option(
-                    "--configfile",
-                    Strings.Option_ConfigFile,
-                    CommandOptionType.SingleValue);
-
-                trustedSignersCmd.HelpOption(XPlatUtility.HelpOption);
-                trustedSignersCmd.Description = Strings.TrustCommandDescription;
-
+                // sub-commands
                 trustedSignersCmd.Command("list", (listCommand) =>
                 {
                     listCommand.Description = Strings.TrustListCommandDescription;
@@ -63,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
 
                     listCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.List, algorithm, allowUntrustedRootOption: false, owners, verbosity, configFile, getLogger, setLogLevel);
+                        return await ExecuteCommand(TrustCommand.List, algorithm : null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel);
                     });
                 });
 
@@ -87,7 +63,7 @@ namespace NuGet.CommandLine.XPlat
 
                     syncCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.Sync, algorithm, allowUntrustedRootOption: false, owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value);
+                        return await ExecuteCommand(TrustCommand.Sync, algorithm: null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value);
                     });
                 });
 
@@ -111,7 +87,7 @@ namespace NuGet.CommandLine.XPlat
 
                     syncCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.Remove, algorithm, allowUntrustedRootOption: false, owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value);
+                        return await ExecuteCommand(TrustCommand.Remove, algorithm: null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value);
                     });
                 });
 
@@ -143,7 +119,7 @@ namespace NuGet.CommandLine.XPlat
 
                     authorCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.Author, algorithm, allowUntrustedRootOption.HasValue(), owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
+                        return await ExecuteCommand(TrustCommand.Author, algorithm: null, allowUntrustedRootOption.HasValue(), owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
                     });
                 });
 
@@ -175,7 +151,7 @@ namespace NuGet.CommandLine.XPlat
 
                     repositoryCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.Repository, algorithm, allowUntrustedRootOption.HasValue(), owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
+                        return await ExecuteCommand(TrustCommand.Repository, algorithm: null, allowUntrustedRootOption.HasValue(), owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
                     });
                 });
 
@@ -212,14 +188,65 @@ namespace NuGet.CommandLine.XPlat
 
                     certificateCommand.OnExecute(async () =>
                     {
-                        return await ExecuteCommand(TrustCommand.Certificate, algorithm, allowUntrustedRootOption.HasValue(), owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: null, fingerprint: fingerprint.Value);
+                        return await ExecuteCommand(TrustCommand.Certificate, algorithm, allowUntrustedRootOption.HasValue(), owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: null, fingerprint: fingerprint.Value);
                     });
                 });
+
+                trustedSignersCmd.Command("source", (sourceCommand) =>
+                {
+                    sourceCommand.Description = Strings.TrustRepositoryCommandDescription;
+
+                    CommandOption configFile = sourceCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+
+                    sourceCommand.HelpOption(XPlatUtility.HelpOption);
+
+                    CommandOption owners = trustedSignersCmd.Option(
+                        "--owners",
+                        Strings.TrustCommandOwners,
+                        CommandOptionType.MultipleValue);
+
+                    CommandOption sourceUrl = sourceCommand.Option(
+                        "--source-url",
+                        "If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported.",
+                        CommandOptionType.SingleValue);
+
+                    CommandOption verbosity = sourceCommand.Option(
+                        "-v|--verbosity",
+                        Strings.Verbosity_Description,
+                        CommandOptionType.SingleValue);
+
+                    CommandArgument name = sourceCommand.Argument("<NAME>",
+                                               "The name of the trusted signer to add. If only <NAME> is provided without --<source-url>, the package source from your NuGet configuration files with the same name is added to the trusted list. If <NAME> already exists in the configuration, the package source is appended to it.");
+                    CommandArgument fingerprint = sourceCommand.Argument("<FINGERPRINT>",
+                                               "The fingerprint of the certificate.");
+
+                    sourceCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.Source, algorithm: null, allowUntrustedRootOption: false, owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: sourceUrl.Value());
+                    });
+                });
+
+                // Main command
+                trustedSignersCmd.Description = Strings.TrustCommandDescription;
+                CommandOption mainConfigFile = trustedSignersCmd.Option(
+                    "--configfile",
+                    Strings.Option_ConfigFile,
+                    CommandOptionType.SingleValue);
+
+                trustedSignersCmd.HelpOption(XPlatUtility.HelpOption);
+
+                CommandOption mainVerbosity = trustedSignersCmd.Option(
+                    "-v|--verbosity",
+                    Strings.Verbosity_Description,
+                    CommandOptionType.SingleValue);
 
                 trustedSignersCmd.OnExecute(async () =>
                 {
                     // If no command specified then default to List command.
-                    return await ExecuteCommand(TrustCommand.List, algorithm, allowUntrustedRootOption: false, owners, verbosity, configFile, getLogger, setLogLevel);
+                    return await ExecuteCommand(TrustCommand.List, algorithm: null, allowUntrustedRootOption: false, owners : null, mainVerbosity, mainConfigFile, getLogger, setLogLevel);
                 });
             });
         }
@@ -241,32 +268,6 @@ namespace NuGet.CommandLine.XPlat
 
             try
             {
-                //if (!Enum.TryParse(command.Values[0], ignoreCase: true, result: out action))
-                //{
-                //    throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnknownAction, command.Values[0]));
-                //}
-
-                //if (command.Values.Count > 1)
-                //{
-                //    name = command.Values[1];
-                //}
-
-                //if (command.Values.Count() > 2)
-                //{
-                //    if (action == TrustCommand.Author || action == TrustCommand.Repository)
-                //    {
-                //        packagePath = command.Values[2];
-                //    }
-                //    else if (action == TrustCommand.Source)
-                //    {
-                //        sourceUrl = command.Values[2];
-                //    }
-                //    else if (action == TrustCommand.Certificate)
-                //    {
-                //        fingerprint = command.Values[2];
-                //    }
-                //}
-
                 ISettings settings = ProcessConfigFile(configFile.Value());
 
                 var trustedSignersArgs = new TrustedSignersArgs()
@@ -280,7 +281,7 @@ namespace NuGet.CommandLine.XPlat
                     AllowUntrustedRoot = allowUntrustedRootOption,
                     Author = action == TrustCommand.Author,
                     Repository = action == TrustCommand.Repository,
-                    Owners = CommandLineUtility.SplitAndJoinAcrossMultipleValues(owners.Values),
+                    Owners = CommandLineUtility.SplitAndJoinAcrossMultipleValues(owners?.Values),
                     Logger = logger
                 };
 
@@ -321,11 +322,6 @@ namespace NuGet.CommandLine.XPlat
                             return 1;
                         }
                     }
-                }
-                else if (e is ArgumentException && e.Message == "An item with the same key has already been added.")
-                {
-                    logger.LogError(e.Message);
-                    return 1;
                 }
 
                 // Unhandled exceptions bubble up.

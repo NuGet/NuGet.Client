@@ -852,6 +852,9 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="SignCommandNoCertificateException" xml:space="preserve">
     <value>No certificate was provided.</value>
   </data>
+  <data name="String.Option_SourceUrl" xml:space="preserve">
+    <value>If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported.</value>
+  </data>
   <data name="TrustAuthorCommandDescription" xml:space="preserve">
     <value>Adds a trusted signer with the given name, based on the author signature of the package.</value>
   </data>

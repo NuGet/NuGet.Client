@@ -1882,6 +1882,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported..
+        /// </summary>
+        internal static string String_Option_SourceUrl {
+            get {
+                return ResourceManager.GetString("String.Option_SourceUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
         /// </summary>
         internal static string Suffix_Description {
