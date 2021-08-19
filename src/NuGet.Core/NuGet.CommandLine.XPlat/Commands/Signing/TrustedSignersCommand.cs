@@ -225,8 +225,6 @@ namespace NuGet.CommandLine.XPlat
 
                     CommandArgument name = sourceCommand.Argument("<NAME>",
                                                "The name of the trusted signer to add. If only <NAME> is provided without --<source-url>, the package source from your NuGet configuration files with the same name is added to the trusted list. If <NAME> already exists in the configuration, the package source is appended to it.");
-                    CommandArgument fingerprint = sourceCommand.Argument("<FINGERPRINT>",
-                                               "The fingerprint of the certificate.");
 
                     sourceCommand.OnExecute(async () =>
                     {
