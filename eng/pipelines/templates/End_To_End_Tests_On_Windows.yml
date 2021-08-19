@@ -24,6 +24,7 @@ stages:
     name: ${{parameters.stageName}}
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
+    testMachineDeploymentJobTimeoutInMinutes: 240
     testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
     testMachineCleanUpStrategy: stop
     testMachineRetention: 0:6:0:0 # Retain the machine for 6 hours
