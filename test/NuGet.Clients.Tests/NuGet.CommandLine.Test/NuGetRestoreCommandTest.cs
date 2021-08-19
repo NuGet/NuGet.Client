@@ -2515,17 +2515,23 @@ EndProject";
     </packageSources>
     <packageNamespaces>
         <packageSource key=""PublicRepository"">
-            <namespace id=""Moq.*"" />
+            <namespace id=""Moq*"" />
             <namespace id=""Nerdbank.*"" />   
             <namespace id=""Microsoft.Asp.*"" />
             <namespace id=""Microsoft.AspNet.*"" />
             <namespace id=""Microsoft.Extensions.Configuration.*"" />
-            <namespace id=""System.Runtime.InteropServices.RuntimeInformation"" />            
-            <namespace id=""xunit.*"" />
+            <namespace id=""Microsoft.VisualStudio.*"" />
+            <namespace id=""System.*"" />            
+            <namespace id=""xunit*"" />
+            <namespace id=""jQuery"" />
+            <namespace id=""123123123123"" />
+            <namespace id=""_"" />
+            <namespace id=""?????"" />
+            <namespace id=""Newtonsoft.Json"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
             <namespace id=""Castle.Cor*"" /> 
-            <namespace id=""Moq.*"" />
+            <namespace id=""Moq*"" />
             <namespace id=""Microsoft.Extensions.*"" />
             <namespace id=""Microsoft.Extensions.Logging"" />
             <namespace id=""Nerd*"" />             
