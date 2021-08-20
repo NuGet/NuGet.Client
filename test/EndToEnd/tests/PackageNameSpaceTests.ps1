@@ -326,6 +326,296 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     }
 }
 
+function Test-PackageNamespaceInstall_Succeed
+{
+    param($context)
+
+    # Arrange
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'    
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="LocalRepository" value="{0}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="LocalRepository">
+            <namespace id="Solution*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $context.RepositoryRoot | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+
+        # Act
+        $p | Install-Package SolutionLevelPkg -Version 1.0
+
+        # # Assert
+        Assert-Package $p SolutionLevelPkg 1.0.0
+        $errorlist = Get-Errors
+        Assert-AreEqual 0 $errorlist.Count
+        $warninglist = Get-Warnings
+        Assert-AreEqual 0 $warninglist.Count
+    }
+    finally {
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-PackageNamespaceInstall_WrongSource_Fails
+{
+    param($context)
+
+    # Arrange
+    $repoDirectory = $context.RepositoryRoot
+    $privateRepo = Join-Path $repoDirectory "privateRepo"
+
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'    
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="LocalRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PrivateRepository">
+            <namespace id="Solution*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $context.RepositoryRoot,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+
+        # Act & Assert
+        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from PrivateRepository repository so it'll fail.
+        $exceptionMessage = "Package 'SolutionLevelPkg 1.0' is not found in the following primary source(s): '" + $context.RepositoryRoot + "," + $privateRepo + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly."
+        Assert-Throws { $p | Install-Package SolutionLevelPkg -Version 1.0 } $exceptionMessage
+        Assert-NoPackage $p SolutionLevelPkg 1.0.0
+    }
+    finally {
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-PackageNamespaceInstall_NonExistingSource_Fails
+{
+    param($context)
+
+    # Arrange
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'    
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="UnavailableRepository">
+            <namespace id="Solution*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $context.RepositoryRoot | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+
+        # Act & Assert
+        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from UnavailableRepository repository so it'll fail.
+        $exceptionMessage = "Argument cannot be null or empty`r`nParameter name: primarySources"        
+        Assert-Throws { $p | Install-Package SolutionLevelPkg -Version 1.0 } $exceptionMessage
+        Assert-NoPackage $p SolutionLevelPkg 1.0.0
+    }
+    finally {
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-PackageNamespaceInstall_Pass_CorrectSourceOption_Succeed
+{
+    param($context)
+
+    # Arrange
+    $repoDirectory = Join-Path $OutputPath "CustomPackages"
+    $opensourceRepo = Join-Path $repoDirectory "opensourceRepo"
+    $privateRepo = Join-Path $repoDirectory "privateRepo"
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="OpensourceRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PrivateRepository">
+            <namespace id="Contoso.MVC.*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo1.txt"
+
+        # Act
+        $p | Install-Package Contoso.MVC.ASP -Source $privateRepo
+
+        # Assert
+        Assert-Package $p Contoso.MVC.ASP 1.0.0
+        $packagesFolder = Join-Path $solutionDirectory "packages"
+        $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
+        Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
+        # Make sure name squatting package from public repo not restored.
+        $contentFolder = Join-Path $contosoNupkgFolder "content"
+        Assert-PathExists(Join-Path $contentFolder "Thisisfromprivaterepo1.txt")
+
+        $errorlist = Get-Errors
+        Assert-AreEqual 0 $errorlist.Count
+    }
+    finally {
+        Remove-Item -Recurse -Force $repoDirectory
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-PackageNamespaceInstall_Pass_WrongSourceOption_Fails
+{
+    param($context)
+
+    # Arrange
+    $repoDirectory = Join-Path $OutputPath "CustomPackages"
+    $opensourceRepo = Join-Path $repoDirectory "opensourceRepo"
+    $privateRepo = Join-Path $repoDirectory "privateRepo"
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="OpensourceRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PrivateRepository">
+            <namespace id="Contoso.MVC.*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo1.txt"
+
+        # Act & Assert   
+        $exceptionMessage = "Package 'Contoso.MVC.ASP 1.0.0' is not found in the following primary source(s): '"+ $opensourceRepo + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly."
+        Assert-Throws { $p | Install-Package Contoso.MVC.ASP -Source $opensourceRepo  } $exceptionMessage
+        Assert-NoPackage $p SolutionLevelPkg 1.0.0
+    }
+    finally {
+        Remove-Item -Recurse -Force $repoDirectory
+        Remove-Item $nugetConfigPath
+    }
+}
+
+function Test-PackageNamespaceUpdate_Pass_CorrectSourceOption_Succeed
+{
+    param($context)
+
+    # Arrange
+    $repoDirectory = Join-Path $OutputPath "CustomPackages"
+    $opensourceRepo = Join-Path $repoDirectory "opensourceRepo"
+    $privateRepo = Join-Path $repoDirectory "privateRepo"
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
+
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <clear />
+    <add key="OpensourceRepository" value="{0}" />
+    <add key="PrivateRepository" value="{1}" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key="PrivateRepository">
+            <namespace id="Contoso.MVC.*" />
+        </packageSource>
+    </packageNamespaces>
+</configuration>
+"@
+    try {
+        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
+        $settingFileContent -f $opensourceRepo,$privateRepo | Out-File -Encoding "UTF8" $nugetConfigPath
+
+        $p = New-ConsoleApplication
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
+        $projectDirectoryPath = $p.Properties.Item("FullPath").Value
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $privateRepo "Thisisfromprivaterepo2.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo1.txt"
+        CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo2.txt"
+
+        # Act
+        $p | Install-Package Contoso.MVC.ASP -Version 1.0 -Source $privateRepo
+        Assert-Package $p Contoso.MVC.ASP 1.0.0
+
+        $p | Update-Package Contoso.MVC.ASP -Version 2.0 -Source $privateRepo
+        Assert-Package $p Contoso.MVC.ASP 2.0.0
+
+        # Assert   
+        $packagesFolder = Join-Path $solutionDirectory "packages"
+        $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.2.0.0"
+        Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.2.0.0.nupkg")
+        # Make sure name squatting package from public repo not restored.
+        $contentFolder = Join-Path $contosoNupkgFolder "content"
+        Assert-PathExists(Join-Path $contentFolder "Thisisfromprivaterepo2.txt")
+
+        $errorlist = Get-Errors
+        Assert-AreEqual 0 $errorlist.Count
+    }
+    finally {
+        Remove-Item -Recurse -Force $repoDirectory
+        Remove-Item $nugetConfigPath
+    }
+}
+
 # Create a custom test package 
 function CreateCustomTestPackage {
     param(
