@@ -493,7 +493,6 @@ NuGet.ProjectManagement.INuGetProjectContext.SourceControlManagerProvider.get ->
 NuGet.ProjectManagement.INuGetProjectServices
 NuGet.ProjectManagement.INuGetProjectServices.BuildProperties.get -> NuGet.ProjectManagement.IProjectBuildProperties
 NuGet.ProjectManagement.INuGetProjectServices.Capabilities.get -> NuGet.ProjectManagement.IProjectSystemCapabilities
-NuGet.ProjectManagement.INuGetProjectServices.GetGlobalService<T>() -> T
 NuGet.ProjectManagement.INuGetProjectServices.ProjectSystem.get -> NuGet.ProjectManagement.IProjectSystemService
 NuGet.ProjectManagement.INuGetProjectServices.References.get -> NuGet.ProjectManagement.IProjectSystemReferencesService
 NuGet.ProjectManagement.INuGetProjectServices.ReferencesReader.get -> NuGet.ProjectManagement.IProjectSystemReferencesReader

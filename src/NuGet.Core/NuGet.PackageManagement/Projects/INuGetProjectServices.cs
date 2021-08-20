@@ -43,12 +43,5 @@ namespace NuGet.ProjectManagement
         /// Service to execute package scripts.
         /// </summary>
         IProjectScriptHostService ScriptService { get; }
-
-        /// <summary>
-        /// Lookup for global services, IE services that are not scoped to the underlying project.
-        /// </summary>
-        /// <typeparam name="T">Type of a service to look for.</typeparam>
-        /// <returns>Desired service instance or <code>null</code> if not found.</returns>
-        T GetGlobalService<T>() where T : class;
     }
 }

@@ -3,12 +3,9 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
@@ -28,32 +25,30 @@ namespace NuGet.PackageManagement.VisualStudio
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly AsyncLazy<IComponentModel> _componentModel;
+        private readonly Lazy<IScriptExecutor> _scriptExecutor;
 
         public RuntimeTypeHandle ProjectType => typeof(LegacyPackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
         public LegacyPackageReferenceProjectProvider(
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
             : this(AsyncServiceProvider.GlobalProvider,
-                   threadingService)
+                   threadingService,
+                   scriptExecutor)
         { }
 
         public LegacyPackageReferenceProjectProvider(
             IAsyncServiceProvider vsServiceProvider,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsServiceProvider);
             Assumes.Present(threadingService);
+            Assumes.Present(scriptExecutor);
 
             _threadingService = threadingService;
-
-            _componentModel = new AsyncLazy<IComponentModel>(
-                async () =>
-                {
-                    return await vsServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
-                },
-                _threadingService.JoinableTaskFactory);
+            _scriptExecutor = scriptExecutor;
         }
 
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
@@ -88,8 +83,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<INuGetProjectServices> TryCreateProjectServicesAsync(
             IVsProjectAdapter vsProjectAdapter, bool forceCreate)
         {
-            var componentModel = await _componentModel.GetValueAsync();
-
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
@@ -111,16 +104,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
             {
                 var nominatesOnSolutionLoad = await vsProjectAdapter.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences);
-                return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad);
+                return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, _threadingService, nominatesOnSolutionLoad, _scriptExecutor);
             }
 
             return null;
-        }
-
-        private INuGetProjectServices CreateCoreProjectSystemServices(
-                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel, bool nominatesOnSolutionLoad)
-        {
-            return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad);
         }
     }
 }

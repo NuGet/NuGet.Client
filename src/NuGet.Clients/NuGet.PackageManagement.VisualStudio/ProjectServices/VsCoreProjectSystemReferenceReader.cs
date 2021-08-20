@@ -32,15 +32,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public VsCoreProjectSystemReferenceReader(
             IVsProjectAdapter vsProjectAdapter,
-            INuGetProjectServices projectServices)
+            IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsProjectAdapter);
-            Assumes.Present(projectServices);
+            Assumes.Present(threadingService);
 
             _vsProjectAdapter = vsProjectAdapter;
-
-            _threadingService = projectServices.GetGlobalService<IVsProjectThreadingService>();
-            Assumes.Present(_threadingService);
+            _threadingService = threadingService;
         }
 
         public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(

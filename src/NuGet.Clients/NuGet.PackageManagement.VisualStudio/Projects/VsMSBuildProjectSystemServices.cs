@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -13,8 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Implements project services in terms of <see cref="VsMSBuildProjectSystem"/>
     /// </summary>
     internal class VsMSBuildProjectSystemServices
-        : GlobalProjectServiceProvider
-        , INuGetProjectServices
+        : INuGetProjectServices
         , IProjectSystemCapabilities
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
@@ -54,20 +52,20 @@ namespace NuGet.PackageManagement.VisualStudio
         public VsMSBuildProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
             VsMSBuildProjectSystem vsProjectSystem,
-            IComponentModel componentModel)
-            : base(componentModel)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(vsProjectSystem);
+            Assumes.Present(threadingService);
+            Assumes.Present(scriptExecutor);
 
             _vsProjectAdapter = vsProjectAdapter;
             _vsProjectSystem = vsProjectSystem;
+            _threadingService = threadingService;
 
-            _threadingService = GetGlobalService<IVsProjectThreadingService>();
-            Assumes.Present(_threadingService);
-
-            ReferencesReader = new VsCoreProjectSystemReferenceReader(vsProjectAdapter, this);
-            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
+            ReferencesReader = new VsCoreProjectSystemReferenceReader(vsProjectAdapter, threadingService);
+            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, scriptExecutor);
         }
     }
 }

@@ -42,7 +42,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Projects
             var ppc = new ProjectProviderContext(nugetProjectContext.Object, packagesPathFactory: () => throw new NotImplementedException());
 
             var projectSystemCache = new Mock<IProjectSystemCache>();
-            var target = new CpsPackageReferenceProjectProvider(projectSystemCache.Object);
+            var scriptExecutor = new Mock<Lazy<IScriptExecutor>>();
+            var target = new CpsPackageReferenceProjectProvider(projectSystemCache.Object, scriptExecutor.Object);
 
             // Act
             NuGetProject actual = await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>

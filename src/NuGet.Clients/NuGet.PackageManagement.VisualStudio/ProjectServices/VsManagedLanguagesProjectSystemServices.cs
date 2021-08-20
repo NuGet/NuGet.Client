@@ -7,8 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -25,9 +23,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// Contains the information specific to a Visual Basic or C# project.
     /// </summary>
-    internal class VsManagedLanguagesProjectSystemServices
-        : GlobalProjectServiceProvider
-        , INuGetProjectServices
+    internal class VsManagedLanguagesProjectSystemServices :
+        INuGetProjectServices
         , IProjectSystemCapabilities
         , IProjectSystemReferencesReader
         , IProjectSystemReferencesService
@@ -73,16 +70,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public VsManagedLanguagesProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
-            IComponentModel componentModel,
-            bool nominatesOnSolutionLoad)
-            : base(componentModel)
+            IVsProjectThreadingService threadingService,
+            bool nominatesOnSolutionLoad,
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsProjectAdapter);
+            Assumes.Present(threadingService);
 
             _vsProjectAdapter = vsProjectAdapter;
-
-            _threadingService = GetGlobalService<IVsProjectThreadingService>();
-            Assumes.Present(_threadingService);
+            _threadingService = threadingService;
 
             _asVSProject4 = new Lazy<VSProject4>(() =>
             {
@@ -90,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return vsProjectAdapter.Project.Object as VSProject4;
             });
 
-            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
+            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, scriptExecutor);
 
             NominatesOnSolutionLoad = nominatesOnSolutionLoad;
         }
