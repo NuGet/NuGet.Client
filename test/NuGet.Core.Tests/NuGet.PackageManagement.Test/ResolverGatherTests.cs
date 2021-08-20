@@ -1570,17 +1570,15 @@ namespace NuGet.Test
             };
 
             // Act
-            HashSet<SourcePackageDependencyInfo> results = await ResolverGather.GatherAsync(context, CancellationToken.None);
-
-            List<SourcePackageDependencyInfo> check = results.OrderBy(e => e.Id).ToList();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => ResolverGather.GatherAsync(context, CancellationToken.None));
 
             // Assert
             Assert.True(namespacesConfiguration.AreNamespacesEnabled);
             Assert.Null(configuredSources);
-            Assert.Equal(1, check.Count);
 
             // Assert log.
-            Assert.Equal($"Package namespace match not found for package ID '{packageId}' ", testNuGetProjectContext.Logs.Value[0]);
+            Assert.Contains($"Package '{packageId} 1.0.0' is not found in the following primary source(s)", exception.Message);
         }
 
         private static SourceRepository CreateTimeoutRepo(string source)
