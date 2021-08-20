@@ -327,6 +327,12 @@ namespace NuGet.CommandLine.XPlat
                     }
                 }
 
+                if (e is ArgumentException && e.Data is System.Collections.IDictionary)
+                {
+                    logger.LogError(StringFormatter.Log_TrustFingerPrintAlreadyExist());
+                    return 1;
+                }
+
                 // Unhandled exceptions bubble up.
                 throw;
             }

@@ -5,5 +5,6 @@ NuGet.Commands.SignArgs.PackagePaths.get -> System.Collections.Generic.IReadOnly
 NuGet.Commands.SignArgs.PackagePaths.set -> void
 NuGet.Commands.StringFormatter
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion, string clrSupport) -> NuGet.Frameworks.NuGetFramework
+static NuGet.Commands.StringFormatter.Log_TrustFingerPrintAlreadyExist() -> string
 static NuGet.Commands.StringFormatter.Log_TrustedRepoAlreadyExists(string serviceIndex) -> string
 static NuGet.Commands.StringFormatter.Log_TrustedSignerAlreadyExists(string packageId) -> string

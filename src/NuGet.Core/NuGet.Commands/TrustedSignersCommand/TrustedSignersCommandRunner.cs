@@ -147,22 +147,11 @@ namespace NuGet.Commands
 
                         var hashAlgorithm = ValidateAndParseFingerprintAlgorithm(trustedSignersArgs.FingerprintAlgorithm);
 
-                        try
-                        {
-                            actionsProvider.AddOrUpdateTrustedSigner(
-                                trustedSignersArgs.Name,
-                                trustedSignersArgs.CertificateFingerprint,
-                                hashAlgorithm,
-                                trustedSignersArgs.AllowUntrustedRoot);
-                        }
-                        catch (ArgumentException e)
-                        {
-                            if (e.Message == "An item with the same key has already been added.")
-                            {
-                                logger.LogError(Strings.Error_TrustFingerPrintAlreadyExist);
-                                return 1;
-                            }
-                        }
+                        actionsProvider.AddOrUpdateTrustedSigner(
+                            trustedSignersArgs.Name,
+                            trustedSignersArgs.CertificateFingerprint,
+                            hashAlgorithm,
+                            trustedSignersArgs.AllowUntrustedRoot);
 
                         break;
                     }

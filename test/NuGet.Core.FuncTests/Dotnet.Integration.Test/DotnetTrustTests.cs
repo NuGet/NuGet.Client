@@ -318,6 +318,49 @@ namespace Dotnet.Integration.Test
         }
 
         [CIOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetTrust_AuthorAction_TryAddSameAuthor_Fails(bool allowUntrustedRoot)
+        {
+            // Arrange
+            var nugetConfigFileName = "NuGet.Config";
+            var package = new SimpleTestPackageContext();
+
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
+            using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            {
+                string certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(trustedTestCert.Source.Cert, package, pathContext.PackageSource);
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+                </configuration>";
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, pathContext.WorkingDirectory, config);
+                var nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, nugetConfigFileName);
+                var allowUntrustedRootArg = allowUntrustedRoot ? "--allow-untrusted-root" : string.Empty;
+                var allowUntruestedRootValue = allowUntrustedRoot ? "true" : "false";
+
+                // Act
+                CommandRunnerResult resultAdd = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}");
+
+                // Assert
+                resultAdd.Success.Should().BeTrue();
+
+                // Try to add same author again.
+                resultAdd = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}", ignoreExitCode: true);
+
+                // Assert
+                resultAdd.Success.Should().BeFalse();
+                resultAdd.AllOutput.Should().Contain("error: A trusted signer 'nuget' already exists.");
+                resultAdd.AllOutput.Should().NotContain("--help");
+            }
+        }
+
+        [CIOnlyTheory]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
@@ -374,6 +417,47 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Fact]
+        public async Task DotnetTrust_RepositoryAction_TryAddSameRepository_Fails()
+        {
+            // Arrange
+            var nugetConfigFileName = "NuGet.Config";
+            var package = new SimpleTestPackageContext();
+
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
+            using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            {
+                var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                var repoServiceIndex = "https://serviceindex.test/v3/index.json";
+                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(trustedTestCert.Source.Cert, package, pathContext.PackageSource, new Uri(repoServiceIndex));
+
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+                </configuration>";
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, pathContext.WorkingDirectory, config);
+                var nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, nugetConfigFileName);
+
+                // Act
+                CommandRunnerResult resultAdd = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust repository nuget {signedPackagePath} --configfile {nugetConfigPath}");
+
+                // Assert
+                resultAdd.Success.Should().BeTrue();
+
+                // Try to add same repository again
+                resultAdd = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust repository nuget {signedPackagePath} --configfile {nugetConfigPath}", ignoreExitCode: true);
+
+                // Main assert
+                resultAdd.Success.Should().BeFalse();
+                resultAdd.AllOutput.Should().Contain("error: A trusted signer 'nuget' already exists.");
+                resultAdd.AllOutput.Should().NotContain("--help");
+            }
+        }
+
         [CIOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
@@ -419,6 +503,53 @@ namespace Dotnet.Integration.Test
                 </configuration>");
 
                 SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath)).Should().Be(expectedResult);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetTrust_CertificateFingerPrintAction_TryAddSameFingerPrint_Fails(bool allowUntrustedRoot)
+        {
+            // Arrange
+            var nugetConfigFileName = "NuGet.Config";
+            var package = new SimpleTestPackageContext();
+
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
+            using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            {
+                var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                var repoServiceIndex = "https://serviceindex.test/v3/index.json";
+                var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(trustedTestCert.Source.Cert, package, pathContext.PackageSource, new Uri(repoServiceIndex));
+
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+                </configuration>";
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, pathContext.WorkingDirectory, config);
+                var nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, nugetConfigFileName);
+                var allowUntrustedRootArg = allowUntrustedRoot ? "--allow-untrusted-root" : string.Empty;
+                var allowUntruestedRootValue = allowUntrustedRoot ? "true" : "false";
+                var authorName = "MyCompanyCert";
+
+                // Act
+                CommandRunnerResult result = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}");
+
+                // Assert
+                result.Success.Should().BeTrue();
+                result.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture, _successfulAddTrustedSigner, "author", authorName));
+
+                // Try to add same certificate fingerprint should fail
+                result = _msbuildFixture.RunDotnet(
+                    pathContext.SolutionRoot,
+                    $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}", ignoreExitCode: true);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                result.AllOutput.Should().Contain("The certificate finger you're trying to add is already in certificate fingerprint list");
+                result.AllOutput.Should().NotContain("--help");
             }
         }
 
