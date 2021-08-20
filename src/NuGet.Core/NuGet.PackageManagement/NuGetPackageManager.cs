@@ -66,6 +66,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         public event EventHandler<PackageProjectEventArgs> BatchEnd;
 
+        public PackageNamespacesConfiguration PackageNamespaces { get; }
+
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
@@ -93,6 +95,7 @@ namespace NuGet.PackageManagement
             InstallationCompatibility = PackageManagement.InstallationCompatibility.Instance;
 
             InitializePackagesFolderInfo(packagesFolderPath, excludeVersion);
+            PackageNamespaces = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
         }
 
         /// <summary>
@@ -120,6 +123,7 @@ namespace NuGet.PackageManagement
             InstallationCompatibility = PackageManagement.InstallationCompatibility.Instance;
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), excludeVersion);
             DeleteOnRestartManager = deleteOnRestartManager ?? throw new ArgumentNullException(nameof(deleteOnRestartManager));
+            PackageNamespaces = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
         }
 
         /// <summary>
@@ -1109,9 +1113,7 @@ namespace NuGet.PackageManagement
                     }
                 }
 
-                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
-
-                var gatherContext = new GatherContext(packageNamespacesConfiguration)
+                var gatherContext = new GatherContext(PackageNamespaces)
                 {
                     InstalledPackages = oldListOfInstalledPackages.ToList(),
                     PrimaryTargetIds = primaryTargetIds.ToList(),
@@ -1738,9 +1740,8 @@ namespace NuGet.PackageManagement
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
 
                     HashSet<SourcePackageDependencyInfo> availablePackageDependencyInfoWithSourceSet = null;
-                    PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
 
-                    var gatherContext = new GatherContext(packageNamespacesConfiguration)
+                    var gatherContext = new GatherContext(PackageNamespaces)
                     {
                         InstalledPackages = oldListOfInstalledPackages.ToList(),
                         PrimaryTargets = primaryPackages,
@@ -3386,10 +3387,10 @@ namespace NuGet.PackageManagement
 
             token.ThrowIfCancellationRequested();
             nuGetProjectContext.Log(MessageLevel.Info, string.Format(Strings.RestoringPackage, packageIdentity));
-            var enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
-                SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
             token.ThrowIfCancellationRequested();
+
+            IEnumerable<SourceRepository> enabledSources = GetEnabledSources(sourceRepositories, packageIdentity);
 
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
                 enabledSources,
@@ -3404,6 +3405,25 @@ namespace NuGet.PackageManagement
             }
 
             return true;
+        }
+
+        private IEnumerable<SourceRepository> GetEnabledSources(IEnumerable<SourceRepository> sourceRepositories, PackageIdentity packageIdentity)
+        {
+            var enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
+    SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled).ToList();
+
+            if (PackageNamespaces?.AreNamespacesEnabled == true)
+            {
+                IReadOnlyList<string> sources = PackageNamespaces.GetConfiguredPackageSources(packageIdentity.Id);
+
+                if (sources == null || sources.Count == 0)
+                {
+                    return Array.Empty<SourceRepository>();
+                }
+
+                return enabledSources.Where(s => sources.Contains(s.PackageSource.Name)).ToList();
+            }
+            return enabledSources;
         }
 
         public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
