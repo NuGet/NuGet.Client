@@ -997,7 +997,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 {
                     writer.Write(
 @"<packages>
-  <package id=""测试更新包"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
   <package id=""Contoso.Opensource.Buffers"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
@@ -1005,18 +1004,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 var opensourceRepositoryPath = pathContext.PackageSource;
                 Directory.CreateDirectory(opensourceRepositoryPath);
-
-                var packageOpenSourceInternational = new SimpleTestPackageContext()
-                {
-                    Id = "测试更新包",
-                    Version = "1.0.0"
-                };
-                packageOpenSourceInternational.Files.Clear();
-                packageOpenSourceInternational.AddFile("lib/net461/a.dll");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    opensourceRepositoryPath,
-                    packageOpenSourceInternational);
 
                 var packageOpenSourceContosoMvc = new SimpleTestPackageContext()
                 {
