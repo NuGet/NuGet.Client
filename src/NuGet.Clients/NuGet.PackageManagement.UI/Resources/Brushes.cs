@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI
 
         public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
 
-        public static object TabSelectedBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+        public static object TabSelectedIndicatorBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
 
         public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;
 
@@ -164,9 +164,9 @@ namespace NuGet.PackageManagement.UI
 
         public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrush;
 
-        public static object TabHoverTextBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
+        public static object TabTextHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
-        public static object TabFocusedTextBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
+        public static object TabTextFocusedBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
         public static object ListItemBackgroundSelectedColorKey { get; private set; } = SystemColors.HighlightColorKey;
 
@@ -255,10 +255,10 @@ namespace NuGet.PackageManagement.UI
             ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextSelectedBrushKey;
 
             // Brushes/Colors for FilterLabel (Top Tabs)
-            TabSelectedBrushKey = CommonDocumentColors.InnerTabSelectedIndicatorBrushKey; // underline
+            TabSelectedIndicatorBrushKey = CommonDocumentColors.InnerTabSelectedIndicatorBrushKey; // underline
             TabSelectedTextBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey; // text
-            TabHoverTextBrushKey = CommonDocumentColors.InnerTabTextHoverBrushKey; //text hover
-            TabFocusedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
+            TabTextHoverBrushKey = CommonDocumentColors.InnerTabTextHoverBrushKey; //text hover
+            TabTextFocusedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
             TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
             TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
 
