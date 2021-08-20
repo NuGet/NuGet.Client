@@ -7349,11 +7349,12 @@ namespace NuGet.Test
     </packageSources>
     <packageNamespaces>
         <packageSource key=""externalRepository"">
+            <namespace id=""Direct.*"" />
             <namespace id=""External.*"" />
             <namespace id=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
+            <namespace id=""Contoso.*"" />
             <namespace id=""Test.*"" />
         </packageSource>
     </packageNamespaces>
@@ -7370,7 +7371,7 @@ namespace NuGet.Test
 
                 var ExternalDirectA = new SimpleTestPackageContext()
                 {
-                    Id = directPackageIdentity.Id, // Package Id not filtered by package namespace.
+                    Id = directPackageIdentity.Id,
                     Version = "1.0.0",
                     Dependencies = new List<SimpleTestPackageContext>() { ExternalContosoA } // We set Contoso.A as dependent package.
                 };
