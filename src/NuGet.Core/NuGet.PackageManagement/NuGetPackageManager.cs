@@ -3421,7 +3421,7 @@ namespace NuGet.PackageManagement
                     return Array.Empty<SourceRepository>();
                 }
 
-                return enabledSources.Where(s => sources.Contains(s.PackageSource.Name)).ToList();
+                return enabledSources.Where(s => sources.Contains(s.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase)).ToList();
             }
             return enabledSources;
         }
