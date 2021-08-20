@@ -353,7 +353,7 @@ namespace Dotnet.Integration.Test
                     pathContext.SolutionRoot,
                     $"nuget trust author nuget {signedPackagePath}  {allowUntrustedRootArg} --configfile {nugetConfigPath}", ignoreExitCode: true);
 
-                // Assert
+                // Main assert
                 resultAdd.Success.Should().BeFalse();
                 resultAdd.AllOutput.Should().Contain("error: A trusted signer 'nuget' already exists.");
                 resultAdd.AllOutput.Should().NotContain("--help");
@@ -546,7 +546,7 @@ namespace Dotnet.Integration.Test
                     pathContext.SolutionRoot,
                     $"nuget trust certificate {authorName} {certFingerprint} {allowUntrustedRootArg}  --algorithm SHA256 --configfile {nugetConfigPath}", ignoreExitCode: true);
 
-                // Assert
+                // Main assert
                 result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain("The certificate finger you're trying to add is already in certificate fingerprint list");
                 result.AllOutput.Should().NotContain("--help");
