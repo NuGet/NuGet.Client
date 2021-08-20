@@ -3353,9 +3353,8 @@ namespace NuGet.Commands.FuncTest
             var restoreGraph = result.RestoreGraphs.ElementAt(0);
             Assert.Equal(1, restoreGraph.Unresolved.Count);
 
-            Assert.Equal(1, log.Errors);
-            log.ErrorMessages.TryPeek(out string message);
-            Assert.Equal("NU1100: Unable to resolve 'PackageB (>= 1.0.0)' for 'net5.0'.", message);
+            Assert.Equal(3, log.Errors);
+            Assert.Contains(log.ErrorMessages, (message) => message.Contains("NU1100: Unable to resolve 'PackageB (>= 1.0.0)' for 'net5.0'."));
 
             //packageA should be installed from source2
             string packageASource = restoreGraph.Install.ElementAt(0).Provider.Source.Name;

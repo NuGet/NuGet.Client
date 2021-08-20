@@ -7351,6 +7351,7 @@ namespace NuGet.Test
         <packageSource key=""externalRepository"">
             <namespace id=""External.*"" />
             <namespace id=""Others.*"" />
+            <namespace id=""Direct.A*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
             <namespace id=""Contoso.*"" />             

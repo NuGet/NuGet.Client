@@ -2720,7 +2720,8 @@ EndProject";
     <packageNamespaces>
         <packageSource key=""PublicRepository""> 
             <namespace id=""Contoso.Opensource.*"" />
-            <namespace id=""Contoso.MVC.*"" /> 
+            <namespace id=""Contoso.MVC.*"" />
+            <namespace id=""测试更新包"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
             <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
@@ -2824,8 +2825,8 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.Output);
+                Assert.Equal(_failureCode, r.ExitCode);
+                Assert.Contains("NU1111: Package namespace for 'My.MVC.ASP' is not listed on any source. Any package id must be in one or more matching namespace declarations.", r.Output);
             }
         }
 
