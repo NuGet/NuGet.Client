@@ -1,7 +1,6 @@
 # assemblies not to be included in VSIX
 
 Ben.Demystifier.dll
-ICSharpCode.SharpZipLib.dll
 MessagePack.Annotations.dll
 MessagePack.dll
 Microsoft.Bcl.AsyncInterfaces.dll
@@ -13,7 +12,6 @@ Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
 Microsoft.Internal.VisualStudio.Interop.dll
 Microsoft.Internal.VisualStudio.Shell.Framework.dll
-Microsoft.NET.StringTools.dll
 Microsoft.ServiceHub.Client.dll
 Microsoft.ServiceHub.Framework.dll
 Microsoft.ServiceHub.Framework.resources.dll
