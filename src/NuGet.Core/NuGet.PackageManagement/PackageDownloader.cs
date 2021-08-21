@@ -125,6 +125,16 @@ namespace NuGet.PackageManagement
 
                     foreach (SourceRepository source in sourceGroup)
                     {
+                        if (isPackageNamespaceEnabled)
+                        {
+                            if (configuredPackageSources != null &&
+                                !configuredPackageSources.Contains(source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                            {
+                                // This package's id prefix is not defined in current package source, let's skip.
+                                continue;
+                            }
+                        }
+
                         var task = GetDownloadResourceResultAsync(
                             source,
                             packageIdentity,
