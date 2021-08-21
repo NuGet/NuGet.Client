@@ -1511,6 +1511,102 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_PackageNamespaceLongerMatches_NoNamespaceMatchesLog()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackagesConfig,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+                var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config")))
+                {
+                    writer.Write(
+@"<packages>
+  <package id=""My.MVC.ASP"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+                }
+
+                var opensourceRepositoryPath = pathContext.PackageSource;
+                Directory.CreateDirectory(opensourceRepositoryPath);
+
+                var packageOpenSourceContosoMvc = new SimpleTestPackageContext()
+                {
+                    Id = "My.MVC.ASP",  // Package Id conflict with internally created package
+                    Version = "1.0.0"
+                };
+                packageOpenSourceContosoMvc.AddFile("lib/net461/openA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    opensourceRepositoryPath,
+                    packageOpenSourceContosoMvc);
+
+                var packageContosoBuffersOpenSource = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.Opensource.Buffers",
+                    Version = "1.0.0"
+                };
+                packageContosoBuffersOpenSource.AddFile("lib/net461/openA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    opensourceRepositoryPath,
+                    packageContosoBuffersOpenSource);
+
+                // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
+                // so we go ahead and remove that config before running MSBuild.
+                var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
+                var configText =
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
+    </packageSources>
+    <packageNamespaces>
+        <packageSource key=""PublicRepository"">
+            <namespace id=""Contoso.MVC.ASP"" />   <!-- My.MVC.ASP doesn't match any package name spaces -->
+        </packageSource>
+    </packageNamespaces>
+</configuration>";
+
+                using (var writer = new StreamWriter(configPath))
+                {
+                    writer.Write(configText);
+                }
+
+                // Act
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0);
+                var contosoRestorePath = Path.Combine(projectAPackages, packageOpenSourceContosoMvc.ToString(), packageOpenSourceContosoMvc.ToString() + ".nupkg");
+                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    // Assert correct package was restored.
+                    Assert.Contains("lib/net461/openA.dll", allFiles);
+                }
+
+                Assert.True(result.ExitCode == 0);
+                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public async Task MsbuildRestore_PackageNamespaceSameMatchesMultipleSources_Succeed()
         {
             // Arrange
