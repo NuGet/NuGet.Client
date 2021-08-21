@@ -1067,7 +1067,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var result = RunRestore(pathContext, _successExitCode);
+                var result = RunRestore(pathContext, _successExitCode, "--debug");
 
                 // Assert
                 var contosoRestorePath = Path.Combine(projectAPackages, ContosoReal.ToString(), ContosoReal.ToString() + ".nupkg");
