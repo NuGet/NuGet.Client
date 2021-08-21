@@ -252,11 +252,6 @@ namespace NuGet.CommandLine
         {
             return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
-
-
-
-
-
         private async Task InstallPackageAsync(
             string packageId,
             NuGetVersion version,
