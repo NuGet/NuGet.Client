@@ -847,7 +847,7 @@ namespace NuGet.CommandLine.Test
                     "-ForceEnglishOutput",
                     "-OutputDirectory", outputDirectory,
                     "-Source", source,
-                    "-PackageSaveMode", "nuspec", "--debug" };
+                    "-PackageSaveMode", "nuspec" };
 
                 // Act
                 var r = RunInstall(pathContext, "testPackage1", 0, args);
@@ -2059,7 +2059,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = RunInstall(pathContext, Path.Combine(pathContext.SolutionRoot, "packages.config"), 1, "-OutputDirectory", "outputDir", "-Source",
-                    opensourceRepositoryPath, "--debug");  // We pass 1 repository.
+                    opensourceRepositoryPath);  // We pass 1 repository.
 
                 // Assert
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
