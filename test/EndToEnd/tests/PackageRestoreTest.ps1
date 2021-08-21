@@ -328,6 +328,118 @@ function Test-PackageRestore-AllSourcesAreUsed {
     }
 }
 
+# Test that during legacy packagereference project restore, AssemblyName property is considered for asset file creation. msbuild restore already does it.
+# Priority: PackageId -> AssemblyName -> Project File Name.
+function Test-VSRestore-AssemblyName-Considered-Over-ProjectFileName {
+    param($context)
+
+    # Arrange
+    $customAssemblyName = "MySpecialAssemblyName"
+    $MSBuildExe = Get-MSBuildExe    
+    $p1 = New-Project PackageReferenceClassLibrary
+    $solutionFile = Get-SolutionFullName
+    $projectDirectoryPath = $p1.Properties.Item("FullPath").Value
+    $projectPath = $p1.FullName
+    $binDirectory = Join-Path $projectDirectoryPath "bin"
+    $debugDirectory = Join-Path $binDirectory "debug"    
+    SaveAs-Solution($solutionFile)
+
+    # Change assembly name in .csproj file
+    $doc = [xml](Get-Content $projectPath)
+    $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
+    $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
+    $node = $doc.SelectSingleNode("//ns:AssemblyName",$ns)
+    $node.InnerText = $customAssemblyName
+    $doc.Save($projectPath)
+    Close-Solution
+
+    Open-Solution $solutionFile    
+    $project = Get-Project
+
+    # Act VS restore
+    Build-Solution  # generate asset file
+    
+    # Assert VS restore
+    $assetFilePath = Get-NetCoreLockFilePath $project
+    $vsRestoredAsset = Get-Content -Raw -Path $assetFilePath
+    $vsRestoredAssetJson = $vsRestoredAsset | ConvertFrom-Json
+    $projectNameInAssetFile = $vsRestoredAssetJson.Project.Restore | Select-Object projectName
+    # Assert generated asset file contains correct projectName = AssemblyName
+    Assert-True ($projectNameInAssetFile.projectName -eq $customAssemblyName)
+
+    # Arrange MSBuild restore
+    # Remove VS asset file.
+    Remove-Item -Force $assetFilePath
+
+    # Act MSBuild restore
+    & "$MSBuildExe" /t:restore $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
+
+    # Main Assert
+    $msBuildRestoredAsset = Get-Content -Raw -Path $assetFilePath
+    # Assert msbuild and VS restore result in same asset file.
+    Assert-True ($vsRestoredAsset -eq $msBuildRestoredAsset)
+}
+
+# Test that during legacy packagereference project restore, PackageId property is considered for asset file creation. msbuild restore already does it.
+# Priority: PackageId -> AssemblyName -> Project File Name.
+function Test-VSRestore-PackageId-Considered-Over-AssemblyName {
+    param($context)
+
+    # Arrange
+    $customPackageId = "MySpecialPackageId"
+    $customAssemblyName = "MySpecialAssemblyName"
+    $MSBuildExe = Get-MSBuildExe    
+    $p1 = New-Project PackageReferenceClassLibrary
+    $solutionFile = Get-SolutionFullName
+    $projectDirectoryPath = $p1.Properties.Item("FullPath").Value
+    $projectPath = $p1.FullName
+    $binDirectory = Join-Path $projectDirectoryPath "bin"
+    $debugDirectory = Join-Path $binDirectory "debug"    
+    SaveAs-Solution($solutionFile)
+
+    # Change assembly name in .csproj file
+    $doc = [xml](Get-Content $projectPath)
+    $ns = New-Object System.Xml.XmlNamespaceManager($doc.NameTable)
+    $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
+    $assemblyNameNode = $doc.SelectSingleNode("//ns:AssemblyName",$ns)
+    $assemblyNameNode.InnerText = $customAssemblyName
+    $node = $doc.DocumentElement.ChildNodes[1]   
+    $packageIdNode = $doc.CreateElement("PackageId",$doc.DocumentElement.NamespaceURI)
+    $packageIdInnerNode = $doc.CreateTextNode($customPackageId);
+    $packageIdNode.AppendChild($packageIdInnerNode);    
+    $node.InsertAfter($packageIdNode, $node.FirstChild)
+    $doc.Save($projectPath)
+    Close-Solution
+    Open-Solution $solutionFile    
+
+    $project = Get-Project
+
+    # Act VS restore
+    Build-Solution  # generate asset file
+    
+    # Assert VS restore
+    $assetFilePath = Get-NetCoreLockFilePath $project
+    $vsRestoredAsset = Get-Content -Raw -Path $assetFilePath
+    $vsRestoredAssetJson = $vsRestoredAsset | ConvertFrom-Json
+    $projectNameInAssetFile = $vsRestoredAssetJson.Project.Restore | Select-Object projectName
+    # Assert generated asset file contains correct projectName = AssemblyName
+    Assert-True ($projectNameInAssetFile.projectName -eq $customPackageId)
+
+    # Arrange MSBuild restore
+    # Remove VS asset file.
+    Remove-Item -Force $assetFilePath
+
+    # Act MSBuild restore
+    & "$MSBuildExe" /t:restore $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
+
+    # Main Assert
+    $msBuildRestoredAsset = Get-Content -Raw -Path $assetFilePath
+    # Assert msbuild and VS restore result in same asset file.
+    Assert-True ($vsRestoredAsset -eq $msBuildRestoredAsset)
+}
+
 # Create a test package 
 function CreateTestPackage {
     param(

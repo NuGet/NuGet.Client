@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -127,6 +126,16 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
         {
             return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
+        }
+
+        private async Task<string> GetSpecifiedAssemblyName()
+        {
+            return await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.AssemblyName);
+        }
+
+        private async Task<string> GetSpecifiedPackageId()
+        {
+            return await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.PackageId);
         }
 
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
@@ -429,6 +438,22 @@ namespace NuGet.PackageManagement.VisualStudio
             var tfis = new TargetFrameworkInformation[] { projectTfi };
 
             var projectName = _projectName ?? _projectUniqueName;
+
+            string specifiedPackageId = await GetSpecifiedPackageId();
+
+            if (!string.IsNullOrWhiteSpace(specifiedPackageId))
+            {
+                projectName = specifiedPackageId;
+            }
+            else
+            {
+                string specifiedAssemblyName = await GetSpecifiedAssemblyName();
+
+                if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
+                {
+                    projectName = specifiedAssemblyName;
+                }
+            }
 
             return new PackageSpec(tfis)
             {
