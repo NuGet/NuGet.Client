@@ -2807,7 +2807,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_successCode, r.ExitCode);
+                Assert.Equal(_failureCode, r.ExitCode);
                 Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.Output);
             }
         }

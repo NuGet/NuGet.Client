@@ -1592,16 +1592,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore -v:d {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-                var contosoRestorePath = Path.Combine(projectAPackages, packageOpenSourceContosoMvc.ToString(), packageOpenSourceContosoMvc.ToString() + ".nupkg");
-                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
-                {
-                    var allFiles = nupkgReader.GetFiles().ToList();
-                    // Assert correct package was restored.
-                    Assert.Contains("lib/net461/openA.dll", allFiles);
-                }
-
-                Assert.True(result.ExitCode == 0);
+                Assert.Equal(1, result.ExitCode);
                 Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", result.Output);
             }
         }
