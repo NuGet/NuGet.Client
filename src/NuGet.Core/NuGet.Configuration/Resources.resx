@@ -320,8 +320,8 @@
     <comment>0 - NU log code
 1 - package id</comment>
   </data>
-  <data name="Error_SingleSourcePerPackageMode" xml:space="preserve">
-    <value>{0}: Package namespace for '{0}' is listed on the following sources: '{1}'. Only one unique package namespace can be defined across sources.</value>
+  <data name="Error_SingleSourcePerPackageModeMoreSources" xml:space="preserve">
+    <value>{0}: Package namespace for '{0}' is listed on the following sources: '{1}'. Only one unique package namespace can be defined across sources in this mode.</value>
     <comment>0 - NU log code
 1 - package id
 2- list of sources</comment>
@@ -329,5 +329,10 @@
   <data name="Error_UnexpectedValue" xml:space="preserve">
     <value>Unexpected value: '{0}'</value>
     <comment>0 - unexpected value</comment>
+  </data>
+  <data name="Error_SingleSourcePerPackageModeNoSources" xml:space="preserve">
+    <value>{0}: Package namespace for '{1}' is not listed on any source. Only one unique package namespace can be defined across sources in this mode.</value>
+    <comment>0 - NU log code
+1 - package id</comment>
   </data>
 </root>

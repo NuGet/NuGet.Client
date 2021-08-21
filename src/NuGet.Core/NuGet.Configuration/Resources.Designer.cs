@@ -259,11 +259,20 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}: Package namespace for &apos;{0}&apos; is listed on the following sources: &apos;{1}&apos;. Only one unique package namespace can be defined across sources..
+        ///   Looks up a localized string similar to {0}: Package namespace for &apos;{0}&apos; is listed on the following sources: &apos;{1}&apos;. Only one unique package namespace can be defined across sources in this mode..
         /// </summary>
-        internal static string Error_SingleSourcePerPackageMode {
+        internal static string Error_SingleSourcePerPackageModeMoreSources {
             get {
-                return ResourceManager.GetString("Error_SingleSourcePerPackageMode", resourceCulture);
+                return ResourceManager.GetString("Error_SingleSourcePerPackageModeMoreSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}: Package namespace for &apos;{1}&apos; is not listed on any source. Only one unique package namespace can be defined across sources in this mode..
+        /// </summary>
+        internal static string Error_SingleSourcePerPackageModeNoSources {
+            get {
+                return ResourceManager.GetString("Error_SingleSourcePerPackageModeNoSources", resourceCulture);
             }
         }
         

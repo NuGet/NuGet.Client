@@ -36,6 +36,7 @@ namespace NuGet.Configuration
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
+        /// <exception cref="NuGetConfigurationException"> if the configured sources doesn't match namespace mode behavior</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {
             IReadOnlyList<string> sources = SearchTree.Value?.GetConfiguredPackageSources(term);

@@ -26,11 +26,22 @@ namespace NuGet.Configuration
             if (sources?.Count == 1)
                 return true;
 
-            errormessage = string.Format(CultureInfo.CurrentCulture,
-                    Resources.Error_SingleSourcePerPackageMode,
-                    NuGetLogCode.NU1110,
-                    packageId,
-                    string.Join(",", sources));
+            if (sources == null || sources.Count == 0)
+            {
+                errormessage = string.Format(CultureInfo.CurrentCulture,
+                                Resources.Error_SingleSourcePerPackageModeNoSources,
+                                NuGetLogCode.NU1110,
+                                packageId);
+            }
+            else
+            {
+                errormessage = string.Format(CultureInfo.CurrentCulture,
+                                Resources.Error_SingleSourcePerPackageModeMoreSources,
+                                NuGetLogCode.NU1110,
+                                packageId,
+                                string.Join(",", sources));
+            }
+
 
             return false;
         }
