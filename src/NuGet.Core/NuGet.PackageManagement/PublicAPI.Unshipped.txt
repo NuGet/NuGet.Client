@@ -1,5 +1,4 @@
 NuGet.PackageManagement.GatherContext.GatherContext(NuGet.Configuration.PackageNamespacesConfiguration packageNamespacesConfiguration) -> void
 NuGet.PackageManagement.GatherContext.PackageNamespacesConfiguration.get -> NuGet.Configuration.PackageNamespacesConfiguration
 const NuGet.ProjectManagement.ProjectBuildProperties.AssemblyName = "AssemblyName" -> string
-NuGet.PackageManagement.NuGetPackageManager.PackageNamespaces.get -> NuGet.Configuration.PackageNamespacesConfiguration
 const NuGet.ProjectManagement.ProjectBuildProperties.CLRSupport = "CLRSupport" -> string
