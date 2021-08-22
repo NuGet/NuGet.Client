@@ -128,12 +128,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
-        private async Task<string> GetSpecifiedAssemblyName()
+        private async Task<string> GetSpecifiedAssemblyNameAsync()
         {
             return await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.AssemblyName);
         }
 
-        private async Task<string> GetSpecifiedPackageId()
+        private async Task<string> GetSpecifiedPackageIdAsync()
         {
             return await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.PackageId);
         }
@@ -439,7 +439,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectName = _projectName ?? _projectUniqueName;
 
-            string specifiedPackageId = await GetSpecifiedPackageId();
+            string specifiedPackageId = await GetSpecifiedPackageIdAsync();
 
             if (!string.IsNullOrWhiteSpace(specifiedPackageId))
             {
@@ -447,7 +447,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                string specifiedAssemblyName = await GetSpecifiedAssemblyName();
+                string specifiedAssemblyName = await GetSpecifiedAssemblyNameAsync();
 
                 if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
                 {
