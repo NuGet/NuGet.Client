@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();
-                return new ProjectPackages(installedPackages.ToList(), transitivePackages.ToList());
+                return new ProjectPackages(installedPackages, transitivePackages);
             }
             else
             {
