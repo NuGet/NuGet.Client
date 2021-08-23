@@ -64,13 +64,7 @@ namespace NuGet.CommandLine
         [Import]
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
-        /// <summary>
-        /// Creates a MSBuild project factory with data from NuGet <see cref="Commands.PackArgs"/> object
-        /// </summary>
-        /// <param name="packArgs">NuGet arguments to create a package</param>
-        /// <param name="path">Not used</param>
-        /// <returns>A <see cref="ProjectFactory"/> object</returns>
-        /// <remarks>This methods is used in <see cref="PackCommandRunner.CreateProjectFactory"/> delegate</remarks>
+        /// <inheritdoc cref="NuGet.Commands.PackCommandRunner.CreateProjectFactory" />
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
             return new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)

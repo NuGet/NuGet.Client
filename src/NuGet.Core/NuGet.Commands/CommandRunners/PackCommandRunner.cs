@@ -22,11 +22,11 @@ namespace NuGet.Commands
     public class PackCommandRunner
     {
         /// <summary>
-        /// Factory for creating projects
+        /// Factory delegate for creating MSBuild Nuget compatible projects
         /// </summary>
         /// <param name="packArgs">NuGet arguments for creating a package</param>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="path">Path to project file</param>
+        /// <returns>A <see cref="IProjectFactory"/> object for creating MSBuild project with NuGEt capabilities to pack </returns>
         public delegate IProjectFactory CreateProjectFactory(PackArgs packArgs, string path);
 
         private readonly PackArgs _packArgs;
