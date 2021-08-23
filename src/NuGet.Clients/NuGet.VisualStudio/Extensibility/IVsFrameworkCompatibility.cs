@@ -18,6 +18,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Gets all .NETStandard frameworks currently supported, in ascending order by version.
         /// </summary>
+        /// <remarks>This API is <a href="https://github.com/microsoft/vs-threading/blob/main/doc/cookbook_vs.md#how-do-i-effectively-verify-that-my-code-is-fully-free-threaded">free-threaded.</a></remarks>
         IEnumerable<FrameworkName> GetNetStandardFrameworks();
 
         /// <summary>
@@ -28,6 +29,8 @@ namespace NuGet.VisualStudio
         /// equivalent frameworks are not returned. Additionally, a framework name with version X
         /// in the result implies that framework names with versions greater than or equal to X
         /// but having the same <see cref="FrameworkName.Identifier"/> are also supported.
+        ///
+        /// <para>This API is <a href="https://github.com/microsoft/vs-threading/blob/main/doc/cookbook_vs.md#how-do-i-effectively-verify-that-my-code-is-fully-free-threaded">free-threaded.</a></para>
         /// </remarks>
         /// <param name="frameworkName">The .NETStandard version to get supporting frameworks for.</param>
         IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName);
@@ -38,6 +41,7 @@ namespace NuGet.VisualStudio
         /// compatibility rules. <c>null</c> is returned of none of the frameworks
         /// are compatible.
         /// </summary>
+        /// <remarks>This API is <a href="https://github.com/microsoft/vs-threading/blob/main/doc/cookbook_vs.md#how-do-i-effectively-verify-that-my-code-is-fully-free-threaded">free-threaded.</a></remarks>
         /// <param name="targetFramework">The target framework.</param>
         /// <param name="frameworks">The list of frameworks to choose from.</param>
         /// <exception cref="ArgumentException">If any of the arguments are <c>null</c>.</exception>

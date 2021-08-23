@@ -18,6 +18,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
+        /// <remarks>Can be called from a background thread.</remarks>
         /// <param name="source">
         /// The package source to install the package from. This value can be <c>null</c>
         /// to indicate that the user's configured sources should be used. Otherwise,
@@ -40,6 +41,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
+        /// <remarks>Can be called from a background thread.</remarks>
         /// <param name="source">
         /// The package source to install the package from. This value can be <c>null</c>
         /// to indicate that the user's configured sources should be used. Otherwise,
@@ -77,6 +79,7 @@ namespace NuGet.VisualStudio
         /// A boolean indicating if assembly references from the package should be
         /// skipped.
         /// </param>
+        [Obsolete]
         void InstallPackage(IPackageRepository repository, Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences);
 
         /// <summary>
@@ -104,6 +107,7 @@ namespace NuGet.VisualStudio
         /// <para>
         /// Dependencies are always ignored.
         /// </para>
+        /// <para>Can be called from a background thread.</para>
         /// </remarks>
         void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions);
 
@@ -130,6 +134,7 @@ namespace NuGet.VisualStudio
         /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
+        /// <para>Can be called from a background thread.</para>
         /// </remarks>
         void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions);
 
@@ -155,6 +160,7 @@ namespace NuGet.VisualStudio
         /// <para>
         /// Dependencies are always ignored.
         /// </para>
+        /// <para>Can be called from a background thread.</para>
         /// </remarks>
         void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions);
 
@@ -178,6 +184,7 @@ namespace NuGet.VisualStudio
         /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
+        /// <para>Can be called from a background thread.</para>
         /// </remarks>
         void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions);
     }
