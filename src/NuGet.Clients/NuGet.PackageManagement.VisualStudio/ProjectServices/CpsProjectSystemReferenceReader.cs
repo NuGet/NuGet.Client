@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Common.ILogger logger, CancellationToken _)
         {
             var unconfiguredProject = await _unconfiguredProject.GetValueAsync();
-            IBuildDependencyProjectReferencesService service = (await unconfiguredProject.GetSuggestedConfiguredProjectAsync())?.Services.ProjectReferences;
+            IBuildDependencyProjectReferencesService service = (await unconfiguredProject?.GetSuggestedConfiguredProjectAsync())?.Services.ProjectReferences;
 
             if (service == null)
             {
