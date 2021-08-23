@@ -62,9 +62,24 @@ namespace NuGet.Protocol
 
             while (tries < request.MaxTries && !success)
             {
-                if (tries > 0)
+                // There are many places where another variable named "MaxTries" is set to 1,
+                // so the Delay() never actually occurs.
+                // When opted in to "enhanced retry", do the delay and have it increase exponentially where applicable
+                // (i.e. when "tries" is allowed to be > 1)
+                if (tries > 0 || (NuGetEnvironment.EnhancedHttpRetryEnabled && request.IsRetry))
                 {
-                    await Task.Delay(request.RetryDelay, cancellationToken);
+                    // "Enhanced" retry: In the case where this is actually a 2nd-Nth try, back off with some random.
+                    // In many cases due to the external retry loop, this will be always be 1 * request.RetryDelay.TotalMilliseconds + 0-200 ms
+                    if (NuGetEnvironment.EnhancedHttpRetryEnabled)
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds((Math.Pow(2, tries) * request.RetryDelay.TotalMilliseconds) + new Random().Next(200)));
+
+                    }
+                    // Old behavior; always delay a constant amount
+                    else
+                    {
+                        await Task.Delay(request.RetryDelay, cancellationToken);
+                    }
                 }
 
                 tries++;
