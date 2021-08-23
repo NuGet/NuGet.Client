@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly AsyncLazy<ConfiguredProject> _configuredProject;
+        private readonly AsyncLazy<UnconfiguredProject> _unconfiguredProject;
 
         public CpsProjectSystemReferenceReader(
             IVsProjectAdapter vsProjectAdapter,
@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
-            _configuredProject = new AsyncLazy<ConfiguredProject>(async () =>
+            _unconfiguredProject = new AsyncLazy<UnconfiguredProject>(async () =>
             {
                 await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -49,15 +49,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     // VC implements this on their DTE.Project.Object
                     context = _vsProjectAdapter.Project.Object as IVsBrowseObjectContext;
                 }
-                return context?.ConfiguredProject;
+                return context?.UnconfiguredProject;
             }, threadingService.JoinableTaskFactory);
         }
 
         public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
             Common.ILogger logger, CancellationToken _)
         {
-            var project = await _configuredProject.GetValueAsync();
-            IBuildDependencyProjectReferencesService service = project.Services.ProjectReferences;
+            var unconfiguredProject = await _unconfiguredProject.GetValueAsync();
+            IBuildDependencyProjectReferencesService service = (await unconfiguredProject.GetSuggestedConfiguredProjectAsync())?.Services.ProjectReferences;
 
             if (service == null)
             {
