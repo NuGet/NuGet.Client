@@ -23,7 +23,6 @@
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <!-- The following property groups prevent VS from treating this as a x86 project -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
