@@ -326,7 +326,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     }
 }
 
-function Test-PackageNamespaceInstall_Succeed
+function Test-PC-PackageNamespaceInstall-Succeed
 {
     param($context)
 
@@ -367,7 +367,7 @@ function Test-PackageNamespaceInstall_Succeed
     }
 }
 
-function Test-PackageNamespaceInstall_WrongSource_Fails
+function Test-PC-PackageNamespaceInstall-WrongSource-Fails
 {
     param($context)
 
@@ -408,7 +408,7 @@ function Test-PackageNamespaceInstall_WrongSource_Fails
     }
 }
 
-function Test-PackageNamespaceInstall_NonExistingSource_Fails
+function Test-PC-PackageNamespaceInstall-NonExistingSource-Fails
 {
     param($context)
 
@@ -444,7 +444,7 @@ function Test-PackageNamespaceInstall_NonExistingSource_Fails
     }
 }
 
-function Test-PackageNamespaceInstall_Pass_CorrectSourceOption_Succeed
+function Test-PC-PackageNamespaceInstall-Pass-CorrectSourceOption-Succeed
 {
     param($context)
 
@@ -503,7 +503,7 @@ function Test-PackageNamespaceInstall_Pass_CorrectSourceOption_Succeed
     }
 }
 
-function Test-PackageNamespaceInstall_Pass_WrongSourceOption_Fails
+function Test-PC-PackageNamespaceInstall-Pass-WrongSourceOption-Fails
 {
     param($context)
 
@@ -552,7 +552,7 @@ function Test-PackageNamespaceInstall_Pass_WrongSourceOption_Fails
     }
 }
 
-function Test-PackageNamespaceUpdate_Pass_CorrectSourceOption_Succeed
+function Test-PC-PackageNamespaceUpdate-Pass-CorrectSourceOption-Succeed
 {
     param($context)
 
