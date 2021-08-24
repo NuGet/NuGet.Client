@@ -1779,13 +1779,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Assert.True(r.ExitCode == 0);
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'PrivateRepository'", r.Output);
                 Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
-                var contosoRestorePath = Path.Combine(pathContext.UserPackagesFolder, packageContosoMvcReal.Id.ToString(), packageContosoMvcReal.Version.ToString(), packageContosoMvcReal.ToString() + ".nupkg");
-                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
-                {
-                    var allFiles = nupkgReader.GetFiles().ToList();
-                    // Assert correct Contoso package was restored.
-                    Assert.True(allFiles.Contains("lib/net461/realA.dll"));
-                }
+                var localResolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
+                var contosoMvcMetadataPath = localResolver.GetNupkgMetadataPath(packageContosoMvcReal.Identity.Id, packageContosoMvcReal.Identity.Version);
+                NupkgMetadataFile contosoMvcmetadata = NupkgMetadataFileFormat.Read(contosoMvcMetadataPath);
+                Assert.Equal(privateRepositoryPath, contosoMvcmetadata.Source);
             }
         }
 
