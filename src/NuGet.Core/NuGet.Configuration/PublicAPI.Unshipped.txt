@@ -4,6 +4,7 @@ NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
 NuGet.Configuration.PackageNamespacesConfiguration.AreNamespacesEnabled.get -> bool
 NuGet.Configuration.PackageNamespacesConfiguration.GetConfiguredPackageSources(string term) -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Configuration.PackageNamespacesConfiguration.ValidateNamespaceMode(string packageId, System.Collections.Generic.IReadOnlyList<string> sources) -> NuGet.Configuration.ValidationResult
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
@@ -11,6 +12,11 @@ NuGet.Configuration.PackageNamespacesSourceItem.SetKey(string value) -> void
 NuGet.Configuration.SettingElementType.Namespace = 19 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageNamespaces = 17 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSource = 18 -> NuGet.Configuration.SettingElementType
+NuGet.Configuration.ValidationResult
+NuGet.Configuration.ValidationResult.ErrorCode.get -> NuGet.Common.NuGetLogCode
+NuGet.Configuration.ValidationResult.ErrorMessage.get -> string
+NuGet.Configuration.ValidationResult.Success.get -> bool
+NuGet.Configuration.ValidationResult.ValidationResult() -> void
 override NuGet.Configuration.NamespaceItem.Clone() -> NuGet.Configuration.SettingBase
 override NuGet.Configuration.NamespaceItem.ElementName.get -> string
 override NuGet.Configuration.NamespaceItem.Equals(object other) -> bool

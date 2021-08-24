@@ -10,6 +10,6 @@ namespace NuGet.Configuration
     /// </summary>
     internal interface INamespaceModeStrategy
     {
-        bool TryValidate(string term, IReadOnlyList<string> sources, out string errormessage);
+        ValidationResult ValidateRule(string packageId, IReadOnlyList<string> sources);
     }
 }

@@ -12,38 +12,41 @@ namespace NuGet.Configuration
     /// </summary>
     internal class SingleSourcePerPackageNamespaceModeStrategy : INamespaceModeStrategy
     {
+        private static readonly ValidationResult SuccessValidationResult = new() { Success = true, ErrorCode = NuGetLogCode.Undefined };
+
         /// <summary>
         /// Any package id must match have only one matching namespace declaration.
         /// </summary>
         /// <param name="packageId"></param>
         /// <param name="sources">List of filtered package sources</param>
-        /// <param name="errormessage">Non empty string incase business rule validation fails</param>
-        /// <returns>true if number of sources satisy business rule otherwise false</returns>
-        public bool TryValidate(string packageId, IReadOnlyList<string> sources, out string errormessage)
+        /// <returns>ValidationResult</returns>
+        public ValidationResult ValidateRule(string packageId, IReadOnlyList<string> sources)
         {
-            errormessage = string.Empty;
-
-            if (sources?.Count == 1)
-                return true;
-
             if (sources == null || sources.Count == 0)
             {
-                errormessage = string.Format(CultureInfo.CurrentCulture,
-                                Resources.Error_SingleSourcePerPackageModeNoSources,
-                                NuGetLogCode.NU1110,
-                                packageId);
+                return new()
+                {
+                    Success = false,
+                    ErrorCode = NuGetLogCode.NU1110,
+                    ErrorMessage = string.Format(CultureInfo.CurrentCulture,
+                    Resources.Error_SingleSourcePerPackageModeNoSources,
+                    packageId)
+                };
             }
-            else
+            else if (sources.Count == 1)
             {
-                errormessage = string.Format(CultureInfo.CurrentCulture,
-                                Resources.Error_SingleSourcePerPackageModeMoreSources,
-                                NuGetLogCode.NU1110,
-                                packageId,
-                                string.Join(",", sources));
+                return SuccessValidationResult;
             }
 
-
-            return false;
+            return new()
+            {
+                Success = false,
+                ErrorCode = NuGetLogCode.NU1110,
+                ErrorMessage = string.Format(CultureInfo.CurrentCulture,
+                                Resources.Error_SingleSourcePerPackageModeMoreSources,
+                                packageId,
+                                string.Join(",", sources))
+            };
         }
     }
 }

@@ -36,17 +36,20 @@ namespace NuGet.Configuration
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
-        /// <exception cref="NuGetConfigurationException"> if the configured sources doesn't match namespace mode behavior</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {
-            IReadOnlyList<string> sources = SearchTree.Value?.GetConfiguredPackageSources(term);
+            return SearchTree.Value?.GetConfiguredPackageSources(term);
+        }
 
-            if (!_namespaceModeStrategy.TryValidate(term, sources, out string errormessage))
-            {
-                throw new NuGetConfigurationException(errormessage);
-            }
-
-            return sources;
+        /// <summary>
+        /// Validates if the number of sources configured for a pacakge satisfy namespace mode rules
+        /// </summary>
+        /// <param name="packageId"></param>
+        /// <param name="sources"></param>
+        /// <returns>ValidationResult</returns>
+        public ValidationResult ValidateNamespaceMode(string packageId, IReadOnlyList<string> sources)
+        {
+            return _namespaceModeStrategy.ValidateRule(packageId, sources);
         }
 
         internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces, NamespaceMode namespaceMode)

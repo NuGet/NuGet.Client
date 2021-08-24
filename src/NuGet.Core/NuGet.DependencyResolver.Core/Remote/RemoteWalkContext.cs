@@ -54,7 +54,7 @@ namespace NuGet.DependencyResolver
         public bool IsMsBuildBased { get; set; }
 
         /// <summary>
-        /// Applies Package namespace filtering for a given package
+        /// Applies Package namespace filtering for a given package and validates namespace mode behavior
         /// </summary>
         /// <param name="libraryRange"></param>
         /// <returns>Returns a subset of sources when namespaces are configured otherwise returns all the sources</returns>
@@ -68,17 +68,14 @@ namespace NuGet.DependencyResolver
             {
                 IReadOnlyList<string> sources = default;
 
-                try
-                {
-                    sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
-                }
-                catch (NuGetConfigurationException ex)
-                {
-                    Logger.LogError(ex.Message);
-                }
+                sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
 
-                if (sources == null || sources.Count == 0)
+                ValidationResult result = PackageNamespaces.ValidateNamespaceMode(libraryRange.Name, sources);
+
+                if (!result.Success)
                 {
+                    RestoreLogMessage.CreateError(result.ErrorCode, result.ErrorMessage);
+
                     return Array.Empty<IRemoteDependencyProvider>();
                 }
 
