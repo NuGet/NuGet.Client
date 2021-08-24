@@ -77,14 +77,5 @@ namespace NuGet.DependencyResolver {
                 return ResourceManager.GetString("Log_MatchingSourceFoundForPackage", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package namespace match not found for package ID &apos;{0}&apos;..
-        /// </summary>
-        internal static string Log_NoMatchingSourceFoundForPackage {
-            get {
-                return ResourceManager.GetString("Log_NoMatchingSourceFoundForPackage", resourceCulture);
-            }
-        }
     }
 }

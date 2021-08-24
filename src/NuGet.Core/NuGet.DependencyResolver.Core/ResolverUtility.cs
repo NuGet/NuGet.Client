@@ -508,12 +508,9 @@ namespace NuGet.DependencyResolver
 
         private static void LogSourcesIfPackageNamespacesAreEnabled(string packageName, RemoteWalkContext context, IList<IRemoteDependencyProvider> remoteDependencyProviders)
         {
-            if (context.PackageNamespaces?.AreNamespacesEnabled == true)
+            if (context.PackageNamespaces?.AreNamespacesEnabled == true && remoteDependencyProviders.Count > 0)
             {
-                if (remoteDependencyProviders.Count == 0)
-                    context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoMatchingSourceFoundForPackage, packageName));
-                else
-                    context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_MatchingSourceFoundForPackage, packageName, string.Join(",", remoteDependencyProviders.Select(provider => provider.Source.Name))));
+                context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_MatchingSourceFoundForPackage, packageName, string.Join(",", remoteDependencyProviders.Select(provider => provider.Source.Name))));
             }
         }
     }

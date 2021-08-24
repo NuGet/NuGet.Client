@@ -124,8 +124,4 @@
     <value>Package namespace matches found for package ID '{0}' are: '{1}'.</value>
     <comment>{0} - Package id {1} - list of sources</comment>
   </data>
-  <data name="Log_NoMatchingSourceFoundForPackage" xml:space="preserve">
-    <value>Package namespace match not found for package ID '{0}'.</value>
-    <comment>{0} - Package id</comment>
-  </data>
 </root>

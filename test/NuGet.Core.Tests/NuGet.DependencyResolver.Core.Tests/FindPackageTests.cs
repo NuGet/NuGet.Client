@@ -316,9 +316,8 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             Assert.Equal(0, downloadCount);
             Assert.Equal(1, testLogger.Errors);
-            Assert.Equal(1, testLogger.DebugMessages.Count);
-            testLogger.DebugMessages.TryPeek(out string message);
-            Assert.Equal($"Package namespace match not found for package ID '{packageX}'.", message);
+            testLogger.ErrorMessages.TryPeek(out string message);
+            Assert.Equal($"Package namespace for '{packageX}' is not listed on any source. Any package id must be in one or more matching namespace declarations.", message);
         }
     }
 }

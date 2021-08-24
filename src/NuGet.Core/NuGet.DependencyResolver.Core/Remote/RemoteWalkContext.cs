@@ -74,7 +74,7 @@ namespace NuGet.DependencyResolver
 
                 if (!result.Success)
                 {
-                    RestoreLogMessage.CreateError(result.ErrorCode, result.ErrorMessage);
+                    Logger.Log(RestoreLogMessage.CreateError(result.ErrorCode, result.ErrorMessage));
 
                     return Array.Empty<IRemoteDependencyProvider>();
                 }
