@@ -228,7 +228,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="graphs">Flattened restore graphs with error and warning info</param>
         /// <returns>A collection of log messages</returns>
-        public static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs)
+        internal static IEnumerable<RestoreLogMessage> GetDependenciesAboveUpperBounds(List<IndexedRestoreTargetGraph> graphs)
         {
             var messages = new List<RestoreLogMessage>();
 

@@ -92,7 +92,8 @@ namespace NuGet.Commands
         /// <param name="context">Restore context</param>
         /// <param name="framework">Target NuGet framework to restore</param>
         /// <returns>A <see cref="RestoreTargetGraph "/> object built from arguments</returns>
-        public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, NuGetFramework framework)
+        /// <remarks>For unit testing purposes</remarks>
+        internal static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, NuGetFramework framework)
         {
             return Create(RuntimeGraph.Empty, graphs, context, framework, runtimeIdentifier: null);
         }

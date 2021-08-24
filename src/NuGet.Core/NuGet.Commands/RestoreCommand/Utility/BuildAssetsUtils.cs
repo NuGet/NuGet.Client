@@ -410,7 +410,7 @@ namespace NuGet.Commands
         /// <param name="assetsFilePath">File Path from loaded <paramref name="assetsFile"/></param>
         /// <param name="restoreSuccess">Indicates if packages were restored successfully</param>
         /// <returns>A collection of .props/.targets file contents generated from restored packages</returns>
-        public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
+        internal static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> repositories,
