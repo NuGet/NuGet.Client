@@ -46,8 +46,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public void Verify_AuthorSignedAndTimestampedPackageWithOptionAll_Succceeds()
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        public void Verify_AuthorSignedAndTimestampedPackageWithOptionAll_Succeeds()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -90,8 +90,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
-        public void Verify_SignedPackageWithAllowedCertificate_Succceeds()
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        public void Verify_SignedPackageWithAllowedCertificate_Succeeds()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -111,7 +111,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
         public void Verify_MultipleSignedPackagesWithWildCardAndDetailedVerbosity_MixedResults()
         {
             // Arrange
