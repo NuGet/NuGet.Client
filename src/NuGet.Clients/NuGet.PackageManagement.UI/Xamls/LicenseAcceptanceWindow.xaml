@@ -8,10 +8,8 @@
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
   x:Name="_self"
-  MinWidth="450"
-  MinHeight="450"
-  Width="450"
-  Height="450"
+  MinWidth="500"
+  MinHeight="500"
   Background="{DynamicResource {x:Static nuget:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
@@ -43,7 +41,7 @@
                 </Hyperlink>
         </TextBlock>
       </DataTemplate>
-      
+
       <DataTemplate DataType="{x:Type nuget:FreeText}">
         <TextBlock
             AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}"
@@ -73,7 +71,7 @@
 
       <DataTemplate x:Key="LicenseItemTemplate">
         <StackPanel
-          Margin="2,0,2,5">
+          Margin="2,0,2,5" IsItemsHost="True">
           <TextBlock
             TextWrapping="Wrap"
             x:Name="_packageLicenseText"
@@ -99,7 +97,7 @@
       </DataTemplate>
     </ResourceDictionary>
   </Window.Resources>
-  <Grid>
+  <Grid MaxWidth="{Binding ActualWidth, ElementName=svLicenseAcceptance}">
     <Grid.RowDefinitions>
       <RowDefinition
         Height="Auto" />
@@ -113,7 +111,6 @@
     </Grid.RowDefinitions>
     <TextBlock
       Grid.Row="0"
-      Grid.Column="0"
       Margin="12,8,12,0"
       x:Name="_licenseAcceptanceText"
       AutomationProperties.Name="{Binding Text}"
@@ -122,7 +119,6 @@
 
     <TextBlock
       Grid.Row="1"
-      Grid.Column="0"
       Margin="12,4,12,0"
       x:Name="_licenseHeaderText"
       AutomationProperties.Name="{Binding Text}"
@@ -130,41 +126,40 @@
       TextWrapping="Wrap" />
     <ItemsControl
       Grid.Row="2"
-      Grid.Column="0"
       Margin="12,8"
-      MinHeight="130"
+      MinHeight="118"
       IsTabStop="False"
       ItemsSource="{Binding}"
       ItemTemplate="{StaticResource LicenseItemTemplate}">
-      <ItemsControl.Template>
-        <ControlTemplate
+        <ItemsControl.Template>
+          <ControlTemplate
           TargetType="{x:Type ItemsControl}">
-          <Border
+      <Border
+            x:Name="_licenseItemsBorder"
             BorderThickness="1"
             BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}">
-            <ScrollViewer
+        <ScrollViewer
               Padding="3"
               CanContentScroll="True"
               VerticalScrollBarVisibility="Visible"
               HorizontalScrollBarVisibility="Disabled"
               AutomationProperties.LabeledBy="{Binding ElementName=_licenseHeaderText}">
-              <ItemsPresenter></ItemsPresenter>
-            </ScrollViewer>
-          </Border>
-        </ControlTemplate>
+          <ItemsPresenter Height="{Binding ActualHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}}"></ItemsPresenter>
+        </ScrollViewer>
+      </Border>
+      </ControlTemplate>
       </ItemsControl.Template>
     </ItemsControl>
 
     <TextBlock
       Grid.Row="3"
-      Grid.Column="0"
       Margin="12,0,12,12"
       x:Name="_licenseText"
       Text="{x:Static nuget:Resources.Text_LicenseText}"
       TextWrapping="Wrap" />
     <Grid
-      Grid.Row="5"
-      Grid.Column="0"
+      Grid.Row="4"
+      Margin="0,0,12,0"
       HorizontalAlignment="Right">
       <Grid.ColumnDefinitions>
         <ColumnDefinition />
