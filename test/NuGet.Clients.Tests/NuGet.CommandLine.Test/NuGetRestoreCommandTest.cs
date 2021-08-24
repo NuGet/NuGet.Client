@@ -2515,23 +2515,17 @@ EndProject";
     </packageSources>
     <packageNamespaces>
         <packageSource key=""PublicRepository"">
-            <namespace id=""Moq*"" />
+            <namespace id=""Moq.*"" />
             <namespace id=""Nerdbank.*"" />   
             <namespace id=""Microsoft.Asp.*"" />
             <namespace id=""Microsoft.AspNet.*"" />
             <namespace id=""Microsoft.Extensions.Configuration.*"" />
-            <namespace id=""Microsoft.VisualStudio.*"" />
-            <namespace id=""System.*"" />            
-            <namespace id=""xunit*"" />
-            <namespace id=""jQuery"" />
-            <namespace id=""123123123123"" />
-            <namespace id=""_"" />
-            <namespace id=""?????"" />
-            <namespace id=""Newtonsoft.Json"" />
+            <namespace id=""System.Runtime.InteropServices.RuntimeInformation"" />            
+            <namespace id=""xunit.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
             <namespace id=""Castle.Cor*"" /> 
-            <namespace id=""Moq*"" />
+            <namespace id=""Moq.*"" />
             <namespace id=""Microsoft.Extensions.*"" />
             <namespace id=""Microsoft.Extensions.Logging"" />
             <namespace id=""Nerd*"" />             
@@ -2720,8 +2714,7 @@ EndProject";
     <packageNamespaces>
         <packageSource key=""PublicRepository""> 
             <namespace id=""Contoso.Opensource.*"" />
-            <namespace id=""Contoso.MVC.*"" />
-            <namespace id=""测试更新包"" />
+            <namespace id=""Contoso.MVC.*"" /> 
         </packageSource>
         <packageSource key=""SharedRepository"">
             <namespace id=""Contoso.MVC.ASP"" />  <!-- Longer prefix prevails over Contoso.MVC.* in other repository-->
@@ -2825,8 +2818,8 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_failureCode, r.ExitCode);
-                Assert.Contains("NU1111: Package namespace for 'My.MVC.ASP' is not listed on any source. Any package id must be in one or more matching namespace declarations.", r.Output);
+                Assert.Equal(_successCode, r.ExitCode);
+                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.Output);
             }
         }
 
