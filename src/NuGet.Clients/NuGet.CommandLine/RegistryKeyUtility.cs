@@ -10,13 +10,13 @@ namespace NuGet.CommandLine
     public static class RegistryKeyUtility
     {
         /// <summary>
-        /// Gets a value from a Windows Registry
+        /// Gets a value from Windows Registry
         /// </summary>
         /// <param name="name">Registry key name</param>
         /// <param name="registryKeyPath">Registry key path</param>
         /// <param name="registryKey">Windows Registry Key object</param>
         /// <param name="logger">Logger to log errors</param>
-        /// <returns>Registry value or null if there is an error</returns>
+        /// <returns>Registry value or <c>null</c> if there is an error</returns>
         public static object GetValueFromRegistryKey(string name, string registryKeyPath, RegistryKey registryKey, ILogger logger)
         {
             try
