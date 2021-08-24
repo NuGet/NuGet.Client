@@ -408,42 +408,6 @@ function Test-PC-PackageNamespaceInstall-WrongSource-Fails
     }
 }
 
-function Test-PC-PackageNamespaceInstall-NonExistingSource-Fails
-{
-    param($context)
-
-    # Arrange
-    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'    
-	$settingFileContent =@"
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-    <packageSources>
-    <clear />
-    </packageSources>
-    <packageNamespaces>
-        <packageSource key="UnavailableRepository">
-            <namespace id="Solution*" />
-        </packageSource>
-    </packageNamespaces>
-</configuration>
-"@
-    try {
-        # We have to create config file before creating solution, otherwise it's not effective for new solutions.
-        $settingFileContent -f $context.RepositoryRoot | Out-File -Encoding "UTF8" $nugetConfigPath
-
-        $p = New-ConsoleApplication
-
-        # Act & Assert
-        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from UnavailableRepository repository so it'll fail.
-        $exceptionMessage = "Argument cannot be null or empty`r`nParameter name: primarySources"        
-        Assert-Throws { $p | Install-Package SolutionLevelPkg -Version 1.0 } $exceptionMessage
-        Assert-NoPackage $p SolutionLevelPkg 1.0.0
-    }
-    finally {
-        Remove-Item $nugetConfigPath
-    }
-}
-
 function Test-PC-PackageNamespaceInstall-Pass-CorrectSourceOption-Succeed
 {
     param($context)
