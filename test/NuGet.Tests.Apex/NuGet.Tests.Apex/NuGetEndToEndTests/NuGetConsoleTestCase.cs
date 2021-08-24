@@ -515,7 +515,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [InlineData(ProjectTemplate.ClassLibrary, false)]
-        [InlineData(ProjectTemplate.NetCoreConsoleApp, true)]
+        [InlineData(ProjectTemplate.NetStandardClassLib, true)]
         public async Task UpdateAllReinstall_WithPackageReferenceProject_WarnsAsync(ProjectTemplate projectTemplate, bool warns)
         {
             EnsureVisualStudioHost();
