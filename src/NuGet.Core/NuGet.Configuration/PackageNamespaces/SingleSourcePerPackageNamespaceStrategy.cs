@@ -19,7 +19,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="packageId"></param>
         /// <param name="sources">List of filtered package sources</param>
-        /// <returns>ValidationResult</returns>
+        /// <returns><see cref="ValidationResult"/></returns>
         public ValidationResult ValidateRule(string packageId, IReadOnlyList<string> sources)
         {
             if (sources == null || sources.Count == 0)
