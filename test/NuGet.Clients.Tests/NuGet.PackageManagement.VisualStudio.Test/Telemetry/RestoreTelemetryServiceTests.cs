@@ -66,7 +66,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
-                new IntervalTracker("Activity"));
+                new IntervalTracker("Activity"),
+                areNamespacesEnabled: false,
+                numberOfSourcesWithNamespaces: 0,
+                allEntryCountInNamespaces: 0);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -122,8 +125,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
-                tracker
-                );
+                tracker,
+                areNamespacesEnabled: false,
+                numberOfSourcesWithNamespaces: 0,
+                allEntryCountInNamespaces: 0);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act

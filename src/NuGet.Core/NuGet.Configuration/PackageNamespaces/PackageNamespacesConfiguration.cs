@@ -28,6 +28,11 @@ namespace NuGet.Configuration
         public bool AreNamespacesEnabled { get; }
 
         /// <summary>
+        /// Dictionary with number of entry count per namespace source, used for telemetry.
+        /// </summary>
+        public IReadOnlyDictionary<string, int> NamespacesMetrics {  get; }
+
+        /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
         /// </summary>
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
@@ -43,6 +48,17 @@ namespace NuGet.Configuration
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
+
+            if (AreNamespacesEnabled)
+            {
+                var namespacesMetric = new Dictionary<string, int>();
+                foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
+                {
+                    namespacesMetric[namespacePerSource.Key] = namespacePerSource.Value.Count;
+                }
+
+                NamespacesMetrics = namespacesMetric;
+            }
         }
 
         /// <summary>

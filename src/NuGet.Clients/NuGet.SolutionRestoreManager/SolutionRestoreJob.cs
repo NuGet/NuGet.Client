@@ -69,6 +69,8 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         internal NuGetOperationStatus Status => _status;
 
+        private PackageNamespacesConfiguration _packageNamespacesConfiguration;
+
         [ImportingConstructor]
         public SolutionRestoreJob(
             IPackageRestoreManager packageRestoreManager,
@@ -112,6 +114,7 @@ namespace NuGet.SolutionRestoreManager
             _settings = settings;
             _packageRestoreConsent = new PackageRestoreConsent(_settings);
             _solutionUpToDateChecker = solutionRestoreChecker;
+            _packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
         }
 
 
@@ -302,6 +305,10 @@ namespace NuGet.SolutionRestoreManager
                 .GroupBy(x => x.ProjectStyle)
                 .ToDictionary(x => x.Key, y => y.Count());
 
+            bool areNamespacesEnabled = _packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            int numberOfSourcesWithNamespaces = areNamespacesEnabled ? _packageNamespacesConfiguration.NamespacesMetrics.Count: 0;
+            int allEntryCountInNamespaces = areNamespacesEnabled ? _packageNamespacesConfiguration.NamespacesMetrics.Values.Sum() : 0;
+
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
                 projectIds,
@@ -322,13 +329,15 @@ namespace NuGet.SolutionRestoreManager
                 DateTimeOffset.Now,
                 duration,
                 _trackingData,
-                intervalTimingTracker);
+                intervalTimingTracker,
+                areNamespacesEnabled,
+                numberOfSourcesWithNamespaces,
+                allEntryCountInNamespaces);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
             var sources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
             var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources, protocolDiagnosticTotals);
-
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }
 
@@ -700,9 +709,7 @@ namespace NuGet.SolutionRestoreManager
 
             using (var cacheContext = new SourceCacheContext())
             {
-                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
-
-                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageNamespacesConfiguration)
+                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, _packageNamespacesConfiguration)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
                     ClientPolicyContext = ClientPolicyContext.GetClientPolicy(_settings, logger)
