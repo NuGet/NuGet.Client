@@ -180,7 +180,7 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
             var sources = _sourceRepositoryProvider.GetRepositories();
-            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore))
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore, _packageNamespacesConfiguration))
             {
                 try
                 {
@@ -306,7 +306,7 @@ namespace NuGet.SolutionRestoreManager
                 .ToDictionary(x => x.Key, y => y.Count());
 
             bool areNamespacesEnabled = _packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-            int numberOfSourcesWithNamespaces = areNamespacesEnabled ? _packageNamespacesConfiguration.NamespacesMetrics.Count: 0;
+            int numberOfSourcesWithNamespaces = areNamespacesEnabled ? _packageNamespacesConfiguration.NamespacesMetrics.Count : 0;
             int allEntryCountInNamespaces = areNamespacesEnabled ? _packageNamespacesConfiguration.NamespacesMetrics.Values.Sum() : 0;
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(

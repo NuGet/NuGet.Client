@@ -30,7 +30,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Dictionary with number of entry count per namespace source, used for telemetry.
         /// </summary>
-        public IReadOnlyDictionary<string, int> NamespacesMetrics {  get; }
+        public IReadOnlyDictionary<string, int> NamespacesMetrics { get; }
 
         /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
@@ -51,7 +51,7 @@ namespace NuGet.Configuration
 
             if (AreNamespacesEnabled)
             {
-                var namespacesMetric = new Dictionary<string, int>();
+                var namespacesMetric = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
                 foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
                 {
                     namespacesMetric[namespacePerSource.Key] = namespacePerSource.Value.Count;

@@ -247,7 +247,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var sourceRepository = new SourceRepository(new PackageSource("source"), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName");
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageNamespacesConfiguration: null);
 
             // Assert
             Assert.Null(result);
@@ -281,7 +281,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var source = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName");
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageNamespacesConfiguration: null);
 
             // Assert
             Assert.NotNull(result);

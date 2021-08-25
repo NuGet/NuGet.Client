@@ -22,6 +22,7 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly Guid _parentId;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
+        private readonly PackageNamespacesConfiguration _packageNamespacesConfiguration;
 
         internal const string EventName = "PackageSourceDiagnostics";
 
@@ -30,6 +31,12 @@ namespace NuGet.VisualStudio.Telemetry
             Unknown = 0,
             Restore,
             Search
+        }
+
+        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageNamespacesConfiguration packageNamespacesConfiguration)
+            : this(sources, parentId, action)
+        {
+            _packageNamespacesConfiguration = packageNamespacesConfiguration;
         }
 
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
@@ -201,7 +208,7 @@ namespace NuGet.VisualStudio.Telemetry
                     sourceRepository = new SourceRepository(new PackageSource(source), Repository.Provider.GetCoreV3());
                 }
 
-                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName);
+                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName, _packageNamespacesConfiguration);
 
                 if (telemetry != null)
                 {
@@ -210,7 +217,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName)
+        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageNamespacesConfiguration packageNamespacesConfiguration)
         {
             if (data.Resources.Count == 0)
             {
@@ -226,7 +233,9 @@ namespace NuGet.VisualStudio.Telemetry
                     new Dictionary<string, object>()
                     {
                     { PropertyNames.ParentId, parentId },
-                    { PropertyNames.Action, actionName }
+                    { PropertyNames.Action, actionName },
+                    { PropertyNames.PackageNamespaces.AreNamespacesEnabled, packageNamespacesConfiguration?.AreNamespacesEnabled ?? false },
+                    { PropertyNames.PackageNamespaces.IsNamespaceEnabledOnSource, packageNamespacesConfiguration?.NamespacesMetrics.ContainsKey(sourceRepository.PackageSource.Name) ?? false}
                     });
 
                 AddSourceProperties(telemetry, sourceRepository, feedType);
@@ -460,6 +469,12 @@ namespace NuGet.VisualStudio.Telemetry
                     internal const string Total = "http.duration.total";
                     internal const string Header = "http.duration.header";
                 }
+            }
+
+            internal static class PackageNamespaces
+            {
+                internal const string AreNamespacesEnabled = "PackageNamespaces.AreNamespacesEnabled";
+                internal const string IsNamespaceEnabledOnSource = "PackageNamespaces.IsNamespaceEnabledOnSource";
             }
         }
     }
