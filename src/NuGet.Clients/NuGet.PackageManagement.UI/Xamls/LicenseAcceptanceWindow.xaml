@@ -71,7 +71,7 @@
 
       <DataTemplate x:Key="LicenseItemTemplate">
         <StackPanel
-          Margin="2,0,2,5" IsItemsHost="True">
+          Margin="2,0,2,5" >
           <TextBlock
             TextWrapping="Wrap"
             x:Name="_packageLicenseText"
