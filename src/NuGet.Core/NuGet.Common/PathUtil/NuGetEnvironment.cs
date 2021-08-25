@@ -18,6 +18,7 @@ namespace NuGet.Common
 #endif
 
         private static readonly Lazy<string> _getHome = new Lazy<string>(() => GetHome());
+
         public static string GetFolderPath(NuGetFolderPath folder)
         {
             switch (folder)
