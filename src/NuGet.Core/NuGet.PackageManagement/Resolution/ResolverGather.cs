@@ -564,7 +564,7 @@ namespace NuGet.PackageManagement
                     {
                         if (configuredPackageSources == null ||
                             configuredPackageSources.Count == 0 ||
-                            !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                            !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.OrdinalIgnoreCase))
                         {
                             // This package's id prefix is not defined in current package source, let's skip.
                             continue;
