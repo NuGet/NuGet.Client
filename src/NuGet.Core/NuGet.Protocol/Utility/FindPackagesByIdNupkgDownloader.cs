@@ -261,7 +261,7 @@ namespace NuGet.Protocol
         {
             int maxRetries = 3;
 
-            if (NuGetEnvironment.EnhancedHttpRetryEnabled)
+            if (HttpRetryHandler.EnhancedHttpRetryEnabled)
             {
                 maxRetries = 6;
             }
@@ -306,7 +306,7 @@ namespace NuGet.Protocol
                         + ExceptionUtilities.DisplayMessage(ex);
 
                     logger.LogMinimal(message);
-                    if (NuGetEnvironment.EnhancedHttpRetryEnabled &&
+                    if (HttpRetryHandler.EnhancedHttpRetryEnabled &&
                         ex.InnerException != null &&
                         ex.InnerException is IOException &&
                         ex.InnerException.InnerException != null &&
@@ -316,7 +316,7 @@ namespace NuGet.Protocol
                         // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
                         // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
                         // Stalling an five extra seconds gives extra time for the hosts to pick up new session tokens if it occurs.
-                        await Task.Delay(5000);
+                        await Task.Delay(TimeSpan.FromSeconds(5));
                     }
                 }
                 catch (Exception ex) when (retry == maxRetries)

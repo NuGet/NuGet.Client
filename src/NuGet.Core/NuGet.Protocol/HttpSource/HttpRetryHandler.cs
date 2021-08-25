@@ -19,6 +19,31 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpRetryHandler : IHttpRetryHandler
     {
+        private static bool? EnhancedHttpRetryIsEnabled = null;
+        internal static bool EnhancedHttpRetryEnabled
+        {
+            get
+            {
+                if (EnhancedHttpRetryIsEnabled == null)
+                {
+                    try
+                    {
+                        EnhancedHttpRetryIsEnabled = false;
+                        var variableValue = Environment.GetEnvironmentVariable("NUGET_ENABLE_ENHANCED_HTTP_RETRY");
+                        if (!string.IsNullOrEmpty(variableValue))
+                        {
+                            if (bool.TryParse(variableValue, out bool parsed))
+                            {
+                                EnhancedHttpRetryIsEnabled = parsed;
+                            }
+                        }
+                    }
+                    catch (Exception) { }
+                }
+                return (bool) EnhancedHttpRetryIsEnabled;
+            }
+        }
+
         internal const string StopwatchPropertyName = "NuGet_ProtocolDiagnostics_Stopwatches";
 
         /// <summary>
@@ -66,11 +91,11 @@ namespace NuGet.Protocol
                 // so the Delay() never actually occurs.
                 // When opted in to "enhanced retry", do the delay and have it increase exponentially where applicable
                 // (i.e. when "tries" is allowed to be > 1)
-                if (tries > 0 || (NuGetEnvironment.EnhancedHttpRetryEnabled && request.IsRetry))
+                if (tries > 0 || (EnhancedHttpRetryEnabled && request.IsRetry))
                 {
-                    // "Enhanced" retry: In the case where this is actually a 2nd-Nth try, back off with some random.
+                    // "Enhanced" retry: In the case where this is actually a 2nd-Nth try, back off exponentially with some random.
                     // In many cases due to the external retry loop, this will be always be 1 * request.RetryDelay.TotalMilliseconds + 0-200 ms
-                    if (NuGetEnvironment.EnhancedHttpRetryEnabled)
+                    if (EnhancedHttpRetryEnabled)
                     {
                         await Task.Delay(TimeSpan.FromMilliseconds((Math.Pow(2, tries) * request.RetryDelay.TotalMilliseconds) + new Random().Next(200)));
 

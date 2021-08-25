@@ -18,7 +18,6 @@ namespace NuGet.Common
 #endif
 
         private static readonly Lazy<string> _getHome = new Lazy<string>(() => GetHome());
-        private static bool? EnhancedHttpRetryIsEnabled = null;
         public static string GetFolderPath(NuGetFolderPath folder)
         {
             switch (folder)
@@ -331,30 +330,6 @@ namespace NuGet.Common
             }
 
             return DotNet;
-        }
-
-        public static bool EnhancedHttpRetryEnabled
-        {
-            get
-            {
-                if (EnhancedHttpRetryIsEnabled == null)
-                {
-                    try
-                    {
-                        EnhancedHttpRetryIsEnabled = false;
-                        var variableValue = Environment.GetEnvironmentVariable("NUGET_ENABLE_ENHANCED_HTTP_RETRY");
-                        if (!string.IsNullOrEmpty(variableValue))
-                        {
-                            if (bool.TryParse(variableValue, out bool parsed))
-                            {
-                                EnhancedHttpRetryIsEnabled = parsed;
-                            }
-                        }
-                    }
-                    catch (Exception) { }
-                }
-                return (bool) EnhancedHttpRetryIsEnabled;
-            }
         }
 
         /// <summary>
