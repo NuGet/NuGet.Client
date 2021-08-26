@@ -134,8 +134,10 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(IconBitmapStatus.DefaultIconDueToRelativeUri, packageItemViewModel.BitmapStatus);
         }
 
-        [Fact]
-        public async Task IconUrl_WithLocalPathAndColorProfile_LoadsImage()
+        [Theory]
+        [InlineData("grayicc.png")]
+        [InlineData("icon.jpeg")]
+        public async Task IconUrl_WithLocalPathAndSpecialColorProfiles_LoadsImage(string imageFile)
         {
             // Prepare
             using (var testDir = TestDirectory.Create())
@@ -143,14 +145,14 @@ namespace NuGet.PackageManagement.UI.Test
                 byte[] bytes;
                 Assembly testAssembly = typeof(PackageItemViewModelTests).Assembly;
 
-                using (Stream sourceStream = testAssembly.GetManifestResourceStream("NuGet.PackageManagement.UI.Test.Resources.grayicc.png"))
+                using (Stream sourceStream = testAssembly.GetManifestResourceStream($"NuGet.PackageManagement.UI.Test.Resources.{imageFile}"))
                 using (var memoryStream = new MemoryStream())
                 {
                     sourceStream.CopyTo(memoryStream);
                     bytes = memoryStream.ToArray();
                 }
 
-                string grayiccImagePath = Path.Combine(testDir, "grayicc.png");
+                string grayiccImagePath = Path.Combine(testDir, imageFile);
                 File.WriteAllBytes(grayiccImagePath, bytes);
 
                 var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
@@ -359,7 +361,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
 
             BitmapSource result = packageItemViewModel.IconBitmap;
-            int millisecondsToWait = 3000;
+            int millisecondsToWait = 200000;
             while (!IconBitmapStatusUtility.GetIsCompleted(packageItemViewModel.BitmapStatus) && millisecondsToWait >= 0)
             {
                 await Task.Delay(250);

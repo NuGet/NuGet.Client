@@ -561,6 +561,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         // Cannot call CopyToAsync as we'll get an InvalidOperationException due to CheckAccess() in next line.
                         stream.CopyTo(memoryStream);
+                        memoryStream.Seek(0, SeekOrigin.Begin);
                         iconBitmapImage.StreamSource = memoryStream;
 
                         try

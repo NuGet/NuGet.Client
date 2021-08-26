@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\icon.jpeg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.Diagnostics.Assert, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>$([MSBuild]::GetVsInstallRoot())\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Diagnostics.Assert.dll</HintPath>
@@ -87,6 +91,7 @@
     <EmbeddedResource Include="compiler\resources\index.json" />
     <EmbeddedResource Include="compiler\resources\nugetSearchPage1.json" />
     <EmbeddedResource Include="compiler\resources\nugetSearchPage2.json" />
+    <EmbeddedResource Include="Resources\icon.jpeg" />
   </ItemGroup>
   <ItemGroup>
     <None Include="xunit.runner.json">
