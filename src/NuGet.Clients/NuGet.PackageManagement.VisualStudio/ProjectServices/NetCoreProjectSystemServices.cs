@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -13,17 +12,16 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Represent net core project systems in visual studio.
     /// </summary>
     internal class NetCoreProjectSystemServices :
-        GlobalProjectServiceProvider,
         INuGetProjectServices
     {
         public NetCoreProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
-            IComponentModel componentModel)
-            : base(componentModel)
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsProjectAdapter);
+            Assumes.Present(scriptExecutor);
 
-            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
+            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, scriptExecutor);
         }
 
         public IProjectBuildProperties BuildProperties => throw new NotSupportedException();

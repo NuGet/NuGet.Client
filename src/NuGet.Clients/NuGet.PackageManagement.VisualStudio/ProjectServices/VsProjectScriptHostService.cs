@@ -21,15 +21,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public VsProjectScriptHostService(
             IVsProjectAdapter vsProjectAdapter,
-            INuGetProjectServices projectServices)
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsProjectAdapter);
-            Assumes.Present(projectServices);
+            Assumes.Present(scriptExecutor);
 
             _vsProjectAdapter = vsProjectAdapter;
-
-            _scriptExecutor = new Lazy<IScriptExecutor>(
-                () => projectServices.GetGlobalService<IScriptExecutor>());
+            _scriptExecutor = scriptExecutor;
         }
 
         public Task ExecutePackageScriptAsync(

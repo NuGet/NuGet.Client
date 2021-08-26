@@ -5,9 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -21,31 +19,27 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class MSBuildNuGetProjectProvider : INuGetProjectProvider
     {
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly AsyncLazy<IComponentModel> _componentModel;
+        private readonly Lazy<IScriptExecutor> _scriptExecutor;
 
         public RuntimeTypeHandle ProjectType => typeof(VsMSBuildNuGetProject).TypeHandle;
 
         [ImportingConstructor]
-        public MSBuildNuGetProjectProvider(IVsProjectThreadingService threadingService)
+        public MSBuildNuGetProjectProvider(IVsProjectThreadingService threadingService, Lazy<IScriptExecutor> scriptExecutor)
             : this(AsyncServiceProvider.GlobalProvider,
-                   threadingService)
+                   threadingService, scriptExecutor)
         { }
 
         public MSBuildNuGetProjectProvider(
             IAsyncServiceProvider vsServiceProvider,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsServiceProvider);
             Assumes.Present(threadingService);
+            Assumes.Present(scriptExecutor);
 
             _threadingService = threadingService;
-
-            _componentModel = new AsyncLazy<IComponentModel>(
-                async () =>
-                {
-                    return await vsServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
-                },
-                _threadingService.JoinableTaskFactory);
+            _scriptExecutor = scriptExecutor;
         }
 
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
@@ -62,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await projectSystem.InitializeProperties();
 
-            var projectServices = await CreateProjectServicesAsync(vsProjectAdapter, projectSystem);
+            var projectServices = new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, _threadingService, _scriptExecutor);
 
             var folderNuGetProjectFullPath = context.PackagesPathFactory();
 
@@ -75,13 +69,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 folderNuGetProjectFullPath,
                 packagesConfigFolderPath,
                 projectServices);
-        }
-
-        private async Task<INuGetProjectServices> CreateProjectServicesAsync(
-            IVsProjectAdapter vsProjectAdapter, VsMSBuildProjectSystem projectSystem)
-        {
-            var componentModel = await _componentModel.GetValueAsync();
-            return new VsMSBuildProjectSystemServices(vsProjectAdapter, projectSystem, componentModel);
         }
     }
 }
