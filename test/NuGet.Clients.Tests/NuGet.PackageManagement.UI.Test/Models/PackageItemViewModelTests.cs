@@ -134,42 +134,16 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(IconBitmapStatus.DefaultIconDueToRelativeUri, packageItemViewModel.BitmapStatus);
         }
 
-        [Theory]
-        [InlineData("grayicc.png")]
-        [InlineData("test.jpeg")]
-        public async Task IconUrl_WithLocalPathAndSpecialColorProfiles_LoadsImage(string imageFile)
+        [Fact]
+        public async Task IconUrl_WithLocalPathAndColorProfile_LoadsImage()
         {
-            // Prepare
-            using (var testDir = TestDirectory.Create())
-            {
-                byte[] bytes;
-                Assembly testAssembly = typeof(PackageItemViewModelTests).Assembly;
+            await ReadIconFromEmbeddedResourceAsync("grayicc.png");
+        }
 
-                using (Stream sourceStream = testAssembly.GetManifestResourceStream($"NuGet.PackageManagement.UI.Test.Resources.{imageFile}"))
-                using (var memoryStream = new MemoryStream())
-                {
-                    sourceStream.CopyTo(memoryStream);
-                    bytes = memoryStream.ToArray();
-                }
-
-                string grayiccImagePath = Path.Combine(testDir, imageFile);
-                File.WriteAllBytes(grayiccImagePath, bytes);
-
-                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
-                {
-                    Id = "PackageId.IconUrl_WithLocalPathAndColorProfile_LoadsImage",
-                    Version = new NuGetVersion("1.0.0"),
-                    IconUrl = new Uri(grayiccImagePath, UriKind.Absolute),
-                    PackageFileService = _packageFileService,
-                };
-
-                // Act
-                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
-
-                // Assert
-                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
-                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
-            }
+        [Fact]
+        public async Task IconUrl_JpegFullReading_LoadsImage()
+        {
+            await ReadIconFromEmbeddedResourceAsync("customMetadata.jpeg");
         }
 
         [Fact]
@@ -521,6 +495,46 @@ namespace NuGet.PackageManagement.UI.Test
             using (var fs = File.OpenWrite(path))
             {
                 encoder.Save(fs);
+            }
+        }
+
+        /// <summary>
+        /// Reads an Icon from test assembly resource
+        /// </summary>
+        /// <param name="imageFile">Relative path to the resource in test assembly</param>
+        /// <returns>An awitable Task</returns>
+        private async Task ReadIconFromEmbeddedResourceAsync(string imageFile)
+        {
+            // Prepare
+            using (var testDir = TestDirectory.Create())
+            {
+                byte[] bytes;
+                Assembly testAssembly = typeof(PackageItemViewModelTests).Assembly;
+
+                using (Stream sourceStream = testAssembly.GetManifestResourceStream($"NuGet.PackageManagement.UI.Test.Resources.{imageFile}"))
+                using (var memoryStream = new MemoryStream())
+                {
+                    sourceStream.CopyTo(memoryStream);
+                    bytes = memoryStream.ToArray();
+                }
+
+                string imageFilePath = Path.Combine(testDir, imageFile);
+                File.WriteAllBytes(imageFilePath, bytes);
+
+                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
+                {
+                    Id = "TestPackageId",
+                    Version = new NuGetVersion("1.0.0"),
+                    IconUrl = new Uri(imageFilePath, UriKind.Absolute),
+                    PackageFileService = _packageFileService,
+                };
+
+                // Act
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
+
+                // Assert
+                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
             }
         }
     }

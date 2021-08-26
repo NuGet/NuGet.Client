@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\test.jpeg" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.Diagnostics.Assert, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>$([MSBuild]::GetVsInstallRoot())\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Diagnostics.Assert.dll</HintPath>
@@ -84,6 +80,7 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\customMetadata.jpeg" />
     <EmbeddedResource Include="Resources\grayicc.png" />
   </ItemGroup>
   <ItemGroup>
@@ -91,7 +88,6 @@
     <EmbeddedResource Include="compiler\resources\index.json" />
     <EmbeddedResource Include="compiler\resources\nugetSearchPage1.json" />
     <EmbeddedResource Include="compiler\resources\nugetSearchPage2.json" />
-    <EmbeddedResource Include="Resources\test.jpeg" />
   </ItemGroup>
   <ItemGroup>
     <None Include="xunit.runner.json">
