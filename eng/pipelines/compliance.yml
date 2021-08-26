@@ -13,7 +13,7 @@ jobs:
   - job: Static_Analysis
     displayName: "Static Analysis"
     timeoutInMinutes: 180
-    pool: VSEngStaticAnalysis
+    pool: VSEngSS-MicroBuild2019
 
     steps:
       - task: CredScan@2
@@ -34,7 +34,7 @@ jobs:
           project: 'devdiv'
           pipeline: NuGet.Client-Official
           artifact: "symbols - NonRTM"
-          path: $(Pipeline.Workspace)\symbols\NonRTM          
+          path: $(Pipeline.Workspace)\symbols\NonRTM
 
       ## Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
       - task: APIScan@2
