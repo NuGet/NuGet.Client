@@ -31,7 +31,7 @@ jobs:
         displayName: "Download symbols - NonRTM artifact"
         inputs:
           source: specific
-          project: 'devdiv'
+          project: "devdiv"
           pipeline: NuGet.Client-Official
           artifact: "symbols - NonRTM"
           path: $(Pipeline.Workspace)\symbols\NonRTM
@@ -41,10 +41,10 @@ jobs:
         displayName: Run APIScan
         inputs:
           softwareFolder: $(Pipeline.Workspace)\symbols
-          softwareName: 'NuGet.Client'
-          softwareVersionNum: '$(Build.BuildId)'
+          softwareName: "NuGet.Client"
+          softwareVersionNum: "$(Build.BuildId)"
           isLargeApp: true
-          toolVersion: 'Latest'
+          toolVersion: "Latest"
         env:
           AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
 
