@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         [Theory]
         [InlineData("grayicc.png")]
-        [InlineData("icon.jpeg")]
+        [InlineData("test.jpeg")]
         public async Task IconUrl_WithLocalPathAndSpecialColorProfiles_LoadsImage(string imageFile)
         {
             // Prepare
