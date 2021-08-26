@@ -560,10 +560,15 @@ namespace NuGet.PackageManagement
             {
                 foreach (SourceResource source in sources)
                 {
-                    if (_areNamespacesEnabled && configuredPackageSources != null && !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                    if (_areNamespacesEnabled)
                     {
-                        // This package's id prefix is not defined in current package source, let's skip.
-                        continue;
+                        if (configuredPackageSources == null ||
+                            configuredPackageSources.Count == 0 ||
+                            !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.OrdinalIgnoreCase))
+                        {
+                            // This package's id prefix is not defined in current package source, let's skip.
+                            continue;
+                        }
                     }
 
                     // Keep track of the order in which these were made
