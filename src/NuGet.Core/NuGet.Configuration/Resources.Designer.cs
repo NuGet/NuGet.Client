@@ -97,15 +97,6 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allowed value(s): {0}.
-        /// </summary>
-        internal static string AttributeValuesAllowed {
-            get {
-                return ResourceManager.GetString("AttributeValuesAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The item passed to the Update method cannot refer to a different item than the one being updated..
         /// </summary>
         internal static string CannotUpdateDifferentItems {
