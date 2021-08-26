@@ -367,7 +367,7 @@ function Test-PC-PackageNamespaceInstall-Succeed
     }
 }
 
-function Test-PC-PackageNamespaceInstall-WrongSource-Fails
+function Test-PC-PackageNamespaceInstall-Fails
 {
     param($context)
 
@@ -408,7 +408,7 @@ function Test-PC-PackageNamespaceInstall-WrongSource-Fails
     }
 }
 
-function Test-PC-PackageNamespaceInstall-Pass-CorrectSourceOption-Succeed
+function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
 {
     param($context)
 
@@ -467,7 +467,7 @@ function Test-PC-PackageNamespaceInstall-Pass-CorrectSourceOption-Succeed
     }
 }
 
-function Test-PC-PackageNamespaceInstall-Pass-WrongSourceOption-Fails
+function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
 {
     param($context)
 
@@ -516,7 +516,7 @@ function Test-PC-PackageNamespaceInstall-Pass-WrongSourceOption-Fails
     }
 }
 
-function Test-PC-PackageNamespaceUpdate-Pass-CorrectSourceOption-Succeed
+function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
 {
     param($context)
 
