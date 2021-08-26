@@ -121,11 +121,7 @@ namespace NuGet.Protocol
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            int maxRetries = 3;
-            if (HttpRetryHandler.EnhancedHttpRetryEnabled)
-            {
-                maxRetries = 6;
-            }
+            int maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? 6 : 3;
 
             for (var retry = 1; retry <= maxRetries; retry++)
             {

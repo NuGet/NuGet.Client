@@ -77,15 +77,7 @@ namespace NuGet.Protocol
             _httpSource = httpSource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
 
-            if (HttpRetryHandler.EnhancedHttpRetryEnabled)
-            {
-                _maxRetries = 6;
-            }
-            else
-            {
-                _maxRetries = DefaultMaxRetries;
-            }
-
+            _maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? 6 : DefaultMaxRetries;
         }
 
         /// <summary>
