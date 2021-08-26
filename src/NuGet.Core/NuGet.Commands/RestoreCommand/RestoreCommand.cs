@@ -76,6 +76,11 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
 
+        // Packagenamespace names
+        private const string PackageNamespaceEnabled = nameof(PackageNamespaceEnabled);
+        private const string PackageNamespaceSourcesCount = nameof(PackageNamespaceSourcesCount);
+        private const string PackageNamespaceAllEntryCounts = nameof(PackageNamespaceAllEntryCounts);
+
         public RestoreCommand(RestoreRequest request)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
@@ -113,6 +118,11 @@ namespace NuGet.Commands
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
+
+                bool areNamespacesEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
+                telemetry.TelemetryEvent[PackageNamespaceEnabled] = areNamespacesEnabled;
+                telemetry.TelemetryEvent[PackageNamespaceSourcesCount] = areNamespacesEnabled ? _request.PackageNameSpaces.NamespacesMetrics.Count : 0;
+                telemetry.TelemetryEvent[PackageNamespaceAllEntryCounts] = areNamespacesEnabled ? _request.PackageNameSpaces.NamespacesMetrics.Values.Sum() : 0;
 
                 _operationId = telemetry.OperationId;
 

@@ -65,9 +65,9 @@ namespace NuGet.VisualStudio
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
             base[nameof(ForceRestore)] = forceRestore;
-            base[nameof(AreNamespacesEnabled)] = areNamespacesEnabled;
-            base[nameof(NumberOfSourcesWithNamespaces)] = numberOfSourcesWithNamespaces;
-            base[nameof(AllEntryCountInNamespaces)] = allEntryCountInNamespaces;
+            base[nameof(PackageNamespacesEnabled)] = areNamespacesEnabled;
+            base[nameof(PackageNamespacesSourceCount)] = numberOfSourcesWithNamespaces;
+            base[nameof(PackageNamespacesAllEntryCounts)] = allEntryCountInNamespaces;
 
             foreach (KeyValuePair<string, object> data in additionalTrackingData)
             {
@@ -106,10 +106,10 @@ namespace NuGet.VisualStudio
 
         public int PackagesConfigProjectsCount => (int)base[nameof(PackagesConfigProjectsCount)];
 
-        public bool AreNamespacesEnabled => (bool)base[nameof(AreNamespacesEnabled)];
+        public bool PackageNamespacesEnabled => (bool)base[nameof(PackageNamespacesEnabled)];
 
-        public int NumberOfSourcesWithNamespaces => (int)base[nameof(NumberOfSourcesWithNamespaces)];
+        public int PackageNamespacesSourceCount => (int)base[nameof(PackageNamespacesSourceCount)];
 
-        public int AllEntryCountInNamespaces => (int)base[nameof(AllEntryCountInNamespaces)];
+        public int PackageNamespacesAllEntryCounts => (int)base[nameof(PackageNamespacesAllEntryCounts)];
     }
 }
