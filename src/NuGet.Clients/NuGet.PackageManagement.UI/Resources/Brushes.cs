@@ -156,6 +156,8 @@ namespace NuGet.PackageManagement.UI
 
         public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
 
+        public static object GridSplitterFocusBrushKey { get; private set; } = SystemColors.HighlightBrushKey;
+
         public static object TabSelectedIndicatorBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
 
         public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;

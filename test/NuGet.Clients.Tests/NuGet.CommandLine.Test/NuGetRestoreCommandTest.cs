@@ -2813,9 +2813,9 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_successCode, r.ExitCode);
-                var contosoRestorePath = Path.Combine(packagePath, "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
-                Assert.True(File.Exists(contosoRestorePath));
+                Assert.Equal(_failureCode, r.ExitCode);
+                Assert.Contains("Unable to find version '1.0.0' of package 'My.MVC.ASP'.", r.Errors);
+                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.Output);
             }
         }
 

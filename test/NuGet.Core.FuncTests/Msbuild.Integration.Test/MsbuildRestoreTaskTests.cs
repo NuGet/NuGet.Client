@@ -1509,7 +1509,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", result.Output);
             }
         }
-
+        
         [PlatformFact(Platform.Windows)]
         public async Task MsbuildRestore_PackageNamespaceSameMatchesMultipleSources_Succeed()
         {
