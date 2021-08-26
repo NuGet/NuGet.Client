@@ -19,14 +19,6 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpRetryHandler : IHttpRetryHandler
     {
-        private static IEnvironmentVariableReader EnvironmentVariableReader;
-        public HttpRetryHandler() : this(EnvironmentVariableWrapper.Instance) {}
-
-        internal HttpRetryHandler(IEnvironmentVariableReader environmentVariableReader)
-        {
-            EnvironmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
-        }
-
         private static bool? EnhancedHttpRetryIsEnabled = null;
         internal static bool EnhancedHttpRetryEnabled
         {
@@ -37,7 +29,7 @@ namespace NuGet.Protocol
                     try
                     {
                         EnhancedHttpRetryIsEnabled = false;
-                        var variableValue = EnvironmentVariableReader.GetEnvironmentVariable("NUGET_ENABLE_ENHANCED_HTTP_RETRY");
+                        var variableValue = EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_ENABLE_ENHANCED_HTTP_RETRY");
                         if (!string.IsNullOrEmpty(variableValue))
                         {
                             if (bool.TryParse(variableValue, out bool parsed))
