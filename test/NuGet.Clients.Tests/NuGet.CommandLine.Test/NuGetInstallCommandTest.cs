@@ -1959,7 +1959,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_NameSpaceFilter_Cli_FromPackagesConfigFile_Pass_AllSourceOptions_Succeed()
+        public void InstallCommand_NameSpaceFilter_Cli_FromPackagesConfigFile_WithCorrectSourceOptions_Succeed()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -2011,7 +2011,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_NameSpaceFilter_Cli_FromPackagesConfigFile_Pass_NotEnoughSources_Fails()
+        public void InstallCommand_NameSpaceFilter_Cli_FromPackagesConfigFile_WithNotEnoughSourceOptions_Fails()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();

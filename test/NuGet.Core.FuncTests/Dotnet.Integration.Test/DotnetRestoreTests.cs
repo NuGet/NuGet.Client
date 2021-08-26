@@ -1777,7 +1777,7 @@ EndGlobal";
         }
 
         [Fact]
-        public async Task DotnetRestore_NameSpaceFilter_Pass_AllSourceOptions_Succeed()
+        public async Task DotnetRestore_NameSpaceFilter_WithAllSourceOptions_Succeed()
         {
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
 
@@ -1861,7 +1861,7 @@ EndGlobal";
         }
 
         [Fact]
-        public async Task DotnetRestore_NameSpaceFilter_Pass_NotEnoughSources_Fails()
+        public async Task DotnetRestore_NameSpaceFilter_WithNotEnoughSourceOptions_Fails()
         {
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
 

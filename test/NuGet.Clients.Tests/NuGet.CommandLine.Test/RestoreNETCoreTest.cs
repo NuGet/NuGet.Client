@@ -10855,7 +10855,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_NameSpaceFilter_PR_WithAllRestoreSources_Properies_Succeed()
+        public async Task RestoreCommand_NameSpaceFilter_PR_WithAllRestoreSourceProperies_Succeed()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -10951,7 +10951,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [Fact]
-        public async Task RestoreCommand_NameSpaceFilter_PR_WithNotEnoughRestoreSources_Property_Fails()
+        public async Task RestoreCommand_NameSpaceFilter_PR_WithNotEnoughRestoreSourceProperty_Fails()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();

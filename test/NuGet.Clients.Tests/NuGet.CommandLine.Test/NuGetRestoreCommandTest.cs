@@ -2966,7 +2966,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NameSpaceFilter_Cli_Pass_AllSourceOptions_Succeed()
+        public void RestoreCommand_NameSpaceFilter_Cli_WithAllSourceOptions_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3051,7 +3051,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NameSpaceFilter_Cli_Pass_NotEnoughSources_Fails()
+        public void RestoreCommand_NameSpaceFilter_Cli_WithNotEnoughSourceOption_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3214,7 +3214,6 @@ EndProject";
                 Assert.Equal(_successCode, r.ExitCode);
                 var contosoRestorePath = Path.Combine(packagePath, "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
                 Assert.True(File.Exists(contosoRestorePath));
-                Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'encyclopædia'", r.Output);
                 Assert.Contains($"Added package 'Contoso.MVC.ASP.1.0.0' to folder '{packagePath}' from source '{sharedRepositoryPath2}'", r.Output);
             }
         }

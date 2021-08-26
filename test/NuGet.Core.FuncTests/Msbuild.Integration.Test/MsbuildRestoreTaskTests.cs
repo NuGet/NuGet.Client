@@ -1769,7 +1769,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PR_PackageNamespace_WithAllRestoreSources_Properies_Succeed()
+        public async Task MsbuildRestore_PR_PackageNamespace_WithAllRestoreSourceProperies_Succeed()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1855,7 +1855,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PR_PackageNamespace_WithNotEnoughRestoreSources_Property_Fails()
+        public async Task MsbuildRestore_PR_PackageNamespace_WithNotEnoughRestoreSourceProperty_Fails()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
