@@ -106,6 +106,7 @@
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
+    <EnforceCodeStyleInBuild Condition=" '$(EnforceCodeStyleInBuild)' != '' " >true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup>

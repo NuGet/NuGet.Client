@@ -63,7 +63,7 @@ namespace Test.Utility.Signing
             using (var certificateTmp = new X509Certificate2(bcCertificate.GetEncoded()))
             {
                 certificate = RSACertificateExtensions.CopyWithPrivateKey(certificateTmp, privateKey);
-            } 
+            }
 #endif
             return certificate;
         }

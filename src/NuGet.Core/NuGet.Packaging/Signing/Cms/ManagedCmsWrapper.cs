@@ -47,7 +47,7 @@ namespace NuGet.Packaging.Signing
         {
             foreach (var cert in certificates)
             {
-                    _signedCms.AddCertificate(cert);
+                _signedCms.AddCertificate(cert);
             }
         }
 
