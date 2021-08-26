@@ -40,7 +40,7 @@ namespace NuGet.Protocol
                     }
                     catch (Exception) { }
                 }
-                return (bool) EnhancedHttpRetryIsEnabled;
+                return (bool)EnhancedHttpRetryIsEnabled;
             }
         }
 
