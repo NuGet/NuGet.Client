@@ -42,7 +42,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 duration: 2.10,
                 packageNamespaceEnabled: false,
                 packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+                packageNamespaceAllEntryCounts: 0,
+                addedPackagesWithPackageNamespaceCount: 0,
+                updatedPackageWithPackageNamespaceCount: 0);
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
@@ -83,7 +85,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 duration: 1.30,
                 packageNamespaceEnabled: false,
                 packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+                packageNamespaceAllEntryCounts: 00,
+                addedPackagesWithPackageNamespaceCount: 0,
+                updatedPackageWithPackageNamespaceCount: 0);
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
@@ -121,7 +125,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 duration: .40,
                 packageNamespaceEnabled: false,
                 packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+                packageNamespaceAllEntryCounts: 0,
+                addedPackagesWithPackageNamespaceCount: 0,
+                updatedPackageWithPackageNamespaceCount: 0);
+
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act

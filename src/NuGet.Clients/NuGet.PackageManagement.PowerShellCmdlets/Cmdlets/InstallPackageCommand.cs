@@ -92,6 +92,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
             int numberOfSourcesWithNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Count : 0;
             int allEntryCountInNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Values.Sum() : 0;
+            int addedPackagesWithPackageNamespaceCount = areNamespacesEnabled ? Packages.Sum(p => packageNamespacesConfiguration.GetConfiguredPackageSources(p).Count) : 0;
 
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
@@ -104,7 +105,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 TelemetryServiceUtility.GetTimerElapsedTimeInSeconds(),
                 packageNamespaceEnabled: areNamespacesEnabled,
                 packageNamespaceSourcesCount: numberOfSourcesWithNamespaces,
-                packageNamespaceAllEntryCounts: allEntryCountInNamespaces);
+                packageNamespaceAllEntryCounts: allEntryCountInNamespaces,
+                addedPackagesWithPackageNamespaceCount: addedPackagesWithPackageNamespaceCount,
+                updatedPackageWithPackageNamespaceCount: 0);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

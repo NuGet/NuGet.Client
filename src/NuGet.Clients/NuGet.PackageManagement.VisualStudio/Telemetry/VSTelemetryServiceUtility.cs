@@ -48,7 +48,9 @@ namespace NuGet.PackageManagement.Telemetry
             double duration,
             bool packageNamespaceEnabled,
             int packageNamespaceSourcesCount,
-            int packageNamespaceAllEntryCounts)
+            int packageNamespaceAllEntryCounts,
+            int addedPackagesWithPackageNamespaceCount,
+            int updatedPackageWithPackageNamespaceCount)
         {
             var sortedProjects = projects.OrderBy(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
@@ -66,9 +68,11 @@ namespace NuGet.PackageManagement.Telemetry
                 packageCount,
                 DateTimeOffset.Now,
                 duration,
-                packageNamespaceEnabled: packageNamespaceEnabled,
-                packageNamespaceSourcesCount: packageNamespaceSourcesCount,
-                packageNamespaceAllEntryCounts: packageNamespaceAllEntryCounts);
+                packageNamespaceEnabled,
+                packageNamespaceSourcesCount,
+                packageNamespaceAllEntryCounts,
+                addedPackagesWithPackageNamespaceCount,
+                updatedPackageWithPackageNamespaceCount);
         }
 
         public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)

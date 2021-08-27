@@ -24,9 +24,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                packageCount: 1,
                endTime: DateTimeOffset.Now,
                duration: 1.30,
-                packageNamespaceEnabled: false,
-                packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+               packageNamespaceEnabled: false,
+               packageNamespaceSourcesCount: 0,
+               packageNamespaceAllEntryCounts: 0,
+               addedPackagesWithPackageNamespaceCount: 0,
+               updatedPackageWithPackageNamespaceCount: 0);
 
             // Act
             var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(actionTelemetryData);

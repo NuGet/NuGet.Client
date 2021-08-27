@@ -105,7 +105,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 stopWatch.Elapsed.TotalSeconds,
                 packageNamespaceEnabled: areNamespacesEnabled,
                 packageNamespaceSourcesCount: numberOfSourcesWithNamespaces,
-                packageNamespaceAllEntryCounts: allEntryCountInNamespaces);
+                packageNamespaceAllEntryCounts: allEntryCountInNamespaces,
+                addedPackagesWithPackageNamespaceCount: 0,
+                updatedPackageWithPackageNamespaceCount: 0);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
