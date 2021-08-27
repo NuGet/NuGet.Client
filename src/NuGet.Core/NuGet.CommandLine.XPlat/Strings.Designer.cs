@@ -466,6 +466,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A trusted repository with the service index &apos;{0}&apos; already exists..
+        /// </summary>
+        internal static string Error_TrustedRepoAlreadyExists {
+            get {
+                return ResourceManager.GetString("Error_TrustedRepoAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A trusted signer &apos;{0}&apos; already exists..
+        /// </summary>
+        internal static string Error_TrustedSignerAlreadyExists {
+            get {
+                return ResourceManager.GetString("Error_TrustedSignerAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate finger you&apos;re trying to add is already in certificate fingerprint list..
+        /// </summary>
+        internal static string Error_TrustFingerPrintAlreadyExist {
+            get {
+                return ResourceManager.GetString("Error_TrustFingerPrintAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The action &apos;{0}&apos; is not recognized..
         /// </summary>
         internal static string Error_UnknownAction {

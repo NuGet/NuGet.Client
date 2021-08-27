@@ -894,4 +894,15 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="TrustSourceUrl" xml:space="preserve">
     <value>If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported.</value>
   </data>
+  <data name="Error_TrustedRepoAlreadyExists" xml:space="preserve">
+    <value>A trusted repository with the service index '{0}' already exists.</value>
+    <comment>0 - trusted repository name</comment>
+  </data>
+  <data name="Error_TrustedSignerAlreadyExists" xml:space="preserve">
+    <value>A trusted signer '{0}' already exists.</value>
+    <comment>0 - trusted signer name</comment>
+  </data>
+  <data name="Error_TrustFingerPrintAlreadyExist" xml:space="preserve">
+    <value>The certificate finger you're trying to add is already in certificate fingerprint list.</value>
+  </data>
 </root>

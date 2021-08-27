@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
@@ -306,7 +307,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (!string.IsNullOrWhiteSpace(name))
                     {
-                        var error_TrustedSignerAlreadyExistsMessage = StringFormatter.Log_TrustedSignerAlreadyExists(name);
+                        var error_TrustedSignerAlreadyExistsMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name);
 
                         if (e.Message == error_TrustedSignerAlreadyExistsMessage)
                         {
@@ -317,7 +318,7 @@ namespace NuGet.CommandLine.XPlat
 
                     if (!string.IsNullOrWhiteSpace(sourceUrl))
                     {
-                        var error_TrustedRepoAlreadyExists = StringFormatter.Log_TrustedRepoAlreadyExists(sourceUrl);
+                        var error_TrustedRepoAlreadyExists = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, sourceUrl);
 
                         if (e.Message == error_TrustedRepoAlreadyExists)
                         {
@@ -329,7 +330,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (e is ArgumentException && e.Data is System.Collections.IDictionary)
                 {
-                    logger.LogError(StringFormatter.Log_TrustFingerPrintAlreadyExist());
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustFingerPrintAlreadyExist));
                     return 1;
                 }
 
