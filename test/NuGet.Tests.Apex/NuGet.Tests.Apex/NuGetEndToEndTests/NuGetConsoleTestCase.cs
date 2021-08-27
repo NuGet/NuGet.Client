@@ -513,7 +513,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory]
+        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/8386")]
         [InlineData(ProjectTemplate.ClassLibrary, false)]
         [InlineData(ProjectTemplate.NetStandardClassLib, true)]
         public async Task UpdateAllReinstall_WithPackageReferenceProject_WarnsAsync(ProjectTemplate projectTemplate, bool warns)
