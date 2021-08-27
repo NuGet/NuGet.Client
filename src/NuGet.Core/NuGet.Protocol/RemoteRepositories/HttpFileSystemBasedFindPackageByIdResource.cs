@@ -31,7 +31,8 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpFileSystemBasedFindPackageByIdResource : FindPackageByIdResource
     {
-        private const int MaxRetries = 3;
+        private const int DefaultMaxRetries = 3;
+        private int _maxRetries;
         private readonly HttpSource _httpSource;
         private readonly ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
             new ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
@@ -69,12 +70,14 @@ namespace NuGet.Protocol
             }
 
             _baseUris = baseUris
-                .Take(MaxRetries)
+                .Take(DefaultMaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
 
             _httpSource = httpSource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
+
+            _maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? HttpRetryHandler.ExperimentalMaxNetworkTryCount : DefaultMaxRetries;
         }
 
         /// <summary>
@@ -446,8 +449,8 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            // Try each base URI 3 times.
-            var maxTries = 3 * _baseUris.Count;
+            // Try each base URI _maxRetries times.
+            var maxTries = _maxRetries * _baseUris.Count;
             var packageIdLowerCase = id.ToLowerInvariant();
 
             for (var retry = 1; retry <= maxTries; ++retry)
@@ -497,14 +500,26 @@ namespace NuGet.Protocol
                         logger,
                         cancellationToken);
                 }
-                catch (Exception ex) when (retry < 3)
+                catch (Exception ex) when (retry < _maxRetries)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogMinimal(message);
+
+                    if (HttpRetryHandler.EnhancedHttpRetryEnabled &&
+                        ex.InnerException != null &&
+                        ex.InnerException is IOException &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException is System.Net.Sockets.SocketException)
+                    {
+                        // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
+                        // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
+                        // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
+                        await Task.Delay(TimeSpan.FromMilliseconds(HttpRetryHandler.ExperimentalRetryDelayMilliseconds));
+                    }
                 }
-                catch (Exception ex) when (retry == 3)
+                catch (Exception ex) when (retry == _maxRetries)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,

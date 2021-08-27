@@ -121,7 +121,8 @@ namespace NuGet.Protocol
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            const int maxRetries = 3;
+            int maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? HttpRetryHandler.ExperimentalMaxNetworkTryCount : 3;
+
             for (var retry = 1; retry <= maxRetries; retry++)
             {
                 using (var sourceCacheContext = new SourceCacheContext())
@@ -162,6 +163,18 @@ namespace NuGet.Protocol
                             + Environment.NewLine
                             + ExceptionUtilities.DisplayMessage(ex);
                         log.LogMinimal(message);
+
+                        if (HttpRetryHandler.EnhancedHttpRetryEnabled &&
+                            ex.InnerException != null &&
+                            ex.InnerException is IOException &&
+                            ex.InnerException.InnerException != null &&
+                            ex.InnerException.InnerException is System.Net.Sockets.SocketException)
+                        {
+                            // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
+                            // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
+                            // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
+                            await Task.Delay(TimeSpan.FromMilliseconds(HttpRetryHandler.ExperimentalRetryDelayMilliseconds));
+                        }
                     }
                     catch (Exception ex) when (retry == maxRetries)
                     {
