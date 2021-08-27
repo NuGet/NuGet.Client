@@ -84,6 +84,8 @@
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
+    <Compile Include="SolutionPickerWindow.cs" />
+    <Compile Include="URISolutionOpenerCommand.cs" />
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
@@ -146,6 +148,8 @@
     <Compile Include="Utility\ProjectUtility.cs" />
     <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
+    <Compile Include="ViewModels\SolutionPickerItemViewModel.cs" />
+    <Compile Include="ViewModels\SolutionPickerViewModel.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
@@ -257,6 +261,9 @@
     </Compile>
     <Compile Include="Xamls\ProjectView.xaml.cs">
       <DependentUpon>ProjectView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\SolutionPickerView.xaml.cs">
+      <DependentUpon>SolutionPickerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\SolutionView.xaml.cs">
       <DependentUpon>SolutionView.xaml</DependentUpon>
@@ -377,6 +384,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\ProjectView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\SolutionPickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

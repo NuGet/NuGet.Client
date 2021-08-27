@@ -19,6 +19,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.CodeContainerManagement;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Options;
@@ -1014,9 +1015,19 @@ namespace NuGetVSExtension
                     // event handler is set up here because the PMUI can only be shown once the solution has fully loaded in as it is not feasible to open the PMUI when
                     // there is no solution associated with it
                     EventHandler handler = null;
+
+                    SolutionPickerViewModel viewModel = new SolutionPickerViewModel();
+
+                    var storageManagerFactory = new CodeContainerStorageManagerFactory(this, JoinableTaskFactory);
+                    await viewModel.PopulateSolutionListAsync(storageManagerFactory);
+
+                    SolutionPickerWindow window = new SolutionPickerWindow(viewModel);
+
                     handler = (s, e) =>
                     {
                         SolutionManager.Value.SolutionOpened -= handler;
+                        window.DialogResult = true;
+                        window.Close();
 
                         NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                         {
@@ -1027,6 +1038,7 @@ namespace NuGetVSExtension
                         }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialogAsync));
                     };
                     SolutionManager.Value.SolutionOpened += handler;
+                    window.ShowModal();
                     return;
                 }
                 else

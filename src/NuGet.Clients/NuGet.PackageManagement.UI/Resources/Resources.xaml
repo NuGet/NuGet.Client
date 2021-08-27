@@ -163,9 +163,15 @@
     <Setter Property="TextWrapping" Value="Wrap" />
     <Setter Property="MaxWidth" Value="300" />
   </Style>
-
   <Style x:Key="ToolBarButtonStyle" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" TargetType="{x:Type Button}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}" />
+  </Style>
+
+  <Style x:Key="URISolutionPickerStyle" TargetType="{x:Type Button}" >
+    <Setter x:Uid="Setter_6" Property="Background" Value="Transparent" />
+    <Setter x:Uid="Setter_7" Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter x:Uid="Setter_8" Property="BorderThickness" Value="0" />
+    <Setter x:Uid="Setter_9" Property="Padding" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=Padding}" />
   </Style>
 
   <Style x:Key="{x:Type CheckBox}" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
