@@ -45,20 +45,20 @@ namespace NuGet.Commands
 
             if (success)
             {
-                signArgs.Logger.LogInformation(Environment.NewLine);
-                signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
-                signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert, HashAlgorithmName.SHA256));
+                signArgs.Logger.LogMinimal(Environment.NewLine);
+                signArgs.Logger.LogMinimal(Strings.SignCommandDisplayCertificate);
+                signArgs.Logger.LogMinimal(CertificateUtility.X509Certificate2ToString(cert, HashAlgorithmName.SHA256));
 
                 if (!string.IsNullOrEmpty(signArgs.Timestamper))
                 {
-                    signArgs.Logger.LogInformation(Strings.SignCommandDisplayTimestamper);
-                    signArgs.Logger.LogInformation(signArgs.Timestamper);
+                    signArgs.Logger.LogMinimal(Strings.SignCommandDisplayTimestamper);
+                    signArgs.Logger.LogMinimal(signArgs.Timestamper);
                 }
 
                 if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
                 {
-                    signArgs.Logger.LogInformation(Strings.SignCommandOutputPath);
-                    signArgs.Logger.LogInformation(signArgs.OutputDirectory);
+                    signArgs.Logger.LogMinimal(Strings.SignCommandOutputPath);
+                    signArgs.Logger.LogMinimal(signArgs.OutputDirectory);
                 }
 
                 using (var signRequest = new AuthorSignPackageRequest(cert, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm))
@@ -153,7 +153,7 @@ namespace NuGet.Commands
 
             if (success)
             {
-                logger.LogInformation(Strings.SignCommandSuccess);
+                logger.LogMinimal(Strings.SignCommandSuccess);
             }
 
             return success ? 0 : 1;

@@ -27,6 +27,10 @@ namespace Dotnet.Integration.Test
         private readonly string _chainBuildFailureErrorCode = NuGetLogCode.NU3018.ToString();
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
         private readonly string _timestampUnsupportedDigestAlgorithmCode = NuGetLogCode.NU3024.ToString();
+        private readonly string _signCommandDisplayCertificate = "Signing package(s) with certificate:";
+        private readonly string _signCommandDisplayTimestamper = "Timestamping package(s) with:";
+        private readonly string _signCommandOutputPath = "Signed package(s) output path:";
+        private readonly string _signCommandSuccess = "Package(s) signed successfully.";
 
         public DotnetSignTests(MsbuildIntegrationTestFixture buildFixture, SignCommandTestFixture signFixture)
         {
@@ -56,6 +60,11 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_signCommandDisplayCertificate);
+                result.AllOutput.Should().Contain(_signCommandSuccess);
+
+                string certInfo = CertificateUtility.X509Certificate2ToString(trustedCert.Source.Cert, NuGet.Common.HashAlgorithmName.SHA256);
+                result.AllOutput.Should().Contain(certInfo);
             }
         }
 
@@ -185,6 +194,13 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().NotContain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_signCommandDisplayCertificate);
+                result.AllOutput.Should().Contain(_signCommandDisplayTimestamper);
+                result.AllOutput.Should().Contain(timestampService.Url.OriginalString);
+                result.AllOutput.Should().Contain(_signCommandSuccess);
+
+                string certInfo = CertificateUtility.X509Certificate2ToString(trustedCert.Source.Cert, NuGet.Common.HashAlgorithmName.SHA256);
+                result.AllOutput.Should().Contain(certInfo);
             }
         }
 
@@ -268,6 +284,13 @@ namespace Dotnet.Integration.Test
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                result.AllOutput.Should().Contain(_signCommandDisplayCertificate);
+                result.AllOutput.Should().Contain(_signCommandOutputPath);
+                result.AllOutput.Should().Contain(_signCommandSuccess);
+
+                string certInfo = CertificateUtility.X509Certificate2ToString(trustedCert.Source.Cert, NuGet.Common.HashAlgorithmName.SHA256);
+                result.AllOutput.Should().Contain(certInfo);
+
                 File.Exists(signedPackagePath).Should().BeTrue();
             }
         }
