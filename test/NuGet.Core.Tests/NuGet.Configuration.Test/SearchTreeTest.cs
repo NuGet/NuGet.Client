@@ -78,6 +78,22 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
+        [InlineData(" Encyclopaedia , encyclopaedia* | encyclopædia , encyclopædia* ", " encyclopaedia ")]
+        [InlineData(" encyclopaedia , Encyclopaedia* | encyclopædia , encyclopædia* ", " encyclopædia. ")]
+        [InlineData(" encyclopaedia , encyclopaedia* | encyclopedia , encyclopedia* ", "ENCYCLOPEDIA.")]
+        public void SearchTree_InternationalSources_MatchesWithOne(string packageNamespaces, string term)
+        {
+            // Arrange
+            PackageNamespacesConfiguration configuration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
+            SearchTree searchTree = new SearchTree(configuration);
+
+            // Act & Assert
+            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            Assert.Equal(1, configuredSources.Count);
+            Assert.True(term.Trim().StartsWith(configuredSources[0], StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Theory]
         [InlineData("nuget.org,nuget|privateRepository,private*", "nuge")]
         [InlineData("nuget.org,nuget|privateRepository,private*", "nuget1")]
         [InlineData("nuget.org,nuget|privateRepository,private*", "privat")]
