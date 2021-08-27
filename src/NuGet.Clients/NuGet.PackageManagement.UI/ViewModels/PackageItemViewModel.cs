@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Common;
 using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -561,6 +560,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         // Cannot call CopyToAsync as we'll get an InvalidOperationException due to CheckAccess() in next line.
                         stream.CopyTo(memoryStream);
+                        memoryStream.Seek(0, SeekOrigin.Begin);
                         iconBitmapImage.StreamSource = memoryStream;
 
                         try
