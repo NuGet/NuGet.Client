@@ -170,7 +170,6 @@ namespace NuGet.Protocol
                             ex.InnerException.InnerException != null &&
                             ex.InnerException.InnerException is System.Net.Sockets.SocketException)
                         {
-                            // https://github.com/NuGet/Home/issues/11027
                             // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
                             // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
                             // Stalling an five extra seconds gives extra time for the hosts to pick up new session tokens if it occurs.
