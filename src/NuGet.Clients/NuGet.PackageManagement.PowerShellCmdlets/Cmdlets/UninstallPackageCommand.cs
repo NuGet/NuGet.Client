@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -87,6 +88,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             });
 
             stopWatch.Stop();
+
+            var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(ConfigSettings);
+            bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            int numberOfSourcesWithNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Count : 0;
+            int allEntryCountInNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Values.Sum() : 0;
+
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
@@ -95,7 +102,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 startTime,
                 _status,
                 _packageCount,
-                stopWatch.Elapsed.TotalSeconds);
+                stopWatch.Elapsed.TotalSeconds,
+                packageNamespaceEnabled: areNamespacesEnabled,
+                packageNamespaceSourcesCount: numberOfSourcesWithNamespaces,
+                packageNamespaceAllEntryCounts: allEntryCountInNamespaces);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

@@ -23,7 +23,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                status: NuGetOperationStatus.Failed,
                packageCount: 1,
                endTime: DateTimeOffset.Now,
-               duration: 1.30);
+               duration: 1.30,
+                packageNamespaceEnabled: false,
+                packageNamespaceSourcesCount: 0,
+                packageNamespaceAllEntryCounts: 0);
 
             // Act
             var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(actionTelemetryData);

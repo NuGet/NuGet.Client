@@ -39,7 +39,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: 2.10);
+                duration: 2.10,
+                packageNamespaceEnabled: false,
+                packageNamespaceSourcesCount: 0,
+                packageNamespaceAllEntryCounts: 0);
+
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -76,7 +80,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Failed,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: 1.30);
+                duration: 1.30,
+                packageNamespaceEnabled: false,
+                packageNamespaceSourcesCount: 0,
+                packageNamespaceAllEntryCounts: 0);
+
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -110,7 +118,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.NoOp,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: .40);
+                duration: .40,
+                packageNamespaceEnabled: false,
+                packageNamespaceSourcesCount: 0,
+                packageNamespaceAllEntryCounts: 0);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
