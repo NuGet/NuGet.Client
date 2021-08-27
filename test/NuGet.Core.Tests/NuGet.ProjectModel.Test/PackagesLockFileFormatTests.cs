@@ -85,7 +85,7 @@ namespace NuGet.ProjectModel.Test
             var lockFile = PackagesLockFileFormat.Parse(lockFileContents, "In memory");
 
             // Assert
-            Assert.Equal(12, lockFile.Targets.Count);
+            Assert.Equal(11, lockFile.Targets.Count);
 
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, lockFile.Targets[0].TargetFramework);
             Assert.Null(lockFile.Targets[0].RuntimeIdentifier);
