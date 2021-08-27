@@ -67,7 +67,6 @@ namespace NuGet.ProjectModel.Test
 @"{
     ""version"": 1,
     ""dependencies"": {
-        "".NETFramework,Version=v4.7.2"": { },
         "".NETStandard,Version=v2.0"": { },
         "".NETCoreApp,Version=3.1"": { },
         "".NETCoreApp,Version=3.1/win-x64"": { },
@@ -88,43 +87,40 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.Equal(12, lockFile.Targets.Count);
 
-            Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, lockFile.Targets[0].TargetFramework);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, lockFile.Targets[0].TargetFramework);
             Assert.Null(lockFile.Targets[0].RuntimeIdentifier);
 
-            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, lockFile.Targets[1].TargetFramework);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp31, lockFile.Targets[1].TargetFramework);
             Assert.Null(lockFile.Targets[1].RuntimeIdentifier);
 
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp31, lockFile.Targets[2].TargetFramework);
-            Assert.Null(lockFile.Targets[2].RuntimeIdentifier);
+            Assert.Equal("win-x64", lockFile.Targets[2].RuntimeIdentifier);
 
-            Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp31, lockFile.Targets[3].TargetFramework);
-            Assert.Equal("win-x64", lockFile.Targets[3].RuntimeIdentifier);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.Net50, lockFile.Targets[3].TargetFramework);
+            Assert.Null(lockFile.Targets[3].RuntimeIdentifier);
 
             Assert.Equal(FrameworkConstants.CommonFrameworks.Net50, lockFile.Targets[4].TargetFramework);
-            Assert.Null(lockFile.Targets[4].RuntimeIdentifier);
-
-            Assert.Equal(FrameworkConstants.CommonFrameworks.Net50, lockFile.Targets[5].TargetFramework);
-            Assert.Equal("win-x64", lockFile.Targets[5].RuntimeIdentifier);
+            Assert.Equal("win-x64", lockFile.Targets[4].RuntimeIdentifier);
 
             NuGetFramework net5win7 = NuGetFramework.Parse("net5.0-windows7.0");
-            Assert.Equal(net5win7, lockFile.Targets[6].TargetFramework);
-            Assert.Null(lockFile.Targets[6].RuntimeIdentifier);
+            Assert.Equal(net5win7, lockFile.Targets[5].TargetFramework);
+            Assert.Null(lockFile.Targets[5].RuntimeIdentifier);
 
-            Assert.Equal(net5win7, lockFile.Targets[7].TargetFramework);
-            Assert.Equal("win-x64", lockFile.Targets[7].RuntimeIdentifier);
+            Assert.Equal(net5win7, lockFile.Targets[6].TargetFramework);
+            Assert.Equal("win-x64", lockFile.Targets[6].RuntimeIdentifier);
+
+            Assert.Equal(FrameworkConstants.CommonFrameworks.Net60, lockFile.Targets[7].TargetFramework);
+            Assert.Null(lockFile.Targets[7].RuntimeIdentifier);
 
             Assert.Equal(FrameworkConstants.CommonFrameworks.Net60, lockFile.Targets[8].TargetFramework);
-            Assert.Null(lockFile.Targets[8].RuntimeIdentifier);
-
-            Assert.Equal(FrameworkConstants.CommonFrameworks.Net60, lockFile.Targets[9].TargetFramework);
-            Assert.Equal("win-x64", lockFile.Targets[9].RuntimeIdentifier);
+            Assert.Equal("win-x64", lockFile.Targets[8].RuntimeIdentifier);
 
             NuGetFramework net6win7 = NuGetFramework.Parse("net6.0-windows7.0");
-            Assert.Equal(net6win7, lockFile.Targets[10].TargetFramework);
-            Assert.Null(lockFile.Targets[10].RuntimeIdentifier);
+            Assert.Equal(net6win7, lockFile.Targets[9].TargetFramework);
+            Assert.Null(lockFile.Targets[9].RuntimeIdentifier);
 
-            Assert.Equal(net6win7, lockFile.Targets[11].TargetFramework);
-            Assert.Equal("win-x64", lockFile.Targets[11].RuntimeIdentifier);
+            Assert.Equal(net6win7, lockFile.Targets[10].TargetFramework);
+            Assert.Equal("win-x64", lockFile.Targets[10].RuntimeIdentifier);
         }
 
         [Fact]

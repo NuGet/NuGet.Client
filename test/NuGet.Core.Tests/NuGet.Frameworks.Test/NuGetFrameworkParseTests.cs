@@ -428,10 +428,8 @@ namespace NuGet.Test
 
         public static IEnumerable<object[]> NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance_Data()
         {
-            yield return new object[] { "net472", FrameworkConstants.CommonFrameworks.Net472 };
             yield return new object[] { "net5.0", FrameworkConstants.CommonFrameworks.Net50 };
             yield return new object[] { "net6.0", FrameworkConstants.CommonFrameworks.Net60 };
-
         }
 
         [Theory]
