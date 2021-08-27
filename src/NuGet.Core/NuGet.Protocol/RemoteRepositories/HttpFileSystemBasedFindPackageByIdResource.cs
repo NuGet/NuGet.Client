@@ -77,7 +77,7 @@ namespace NuGet.Protocol
             _httpSource = httpSource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
 
-            _maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? 6 : DefaultMaxRetries;
+            _maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? HttpRetryHandler.ExperimentalMaxNetworkTryCount : DefaultMaxRetries;
         }
 
         /// <summary>
@@ -515,8 +515,8 @@ namespace NuGet.Protocol
                     {
                         // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
                         // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
-                        // Stalling an five extra seconds gives extra time for the hosts to pick up new session tokens if it occurs.
-                        await Task.Delay(TimeSpan.FromSeconds(5));
+                        // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
+                        await Task.Delay(TimeSpan.FromMilliseconds(HttpRetryHandler.ExperimentalRetryDelayMilliseconds));
                     }
                 }
                 catch (Exception ex) when (retry == _maxRetries)

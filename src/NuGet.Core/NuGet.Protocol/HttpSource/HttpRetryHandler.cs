@@ -27,6 +27,8 @@ namespace NuGet.Protocol
             EnvironmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
         }
 
+        #region Experimental Retry Settings
+
         private static bool? EnhancedHttpRetryIsEnabled = null;
         internal static bool EnhancedHttpRetryEnabled
         {
@@ -51,6 +53,58 @@ namespace NuGet.Protocol
                 return (bool)EnhancedHttpRetryIsEnabled;
             }
         }
+
+        private static int? ExperimentalMaxNetworkTryCountValue = null;
+        internal static int ExperimentalMaxNetworkTryCount
+        {
+            get
+            {
+                if (ExperimentalMaxNetworkTryCountValue == null)
+                {
+                    try
+                    {
+                        ExperimentalMaxNetworkTryCountValue = 6;
+                        var variableValue = EnvironmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT");
+                        if (!string.IsNullOrEmpty(variableValue))
+                        {
+                            if (int.TryParse(variableValue, out int parsed))
+                            {
+                                ExperimentalMaxNetworkTryCountValue = parsed;
+                            }
+                        }
+                    }
+                    catch (Exception) { }
+                }
+                return (int)ExperimentalMaxNetworkTryCountValue;
+            }
+        }
+
+        private static int? ExperimentalRetryDelayMillisecondsValue = null;
+        internal static int ExperimentalRetryDelayMilliseconds
+        {
+            get
+            {
+                if (ExperimentalRetryDelayMillisecondsValue == null)
+                {
+                    try
+                    {
+                        ExperimentalRetryDelayMillisecondsValue = 400;
+                        var variableValue = EnvironmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS");
+                        if (!string.IsNullOrEmpty(variableValue))
+                        {
+                            if (int.TryParse(variableValue, out int parsed))
+                            {
+                                ExperimentalRetryDelayMillisecondsValue = parsed;
+                            }
+                        }
+                    }
+                    catch (Exception) { }
+                }
+                return (int)ExperimentalRetryDelayMillisecondsValue;
+            }
+        }
+
+        #endregion
 
         internal const string StopwatchPropertyName = "NuGet_ProtocolDiagnostics_Stopwatches";
 

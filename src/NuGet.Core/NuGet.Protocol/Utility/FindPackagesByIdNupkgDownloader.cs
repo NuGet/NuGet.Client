@@ -259,7 +259,7 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            int maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? 6 : 3;
+            int maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? HttpRetryHandler.ExperimentalMaxNetworkTryCount : 3;
 
             for (var retry = 1; retry <= maxRetries; ++retry)
             {
@@ -309,8 +309,8 @@ namespace NuGet.Protocol
                     {
                         // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
                         // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
-                        // Stalling an five extra seconds gives extra time for the hosts to pick up new session tokens if it occurs.
-                        await Task.Delay(TimeSpan.FromSeconds(5));
+                        // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
+                        await Task.Delay(TimeSpan.FromMilliseconds(HttpRetryHandler.ExperimentalRetryDelayMilliseconds));
                     }
                 }
                 catch (Exception ex) when (retry == maxRetries)
