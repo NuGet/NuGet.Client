@@ -8,6 +8,7 @@ namespace NuGet.Protocol.Plugins
     /// <summary>
     /// A plugin  protocol exception.
     /// </summary>
+    [Serializable]
     public sealed class ProtocolException : Exception
     {
         /// <summary>
