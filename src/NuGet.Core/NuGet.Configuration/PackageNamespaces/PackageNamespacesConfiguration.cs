@@ -31,6 +31,7 @@ namespace NuGet.Configuration
         /// Tuple with number of sources and total number of entries defined with package namespaces, used for telemetry.
         /// Item1 is number of sources.
         /// Item2 is total number of of entries.
+        /// item3 is source names.
         /// </summary>
         public Tuple<int, int, List<string>> NamespacesMetrics { get; }
 

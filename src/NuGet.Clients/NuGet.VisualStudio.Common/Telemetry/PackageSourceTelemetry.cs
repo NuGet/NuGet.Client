@@ -229,13 +229,22 @@ namespace NuGet.VisualStudio.Telemetry
             TelemetryEvent telemetry;
             lock (data._lock)
             {
+                bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+                bool isNamespaceEnabledOnSource = false;
+
+                if (areNamespacesEnabled)
+                {
+                    var (_, _, namespaceEnabledOnSources) = packageNamespacesConfiguration.NamespacesMetrics;
+                    isNamespaceEnabledOnSource = namespaceEnabledOnSources.Contains(sourceRepository.PackageSource.Name, StringComparer.OrdinalIgnoreCase);
+                }
+
                 telemetry = new TelemetryEvent(EventName,
                     new Dictionary<string, object>()
                     {
                     { PropertyNames.ParentId, parentId },
                     { PropertyNames.Action, actionName },
                     { PropertyNames.PackageNamespaces.AreNamespacesEnabled, packageNamespacesConfiguration?.AreNamespacesEnabled ?? false },
-                    { PropertyNames.PackageNamespaces.IsNamespaceEnabledOnSource, packageNamespacesConfiguration?.NamespacesMetrics.Item3?.Contains(sourceRepository.PackageSource.Name, StringComparer.OrdinalIgnoreCase)}
+                    { PropertyNames.PackageNamespaces.IsNamespaceEnabledOnSource, isNamespaceEnabledOnSource}
                     });
 
                 AddSourceProperties(telemetry, sourceRepository, feedType);

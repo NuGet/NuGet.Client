@@ -501,8 +501,15 @@ namespace NuGet.PackageManagement.UI
 
                     var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(uiService.Settings);
                     bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-                    int numberOfSourcesWithNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Item1 : 0;
-                    int allEntryCountInNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Item2 : 0;
+                    int numberOfSourcesWithNamespaces = 0;
+                    int allEntryCountInNamespaces = 0;
+
+                    if (areNamespacesEnabled)
+                    {
+                        var (numberOfSourcesWithPackageNamespaces, numberOfEntriesInPackageNamespaces, _) = packageNamespacesConfiguration.NamespacesMetrics;
+                        numberOfSourcesWithNamespaces = numberOfSourcesWithPackageNamespaces;
+                        allEntryCountInNamespaces = numberOfEntriesInPackageNamespaces;
+                    }
 
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
