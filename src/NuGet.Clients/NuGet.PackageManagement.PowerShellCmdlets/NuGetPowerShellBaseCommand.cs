@@ -51,7 +51,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private Guid _operationId;
 
         protected int _packageCount;
-        protected List<string> Packages { get; }
         protected NuGetOperationStatus _status = NuGetOperationStatus.Succeeded;
 
         private ProgressRecordCollection _progressRecordCache;
@@ -77,7 +76,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
             PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
-            Packages = new List<string>();
 
             var logger = new LoggerAdapter(this);
             PackageExtractionContext = new PackageExtractionContext(

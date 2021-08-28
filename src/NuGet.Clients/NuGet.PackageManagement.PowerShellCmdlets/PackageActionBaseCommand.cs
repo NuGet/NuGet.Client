@@ -125,8 +125,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     // update packages count to be logged under telemetry event
-                    Packages.AddRange(actions.Select(action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase));
-                    _packageCount = Packages.Count;
+                    _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
                 }
 
                 // stop telemetry event timer to avoid UI interaction
@@ -198,9 +197,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     // update packages count to be logged under telemetry event
-                    Packages.AddRange(actions.Select(
-                        action => action.PackageIdentity.Id).Distinct().ToList());
-                    _packageCount = Packages.Count;
+                    _packageCount = actions.Select(
+                        action => action.PackageIdentity.Id).Distinct().Count();
                 }
 
                 // stop telemetry event timer to avoid UI interaction

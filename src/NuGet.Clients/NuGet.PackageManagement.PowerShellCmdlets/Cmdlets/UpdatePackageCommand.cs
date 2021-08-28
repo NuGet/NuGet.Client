@@ -143,7 +143,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
             int numberOfSourcesWithNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Count : 0;
             int allEntryCountInNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Values.Sum() : 0;
-            int updatedPackagesWithPackageNamespaceCount = areNamespacesEnabled ? Packages.Sum(p => packageNamespacesConfiguration.GetConfiguredPackageSources(p).Count) : 0;
 
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
@@ -156,9 +155,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 TelemetryServiceUtility.GetTimerElapsedTimeInSeconds(),
                 packageNamespaceEnabled: areNamespacesEnabled,
                 packageNamespaceSourcesCount: numberOfSourcesWithNamespaces,
-                packageNamespaceAllEntryCounts: allEntryCountInNamespaces,
-                addedPackagesWithPackageNamespaceCount: 0,
-                updatedPackageWithPackageNamespaceCount: updatedPackagesWithPackageNamespaceCount);
+                packageNamespaceAllEntryCounts: allEntryCountInNamespaces);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
@@ -223,8 +220,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        Packages.AddRange(actions.Select(action => action.PackageIdentity.Id).Distinct().ToList());
-                        _packageCount = Packages.Count;
+                        _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct().Count();
                     }
 
                     await ExecuteActions(actions, sourceCacheContext);
@@ -389,9 +385,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    Packages.AddRange(actions.Select(
-                        action => action.PackageIdentity.Id).Distinct().ToList());
-                    _packageCount = Packages.Count();
+                    _packageCount = actions.Select(
+                        action => action.PackageIdentity.Id).Distinct().Count();
                 }
 
                 await ExecuteActions(actions, sourceCacheContext);

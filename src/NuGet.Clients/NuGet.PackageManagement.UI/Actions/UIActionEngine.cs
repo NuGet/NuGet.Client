@@ -503,8 +503,6 @@ namespace NuGet.PackageManagement.UI
                     bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
                     int numberOfSourcesWithNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Count : 0;
                     int allEntryCountInNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Values.Sum() : 0;
-                    int addedPackagesWithPackageNamespaceCount = areNamespacesEnabled && addedPackages != null ? addedPackages.Sum(p => packageNamespacesConfiguration.GetConfiguredPackageSources(p.Item1).Count) : 0;
-                    int updatedPackageWithPackageNamespaceCount = areNamespacesEnabled && updatedPackagesNew != null ? updatedPackagesNew.Sum(p => packageNamespacesConfiguration.GetConfiguredPackageSources(p.Item1).Count) : 0;
 
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
@@ -518,9 +516,7 @@ namespace NuGet.PackageManagement.UI
                         duration.TotalSeconds,
                         packageNamespaceEnabled: areNamespacesEnabled,
                         packageNamespaceSourcesCount: numberOfSourcesWithNamespaces,
-                        packageNamespaceAllEntryCounts: allEntryCountInNamespaces,
-                        addedPackagesWithPackageNamespaceCount: addedPackagesWithPackageNamespaceCount,
-                        updatedPackageWithPackageNamespaceCount: updatedPackageWithPackageNamespaceCount);
+                        packageNamespaceAllEntryCounts: allEntryCountInNamespaces);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
