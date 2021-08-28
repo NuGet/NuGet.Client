@@ -36,6 +36,7 @@ namespace NuGet.VisualStudio
             DateTimeOffset startTime,
             NuGetOperationStatus status,
             int packageCount,
+            int packageOnlyCount,
             int noOpProjectsCount,
             int upToDateProjectsCount,
             int unknownProjectsCount,
@@ -68,6 +69,7 @@ namespace NuGet.VisualStudio
             base[nameof(PackageNamespacesEnabled)] = areNamespacesEnabled;
             base[nameof(PackageNamespacesSourceCount)] = numberOfSourcesWithNamespaces;
             base[nameof(PackageNamespacesAllEntryCounts)] = allEntryCountInNamespaces;
+            base[nameof(PackageOnlyCount)] = packageOnlyCount;
 
             foreach (KeyValuePair<string, object> data in additionalTrackingData)
             {
@@ -111,5 +113,6 @@ namespace NuGet.VisualStudio
         public int PackageNamespacesSourceCount => (int)base[nameof(PackageNamespacesSourceCount)];
 
         public int PackageNamespacesAllEntryCounts => (int)base[nameof(PackageNamespacesAllEntryCounts)];
+        public int PackageOnlyCount => (int)base[nameof(PackageOnlyCount)];
     }
 }

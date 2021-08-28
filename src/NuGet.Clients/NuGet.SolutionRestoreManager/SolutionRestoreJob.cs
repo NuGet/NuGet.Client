@@ -56,6 +56,7 @@ namespace NuGet.SolutionRestoreManager
 
         private NuGetOperationStatus _status;
         private int _packageCount;
+        private int _packageOnlyCount;
         private int _noOpProjectsCount;
         private int _upToDateProjectCount;
         private Dictionary<string, object> _trackingData;
@@ -324,6 +325,7 @@ namespace NuGet.SolutionRestoreManager
                 startTime,
                 _status,
                 packageCount: _packageCount,
+                packageOnlyCount: _packageOnlyCount,
                 noOpProjectsCount: _noOpProjectsCount,
                 upToDateProjectsCount: _upToDateProjectCount,
                 unknownProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.Unknown, 0), // appears in DependencyGraphRestoreUtility
@@ -615,6 +617,8 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 _packageCount += packages.Count;
+                _packageOnlyCount += packages.Count;
+
                 var missingPackagesList = packages.Where(p => p.IsMissing).ToList();
                 _missingPackagesCount = missingPackagesList.Count;
                 if (_missingPackagesCount > 0)

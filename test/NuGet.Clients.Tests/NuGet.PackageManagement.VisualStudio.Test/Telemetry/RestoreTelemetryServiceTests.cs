@@ -51,6 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: status,
                 packageCount: 2,
+                packageOnlyCount: 2,
                 noOpProjectsCount: noopProjectsCount,
                 upToDateProjectsCount: 5,
                 unknownProjectsCount: 0,
@@ -110,6 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
+                packageOnlyCount: 1,
                 noOpProjectsCount: 0,
                 upToDateProjectsCount: 0,
                 unknownProjectsCount: 0,
@@ -138,7 +140,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(22, lastTelemetryEvent.Count);
+            Assert.Equal(26, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -151,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(20, actual.Count);
+            Assert.Equal(24, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
