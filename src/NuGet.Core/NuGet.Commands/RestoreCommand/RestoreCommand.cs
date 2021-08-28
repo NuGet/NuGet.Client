@@ -121,8 +121,8 @@ namespace NuGet.Commands
 
                 bool areNamespacesEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
                 telemetry.TelemetryEvent[PackageNamespaceEnabled] = areNamespacesEnabled;
-                telemetry.TelemetryEvent[PackageNamespaceSourcesCount] = areNamespacesEnabled ? _request.PackageNameSpaces.NamespacesMetrics.Count : 0;
-                telemetry.TelemetryEvent[PackageNamespaceAllEntryCounts] = areNamespacesEnabled ? _request.PackageNameSpaces.NamespacesMetrics.Values.Sum() : 0;
+                telemetry.TelemetryEvent[PackageNamespaceSourcesCount] = areNamespacesEnabled ? _request.PackageNameSpaces.NamespacesMetrics.Item1 : 0;
+                telemetry.TelemetryEvent[PackageNamespaceAllEntryCounts] = areNamespacesEnabled ? _request.PackageNameSpaces.NamespacesMetrics.Item2 : 0;
 
                 _operationId = telemetry.OperationId;
 

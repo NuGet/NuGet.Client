@@ -28,9 +28,11 @@ namespace NuGet.Configuration
         public bool AreNamespacesEnabled { get; }
 
         /// <summary>
-        /// Dictionary with number of entry count per namespace source, used for telemetry.
+        /// Tuple with number of sources and total number of entries defined with package namespaces, used for telemetry.
+        /// Item1 is number of sources.
+        /// Item2 is total number of of entries.
         /// </summary>
-        public IReadOnlyDictionary<string, int> NamespacesMetrics { get; }
+        public Tuple<int, int, List<string>> NamespacesMetrics { get; }
 
         /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
@@ -51,13 +53,11 @@ namespace NuGet.Configuration
 
             if (AreNamespacesEnabled)
             {
-                var namespacesMetric = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in Namespaces)
-                {
-                    namespacesMetric[namespacePerSource.Key] = namespacePerSource.Value.Count;
-                }
-
-                NamespacesMetrics = namespacesMetric;
+                NamespacesMetrics = new Tuple<int, int, List<string>>(Namespaces.Keys.Count, Namespaces.Values.Sum(v => v.Count), Namespaces.Keys.ToList());
+            }
+            else
+            {
+                NamespacesMetrics = new Tuple<int, int, List<string>>(0, 0, null);
             }
         }
 

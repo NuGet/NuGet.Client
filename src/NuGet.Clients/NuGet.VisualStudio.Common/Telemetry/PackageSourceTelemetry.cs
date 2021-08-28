@@ -235,7 +235,7 @@ namespace NuGet.VisualStudio.Telemetry
                     { PropertyNames.ParentId, parentId },
                     { PropertyNames.Action, actionName },
                     { PropertyNames.PackageNamespaces.AreNamespacesEnabled, packageNamespacesConfiguration?.AreNamespacesEnabled ?? false },
-                    { PropertyNames.PackageNamespaces.IsNamespaceEnabledOnSource, packageNamespacesConfiguration?.NamespacesMetrics.ContainsKey(sourceRepository.PackageSource.Name) ?? false}
+                    { PropertyNames.PackageNamespaces.IsNamespaceEnabledOnSource, packageNamespacesConfiguration?.NamespacesMetrics.Item3?.Contains(sourceRepository.PackageSource.Name, StringComparer.OrdinalIgnoreCase)}
                     });
 
                 AddSourceProperties(telemetry, sourceRepository, feedType);

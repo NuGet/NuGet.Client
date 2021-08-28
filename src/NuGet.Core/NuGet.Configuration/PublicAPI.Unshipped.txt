@@ -4,7 +4,7 @@ NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void
 NuGet.Configuration.PackageNamespacesConfiguration
 NuGet.Configuration.PackageNamespacesConfiguration.AreNamespacesEnabled.get -> bool
 NuGet.Configuration.PackageNamespacesConfiguration.GetConfiguredPackageSources(string term) -> System.Collections.Generic.IReadOnlyList<string>
-NuGet.Configuration.PackageNamespacesConfiguration.NamespacesMetrics.get -> System.Collections.Generic.IReadOnlyDictionary<string, int>
+NuGet.Configuration.PackageNamespacesConfiguration.NamespacesMetrics.get -> System.Tuple<int, int, System.Collections.Generic.List<string>>
 NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void

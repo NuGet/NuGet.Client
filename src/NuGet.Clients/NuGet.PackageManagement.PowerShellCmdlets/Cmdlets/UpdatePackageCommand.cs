@@ -141,8 +141,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(ConfigSettings);
             bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-            int numberOfSourcesWithNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Count : 0;
-            int allEntryCountInNamespaces = areNamespacesEnabled ? packageNamespacesConfiguration.NamespacesMetrics.Values.Sum() : 0;
+            var (numberOfSourcesWithPackageNamespaces, numberOfEntriesInPackageNamespaces, _) = packageNamespacesConfiguration.NamespacesMetrics;
+            int numberOfSourcesWithNamespaces = areNamespacesEnabled ? numberOfSourcesWithPackageNamespaces : 0;
+            int allEntryCountInNamespaces = areNamespacesEnabled ? numberOfEntriesInPackageNamespaces : 0;
 
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
