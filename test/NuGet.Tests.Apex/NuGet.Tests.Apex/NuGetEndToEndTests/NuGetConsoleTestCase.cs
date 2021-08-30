@@ -554,7 +554,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task InstallPackageFromPMC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -610,7 +610,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
-        public async Task UpdatePackageFromPMC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
