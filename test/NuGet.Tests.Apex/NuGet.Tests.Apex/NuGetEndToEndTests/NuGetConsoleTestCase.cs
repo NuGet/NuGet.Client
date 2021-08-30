@@ -655,17 +655,27 @@ namespace NuGet.Tests.Apex
 </configuration>");
 
             using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            var solutionService = VisualStudio.Get<SolutionService>();
             var nugetConsole = GetConsole(testContext.Project);
 
-            // Act
+            //Pre-conditions
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+            testContext.SolutionService.Build();
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();
+            nugetConsole.Clear();
+
+            // Act
             nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
             // Assert
             var expectedMessage = $"Installed {packageName} {packageVersion2} from {privateRepositoryPath}";
-            Assert.True(nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+            nugetConsole.IsMessageFoundInPMC(expectedMessage).Should().BeTrue(because: nugetConsole.GetText());
             VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-            Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+            VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();
+
+            nugetConsole.Clear();
+            solutionService.Save();
         }
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
