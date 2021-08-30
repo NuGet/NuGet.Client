@@ -47,7 +47,6 @@ namespace NuGet.PackageManagement.UI
             var sp = new StackPanel()
             {
                 Orientation = Orientation.Horizontal,
-                IsHitTestVisible = false,
             };
 
             var textConsolidate = new TextBlock();
