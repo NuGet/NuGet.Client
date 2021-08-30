@@ -38,11 +38,22 @@ namespace NuGet.VisualStudio
             }
         }
 
+        /// <inheritdoc cref="GetInstanceAsync{TService}"/>
         public static TService GetInstance<TService>() where TService : class
         {
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetInstanceAsync<TService>);
         }
 
+        /// <summary>
+        /// Fetches a service that may be registered with the DTE, MEF or the VS service provider.
+        /// This method may switch to the UI thread.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns>The instance of the service request, <see langword="null"/> otherwise. </returns>
+        /// <remarks>
+        /// Prefer <see cref="GetComponentModelServiceAsync{TService}{TService}"/> over this requesting a MEF service.
+        /// A good rule of thumb is that only non-NuGet VS services should be retrieved this method.
+        /// </remarks>
         public static async Task<TService> GetInstanceAsync<TService>() where TService : class
         {
             // Try to find the service as a component model, then try dte then lastly try global service
@@ -105,10 +116,28 @@ namespace NuGet.VisualStudio
             return null;
         }
 
+        /// <summary>
+        /// Fetches a MEF registered service if available.
+        /// This method should be called from a background thread only. 
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns>The instance of the service request, <see langword="null"/> otherwise. </returns>
+        /// <remarks>
+        /// This method should only be preferred when using MEF imports is not easily achievable.
+        /// Prefer this over <see cref="GetInstanceAsync{TService}"/> when the service requesting a MEF service.
+        /// A good rule of thumb is that internal NuGet services should call this method over <see cref="GetInstanceAsync{TService}"/>.
+        /// This method can be called from the UI thread, but that's unnecessary and a bad practice. Never do things that don't need the UI thread, on the UI thread.
+        /// </remarks>
         public static async Task<TService> GetComponentModelServiceAsync<TService>() where TService : class
         {
             IComponentModel componentModel = await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
             return componentModel?.GetService<TService>();
+        }
+
+        /// <inheritdoc cref="GetComponentModelServiceAsync{TService}"/>
+        public static TService GetComponentModelService<TService>() where TService : class
+        {
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetComponentModelServiceAsync<TService>);
         }
 
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class

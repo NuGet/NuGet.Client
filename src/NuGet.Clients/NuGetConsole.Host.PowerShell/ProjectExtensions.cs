@@ -38,7 +38,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
+                var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<IVsSolutionManager>();
                 if (solutionManager != null)
                 {
                     var project = await solutionManager.GetVsProjectAdapterAsync(projectName);
@@ -47,7 +47,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         throw new InvalidOperationException();
                     }
 
-                    var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+                    var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
                     dte.Solution.Remove(project.Project);
                 }
             });

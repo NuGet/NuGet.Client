@@ -106,11 +106,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _runspaceManager = runspaceManager;
 
             // TODO: Take these as ctor arguments
-            _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-            _solutionManager = new Lazy<IVsSolutionManager>(() => ServiceLocator.GetInstance<IVsSolutionManager>());
-            _settings = new Lazy<ISettings>(() => ServiceLocator.GetInstance<ISettings>());
-            _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => ServiceLocator.GetInstance<IDeleteOnRestartManager>());
-            _scriptExecutor = new Lazy<IScriptExecutor>(() => ServiceLocator.GetInstance<IScriptExecutor>());
+            _sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
+            _solutionManager = new Lazy<IVsSolutionManager>(() => ServiceLocator.GetComponentModelService<IVsSolutionManager>());
+            _settings = new Lazy<ISettings>(() => ServiceLocator.GetComponentModelService<ISettings>());
+            _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>());
+            _scriptExecutor = new Lazy<IScriptExecutor>(() => ServiceLocator.GetComponentModelService<IScriptExecutor>());
 
             _dte = new Lazy<DTE>(() => ServiceLocator.GetInstance<DTE>());
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(

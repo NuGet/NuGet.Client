@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </param>
         public static void Set(string property, string value)
         {
-            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
+            var settings = ServiceLocator.GetComponentModelService<ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             if (string.Equals(property, "PackageRestoreConsentGranted", StringComparison.OrdinalIgnoreCase))
             {
@@ -45,15 +45,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     SettingsUtility.SetConfigValue(settings, property, value);
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the VsSettings singleton object.
-        /// </summary>
-        /// <returns>The VsSettings object in the system.</returns>
-        public static Configuration.ISettings GetVsSettings()
-        {
-            return ServiceLocator.GetInstance<Configuration.ISettings>();
         }
 
         /// <summary>

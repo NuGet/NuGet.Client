@@ -703,7 +703,7 @@ namespace NuGetConsole.Implementation
             {
                 if (_consoleStatus == null)
                 {
-                    _consoleStatus = ServiceLocator.GetInstance<IConsoleStatus>();
+                    _consoleStatus = ServiceLocator.GetComponentModelService<IConsoleStatus>();
                     Debug.Assert(_consoleStatus != null);
                 }
 

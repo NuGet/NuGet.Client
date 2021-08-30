@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static async Task<NuGetProject> GetNuGetProject(Project envDTEProject)
         {
-            var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
+            var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<IVsSolutionManager>();
 
             var projectSafeName = await envDTEProject.GetCustomUniqueNameAsync();
             var nuGetProject = await solutionManager.GetNuGetProjectAsync(projectSafeName);
