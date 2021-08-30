@@ -1069,7 +1069,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have {0} deprecated package(s) installed..
+        ///   Looks up a localized string similar to You have {0} deprecated package versions installed..
         /// </summary>
         public static string Label_Installed_DeprecatedWarning {
             get {
@@ -1078,7 +1078,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have {0} vulnerable package(s) and {1} deprecated package(s) installed..
+        ///   Looks up a localized string similar to You have {0} vulnerable package versions and {1} deprecated package versions installed..
         /// </summary>
         public static string Label_Installed_VulnerableAndDeprecatedWarning {
             get {
@@ -1087,7 +1087,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have {0} vulnerable package(s) installed..
+        ///   Looks up a localized string similar to You have {0} vulnerable package versions installed..
         /// </summary>
         public static string Label_Installed_VulnerableWarning {
             get {
