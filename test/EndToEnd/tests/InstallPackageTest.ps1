@@ -306,7 +306,7 @@ function Test-PackageWithIncompatibleAssembliesRollsInstallBack {
     $p = New-WebApplication
 
     # Act & Assert
-    Assert-Throws { Install-Package BingMapAppSDK -Project $p.Name -Source $context.RepositoryPath } "Could not install package 'BingMapAppSDK 1.0.1011.1716'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.5', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
+    Assert-Throws { Install-Package BingMapAppSDK -Project $p.Name -Source $context.RepositoryPath } "Could not install package 'BingMapAppSDK 1.0.1011.1716'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.7.2', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
     Assert-Null (Get-ProjectPackage $p BingMapAppSDK 1.0.1011.1716)
     Assert-Null (Get-SolutionPackage BingMapAppSDK 1.0.1011.1716)
 }
@@ -655,9 +655,6 @@ function Test-InstallPackageWithFrameworkFacadeReference {
 
     # Arrange
     $p = New-ClassLibrary
-
-    # Change it to v4.5.1
-    $p.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.1"
 
     Install-Package PackageWithFrameworkFacadeReference -Source $context.RepositoryRoot
 
