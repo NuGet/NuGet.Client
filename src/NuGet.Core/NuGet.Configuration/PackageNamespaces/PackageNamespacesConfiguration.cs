@@ -28,12 +28,9 @@ namespace NuGet.Configuration
         public bool AreNamespacesEnabled { get; }
 
         /// <summary>
-        /// Tuple with number of sources and total number of entries defined with package namespaces, used for telemetry.
-        /// Item1 is number of sources.
-        /// Item2 is total number of of entries.
-        /// item3 is source names.
+        /// Sources with package namespaces, used for telemetry.
         /// </summary>
-        public Tuple<int, int, List<string>> NamespacesMetrics { get; }
+        public List<string> NamespacesMetrics { get; }
 
         /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
@@ -54,11 +51,7 @@ namespace NuGet.Configuration
 
             if (AreNamespacesEnabled)
             {
-                NamespacesMetrics = new Tuple<int, int, List<string>>(Namespaces.Keys.Count, Namespaces.Values.Sum(v => v.Count), Namespaces.Keys.ToList());
-            }
-            else
-            {
-                NamespacesMetrics = new Tuple<int, int, List<string>>(0, 0, null);
+                NamespacesMetrics = Namespaces.Keys.ToList();
             }
         }
 

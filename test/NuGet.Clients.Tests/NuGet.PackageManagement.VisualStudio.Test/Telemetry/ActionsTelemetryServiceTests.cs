@@ -40,9 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                packageNamespaceEnabled: true,
-                packageNamespaceSourcesCount: 2,
-                packageNamespaceAllEntryCounts: 4);
+                packageNamespaceEnabled: true);
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
@@ -81,9 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 1.30,
-                packageNamespaceEnabled: false,
-                packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+                packageNamespaceEnabled: false);
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
@@ -119,9 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: .40,
-                packageNamespaceEnabled: false,
-                packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+                packageNamespaceEnabled: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -173,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(ActionsTelemetryEvent.NugetActionEventName, actual.Name);
-            Assert.Equal(13, actual.Count);
+            Assert.Equal(11, actual.Count);
 
             Assert.Equal(expected.OperationType.ToString(), actual["OperationType"].ToString());
             Assert.Equal(expected.Source.ToString(), actual["Source"].ToString());

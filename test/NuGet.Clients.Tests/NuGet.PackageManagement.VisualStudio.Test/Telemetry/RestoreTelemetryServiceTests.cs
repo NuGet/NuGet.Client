@@ -70,9 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
                 new IntervalTracker("Activity"),
-                areNamespacesEnabled: false,
-                numberOfSourcesWithNamespaces: 0,
-                allEntryCountInNamespaces: 0);
+                areNamespacesEnabled: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -109,15 +107,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var operationId = Guid.NewGuid().ToString();
             PackageNamespacesConfiguration packageNamespacesConfiguration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
             bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-            int numberOfSourcesWithNamespaces = 0;
-            int allEntryCountInNamespaces = 0;
-
-            if (areNamespacesEnabled)
-            {
-                var (numberOfSourcesWithPackageNamespaces, numberOfEntriesInPackageNamespaces, _) = packageNamespacesConfiguration.NamespacesMetrics;
-                numberOfSourcesWithNamespaces = numberOfSourcesWithPackageNamespaces;
-                allEntryCountInNamespaces = numberOfEntriesInPackageNamespaces;
-            }
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,
@@ -144,9 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
                 tracker,
-                areNamespacesEnabled: areNamespacesEnabled,
-                numberOfSourcesWithNamespaces: numberOfSourcesWithNamespaces,
-                allEntryCountInNamespaces: allEntryCountInNamespaces);
+                areNamespacesEnabled: areNamespacesEnabled);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -169,7 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(24, actual.Count);
+            Assert.Equal(22, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 

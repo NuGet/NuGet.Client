@@ -50,9 +50,7 @@ namespace NuGet.VisualStudio
             double duration,
             IDictionary<string, object> additionalTrackingData,
             IntervalTracker intervalTimingTracker,
-            bool areNamespacesEnabled,
-            int numberOfSourcesWithNamespaces,
-            int allEntryCountInNamespaces) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
+            bool areNamespacesEnabled) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
@@ -67,8 +65,6 @@ namespace NuGet.VisualStudio
             base[nameof(ForceRestore)] = forceRestore;
             base[nameof(ForceRestore)] = forceRestore;
             base[nameof(PackageNamespacesEnabled)] = areNamespacesEnabled;
-            base[nameof(PackageNamespacesSourceCount)] = numberOfSourcesWithNamespaces;
-            base[nameof(PackageNamespacesAllEntryCounts)] = allEntryCountInNamespaces;
             base[nameof(PackageOnlyCount)] = packageOnlyCount;
 
             foreach (KeyValuePair<string, object> data in additionalTrackingData)
@@ -110,9 +106,6 @@ namespace NuGet.VisualStudio
 
         public bool PackageNamespacesEnabled => (bool)base[nameof(PackageNamespacesEnabled)];
 
-        public int PackageNamespacesSourceCount => (int)base[nameof(PackageNamespacesSourceCount)];
-
-        public int PackageNamespacesAllEntryCounts => (int)base[nameof(PackageNamespacesAllEntryCounts)];
         public int PackageOnlyCount => (int)base[nameof(PackageOnlyCount)];
     }
 }

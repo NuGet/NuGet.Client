@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement.Telemetry
         /// <param name="packageCount"></param>
         /// <param name="endTime"></param>
         /// <param name="duration"></param>
+        /// <param name="packageNamespaceEnabled"></param>
         /// <returns></returns>
         public static VSActionsTelemetryEvent GetActionTelemetryEvent(
             string operationId,
@@ -46,9 +47,7 @@ namespace NuGet.PackageManagement.Telemetry
             NuGetOperationStatus status,
             int packageCount,
             double duration,
-            bool packageNamespaceEnabled,
-            int packageNamespaceSourcesCount,
-            int packageNamespaceAllEntryCounts)
+            bool packageNamespaceEnabled)
         {
             var sortedProjects = projects.OrderBy(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
@@ -66,9 +65,7 @@ namespace NuGet.PackageManagement.Telemetry
                 packageCount,
                 DateTimeOffset.Now,
                 duration,
-                packageNamespaceEnabled: packageNamespaceEnabled,
-                packageNamespaceSourcesCount: packageNamespaceSourcesCount,
-                packageNamespaceAllEntryCounts: packageNamespaceAllEntryCounts);
+                packageNamespaceEnabled: packageNamespaceEnabled);
         }
 
         public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)

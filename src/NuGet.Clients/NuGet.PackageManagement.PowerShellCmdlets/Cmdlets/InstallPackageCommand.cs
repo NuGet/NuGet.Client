@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryServiceUtility.StopTimer();
 
-            var (areNamespacesEnabled, numberOfSourcesWithNamespaces, allEntryCountInNamespaces) = PackageNamespacesUtility.GetPackageNamespacesMetric(ConfigSettings);
+            var areNamespacesEnabled = PackageNamespacesUtility.GetPackageNamespacesMetric(ConfigSettings);
 
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
@@ -99,9 +99,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _status,
                 _packageCount,
                 TelemetryServiceUtility.GetTimerElapsedTimeInSeconds(),
-                packageNamespaceEnabled: areNamespacesEnabled,
-                packageNamespaceSourcesCount: numberOfSourcesWithNamespaces,
-                packageNamespaceAllEntryCounts: allEntryCountInNamespaces);
+                packageNamespaceEnabled: areNamespacesEnabled);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

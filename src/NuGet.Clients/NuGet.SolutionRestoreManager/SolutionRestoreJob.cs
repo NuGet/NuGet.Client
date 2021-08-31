@@ -70,8 +70,6 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         internal NuGetOperationStatus Status => _status;
 
-        private PackageNamespacesConfiguration _packageNamespacesConfiguration;
-
         [ImportingConstructor]
         public SolutionRestoreJob(
             IPackageRestoreManager packageRestoreManager,
@@ -115,7 +113,6 @@ namespace NuGet.SolutionRestoreManager
             _settings = settings;
             _packageRestoreConsent = new PackageRestoreConsent(_settings);
             _solutionUpToDateChecker = solutionRestoreChecker;
-            _packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
         }
 
 
@@ -181,7 +178,9 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
             var sources = _sourceRepositoryProvider.GetRepositories();
-            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore, _packageNamespacesConfiguration))
+            PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore, packageNamespacesConfiguration))
             {
                 try
                 {
@@ -306,16 +305,8 @@ namespace NuGet.SolutionRestoreManager
                 .GroupBy(x => x.ProjectStyle)
                 .ToDictionary(x => x.Key, y => y.Count());
 
-            bool areNamespacesEnabled = _packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-            int numberOfSourcesWithNamespaces = 0;
-            int allEntryCountInNamespaces = 0;
-
-            if (areNamespacesEnabled)
-            {
-                var (numberOfSourcesWithPackageNamespaces, numberOfEntriesInPackageNamespaces, _) = _packageNamespacesConfiguration.NamespacesMetrics;
-                numberOfSourcesWithNamespaces = numberOfSourcesWithPackageNamespaces;
-                allEntryCountInNamespaces = numberOfEntriesInPackageNamespaces;
-            }
+            PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+            bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
@@ -339,9 +330,7 @@ namespace NuGet.SolutionRestoreManager
                 duration,
                 _trackingData,
                 intervalTimingTracker,
-                areNamespacesEnabled,
-                numberOfSourcesWithNamespaces,
-                allEntryCountInNamespaces);
+                areNamespacesEnabled);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
@@ -720,7 +709,8 @@ namespace NuGet.SolutionRestoreManager
 
             using (var cacheContext = new SourceCacheContext())
             {
-                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, _packageNamespacesConfiguration)
+                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageNamespacesConfiguration)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
                     ClientPolicyContext = ClientPolicyContext.GetClientPolicy(_settings, logger)

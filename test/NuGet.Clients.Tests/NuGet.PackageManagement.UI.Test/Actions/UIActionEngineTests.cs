@@ -145,9 +145,7 @@ namespace NuGet.PackageManagement.UI.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: .40,
-                packageNamespaceEnabled: false,
-                packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+                packageNamespaceEnabled: false);
 
             UIActionEngine.AddUiActionEngineTelemetryProperties(
                 actionTelemetryEvent: actionTelemetryData,

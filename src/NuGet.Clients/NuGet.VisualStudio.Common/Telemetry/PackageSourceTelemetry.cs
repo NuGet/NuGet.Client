@@ -234,7 +234,7 @@ namespace NuGet.VisualStudio.Telemetry
 
                 if (areNamespacesEnabled)
                 {
-                    var (_, _, namespaceEnabledSources) = packageNamespacesConfiguration.NamespacesMetrics;
+                    var namespaceEnabledSources = packageNamespacesConfiguration.NamespacesMetrics;
                     isNamespaceEnabledOnSource = namespaceEnabledSources.Contains(sourceRepository.PackageSource.Name, StringComparer.OrdinalIgnoreCase);
                 }
 
@@ -243,7 +243,7 @@ namespace NuGet.VisualStudio.Telemetry
                     {
                     { PropertyNames.ParentId, parentId },
                     { PropertyNames.Action, actionName },
-                    { PropertyNames.PackageNamespaces.AreNamespacesEnabled, packageNamespacesConfiguration?.AreNamespacesEnabled ?? false },
+                    { PropertyNames.PackageNamespaces.AreNamespacesEnabled, areNamespacesEnabled },
                     { PropertyNames.PackageNamespaces.IsNamespaceEnabledOnSource, isNamespaceEnabledOnSource}
                     });
 

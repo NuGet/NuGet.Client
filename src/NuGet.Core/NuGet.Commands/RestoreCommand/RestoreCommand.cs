@@ -120,19 +120,8 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
                 bool areNamespacesEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
-                int numberOfSourcesWithNamespaces = 0;
-                int allEntryCountInNamespaces = 0;
-
-                if (areNamespacesEnabled)
-                {
-                    var (numberOfSourcesWithPackageNamespaces, numberOfEntriesInPackageNamespaces, _) = _request.PackageNameSpaces.NamespacesMetrics;
-                    numberOfSourcesWithNamespaces = numberOfSourcesWithPackageNamespaces;
-                    allEntryCountInNamespaces = numberOfEntriesInPackageNamespaces;
-                }
 
                 telemetry.TelemetryEvent[PackageNamespaceEnabled] = areNamespacesEnabled;
-                telemetry.TelemetryEvent[PackageNamespaceSourcesCount] = numberOfSourcesWithNamespaces;
-                telemetry.TelemetryEvent[PackageNamespaceAllEntryCounts] = allEntryCountInNamespaces;
 
                 _operationId = telemetry.OperationId;
 
