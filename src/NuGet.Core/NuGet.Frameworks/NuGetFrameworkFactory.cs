@@ -609,6 +609,9 @@ namespace NuGet.Frameworks
                 case "net462":
                     framework = FrameworkConstants.CommonFrameworks.Net462;
                     break;
+                case "net472":
+                    framework = FrameworkConstants.CommonFrameworks.Net472;
+                    break;
                 case "win8":
                     framework = FrameworkConstants.CommonFrameworks.Win8;
                     break;
