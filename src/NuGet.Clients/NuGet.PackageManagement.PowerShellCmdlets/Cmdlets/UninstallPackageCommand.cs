@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -88,19 +85,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             });
 
             stopWatch.Stop();
-
-            var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(ConfigSettings);
-            bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-            int numberOfSourcesWithNamespaces = 0;
-            int allEntryCountInNamespaces = 0;
-
-            if (areNamespacesEnabled)
-            {
-                var (numberOfSourcesWithPackageNamespaces, numberOfEntriesInPackageNamespaces, _) = packageNamespacesConfiguration.NamespacesMetrics;
-                numberOfSourcesWithNamespaces = numberOfSourcesWithPackageNamespaces;
-                allEntryCountInNamespaces = numberOfEntriesInPackageNamespaces;
-            }
-
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
@@ -110,9 +94,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _status,
                 _packageCount,
                 stopWatch.Elapsed.TotalSeconds,
-                packageNamespaceEnabled: areNamespacesEnabled,
-                packageNamespaceSourcesCount: numberOfSourcesWithNamespaces,
-                packageNamespaceAllEntryCounts: allEntryCountInNamespaces);
+                packageNamespaceEnabled: false,  // Packagenamespace doesn't matter when do uninstall.
+                packageNamespaceSourcesCount: 0,
+                packageNamespaceAllEntryCounts: 0);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

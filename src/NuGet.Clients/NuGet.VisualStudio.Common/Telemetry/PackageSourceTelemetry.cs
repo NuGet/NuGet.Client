@@ -234,8 +234,8 @@ namespace NuGet.VisualStudio.Telemetry
 
                 if (areNamespacesEnabled)
                 {
-                    var (_, _, namespaceEnabledOnSources) = packageNamespacesConfiguration.NamespacesMetrics;
-                    isNamespaceEnabledOnSource = namespaceEnabledOnSources.Contains(sourceRepository.PackageSource.Name, StringComparer.OrdinalIgnoreCase);
+                    var (_, _, namespaceEnabledSources) = packageNamespacesConfiguration.NamespacesMetrics;
+                    isNamespaceEnabledOnSource = namespaceEnabledSources.Contains(sourceRepository.PackageSource.Name, StringComparer.OrdinalIgnoreCase);
                 }
 
                 telemetry = new TelemetryEvent(EventName,

@@ -617,7 +617,7 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 _packageCount += packages.Count;
-                _packageOnlyCount += packages.Count;
+                _packageOnlyCount += packages.Select(p => p.PackageReference?.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
 
                 var missingPackagesList = packages.Where(p => p.IsMissing).ToList();
                 _missingPackagesCount = missingPackagesList.Count;
