@@ -28,11 +28,6 @@ namespace NuGet.Configuration
         public bool AreNamespacesEnabled { get; }
 
         /// <summary>
-        /// Sources with package namespaces, used for telemetry.
-        /// </summary>
-        public List<string> NamespacesMetrics { get; }
-
-        /// <summary>
         /// Get package source names with matching prefix "term" from package namespaces section.
         /// </summary>
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
@@ -48,11 +43,6 @@ namespace NuGet.Configuration
             Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
             AreNamespacesEnabled = Namespaces.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
-
-            if (AreNamespacesEnabled)
-            {
-                NamespacesMetrics = Namespaces.Keys.ToList();
-            }
         }
 
         /// <summary>

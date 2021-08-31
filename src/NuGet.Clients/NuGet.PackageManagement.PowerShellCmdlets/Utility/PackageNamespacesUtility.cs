@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     internal static class PackageNamespacesUtility
     {
-        public static bool GetPackageNamespacesMetric(ISettings settings)
+        public static bool AreNamespacesEnabled(ISettings settings)
         {
             var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
             bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;

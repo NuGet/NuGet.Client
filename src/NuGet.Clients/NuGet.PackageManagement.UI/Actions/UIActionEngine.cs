@@ -501,7 +501,6 @@ namespace NuGet.PackageManagement.UI
 
                     var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(uiService.Settings);
                     bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,

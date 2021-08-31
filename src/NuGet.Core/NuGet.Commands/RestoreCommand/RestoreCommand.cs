@@ -78,8 +78,6 @@ namespace NuGet.Commands
 
         // Packagenamespace names
         private const string PackageNamespaceEnabled = nameof(PackageNamespaceEnabled);
-        private const string PackageNamespaceSourcesCount = nameof(PackageNamespaceSourcesCount);
-        private const string PackageNamespaceAllEntryCounts = nameof(PackageNamespaceAllEntryCounts);
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -120,7 +118,6 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
                 bool areNamespacesEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
-
                 telemetry.TelemetryEvent[PackageNamespaceEnabled] = areNamespacesEnabled;
 
                 _operationId = telemetry.OperationId;

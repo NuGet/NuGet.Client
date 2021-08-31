@@ -330,12 +330,10 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             if (string.IsNullOrEmpty(packageNamespaces))
             {
                 Assert.False((bool)result["PackageNamespaces.AreNamespacesEnabled"]);
-                Assert.False((bool)result["PackageNamespaces.IsNamespaceEnabledOnSource"]);
             }
             else
             {
                 Assert.True((bool)result["PackageNamespaces.AreNamespacesEnabled"]);
-                Assert.False((bool)result["PackageNamespaces.IsNamespaceEnabledOnSource"]);
             }
 
             var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Http.StatusCodes, result.ComplexData);

@@ -87,8 +87,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             stopWatch.Stop();
 
-            var areNamespacesEnabled = PackageNamespacesUtility.GetPackageNamespacesMetric(ConfigSettings);
-
+            var areNamespacesEnabled = PackageNamespacesUtility.AreNamespacesEnabled(ConfigSettings);
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },

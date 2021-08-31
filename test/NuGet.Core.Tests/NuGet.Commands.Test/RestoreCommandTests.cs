@@ -2104,7 +2104,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(26);
+            projectInformationEvent.Count.Should().Be(24);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -2129,8 +2129,6 @@ namespace NuGet.Commands.Test
             projectInformationEvent["OperationId"].Should().NotBeNull();
             projectInformationEvent["Duration"].Should().NotBeNull();
             projectInformationEvent["PackageNamespaceEnabled"].Should().Be(false);
-            projectInformationEvent["PackageNamespaceSourcesCount"].Should().Be(0);
-            projectInformationEvent["PackageNamespaceAllEntryCounts"].Should().Be(0);
         }
 
         [Fact]
@@ -2186,7 +2184,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(18);
+            projectInformationEvent.Count.Should().Be(16);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -2203,8 +2201,6 @@ namespace NuGet.Commands.Test
             projectInformationEvent["NoOpRestoreOutputEvaluationDuration"].Should().NotBeNull();
             projectInformationEvent["NoOpReplayLogsDuration"].Should().NotBeNull();
             projectInformationEvent["PackageNamespaceEnabled"].Should().Be(false);
-            projectInformationEvent["PackageNamespaceSourcesCount"].Should().Be(0);
-            projectInformationEvent["PackageNamespaceAllEntryCounts"].Should().Be(0);
         }
 
         [Fact]
@@ -2262,14 +2258,12 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(26);
+            projectInformationEvent.Count.Should().Be(24);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
             projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
             projectInformationEvent["PackageNamespaceEnabled"].Should().Be(false);
-            projectInformationEvent["PackageNamespaceSourcesCount"].Should().Be(0);
-            projectInformationEvent["PackageNamespaceAllEntryCounts"].Should().Be(0);
         }
 
         /// A 1.0.0 -> C 1.0.0 -> D 1.1.0
@@ -2415,8 +2409,6 @@ namespace NuGet.Commands.Test
 
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["PackageNamespaceEnabled"].Should().Be(true);
-            projectInformationEvent["PackageNamespaceSourcesCount"].Should().Be(1);
-            projectInformationEvent["PackageNamespaceAllEntryCounts"].Should().Be(3);
         }
 
         private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)

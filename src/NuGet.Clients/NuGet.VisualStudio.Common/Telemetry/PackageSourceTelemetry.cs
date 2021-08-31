@@ -230,21 +230,13 @@ namespace NuGet.VisualStudio.Telemetry
             lock (data._lock)
             {
                 bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
-                bool isNamespaceEnabledOnSource = false;
-
-                if (areNamespacesEnabled)
-                {
-                    var namespaceEnabledSources = packageNamespacesConfiguration.NamespacesMetrics;
-                    isNamespaceEnabledOnSource = namespaceEnabledSources.Contains(sourceRepository.PackageSource.Name, StringComparer.OrdinalIgnoreCase);
-                }
 
                 telemetry = new TelemetryEvent(EventName,
                     new Dictionary<string, object>()
                     {
                     { PropertyNames.ParentId, parentId },
                     { PropertyNames.Action, actionName },
-                    { PropertyNames.PackageNamespaces.AreNamespacesEnabled, areNamespacesEnabled },
-                    { PropertyNames.PackageNamespaces.IsNamespaceEnabledOnSource, isNamespaceEnabledOnSource}
+                    { PropertyNames.PackageNamespaces.AreNamespacesEnabled, areNamespacesEnabled }
                     });
 
                 AddSourceProperties(telemetry, sourceRepository, feedType);
@@ -483,7 +475,6 @@ namespace NuGet.VisualStudio.Telemetry
             internal static class PackageNamespaces
             {
                 internal const string AreNamespacesEnabled = "PackageNamespaces.AreNamespacesEnabled";
-                internal const string IsNamespaceEnabledOnSource = "PackageNamespaces.IsNamespaceEnabledOnSource";
             }
         }
     }
