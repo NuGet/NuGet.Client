@@ -2127,6 +2127,9 @@ namespace NuGet.Commands.Test
             projectInformationEvent["EndTime"].Should().NotBeNull();
             projectInformationEvent["OperationId"].Should().NotBeNull();
             projectInformationEvent["Duration"].Should().NotBeNull();
+            projectInformationEvent["PackageNamespaceEnabled"].Should().Be(false);
+            projectInformationEvent["PackageNamespaceSourcesCount"].Should().Be(0);
+            projectInformationEvent["PackageNamespaceAllEntryCounts"].Should().Be(0);
         }
 
         [Fact]
@@ -2198,6 +2201,9 @@ namespace NuGet.Commands.Test
             projectInformationEvent["Duration"].Should().NotBeNull();
             projectInformationEvent["NoOpRestoreOutputEvaluationDuration"].Should().NotBeNull();
             projectInformationEvent["NoOpReplayLogsDuration"].Should().NotBeNull();
+            projectInformationEvent["PackageNamespaceEnabled"].Should().Be(false);
+            projectInformationEvent["PackageNamespaceSourcesCount"].Should().Be(0);
+            projectInformationEvent["PackageNamespaceAllEntryCounts"].Should().Be(0);
         }
 
         [Fact]
@@ -2260,6 +2266,9 @@ namespace NuGet.Commands.Test
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
             projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
+            projectInformationEvent["PackageNamespaceEnabled"].Should().Be(false);
+            projectInformationEvent["PackageNamespaceSourcesCount"].Should().Be(0);
+            projectInformationEvent["PackageNamespaceAllEntryCounts"].Should().Be(0);
         }
 
         /// A 1.0.0 -> C 1.0.0 -> D 1.1.0

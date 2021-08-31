@@ -12,6 +12,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
 using NuGet.VisualStudio.Telemetry;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test.Telemetry
@@ -235,26 +236,33 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(2, httpData.Failed);
         }
 
-        [Fact]
-        public async Task ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject()
+        [Theory]
+        [InlineData("")]
+        [InlineData("nuget.org,nuget")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ")]
+        public async Task ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject(string packageNamespaces)
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
             data.NupkgCount = 0;
             data.Resources.Clear();
             data.Http.Requests = 0;
+            PackageNamespacesConfiguration configuration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
 
             var sourceRepository = new SourceRepository(new PackageSource("source"), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageNamespacesConfiguration: null);
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageNamespacesConfiguration: configuration);
 
             // Assert
             Assert.Null(result);
         }
 
-        [Fact]
-        public async Task ToTelemetry_WithData_CreatesTelemetryProperties()
+        [Theory]
+        [InlineData("")]
+        [InlineData("nuget.org,nuget")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ")]
+        public async Task ToTelemetry_WithData_CreatesTelemetryProperties(string packageNamespaces)
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
@@ -277,11 +285,12 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             httpData.Failed = 1;
             httpData.StatusCodes.Add(200, 7);
             httpData.StatusCodes.Add(404, 3);
+            PackageNamespacesConfiguration configuration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
 
             var source = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageNamespacesConfiguration: null);
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageNamespacesConfiguration: configuration);
 
             // Assert
             Assert.NotNull(result);
@@ -317,6 +326,17 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(httpData.TotalBytes, result[PackageSourceTelemetry.PropertyNames.Http.Bytes]);
             Assert.Equal(httpData.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Total]);
             Assert.Equal(httpData.HeaderDuration.Value.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Header]);
+
+            if (string.IsNullOrEmpty(packageNamespaces))
+            {
+                Assert.False((bool)result["PackageNamespaces.AreNamespacesEnabled"]);
+                Assert.False((bool)result["PackageNamespaces.IsNamespaceEnabledOnSource"]);
+            }
+            else
+            {
+                Assert.True((bool)result["PackageNamespaces.AreNamespacesEnabled"]);
+                Assert.False((bool)result["PackageNamespaces.IsNamespaceEnabledOnSource"]);
+            }
 
             var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Http.StatusCodes, result.ComplexData);
             var statusCodes = Assert.IsType<TelemetryEvent>(statusCodesValue);

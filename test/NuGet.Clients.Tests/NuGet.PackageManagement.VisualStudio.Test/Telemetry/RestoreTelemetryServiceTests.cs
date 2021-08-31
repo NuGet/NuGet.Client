@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.VisualStudio;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -80,8 +82,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             VerifyTelemetryEventData(operationId, restoreTelemetryData, lastTelemetryEvent);
         }
 
-        [Fact]
-        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured()
+        [Theory]
+        [InlineData("")]
+        [InlineData("nuget.org,nuget")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ")]
+        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured(string packageNamespaces)
         {
             // Arrange
             var first = "first";
@@ -102,6 +107,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             var operationId = Guid.NewGuid().ToString();
+            PackageNamespacesConfiguration packageNamespacesConfiguration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
+            bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            int numberOfSourcesWithNamespaces = 0;
+            int allEntryCountInNamespaces = 0;
+
+            if (areNamespacesEnabled)
+            {
+                var (numberOfSourcesWithPackageNamespaces, numberOfEntriesInPackageNamespaces, _) = packageNamespacesConfiguration.NamespacesMetrics;
+                numberOfSourcesWithNamespaces = numberOfSourcesWithPackageNamespaces;
+                allEntryCountInNamespaces = numberOfEntriesInPackageNamespaces;
+            }
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,
@@ -128,9 +144,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
                 tracker,
-                areNamespacesEnabled: false,
-                numberOfSourcesWithNamespaces: 0,
-                allEntryCountInNamespaces: 0);
+                areNamespacesEnabled: areNamespacesEnabled,
+                numberOfSourcesWithNamespaces: numberOfSourcesWithNamespaces,
+                allEntryCountInNamespaces: allEntryCountInNamespaces);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act

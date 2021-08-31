@@ -40,9 +40,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                packageNamespaceEnabled: false,
-                packageNamespaceSourcesCount: 0,
-                packageNamespaceAllEntryCounts: 0);
+                packageNamespaceEnabled: true,
+                packageNamespaceSourcesCount: 2,
+                packageNamespaceAllEntryCounts: 4);
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
