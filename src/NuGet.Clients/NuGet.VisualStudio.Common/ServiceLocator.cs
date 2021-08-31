@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio
         /// <returns>The instance of the service request, <see langword="null"/> otherwise. </returns>
         /// <remarks>
         /// Prefer <see cref="GetComponentModelServiceAsync{TService}{TService}"/> over this requesting a MEF service.
-        /// A good rule of thumb is that only non-NuGet VS services should be retrieved this method.
+        /// A general rule is that only non-NuGet VS services should be retrieved this method.
         /// </remarks>
         public static async Task<TService> GetInstanceAsync<TService>() where TService : class
         {
@@ -112,8 +112,7 @@ namespace NuGet.VisualStudio
                     return service;
                 }
             }
-
-            return null;
+            return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
         /// <summary>
@@ -125,7 +124,7 @@ namespace NuGet.VisualStudio
         /// <remarks>
         /// This method should only be preferred when using MEF imports is not easily achievable.
         /// Prefer this over <see cref="GetInstanceAsync{TService}"/> when the service requesting a MEF service.
-        /// A good rule of thumb is that internal NuGet services should call this method over <see cref="GetInstanceAsync{TService}"/>.
+        /// A general rule is that internal NuGet services should call this method over <see cref="GetInstanceAsync{TService}"/>.
         /// This method can be called from the UI thread, but that's unnecessary and a bad practice. Never do things that don't need the UI thread, on the UI thread.
         /// </remarks>
         public static async Task<TService> GetComponentModelServiceAsync<TService>() where TService : class

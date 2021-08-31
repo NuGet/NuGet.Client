@@ -43,19 +43,19 @@ namespace NuGet.Tools.Test
             var componentModel = new Mock<IComponentModel>();
             var compositionService = new MockCompositionService();
 
-            componentModel.SetupGet(x => x.DefaultCompositionService)
-                .Returns(compositionService);
-
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
-
             sourceRepositoryProvider.SetupGet(x => x.PackageSourceProvider)
                 .Returns(Mock.Of<IPackageSourceProvider>());
 
-            globalServiceProvider.AddService(typeof(IVsSolutionManager), Mock.Of<IVsSolutionManager>());
-            globalServiceProvider.AddService(typeof(ISettings), Mock.Of<ISettings>());
-            globalServiceProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider.Object);
+            componentModel.SetupGet(x => x.DefaultCompositionService)
+                .Returns(compositionService);
+            
+            componentModel.Setup(x => x.GetService<IVsSolutionManager>()).Returns(Mock.Of<IVsSolutionManager>());
+            componentModel.Setup(x => x.GetService<ISettings>()).Returns(Mock.Of<ISettings>());
+            componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
+            componentModel.Setup(x => x.GetService<INuGetTelemetryProvider>()).Returns(Mock.Of<INuGetTelemetryProvider>());
+
             globalServiceProvider.AddService(typeof(SComponentModel), componentModel.Object);
-            globalServiceProvider.AddService(typeof(INuGetTelemetryProvider), Mock.Of<INuGetTelemetryProvider>());
 
             _serviceFactories = new Dictionary<ServiceRpcDescriptor, BrokeredServiceFactory>();
             _authorizingServiceFactories = new Dictionary<ServiceRpcDescriptor, AuthorizingBrokeredServiceFactory>();

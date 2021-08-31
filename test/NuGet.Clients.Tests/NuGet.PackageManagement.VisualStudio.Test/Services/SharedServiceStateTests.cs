@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Configuration;
@@ -25,10 +26,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             SourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
-            AddService<IDeleteOnRestartManager>(Task.FromResult<object>(Mock.Of<IDeleteOnRestartManager>()));
-            AddService<ISettings>(Task.FromResult<object>(Mock.Of<ISettings>()));
-            AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepositoryProvider));
-            AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
+            var componentModel = new Mock<IComponentModel>();
+            componentModel.Setup(x => x.GetService<IDeleteOnRestartManager>()).Returns(Mock.Of<IDeleteOnRestartManager>());
+            componentModel.Setup(x => x.GetService<ISettings>()).Returns(Mock.Of<ISettings>());
+            componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider);
+            componentModel.Setup(x => x.GetService<IVsSolutionManager>()).Returns(solutionManager.Object);
+
+            globalServiceProvider.AddService(typeof(SComponentModel), componentModel.Object);
         }
 
         [Fact]

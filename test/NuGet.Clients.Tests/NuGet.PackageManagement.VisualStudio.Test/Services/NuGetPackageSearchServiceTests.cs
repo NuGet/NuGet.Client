@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -17,10 +18,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
@@ -291,10 +290,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var settings = new Mock<ISettings>();
             var deleteOnRestartManager = new Mock<IDeleteOnRestartManager>();
 
-            AddService<IDeleteOnRestartManager>(Task.FromResult<object>(deleteOnRestartManager.Object));
-            AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
-            AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepositoryProvider.Object));
-            AddService<ISettings>(Task.FromResult<object>(settings.Object));
+            var componentModel = new Mock<IComponentModel>();
+
+            componentModel.Setup(x => x.GetService<IDeleteOnRestartManager>()).Returns(deleteOnRestartManager.Object);
+            componentModel.Setup(x => x.GetService<IVsSolutionManager>()).Returns(solutionManager.Object);
+            componentModel.Setup(x => x.GetService<ISettings>()).Returns(settings.Object);
+            componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
+
+           AddService<SComponentModel>(Task.FromResult<object>(componentModel.Object));
 
             var serviceActivationOptions = default(ServiceActivationOptions);
             var serviceBroker = new Mock<IServiceBroker>();
