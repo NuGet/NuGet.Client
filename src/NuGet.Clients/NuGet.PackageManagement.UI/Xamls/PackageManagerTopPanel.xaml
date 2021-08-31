@@ -114,8 +114,8 @@
             </MultiBinding>
           </AutomationProperties.Name>
           <TabItem.Header>
-            <StackPanel Orientation="Horizontal" IsHitTestVisible="False" >
-              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}" />
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}" IsHitTestVisible="False" />
               <imaging:CrispImage
                 Name="_warningIcon"
                 Margin="3,0"
@@ -132,8 +132,8 @@
             </MultiBinding>
           </AutomationProperties.Name>
           <TabItem.Header>
-            <StackPanel Orientation="Horizontal" IsHitTestVisible="False">
-              <TextBlock x:Name="textUpdates" Text="{x:Static nuget:Resources.Label_Updates}" />
+            <StackPanel Orientation="Horizontal">
+              <TextBlock x:Name="textUpdates" Text="{x:Static nuget:Resources.Label_Updates}" IsHitTestVisible="False" />
               <!-- the textblock that displays the count -->
               <Border
                 x:Name="_countUpdatesContainer"
