@@ -59,9 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var componentModel = new Mock<IComponentModel>();
             componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(_projectContext);
-            globalServiceProvider.AddService(typeof(SComponentModel), componentModel.Object);
-
-            AddService<INuGetProjectContext>(Task.FromResult<object>(_projectContext));
+            AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
         }
 
         public void Dispose()

@@ -5,9 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 
@@ -33,6 +36,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             componentModel.Setup(x => x.GetService<IVsSolutionManager>()).Returns(solutionManager.Object);
 
             globalServiceProvider.AddService(typeof(SComponentModel), componentModel.Object);
+            var service = Package.GetGlobalService(typeof(SAsyncServiceProvider)) as IAsyncServiceProvider;
+            ServiceLocator.InitializePackageServiceProvider(service);
         }
 
         [Fact]

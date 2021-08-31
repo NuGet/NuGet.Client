@@ -112,7 +112,7 @@ namespace NuGet.VisualStudio
                     return service;
                 }
             }
-            return Package.GetGlobalService(typeof(TService)) as TInterface;
+            return null;
         }
 
         /// <summary>

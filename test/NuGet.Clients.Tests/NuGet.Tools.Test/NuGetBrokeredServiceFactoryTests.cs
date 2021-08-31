@@ -13,11 +13,14 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Moq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
@@ -49,14 +52,14 @@ namespace NuGet.Tools.Test
 
             componentModel.SetupGet(x => x.DefaultCompositionService)
                 .Returns(compositionService);
-            
             componentModel.Setup(x => x.GetService<IVsSolutionManager>()).Returns(Mock.Of<IVsSolutionManager>());
             componentModel.Setup(x => x.GetService<ISettings>()).Returns(Mock.Of<ISettings>());
             componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
             componentModel.Setup(x => x.GetService<INuGetTelemetryProvider>()).Returns(Mock.Of<INuGetTelemetryProvider>());
 
             globalServiceProvider.AddService(typeof(SComponentModel), componentModel.Object);
-
+            var service = Package.GetGlobalService(typeof(SAsyncServiceProvider)) as IAsyncServiceProvider;
+            ServiceLocator.InitializePackageServiceProvider(service);
             _serviceFactories = new Dictionary<ServiceRpcDescriptor, BrokeredServiceFactory>();
             _authorizingServiceFactories = new Dictionary<ServiceRpcDescriptor, AuthorizingBrokeredServiceFactory>();
         }
