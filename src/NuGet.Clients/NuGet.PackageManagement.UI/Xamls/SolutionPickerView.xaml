@@ -13,7 +13,8 @@
         <DataTemplate>
           <Button
             Command="{Binding OpenSolutionCommand}"
-            CommandParameter="{Binding FilePath}">
+            CommandParameter="{Binding FilePath}"
+            IsCancel="True">
             <TextBlock Text="{Binding FilePath}"/>
           </Button>
         </DataTemplate>

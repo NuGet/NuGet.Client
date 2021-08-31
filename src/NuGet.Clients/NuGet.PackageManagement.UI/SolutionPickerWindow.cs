@@ -19,17 +19,6 @@ namespace NuGet.PackageManagement.UI
         public SolutionPickerWindow(SolutionPickerViewModel viewModel)
         {
             Content = new SolutionPickerView(viewModel);
-            Closing += new CancelEventHandler(Window_ClosingAction);
-        }
-
-        private void Window_ClosingAction(object sender, CancelEventArgs e)
-        {
-            if (DialogResult != true)
-            {
-                DataContext = false;
-                var dte = Package.GetGlobalService(typeof(_DTE)) as DTE2;
-                dte.ExecuteCommand("File.Exit");
-            }
         }
     }
 }
