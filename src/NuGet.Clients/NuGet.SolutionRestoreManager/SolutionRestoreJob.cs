@@ -56,7 +56,6 @@ namespace NuGet.SolutionRestoreManager
 
         private NuGetOperationStatus _status;
         private int _packageCount;
-        private int _packageOnlyCount;
         private int _noOpProjectsCount;
         private int _upToDateProjectCount;
         private Dictionary<string, object> _trackingData;
@@ -316,7 +315,6 @@ namespace NuGet.SolutionRestoreManager
                 startTime,
                 _status,
                 packageCount: _packageCount,
-                packageOnlyCount: _packageOnlyCount,
                 noOpProjectsCount: _noOpProjectsCount,
                 upToDateProjectsCount: _upToDateProjectCount,
                 unknownProjectsCount: projectDictionary.GetValueOrDefault(ProjectStyle.Unknown, 0), // appears in DependencyGraphRestoreUtility
@@ -606,8 +604,6 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 _packageCount += packages.Count;
-                _packageOnlyCount += packages.Select(p => p.PackageReference?.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
-
                 var missingPackagesList = packages.Where(p => p.IsMissing).ToList();
                 _missingPackagesCount = missingPackagesList.Count;
                 if (_missingPackagesCount > 0)
@@ -710,6 +706,7 @@ namespace NuGet.SolutionRestoreManager
             using (var cacheContext = new SourceCacheContext())
             {
                 PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+
                 var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageNamespacesConfiguration)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
