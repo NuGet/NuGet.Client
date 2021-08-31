@@ -181,7 +181,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            var section = settingsFile.GetSection("packageNamespaces");
+            var section = settingsFile.GetSection("packageSourceMapping");
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -211,7 +211,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            var section = settingsFile.GetSection("packageNamespaces");
+            var section = settingsFile.GetSection("packageSourceMapping");
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -239,7 +239,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -287,7 +287,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -333,7 +333,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -369,7 +369,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);

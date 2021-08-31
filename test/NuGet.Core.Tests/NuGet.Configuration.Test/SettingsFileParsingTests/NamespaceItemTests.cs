@@ -92,7 +92,7 @@ namespace NuGet.Configuration.Test
         public void ElementNameGetter_ReturnsNamespace()
         {
             var original = new NamespaceItem("item");
-            original.ElementName.Should().Be("namespace");
+            original.ElementName.Should().Be("package");
         }
 
         [Fact]
@@ -116,7 +116,7 @@ namespace NuGet.Configuration.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<NuGetConfigurationException>();
-            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'prefix' in element 'namespace'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'prefix' in element 'package'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace NuGet.Configuration.Test
         <packageSource key=""nuget.org"">
             <package prefix=""sadas"">
                 <add key=""key"" value=""val"" />
-            </namespace>
+            </package>
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -163,7 +163,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            var section = settingsFile.GetSection("packageNamespaces");
+            var section = settingsFile.GetSection("packageSourceMapping");
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -191,7 +191,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);

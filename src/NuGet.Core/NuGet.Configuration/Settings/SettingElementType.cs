@@ -45,10 +45,10 @@ namespace NuGet.Configuration
 
         /** Package Namespaces **/
 
-        PackageNamespaces,
+        PackageSourceMapping,
 
         PackageSource,
 
-        Namespace,
+        Package,
     }
 }
