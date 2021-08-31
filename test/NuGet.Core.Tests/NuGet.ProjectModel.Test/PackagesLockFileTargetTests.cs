@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel.Test
             // Arrange
             NuGetFramework framework = NuGetFramework.Parse(targetFramework);
 
-            PackagesLockFileTarget packagesLockFileTarget = new()
+            PackagesLockFileTarget packagesLockFileTarget = new PackagesLockFileTarget()
             {
                 TargetFramework = framework,
                 RuntimeIdentifier = runtimeIdentifier
