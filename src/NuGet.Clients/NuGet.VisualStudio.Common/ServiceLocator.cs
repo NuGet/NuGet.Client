@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -59,6 +60,14 @@ namespace NuGet.VisualStudio
             // Try to find the service as a component model, then try dte then lastly try global service
             // Per bug #2072, avoid calling GetGlobalService() from within the Initialize() method of NuGetPackage class.
             // Doing so is illegal and may make VS to stop responding. As a result of that, we defer calling GetGlobalService to the last option.
+
+            // Special case IServiceProvider
+            if (typeof(TService) == typeof(IServiceProvider))
+            {
+                var serviceProvider = await GetServiceProviderAsync();
+                return (TService)serviceProvider;
+            }
+
             var serviceFromDTE = await GetDTEServiceAsync<TService>();
             if (serviceFromDTE != null)
             {
@@ -171,6 +180,21 @@ namespace NuGet.VisualStudio
             }
 
             return service;
+        }
+
+        private static async Task<IServiceProvider> GetServiceProviderAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var dte = await GetGlobalServiceAsync<SDTE, DTE>();
+            return GetServiceProviderFromDTE(dte);
+        }
+
+        private static IServiceProvider GetServiceProviderFromDTE(DTE dte)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            IServiceProvider serviceProvider = new ServiceProvider(dte as VsServiceProvider);
+            Debug.Assert(serviceProvider != null, "Service provider is null");
+            return serviceProvider;
         }
     }
 }
