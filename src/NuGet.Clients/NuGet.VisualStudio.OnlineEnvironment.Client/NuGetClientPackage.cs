@@ -50,7 +50,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread
-            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
+            NuGetVSTelemetryService.Initialize();
 
             return Task.CompletedTask;
         }

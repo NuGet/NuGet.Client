@@ -154,8 +154,9 @@ namespace NuGetVSExtension
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            NuGetVSTelemetryService.Initialize();
+
             _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
-            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
 
             await base.InitializeAsync(cancellationToken, progress);
 

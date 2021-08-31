@@ -816,6 +816,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         return;
                     }
 
+                    NuGetVSTelemetryService.Initialize();
+
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     await InitializeAsync();
