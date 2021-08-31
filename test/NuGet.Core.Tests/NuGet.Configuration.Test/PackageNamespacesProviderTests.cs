@@ -27,11 +27,11 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
@@ -54,20 +54,20 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
             SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
@@ -89,20 +89,20 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
             SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
@@ -130,21 +130,21 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <clear />
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
             SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
@@ -167,14 +167,14 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
@@ -187,11 +187,11 @@ namespace NuGet.Configuration.Test
             namespaceProvider.Remove(new PackageNamespacesSourceItem[] { contosoNamespace });
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")
@@ -207,14 +207,14 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             var configContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             SettingsTestUtils.CreateConfigurationFile(configPath1, configContent);
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
@@ -239,20 +239,20 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
             SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
@@ -277,20 +277,20 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
             SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
@@ -302,12 +302,12 @@ namespace NuGet.Configuration.Test
             namespaceProvider.AddOrUpdatePackageSourceNamespace(namespaceToUpdate);
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
-            <namespace id=""added"" />
+            <package prefix=""stuff"" />
+            <package prefix=""added"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")
@@ -323,20 +323,20 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
             SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
@@ -347,14 +347,14 @@ namespace NuGet.Configuration.Test
 
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
         <packageSource key=""localSource"">
-            <namespace id=""added"" />
+            <package prefix=""added"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")
@@ -370,21 +370,21 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <clear />
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
             SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""contoso"">
-            <namespace id=""stuff2"" />
+            <package prefix=""stuff2"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
@@ -395,15 +395,15 @@ namespace NuGet.Configuration.Test
 
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <clear />
         <packageSource key=""nuget.org"">
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
         <packageSource key=""localSource"">
-            <namespace id=""added"" />
+            <package prefix=""added"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")

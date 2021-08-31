@@ -1890,14 +1890,14 @@ namespace NuGet.CommandLine.Test
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource"" />
+            <package prefix=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.*"" />
+            <package prefix=""Contoso.MVC.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
             // Act
@@ -1938,14 +1938,14 @@ namespace NuGet.CommandLine.Test
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
+            <package prefix=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.*"" />
+            <package prefix=""Contoso.MVC.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
             // Act
@@ -1988,14 +1988,14 @@ namespace NuGet.CommandLine.Test
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource"" />
+            <package prefix=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.*"" />
+            <package prefix=""Contoso.MVC.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
             // Act
@@ -2040,14 +2040,14 @@ namespace NuGet.CommandLine.Test
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource"" />
+            <package prefix=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.*"" />
+            <package prefix=""Contoso.MVC.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
             // Act

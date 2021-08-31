@@ -1009,16 +1009,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""ContosoRepository"" value=""{contosoRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""contosoRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />             
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
                 var ContosoReal = new SimpleTestPackageContext()
@@ -1115,16 +1115,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""ContosoRepository"" value=""{contosoRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""ExternalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""ContosoRepository"">
-            <namespace id=""Contoso.*"" />  <!--Contoso.A package doesn't exist Contoso repository, so restore should fail-->
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />  <!--Contoso.A package doesn't exist Contoso repository, so restore should fail-->
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
                 var ExternalA = new SimpleTestPackageContext()

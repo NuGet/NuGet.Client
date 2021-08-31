@@ -267,11 +267,11 @@ namespace Dotnet.Integration.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
@@ -328,14 +328,14 @@ namespace Dotnet.Integration.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""{packageZ}*"" />
+                <package prefix=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
@@ -392,16 +392,16 @@ namespace Dotnet.Integration.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""{packageZ}*"" />
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageZ}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageZ}*"" />
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageZ}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
@@ -458,15 +458,15 @@ namespace Dotnet.Integration.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""{packageZ}*"" />
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageZ}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
@@ -520,15 +520,15 @@ namespace Dotnet.Integration.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""*"" />
+                <package prefix=""*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageZ}*"" />
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageZ}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
 
@@ -589,11 +589,11 @@ namespace Dotnet.Integration.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             // Add RestoreSources

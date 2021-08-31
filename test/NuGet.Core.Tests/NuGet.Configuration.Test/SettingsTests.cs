@@ -2735,12 +2735,12 @@ namespace NuGet.Configuration.Test
             var nugetConfigPath = "NuGet.Config";
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
             <yay/>
-            <namespace id=""stuff"" />
+            <package prefix=""stuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             using var mockBaseDirectory = TestDirectory.Create();
@@ -2754,12 +2754,12 @@ namespace NuGet.Configuration.Test
 
             var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
             <yay/>
-            <namespace id=""moreStuff"" />
+            <package prefix=""moreStuff"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
 
             SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath))).Should().Be(result);

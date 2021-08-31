@@ -122,11 +122,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource id=""nuget.org"">
-            <namespace id=""sadas""  />
+            <package prefix=""sadas""  />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -146,10 +146,10 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -169,11 +169,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"" />
+            <package prefix=""sadas"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -198,12 +198,12 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"" />
+            <package prefix=""sadas"" />
             <notANamespace id=""sadas"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -227,11 +227,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
+            <package prefix=""first"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -255,12 +255,12 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""second"" />
+            <package prefix=""first"" />
+            <package prefix=""second"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")
@@ -274,12 +274,12 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""second"" />
+            <package prefix=""first"" />
+            <package prefix=""second"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -303,11 +303,11 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
+            <package prefix=""first"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")
@@ -321,11 +321,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
+            <package prefix=""first"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -356,12 +356,12 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""second"" />
+            <package prefix=""first"" />
+            <package prefix=""second"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -386,12 +386,12 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""third"" />
+            <package prefix=""first"" />
+            <package prefix=""third"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")

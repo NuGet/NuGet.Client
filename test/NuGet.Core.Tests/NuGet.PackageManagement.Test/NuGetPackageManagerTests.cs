@@ -7055,12 +7055,12 @@ namespace NuGet.Test
     <clear />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />             
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
                 var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
 
@@ -7138,16 +7138,16 @@ namespace NuGet.Test
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />             
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
                 var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
 
@@ -7241,16 +7241,16 @@ namespace NuGet.Test
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />             
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
                 var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
 
@@ -7347,17 +7347,17 @@ namespace NuGet.Test
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""externalRepository"">
-            <namespace id=""Direct.*"" />
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""Direct.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
                 var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
                 var directPackageIdentity = new PackageIdentity("Direct.A", new NuGetVersion("1.0.0"));
@@ -7469,16 +7469,16 @@ namespace NuGet.Test
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />             
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
                 var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
 
@@ -7630,16 +7630,16 @@ namespace NuGet.Test
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />             
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>");
                 var contosoPackageIdentity = new PackageIdentity("Contoso.A", new NuGetVersion("1.0.0"));
 

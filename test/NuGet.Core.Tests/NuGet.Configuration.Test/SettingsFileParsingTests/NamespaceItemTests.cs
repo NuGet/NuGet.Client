@@ -101,11 +101,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace stuff=""sadas""  />
+            <package stuff=""sadas""  />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -116,7 +116,7 @@ namespace NuGet.Configuration.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<NuGetConfigurationException>();
-            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'id' in element 'namespace'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'prefix' in element 'namespace'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -125,13 +125,13 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"">
+            <package prefix=""sadas"">
                 <add key=""key"" value=""val"" />
             </namespace>
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -142,7 +142,7 @@ namespace NuGet.Configuration.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<NuGetConfigurationException>();
-            ex.Message.Should().Be(string.Format("Error parsing NuGet.Config. Element 'namespace' cannot have descendant elements. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            ex.Message.Should().Be(string.Format("Error parsing NuGet.Config. Element 'package' cannot have descendant elements. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -151,11 +151,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"" />
+            <package prefix=""sadas"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -179,11 +179,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""original"" />
+            <package prefix=""original"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -205,11 +205,11 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""nuget.org"">
-            <namespace id=""updated"" />
+            <package prefix=""updated"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
 
             result.Replace("\r\n", "\n")

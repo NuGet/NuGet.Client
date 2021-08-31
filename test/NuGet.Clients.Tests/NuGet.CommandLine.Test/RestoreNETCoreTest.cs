@@ -10759,16 +10759,16 @@ namespace NuGet.CommandLine.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
-                <namespace id=""{packageZ}*"" />
+                <package prefix=""{packageY}*"" />
+                <package prefix=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
-                <namespace id=""{packageK}*"" /> 
+                <package prefix=""{packageX}*"" />
+                <package prefix=""{packageK}*"" /> 
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
 
@@ -10834,14 +10834,14 @@ namespace NuGet.CommandLine.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
+                <package prefix=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />                                                
+                <package prefix=""{packageX}*"" />                                                
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
 
@@ -10905,14 +10905,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
+            <package prefix=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             using (var writer = new StreamWriter(configAPath))
             {
@@ -11001,14 +11001,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMappings>
         <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
+            <package prefix=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>";
             using (var writer = new StreamWriter(configAPath))
             {

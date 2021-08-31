@@ -1675,16 +1675,16 @@ EndGlobal";
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
-                <namespace id=""{packageZ}*"" />
+                <package prefix=""{packageY}*"" />
+                <package prefix=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
-                <namespace id=""{packageK}*"" /> 
+                <package prefix=""{packageX}*"" />
+                <package prefix=""{packageK}*"" /> 
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1754,14 +1754,14 @@ EndGlobal";
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
+                <package prefix=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1832,16 +1832,16 @@ EndGlobal";
         <add key=""source1"" value=""{pathContext.PackageSource}"" />
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source1"">
-                <namespace id=""{packageY}*"" />
-                <namespace id=""{packageZ}*"" />
+                <package prefix=""{packageY}*"" />
+                <package prefix=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
-                <namespace id=""{packageK}*"" /> 
+                <package prefix=""{packageX}*"" />
+                <package prefix=""{packageK}*"" /> 
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1908,14 +1908,14 @@ EndGlobal";
         <add key=""source1"" value=""{pathContext.PackageSource}"" />
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMappings>
             <packageSource key=""source1"">
-                <namespace id=""{packageY}*"" />
+                <package prefix=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package prefix=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMappings>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
