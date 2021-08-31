@@ -68,30 +68,6 @@ namespace NuGet.Commands.Test
             string packagesDirectory,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
-            PackageNamespacesConfiguration packageNamespacesConfiguration,
-            ILogger log) : base(
-                project,
-                RestoreCommandProviders.Create(
-                    packagesDirectory,
-                    fallbackPackageFolderPaths: new List<string>(),
-                    sources: sources.Select(source => Repository.Factory.GetCoreV3(source)),
-                    cacheContext: cacheContext,
-                    packageFileCache: new LocalPackageFileCache(),
-                    log: log),
-                cacheContext,
-                clientPolicyContext,
-                packageNamespaces: packageNamespacesConfiguration,
-                log,
-                new LockFileBuilderCache())
-        {
-        }
-
-        public TestRestoreRequest(
-            PackageSpec project,
-            IEnumerable<PackageSource> sources,
-            string packagesDirectory,
-            SourceCacheContext cacheContext,
-            ClientPolicyContext clientPolicyContext,
             ILogger log) : base(
                 project,
                 RestoreCommandProviders.Create(
