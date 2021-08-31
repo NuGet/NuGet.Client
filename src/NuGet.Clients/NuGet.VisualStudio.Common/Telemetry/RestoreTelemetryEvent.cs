@@ -63,7 +63,6 @@ namespace NuGet.VisualStudio
             base[nameof(DotnetCliToolProjectsCount)] = dotnetCliToolProjectsCount;
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
-            base[nameof(ForceRestore)] = forceRestore;
             base[nameof(PackageNamespacesEnabled)] = areNamespacesEnabled;
             base[nameof(PackageOnlyCount)] = packageOnlyCount;
 
