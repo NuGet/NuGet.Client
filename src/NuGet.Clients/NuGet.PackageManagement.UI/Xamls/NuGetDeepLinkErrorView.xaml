@@ -14,7 +14,6 @@
                FontSize="12"
                TextWrapping="Wrap"
                Text="{Binding ErrorWindowMessage}">
-
     </TextBlock>
     <Button Width="80"
             Height="27"
@@ -24,8 +23,6 @@
             Margin="30,65,25,10">
       <TextBlock Text="{Binding ButtonText}">
       </TextBlock>
-
     </Button>
-
   </Grid>
 </UserControl>
