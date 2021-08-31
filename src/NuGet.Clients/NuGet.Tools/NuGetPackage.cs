@@ -10,8 +10,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using EnvDTE;
-using Lucene.Net.Util;
+using EnvDTE80;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
@@ -202,7 +203,7 @@ namespace NuGetVSExtension
             if (isPresent == 1)
             {
                 // If opened from a URL, then "optionValue" is the URL string itself
-                await AutomaticallySearchPackagesAsync(optionValue);
+                await SearchPackagesAsync(optionValue);
             }
 
             VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
@@ -649,22 +650,27 @@ namespace NuGetVSExtension
             }
         }
 
-        public async Task AutomaticallySearchPackagesAsync(string packageLink)
+        public async Task SearchPackagesAsync(string packageLink)
         {
             var packageDetails = DeepLinkURIParser.GetNuGetPackageDetails(packageLink);
 
             if (packageDetails == null)
             {
-                var message = "invalid link";
-                System.Windows.Forms.MessageBox.Show(message);
+                var view = new NuGetDeepLinkErrorView(Resx.ShowMessage_InvalidNuGetDeepLinkURI, Resx.Button_OK);
+                var window = new NuGetDeepLinkErrorWindow(view);
+                window.Title = Resx.WindowTitle_VisualStudioWebHandler;
+                window.SizeToContent = SizeToContent.WidthAndHeight;
+
+                window.ShowModal();
+
+                var dte = GetGlobalService(typeof(_DTE)) as DTE2;
+                dte.ExecuteCommand("File.Exit");
+
                 return;
             }
-            string packageName = packageDetails.PackageName;
-            string version = packageDetails.VersionNumber;
+            string packageName = "packageid: " + packageDetails.PackageName;
 
-            packageName = "packageid: " + packageName;
-
-            await ShowManageLibraryPackageForSolutionDialogAsync(packageName, true, version);
+            await ShowManageLibraryPackageForSolutionDialogAsync(packageName, isOpenedByURI: true, packageDetails.VersionNumber);
         }
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
@@ -676,7 +682,7 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
         }
 
-        private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null, bool isOpenedByURI = false, string version = null)
+        private async Task ShowManageLibraryPackageDialogAsync(string searchText, ShowUpdatePackageOptions updatePackageOptions = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -704,13 +710,6 @@ namespace NuGetVSExtension
                 {
                     ShowUpdatePackages(windowFrame, updatePackageOptions);
                     Search(windowFrame, searchText);
-
-                    if (isOpenedByURI)
-                    {
-                        var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
-                        packageManagerControl?.SelectFirstPackage(version);
-                    }
-
                     windowFrame.Show();
                 }
             }

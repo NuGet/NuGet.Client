@@ -1004,4 +1004,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>This package version is deprecated. Use {0} instead.</value>
     <comment>{0} is a NuGet package id (string)</comment>
   </data>
+  <data name="ShowMessage_InvalidNuGetDeepLinkURI" xml:space="preserve">
+    <value>Cannot determine the target package from this URI. Please verify that the URI is properly formed using the following format: nuget-client://OpenPackageDetails/&lt;packageID&gt;/&lt;version&gt;.</value>
+  </data>
+  <data name="WindowTitle_VisualStudioWebHandler" xml:space="preserve">
+    <value>Microsoft Visual Studio Web Handler</value>
+  </data>
 </root>

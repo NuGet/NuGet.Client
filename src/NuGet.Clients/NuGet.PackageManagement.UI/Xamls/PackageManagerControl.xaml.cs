@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Lucene.Net.Util;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
@@ -1306,7 +1304,7 @@ namespace NuGet.PackageManagement.UI
                 _packageList.LoadItemsCompleted -= handler;
 
                 _packageList.UpdateSelectedItem((PackageItemViewModel)_packageList.Items.FirstOrDefault());
-                if(_packageList.SelectedItem == null)
+                if (_packageList.SelectedItem == null)
                 {
                     SelectionChangedEventHandler handle = null;
                     handle = (send, events) =>
@@ -1326,29 +1324,32 @@ namespace NuGet.PackageManagement.UI
 
         private void FindExactPackageVersion(string packageVersion)
         {
-            NuGetVersion nugetPackageVersion = NuGetVersion.Parse(packageVersion);
-            IReadOnlyCollection<VersionInfoContextInfo> versions = null;
-
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetVersion nugetPackageVersion = null;
+            if (NuGetVersion.TryParse(packageVersion, out nugetPackageVersion))
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                versions = await _packageList.SelectedItem.GetVersionsAsync();
-
-                //iterates through the list backwards as newer versions are more likely to be selected
-                if (versions != null)
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    for (int i = versions.Count - 1; i >= 0; i--)
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    IReadOnlyCollection<VersionInfoContextInfo>  versions = await _packageList.SelectedItem.GetVersionsAsync();
+
+                    //iterates through the list backwards as newer versions are more likely to be selected
+                    if (versions != null)
                     {
-                        NuGetVersion version = versions.ElementAt(i).Version;
-                        if (version.Equals(nugetPackageVersion))
+                        for (int i = versions.Count - 1; i >= 0; i--)
                         {
-                            var displayVersion = new DisplayVersion(version, string.Empty);
-                            _detailModel.SelectedVersion = displayVersion;
-                            break;
+                            if (versions.ElementAt(i) != null)
+                            {
+                                NuGetVersion version = versions.ElementAt(i).Version;
+                                if (version.Equals(nugetPackageVersion))
+                                {
+                                    _detailModel.SelectedVersion = new DisplayVersion(version, string.Empty);
+                                    break;
+                                }
+                            }
                         }
                     }
-                }
-            }).PostOnFailure(nameof(PackageManagerControl), nameof(SelectFirstPackage));
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(FindExactPackageVersion));
+            }
         }
 
         private void SelectMatchingUpdatePackages(ShowUpdatePackageOptions updatePackageOptions)

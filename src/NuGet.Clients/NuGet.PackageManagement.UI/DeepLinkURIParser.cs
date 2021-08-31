@@ -2,25 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
     public static class DeepLinkURIParser
     {
+        private static string[] UrlSections;
+
         public static NuGetPackageDetails GetNuGetPackageDetails(string packageLink)
         {
             if (IsPackageURIValid(packageLink))
             {
-                var packageInfo = packageLink.Split('/');
+                string packageName = UrlSections[3];
+                if (UrlSections.Length == 5)
+                {
+                    string versionNumber = UrlSections[4];
+                    return new NuGetPackageDetails(packageName, versionNumber);
+                }
 
-                string packageName = packageInfo[3];
-                string versionNumber = packageInfo[4];
-
-                return new NuGetPackageDetails(packageName, versionNumber);
+                return new NuGetPackageDetails(packageName);
             }
             return null;
         }
@@ -31,10 +31,7 @@ namespace NuGet.PackageManagement.UI
                 return false;
             }
 
-            var protocol = "vsph://";
-            var domain = "OpenPackageDetails/";
-
-            var protocolWithDomain = protocol + domain;
+            var protocolWithDomain = "nuget-client://OpenPackageDetails/";
 
             if (!packageLink.StartsWith(protocolWithDomain, StringComparison.Ordinal))
             {
@@ -42,14 +39,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             var linkPropertySeparator = '/';
-            var urlSections = packageLink.Split(linkPropertySeparator);
+            UrlSections = packageLink.Split(linkPropertySeparator);
 
-            if (urlSections.Length != 5)
-            {
-                return false;
-            }
-
-            return true;
+            return UrlSections.Length == 4 || UrlSections.Length == 5;
         }
     }
 }

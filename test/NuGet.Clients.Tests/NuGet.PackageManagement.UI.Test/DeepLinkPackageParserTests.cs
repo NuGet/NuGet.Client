@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using NuGet.PackageManagement.UI;
 using Xunit;
 
@@ -11,10 +9,10 @@ namespace NuGet.Tools.Test
     public class DeepLinkPackageParserTests
     {
         [Theory]
-        [InlineData("vsph://OpenPackageDetails/Newtsoft.Json/1.0.0", "Newtsoft.Json", "1.0.0")]
-        [InlineData("vsph://OpenPackageDetails/Serilog/1.2.3", "Serilog", "1.2.3")]
-        [InlineData("vsph://OpenPackageDetails/Moq/1.3.5", "Moq", "1.3.5")]
-        public void URILinks_FormattedProperly_ShouldBeValid(string packageLink, string packageName, string packageVersion)
+        [InlineData("nuget-client://OpenPackageDetails/Newtonsoft.Json/1.0.0", "Newtonsoft.Json", "1.0.0")]
+        [InlineData("nuget-client://OpenPackageDetails/Serilog/1.2.3", "Serilog", "1.2.3")]
+        [InlineData("nuget-client://OpenPackageDetails/Moq/1.3.5", "Moq", "1.3.5")]
+        public void URILinks_FormattedProperlyTwoProperties_ShouldBeValid(string packageLink, string packageName, string packageVersion)
         {
             //Arrange
             var package = new NuGetPackageDetails(packageName, packageVersion);
@@ -35,8 +33,31 @@ namespace NuGet.Tools.Test
         }
 
         [Theory]
-        [InlineData("vsph:://OpenPackageDetails/Newtsoft.Json/1.0.0")]
-        [InlineData("vsph:/a/OpenPackageDetails/Serilog/1.2.3")]
+        [InlineData("nuget-client://OpenPackageDetails/Newtonsoft.Json", "Newtonsoft.Json")]
+        [InlineData("nuget-client://OpenPackageDetails/Serilog", "Serilog")]
+        [InlineData("nuget-client://OpenPackageDetails/Moq", "Moq")]
+        public void URILinks_FormattedProperlyOneProperty_ShouldBeValid(string packageLink, string packageName)
+        {
+            //Arrange
+            var package = new NuGetPackageDetails(packageName);
+
+            //Act
+            NuGetPackageDetails resultingPackage = DeepLinkURIParser.GetNuGetPackageDetails(packageLink);
+
+            //Assert
+            string testPackageName = package.PackageName;
+
+            string resultPackageName = resultingPackage.PackageName;
+            string resultPackageVersion = resultingPackage.VersionNumber;
+
+            Assert.NotNull(resultingPackage);
+            Assert.Equal(testPackageName, resultPackageName);
+            Assert.Null(resultPackageVersion);
+        }
+
+        [Theory]
+        [InlineData("nuget-client:://OpenPackageDetails/Newtonsoft.Json/1.0.0")]
+        [InlineData("nuget-client:/a/OpenPackageDetails/Serilog/1.2.3")]
         [InlineData("vsah://OpenPackageDetails/Moq/1.3.5")]
         public void URILinks_BadProtocolName_ShouldBeNull(string packageLink)
         {
@@ -50,9 +71,9 @@ namespace NuGet.Tools.Test
         }
 
         [Theory]
-        [InlineData("vsph://OpenSesame/Newtsoft.Json/1.0.0")]
-        [InlineData("vsph://HEyHOwdidIgetHere/Serilog/1.2.3")]
-        [InlineData("vsph://OpenPackageDetail/Moq/1.3.5")]
+        [InlineData("nuget-client://OpenSesame/Newtonsoft.Json/1.0.0")]
+        [InlineData("nuget-client://HEyHOwdidIgetHere/Serilog/1.2.3")]
+        [InlineData("nuget-client://OpenPackageDetail/Moq/1.3.5")]
         public void URILinks_BadDomainName_ShouldBeNull(string packageLink)
         {
             //Arrange
@@ -65,11 +86,10 @@ namespace NuGet.Tools.Test
         }
 
         [Theory]
-        [InlineData("vsph://OpenPackageDetails/Newtsoft.Json/1.0.0/wazzap")]
-        [InlineData("vsph://OpenPackageDetails/Serilog/1.2.3/Im/messing/up/your/code")]
-        [InlineData("vsph://OpenPackageDetails/Moq")]
+        [InlineData("nuget-client://OpenPackageDetails/Newtsoft.Json/1.0.0/wazzap")]
+        [InlineData("nuget-client://OpenPackageDetails/Serilog/1.2.3/Im/messing/up/your/code")]
         [InlineData(null)]
-        public void URILinks_NumberOfPropertiesIsNotTwo_ShouldBeNull(string packageLink)
+        public void URILinks_NumberOfPropertiesIsNotTwoOrOne_ShouldBeNull(string packageLink)
         {
             //Arrange
 
