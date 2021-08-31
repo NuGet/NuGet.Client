@@ -13,37 +13,37 @@ function Test-PackageNamespaceRestore-WithSingleFeed
     <clear />
     <add key="ReadyPackages" value="{0}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="ReadyPackages">
-            <namespace id="Soluti*" />
+            <package prefix="Soluti*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
-  
+
     try {
         # We have to create config file before creating solution, otherwise it's not effective for new solutions.
         $settingFileContent -f $repoDirectory | Out-File -Encoding "UTF8" $nugetConfigPath
-    
+
         $p = New-ConsoleApplication
-    
+
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
         $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
         # Write a file to disk, but do not add it to project
         '<packages>
             <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net461" />
     </packages>' | out-file $packagesConfigPath
-    
+
         # Act
         Build-Solution
-    
+
         # Assert
         $packagesFolder = Join-Path $solutionDirectory "packages"
         $solutionLevelPkgNupkgFolder = Join-Path $packagesFolder "SolutionLevelPkg.1.0.0"
         Assert-PathExists(Join-Path $solutionLevelPkgNupkgFolder "SolutionLevelPkg.1.0.0.nupkg")
-        
+
         $errorlist = Get-Errors
         Assert-AreEqual 0 $errorlist.Count
     }
@@ -70,11 +70,11 @@ function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-Res
     <add key="OpensourceRepository" value="{0}" />
     <add key="PrivateRepository" value="{1}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <namespace id="Contoso.MVC.*" />
+            <package prefix="Contoso.MVC.*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -86,7 +86,7 @@ function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-Res
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
         $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
         # Write a file to disk, but do not add it to project
         '<packages>
             <package id="Contoso.MVC.ASP" version="1.0.0" targetFramework="net461" />
@@ -98,7 +98,7 @@ function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-Res
         # Act
         Build-Solution
 
-        # Assert   
+        # Assert
         $packagesFolder = Join-Path $solutionDirectory "packages"
         $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
         Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
@@ -131,18 +131,18 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     <clear />
     <add key="ReadyPackages" value="{0}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="ReadyPackages">
-            <namespace id="Soluti*" />
+            <package prefix="Soluti*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
-  
+
     try {
         # We have to create config file before creating solution, otherwise it's not effective for new solutions.
         $settingFileContent -f $repoDirectory | Out-File -Encoding "UTF8" $nugetConfigPath
-    
+
         # $p = New-ConsoleApplication
         # Arrange
         $p = New-ClassLibrary
@@ -177,18 +177,18 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     <clear />
     <add key="ReadyPackages" value="{0}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="SecretPackages">
-            <namespace id="Soluti*" />
+            <package prefix="Soluti*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
-  
+
     try {
         # We have to create config file before creating solution, otherwise it's not effective for new solutions.
         $settingFileContent -f $repoDirectory | Out-File -Encoding "UTF8" $nugetConfigPath
-    
+
         # $p = New-ConsoleApplication
         # Arrange
         $p = New-ClassLibrary
@@ -222,11 +222,11 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     <add key="OpensourceRepository" value="{0}" />
     <add key="PrivateRepository" value="{1}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <namespace id="Contoso.MVC.*" />
+            <package prefix="Contoso.MVC.*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -238,7 +238,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
         $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
 
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
         CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $privateRepo "Thisisfromprivaterepo2.txt"
@@ -248,7 +248,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
         # Act
         [API.Test.InternalAPITestHook]::InstallPackageApi("Contoso.MVC.ASP", "1.0.0")
 
-        # Assert   
+        # Assert
         $packagesFolder = Join-Path $solutionDirectory "packages"
         $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.1.0.0"
         Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.1.0.0.nupkg")
@@ -283,11 +283,11 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     <add key="OpensourceRepository" value="{0}" />
     <add key="PrivateRepository" value="{1}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <namespace id="Contoso.MVC.*" />
+            <package prefix="Contoso.MVC.*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -299,7 +299,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
         $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
 
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
         CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $privateRepo "Thisisfromprivaterepo2.txt"
@@ -309,7 +309,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
         # Act
         [API.Test.InternalAPITestHook]::InstallLatestPackageApi("Contoso.MVC.ASP", $false)
 
-        # Assert   
+        # Assert
         $packagesFolder = Join-Path $solutionDirectory "packages"
         $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.2.0.0"
         Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.2.0.0.nupkg")
@@ -331,7 +331,7 @@ function Test-PC-PackageNamespaceInstall-Succeed
     param($context)
 
     # Arrange
-    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'    
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
 	$settingFileContent =@"
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -339,11 +339,11 @@ function Test-PC-PackageNamespaceInstall-Succeed
     <clear />
     <add key="LocalRepository" value="{0}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="LocalRepository">
-            <namespace id="Solution*" />
+            <package prefix="Solution*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -375,7 +375,7 @@ function Test-PC-PackageNamespaceInstall-Fails
     $repoDirectory = $context.RepositoryRoot
     $privateRepo = Join-Path $repoDirectory "privateRepo"
 
-    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'    
+    $nugetConfigPath = Join-Path $OutputPath 'nuget.config'
 	$settingFileContent =@"
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -384,11 +384,11 @@ function Test-PC-PackageNamespaceInstall-Fails
     <add key="LocalRepository" value="{0}" />
     <add key="PrivateRepository" value="{1}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <namespace id="Solution*" />
+            <package prefix="Solution*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -426,11 +426,11 @@ function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
     <add key="OpensourceRepository" value="{0}" />
     <add key="PrivateRepository" value="{1}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <namespace id="Contoso.MVC.*" />
+            <package prefix="Contoso.MVC.*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -441,7 +441,7 @@ function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
         $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
 
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo1.txt"
@@ -485,11 +485,11 @@ function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
     <add key="OpensourceRepository" value="{0}" />
     <add key="PrivateRepository" value="{1}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <namespace id="Contoso.MVC.*" />
+            <package prefix="Contoso.MVC.*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -500,12 +500,12 @@ function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
         $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
 
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $opensourceRepo "Thisisfromopensourcerepo1.txt"
 
-        # Act & Assert   
+        # Act & Assert
         $exceptionMessage = "Package 'Contoso.MVC.ASP 1.0.0' is not found in the following primary source(s): '"+ $opensourceRepo + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly."
         Assert-Throws { $p | Install-Package Contoso.MVC.ASP -Source $opensourceRepo  } $exceptionMessage
         Assert-NoPackage $p SolutionLevelPkg 1.0.0
@@ -534,11 +534,11 @@ function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
     <add key="OpensourceRepository" value="{0}" />
     <add key="PrivateRepository" value="{1}" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <namespace id="Contoso.MVC.*" />
+            <package prefix="Contoso.MVC.*" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 "@
     try {
@@ -549,7 +549,7 @@ function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
         $packagesConfigPath = Join-Path $projectDirectoryPath 'packages.config'
         $projectDirectoryPath = $p.Properties.Item("FullPath").Value
-        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent   
+        $solutionDirectory = Split-Path -Path $projectDirectoryPath -Parent
 
         CreateCustomTestPackage "Contoso.MVC.ASP" "1.0.0" $privateRepo "Thisisfromprivaterepo1.txt"
         CreateCustomTestPackage "Contoso.MVC.ASP" "2.0.0" $privateRepo "Thisisfromprivaterepo2.txt"
@@ -563,7 +563,7 @@ function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
         $p | Update-Package Contoso.MVC.ASP -Version 2.0 -Source $privateRepo
         Assert-Package $p Contoso.MVC.ASP 2.0.0
 
-        # Assert   
+        # Assert
         $packagesFolder = Join-Path $solutionDirectory "packages"
         $contosoNupkgFolder = Join-Path $packagesFolder "Contoso.MVC.ASP.2.0.0"
         Assert-PathExists(Join-Path $contosoNupkgFolder "Contoso.MVC.ASP.2.0.0.nupkg")
@@ -580,7 +580,7 @@ function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
     }
 }
 
-# Create a custom test package 
+# Create a custom test package
 function CreateCustomTestPackage {
     param(
         [string]$id,
@@ -593,7 +593,7 @@ function CreateCustomTestPackage {
     $builder.Authors.Add("test_author")
     $builder.Id = $id
     $builder.Version = [NuGet.Versioning.NuGetVersion]::Parse($version)
-    $builder.Description = "description" 
+    $builder.Description = "description"
 
     # add one content file
     $tempFile = [IO.Path]::GetTempFileName()
@@ -607,7 +607,7 @@ function CreateCustomTestPackage {
     {
         # add one content file
         $tempFile2 = [IO.Path]::GetTempFileName()
-        "temp2" >> $tempFile2        
+        "temp2" >> $tempFile2
         $packageFile = New-Object NuGet.Packaging.PhysicalPackageFile
         $packageFile.SourcePath = $tempFile2
         $packageFile.TargetPath = "content\$requestAdditionalContent"

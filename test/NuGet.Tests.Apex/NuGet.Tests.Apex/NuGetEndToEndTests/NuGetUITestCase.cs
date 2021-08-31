@@ -183,12 +183,12 @@ namespace NuGet.Tests.Apex
     <clear />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
@@ -230,12 +230,12 @@ namespace NuGet.Tests.Apex
     <clear />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
@@ -288,16 +288,16 @@ namespace NuGet.Tests.Apex
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 //</configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
@@ -345,16 +345,16 @@ namespace NuGet.Tests.Apex
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
@@ -368,7 +368,7 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
 
             // Assert
-            // Even though Contoso.a exist in ExternalRepository, but PackageNamespaces filter doesn't let restore from it.
+            // Even though Contoso.a exist in ExternalRepository, but packageSourceMapping filter doesn't let restore from it.
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "contoso.a", XunitLogger);
         }
 
@@ -399,12 +399,12 @@ namespace NuGet.Tests.Apex
     <clear />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
@@ -458,16 +458,16 @@ namespace NuGet.Tests.Apex
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package prefix=""External.*"" />
+            <package prefix=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package prefix=""Contoso.*"" />
+            <package prefix=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 //</configuration>");
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
