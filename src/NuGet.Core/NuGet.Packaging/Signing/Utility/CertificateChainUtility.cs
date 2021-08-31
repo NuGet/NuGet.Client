@@ -65,7 +65,7 @@ namespace NuGet.Packaging.Signing
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
 
-                if (chain.Build(certificate))
+                if (BuildWithPolicy(chain, certificate))
                 {
                     return GetCertificateChain(chain);
                 }
@@ -184,12 +184,29 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            var buildSuccess = chain.Build(certificate);
+            bool buildSuccess = BuildWithPolicy(chain, certificate);
             status = new X509ChainStatus[chain.ChainStatus.Length];
-            chain.ChainStatus.CopyTo(status, 0);
+            chain.ChainStatus.CopyTo(status, index: 0);
 
             // Check if time is not in the future
             return buildSuccess && !CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate);
+        }
+
+        internal static bool BuildWithPolicy(X509Chain chain, X509Certificate2 certificate)
+        {
+            if (chain is null)
+            {
+                throw new ArgumentNullException(nameof(chain));
+            }
+
+            if (certificate is null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.Create(EnvironmentVariableWrapper.Instance);
+
+            return policy.Build(chain, certificate);
         }
 
         // Ignore some chain status flags to special case them

@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class CertificateUtility
     {
-        private const int _limit = 10;
+        private const int ChainDepthLimit = 10;
 
         /// <summary>
         /// Converts a X509Certificate2 to a human friendly string of the following format -
@@ -91,16 +91,16 @@ namespace NuGet.Packaging.Signing
 
             collectionStringBuilder.AppendLine(Strings.CertUtilityMultipleCertificatesHeader);
 
-            for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
+            for (var i = 0; i < Math.Min(ChainDepthLimit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
                 X509Certificate2ToString(cert, collectionStringBuilder, fingerprintAlgorithm, indentation: "  ");
                 collectionStringBuilder.AppendLine();
             }
 
-            if (certCollection.Count > _limit)
+            if (certCollection.Count > ChainDepthLimit)
             {
-                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - _limit));
+                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - ChainDepthLimit));
             }
 
             return collectionStringBuilder.ToString();
@@ -114,15 +114,15 @@ namespace NuGet.Packaging.Signing
 
             var chainElementsCount = chain.ChainElements.Count;
             // Start in 1 to omit main certificate (only build the chain)
-            for (var i = 1; i < Math.Min(_limit, chainElementsCount); i++)
+            for (var i = 1; i < Math.Min(ChainDepthLimit, chainElementsCount); i++)
             {
                 X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, fingerprintAlgorithm, indentation);
                 indentation += indentationLevel;
             }
 
-            if (chainElementsCount > _limit)
+            if (chainElementsCount > ChainDepthLimit)
             {
-                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, chainElementsCount - _limit));
+                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, chainElementsCount - ChainDepthLimit));
             }
 
             return collectionStringBuilder.ToString();
@@ -317,7 +317,7 @@ namespace NuGet.Packaging.Signing
 
             using (var chainHolder = new X509ChainHolder())
             {
-                var chain = chainHolder.Chain;
+                X509Chain chain = chainHolder.Chain;
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
                 chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
@@ -325,7 +325,7 @@ namespace NuGet.Packaging.Signing
                     X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
                     X509VerificationFlags.IgnoreEndRevocationUnknown;
 
-                chain.Build(certificate);
+                CertificateChainUtility.BuildWithPolicy(chain, certificate);
 
                 if (chain.ChainElements.Count != 1)
                 {
