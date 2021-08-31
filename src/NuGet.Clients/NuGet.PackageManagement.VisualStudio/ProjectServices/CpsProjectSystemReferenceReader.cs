@@ -57,12 +57,13 @@ namespace NuGet.PackageManagement.VisualStudio
             Common.ILogger logger, CancellationToken _)
         {
             var unconfiguredProject = await _unconfiguredProject.GetValueAsync();
-            IBuildDependencyProjectReferencesService service = (await unconfiguredProject?.GetSuggestedConfiguredProjectAsync())?.Services.ProjectReferences;
+            IBuildDependencyProjectReferencesService service = await GetProjectReferencesService(unconfiguredProject);
 
             if (service == null)
             {
                 return Enumerable.Empty<ProjectRestoreReference>();
             }
+
             var results = new List<ProjectRestoreReference>();
             var hasMissingReferences = false;
 
@@ -103,6 +104,26 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Gets the project reference service for the suggested configured project if available, <see langword="null"/> otherwise.
+        /// </summary>
+        private static async Task<IBuildDependencyProjectReferencesService> GetProjectReferencesService(UnconfiguredProject unconfiguredProject)
+        {
+            IBuildDependencyProjectReferencesService service = null;
+
+            if (unconfiguredProject != null)
+            {
+                ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+
+                if (configuredProject != null)
+                {
+                    service = configuredProject.Services.ProjectReferences;
+                }
+            }
+
+            return service;
         }
 
         public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(
