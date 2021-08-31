@@ -224,5 +224,394 @@ namespace Dotnet.Integration.Test
                 ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(packageY_V2.Version));
             }
         }
+
+        [Fact]
+        public async Task AddPkg_WhenPackageNamespacesConfiguredAndNoMatchingSourceFound_Fails()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageZ = "Z";
+
+            var packageFrameworks = "net472; net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+            var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})'", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task AddPkg_WhenPackageNamespacesConfiguredInstallsPackagesFromExpectedSources_Success()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageZ = "Z";
+
+            var packageFrameworks = "net472; net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+            var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""{packageZ}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task AddPkg_WhenPackageNamespacesConfiguredInstallsPackagesFromSourcesUriOption_Success()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageZ = "Z";
+
+            var packageFrameworks = "net472; net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+            var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""{packageZ}*"" />
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageZ}*"" />
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version} -s {pathContext.PackageSource}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task AddPkg_WhenPackageNamespacesConfiguredCanotInstallsPackagesFromSourcesUriOption_Fails()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageZ = "Z";
+
+            var packageFrameworks = "net472; net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+            var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""{packageZ}*"" />
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version} -s {packageSource2}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net5.0'", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task AddPkg_WhenPackageNamespacesConfiguredInstallsPackagesFromRestoreSources_Success()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageZ = "Z";
+
+            var packageFrameworks = "net472;net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+            var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source"">
+                <namespace id=""*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <namespace id=""{packageZ}*"" />
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+
+            // Add RestoreSources
+            projectA.Properties.Add("RestoreSources", $"{packageSource2.FullName}");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} from {packageSource2.FullName}", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task AddPkg_WhenPackageNamespacesConfiguredCanotInstallsPackagesFromRestoreSources_Fails()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageZ = "Z";
+
+            var packageFrameworks = "net472; net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+            var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageZ100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageNamespaces>
+            <packageSource key=""source2"">
+                <namespace id=""{packageX}*"" />
+            </packageSource>
+    </packageNamespaces>
+</configuration>
+";
+            // Add RestoreSources
+            projectA.Properties.Add("RestoreSources", $"{packageSource2.FullName};{pathContext.PackageSource}");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version} -s {packageSource2}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net5.0'", result.AllOutput);
+        }
     }
 }
