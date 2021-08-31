@@ -10759,7 +10759,7 @@ namespace NuGet.CommandLine.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageSourceMappings>
+        <packageSourceMapping>
             <packageSource key=""source"">
                 <package prefix=""{packageY}*"" />
                 <package prefix=""{packageZ}*"" />
@@ -10768,7 +10768,7 @@ namespace NuGet.CommandLine.Test
                 <package prefix=""{packageX}*"" />
                 <package prefix=""{packageK}*"" /> 
             </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>
 ";
 
@@ -10834,14 +10834,14 @@ namespace NuGet.CommandLine.Test
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageSourceMappings>
+        <packageSourceMapping>
             <packageSource key=""source"">
                 <package prefix=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
                 <package prefix=""{packageX}*"" />                                                
             </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>
 ";
 
@@ -10905,14 +10905,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""PublicRepository""> 
             <package prefix=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
             <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>";
             using (var writer = new StreamWriter(configAPath))
             {
@@ -11001,14 +11001,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""PublicRepository""> 
             <package prefix=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
             <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>";
             using (var writer = new StreamWriter(configAPath))
             {

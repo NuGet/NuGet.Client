@@ -119,7 +119,7 @@ namespace NuGet.Configuration
 
         public static readonly string TrustedSigners = "trustedSigners";
 
-        public static readonly string PackageNamespaces = "packageSourceMappings";
+        public static readonly string PackageNamespaces = "packageSourceMapping";
 
         public static readonly string UserKey = "http_proxy.user";
 

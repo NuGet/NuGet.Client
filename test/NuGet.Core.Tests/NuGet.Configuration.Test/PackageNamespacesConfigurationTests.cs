@@ -20,12 +20,12 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <clear />
         <packageSource key=""nuget.org"">
             <package prefix=""stuff"" />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
@@ -46,14 +46,14 @@ namespace NuGet.Configuration.Test
             var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <package prefix=""stuff"" />
         </packageSource>
         <packageSource key=""contoso"">
             <package prefix=""moreStuff"" />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 

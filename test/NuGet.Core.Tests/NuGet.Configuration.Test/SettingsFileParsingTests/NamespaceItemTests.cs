@@ -101,11 +101,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <package stuff=""sadas""  />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -125,13 +125,13 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <package prefix=""sadas"">
                 <add key=""key"" value=""val"" />
             </namespace>
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -151,11 +151,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <package prefix=""sadas"" />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -179,11 +179,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <package prefix=""original"" />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -205,11 +205,11 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <package prefix=""updated"" />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>";
 
             result.Replace("\r\n", "\n")

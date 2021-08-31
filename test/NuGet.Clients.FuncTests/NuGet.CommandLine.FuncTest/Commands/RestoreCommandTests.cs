@@ -1009,7 +1009,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""ContosoRepository"" value=""{contosoRepositoryPath}"" />
     </packageSources>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
             <package prefix=""External.*"" />
             <package prefix=""Others.*"" />
@@ -1018,7 +1018,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             <package prefix=""Contoso.*"" />             
             <package prefix=""Test.*"" />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>");
 
                 var ContosoReal = new SimpleTestPackageContext()
@@ -1115,7 +1115,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
     <add key=""ContosoRepository"" value=""{contosoRepositoryPath}"" />
     </packageSources>
-    <packageSourceMappings>
+    <packageSourceMapping>
         <packageSource key=""ExternalRepository"">
             <package prefix=""External.*"" />
             <package prefix=""Others.*"" />
@@ -1124,7 +1124,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             <package prefix=""Contoso.*"" />  <!--Contoso.A package doesn't exist Contoso repository, so restore should fail-->
             <package prefix=""Test.*"" />
         </packageSource>
-    </packageSourceMappings>
+    </packageSourceMapping>
 </configuration>");
 
                 var ExternalA = new SimpleTestPackageContext()
