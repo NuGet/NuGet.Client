@@ -19,6 +19,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public string ErrorWindowMessage { get; }
+
         public string ButtonText { get; }
     }
 }

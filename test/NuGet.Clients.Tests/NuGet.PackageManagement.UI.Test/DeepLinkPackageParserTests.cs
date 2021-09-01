@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.PackageManagement.UI;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Tools.Test
@@ -12,9 +13,10 @@ namespace NuGet.Tools.Test
         [InlineData("nuget-client://OpenPackageDetails/Newtonsoft.Json/1.0.0", "Newtonsoft.Json", "1.0.0")]
         [InlineData("nuget-client://OpenPackageDetails/Serilog/1.2.3", "Serilog", "1.2.3")]
         [InlineData("nuget-client://OpenPackageDetails/Moq/1.3.5", "Moq", "1.3.5")]
-        public void URILinks_FormattedProperlyTwoProperties_ShouldBeValid(string packageLink, string packageName, string packageVersion)
+        public void URILinks_FormattedProperlyTwoProperties_ShouldBeValid(string packageLink, string packageName, string version)
         {
             //Arrange
+            var packageVersion = NuGetVersion.Parse(version);
             var package = new NuGetPackageDetails(packageName, packageVersion);
 
             //Act
@@ -22,10 +24,10 @@ namespace NuGet.Tools.Test
 
             //Assert
             string testPackageName = package.PackageName;
-            string testPackageVersion = package.VersionNumber;
+            NuGetVersion testPackageVersion = package.VersionNumber;
 
             string resultPackageName = resultingPackage.PackageName;
-            string resultPackageVersion = resultingPackage.VersionNumber;
+            NuGetVersion resultPackageVersion = resultingPackage.VersionNumber;
 
             Assert.NotNull(resultingPackage);
             Assert.Equal(testPackageName, resultPackageName);
@@ -39,7 +41,7 @@ namespace NuGet.Tools.Test
         public void URILinks_FormattedProperlyOneProperty_ShouldBeValid(string packageLink, string packageName)
         {
             //Arrange
-            var package = new NuGetPackageDetails(packageName);
+            var package = new NuGetPackageDetails(packageName, null);
 
             //Act
             NuGetPackageDetails resultingPackage = DeepLinkURIParser.GetNuGetPackageDetails(packageLink);
@@ -48,7 +50,29 @@ namespace NuGet.Tools.Test
             string testPackageName = package.PackageName;
 
             string resultPackageName = resultingPackage.PackageName;
-            string resultPackageVersion = resultingPackage.VersionNumber;
+            NuGetVersion resultPackageVersion = resultingPackage.VersionNumber;
+
+            Assert.NotNull(resultingPackage);
+            Assert.Equal(testPackageName, resultPackageName);
+            Assert.Null(resultPackageVersion);
+        }
+
+        [Theory]
+        [InlineData("nuget-client://OpenPackageDetails/Newtonsoft.Json/helllo", "Newtonsoft.Json")]
+        [InlineData("nuget-client://OpenPackageDetails/Serilog/1.2.3.4.5.4.56.45.45.4.545.45.45", "Serilog")]
+        public void URILinks_VersionNumbersNotProper_LinkShouldBeValidAndVersionShouldBeNull(string packageLink, string packageName)
+        {
+            //Arrange
+            var package = new NuGetPackageDetails(packageName, null);
+
+            //Act
+            NuGetPackageDetails resultingPackage = DeepLinkURIParser.GetNuGetPackageDetails(packageLink);
+
+            //Assert
+            string testPackageName = package.PackageName;
+
+            string resultPackageName = resultingPackage.PackageName;
+            NuGetVersion resultPackageVersion = resultingPackage.VersionNumber;
 
             Assert.NotNull(resultingPackage);
             Assert.Equal(testPackageName, resultPackageName);

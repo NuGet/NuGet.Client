@@ -1294,45 +1294,56 @@ namespace NuGet.PackageManagement.UI
             }  
         }
 
-        public void SelectFirstPackage(string packageVersion)
+        public void SelectFirstPackage(NuGetVersion packageVersion)
         {
             _topPanel.SelectFilter(ItemFilter.All);
             SelectedSource = PackageSources.FirstOrDefault(psm => psm.IsAggregateSource);
             EventHandler handler = null;
-            handler = (s, e) =>
+            if (_packageList.IsLoaded)
             {
-                _packageList.LoadItemsCompleted -= handler;
+                SelectPackageUponLoaded(packageVersion);
+            }
 
-                _packageList.UpdateSelectedItem((PackageItemViewModel)_packageList.Items.FirstOrDefault());
-                if (_packageList.SelectedItem == null)
+            else
+            {
+                handler = (s, e) =>
                 {
-                    SelectionChangedEventHandler handle = null;
-                    handle = (send, events) =>
-                    {
-                        _packageList.SelectionChanged -= handle;
-                        FindExactPackageVersion(packageVersion);
-                    };
-                    _packageList.SelectionChanged += handle;
-                }
-                else
-                {
-                    FindExactPackageVersion(packageVersion);
-                }
-            };
-            _packageList.LoadItemsCompleted += handler;
+                    _packageList.LoadItemsCompleted -= handler;
+                    SelectPackageUponLoaded(packageVersion);
+                };
+                _packageList.LoadItemsCompleted += handler;
+            }
         }
 
-        private void FindExactPackageVersion(string packageVersion)
+        private void SelectPackageUponLoaded(NuGetVersion packageVersion)
         {
-            NuGetVersion nugetPackageVersion = null;
-            if (NuGetVersion.TryParse(packageVersion, out nugetPackageVersion))
+            _packageList.UpdateSelectedItem((PackageItemViewModel)_packageList.Items.FirstOrDefault());
+            if (_packageList.SelectedItem == null)
+            {
+                SelectionChangedEventHandler handle = null;
+                handle = (send, events) =>
+                {
+                    _packageList.SelectionChanged -= handle;
+                    FindExactPackageVersion(packageVersion);
+                };
+                _packageList.SelectionChanged += handle;
+            }
+            else
+            {
+                FindExactPackageVersion(packageVersion);
+            }
+        }
+
+        private void FindExactPackageVersion(NuGetVersion packageVersion)
+        {
+            if (packageVersion != null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    IReadOnlyCollection<VersionInfoContextInfo>  versions = await _packageList.SelectedItem.GetVersionsAsync();
+                    IReadOnlyCollection<VersionInfoContextInfo> versions = await _packageList.SelectedItem.GetVersionsAsync();
 
-                    //iterates through the list backwards as newer versions are more likely to be selected
+                    // iterates through the list backwards as newer versions are more likely to be selected
                     if (versions != null)
                     {
                         for (int i = versions.Count - 1; i >= 0; i--)
@@ -1340,7 +1351,7 @@ namespace NuGet.PackageManagement.UI
                             if (versions.ElementAt(i) != null)
                             {
                                 NuGetVersion version = versions.ElementAt(i).Version;
-                                if (version.Equals(nugetPackageVersion))
+                                if (version.Equals(packageVersion))
                                 {
                                     _detailModel.SelectedVersion = new DisplayVersion(version, string.Empty);
                                     break;

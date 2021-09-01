@@ -5,9 +5,9 @@ namespace NuGet.PackageManagement.UI
 {
     public class NuGetDeepLinkErrorWindow : VsDialogWindow
     {
-        public NuGetDeepLinkErrorWindow(NuGetDeepLinkErrorView view)
+        public NuGetDeepLinkErrorWindow(string message, string buttonText)
         {
-            Content = view;
+            Content = new NuGetDeepLinkErrorView(message, buttonText);
         }
     }
 }

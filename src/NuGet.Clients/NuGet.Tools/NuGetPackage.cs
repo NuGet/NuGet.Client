@@ -42,6 +42,7 @@ using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudien
 using Task = System.Threading.Tasks.Task;
 using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using UI = NuGet.PackageManagement.UI;
+using NuGet.Versioning;
 
 namespace NuGetVSExtension
 {
@@ -203,7 +204,7 @@ namespace NuGetVSExtension
             if (isPresent == 1)
             {
                 // If opened from a URL, then "optionValue" is the URL string itself
-                await SearchPackagesAsync(optionValue);
+                await SearchPackagesFromDeepLinkURIAsync(optionValue);
             }
 
             VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
@@ -650,14 +651,13 @@ namespace NuGetVSExtension
             }
         }
 
-        public async Task SearchPackagesAsync(string packageLink)
+        public async Task SearchPackagesFromDeepLinkURIAsync(string packageLink)
         {
             var packageDetails = DeepLinkURIParser.GetNuGetPackageDetails(packageLink);
 
             if (packageDetails == null)
             {
-                var view = new NuGetDeepLinkErrorView(Resx.ShowMessage_InvalidNuGetDeepLinkURI, Resx.Button_OK);
-                var window = new NuGetDeepLinkErrorWindow(view);
+                var window = new NuGetDeepLinkErrorWindow(Resx.ShowMessage_InvalidNuGetDeepLinkURI, Resx.Button_OK);
                 window.Title = Resx.WindowTitle_VisualStudioWebHandler;
                 window.SizeToContent = SizeToContent.WidthAndHeight;
 
@@ -992,7 +992,7 @@ namespace NuGetVSExtension
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
         }
 
-        private async Task ShowManageLibraryPackageForSolutionDialogAsync(string searchText, bool isOpenedByURI = false, string version = null)
+        private async Task ShowManageLibraryPackageForSolutionDialogAsync(string searchText, bool isOpenedByURI = false, NuGetVersion version = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -1007,6 +1007,7 @@ namespace NuGetVSExtension
                 //Create the window frame
                 if (isOpenedByURI && !await SolutionManager.Value.IsSolutionAvailableAsync())
                 {
+                    // event handler is set up here to allow time for the solution to load in before it does anything
                     EventHandler handler = null;
                     handler = (s, e) =>
                     {
@@ -1016,7 +1017,8 @@ namespace NuGetVSExtension
                         {
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                             windowFrame = await CreateDocWindowForSolutionAsync();
-                            DisplayPMUISearch(windowFrame, searchText, isOpenedByURI, version);
+                            DisplayPMUISearch(windowFrame, searchText);
+                            VsUtility.GetPackageManagerControl(windowFrame)?.SelectFirstPackage(version);
                         }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialogAsync));
                     };
                     SolutionManager.Value.SolutionOpened += handler;
@@ -1027,22 +1029,15 @@ namespace NuGetVSExtension
                     windowFrame = await CreateDocWindowForSolutionAsync();
                 }
             }
-            DisplayPMUISearch(windowFrame, searchText, isOpenedByURI, version);
+            DisplayPMUISearch(windowFrame, searchText);
         }
 
-        private void DisplayPMUISearch(IVsWindowFrame windowFrame, string searchText, bool isOpenedByURI = false, string version = null)
+        private void DisplayPMUISearch(IVsWindowFrame windowFrame, string searchText)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (windowFrame != null)
             {
                 Search(windowFrame, searchText);
-
-                if (isOpenedByURI)
-                {
-                    var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
-                    packageManagerControl?.SelectFirstPackage(version);
-                }
-
                 windowFrame.Show();
             }
         }

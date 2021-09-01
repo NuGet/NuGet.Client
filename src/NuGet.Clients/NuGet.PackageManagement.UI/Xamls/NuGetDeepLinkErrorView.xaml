@@ -3,26 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             MaxWidth="700"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             MaxWidth="700"
              d:DesignHeight="200" d:DesignWidth="1900">
- 
   <Grid>
     <TextBlock Name="Message"
                Margin="15,15,15,0"
                FontSize="12"
                TextWrapping="Wrap"
-               Text="{Binding ErrorWindowMessage}">
-    </TextBlock>
-    <Button Width="80"
+               Text="{Binding ErrorWindowMessage}"/>
+    <Button MinWidth="80"
             Height="27"
             IsCancel="True"
             VerticalAlignment="Bottom"
             HorizontalAlignment="Right"
             Margin="30,65,25,10">
-      <TextBlock Text="{Binding ButtonText}">
-      </TextBlock>
+      <TextBlock Text="{Binding ButtonText}"/>
     </Button>
   </Grid>
 </UserControl>

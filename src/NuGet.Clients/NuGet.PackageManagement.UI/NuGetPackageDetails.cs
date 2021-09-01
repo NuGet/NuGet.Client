@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Versioning;
+
 namespace NuGet.PackageManagement.UI
 {
     public class NuGetPackageDetails
     {
-        public NuGetPackageDetails(string packageName, string versionNumber = null)
+        public NuGetPackageDetails(string packageName, NuGetVersion versionNumber)
         {
             PackageName = packageName;
             VersionNumber = versionNumber;
@@ -13,6 +15,6 @@ namespace NuGet.PackageManagement.UI
 
         public string PackageName { get; }
 
-        public string VersionNumber { get; }
+        public NuGetVersion VersionNumber { get; }
     }
 }

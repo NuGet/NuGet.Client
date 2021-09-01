@@ -2,30 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
     public static class DeepLinkURIParser
     {
-        private static string[] UrlSections;
-
         public static NuGetPackageDetails GetNuGetPackageDetails(string packageLink)
         {
-            if (IsPackageURIValid(packageLink))
+            string packageName;
+            NuGetVersion nugetPackageVersion;
+            if (TryParse(packageLink, out packageName, out nugetPackageVersion))
             {
-                string packageName = UrlSections[3];
-                if (UrlSections.Length == 5)
-                {
-                    string versionNumber = UrlSections[4];
-                    return new NuGetPackageDetails(packageName, versionNumber);
-                }
-
-                return new NuGetPackageDetails(packageName);
+                return new NuGetPackageDetails(packageName, nugetPackageVersion);
             }
             return null;
         }
-        private static bool IsPackageURIValid(string packageLink)
+
+        private static bool TryParse(string packageLink, out string packageName, out NuGetVersion nugetPackageVersion)
         {
+            packageName = null;
+            nugetPackageVersion = null;
+
             if (packageLink == null)
             {
                 return false;
@@ -39,9 +37,24 @@ namespace NuGet.PackageManagement.UI
             }
 
             var linkPropertySeparator = '/';
-            UrlSections = packageLink.Split(linkPropertySeparator);
+            string[] urlSections = packageLink.Split(linkPropertySeparator);
 
-            return UrlSections.Length == 4 || UrlSections.Length == 5;
+            if (urlSections.Length != 4 && urlSections.Length != 5)
+            {
+                return false;
+            }
+
+            packageName = urlSections[3];
+
+            if (urlSections.Length == 5)
+            {
+                string versionNumber = urlSections[4];
+                if (!NuGetVersion.TryParse(versionNumber, out nugetPackageVersion))
+                {
+                    nugetPackageVersion = null;
+                }
+            }
+            return true;
         }
     }
 }
