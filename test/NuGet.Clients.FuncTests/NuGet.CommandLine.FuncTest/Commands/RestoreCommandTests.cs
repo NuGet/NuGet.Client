@@ -1011,12 +1011,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""contosoRepository"">
-            <package prefix=""Contoso.*"" />             
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -1117,12 +1117,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""ExternalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""ContosoRepository"">
-            <package prefix=""Contoso.*"" />  <!--Contoso.A package doesn't exist Contoso repository, so restore should fail-->
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />  <!--Contoso.A package doesn't exist Contoso repository, so restore should fail-->
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");

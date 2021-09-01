@@ -124,7 +124,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource id=""nuget.org"">
-            <package prefix=""sadas""  />
+            <package pattern=""sadas""  />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -171,7 +171,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""sadas"" />
+            <package pattern=""sadas"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -200,7 +200,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""sadas"" />
+            <package pattern=""sadas"" />
             <notANamespace id=""sadas"" />
         </packageSource>
     </packageSourceMapping>
@@ -229,7 +229,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""first"" />
+            <package pattern=""first"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -257,8 +257,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""first"" />
-            <package prefix=""second"" />
+            <package pattern=""first"" />
+            <package pattern=""second"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -276,8 +276,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""first"" />
-            <package prefix=""second"" />
+            <package pattern=""first"" />
+            <package pattern=""second"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -305,7 +305,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""first"" />
+            <package pattern=""first"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -323,7 +323,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""first"" />
+            <package pattern=""first"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -358,8 +358,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""first"" />
-            <package prefix=""second"" />
+            <package pattern=""first"" />
+            <package pattern=""second"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -388,8 +388,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""first"" />
-            <package prefix=""third"" />
+            <package pattern=""first"" />
+            <package pattern=""third"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";

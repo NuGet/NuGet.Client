@@ -1891,11 +1891,11 @@ namespace NuGet.CommandLine.Test
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -1939,11 +1939,11 @@ namespace NuGet.CommandLine.Test
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -1989,11 +1989,11 @@ namespace NuGet.CommandLine.Test
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -2041,11 +2041,11 @@ namespace NuGet.CommandLine.Test
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");

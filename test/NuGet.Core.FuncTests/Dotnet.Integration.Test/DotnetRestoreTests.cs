@@ -187,7 +187,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 var result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
@@ -259,7 +259,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().NotContain($"error NU3004");
@@ -334,7 +334,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -415,7 +415,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -497,7 +497,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -1141,7 +1141,7 @@ EndGlobal";
                 // The test depends on the presence of these packages and their versions.
                 // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
                 var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
-                var directoryPackagesPropsContent = @"<Project>                    
+                var directoryPackagesPropsContent = @"<Project>
                         <PropertyGroup>
                             <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
                         </PropertyGroup>
@@ -1677,12 +1677,12 @@ EndGlobal";
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""{packageY}*"" />
-                <package prefix=""{packageZ}*"" />
+                <package pattern=""{packageY}*"" />
+                <package pattern=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
-                <package prefix=""{packageK}*"" /> 
+                <package pattern=""{packageX}*"" />
+                <package pattern=""{packageK}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -1756,10 +1756,10 @@ EndGlobal";
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""{packageY}*"" />
+                <package pattern=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -1834,12 +1834,12 @@ EndGlobal";
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source1"">
-                <package prefix=""{packageY}*"" />
-                <package prefix=""{packageZ}*"" />
+                <package pattern=""{packageY}*"" />
+                <package pattern=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
-                <package prefix=""{packageK}*"" /> 
+                <package pattern=""{packageX}*"" />
+                <package pattern=""{packageK}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -1910,10 +1910,10 @@ EndGlobal";
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source1"">
-                <package prefix=""{packageY}*"" />
+                <package pattern=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>

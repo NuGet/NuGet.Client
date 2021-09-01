@@ -129,6 +129,6 @@ namespace NuGet.Configuration
 
         public static readonly string ValueAttribute = "value";
 
-        public static readonly string IdAttribute = "prefix";
+        public static readonly string IdAttribute = "pattern";
     }
 }

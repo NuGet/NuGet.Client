@@ -2865,7 +2865,7 @@ namespace NuGet.Test
         [Fact]
         public async Task TestPacManPreviewInstallPackageWithNonTargetDependency()
         {
-            // Arrange            
+            // Arrange
 
             // Set up Package Source
             var packages = new List<SourcePackageDependencyInfo>
@@ -7057,8 +7057,8 @@ namespace NuGet.Test
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />             
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -7140,12 +7140,12 @@ namespace NuGet.Test
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />             
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -7243,12 +7243,12 @@ namespace NuGet.Test
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />             
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -7349,13 +7349,13 @@ namespace NuGet.Test
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""Direct.*"" />
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""Direct.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -7471,12 +7471,12 @@ namespace NuGet.Test
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />             
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -7632,12 +7632,12 @@ namespace NuGet.Test
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />             
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");

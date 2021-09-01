@@ -127,7 +127,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""sadas"">
+            <package pattern=""sadas"">
                 <add key=""key"" value=""val"" />
             </package>
         </packageSource>
@@ -153,7 +153,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""sadas"" />
+            <package pattern=""sadas"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -181,7 +181,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""original"" />
+            <package pattern=""original"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -207,7 +207,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""updated"" />
+            <package pattern=""updated"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";

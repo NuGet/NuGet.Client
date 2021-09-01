@@ -2738,7 +2738,7 @@ namespace NuGet.Configuration.Test
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <yay/>
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -2748,7 +2748,7 @@ namespace NuGet.Configuration.Test
             var settingsFile = new SettingsFile(mockBaseDirectory);
             var settings = new Settings(new SettingsFile[] { settingsFile });
 
-            // Act & 
+            // Act &
             settings.AddOrUpdate(settingsFile, "packageSourceMapping", new PackageNamespacesSourceItem("nuget.org", new List<NamespaceItem>() { new NamespaceItem("moreStuff") }));
             settings.SaveToDisk();
 
@@ -2757,7 +2757,7 @@ namespace NuGet.Configuration.Test
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
             <yay/>
-            <package prefix=""moreStuff"" />
+            <package pattern=""moreStuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");

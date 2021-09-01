@@ -1057,11 +1057,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -1157,11 +1157,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
 </packageSources>
 <packageSourceMapping>
-    <packageSource key=""PublicRepository""> 
-        <package prefix=""Contoso.Opensource.*"" />
+    <packageSource key=""PublicRepository"">
+        <package pattern=""Contoso.Opensource.*"" />
     </packageSource>
     <packageSource key=""SharedRepository"">
-        <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
+        <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
     </packageSource>
 </packageSourceMapping>
 </configuration>";
@@ -1267,11 +1267,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.O*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.O*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.M*"" /> 
+            <package pattern=""Contoso.M*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -1367,11 +1367,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
 </packageSources>
 <packageSourceMapping>
-    <packageSource key=""PublicRepository""> 
-        <package prefix=""Contoso.O*"" />
+    <packageSource key=""PublicRepository"">
+        <package pattern=""Contoso.O*"" />
     </packageSource>
     <packageSource key=""SharedRepository"">
-        <package prefix=""Contoso.M*"" />  <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
+        <package pattern=""Contoso.M*"" />  <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
     </packageSource>
 </packageSourceMapping>
 </configuration>";
@@ -1477,12 +1477,12 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
-            <package prefix=""Contoso.MVC.*"" /> 
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.ASP"" />   <!-- Longer prefix prevails over Contoso.MVC.* -->
+            <package pattern=""Contoso.MVC.ASP"" />   <!-- Longer prefix prevails over Contoso.MVC.* -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -1578,7 +1578,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""PublicRepository"">
-            <package prefix=""Contoso.MVC.ASP"" />   <!-- My.MVC.ASP doesn't match any package name spaces -->
+            <package pattern=""Contoso.MVC.ASP"" />   <!-- My.MVC.ASP doesn't match any package name spaces -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -1671,10 +1671,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""SharedRepository1"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
         <packageSource key=""SharedRepository2"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -1819,11 +1819,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -1905,11 +1905,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";

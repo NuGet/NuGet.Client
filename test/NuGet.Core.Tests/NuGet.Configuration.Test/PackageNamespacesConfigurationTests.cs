@@ -23,7 +23,7 @@ namespace NuGet.Configuration.Test
     <packageSourceMapping>
         <clear />
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -48,10 +48,10 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
         <packageSource key=""contoso"">
-            <package prefix=""moreStuff"" />
+            <package pattern=""moreStuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");

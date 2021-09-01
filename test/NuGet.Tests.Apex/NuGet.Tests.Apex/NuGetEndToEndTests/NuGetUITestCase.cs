@@ -185,8 +185,8 @@ namespace NuGet.Tests.Apex
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -232,8 +232,8 @@ namespace NuGet.Tests.Apex
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -290,12 +290,12 @@ namespace NuGet.Tests.Apex
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 //</configuration>");
@@ -347,12 +347,12 @@ namespace NuGet.Tests.Apex
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -401,8 +401,8 @@ namespace NuGet.Tests.Apex
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -460,12 +460,12 @@ namespace NuGet.Tests.Apex
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <package prefix=""External.*"" />
-            <package prefix=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.*"" />
-            <package prefix=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
     </packageSourceMapping>
 //</configuration>");

@@ -15,7 +15,7 @@ function Test-PackageNamespaceRestore-WithSingleFeed
     </packageSources>
     <packageSourceMapping>
         <packageSource key="ReadyPackages">
-            <package prefix="Soluti*" />
+            <package pattern="Soluti*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -72,7 +72,7 @@ function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-Res
     </packageSources>
     <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <package prefix="Contoso.MVC.*" />
+            <package pattern="Contoso.MVC.*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -133,7 +133,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     </packageSources>
     <packageSourceMapping>
         <packageSource key="ReadyPackages">
-            <package prefix="Soluti*" />
+            <package pattern="Soluti*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -179,7 +179,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     </packageSources>
     <packageSourceMapping>
         <packageSource key="SecretPackages">
-            <package prefix="Soluti*" />
+            <package pattern="Soluti*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -224,7 +224,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     </packageSources>
     <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <package prefix="Contoso.MVC.*" />
+            <package pattern="Contoso.MVC.*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -285,7 +285,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     </packageSources>
     <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <package prefix="Contoso.MVC.*" />
+            <package pattern="Contoso.MVC.*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -341,7 +341,7 @@ function Test-PC-PackageNamespaceInstall-Succeed
     </packageSources>
     <packageSourceMapping>
         <packageSource key="LocalRepository">
-            <package prefix="Solution*" />
+            <package pattern="Solution*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -386,7 +386,7 @@ function Test-PC-PackageNamespaceInstall-Fails
     </packageSources>
     <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <package prefix="Solution*" />
+            <package pattern="Solution*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -428,7 +428,7 @@ function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
     </packageSources>
     <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <package prefix="Contoso.MVC.*" />
+            <package pattern="Contoso.MVC.*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -487,7 +487,7 @@ function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
     </packageSources>
     <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <package prefix="Contoso.MVC.*" />
+            <package pattern="Contoso.MVC.*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -536,7 +536,7 @@ function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
     </packageSources>
     <packageSourceMapping>
         <packageSource key="PrivateRepository">
-            <package prefix="Contoso.MVC.*" />
+            <package pattern="Contoso.MVC.*" />
         </packageSource>
     </packageSourceMapping>
 </configuration>

@@ -269,7 +269,7 @@ namespace Dotnet.Integration.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -330,10 +330,10 @@ namespace Dotnet.Integration.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""{packageZ}*"" />
+                <package pattern=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -394,12 +394,12 @@ namespace Dotnet.Integration.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""{packageZ}*"" />
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageZ}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageZ}*"" />
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageZ}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -460,11 +460,11 @@ namespace Dotnet.Integration.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""{packageZ}*"" />
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageZ}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -522,11 +522,11 @@ namespace Dotnet.Integration.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""*"" />
+                <package pattern=""*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageZ}*"" />
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageZ}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -591,7 +591,7 @@ namespace Dotnet.Integration.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>

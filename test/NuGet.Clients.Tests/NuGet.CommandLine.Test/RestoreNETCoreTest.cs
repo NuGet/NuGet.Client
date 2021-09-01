@@ -10761,12 +10761,12 @@ namespace NuGet.CommandLine.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""{packageY}*"" />
-                <package prefix=""{packageZ}*"" />
+                <package pattern=""{packageY}*"" />
+                <package pattern=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />
-                <package prefix=""{packageK}*"" /> 
+                <package pattern=""{packageX}*"" />
+                <package pattern=""{packageK}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -10836,10 +10836,10 @@ namespace NuGet.CommandLine.Test
     </packageSources>
         <packageSourceMapping>
             <packageSource key=""source"">
-                <package prefix=""{packageY}*"" />
+                <package pattern=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <package prefix=""{packageX}*"" />                                                
+                <package pattern=""{packageX}*"" />
             </packageSource>
     </packageSourceMapping>
 </configuration>
@@ -10906,11 +10906,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -11002,11 +11002,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";

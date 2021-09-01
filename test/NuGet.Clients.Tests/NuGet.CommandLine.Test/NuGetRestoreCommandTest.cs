@@ -2082,10 +2082,10 @@ EndProject");
             {
                 // Overriding globalPackages folder
                 Util.CreateFile(workingPath, "nuget.config",
-@"<configuration> 
-  <config> 
-    <add key=""globalPackagesFolder"" value=""globalPackages"" /> 
-  </config> 
+@"<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""globalPackages"" />
+  </config>
 </configuration>");
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
@@ -2127,10 +2127,10 @@ EndProject");
             {
                 // Overriding globalPackages folder
                 Util.CreateFile(workingPath, "nuget.config",
-@"<configuration> 
-  <config> 
-    <add key=""globalPackagesFolder"" value=""globalPackages"" /> 
-  </config> 
+@"<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""globalPackages"" />
+  </config>
 </configuration>");
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
@@ -2199,7 +2199,7 @@ EndProject";
                 var targetFileContents
                     = @"
 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-<Target Name=""test"">  
+<Target Name=""test"">
     <Message Text = ""test"" />
 </Target>
 </Project>";
@@ -2374,7 +2374,7 @@ EndProject";
    <!ENTITY sayhello ""&greeting; &name;"">
 ]>
 <packages>
-    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" /> 
+    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" />
     <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -2505,27 +2505,27 @@ EndProject";
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""PublicRepository"">
-            <package prefix=""Moq*"" />
-            <package prefix=""Nerdbank.*"" />   
-            <package prefix=""Microsoft.Asp.*"" />
-            <package prefix=""Microsoft.AspNet.*"" />
-            <package prefix=""Microsoft.Extensions.Configuration.*"" />
-            <package prefix=""System.*"" />            
-            <package prefix=""xunit*"" />
-            <package prefix=""测试更新包"" />
+            <package pattern=""Moq*"" />
+            <package pattern=""Nerdbank.*"" />
+            <package pattern=""Microsoft.Asp.*"" />
+            <package pattern=""Microsoft.AspNet.*"" />
+            <package pattern=""Microsoft.Extensions.Configuration.*"" />
+            <package pattern=""System.*"" />
+            <package pattern=""xunit*"" />
+            <package pattern=""测试更新包"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Castle.Cor*"" /> 
-            <package prefix=""Moq*"" />
-            <package prefix=""Microsoft.Extensions.*"" />
-            <package prefix=""Microsoft.Extensions.Logging"" />
-            <package prefix=""Nerd*"" />             
-            <package prefix=""Test*"" />
-            <package prefix=""xunit.extensibility.core"" />
+            <package pattern=""Castle.Cor*"" />
+            <package pattern=""Moq*"" />
+            <package pattern=""Microsoft.Extensions.*"" />
+            <package pattern=""Microsoft.Extensions.Logging"" />
+            <package pattern=""Nerd*"" />
+            <package pattern=""Test*"" />
+            <package pattern=""xunit.extensibility.core"" />
         </packageSource>
         <packageSource key=""signed"">
-            <package prefix=""TestPackage.*"" />    
-        </packageSource>        
+            <package pattern=""TestPackage.*"" />
+        </packageSource>
     </packageSourceMapping>
 </configuration>");
 
@@ -2617,12 +2617,12 @@ EndProject";
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""PublicRepository"">
-            <package prefix=""Newton.*"" />
-            <package prefix=""Great.*"" />
-            <package prefix=""Another.*"" />   
+            <package pattern=""Newton.*"" />
+            <package pattern=""Great.*"" />
+            <package pattern=""Another.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Some.*"" /> <!--Newton.* prefix exist in other repository, not this one. -->
+            <package pattern=""Some.*"" /> <!--Newton.* prefix exist in other repository, not this one. -->
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -2702,12 +2702,12 @@ EndProject";
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
-            <package prefix=""Contoso.MVC.*"" /> 
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.ASP"" />
+            <package pattern=""Contoso.MVC.ASP"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -2786,11 +2786,11 @@ EndProject";
     <add key=""SharedRepositoryPath2"" value=""{sharedRepositoryPath2}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""SharedRepositoryPath1""> 
-            <package prefix=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+        <packageSource key=""SharedRepositoryPath1"">
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
         <packageSource key=""SharedRepositoryPath2"">
-            <package prefix=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -3013,11 +3013,11 @@ EndProject";
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -3099,11 +3099,11 @@ EndProject";
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""PublicRepository""> 
-            <package prefix=""Contoso.Opensource.*"" />
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <package prefix=""Contoso.MVC.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -3185,8 +3185,8 @@ EndProject";
     <add key=""encyclopædia"" value=""{sharedRepositoryPath2}"" />
     </packageSources>
     <packageSourceMapping>
-        <packageSource key=""encyclopædia""> 
-            <package prefix=""Contoso.MVC.*"" />
+        <packageSource key=""encyclopædia"">
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");

@@ -29,7 +29,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -56,7 +56,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -65,7 +65,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -91,7 +91,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -100,7 +100,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -133,7 +133,7 @@ namespace NuGet.Configuration.Test
     <packageSourceMapping>
         <clear />
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -142,7 +142,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -169,10 +169,10 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -189,7 +189,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -209,10 +209,10 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -241,7 +241,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -250,7 +250,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -279,7 +279,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -288,7 +288,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -304,8 +304,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
-            <package prefix=""added"" />
+            <package pattern=""stuff"" />
+            <package pattern=""added"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -325,7 +325,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -334,7 +334,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -349,10 +349,10 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
         <packageSource key=""localSource"">
-            <package prefix=""added"" />
+            <package pattern=""added"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
@@ -373,7 +373,7 @@ namespace NuGet.Configuration.Test
     <packageSourceMapping>
         <clear />
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -382,7 +382,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <packageSource key=""contoso"">
-            <package prefix=""stuff2"" />
+            <package pattern=""stuff2"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -398,10 +398,10 @@ namespace NuGet.Configuration.Test
     <packageSourceMapping>
         <clear />
         <packageSource key=""nuget.org"">
-            <package prefix=""stuff"" />
+            <package pattern=""stuff"" />
         </packageSource>
         <packageSource key=""localSource"">
-            <package prefix=""added"" />
+            <package pattern=""added"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>";
