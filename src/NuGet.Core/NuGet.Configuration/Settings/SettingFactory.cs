@@ -48,7 +48,7 @@ namespace NuGet.Configuration
                         }
                         break;
 
-                    case SettingElementType.PackageNamespaces:
+                    case SettingElementType.PackageSourceMapping:
                         if (elementType == SettingElementType.PackageSource)
                         {
                             return new PackageNamespacesSourceItem(element, origin);
@@ -56,7 +56,7 @@ namespace NuGet.Configuration
                         break;
 
                     case SettingElementType.PackageSource:
-                        if (elementType == SettingElementType.Namespace)
+                        if (elementType == SettingElementType.Package)
                         {
                             return new NamespaceItem(element, origin);
                         }

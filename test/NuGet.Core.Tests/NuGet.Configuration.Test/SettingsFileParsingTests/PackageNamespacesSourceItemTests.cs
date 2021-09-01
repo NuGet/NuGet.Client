@@ -122,11 +122,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource id=""nuget.org"">
-            <namespace id=""sadas""  />
+            <package pattern=""sadas""  />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -146,10 +146,10 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -169,11 +169,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"" />
+            <package pattern=""sadas"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -181,7 +181,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            var section = settingsFile.GetSection("packageNamespaces");
+            var section = settingsFile.GetSection("packageSourceMapping");
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -198,12 +198,12 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"" />
+            <package pattern=""sadas"" />
             <notANamespace id=""sadas"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -211,7 +211,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            var section = settingsFile.GetSection("packageNamespaces");
+            var section = settingsFile.GetSection("packageSourceMapping");
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -227,11 +227,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
+            <package pattern=""first"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -239,7 +239,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -255,12 +255,12 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""second"" />
+            <package pattern=""first"" />
+            <package pattern=""second"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
 
             result.Replace("\r\n", "\n")
@@ -274,12 +274,12 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""second"" />
+            <package pattern=""first"" />
+            <package pattern=""second"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -287,7 +287,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -303,11 +303,11 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
+            <package pattern=""first"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
 
             result.Replace("\r\n", "\n")
@@ -321,11 +321,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
+            <package pattern=""first"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -333,7 +333,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -356,12 +356,12 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""second"" />
+            <package pattern=""first"" />
+            <package pattern=""second"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -369,7 +369,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -386,12 +386,12 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""first"" />
-            <namespace id=""third"" />
+            <package pattern=""first"" />
+            <package pattern=""third"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
 
             result.Replace("\r\n", "\n")

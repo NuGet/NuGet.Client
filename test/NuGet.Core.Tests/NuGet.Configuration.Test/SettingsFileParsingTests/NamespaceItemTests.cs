@@ -92,7 +92,7 @@ namespace NuGet.Configuration.Test
         public void ElementNameGetter_ReturnsNamespace()
         {
             var original = new NamespaceItem("item");
-            original.ElementName.Should().Be("namespace");
+            original.ElementName.Should().Be("package");
         }
 
         [Fact]
@@ -101,11 +101,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace stuff=""sadas""  />
+            <package stuff=""sadas""  />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -116,7 +116,7 @@ namespace NuGet.Configuration.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<NuGetConfigurationException>();
-            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'id' in element 'namespace'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'pattern' in element 'package'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -125,13 +125,13 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"">
+            <package pattern=""sadas"">
                 <add key=""key"" value=""val"" />
-            </namespace>
+            </package>
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -142,7 +142,7 @@ namespace NuGet.Configuration.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<NuGetConfigurationException>();
-            ex.Message.Should().Be(string.Format("Error parsing NuGet.Config. Element 'namespace' cannot have descendant elements. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            ex.Message.Should().Be(string.Format("Error parsing NuGet.Config. Element 'package' cannot have descendant elements. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
@@ -151,11 +151,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""sadas"" />
+            <package pattern=""sadas"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -163,7 +163,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            var section = settingsFile.GetSection("packageNamespaces");
+            var section = settingsFile.GetSection("packageSourceMapping");
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -179,11 +179,11 @@ namespace NuGet.Configuration.Test
             // Arrange
             var config = @"
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""original"" />
+            <package pattern=""original"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
             using var mockBaseDirectory = TestDirectory.Create();
@@ -191,7 +191,7 @@ namespace NuGet.Configuration.Test
 
             // Act and Assert
             var settingsFile = new SettingsFile(mockBaseDirectory);
-            settingsFile.TryGetSection("packageNamespaces", out var section).Should().BeTrue();
+            settingsFile.TryGetSection("packageSourceMapping", out var section).Should().BeTrue();
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
@@ -205,11 +205,11 @@ namespace NuGet.Configuration.Test
             // Assert
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""nuget.org"">
-            <namespace id=""updated"" />
+            <package pattern=""updated"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
 
             result.Replace("\r\n", "\n")

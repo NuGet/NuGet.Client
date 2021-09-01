@@ -110,12 +110,12 @@ namespace NuGet.Tests.Apex
     <clear />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
@@ -159,12 +159,12 @@ namespace NuGet.Tests.Apex
     <clear />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
@@ -221,16 +221,16 @@ namespace NuGet.Tests.Apex
     <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
@@ -286,16 +286,16 @@ namespace NuGet.Tests.Apex
     <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>");
 
             solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
