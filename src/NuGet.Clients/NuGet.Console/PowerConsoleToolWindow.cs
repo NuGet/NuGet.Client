@@ -683,7 +683,7 @@ namespace NuGetConsole.Implementation
                 {
                     _vsOutputConsole = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                     {
-                        var consoleProvider = await ServiceLocator.GetInstanceAsync<IOutputConsoleProvider>();
+                        var consoleProvider = await ServiceLocator.GetComponentModelServiceAsync<IOutputConsoleProvider>();
                         if (null != consoleProvider)
                         {
                             return await consoleProvider.CreatePackageManagerConsoleAsync();
@@ -703,7 +703,7 @@ namespace NuGetConsole.Implementation
             {
                 if (_consoleStatus == null)
                 {
-                    _consoleStatus = ServiceLocator.GetInstance<IConsoleStatus>();
+                    _consoleStatus = ServiceLocator.GetComponentModelService<IConsoleStatus>();
                     Debug.Assert(_consoleStatus != null);
                 }
 
