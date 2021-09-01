@@ -48,6 +48,15 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
+        /// Gets the VsSettings singleton object.
+        /// </summary>
+        /// <returns>The VsSettings object in the system.</returns>
+        public static Configuration.ISettings GetVsSettings()
+        {
+            return ServiceLocator.GetInstance<Configuration.ISettings>();
+        }
+
+        /// <summary>
         /// Adds a new package source.
         /// </summary>
         /// <param name="name">Name of the new source.</param>
