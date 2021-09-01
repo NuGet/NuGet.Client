@@ -23,19 +23,24 @@ namespace NuGet.Protocol
         private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
         private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
+
 
         /// <summary>
         /// Maximum amount of time to store index.json
         /// </summary>
         public TimeSpan MaxCacheDuration { get; protected set; }
 
-        public ServiceIndexResourceV3Provider()
+        public ServiceIndexResourceV3Provider() : this(EnvironmentVariableWrapper.Instance) { }
+
+        internal ServiceIndexResourceV3Provider(IEnvironmentVariableReader environmentVariableReader)
             : base(typeof(ServiceIndexResourceV3),
                   nameof(ServiceIndexResourceV3Provider),
                   NuGetResourceProviderPositions.Last)
         {
             _cache = new ConcurrentDictionary<string, ServiceIndexCacheInfo>(StringComparer.OrdinalIgnoreCase);
             MaxCacheDuration = _defaultCacheDuration;
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -121,7 +126,7 @@ namespace NuGet.Protocol
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            int maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? HttpRetryHandler.ExperimentalMaxNetworkTryCount : 3;
+            int maxRetries = _enhancedHttpRetryHelper.EnhancedHttpRetryEnabled ? _enhancedHttpRetryHelper.ExperimentalMaxNetworkTryCount : 3;
 
             for (var retry = 1; retry <= maxRetries; retry++)
             {
@@ -164,7 +169,7 @@ namespace NuGet.Protocol
                             + ExceptionUtilities.DisplayMessage(ex);
                         log.LogMinimal(message);
 
-                        if (HttpRetryHandler.EnhancedHttpRetryEnabled &&
+                        if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled &&
                             ex.InnerException != null &&
                             ex.InnerException is IOException &&
                             ex.InnerException.InnerException != null &&
@@ -173,7 +178,8 @@ namespace NuGet.Protocol
                             // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
                             // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
                             // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
-                            await Task.Delay(TimeSpan.FromMilliseconds(HttpRetryHandler.ExperimentalRetryDelayMilliseconds));
+                            log.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
+                            await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.ExperimentalRetryDelayMilliseconds));
                         }
                     }
                     catch (Exception ex) when (retry == maxRetries)

@@ -38,6 +38,7 @@ namespace NuGet.Protocol
             new ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly IReadOnlyList<Uri> _baseUris;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
 
         private const string ResourceTypeName = nameof(FindPackageByIdResource);
         private const string ThisTypeName = nameof(HttpFileSystemBasedFindPackageByIdResource);
@@ -52,7 +53,11 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" /> is <c>null</c>.</exception>
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
-            HttpSource httpSource)
+            HttpSource httpSource) : this(baseUris, httpSource, EnvironmentVariableWrapper.Instance) { }
+
+        internal HttpFileSystemBasedFindPackageByIdResource(
+            IReadOnlyList<Uri> baseUris,
+            HttpSource httpSource, IEnvironmentVariableReader environmentVariableReader)
         {
             if (baseUris == null)
             {
@@ -76,8 +81,8 @@ namespace NuGet.Protocol
 
             _httpSource = httpSource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
-
-            _maxRetries = HttpRetryHandler.EnhancedHttpRetryEnabled ? HttpRetryHandler.ExperimentalMaxNetworkTryCount : DefaultMaxRetries;
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
+            _maxRetries = _enhancedHttpRetryHelper.EnhancedHttpRetryEnabled ? _enhancedHttpRetryHelper.ExperimentalMaxNetworkTryCount : DefaultMaxRetries;
         }
 
         /// <summary>
@@ -507,7 +512,7 @@ namespace NuGet.Protocol
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogMinimal(message);
 
-                    if (HttpRetryHandler.EnhancedHttpRetryEnabled &&
+                    if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled &&
                         ex.InnerException != null &&
                         ex.InnerException is IOException &&
                         ex.InnerException.InnerException != null &&
@@ -516,7 +521,8 @@ namespace NuGet.Protocol
                         // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
                         // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
                         // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
-                        await Task.Delay(TimeSpan.FromMilliseconds(HttpRetryHandler.ExperimentalRetryDelayMilliseconds));
+                        logger.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
+                        await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.ExperimentalRetryDelayMilliseconds));
                     }
                 }
                 catch (Exception ex) when (retry == _maxRetries)
