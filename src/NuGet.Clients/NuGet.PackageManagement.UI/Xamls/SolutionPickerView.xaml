@@ -2,24 +2,46 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              x:Name="_solPickerView">
-    <Grid>
-    <ListBox ItemsSource="{Binding SolutionList}">
+  <Grid>
+    <TextBlock Text="{x:Static nuget:Resources.Text_OpenInNuGetPackageManager}"
+               FontSize="24"
+               Margin="75,10,0,0"
+               FontWeight="Bold"/>
+    <TextBlock Text="{x:Static nuget:Resources.Text_RecentProjectsSolutions}"
+               FontSize="16"
+               Margin="75,65,0,0"
+               FontWeight="Bold"/>
+    <ListBox ItemsSource="{Binding SolutionList}"
+             Margin="20, 90"
+             BorderThickness="0">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Button
             Command="{Binding OpenSolutionCommand}"
             CommandParameter="{Binding FilePath}"
-            IsCancel="True">
-            <TextBlock Text="{Binding FilePath}"/>
+            IsCancel="True"
+            Margin="50,15,10,5"
+            Background="Transparent"
+            BorderThickness="0"
+            HorizontalContentAlignment="Stretch"
+            Padding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=Padding}">
+            <TextBlock TextWrapping="Wrap">
+             <Run
+               Text="{Binding SolutionName, Mode=OneWay}"
+               FontSize="16"/>
+             <LineBreak/>
+             <LineBreak/>
+             <Run Text="{Binding FilePath, Mode=OneWay}"/>
+            </TextBlock>
           </Button>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
-            
-    </Grid>
+  </Grid>
 </UserControl>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,10 +16,14 @@ namespace NuGet.PackageManagement.UI
         public SolutionPickerItemViewModel(ICommand command, string filePath)
         {
             OpenSolutionCommand = command;
-            FilePath = filePath;
+            FilePath = Path.GetDirectoryName(filePath);
+            SolutionName = Path.GetFileName(filePath);
         }
 
         public ICommand OpenSolutionCommand { get; }
+
         public string FilePath { get; }
+
+        public string SolutionName { get; }
     }
 }

@@ -2090,6 +2090,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open in NuGet Package Manager.
+        /// </summary>
+        public static string Text_OpenInNuGetPackageManager {
+            get {
+                return ResourceManager.GetString("Text_OpenInNuGetPackageManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package manager format will apply to the following projects in this Solution.
         /// </summary>
         public static string Text_PackageFormatApply {
@@ -2158,6 +2167,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_Ready {
             get {
                 return ResourceManager.GetString("Text_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recent Projects and Solutions.
+        /// </summary>
+        public static string Text_RecentProjectsSolutions {
+            get {
+                return ResourceManager.GetString("Text_RecentProjectsSolutions", resourceCulture);
             }
         }
         
