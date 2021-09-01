@@ -130,7 +130,7 @@ namespace NuGet.Credentials
 
                     if (response.Status == CredentialStatus.Success)
                     {
-                        _retryCache[retryKey] = true;
+                        _retryCache[retryKey] = false;
                         creds = response.Credentials;
                         break;
                     }
