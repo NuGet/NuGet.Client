@@ -484,7 +484,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The certificate finger you&apos;re trying to add is already in certificate fingerprint list..
+        ///   Looks up a localized string similar to The certificate finger you&apos;re trying to add is already in the certificate fingerprint list..
         /// </summary>
         internal static string Error_TrustFingerPrintAlreadyExist {
             get {
@@ -2044,7 +2044,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name of the trusted signer to add. If NAME already exists in the configuration, the signature is appended..
+        ///   Looks up a localized string similar to The name of the trusted signer to add. If name already exists in the configuration, the signature is appended..
         /// </summary>
         internal static string TrustedSignerNameToAdd {
             get {
@@ -2071,7 +2071,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The given PACKAGE should be a local path to the signed .nupkg file..
+        ///   Looks up a localized string similar to The given package should be a local path to the signed .nupkg file..
         /// </summary>
         internal static string TrustLocalSignedNupkgPath {
             get {

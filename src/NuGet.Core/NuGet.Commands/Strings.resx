@@ -1132,6 +1132,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>0 - library/package name, 1 - VS project name, 2 - target framework</comment>
   </data>
   <data name="Error_TrustFingerPrintAlreadyExist" xml:space="preserve">
-    <value>The certificate finger you're trying to add is already in certificate fingerprint list.</value>
+    <value>The certificate finger you're trying to add is already in the certificate fingerprint list.</value>
   </data>
 </root>

@@ -877,13 +877,13 @@ The search is a case-insensitive string comparison using the supplied value, whi
     <value>The name of the existing trusted signer to sync.</value>
   </data>
   <data name="TrustedSignerNameToAdd" xml:space="preserve">
-    <value>The name of the trusted signer to add. If NAME already exists in the configuration, the signature is appended.</value>
+    <value>The name of the trusted signer to add. If name already exists in the configuration, the signature is appended.</value>
   </data>
   <data name="TrustedSignerNameToRemove" xml:space="preserve">
     <value>The name of the existing trusted signer to remove.</value>
   </data>
   <data name="TrustLocalSignedNupkgPath" xml:space="preserve">
-    <value>The given PACKAGE should be a local path to the signed .nupkg file.</value>
+    <value>The given package should be a local path to the signed .nupkg file.</value>
   </data>
   <data name="TrustSourceCommandDescription" xml:space="preserve">
     <value>Adds a trusted signer based on a given package source.</value>
@@ -903,6 +903,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
     <comment>0 - trusted signer name</comment>
   </data>
   <data name="Error_TrustFingerPrintAlreadyExist" xml:space="preserve">
-    <value>The certificate finger you're trying to add is already in certificate fingerprint list.</value>
+    <value>The certificate finger you're trying to add is already in the certificate fingerprint list.</value>
   </data>
 </root>
