@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
-				noOpProjectsCount: 0,
+                noOpProjectsCount: 0,
                 upToDateProjectsCount: 0,
                 unknownProjectsCount: 0,
                 projectJsonProjectsCount: 0,
@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(22, actual.Count);
+            Assert.Equal(21, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 

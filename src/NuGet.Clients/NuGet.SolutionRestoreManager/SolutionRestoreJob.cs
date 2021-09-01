@@ -334,6 +334,7 @@ namespace NuGet.SolutionRestoreManager
 
             var sources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
             var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources, protocolDiagnosticTotals);
+
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }
 
