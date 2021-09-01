@@ -158,7 +158,7 @@ namespace NuGet.PackageManagement.UI
         {
             string content = null;
 
-            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
+            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
             using (INuGetPackageFileService packageFileService = await serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService))

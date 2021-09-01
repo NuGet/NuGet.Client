@@ -114,8 +114,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             _dte = new Lazy<DTE>(() => ServiceLocator.GetInstance<DTE>());
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
-                () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
-            _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
+                () => ServiceLocator.GetComponentModelService<ISourceControlManagerProvider>());
+            _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetComponentModelService<ICommonOperations>());
             _name = name;
             IsCommandEnabled = true;
 

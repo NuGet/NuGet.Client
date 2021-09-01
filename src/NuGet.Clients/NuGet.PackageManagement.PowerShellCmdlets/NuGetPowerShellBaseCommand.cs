@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected NuGetPowerShellBaseCommand()
         {
             _sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
-            ConfigSettings = ServiceLocator.GetComponentModelService<Configuration.ISettings>();
+            ConfigSettings = ServiceLocator.GetComponentModelService<ISettings>();
             VsSolutionManager = ServiceLocator.GetComponentModelService<IVsSolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
             SourceControlManagerProvider = ServiceLocator.GetComponentModelService<ISourceControlManagerProvider>();

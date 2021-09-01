@@ -254,7 +254,7 @@ namespace NuGet.VisualStudio
 
         private static async Task<IVsUIHierarchyWindow> GetSolutionExplorerHierarchyWindowAsync()
         {
-            var serviceProvider = await ServiceLocator.GetInstanceAsync<IServiceProvider>();
+            var serviceProvider = await ServiceLocator.GetServiceProviderAsync();
             return VsShellUtilities.GetUIHierarchyWindow(
                 serviceProvider,
                 new Guid(VsWindowKindSolutionExplorer));
