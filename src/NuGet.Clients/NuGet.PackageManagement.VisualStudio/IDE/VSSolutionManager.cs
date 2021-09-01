@@ -606,7 +606,10 @@ namespace NuGet.PackageManagement.VisualStudio
                             RemoveVsProjectAdapterFromCache(item.FullName);
 
                             var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(item);
-                            await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                            if (!await vsProjectAdapter.IsSupportedAsync())
+                            {
+                                await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                            }
                         }
                     }
                 }
@@ -734,11 +737,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task AddVsProjectAdapterToCacheAsync(IVsProjectAdapter vsProjectAdapter)
         {
-            if (!await vsProjectAdapter.IsSupportedAsync())
-            {
-                return;
-            }
-
             _projectSystemCache.TryGetProjectNameByShortName(vsProjectAdapter.ProjectName, out var oldProjectName);
 
             // Create the NuGet project first. If this throws we bail out and do not change the cache.
