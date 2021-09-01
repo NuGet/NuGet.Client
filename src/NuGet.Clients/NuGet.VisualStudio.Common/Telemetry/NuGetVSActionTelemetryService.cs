@@ -24,6 +24,11 @@ namespace NuGet.VisualStudio
         {
         }
 
+        public static void Initialize()
+        {
+            TelemetryActivity.NuGetTelemetryService ??= new NuGetVSTelemetryService();
+        }
+
         public virtual void EmitTelemetryEvent(TelemetryEvent telemetryData)
         {
             if (telemetryData == null)
