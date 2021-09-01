@@ -116,7 +116,7 @@ namespace NuGet.Configuration.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<NuGetConfigurationException>();
-            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'prefix' in element 'package'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            ex.Message.Should().Be(string.Format("Unable to parse config file because: Missing required attribute 'pattern' in element 'package'. Path: '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
