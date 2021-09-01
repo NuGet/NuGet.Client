@@ -2128,7 +2128,7 @@ namespace NuGet.Commands.Test
             projectInformationEvent["EndTime"].Should().NotBeNull();
             projectInformationEvent["OperationId"].Should().NotBeNull();
             projectInformationEvent["Duration"].Should().NotBeNull();
-            projectInformationEvent["IsPackageSourceMappingEnabled"].Should().Be(false);
+            projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
         }
 
         [Fact]
@@ -2200,7 +2200,7 @@ namespace NuGet.Commands.Test
             projectInformationEvent["Duration"].Should().NotBeNull();
             projectInformationEvent["NoOpRestoreOutputEvaluationDuration"].Should().NotBeNull();
             projectInformationEvent["NoOpReplayLogsDuration"].Should().NotBeNull();
-            projectInformationEvent["IsPackageSourceMappingEnabled"].Should().Be(false);
+            projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
         }
 
         [Fact]
@@ -2263,7 +2263,7 @@ namespace NuGet.Commands.Test
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
             projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
-            projectInformationEvent["IsPackageSourceMappingEnabled"].Should().Be(false);
+            projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
         }
 
         /// A 1.0.0 -> C 1.0.0 -> D 1.1.0
