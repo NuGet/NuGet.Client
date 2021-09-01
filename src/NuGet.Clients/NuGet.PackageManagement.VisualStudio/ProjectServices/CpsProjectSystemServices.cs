@@ -11,10 +11,10 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// Represent net core project systems in visual studio.
     /// </summary>
-    internal class NetCoreProjectSystemServices :
+    internal class CpsProjectSystemServices :
         INuGetProjectServices
     {
-        public NetCoreProjectSystemServices(
+        public CpsProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
             Lazy<IScriptExecutor> scriptExecutor)
         {

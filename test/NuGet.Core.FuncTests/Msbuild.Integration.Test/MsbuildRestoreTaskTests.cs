@@ -1056,14 +1056,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
+    <packageSourceMapping>
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
                 using (var writer = new StreamWriter(configPath))
                 {
@@ -1156,14 +1156,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
 <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
 </packageSources>
-<packageNamespaces>
-    <packageSource key=""PublicRepository""> 
-        <namespace id=""Contoso.Opensource.*"" />
+<packageSourceMapping>
+    <packageSource key=""PublicRepository"">
+        <package pattern=""Contoso.Opensource.*"" />
     </packageSource>
     <packageSource key=""SharedRepository"">
-        <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
+        <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
     </packageSource>
-</packageNamespaces>
+</packageSourceMapping>
 </configuration>";
                 using (var writer = new StreamWriter(configPath))
                 {
@@ -1266,14 +1266,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.O*"" />
+    <packageSourceMapping>
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.O*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.M*"" /> 
+            <package pattern=""Contoso.M*"" />
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
                 using (var writer = new StreamWriter(configPath))
                 {
@@ -1366,14 +1366,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
 <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
 </packageSources>
-<packageNamespaces>
-    <packageSource key=""PublicRepository""> 
-        <namespace id=""Contoso.O*"" />
+<packageSourceMapping>
+    <packageSource key=""PublicRepository"">
+        <package pattern=""Contoso.O*"" />
     </packageSource>
     <packageSource key=""SharedRepository"">
-        <namespace id=""Contoso.M*"" />  <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
+        <package pattern=""Contoso.M*"" />  <!--Contoso.MVC.ASP package doesn't exist in this repostiry, so it'll fail to restore -->
     </packageSource>
-</packageNamespaces>
+</packageSourceMapping>
 </configuration>";
                 using (var writer = new StreamWriter(configPath))
                 {
@@ -1476,15 +1476,15 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
-            <namespace id=""Contoso.MVC.*"" /> 
+    <packageSourceMapping>
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
+            <package pattern=""Contoso.MVC.*"" />
         </packageSource>
         <packageSource key=""SharedRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />   <!-- Longer prefix prevails over Contoso.MVC.* -->
+            <package pattern=""Contoso.MVC.ASP"" />   <!-- Longer prefix prevails over Contoso.MVC.* -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
 
                 using (var writer = new StreamWriter(configPath))
@@ -1576,11 +1576,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <clear />
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""PublicRepository"">
-            <namespace id=""Contoso.MVC.ASP"" />   <!-- My.MVC.ASP doesn't match any package name spaces -->
+            <package pattern=""Contoso.MVC.ASP"" />   <!-- My.MVC.ASP doesn't match any package name spaces -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
 
                 using (var writer = new StreamWriter(configPath))
@@ -1669,14 +1669,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""SharedRepository1"" value=""{sharedRepositoryPath1}"" />
     <add key=""SharedRepository2"" value=""{sharedRepositoryPath2}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""SharedRepository1"">
-            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
         <packageSource key=""SharedRepository2"">
-            <namespace id=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
                 using (var writer = new StreamWriter(configPath))
                 {
@@ -1818,14 +1818,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
+    <packageSourceMapping>
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             using (var writer = new StreamWriter(configAPath))
             {
@@ -1904,14 +1904,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     <add key=""PublicRepository"" value=""{opensourceRepositoryPath}"" />
     <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
-        <packageSource key=""PublicRepository""> 
-            <namespace id=""Contoso.Opensource.*"" />
+    <packageSourceMapping>
+        <packageSource key=""PublicRepository"">
+            <package pattern=""Contoso.Opensource.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Contoso.MVC.ASP package exist in both repository but it'll restore from this one -->
         </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>";
             using (var writer = new StreamWriter(configAPath))
             {

@@ -187,7 +187,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 var result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
@@ -259,7 +259,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().NotContain($"error NU3004");
@@ -334,7 +334,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -415,7 +415,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -497,7 +497,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -1141,7 +1141,7 @@ EndGlobal";
                 // The test depends on the presence of these packages and their versions.
                 // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
                 var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
-                var directoryPackagesPropsContent = @"<Project>                    
+                var directoryPackagesPropsContent = @"<Project>
                         <PropertyGroup>
                             <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
                         </PropertyGroup>
@@ -1675,16 +1675,16 @@ EndGlobal";
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMapping>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
-                <namespace id=""{packageZ}*"" />
+                <package pattern=""{packageY}*"" />
+                <package pattern=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
-                <namespace id=""{packageK}*"" /> 
+                <package pattern=""{packageX}*"" />
+                <package pattern=""{packageK}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1754,14 +1754,14 @@ EndGlobal";
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMapping>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
+                <package pattern=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1832,16 +1832,16 @@ EndGlobal";
         <add key=""source1"" value=""{pathContext.PackageSource}"" />
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMapping>
             <packageSource key=""source1"">
-                <namespace id=""{packageY}*"" />
-                <namespace id=""{packageZ}*"" />
+                <package pattern=""{packageY}*"" />
+                <package pattern=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
-                <namespace id=""{packageK}*"" /> 
+                <package pattern=""{packageX}*"" />
+                <package pattern=""{packageK}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1908,14 +1908,14 @@ EndGlobal";
         <add key=""source1"" value=""{pathContext.PackageSource}"" />
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMapping>
             <packageSource key=""source1"">
-                <namespace id=""{packageY}*"" />
+                <package pattern=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);

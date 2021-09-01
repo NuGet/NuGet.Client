@@ -8,9 +8,9 @@ NuGet.Configuration.PackageNamespacesSourceItem
 NuGet.Configuration.PackageNamespacesSourceItem.Namespaces.get -> System.Collections.Generic.IList<NuGet.Configuration.NamespaceItem>
 NuGet.Configuration.PackageNamespacesSourceItem.PackageNamespacesSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.NamespaceItem> namespaceItems) -> void
 NuGet.Configuration.PackageNamespacesSourceItem.SetKey(string value) -> void
-NuGet.Configuration.SettingElementType.Namespace = 19 -> NuGet.Configuration.SettingElementType
-NuGet.Configuration.SettingElementType.PackageNamespaces = 17 -> NuGet.Configuration.SettingElementType
+NuGet.Configuration.SettingElementType.Package = 19 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSource = 18 -> NuGet.Configuration.SettingElementType
+NuGet.Configuration.SettingElementType.PackageSourceMapping = 17 -> NuGet.Configuration.SettingElementType
 override NuGet.Configuration.NamespaceItem.Clone() -> NuGet.Configuration.SettingBase
 override NuGet.Configuration.NamespaceItem.ElementName.get -> string
 override NuGet.Configuration.NamespaceItem.Equals(object other) -> bool
