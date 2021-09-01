@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                packageNamespaceEnabled: true);
+                isPackageSourceMappingEnabled: true);
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: 1.30,
-                packageNamespaceEnabled: false);
+                isPackageSourceMappingEnabled: false);
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
                 duration: .40,
-                packageNamespaceEnabled: false);
+                isPackageSourceMappingEnabled: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act

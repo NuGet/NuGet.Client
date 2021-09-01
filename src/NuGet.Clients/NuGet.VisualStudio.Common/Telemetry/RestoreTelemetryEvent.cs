@@ -49,7 +49,7 @@ namespace NuGet.VisualStudio
             double duration,
             IDictionary<string, object> additionalTrackingData,
             IntervalTracker intervalTimingTracker,
-            bool areNamespacesEnabled) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
+            bool isPackageSourceMappingEnabled) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
@@ -62,7 +62,7 @@ namespace NuGet.VisualStudio
             base[nameof(DotnetCliToolProjectsCount)] = dotnetCliToolProjectsCount;
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
-            base[nameof(PackageNamespacesEnabled)] = areNamespacesEnabled;
+            base[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
 
             foreach (KeyValuePair<string, object> data in additionalTrackingData)
             {
@@ -101,6 +101,6 @@ namespace NuGet.VisualStudio
 
         public int PackagesConfigProjectsCount => (int)base[nameof(PackagesConfigProjectsCount)];
 
-        public bool PackageNamespacesEnabled => (bool)base[nameof(PackageNamespacesEnabled)];
+        internal const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
     }
 }

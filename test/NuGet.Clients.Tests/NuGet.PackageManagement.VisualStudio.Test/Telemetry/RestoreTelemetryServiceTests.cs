@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
                 new IntervalTracker("Activity"),
-                areNamespacesEnabled: false);
+                isPackageSourceMappingEnabled: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -105,7 +105,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var operationId = Guid.NewGuid().ToString();
             PackageNamespacesConfiguration packageNamespacesConfiguration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
-            bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,
@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
                 tracker,
-                areNamespacesEnabled: areNamespacesEnabled);
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act

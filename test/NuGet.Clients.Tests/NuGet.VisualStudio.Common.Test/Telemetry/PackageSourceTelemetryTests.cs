@@ -329,11 +329,11 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             if (string.IsNullOrEmpty(packageNamespaces))
             {
-                Assert.False((bool)result["PackageNamespaces.AreNamespacesEnabled"]);
+                Assert.False((bool)result["PackageSourceMapping.IsMappingEnabled"]);
             }
             else
             {
-                Assert.True((bool)result["PackageNamespaces.AreNamespacesEnabled"]);
+                Assert.True((bool)result["PackageSourceMapping.IsMappingEnabled"]);
             }
 
             var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Http.StatusCodes, result.ComplexData);

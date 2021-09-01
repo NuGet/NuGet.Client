@@ -51,7 +51,7 @@
     <Compile Include="Utility\NuGetErrorId.cs" />
     <Compile Include="NuGetPowerShellBaseCommand.cs" />
     <Compile Include="Model\PowerShellPackage.cs" />
-    <Compile Include="Utility\PackageNamespacesUtility.cs" />
+    <Compile Include="Utility\PackageSourceMappingUtility.cs" />
     <Compile Include="Utility\PowerShellCmdletsUtility.cs" />
     <Compile Include="Utility\ProgressActivityIds.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

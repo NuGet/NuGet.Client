@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             stopWatch.Stop();
 
-            var areNamespacesEnabled = PackageNamespacesUtility.AreNamespacesEnabled(ConfigSettings);
+            var isPackageSourceMappingEnabled = PackageSourceMappingUtility.IsMappingEnabled(ConfigSettings);
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 _status,
                 _packageCount,
                 stopWatch.Elapsed.TotalSeconds,
-                packageNamespaceEnabled: areNamespacesEnabled);
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

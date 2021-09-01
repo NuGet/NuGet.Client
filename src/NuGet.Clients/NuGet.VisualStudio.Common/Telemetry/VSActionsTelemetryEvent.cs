@@ -19,14 +19,14 @@ namespace NuGet.VisualStudio
            int packageCount,
            DateTimeOffset endTime,
            double duration,
-           bool packageNamespaceEnabled) :
+           bool isPackageSourceMappingEnabled) :
             base(operationId, projectIds, operationType, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(Source)] = source;
-            base[nameof(PackageNamespaceEnabled)] = packageNamespaceEnabled;
+            base[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
         }
 
         public OperationSource Source => (OperationSource)base[nameof(Source)];
-        public bool PackageNamespaceEnabled => (bool)base[nameof(PackageNamespaceEnabled)];
+        internal const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
     }
 }

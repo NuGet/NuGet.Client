@@ -76,8 +76,8 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
 
-        // Packagenamespace names
-        private const string PackageNamespaceEnabled = nameof(PackageNamespaceEnabled);
+        // PackageSourceMapping names
+        private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -117,8 +117,8 @@ namespace NuGet.Commands
             {
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
-                bool areNamespacesEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
-                telemetry.TelemetryEvent[PackageNamespaceEnabled] = areNamespacesEnabled;
+                bool isPackageSourceMappingEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
+                telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
 
                 _operationId = telemetry.OperationId;
 

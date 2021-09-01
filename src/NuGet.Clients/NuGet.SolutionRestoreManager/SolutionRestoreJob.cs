@@ -305,7 +305,7 @@ namespace NuGet.SolutionRestoreManager
                 .ToDictionary(x => x.Key, y => y.Count());
 
             PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
-            bool areNamespacesEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
@@ -328,7 +328,7 @@ namespace NuGet.SolutionRestoreManager
                 duration,
                 _trackingData,
                 intervalTimingTracker,
-                areNamespacesEnabled);
+                isPackageSourceMappingEnabled);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
