@@ -49,6 +49,7 @@
     <Compile Include="Telemetry\IntervalTrackerTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\RestoreTelemetryServiceTests.cs" />
+    <Compile Include="Telemetry\SearchSelecitonTelemetryEventTests.cs" />
     <Compile Include="Telemetry\TestTelemetryUtility.cs" />
     <Compile Include="VisualStudioAccountProviderTests.cs" />
     <Compile Include="VisualStudioCredentialProviderTests.cs" />

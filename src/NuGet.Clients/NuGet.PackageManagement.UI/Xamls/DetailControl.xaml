@@ -1,6 +1,7 @@
 <UserControl
   x:Class="NuGet.PackageManagement.UI.DetailControl"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -120,7 +121,8 @@
               Style="{StaticResource HyperlinkStyle}"
               ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
               AutomationProperties.LabeledBy="{Binding ElementName=_packageDetailsUrlIcon}"
-              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+              CommandParameter="{x:Static nugettel:ExternalHyperlinkType.ProjectUri}">
               <Run Text="{Binding Path=PackageMetadata.PackageDetailsText}" />
             </Hyperlink>
           </TextBlock>

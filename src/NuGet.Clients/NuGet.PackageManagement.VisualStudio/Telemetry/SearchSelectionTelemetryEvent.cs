@@ -15,11 +15,15 @@ namespace NuGet.PackageManagement.Telemetry
             int recommendedCount,
             int itemIndex,
             string packageId,
-            NuGetVersion packageVersion) : base("SearchSelection")
+            NuGetVersion packageVersion,
+            bool isPackageVulnerable,
+            bool isPackageDeprecated) : base("SearchSelection")
         {
             base["ParentId"] = parentId.ToString();
             base["RecommendedCount"] = recommendedCount;
             base["ItemIndex"] = itemIndex;
+            base["IsPackageVulnerable"] = isPackageVulnerable;
+            base["IsPackageDeprecated"] = isPackageDeprecated;
             AddPiiData("PackageId", packageId.ToLowerInvariant());
             AddPiiData("PackageVersion", packageVersion.ToNormalizedString().ToLowerInvariant());
         }

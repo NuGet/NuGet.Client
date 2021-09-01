@@ -4,6 +4,8 @@
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -31,11 +33,18 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
             var hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink != null
-                && hyperlink.NavigateUri != null)
+            if (hyperlink != null && hyperlink.NavigateUri != null)
             {
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
+
+                if (e.Parameter != null)
+                {
+                    var hyperlinkType = (ExternalHyperlinkType)e.Parameter;
+
+                    var evt = new ExternalHyperlinkEvent(hyperlinkType);
+                    TelemetryActivity.EmitTelemetryEvent(evt);
+                }
             }
         }
     }

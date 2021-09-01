@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1053,7 +1052,9 @@ namespace NuGet.PackageManagement.UI
                     recommendedCount,
                     selectedIndex,
                     selectedPackage.Id,
-                    selectedPackage.Version));
+                    selectedPackage.Version,
+                    selectedPackage.IsPackageVulnerable,
+                    selectedPackage.IsPackageDeprecated));
             }
         }
 
@@ -1170,6 +1171,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             public string SearchString { get; set; }
+
+            public bool IsSearchFromDeprecationLink { get; set; }
         }
 
         public Guid Category
@@ -1245,7 +1248,7 @@ namespace NuGet.PackageManagement.UI
             .PostOnFailure(nameof(PackageManagerControl), nameof(FocusOnSearchBox_Executed));
         }
 
-        public void Search(string searchText)
+        public void Search(string searchText, bool isSearchFromDeprecationLink = false)
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {
@@ -1257,7 +1260,7 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _windowSearchHost.Activate();
-                _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
+                _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText, IsSearchFromDeprecationLink = isSearchFromDeprecationLink });
             });
         }
 
@@ -1503,7 +1506,7 @@ namespace NuGet.PackageManagement.UI
                     if (_windowSearchHost.SearchTask == null)
                     {
                         _topPanel.SelectFilter(ItemFilter.All);
-                        Search("packageid:" + alternatePackageId);
+                        Search("packageid:" + alternatePackageId, isSearchFromDeprecationLink: true);
                     }
                 }
             }
