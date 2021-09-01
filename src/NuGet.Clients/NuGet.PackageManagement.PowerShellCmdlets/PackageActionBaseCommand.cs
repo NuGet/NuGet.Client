@@ -29,8 +29,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public PackageActionBaseCommand()
         {
-            _deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
-            _lockService = ServiceLocator.GetComponentModelService<INuGetLockService>();
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
+            _lockService = componentModel.GetService<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
