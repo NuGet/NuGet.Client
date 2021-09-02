@@ -1043,6 +1043,8 @@ namespace NuGet.PackageManagement.UI
             var operationId = _packageList.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
             var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+            var hasDeprecationAlternative = selectedPackage.DeprecationMetadata?.AlternatePackage != null;
+
             if (_topPanel.Filter == ItemFilter.All
                 && operationId.HasValue
                 && selectedIndex >= 0)
@@ -1054,7 +1056,8 @@ namespace NuGet.PackageManagement.UI
                     selectedPackage.Id,
                     selectedPackage.Version,
                     selectedPackage.IsPackageVulnerable,
-                    selectedPackage.IsPackageDeprecated));
+                    selectedPackage.IsPackageDeprecated,
+                    hasDeprecationAlternative));
             }
         }
 

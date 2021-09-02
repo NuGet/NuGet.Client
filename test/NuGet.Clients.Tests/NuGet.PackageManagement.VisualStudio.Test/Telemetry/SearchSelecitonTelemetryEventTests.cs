@@ -13,13 +13,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class SearchSelecitonTelemetryEventTests
     {
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, true, true)]
+        [InlineData(false, true, false)]
+        [InlineData(true, false, false)]
+        [InlineData(true, true, false)]
+        [InlineData(false, false, false)]
         [Theory]
-        public void SearchSelecitonTelemetryEvent_VulnerableAndDeprecationInfo_Suceeds(bool isPackageVulnerable, bool isPackageDeprecated)
+        public void SearchSelecitonTelemetryEvent_VulnerableAndDeprecationInfo_Suceeds(bool isPackageVulnerable, bool isPackageDeprecated, bool hasDeprecationAlternative)
         {
+            // Assert params
+            Assert.False(isPackageDeprecated == false && hasDeprecationAlternative == true);
+
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
             TelemetryEvent lastTelemetryEvent = null;
@@ -36,7 +41,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packageId: "testpackage",
                 packageVersion: new NuGetVersion(1, 0, 0),
                 isPackageVulnerable: isPackageVulnerable,
-                isPackageDeprecated: isPackageDeprecated);
+                isPackageDeprecated: isPackageDeprecated,
+                hasDeprecationAlternativePackage: hasDeprecationAlternative);
 
             // Act
             service.EmitTelemetryEvent(evt);
@@ -45,6 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(isPackageDeprecated, lastTelemetryEvent["IsPackageDeprecated"]);
             Assert.Equal(isPackageVulnerable, lastTelemetryEvent["IsPackageVulnerable"]);
+            Assert.Equal(hasDeprecationAlternative, lastTelemetryEvent["HasDeprecationAlternativePackage"]);
         }
     }
 }

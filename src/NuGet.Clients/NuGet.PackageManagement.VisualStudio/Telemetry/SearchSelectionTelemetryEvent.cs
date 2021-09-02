@@ -17,13 +17,15 @@ namespace NuGet.PackageManagement.Telemetry
             string packageId,
             NuGetVersion packageVersion,
             bool isPackageVulnerable,
-            bool isPackageDeprecated) : base("SearchSelection")
+            bool isPackageDeprecated,
+            bool hasDeprecationAlternativePackage) : base("SearchSelection")
         {
             base["ParentId"] = parentId.ToString();
             base["RecommendedCount"] = recommendedCount;
             base["ItemIndex"] = itemIndex;
             base["IsPackageVulnerable"] = isPackageVulnerable;
             base["IsPackageDeprecated"] = isPackageDeprecated;
+            base["HasDeprecationAlternativePackage"] = hasDeprecationAlternativePackage;
             AddPiiData("PackageId", packageId.ToLowerInvariant());
             AddPiiData("PackageVersion", packageVersion.ToNormalizedString().ToLowerInvariant());
         }
