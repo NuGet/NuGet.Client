@@ -33,18 +33,11 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
             var hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink != null && hyperlink.NavigateUri != null)
+            if (hyperlink != null
+                && hyperlink.NavigateUri != null)
             {
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
-
-                if (e.Parameter != null)
-                {
-                    var hyperlinkType = (HyperlinkType)e.Parameter;
-
-                    var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType);
-                    TelemetryActivity.EmitTelemetryEvent(evt);
-                }
             }
         }
     }

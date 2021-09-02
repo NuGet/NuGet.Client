@@ -9,17 +9,16 @@ namespace NuGet.PackageManagement.Telemetry
     {
         internal const string HyperlinkClickedEventName = "HyperlinkClicked";
         internal const string SearchQueryPropertyName = "SearchQuery";
+        internal const string HyperLinkTypePropertyName = "HyperlinkType";
 
         public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType) : base(HyperlinkClickedEventName)
         {
-            base[nameof(HyperlinkType)] = hyperlinkType;
+            base[HyperLinkTypePropertyName] = hyperlinkType;
         }
 
         public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, string searchQuery) : this(hyperlinkType)
         {
             AddPiiData(SearchQueryPropertyName, searchQuery);
         }
-
-        public HyperlinkType HyperlinkType => (HyperlinkType)base[nameof(HyperlinkType)];
     }
 }

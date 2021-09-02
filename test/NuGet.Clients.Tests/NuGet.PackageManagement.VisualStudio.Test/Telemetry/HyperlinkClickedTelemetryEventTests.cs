@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal(hType, lastTelemetryEvent[nameof(evt.HyperlinkType)]);
+            Assert.Equal(hType, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.HyperLinkTypePropertyName]);
         }
 
         [Theory]
@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal(hType, lastTelemetryEvent[nameof(evt.HyperlinkType)]);
+            Assert.Equal(hType, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.HyperLinkTypePropertyName]);
             Assert.Equal(searchQuery, lastTelemetryEvent.GetPiiData().Where(x => x.Key == HyperlinkClickedTelemetryEvent.SearchQueryPropertyName).Select(x => x.Value).First());
         }
     }
