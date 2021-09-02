@@ -15,18 +15,18 @@
                FontWeight="Bold"/>
     <TextBlock Text="{x:Static nuget:Resources.Text_RecentProjectsSolutions}"
                FontSize="16"
-               Margin="75,65,0,0"
+               Margin="75,75,0,0"
                FontWeight="Bold"/>
     <ListBox ItemsSource="{Binding SolutionList}"
-             Margin="20, 90"
-             BorderThickness="0">
+             Margin="65, 110"
+             BorderThickness="0"
+             HorizontalContentAlignment="Stretch">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Button
             Command="{Binding OpenSolutionCommand}"
-            CommandParameter="{Binding FilePath}"
+            CommandParameter="{Binding FullPath}"
             IsCancel="True"
-            Margin="50,15,10,5"
             Background="Transparent"
             BorderThickness="0"
             HorizontalContentAlignment="Stretch"
@@ -38,6 +38,7 @@
              <LineBreak/>
              <LineBreak/>
              <Run Text="{Binding FilePath, Mode=OneWay}"/>
+             <LineBreak/>
             </TextBlock>
           </Button>
         </DataTemplate>

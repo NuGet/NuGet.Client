@@ -16,6 +16,7 @@ namespace NuGet.PackageManagement.UI
         public SolutionPickerItemViewModel(ICommand command, string filePath)
         {
             OpenSolutionCommand = command;
+            FullPath = filePath;
             FilePath = Path.GetDirectoryName(filePath);
             SolutionName = Path.GetFileName(filePath);
         }
@@ -25,5 +26,7 @@ namespace NuGet.PackageManagement.UI
         public string FilePath { get; }
 
         public string SolutionName { get; }
+
+        public string FullPath { get; }
     }
 }
