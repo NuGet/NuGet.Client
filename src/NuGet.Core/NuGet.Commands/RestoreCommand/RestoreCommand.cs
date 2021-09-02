@@ -76,6 +76,9 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
 
+        // PackageSourceMapping names
+        private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
+
         public RestoreCommand(RestoreRequest request)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
@@ -113,6 +116,9 @@ namespace NuGet.Commands
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
+
+                bool isPackageSourceMappingEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
+                telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
 
                 _operationId = telemetry.OperationId;
 

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -137,6 +138,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryServiceUtility.StopTimer();
+
+            var isPackageSourceMappingEnabled = PackageSourceMappingUtility.IsMappingEnabled(ConfigSettings);
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
@@ -145,7 +148,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 startTime,
                 _status,
                 _packageCount,
-                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds());
+                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds(),
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
@@ -210,7 +214,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct().Count();
+                        _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
                     }
 
                     await ExecuteActions(actions, sourceCacheContext);
@@ -376,7 +380,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     _packageCount = actions.Select(
-                        action => action.PackageIdentity.Id).Distinct().Count();
+                        action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
                 }
 
                 await ExecuteActions(actions, sourceCacheContext);

@@ -87,6 +87,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryServiceUtility.StopTimer();
+
+            var isPackageSourceMappingEnabled = PackageSourceMappingUtility.IsMappingEnabled(ConfigSettings);
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
@@ -95,7 +97,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 startTime,
                 _status,
                 _packageCount,
-                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds());
+                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds(),
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

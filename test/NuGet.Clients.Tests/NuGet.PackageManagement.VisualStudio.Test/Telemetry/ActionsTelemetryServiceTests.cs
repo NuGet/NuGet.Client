@@ -39,7 +39,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: 2.10);
+                duration: 2.10,
+                isPackageSourceMappingEnabled: true);
+
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -76,7 +78,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Failed,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: 1.30);
+                duration: 1.30,
+                isPackageSourceMappingEnabled: false);
+
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -110,7 +114,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.NoOp,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: .40);
+                duration: .40,
+                isPackageSourceMappingEnabled: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -162,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(ActionsTelemetryEvent.NugetActionEventName, actual.Name);
-            Assert.Equal(10, actual.Count);
+            Assert.Equal(11, actual.Count);
 
             Assert.Equal(expected.OperationType.ToString(), actual["OperationType"].ToString());
             Assert.Equal(expected.Source.ToString(), actual["Source"].ToString());

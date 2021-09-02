@@ -12,6 +12,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -498,6 +499,8 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
+                    var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(uiService.Settings);
+                    bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,
@@ -507,7 +510,8 @@ namespace NuGet.PackageManagement.UI
                         status,
                         packageCount,
                         DateTimeOffset.Now,
-                        duration.TotalSeconds);
+                        duration.TotalSeconds,
+                        isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(

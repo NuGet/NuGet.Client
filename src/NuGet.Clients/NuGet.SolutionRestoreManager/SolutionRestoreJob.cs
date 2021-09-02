@@ -177,7 +177,9 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
             var sources = _sourceRepositoryProvider.GetRepositories();
-            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore))
+            PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore, packageNamespacesConfiguration))
             {
                 try
                 {
@@ -302,6 +304,9 @@ namespace NuGet.SolutionRestoreManager
                 .GroupBy(x => x.ProjectStyle)
                 .ToDictionary(x => x.Key, y => y.Count());
 
+            PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+            bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
                 projectIds,
@@ -322,7 +327,8 @@ namespace NuGet.SolutionRestoreManager
                 DateTimeOffset.Now,
                 duration,
                 _trackingData,
-                intervalTimingTracker);
+                intervalTimingTracker,
+                isPackageSourceMappingEnabled);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 

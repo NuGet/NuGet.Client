@@ -144,7 +144,8 @@ namespace NuGet.PackageManagement.UI.Test
                 status: NuGetOperationStatus.NoOp,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: .40);
+                duration: .40,
+                isPackageSourceMappingEnabled: false);
 
             UIActionEngine.AddUiActionEngineTelemetryProperties(
                 actionTelemetryEvent: actionTelemetryData,
