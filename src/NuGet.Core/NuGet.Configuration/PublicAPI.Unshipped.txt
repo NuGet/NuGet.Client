@@ -1,3 +1,4 @@
+NuGet.Configuration.ICredentialService.GetCredentialsAsync(System.Uri uri, System.Net.IWebProxy proxy, NuGet.Configuration.CredentialRequestType type, string message, bool? isRetrying, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.ICredentials>
 NuGet.Configuration.NamespaceItem
 NuGet.Configuration.NamespaceItem.Id.get -> string
 NuGet.Configuration.NamespaceItem.NamespaceItem(string id) -> void

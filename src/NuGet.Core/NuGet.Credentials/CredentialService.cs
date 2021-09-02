@@ -76,6 +76,7 @@ namespace NuGet.Credentials
             IWebProxy proxy,
             CredentialRequestType type,
             string message,
+            bool? isRetrying,
             CancellationToken cancellationToken)
         {
             if (uri == null)
@@ -84,13 +85,13 @@ namespace NuGet.Credentials
             }
 
             ICredentials creds = null;
-
-            foreach (var provider in await _providers)
+            var providers = await _providers;
+            foreach (var provider in providers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var retryKey = RetryCacheKey(uri, type, provider);
-                var isRetry = _retryCache.ContainsKey(retryKey);
+                var isRetry = isRetrying == null ? _retryCache.ContainsKey(retryKey) : isRetrying == true && _retryCache.ContainsKey(retryKey);
 
                 try
                 {
@@ -130,7 +131,7 @@ namespace NuGet.Credentials
 
                     if (response.Status == CredentialStatus.Success)
                     {
-                        _retryCache[retryKey] = false;
+                        _retryCache[retryKey] = true;
                         creds = response.Credentials;
                         break;
                     }
@@ -197,12 +198,12 @@ namespace NuGet.Credentials
             credentials = null;
 
             var key = CredentialCacheKey(uri, type, provider);
-            if (isRetry)
-            {
-                CredentialResponse removed;
-                _providerCredentialCache.TryRemove(key, out removed);
-                return false;
-            }
+            //if (isRetry)
+            //{
+            //    CredentialResponse removed;
+            //    _providerCredentialCache.TryRemove(key, out removed);
+            //    return false;
+            //}
 
             return _providerCredentialCache.TryGetValue(key, out credentials);
         }

@@ -243,6 +243,7 @@ namespace NuGet.Protocol.Plugins
                 _proxy,
                 requestType,
                 message,
+                null,
                 cancellationToken);
 
             return credentials;
@@ -265,6 +266,7 @@ namespace NuGet.Protocol.Plugins
                     _proxy,
                     CredentialRequestType.Proxy,
                     message,
+                    null,
                     cancellationToken);
 
                 return proxyCredentials?.GetCredential(proxyUri, _basicAuthenticationType);

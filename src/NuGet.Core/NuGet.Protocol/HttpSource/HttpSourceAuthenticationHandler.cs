@@ -248,7 +248,7 @@ namespace NuGet.Protocol
                 var proxy = proxyCache?.GetProxy(_packageSource.SourceUri);
 
                 promptCredentials = await _credentialService
-                    .GetCredentialsAsync(_packageSource.SourceUri, proxy, type, message, token);
+                    .GetCredentialsAsync(_packageSource.SourceUri, proxy, type, message, authState.AuthenticationRetriesCount > 0, token);
 
                 if (promptCredentials == null)
                 {

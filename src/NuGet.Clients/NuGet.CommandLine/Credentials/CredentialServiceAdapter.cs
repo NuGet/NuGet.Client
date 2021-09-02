@@ -64,6 +64,7 @@ namespace NuGet.Credentials
                 proxy,
                 type,
                 message: null,
+                retrying,
                 cancellationToken: CancellationToken.None);
 
             return task.Result;

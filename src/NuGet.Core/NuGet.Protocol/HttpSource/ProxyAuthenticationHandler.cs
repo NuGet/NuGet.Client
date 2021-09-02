@@ -207,6 +207,7 @@ namespace NuGet.Protocol
                     proxy,
                     type: CredentialRequestType.Proxy,
                     message: message,
+                    null,
                     cancellationToken: cancellationToken);
             }
             catch (OperationCanceledException)
