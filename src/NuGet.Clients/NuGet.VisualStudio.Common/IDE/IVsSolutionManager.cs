@@ -93,5 +93,8 @@ namespace NuGet.PackageManagement.VisualStudio
         Task<bool> IsSolutionOpenAsync();
 
         IReadOnlyList<object> GetAllProjectRestoreInfoSources();
+
+        Task<string> GetSolutionDirectoryAsync();
+
     }
 }

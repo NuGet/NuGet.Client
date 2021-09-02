@@ -249,7 +249,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected async Task CheckMissingPackagesAsync()
         {
-            var solutionDirectory = VsSolutionManager.SolutionDirectory;
+            var solutionDirectory = await VsSolutionManager.GetSolutionDirectoryAsync();
 
             var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
             if (packages.Any(p => p.IsMissing))

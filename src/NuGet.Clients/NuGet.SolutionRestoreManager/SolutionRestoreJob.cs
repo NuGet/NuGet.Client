@@ -185,12 +185,12 @@ namespace NuGet.SolutionRestoreManager
                 {
                     token.ThrowIfCancellationRequested();
 
-                    string solutionDirectory;
+                    string solutionDirectory = null;
                     bool isSolutionAvailable;
 
                     using (intervalTracker.Start(RestoreTelemetryEvent.RestoreOperationChecks))
                     {
-                        solutionDirectory = _solutionManager.SolutionDirectory;
+                        var solutionFilePath = await _solutionManager.GetSolutionDirectoryAsync();
                         isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
 
                         // Get the projects from the SolutionManager
