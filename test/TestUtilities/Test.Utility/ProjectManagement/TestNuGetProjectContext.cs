@@ -10,6 +10,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectManagement;
+using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace Test.Utility
 {

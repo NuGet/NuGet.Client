@@ -6,6 +6,8 @@
     <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Packaging.</Description>
+    <!-- remove warnings for obsolete types and methods: SYSLIB0023: RNGCryptoServiceProvider, SYSLIB0026: X509Certificate2() blank constructor -->
+    <NoWarn>SYSLIB0023;SYSLIB0026</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
