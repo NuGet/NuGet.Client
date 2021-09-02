@@ -159,7 +159,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                _threadingService.ThrowIfNotOnUIThread();
+                ThreadHelper.ThrowIfNotOnUIThread();
 
                 var packageVersion = BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageVersion);
 
@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return EnvDTEProjectUtility.GetReferencedProjects(Project)
                     .Select(p =>
                     {
-                        _threadingService.ThrowIfNotOnUIThread();
+                        ThreadHelper.ThrowIfNotOnUIThread();
                         return p.UniqueName;
                     });
             }

@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
         {
-            return _threadingService.ExecuteSynchronously(
+            return _threadingService.JoinableTaskFactory.Run(
                 () => CreateAdapterForFullyLoadedProjectAsync(dteProject));
         }
 

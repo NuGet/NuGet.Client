@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                return _threadingService.ExecuteSynchronously(async () =>
+                return _threadingService.JoinableTaskFactory.Run(async () =>
                 {
                     await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return _vsProjectAdapter.Project.Object is VSLangProj150.VSProject4;
