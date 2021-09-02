@@ -28,7 +28,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var telemetryProvider = new Mock<INuGetTelemetryProvider>();
 
             var assemblyDirectory = Path.GetDirectoryName(typeof(VsPackageInstallerServicesTests).Assembly.Location);
-            solutionManager.SetupGet(sm => sm.SolutionDirectory)
+            solutionManager.Setup(s => s.GetSolutionDirectoryAsync())
                 .Throws(expectedException);
 
             // Act
@@ -58,7 +58,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var telemetryProvider = new Mock<INuGetTelemetryProvider>();
 
             var assemblyDirectory = Path.GetDirectoryName(typeof(VsPackageInstallerServicesTests).Assembly.Location);
-            solutionManager.SetupGet(sm => sm.SolutionDirectory)
+            solutionManager.Setup(sm => sm.GetSolutionDirectoryAsync())
                 .Throws(expectedException);
 
             var project = new Mock<EnvDTE.Project>();
@@ -92,7 +92,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var expectedException = new ArgumentException("Internal error");
 
             var solutionManager = new Mock<IVsSolutionManager>();
-            solutionManager.SetupGet(s => s.SolutionDirectory)
+            solutionManager.Setup(s => s.GetSolutionDirectoryAsync())
                 .Throws(expectedException);
 
             var telemetryProvider = new Mock<INuGetTelemetryProvider>();
@@ -132,7 +132,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var expectedException = new ArgumentException("Internal error");
 
             var solutionManager = new Mock<IVsSolutionManager>();
-            solutionManager.SetupGet(s => s.SolutionDirectory)
+            solutionManager.Setup(s => s.GetSolutionDirectoryAsync())
                 .Throws(expectedException);
 
             var telemetryProvider = new Mock<INuGetTelemetryProvider>();
