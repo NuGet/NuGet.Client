@@ -5427,4 +5427,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ArgumentNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
+  <data name="Error_ProjectJson_Deprecated_And_Removed" xml:space="preserve">
+    <value>`project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
+Please consider migrating '{0}' to `PackageReference` and using the pack targets.
+You can use '{1}' environment variable to temporarily reenable this functionality.</value>
+    <comment>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</comment>
+  </data>
 </root>

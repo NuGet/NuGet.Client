@@ -27,16 +27,18 @@ using XElementExtensions = NuGet.Packaging.XElementExtensions;
 
 namespace NuGet.CommandLine
 {
-
-    [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider
     {
+        private const string NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK = nameof(NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK);
+
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
 
         private ILogger _logger;
-        // TODO NK - Obsolete this.
+
         private bool _usingJsonFile;
+
+        private IEnvironmentVariableReader _environmentVariableReader;
 
         // Files we want to always exclude from the resulting package
         private static readonly HashSet<string> ExcludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
@@ -85,6 +87,8 @@ namespace NuGet.CommandLine
         {
             LoadAssemblies(msbuildDirectory);
 
+            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
+
             // Create project, allowing for assembly load failures
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
 
@@ -107,17 +111,20 @@ namespace NuGet.CommandLine
         {
             LoadAssemblies(msbuildDirectory);
             Initialize(project);
+            _environmentVariableReader = EnvironmentVariableWrapper.Instance;
         }
 
         private ProjectFactory(
             string msbuildDirectory,
             Assembly msbuildAssembly,
             Assembly frameworkAssembly,
-            dynamic project)
+            dynamic project,
+            IEnvironmentVariableReader environmentVariableReader)
         {
             _msbuildDirectory = msbuildDirectory;
             _msbuildAssembly = msbuildAssembly;
             _frameworkAssembly = frameworkAssembly;
+            _environmentVariableReader = environmentVariableReader;
             LoadTypes();
             Initialize(project);
         }
@@ -214,7 +221,7 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        public Packaging.PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, Packaging.PackageBuilder builder = null)
+        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, Packaging.PackageBuilder builder = null)
         {
             if (buildIfNeeded)
             {
@@ -293,7 +300,18 @@ namespace NuGet.CommandLine
                         string.Format(NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
                         NuGetLogCode.NU5126));
                 _usingJsonFile = true;
-                return null;
+
+                _ = bool.TryParse(_environmentVariableReader.GetEnvironmentVariable(NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK), out bool enableLegacyProjectJsonPack);
+
+                if (!enableLegacyProjectJsonPack)
+                {
+                    Logger.Log(
+                        PackagingLogMessage.CreateError(
+                            string.Format(NuGetResources.Error_ProjectJson_Deprecated_And_Removed, builder.Id, NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK),
+                            NuGetLogCode.NU5041));
+                    return null;
+                }
+
             }
 
             // Remove the extra author
@@ -592,7 +610,7 @@ namespace NuGet.CommandLine
                         null,
                         alreadyAppliedProjects);
                     var referencedProject = new ProjectFactory(
-                        _msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project);
+                        _msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project, _environmentVariableReader);
                     referencedProject.Logger = _logger;
                     referencedProject.IncludeSymbols = IncludeSymbols;
                     referencedProject.Build = Build;
@@ -712,7 +730,7 @@ namespace NuGet.CommandLine
         {
             try
             {
-                var projectFactory = new ProjectFactory(_msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project);
+                var projectFactory = new ProjectFactory(_msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project, EnvironmentVariableWrapper.Instance);
                 projectFactory.Build = Build;
                 projectFactory.ProjectProperties = ProjectProperties;
                 projectFactory.SymbolPackageFormat = SymbolPackageFormat;
