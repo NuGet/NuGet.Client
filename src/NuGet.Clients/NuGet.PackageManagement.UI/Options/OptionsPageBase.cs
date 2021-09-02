@@ -45,7 +45,7 @@ namespace NuGet.Options
             timer.Stop();
             timer.Dispose();
 
-            var optionsPageActivator = ServiceLocator.GetComponentModelService<IOptionsPageActivator>();
+            var optionsPageActivator = ServiceLocator.GetInstance<IOptionsPageActivator>();
             if (optionsPageActivator != null)
             {
                 optionsPageActivator.NotifyOptionsDialogClosed();

@@ -25,8 +25,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public UninstallPackageCommand()
         {
-            _deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
-            _lockService = ServiceLocator.GetComponentModelService<INuGetLockService>();
+            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]

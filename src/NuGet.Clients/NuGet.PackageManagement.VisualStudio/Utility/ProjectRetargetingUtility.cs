@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (installedRefs != null && installedRefs.Any())
             {
                 var targetFramework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-                return await GetPackagesToBeReinstalledAsync(targetFramework, installedRefs);
+                return GetPackagesToBeReinstalled(targetFramework, installedRefs);
             }
 
             return new List<PackageIdentity>();
@@ -55,16 +55,16 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="projectFramework">Current target framework of the project</param>
         /// <param name="packageReferences">List of package references in the project from which packages to be reinstalled are determined</param>
         /// <returns>List of package identities to be reinstalled</returns>
-        public static async Task<List<PackageIdentity>> GetPackagesToBeReinstalledAsync(NuGetFramework projectFramework, IEnumerable<Packaging.PackageReference> packageReferences)
+        public static List<PackageIdentity> GetPackagesToBeReinstalled(NuGetFramework projectFramework, IEnumerable<Packaging.PackageReference> packageReferences)
         {
             Debug.Assert(projectFramework != null);
             Debug.Assert(packageReferences != null);
 
             var packagesToBeReinstalled = new List<PackageIdentity>();
-            var sourceRepositoryProvider = await ServiceLocator.GetComponentModelServiceAsync<ISourceRepositoryProvider>();
-            var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<ISolutionManager>();
-            var settings = await ServiceLocator.GetComponentModelServiceAsync<Configuration.ISettings>();
-            var deleteOnRestartManager = await ServiceLocator.GetComponentModelServiceAsync<IDeleteOnRestartManager>();
+            var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
+            var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
             var packageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 settings,

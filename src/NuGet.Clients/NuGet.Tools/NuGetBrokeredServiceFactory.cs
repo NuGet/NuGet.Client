@@ -203,11 +203,11 @@ namespace NuGetVSExtension
         }
         private async Task InitializeAsync()
         {
-            _lazySettings = new AsyncLazy<ISettings>(ServiceLocator.GetComponentModelServiceAsync<ISettings>, ThreadHelper.JoinableTaskFactory);
-            _lazySolutionManager = new AsyncLazy<IVsSolutionManager>(ServiceLocator.GetComponentModelServiceAsync<IVsSolutionManager>, ThreadHelper.JoinableTaskFactory);
+            _lazySettings = new AsyncLazy<ISettings>(ServiceLocator.GetInstanceAsync<ISettings>, ThreadHelper.JoinableTaskFactory);
+            _lazySolutionManager = new AsyncLazy<IVsSolutionManager>(ServiceLocator.GetInstanceAsync<IVsSolutionManager>, ThreadHelper.JoinableTaskFactory);
             _projectManagerServiceSharedState = new NuGetProjectManagerServiceState();
             _sharedServiceState = await SharedServiceState.CreateAsync(CancellationToken.None);
-            _lazyTelemetryProvider = new AsyncLazy<INuGetTelemetryProvider>(ServiceLocator.GetComponentModelServiceAsync<INuGetTelemetryProvider>, ThreadHelper.JoinableTaskFactory);
+            _lazyTelemetryProvider = new AsyncLazy<INuGetTelemetryProvider>(ServiceLocator.GetInstanceAsync<INuGetTelemetryProvider>, ThreadHelper.JoinableTaskFactory);
         }
     }
 }

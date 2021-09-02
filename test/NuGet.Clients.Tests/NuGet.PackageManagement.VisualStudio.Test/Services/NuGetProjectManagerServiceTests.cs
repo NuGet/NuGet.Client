@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
 using Microsoft.VisualStudio.Sdk.TestFramework;
@@ -57,9 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             _projectContext = new TestNuGetProjectContext();
 
-            var componentModel = new Mock<IComponentModel>();
-            componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(_projectContext);
-            AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
+            AddService<INuGetProjectContext>(Task.FromResult<object>(_projectContext));
         }
 
         public void Dispose()
