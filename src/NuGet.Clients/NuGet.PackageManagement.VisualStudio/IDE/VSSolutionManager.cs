@@ -606,7 +606,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             RemoveVsProjectAdapterFromCache(item.FullName);
 
                             var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(item);
-                            if (!await vsProjectAdapter.IsSupportedAsync())
+                            if (await vsProjectAdapter.IsSupportedAsync())
                             {
                                 await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
                             }
