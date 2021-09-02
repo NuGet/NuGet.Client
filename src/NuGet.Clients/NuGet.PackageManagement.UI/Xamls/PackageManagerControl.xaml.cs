@@ -1301,7 +1301,7 @@ namespace NuGet.PackageManagement.UI
             EventHandler handler = null;
             if (_packageList.IsLoaded)
             {
-                SelectPackageUponLoaded(packageVersion);
+                FindExactPackageVersion(packageVersion);
             }
 
             else
@@ -1309,33 +1309,15 @@ namespace NuGet.PackageManagement.UI
                 handler = (s, e) =>
                 {
                     _packageList.LoadItemsCompleted -= handler;
-                    SelectPackageUponLoaded(packageVersion);
+                    FindExactPackageVersion(packageVersion);
                 };
                 _packageList.LoadItemsCompleted += handler;
             }
         }
 
-        private void SelectPackageUponLoaded(NuGetVersion packageVersion)
-        {
-            _packageList.UpdateSelectedItem((PackageItemViewModel)_packageList.Items.FirstOrDefault());
-            if (_packageList.SelectedItem == null)
-            {
-                SelectionChangedEventHandler handle = null;
-                handle = (send, events) =>
-                {
-                    _packageList.SelectionChanged -= handle;
-                    FindExactPackageVersion(packageVersion);
-                };
-                _packageList.SelectionChanged += handle;
-            }
-            else
-            {
-                FindExactPackageVersion(packageVersion);
-            }
-        }
-
         private void FindExactPackageVersion(NuGetVersion packageVersion)
         {
+            _packageList.UpdateSelectedItem((PackageItemViewModel)_packageList.Items.FirstOrDefault());
             if (packageVersion != null)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>

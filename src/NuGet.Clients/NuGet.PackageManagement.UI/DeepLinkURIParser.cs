@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
             return null;
         }
 
-        private static bool TryParse(string packageLink, out string packageName, out NuGetVersion nugetPackageVersion)
+        public static bool TryParse(string packageLink, out string packageName, out NuGetVersion nugetPackageVersion)
         {
             packageName = null;
             nugetPackageVersion = null;
@@ -39,14 +39,14 @@ namespace NuGet.PackageManagement.UI
             var linkPropertySeparator = '/';
             string[] urlSections = packageLink.Split(linkPropertySeparator);
 
-            if (urlSections.Length != 4 && urlSections.Length != 5)
+            packageName = urlSections[3];
+
+            if (packageName.Equals(string.Empty, StringComparison.Ordinal))
             {
                 return false;
             }
 
-            packageName = urlSections[3];
-
-            if (urlSections.Length == 5)
+            if (urlSections.Length >= 5)
             {
                 string versionNumber = urlSections[4];
                 if (!NuGetVersion.TryParse(versionNumber, out nugetPackageVersion))

@@ -4,13 +4,13 @@
     {
       "protocol": "nuget-client",
       "displayName": "Visual Studio NuGet Deep Link URI Handler",
-      "progId": "VisualStudio.vsph.[InstanceId]",
+      "progId": "VisualStudio.nuget-client.[InstanceId]",
       "defaultProgramRegistrationPath": "Software\\Microsoft\\VisualStudio_[InstanceId]\\Capabilities"
     }
   ],
   "progIds": [
     {
-      "id": "VisualStudio.vsph.[InstanceId]",
+      "id": "VisualStudio.nuget-client.[InstanceId]",
       "displayName": "Visual Studio URI Handler",
       "path": "[InstallDir]\\Common7\\IDE\\devenv.exe",
       "arguments": "/OpenPackageDetails",

@@ -664,7 +664,11 @@ namespace NuGetVSExtension
                 window.ShowModal();
 
                 var dte = GetGlobalService(typeof(_DTE)) as DTE2;
-                dte.ExecuteCommand("File.Exit");
+
+                if (dte != null)
+                {
+                    dte.ExecuteCommand("File.Exit");
+                }
 
                 return;
             }
@@ -1007,7 +1011,8 @@ namespace NuGetVSExtension
                 //Create the window frame
                 if (isOpenedByURI && !await SolutionManager.Value.IsSolutionAvailableAsync())
                 {
-                    // event handler is set up here to allow time for the solution to load in before it does anything
+                    // event handler is set up here because the PMUI can only be shown once the solution has fully loaded in as it is not feasible to open the PMUI when
+                    // there is no solution associated with it
                     EventHandler handler = null;
                     handler = (s, e) =>
                     {
