@@ -349,7 +349,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 try
                 {
-                    projectContext = await ServiceLocator.GetComponentModelServiceAsync<INuGetProjectContext>();
+                    projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
 
                     Assumes.NotNull(projectContext);
 
@@ -418,7 +418,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 Assumes.NotNullOrEmpty(sourceRepositories);
 
-                INuGetProjectContext projectContext = await ServiceLocator.GetComponentModelServiceAsync<INuGetProjectContext>();
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
                 IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
                 var resolutionContext = new ResolutionContext(
@@ -471,7 +471,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return await CatchAndRethrowExceptionAsync(async () =>
             {
-                INuGetProjectContext projectContext = await ServiceLocator.GetComponentModelServiceAsync<INuGetProjectContext>();
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
                 IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
                 var projectActions = new List<ProjectAction>();
@@ -541,7 +541,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                INuGetProjectContext projectContext = await ServiceLocator.GetComponentModelServiceAsync<INuGetProjectContext>();
+                INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
                 IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
                 var resolutionContext = new ResolutionContext(

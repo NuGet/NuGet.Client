@@ -61,8 +61,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 );
 
             // this is used by the functional tests
-            var sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
-            var solutionManager = ServiceLocator.GetComponentModelService<ISolutionManager>();
+            var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             var sourceRepoTuple = Tuple.Create<string, object>("SourceRepositoryProvider", sourceRepositoryProvider);
             var solutionManagerTuple = Tuple.Create<string, object>("VsSolutionManager", solutionManager);
 

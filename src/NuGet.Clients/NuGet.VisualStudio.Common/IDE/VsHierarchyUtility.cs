@@ -118,7 +118,7 @@ namespace NuGet.VisualStudio
             // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             var projects = dte.Solution.Projects;
 
             var results = new Dictionary<string, ISet<VsHierarchyItem>>(StringComparer.OrdinalIgnoreCase);
@@ -139,7 +139,7 @@ namespace NuGet.VisualStudio
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             var projects = dte.Solution.Projects;
 
             foreach (var project in projects.Cast<EnvDTE.Project>())
@@ -157,7 +157,7 @@ namespace NuGet.VisualStudio
         private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)
         {
             var projectHierarchyItem = await VsHierarchyItem.FromDteProjectAsync(project);
-            var solutionExplorerWindow = await GetSolutionExplorerHierarchyWindowAsync();
+            var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
             {
@@ -192,7 +192,7 @@ namespace NuGet.VisualStudio
         private static async Task CollapseProjectHierarchyItemsAsync(EnvDTE.Project project, ISet<VsHierarchyItem> ignoredHierarcyItems)
         {
             var projectHierarchyItem = await VsHierarchyItem.FromDteProjectAsync(project);
-            var solutionExplorerWindow = await GetSolutionExplorerHierarchyWindowAsync();
+            var solutionExplorerWindow = GetSolutionExplorerHierarchyWindow();
 
             if (solutionExplorerWindow == null)
             {
@@ -252,11 +252,10 @@ namespace NuGet.VisualStudio
             return hierarchyItem.VsHierarchy as IVsUIHierarchy;
         }
 
-        private static async Task<IVsUIHierarchyWindow> GetSolutionExplorerHierarchyWindowAsync()
+        private static IVsUIHierarchyWindow GetSolutionExplorerHierarchyWindow()
         {
-            var serviceProvider = await ServiceLocator.GetInstanceAsync<IServiceProvider>();
             return VsShellUtilities.GetUIHierarchyWindow(
-                serviceProvider,
+                ServiceLocator.GetInstance<IServiceProvider>(),
                 new Guid(VsWindowKindSolutionExplorer));
         }
     }

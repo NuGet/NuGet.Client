@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </param>
         public static void Set(string property, string value)
         {
-            var settings = ServiceLocator.GetComponentModelService<ISettings>();
+            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             if (string.Equals(property, "PackageRestoreConsentGranted", StringComparison.OrdinalIgnoreCase))
             {

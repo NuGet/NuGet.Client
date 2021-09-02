@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SourceRepositoryProvider.PackageSourceProvider.PackageSourcesChanged += PackageSourcesChanged;
 
             SolutionManager = new AsyncLazy<IVsSolutionManager>(
-                ServiceLocator.GetComponentModelServiceAsync<IVsSolutionManager>,
+                ServiceLocator.GetInstanceAsync<IVsSolutionManager>,
                 NuGetUIThreadHelper.JoinableTaskFactory);
 
             SourceRepositories = new AsyncLazy<IReadOnlyCollection<SourceRepository>>(
@@ -41,15 +41,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static async ValueTask<SharedServiceState> CreateAsync(CancellationToken cancellationToken)
         {
-            var sourceRepositoryProvider = await ServiceLocator.GetComponentModelServiceAsync<ISourceRepositoryProvider>();
+            var sourceRepositoryProvider = await ServiceLocator.GetInstanceAsync<ISourceRepositoryProvider>();
 
             return new SharedServiceState(sourceRepositoryProvider);
         }
 
         public async ValueTask<NuGetPackageManager> GetPackageManagerAsync(CancellationToken cancellationToken)
         {
-            IDeleteOnRestartManager deleteOnRestartManager = await ServiceLocator.GetComponentModelServiceAsync<IDeleteOnRestartManager>();
-            ISettings settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
+            IDeleteOnRestartManager deleteOnRestartManager = await ServiceLocator.GetInstanceAsync<IDeleteOnRestartManager>();
+            ISettings settings = await ServiceLocator.GetInstanceAsync<ISettings>();
             IVsSolutionManager solutionManager = await SolutionManager.GetValueAsync(cancellationToken);
 
             return new NuGetPackageManager(

@@ -25,8 +25,8 @@ namespace NuGet.Options
         public GeneralOptionControl()
         {
             InitializeComponent();
-            _settings = ServiceLocator.GetComponentModelService<ISettings>();
-            _outputConsoleLogger = ServiceLocator.GetComponentModelService<INuGetUILogger>();
+            _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
+            _outputConsoleLogger = ServiceLocator.GetInstance<INuGetUILogger>();
             _localsCommandRunner = new LocalsCommandRunner();
             AutoScroll = true;
             Debug.Assert(_settings != null);
@@ -150,7 +150,7 @@ namespace NuGet.Options
         {
             UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
             var arguments = new List<string> { "all" };
-            var settings = ServiceLocator.GetComponentModelService<ISettings>();
+            var settings = ServiceLocator.GetInstance<ISettings>();
             var logError = new LocalsArgs.Log(LogError);
             var logInformation = new LocalsArgs.Log(LogInformation);
             var localsArgs = new LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
