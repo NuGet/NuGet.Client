@@ -10,7 +10,7 @@ using NuGet.Common;
 
 namespace NuGet.Build.Tasks
 {
-    public class WarnForInvalidProjectsTask : Task
+    public class WarnForInvalidProjectsTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// All known projects.

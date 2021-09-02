@@ -12,7 +12,7 @@ using NuGet.Frameworks;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetReferenceNearestTargetFrameworkTask : Task
+    public class GetReferenceNearestTargetFrameworkTask : Microsoft.Build.Utilities.Task
     {
         private const string NEAREST_TARGET_FRAMEWORK = "NearestTargetFramework";
         private const string TARGET_FRAMEWORKS = "TargetFrameworks";

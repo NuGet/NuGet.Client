@@ -13,7 +13,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Convert .metaproj paths to project paths.
     /// </summary>
-    public class GetRestoreSolutionProjectsTask : Task
+    public class GetRestoreSolutionProjectsTask : Microsoft.Build.Utilities.Task
     {
         private const string MetaProjExtension = ".metaproj";
 

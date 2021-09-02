@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetRestoreProjectJsonPathTask : Task
+    public class GetRestoreProjectJsonPathTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.

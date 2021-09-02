@@ -17,7 +17,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Represents an MSBuild task that performs a command-line based restore.
     /// </summary>
-    public sealed class RestoreTaskEx : Task, ICancelableTask, IDisposable
+    public sealed class RestoreTaskEx : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
         internal readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 

@@ -10,7 +10,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectManagement;
-using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace Test.Utility
 {
@@ -64,7 +63,7 @@ namespace Test.Utility
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 
-        public ExecutionContext ExecutionContext
+        public NuGet.ProjectManagement.ExecutionContext ExecutionContext
         {
             get { return TestExecutionContext; }
         }
@@ -102,7 +101,7 @@ namespace Test.Utility
         }
     }
 
-    public class TestExecutionContext : ExecutionContext
+    public class TestExecutionContext : NuGet.ProjectManagement.ExecutionContext
     {
         public TestExecutionContext(PackageIdentity directInstall)
         {

@@ -17,7 +17,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Get all the settings to be used for project restore.
     /// </summary>
-    public class GetRestoreSettingsTask : Task
+    public class GetRestoreSettingsTask : Microsoft.Build.Utilities.Task
     {
         [Required]
         public string ProjectUniqueName { get; set; }
