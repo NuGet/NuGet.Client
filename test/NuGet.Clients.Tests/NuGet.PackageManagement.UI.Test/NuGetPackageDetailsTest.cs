@@ -11,11 +11,10 @@ namespace NuGet.PackageManagement.UI.Test
         [Theory]
         [InlineData("Newtonsoft.Json", "1.2.3")]
         [InlineData("Moq", "2.3.4")]
-        public void NuGetPackageDetails_BothPropertiesNotNull_NotNull(string name, string version)
+        public void NuGetPackageDetails_BothPropertiesNotNull_BothPropertiesNotNull(string name, string version)
         {
             //Arrange
-            NuGetVersion nugetVersion;
-            NuGetVersion.TryParse(version, out nugetVersion);
+            NuGetVersion.TryParse(version, out NuGetVersion nugetVersion);
 
             //Act
             var packagedetails = new NuGetPackageDetails(name, nugetVersion);
@@ -30,11 +29,10 @@ namespace NuGet.PackageManagement.UI.Test
         [Theory]
         [InlineData(null, "1.2.3")]
         [InlineData(null, "2.3.4")]
-        public void NuGetPackageDetails_NameNullVersionNotNull_NotNull(string name, string version)
+        public void NuGetPackageDetails_NameNullVersionNotNull_VersionPropertyNotNull(string name, string version)
         {
             //Arrange
-            NuGetVersion nugetVersion;
-            NuGetVersion.TryParse(version, out nugetVersion);
+            NuGetVersion.TryParse(version, out NuGetVersion nugetVersion);
 
             //Act
             var packagedetails = new NuGetPackageDetails(name, nugetVersion);
@@ -49,11 +47,10 @@ namespace NuGet.PackageManagement.UI.Test
         [Theory]
         [InlineData("Newtonsoft.Json", null)]
         [InlineData("Moq", null)]
-        public void NuGetPackageDetails_NameNotNullVersionNull_NotNull(string name, string version)
+        public void NuGetPackageDetails_NameNotNullVersionNull_NamePropertyNotNull(string name, string version)
         {
             //Arrange
-            NuGetVersion nugetVersion;
-            NuGetVersion.TryParse(version, out nugetVersion);
+            NuGetVersion.TryParse(version, out NuGetVersion nugetVersion);
 
             //Act
             var packagedetails = new NuGetPackageDetails(name, nugetVersion);
@@ -67,11 +64,10 @@ namespace NuGet.PackageManagement.UI.Test
 
         [Theory]
         [InlineData(null, null)]
-        public void NuGetPackageDetails_NameNullVersionNull_NotNull(string name, string version)
+        public void NuGetPackageDetails_NameNullVersionNull_BothPropertiesNull(string name, string version)
         {
             //Arrange
-            NuGetVersion nugetVersion;
-            NuGetVersion.TryParse(version, out nugetVersion);
+            NuGetVersion.TryParse(version, out NuGetVersion nugetVersion);
 
             //Act
             var packagedetails = new NuGetPackageDetails(name, nugetVersion);

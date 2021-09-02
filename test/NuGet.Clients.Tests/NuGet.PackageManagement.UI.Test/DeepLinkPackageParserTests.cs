@@ -17,10 +17,9 @@ namespace NuGet.PackageManagement.UI.Test
             //Arrange
             var packageVersion = NuGetVersion.Parse(version);
             var package = new NuGetPackageDetails(packageName, packageVersion);
-            NuGetPackageDetails resultingPackage;
 
             //Act
-            bool result = DeepLinkURIParser.TryParse(packageLink, out resultingPackage);
+            bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 
             //Assert
             string expectedPackageName = package.PackageName;
@@ -45,10 +44,8 @@ namespace NuGet.PackageManagement.UI.Test
             var packageVersion = NuGetVersion.Parse(version);
             var package = new NuGetPackageDetails(packageName, packageVersion);
 
-            NuGetPackageDetails resultingPackage;
-
             //Act
-            bool result = DeepLinkURIParser.TryParse(packageLink, out resultingPackage);
+            bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 
             //Assert
             string expectedPackageName = package.PackageName;
@@ -72,10 +69,8 @@ namespace NuGet.PackageManagement.UI.Test
             //Arrange
             var package = new NuGetPackageDetails(packageName, null);
 
-            NuGetPackageDetails resultingPackage;
-
             //Act
-            bool result = DeepLinkURIParser.TryParse(packageLink, out resultingPackage);
+            bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 
             //Assert
             string expectedPackageName = package.PackageName;
@@ -98,10 +93,8 @@ namespace NuGet.PackageManagement.UI.Test
             //Arrange
             var package = new NuGetPackageDetails(packageName, null);
 
-            NuGetPackageDetails resultingPackage;
-
             //Act
-            bool result = DeepLinkURIParser.TryParse(packageLink, out resultingPackage);
+            bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 
             //Assert
             string expectedPackageName = package.PackageName;
@@ -123,10 +116,8 @@ namespace NuGet.PackageManagement.UI.Test
         public void TryParse_BadProtocolName_ShouldBeNull(string packageLink)
         {
             //Arrange
-            NuGetPackageDetails resultingPackage;
-
             //Act
-            bool result = DeepLinkURIParser.TryParse(packageLink, out resultingPackage);
+            bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 
             //Assert
             Assert.Null(resultingPackage);
@@ -141,10 +132,8 @@ namespace NuGet.PackageManagement.UI.Test
         public void TryParse_BadDomainName_ShouldBeNull(string packageLink)
         {
             //Arrange
-            NuGetPackageDetails resultingPackage;
-
             //Act
-            bool result = DeepLinkURIParser.TryParse(packageLink, out resultingPackage);
+            bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 
             //Assert
             Assert.Null(resultingPackage);
@@ -158,10 +147,8 @@ namespace NuGet.PackageManagement.UI.Test
         public void TryParse_NumberOfPropertiesIsNotTwoOrOne_ShouldBeNull(string packageLink)
         {
             //Arrange
-            NuGetPackageDetails resultingPackage;
-
             //Act
-            bool result = DeepLinkURIParser.TryParse(packageLink, out resultingPackage);
+            bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 
             //Assert
             Assert.Null(resultingPackage);

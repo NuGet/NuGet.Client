@@ -11,7 +11,7 @@
   "progIds": [
     {
       "id": "VisualStudio.nuget-client.[InstanceId]",
-      "displayName": "Visual Studio URI Handler",
+      "displayName": "NuGet Deep Link URI Handler",
       "path": "[InstallDir]\\Common7\\IDE\\devenv.exe",
       "arguments": "/OpenPackageDetails",
       "defaultIconPath": "[InstallDir]\\Common7\\IDE\\devenv.exe"

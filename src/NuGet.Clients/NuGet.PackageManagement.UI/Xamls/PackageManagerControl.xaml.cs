@@ -1303,7 +1303,6 @@ namespace NuGet.PackageManagement.UI
             {
                 FindExactPackageVersion(packageVersion);
             }
-
             else
             {
                 handler = (s, e) =>
