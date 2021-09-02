@@ -85,8 +85,7 @@ namespace NuGet.Credentials
             }
 
             ICredentials creds = null;
-            var providers = await _providers;
-            foreach (var provider in providers)
+            foreach (var provider in await _providers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -198,12 +197,12 @@ namespace NuGet.Credentials
             credentials = null;
 
             var key = CredentialCacheKey(uri, type, provider);
-            //if (isRetry)
-            //{
-            //    CredentialResponse removed;
-            //    _providerCredentialCache.TryRemove(key, out removed);
-            //    return false;
-            //}
+            if (isRetry)
+            {
+                CredentialResponse removed;
+                _providerCredentialCache.TryRemove(key, out removed);
+                return false;
+            }
 
             return _providerCredentialCache.TryGetValue(key, out credentials);
         }
