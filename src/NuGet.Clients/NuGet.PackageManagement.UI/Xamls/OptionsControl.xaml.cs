@@ -40,9 +40,9 @@ namespace NuGet.PackageManagement.UI
 
                 if (e.Parameter != null)
                 {
-                    var hyperlinkType = (ExternalHyperlinkType)e.Parameter;
+                    var hyperlinkType = (HyperlinkType)e.Parameter;
 
-                    var evt = new ExternalHyperlinkEvent(hyperlinkType);
+                    var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType);
                     TelemetryActivity.EmitTelemetryEvent(evt);
                 }
             }

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <UserControl.Resources>
@@ -37,7 +37,8 @@
               Style="{StaticResource HyperlinkStyleNoUri}"
               ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
               Command="{x:Static nuget:Commands.SearchPackageCommand}"
-              CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=DataContext.AlternatePackage.PackageId, Mode=OneWay}">
+              CommandParameter="{x:Static nugettel:HyperlinkType.DeprecationAlternativePackageItem}"
+              CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=DataContext.AlternatePackage.PackageId, Mode=OneWay}">
               <Run Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=DataContext.AlternatePackage.PackageId, Mode=OneWay}" />
             </Hyperlink>
           </TextBlock>

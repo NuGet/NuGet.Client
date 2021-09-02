@@ -1,6 +1,7 @@
 <UserControl x:Class="NuGet.PackageManagement.UI.DeprecationControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -44,6 +45,7 @@
             NavigateUri="{Binding Path=PackageMetadata.PackageDetailsUrl}"
             ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
             Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+            CommandParameter="{x:Static nugettel:HyperlinkType.DeprecationMoreInfo}"
             Style="{StaticResource HyperlinkStyleNoUri}">
             <Run Text="{x:Static nuget:Resources.Deprecation_MoreInfo}" />
           </Hyperlink>
@@ -67,7 +69,8 @@
                 ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
                 Command="{x:Static nuget:Commands.SearchPackageCommand}"
                 Style="{StaticResource HyperlinkStyleNoUri}"
-                CommandParameter="{Binding Path=PackageMetadata.DeprecationMetadata.AlternatePackage.PackageId}">
+                CommandParameter="{x:Static nugettel:HyperlinkType.DeprecationAlternativeDetails}"
+                TargetName="{Binding Path=PackageMetadata.DeprecationMetadata.AlternatePackage.PackageId}">
                 <Run Text="{Binding Path=PackageDeprecationAlternatePackageText}" />
               </Hyperlink>
             </TextBlock>

@@ -23,7 +23,7 @@
   <UserControl.CommandBindings>
     <CommandBinding
       Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-      Executed="ExecuteOpenLicenseLink" />
+      Executed="ExecuteOpenExternalLink" />
   </UserControl.CommandBindings>
   <ScrollViewer
     x:Name="_root"
@@ -122,7 +122,7 @@
               ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
               AutomationProperties.LabeledBy="{Binding ElementName=_packageDetailsUrlIcon}"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-              CommandParameter="{x:Static nugettel:ExternalHyperlinkType.ProjectUri}">
+              CommandParameter="{x:Static nugettel:HyperlinkType.ProjectUri}">
               <Run Text="{Binding Path=PackageMetadata.PackageDetailsText}" />
             </Hyperlink>
           </TextBlock>
@@ -204,7 +204,8 @@
             <Hyperlink
               NavigateUri="{Binding Path=OptionsBlockedUrl}"
               Style="{StaticResource HyperlinkStyle}"
-              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+              CommandParameter="{x:Static nugettel:HyperlinkType.OptionsBlocked}">
               <Run Text="{Binding Path=OptionsBlockedUrlText}" />
             </Hyperlink>
           </TextBlock>

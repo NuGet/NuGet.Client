@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.Telemetry
 {
-    public enum ExternalHyperlinkType
+    public enum HyperlinkType
     {
         License,
         ProjectUri,
@@ -17,6 +17,9 @@ namespace NuGet.PackageManagement.Telemetry
         FeedHome,
         Readme,
         DeprecationMoreInfo,
+        DeprecationAlternativeDetails,
+        DeprecationAlternativePackageItem,
         VulnerabilityAdvisory,
+        OptionsBlocked,
     }
 }

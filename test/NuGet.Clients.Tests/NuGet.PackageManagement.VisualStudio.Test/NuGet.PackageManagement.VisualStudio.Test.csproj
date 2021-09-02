@@ -46,6 +46,7 @@
     <Compile Include="Services\TestSharedServiceState.cs" />
     <Compile Include="Services\NuGetPackageSearchServiceTests.cs" />
     <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
+    <Compile Include="Telemetry\HyperlinkClickedTelemetryEventTests.cs" />
     <Compile Include="Telemetry\IntervalTrackerTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\RestoreTelemetryServiceTests.cs" />

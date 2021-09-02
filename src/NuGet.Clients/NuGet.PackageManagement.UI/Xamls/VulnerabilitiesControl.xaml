@@ -1,6 +1,7 @@
 <UserControl x:Class="NuGet.PackageManagement.UI.VulnerabilitiesControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -88,6 +89,7 @@
                     NavigateUri="{Binding Path=AdvisoryUrl}"
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+                    CommandParameter="{x:Static nugettel:HyperlinkType.VulnerabilityAdvisory}"
                     AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_AdvisoryUrl}">
                     <Run Text="{Binding Path=AdvisoryUrl, Mode=OneWay}" />
                   </Hyperlink>

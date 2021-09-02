@@ -1171,8 +1171,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             public string SearchString { get; set; }
-
-            public bool IsSearchFromDeprecationLink { get; set; }
         }
 
         public Guid Category
@@ -1248,7 +1246,7 @@ namespace NuGet.PackageManagement.UI
             .PostOnFailure(nameof(PackageManagerControl), nameof(FocusOnSearchBox_Executed));
         }
 
-        public void Search(string searchText, bool isSearchFromDeprecationLink = false)
+        public void Search(string searchText)
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {
@@ -1260,7 +1258,7 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _windowSearchHost.Activate();
-                _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText, IsSearchFromDeprecationLink = isSearchFromDeprecationLink });
+                _windowSearchHost.SearchAsync(new SearchQuery { SearchString = searchText });
             });
         }
 
@@ -1493,7 +1491,8 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var alternatePackageId = e.Parameter as string;
+            var hyperlink = sender as System.Windows.Documents.Hyperlink;
+            var alternatePackageId = hyperlink?.TargetName;
             if (!string.IsNullOrWhiteSpace(alternatePackageId))
             {
                 if (_windowSearchHost?.IsEnabled == true)
@@ -1506,7 +1505,14 @@ namespace NuGet.PackageManagement.UI
                     if (_windowSearchHost.SearchTask == null)
                     {
                         _topPanel.SelectFilter(ItemFilter.All);
-                        Search("packageid:" + alternatePackageId, isSearchFromDeprecationLink: true);
+                        var searchQuery = "packageid:" + alternatePackageId;
+                        Search(searchQuery);
+
+                        if (e.Parameter is not null and HyperlinkType hyperlinkType)
+                        {
+                            var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, searchQuery);
+                            TelemetryActivity.EmitTelemetryEvent(evt);
+                        }
                     }
                 }
             }

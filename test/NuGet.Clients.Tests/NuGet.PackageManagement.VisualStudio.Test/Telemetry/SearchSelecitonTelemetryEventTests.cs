@@ -38,8 +38,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 isPackageVulnerable: isPackageVulnerable,
                 isPackageDeprecated: isPackageDeprecated);
 
+            // Act
             service.EmitTelemetryEvent(evt);
 
+            // Assert
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(isPackageDeprecated, lastTelemetryEvent["IsPackageDeprecated"]);
             Assert.Equal(isPackageVulnerable, lastTelemetryEvent["IsPackageVulnerable"]);
