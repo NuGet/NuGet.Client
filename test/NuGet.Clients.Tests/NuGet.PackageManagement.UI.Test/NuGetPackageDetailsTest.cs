@@ -1,11 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Versioning;
 using Xunit;
 
@@ -28,7 +23,6 @@ namespace NuGet.PackageManagement.UI.Test
             //Assert
             string actualPackageName = packagedetails.PackageName;
             NuGetVersion actualVersion = packagedetails.VersionNumber;
-            Assert.NotNull(packagedetails);
             Assert.Equal(name, actualPackageName);
             Assert.Equal(nugetVersion, actualVersion);
         }
@@ -48,7 +42,6 @@ namespace NuGet.PackageManagement.UI.Test
             //Assert
             string actualPackageName = packagedetails.PackageName;
             NuGetVersion actualVersion = packagedetails.VersionNumber;
-            Assert.NotNull(packagedetails);
             Assert.Null(actualPackageName);
             Assert.Equal(nugetVersion, actualVersion);
         }
@@ -68,7 +61,6 @@ namespace NuGet.PackageManagement.UI.Test
             //Assert
             string actualPackageName = packagedetails.PackageName;
             NuGetVersion actualVersion = packagedetails.VersionNumber;
-            Assert.NotNull(packagedetails);
             Assert.Equal(name, actualPackageName);
             Assert.Null(actualVersion);
         }
@@ -87,7 +79,6 @@ namespace NuGet.PackageManagement.UI.Test
             //Assert
             string actualPackageName = packagedetails.PackageName;
             NuGetVersion actualVersion = packagedetails.VersionNumber;
-            Assert.NotNull(packagedetails);
             Assert.Null(actualPackageName);
             Assert.Null(actualVersion);
         }

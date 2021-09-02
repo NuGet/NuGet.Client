@@ -8,18 +8,20 @@ namespace NuGet.PackageManagement.UI
 {
     public static class DeepLinkURIParser
     {
-        public static NuGetPackageDetails GetNuGetPackageDetails(string packageLink)
+        public static bool TryParse(string packageLink, out NuGetPackageDetails packageDetails)
         {
             string packageName;
             NuGetVersion nugetPackageVersion;
-            if (TryParse(packageLink, out packageName, out nugetPackageVersion))
+            packageDetails = null;
+            bool success = TryParse(packageLink, out packageName, out nugetPackageVersion);
+            if (success)
             {
-                return new NuGetPackageDetails(packageName, nugetPackageVersion);
+                packageDetails = new NuGetPackageDetails(packageName, nugetPackageVersion);
             }
-            return null;
+            return success;
         }
 
-        public static bool TryParse(string packageLink, out string packageName, out NuGetVersion nugetPackageVersion)
+        private static bool TryParse(string packageLink, out string packageName, out NuGetVersion nugetPackageVersion)
         {
             packageName = null;
             nugetPackageVersion = null;

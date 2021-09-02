@@ -1325,9 +1325,9 @@ namespace NuGet.PackageManagement.UI
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     IReadOnlyCollection<VersionInfoContextInfo> versions = await _packageList.SelectedItem.GetVersionsAsync();
 
-                    // iterates through the list backwards as newer versions are more likely to be selected
                     if (versions != null)
                     {
+                        // iterates through the list backwards as newer versions are more likely to be selected
                         for (int i = versions.Count - 1; i >= 0; i--)
                         {
                             if (versions.ElementAt(i) != null)

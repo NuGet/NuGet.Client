@@ -653,9 +653,9 @@ namespace NuGetVSExtension
 
         public async Task SearchPackagesFromDeepLinkURIAsync(string packageLink)
         {
-            var packageDetails = DeepLinkURIParser.GetNuGetPackageDetails(packageLink);
+            NuGetPackageDetails packageDetails;
 
-            if (packageDetails == null)
+            if (!DeepLinkURIParser.TryParse(packageLink, out packageDetails))
             {
                 var window = new NuGetDeepLinkErrorWindow(Resx.ShowMessage_InvalidNuGetDeepLinkURI, Resx.Button_OK);
                 window.Title = Resx.WindowTitle_VisualStudioWebHandler;
