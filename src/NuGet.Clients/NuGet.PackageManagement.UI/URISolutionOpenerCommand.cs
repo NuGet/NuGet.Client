@@ -2,18 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using EnvDTE;
 using EnvDTE80;
-using Lucene.Net.Util;
 using Microsoft.VisualStudio.Shell;
-using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
