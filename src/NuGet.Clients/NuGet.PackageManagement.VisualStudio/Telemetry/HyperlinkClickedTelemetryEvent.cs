@@ -9,23 +9,23 @@ namespace NuGet.PackageManagement.Telemetry
     public sealed class HyperlinkClickedTelemetryEvent : TelemetryEvent
     {
         internal const string HyperlinkClickedEventName = "HyperlinkClicked";
-        internal const string SearchQueryPropertyName = "SearchQuery";
+        internal const string AlternativePackageIdPropertyName = "AlternativePackageId";
         internal const string HyperLinkTypePropertyName = "HyperlinkType";
         internal const string CurrentTabPropertyName = "CurrentTab";
         internal const string IsSolutionViewPropertyName = "IsSolutionView";
 
-        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ItemFilter currentTab, bool isSolution)
+        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ItemFilter currentTab, bool isSolutionView)
             : base(HyperlinkClickedEventName)
         {
             base[HyperLinkTypePropertyName] = hyperlinkType;
             base[CurrentTabPropertyName] = currentTab;
-            base[IsSolutionViewPropertyName] = isSolution;
+            base[IsSolutionViewPropertyName] = isSolutionView;
         }
 
-        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ItemFilter currentTab, bool isSolution, string searchQuery)
-            : this(hyperlinkType, currentTab, isSolution)
+        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ItemFilter currentTab, bool isSolutionView, string alternativePackageId)
+            : this(hyperlinkType, currentTab, isSolutionView)
         {
-            AddPiiData(SearchQueryPropertyName, searchQuery);
+            AddPiiData(AlternativePackageIdPropertyName, VSTelemetryServiceUtility.NormalizePackageId(alternativePackageId));
         }
     }
 }

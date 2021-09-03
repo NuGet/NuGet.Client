@@ -141,5 +141,10 @@ namespace NuGet.PackageManagement.Telemetry
 
             return projectType;
         }
+
+        public static string NormalizePackageId(string packageId)
+        {
+            return packageId?.ToLowerInvariant() ?? "(empty package id)";
+        }
     }
 }

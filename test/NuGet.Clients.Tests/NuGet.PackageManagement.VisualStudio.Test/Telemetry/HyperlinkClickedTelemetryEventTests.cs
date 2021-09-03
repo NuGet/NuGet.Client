@@ -7,6 +7,7 @@ using System.Linq;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
@@ -54,7 +55,79 @@ namespace NuGet.PackageManagement.Test.Telemetry
             Assert.Equal(hyperlinkTab, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.HyperLinkTypePropertyName]);
             Assert.Equal(currentTab, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.CurrentTabPropertyName]);
             Assert.Equal(isSolutionView, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.IsSolutionViewPropertyName]);
-            Assert.Equal(searchQuery, lastTelemetryEvent.GetPiiData().Where(x => x.Key == HyperlinkClickedTelemetryEvent.SearchQueryPropertyName).Select(x => x.Value).First());
+            Assert.Equal(searchQuery, lastTelemetryEvent.GetPiiData().Where(x => x.Key == HyperlinkClickedTelemetryEvent.AlternativePackageIdPropertyName).Select(x => x.Value).First());
+        }
+
+        [Fact]
+        public void HyperlinkClicked_CorrelatesSearchSelectionAndAction_Succeeds()
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            _ = telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            var testPackageId = "testPackage.id";
+            var testPackageVersion = new NuGetVersion(1, 0, 0);
+
+            var evtHyperlink = new HyperlinkClickedTelemetryEvent(
+                HyperlinkType.DeprecationAlternativeDetails,
+                ItemFilter.All,
+                isSolutionView: false,
+                testPackageId);
+
+            var evtSearch = new SearchSelectionTelemetryEvent(
+                parentId: It.IsAny<Guid>(),
+                recommendedCount: It.IsAny<int>(),
+                itemIndex: It.IsAny<int>(),
+                packageId: testPackageId,
+                packageVersion: testPackageVersion,
+                isPackageVulnerable: It.IsAny<bool>(),
+                isPackageDeprecated: true,
+                hasDeprecationAlternativePackage: true);
+
+            var evtActions = new VSActionsTelemetryEvent(
+                operationId: It.IsAny<string>(),
+                projectIds: new[] { Guid.NewGuid().ToString() },
+                operationType: NuGetOperationType.Install,
+                source: OperationSource.PMC,
+                startTime: DateTimeOffset.Now.AddSeconds(-1),
+                status: NuGetOperationStatus.NoOp,
+                packageCount: 1,
+                endTime: DateTimeOffset.Now,
+                duration: .40,
+                isPackageSourceMappingEnabled: false);
+
+            // Simulate UIActionEngine.AddUiActionEngineTelemetryProperties()
+            var pkgAdded = new TelemetryEvent(eventName: null);
+            pkgAdded.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(testPackageId));
+            pkgAdded.AddPiiData("version", testPackageVersion.ToNormalizedString());
+
+            var packages = new List<TelemetryEvent>
+            {
+                pkgAdded
+            };
+
+            evtActions.ComplexData["AddedPackages"] = packages;
+
+            // Act
+            service.EmitTelemetryEvent(evtHyperlink);
+            var hyperlinkEmitted = lastTelemetryEvent;
+            service.EmitTelemetryEvent(evtSearch);
+            var searchEmitted = lastTelemetryEvent;
+            service.EmitTelemetryEvent(evtActions);
+            var actionEmitted = lastTelemetryEvent;
+
+            // Assert
+            var packageIdHyperlink = hyperlinkEmitted.GetPiiData().First(x => x.Key == HyperlinkClickedTelemetryEvent.AlternativePackageIdPropertyName).Value;
+            var packageIdSearch = searchEmitted.GetPiiData().First(x => x.Key == "PackageId").Value;
+            var packageIdsAction = (IEnumerable<TelemetryEvent>)actionEmitted.ComplexData["AddedPackages"];
+            var packageIds = packageIdsAction.Select(x => x.GetPiiData().First(x => x.Key == "id").Value);
+            Assert.Equal(packageIdHyperlink, packageIdSearch);
+            Assert.Contains(packageIdHyperlink, packageIds);
         }
     }
 }

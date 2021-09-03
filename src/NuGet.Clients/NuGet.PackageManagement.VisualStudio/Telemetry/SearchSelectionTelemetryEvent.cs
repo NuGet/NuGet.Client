@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.Telemetry
             base["IsPackageVulnerable"] = isPackageVulnerable;
             base["IsPackageDeprecated"] = isPackageDeprecated;
             base["HasDeprecationAlternativePackage"] = hasDeprecationAlternativePackage;
-            AddPiiData("PackageId", packageId.ToLowerInvariant());
+            AddPiiData("PackageId", VSTelemetryServiceUtility.NormalizePackageId(packageId));
             AddPiiData("PackageVersion", packageVersion.ToNormalizedString().ToLowerInvariant());
         }
     }

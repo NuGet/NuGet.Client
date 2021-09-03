@@ -561,7 +561,7 @@ namespace NuGet.PackageManagement.UI
             static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
             {
                 var subEvent = new TelemetryEvent(eventName: null);
-                subEvent.AddPiiData("id", package.Item1?.ToLowerInvariant() ?? "(empty package id)");
+                subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(package.Item1));
                 subEvent["version"] = package.Item2;
                 return subEvent;
             }
