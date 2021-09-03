@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI.Test
         [InlineData("nuget-client://OpenPackageDetails/Serilog/1.2.3", "Serilog", "1.2.3")]
         [InlineData("nuget-client://OpenPackageDetails/Moq/1.3.5", "Moq", "1.3.5")]
         public void TryParse_FormattedProperlyTwoProperties_ShouldBeValid(string packageLink, string packageName, string version)
-            {
+        {
             //Arrange
             var packageVersion = NuGetVersion.Parse(version);
             var package = new NuGetPackageDetails(packageName, packageVersion);
@@ -147,8 +147,6 @@ namespace NuGet.PackageManagement.UI.Test
         public void TryParse_NumberOfPropertiesIsNotTwoOrOne_ShouldBeNull(string packageLink)
         {
             //Arrange
-            string packageLink = null;
-
             //Act
             bool result = DeepLinkURIParser.TryParse(packageLink, out NuGetPackageDetails resultingPackage);
 

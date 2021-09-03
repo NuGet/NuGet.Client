@@ -5,15 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell.CodeContainerManagement;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
-using System.Threading.Tasks.Dataflow;
-using CodeContainer = Microsoft.VisualStudio.Shell.CodeContainerManagement.CodeContainer;
 using System.Threading;
-using NuGet.VisualStudio;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using System.Windows.Input;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.CodeContainerManagement;
+using NuGet.VisualStudio;
+using CodeContainer = Microsoft.VisualStudio.Shell.CodeContainerManagement.CodeContainer;
 
 namespace NuGet.PackageManagement.UI
 {
