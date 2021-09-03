@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.UI
 
         public async Task PopulateSolutionListAsync(CodeContainerStorageManagerFactory storageManagerFactory)
         {
-            if(storageManagerFactory == null)
+            if (storageManagerFactory == null)
             {
                 throw new ArgumentNullException(nameof(storageManagerFactory));
             }
@@ -55,8 +55,7 @@ namespace NuGet.PackageManagement.UI
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             foreach (CodeContainer cc in solutionList)
             {
-                string filePath = cc.LocalProperties.FullPath;
-                var item = new SolutionPickerItemViewModel(OpenSolution, filePath);
+                var item = new SolutionPickerItemViewModel(OpenSolution, cc.LocalProperties.FullPath);
                 _solutionPathList.Add(item);
             }
         }

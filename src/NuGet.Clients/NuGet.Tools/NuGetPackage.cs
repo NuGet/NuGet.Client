@@ -1027,7 +1027,6 @@ namespace NuGetVSExtension
                     {
                         SolutionManager.Value.SolutionOpened -= handler;
                         window.DialogResult = true;
-                        //window.Close();
 
                         NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                         {
@@ -1043,7 +1042,10 @@ namespace NuGetVSExtension
                     if (window.DialogResult != true)
                     {
                         var dte = GetGlobalService(typeof(_DTE)) as DTE2;
-                        dte.ExecuteCommand("File.Exit");
+                        if (dte != null)
+                        {
+                            dte.ExecuteCommand("File.Exit");
+                        }
                     }
                     return;
                 }
