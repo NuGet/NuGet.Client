@@ -3,8 +3,10 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
+using System.Windows.Input;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -74,6 +76,11 @@ namespace NuGet.PackageManagement.UI
                 v,
                 _scalingFactor[exp]);
             return s;
+        }
+
+        public static string CreateSearchQuery(string query)
+        {
+            return "packageid:" + query;
         }
     }
 }

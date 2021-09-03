@@ -1494,9 +1494,9 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var hyperlink = sender as System.Windows.Documents.Hyperlink;
-            var alternatePackageId = hyperlink?.TargetName;
-            if (!string.IsNullOrWhiteSpace(alternatePackageId))
+            var tupleParam = e.Parameter as Tuple<string, HyperlinkType>;
+            var alternatePackageId = tupleParam?.Item1;
+            if (tupleParam != null && !string.IsNullOrWhiteSpace(alternatePackageId))
             {
                 if (_windowSearchHost?.IsEnabled == true)
                 {
@@ -1508,17 +1508,17 @@ namespace NuGet.PackageManagement.UI
                     if (_windowSearchHost.SearchTask == null)
                     {
                         _topPanel.SelectFilter(ItemFilter.All);
-                        var searchQuery = "packageid:" + alternatePackageId;
+                        var searchQuery = UIUtility.CreateSearchQuery(alternatePackageId);
                         Search(searchQuery);
 
-                        if (e.Parameter is not null and HyperlinkType hyperlinkType)
-                        {
-                            var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, searchQuery);
-                            TelemetryActivity.EmitTelemetryEvent(evt);
-                        }
+                        var hyperlinkType = tupleParam.Item2;
+                        var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, searchQuery);
+                        TelemetryActivity.EmitTelemetryEvent(evt);
                     }
                 }
             }
+
+            e.Handled = true;
         }
 
         private async Task ExecuteRestartSearchCommandAsync()
