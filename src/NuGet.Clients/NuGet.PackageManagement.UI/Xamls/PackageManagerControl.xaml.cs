@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1292,6 +1291,56 @@ namespace NuGet.PackageManagement.UI
                     SelectMatchingUpdatePackages(updatePackageOptions);
                 };
                 _packageList.LoadItemsCompleted += handler;
+            }  
+        }
+
+        public void SelectFirstPackage(NuGetVersion packageVersion)
+        {
+            _topPanel.SelectFilter(ItemFilter.All);
+            SelectedSource = PackageSources.FirstOrDefault(psm => psm.IsAggregateSource);
+            EventHandler handler = null;
+            if (_packageList.IsLoaded)
+            {
+                FindExactPackageVersion(packageVersion);
+            }
+            else
+            {
+                handler = (s, e) =>
+                {
+                    _packageList.LoadItemsCompleted -= handler;
+                    FindExactPackageVersion(packageVersion);
+                };
+                _packageList.LoadItemsCompleted += handler;
+            }
+        }
+
+        private void FindExactPackageVersion(NuGetVersion packageVersion)
+        {
+            _packageList.UpdateSelectedItem((PackageItemViewModel)_packageList.Items.FirstOrDefault());
+            if (packageVersion != null)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    IReadOnlyCollection<VersionInfoContextInfo> versions = await _packageList.SelectedItem.GetVersionsAsync();
+
+                    if (versions != null)
+                    {
+                        // iterates through the list backwards as newer versions are more likely to be selected
+                        for (int i = versions.Count - 1; i >= 0; i--)
+                        {
+                            if (versions.ElementAt(i) != null)
+                            {
+                                NuGetVersion version = versions.ElementAt(i).Version;
+                                if (version.Equals(packageVersion))
+                                {
+                                    _detailModel.SelectedVersion = new DisplayVersion(version, string.Empty);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(FindExactPackageVersion));
             }
         }
 

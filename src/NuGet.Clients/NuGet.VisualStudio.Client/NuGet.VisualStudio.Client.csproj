@@ -382,6 +382,9 @@
   <ItemGroup>
     <VsixIgnoreFile Include=".vsixignore" />
   </ItemGroup>
+  <ItemGroup>
+    <ContentManifest Include="ContentManifest.json" />
+  </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS" />
   <Target Name="PublishVS">
     <ItemGroup>

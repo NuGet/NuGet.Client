@@ -36,6 +36,7 @@
     <Compile Include="Converters\DeprecationToDeprecationLabelStateConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
+    <Compile Include="DeepLinkPackageParserTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MockedVS.cs" />
     <Compile Include="Models\PackageDependencySetMetadataTests.cs" />
@@ -44,6 +45,7 @@
     <Compile Include="Models\PackageItemViewModelTests.cs" />
     <Compile Include="Models\PreviewWindowModelTests.cs" />
     <Compile Include="Models\DetailedPackageMetadataTests.cs" />
+    <Compile Include="NuGetPackageDetailsTest.cs" />
     <Compile Include="NuGetSettingsSerializerTests.cs" />
     <Compile Include="NuGetSolutionManagerServiceWrapperTests.cs" />
     <Compile Include="NuGetSourcesServiceWrapperTests.cs" />

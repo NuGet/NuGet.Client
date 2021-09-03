@@ -1719,6 +1719,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot determine the target package from this URI. Please verify that the URI is properly formed using the following format: nuget-client://OpenPackageDetails/&lt;packageID&gt;/&lt;version&gt;..
+        /// </summary>
+        public static string ShowMessage_InvalidNuGetDeepLinkURI {
+            get {
+                return ResourceManager.GetString("ShowMessage_InvalidNuGetDeepLinkURI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet cache(s) clear failed at {0}. 
         ///Error: {1}
         ///Please see https://aka.ms/troubleshoot_nuget_cache for more help..
@@ -2644,6 +2653,15 @@ namespace NuGet.PackageManagement.UI {
         public static string WindowTitle_Progress {
             get {
                 return ResourceManager.GetString("WindowTitle_Progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microsoft Visual Studio Web Handler.
+        /// </summary>
+        public static string WindowTitle_VisualStudioWebHandler {
+            get {
+                return ResourceManager.GetString("WindowTitle_VisualStudioWebHandler", resourceCulture);
             }
         }
     }

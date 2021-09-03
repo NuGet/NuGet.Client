@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json.schemastore.org/vsix-manifestinjection",
+  "urlAssociations": [
+    {
+      "protocol": "nuget-client",
+      "displayName": "Visual Studio NuGet Deep Link URI Handler",
+      "progId": "VisualStudio.nuget-client.[InstanceId]",
+      "defaultProgramRegistrationPath": "Software\\Microsoft\\VisualStudio_[InstanceId]\\Capabilities"
+    }
+  ],
+  "progIds": [
+    {
+      "id": "VisualStudio.nuget-client.[InstanceId]",
+      "displayName": "NuGet Deep Link URI Handler",
+      "path": "[InstallDir]\\Common7\\IDE\\devenv.exe",
+      "arguments": "/OpenPackageDetails",
+      "defaultIconPath": "[InstallDir]\\Common7\\IDE\\devenv.exe"
+    }
+  ]
+}

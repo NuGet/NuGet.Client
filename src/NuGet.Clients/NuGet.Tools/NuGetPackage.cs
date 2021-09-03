@@ -10,7 +10,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using EnvDTE;
+using EnvDTE80;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
@@ -40,6 +42,7 @@ using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudien
 using Task = System.Threading.Tasks.Task;
 using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using UI = NuGet.PackageManagement.UI;
+using NuGet.Versioning;
 
 namespace NuGetVSExtension
 {
@@ -66,6 +69,7 @@ namespace NuGetVSExtension
         new[] { "SolutionExistsAndFullyLoaded", "PackagesConfigBasedProjectLoaded" },
         new[] { VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string,
             "HierSingleSelectionName:packages.config"})]
+    [ProvideAppCommandLine("OpenPackageDetails", typeof(NuGetPackage), Arguments = "1", DemandLoad = 1)]
     [ProvideAutoLoad(GuidList.guidUpgradeableProjectLoadedString, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string, PackageAutoLoadFlags.BackgroundLoad)]
@@ -191,6 +195,17 @@ namespace NuGetVSExtension
                 ThreadHelper.JoinableTaskFactory);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
+
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
+            var cmdline = await GetServiceAsync(typeof(SVsAppCommandLine)) as IVsAppCommandLine;
+            Assumes.Present(cmdline);
+            ErrorHandler.ThrowOnFailure(cmdline.GetOption("OpenPackageDetails", out int isPresent, out string optionValue));
+
+            if (isPresent == 1)
+            {
+                // If opened from a URL, then "optionValue" is the URL string itself
+                await SearchPackagesFromDeepLinkURIAsync(optionValue);
+            }
 
             VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
         }
@@ -636,6 +651,32 @@ namespace NuGetVSExtension
             }
         }
 
+        public async Task SearchPackagesFromDeepLinkURIAsync(string packageLink)
+        {
+            NuGetPackageDetails packageDetails;
+
+            if (!DeepLinkURIParser.TryParse(packageLink, out packageDetails))
+            {
+                var window = new NuGetDeepLinkErrorWindow(Resx.ShowMessage_InvalidNuGetDeepLinkURI, Resx.Button_OK);
+                window.Title = Resx.WindowTitle_VisualStudioWebHandler;
+                window.SizeToContent = SizeToContent.WidthAndHeight;
+
+                window.ShowModal();
+
+                var dte = GetGlobalService(typeof(_DTE)) as DTE2;
+
+                if (dte != null)
+                {
+                    dte.ExecuteCommand("File.Exit");
+                }
+
+                return;
+            }
+            string packageName = "packageid: " + packageDetails.PackageName;
+
+            await ShowManageLibraryPackageForSolutionDialogAsync(packageName, isOpenedByURI: true, packageDetails.VersionNumber);
+        }
+
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
             string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
@@ -948,37 +989,62 @@ namespace NuGetVSExtension
 
         private void ShowManageLibraryPackageForSolutionDialog(object sender, EventArgs e)
         {
+            string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await ShowManageLibraryPackageForSolutionDialogAsync(GetSearchText(parameterString));
+            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
+        }
 
-                if (ShouldMEFBeInitialized())
+        private async Task ShowManageLibraryPackageForSolutionDialogAsync(string searchText, bool isOpenedByURI = false, NuGetVersion version = null)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (ShouldMEFBeInitialized(isOpenedByURI))
+            {
+                await InitializeMEFAsync();
+            }
+
+            var windowFrame = await FindExistingSolutionWindowFrameAsync();
+            if (windowFrame == null)
+            {
+                //Create the window frame
+                if (isOpenedByURI && !await SolutionManager.Value.IsSolutionAvailableAsync())
                 {
-                    await InitializeMEFAsync();
+                    // event handler is set up here because the PMUI can only be shown once the solution has fully loaded in as it is not feasible to open the PMUI when
+                    // there is no solution associated with it
+                    EventHandler handler = null;
+                    handler = (s, e) =>
+                    {
+                        SolutionManager.Value.SolutionOpened -= handler;
+
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                        {
+                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            windowFrame = await CreateDocWindowForSolutionAsync();
+                            DisplayPMUISearch(windowFrame, searchText);
+                            VsUtility.GetPackageManagerControl(windowFrame)?.SelectFirstPackage(version);
+                        }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialogAsync));
+                    };
+                    SolutionManager.Value.SolutionOpened += handler;
+                    return;
                 }
-
-                var windowFrame = await FindExistingSolutionWindowFrameAsync();
-                if (windowFrame == null)
+                else
                 {
-                    // Create the window frame
                     windowFrame = await CreateDocWindowForSolutionAsync();
                 }
+            }
+            DisplayPMUISearch(windowFrame, searchText);
+        }
 
-                if (windowFrame != null)
-                {
-                    // process search string
-                    string parameterString = null;
-                    var args = e as OleMenuCmdEventArgs;
-                    if (args != null)
-                    {
-                        parameterString = args.InValue as string;
-                    }
-                    var searchText = GetSearchText(parameterString);
-                    Search(windowFrame, searchText);
-
-                    windowFrame.Show();
-                }
-            }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
+        private void DisplayPMUISearch(IVsWindowFrame windowFrame, string searchText)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (windowFrame != null)
+            {
+                Search(windowFrame, searchText);
+                windowFrame.Show();
+            }
         }
 
         /// <summary>
@@ -1235,7 +1301,7 @@ namespace NuGetVSExtension
                    && await EnvDTEProjectUtility.IsSupportedAsync(project);
         }
 
-        private bool ShouldMEFBeInitialized()
+        private bool ShouldMEFBeInitialized(bool isOpenedByURI = false)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -1243,6 +1309,11 @@ namespace NuGetVSExtension
             {
                 var hr = VsMonitorSelection.IsCmdUIContextActive(
                 _solutionExistsCookie, out var pfActive);
+
+                if (isOpenedByURI)
+                {
+                    return ErrorHandler.Succeeded(hr);
+                }
 
                 return ErrorHandler.Succeeded(hr) && pfActive > 0;
             }

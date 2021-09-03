@@ -52,6 +52,9 @@
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Actions\UpgradeLogger.cs" />
+    <Compile Include="DeepLinkURIParser.cs" />
+    <Compile Include="NuGetDeepLinkErrorWindow.cs" />
+    <Compile Include="NuGetPackageDetails.cs" />
     <Compile Include="Automation\ISelectableItem.cs" />
     <Compile Include="Automation\ISelectableItemsControl.cs" />
     <Compile Include="Automation\ListBoxToggleableItemsAutomationPeer.cs" />
@@ -153,6 +156,9 @@
     <Compile Include="Models\LicenseFileData.cs" />
     <Compile Include="Xamls\LicenseFileWindow.xaml.cs">
       <DependentUpon>LicenseFileWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\NuGetDeepLinkErrorView.xaml.cs">
+      <DependentUpon>NuGetDeepLinkErrorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\NuGetProjectUpgradeWindow.xaml.cs">
       <DependentUpon>NuGetProjectUpgradeWindow.xaml</DependentUpon>
@@ -319,6 +325,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Xamls\LicenseFileWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\NuGetDeepLinkErrorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -532,5 +542,4 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
-  <ItemGroup />
 </Project>
