@@ -121,7 +121,8 @@ namespace NuGet.VisualStudio
                     return service;
                 }
             }
-            return null;
+
+            return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<TService, TInterface>();
         }
 
         /// <summary>
