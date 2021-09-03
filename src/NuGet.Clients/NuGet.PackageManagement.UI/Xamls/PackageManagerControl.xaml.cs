@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.UI
 
             Model = model;
             _uiLogger = uiLogger;
-            Settings = await ServiceLocator.GetInstanceAsync<ISettings>();
+            Settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
 
             _windowSearchHostFactory = await ServiceLocator.GetGlobalServiceAsync<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             _serviceBroker = model.Context.ServiceBroker;
@@ -882,7 +882,7 @@ namespace NuGet.PackageManagement.UI
                 _recommendPackages = true;
             }
 
-            NuGetExperimentationService = await ServiceLocator.GetInstanceAsync<INuGetExperimentationService>();
+            NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             // Check for A/B experiment here. For control group, return false instead of _recommendPackages
             if (IsRecommenderFlightEnabled(NuGetExperimentationService))
             {

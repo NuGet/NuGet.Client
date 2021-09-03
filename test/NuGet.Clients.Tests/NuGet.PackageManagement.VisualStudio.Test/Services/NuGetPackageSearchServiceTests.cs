@@ -9,18 +9,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
@@ -35,6 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly IEnumerable<IPackageReferenceContextInfo> _installedPackages;
         private readonly IEnumerable<IPackageReferenceContextInfo> _transitivePackages;
         private readonly IReadOnlyCollection<IProjectContextInfo> _projects;
+        private readonly Mock<IComponentModel> _componentModel;
 
         public NuGetPackageSearchServiceTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
@@ -59,6 +62,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { "https://api.nuget.org/v3/registration3-gz-semver2/nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) },
                 { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
             };
+            _componentModel = new Mock<IComponentModel>();
+            globalServiceProvider.AddService(typeof(SComponentModel), _componentModel.Object);
 
             _sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
         }
@@ -291,10 +296,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var settings = new Mock<ISettings>();
             var deleteOnRestartManager = new Mock<IDeleteOnRestartManager>();
 
-            AddService<IDeleteOnRestartManager>(Task.FromResult<object>(deleteOnRestartManager.Object));
-            AddService<IVsSolutionManager>(Task.FromResult<object>(solutionManager.Object));
-            AddService<ISourceRepositoryProvider>(Task.FromResult<object>(sourceRepositoryProvider.Object));
-            AddService<ISettings>(Task.FromResult<object>(settings.Object));
+            _componentModel.Setup(x => x.GetService<IDeleteOnRestartManager>()).Returns(deleteOnRestartManager.Object);
+            _componentModel.Setup(x => x.GetService<IVsSolutionManager>()).Returns(solutionManager.Object);
+            _componentModel.Setup(x => x.GetService<ISolutionManager>()).Returns(solutionManager.Object);
+            _componentModel.Setup(x => x.GetService<ISettings>()).Returns(settings.Object);
+            _componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
+            _componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(new Mock<INuGetProjectContext>().Object);
+
+            var service = Package.GetGlobalService(typeof(SAsyncServiceProvider)) as IAsyncServiceProvider;
+            ServiceLocator.InitializePackageServiceProvider(service);
 
             var serviceActivationOptions = default(ServiceActivationOptions);
             var serviceBroker = new Mock<IServiceBroker>();
