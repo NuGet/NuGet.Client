@@ -3,10 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Windows.Input;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Common;
-using NuGet.PackageManagement.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -81,6 +78,25 @@ namespace NuGet.PackageManagement.UI
         public static string CreateSearchQuery(string query)
         {
             return "packageid:" + query;
+        }
+
+        public static NuGet.VisualStudio.Internal.Contracts.ItemFilter ToContractsItemFilter(ItemFilter filter)
+        {
+            switch (filter)
+            {
+                case ItemFilter.All:
+                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.All;
+                case ItemFilter.Consolidate:
+                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.Consolidate;
+                case ItemFilter.Installed:
+                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.Installed;
+                case ItemFilter.UpdatesAvailable:
+                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.UpdatesAvailable;
+                default:
+                    break;
+            }
+
+            return NuGet.VisualStudio.Internal.Contracts.ItemFilter.All;
         }
     }
 }

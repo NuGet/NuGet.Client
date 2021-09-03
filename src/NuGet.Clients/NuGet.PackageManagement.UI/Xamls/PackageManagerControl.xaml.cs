@@ -1507,12 +1507,14 @@ namespace NuGet.PackageManagement.UI
                     }
                     if (_windowSearchHost.SearchTask == null)
                     {
+                        NuGet.VisualStudio.Internal.Contracts.ItemFilter currentTab = UIUtility.ToContractsItemFilter(ActiveFilter);
+
                         _topPanel.SelectFilter(ItemFilter.All);
                         var searchQuery = UIUtility.CreateSearchQuery(alternatePackageId);
                         Search(searchQuery);
 
                         var hyperlinkType = tupleParam.Item2;
-                        var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, searchQuery);
+                        var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, currentTab, Model.IsSolution, searchQuery);
                         TelemetryActivity.EmitTelemetryEvent(evt);
                     }
                 }
