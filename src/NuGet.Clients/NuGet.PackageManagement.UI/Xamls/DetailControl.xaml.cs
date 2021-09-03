@@ -16,8 +16,10 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
-    // The DataContext of this control is DetailControlModel, i.e. either
-    // PackageSolutionDetailControlModel or PackageDetailControlModel.
+    /// <summary>
+    /// The DataContext of this control is <see cref="DetailControlModel" />, i.e. either
+    /// <see cref="PackageSolutionDetailControlModel" /> or <see cref="PackageDetailControlModel"/>
+    /// </summary>
     public partial class DetailControl : UserControl
     {
         public PackageManagerControl Control { get; set; }

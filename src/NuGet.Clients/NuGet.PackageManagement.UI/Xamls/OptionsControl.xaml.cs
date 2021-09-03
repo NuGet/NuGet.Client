@@ -4,8 +4,6 @@
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using NuGet.Common;
-using NuGet.PackageManagement.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
