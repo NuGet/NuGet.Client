@@ -122,7 +122,7 @@
               ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
               AutomationProperties.LabeledBy="{Binding ElementName=_packageDetailsUrlIcon}"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-              CommandParameter="{x:Static nugettel:HyperlinkType.ProjectUri}">
+              CommandParameter="{x:Static nugettel:HyperlinkType.Header}">
               <Run Text="{Binding Path=PackageMetadata.PackageDetailsText}" />
             </Hyperlink>
           </TextBlock>
