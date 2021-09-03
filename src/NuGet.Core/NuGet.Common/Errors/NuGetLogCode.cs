@@ -713,7 +713,7 @@ namespace NuGet.Common
         NU5040 = 5040,
 
         /// <summary>
-        /// Error_ProjectJsonPack_Deprecated_And_Disabled
+        /// Error_ReadmeCannotOpenFile
         /// </summary>
         NU5041 = 5041,
 
@@ -721,6 +721,11 @@ namespace NuGet.Common
         /// Attempted to write files from multiple sources into the same location
         /// </summary>
         NU5042 = 5042,
+
+        /// <summary>
+        /// Error_ProjectJsonPack_Deprecated_And_Disabled
+        /// </summary>
+        NU5043 = 5043,
 
         /// <summary>
         /// Invalid icon extension error
