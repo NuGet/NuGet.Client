@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string GetPropertyValue(string propertyName)
         {
-            return _threadingService.ExecuteSynchronously(() => GetPropertyValueAsync(propertyName));
+            return _threadingService.JoinableTaskFactory.Run(() => GetPropertyValueAsync(propertyName));
         }
 
         public async Task<string> GetPropertyValueAsync(string propertyName)

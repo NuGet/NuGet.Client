@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -82,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _asVSProject4 = new Lazy<VSProject4>(() =>
             {
-                _threadingService.ThrowIfNotOnUIThread();
+                ThreadHelper.ThrowIfNotOnUIThread();
                 return vsProjectAdapter.Project.Object as VSProject4;
             });
 
@@ -297,7 +298,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void AddOrUpdatePackageReference(string packageName, VersionRange packageVersion, string[] metadataElements, string[] metadataValues)
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             // Note that API behavior is:
             // - specify a metadata element name with a value => add/replace that metadata item on the package reference
