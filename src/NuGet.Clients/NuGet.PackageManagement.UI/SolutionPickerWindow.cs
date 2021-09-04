@@ -23,9 +23,13 @@ namespace NuGet.PackageManagement.UI
             _viewModel.SolutionClicked += ViewModelSolutionClicked;
         }
 
-        private void ViewModelSolutionClicked(object sender, EventArgs e)
+        public void Dispose()
         {
             _viewModel.SolutionClicked -= ViewModelSolutionClicked;
+        }
+
+        private void ViewModelSolutionClicked(object sender, EventArgs e)
+        {
             DialogResult = true;
             Close();
         }
