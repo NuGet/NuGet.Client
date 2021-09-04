@@ -308,7 +308,7 @@ namespace NuGet.CommandLine
                     Logger.Log(
                         PackagingLogMessage.CreateError(
                             string.Format(NuGetResources.Error_ProjectJson_Deprecated_And_Removed, builder.Id, NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK),
-                            NuGetLogCode.NU5041));
+                            NuGetLogCode.NU5042));
                     return null;
                 }
 
