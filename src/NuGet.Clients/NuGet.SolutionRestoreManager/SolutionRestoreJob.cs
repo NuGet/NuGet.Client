@@ -190,7 +190,7 @@ namespace NuGet.SolutionRestoreManager
 
                     using (intervalTracker.Start(RestoreTelemetryEvent.RestoreOperationChecks))
                     {
-                        solutionDirectory = _solutionManager.SolutionDirectory;
+                        solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync();
                         isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
 
                         // Get the projects from the SolutionManager

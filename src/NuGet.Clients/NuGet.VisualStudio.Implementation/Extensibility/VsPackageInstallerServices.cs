@@ -67,7 +67,7 @@ namespace NuGet.VisualStudio
                         // Calls may occur in the template wizard before the solution is actually created,
                         // in that case return no projects
                         if (_solutionManager != null
-                                && !string.IsNullOrEmpty(_solutionManager.SolutionDirectory))
+                                && !string.IsNullOrEmpty(await _solutionManager.GetSolutionDirectoryAsync()))
                         {
                             //switch to background thread
                             await TaskScheduler.Default;
@@ -152,7 +152,7 @@ namespace NuGet.VisualStudio
             var packages = new List<PackageReference>();
 
             if (_solutionManager != null
-                && !string.IsNullOrEmpty(_solutionManager.SolutionDirectory))
+                && !string.IsNullOrEmpty(await _solutionManager.GetSolutionDirectoryAsync()))
             {
                 var projectContext = new VSAPIProjectContext
                 {
@@ -188,7 +188,7 @@ namespace NuGet.VisualStudio
                         var packages = new List<IVsPackageMetadata>();
 
                         if (_solutionManager != null
-                            && !string.IsNullOrEmpty(_solutionManager.SolutionDirectory))
+                            && !string.IsNullOrEmpty(await _solutionManager.GetSolutionDirectoryAsync()))
                         {
                             //switch to background thread
                             await TaskScheduler.Default;

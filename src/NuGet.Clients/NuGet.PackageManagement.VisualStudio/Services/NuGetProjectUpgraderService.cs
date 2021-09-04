@@ -110,9 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsSolutionManager? solutionManager = await _state.SolutionManager.GetValueAsync(cancellationToken);
             Assumes.NotNull(solutionManager);
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            string solutionDirectory = solutionManager.SolutionDirectory;
+            string solutionDirectory = await solutionManager.GetSolutionDirectoryAsync();
 
             await TaskScheduler.Default;
 

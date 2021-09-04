@@ -416,25 +416,21 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        public string SolutionDirectory
-        {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    if (!await IsSolutionOpenAsync())
-                    {
-                        return null;
-                    }
-                    var solutionFilePath = await GetSolutionFilePathAsync();
+        public string SolutionDirectory => NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
 
-                    if (string.IsNullOrEmpty(solutionFilePath))
-                    {
-                        return null;
-                    }
-                    return Path.GetDirectoryName(solutionFilePath);
-                });
+        public async Task<string> GetSolutionDirectoryAsync()
+        {
+            if (!await IsSolutionOpenAsync())
+            {
+                return null;
             }
+            var solutionFilePath = await GetSolutionFilePathAsync();
+
+            if (string.IsNullOrEmpty(solutionFilePath))
+            {
+                return null;
+            }
+            return Path.GetDirectoryName(solutionFilePath);
         }
 
         public async Task<string> GetSolutionFilePathAsync()

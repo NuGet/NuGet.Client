@@ -416,7 +416,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 {
                     // if there is no solution open, we set the active directory to be user profile folder
                     var targetDir = await _solutionManager.Value.IsSolutionOpenAsync() ?
-                        _solutionManager.Value.SolutionDirectory :
+                        await _solutionManager.Value.GetSolutionDirectoryAsync() :
                         Environment.GetEnvironmentVariable("USERPROFILE");
 
                     Runspace.ChangePSDirectory(targetDir);
@@ -441,7 +441,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 }
 
                 var latestRestore = _latestRestore;
-                var latestSolutionDirectory = _solutionManager.Value.SolutionDirectory;
+                var latestSolutionDirectory = await _solutionManager.Value.GetSolutionDirectoryAsync();
                 if (ShouldNoOpDueToRestore(latestRestore) &&
                     ShouldNoOpDueToSolutionDirectory(latestSolutionDirectory))
                 {
