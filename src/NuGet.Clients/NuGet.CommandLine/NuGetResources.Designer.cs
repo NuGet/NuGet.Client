@@ -3114,7 +3114,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to `project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
         ///Please consider migrating &apos;{0}&apos; to `PackageReference` and using the pack targets.
-        ///You can use &apos;{1}&apos; environment variable to temporarily reenable this functionality..
+        ///You can set &apos;{1}&apos; environment variable to &apos;true&apos; to temporarily reenable this functionality..
         /// </summary>
         public static string Error_ProjectJson_Deprecated_And_Removed {
             get {
