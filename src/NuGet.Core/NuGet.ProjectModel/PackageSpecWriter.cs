@@ -59,10 +59,12 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
+#pragma warning restore CS0612 // Type or member is obsolete
+            SetMSBuildMetadata(writer, packageSpec);
+#pragma warning disable CS0612 // Type or member is obsolete
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 #pragma warning restore CS0612 // Type or member is obsolete
 
-            SetMSBuildMetadata(writer, packageSpec);
 
             if (packageSpec.Dependencies.Any())
             {

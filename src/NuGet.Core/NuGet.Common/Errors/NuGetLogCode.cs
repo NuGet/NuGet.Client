@@ -718,14 +718,9 @@ namespace NuGet.Common
         NU5041 = 5041,
 
         /// <summary>
-        /// Attempted to write files from multiple sources into the same location
-        /// </summary>
-        NU5042 = 5042,
-
-        /// <summary>
         /// Error_ProjectJsonPack_Deprecated_And_Disabled
         /// </summary>
-        NU5043 = 5043,
+        NU5042 = 5042,
 
         /// <summary>
         /// Invalid icon extension error
