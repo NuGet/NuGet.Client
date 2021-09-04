@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         {
             yield return new object[] { new object[] { }, null };
             yield return new object[] { null, null };
-            yield return new object[] { new object[] { "query", HyperlinkType.DeprecationMoreInfo }, Tuple.Create("query", HyperlinkType.ProjectUri) };
+            yield return new object[] { new object[] { "query", HyperlinkType.DeprecationMoreInfo }, Tuple.Create("query", HyperlinkType.DeprecationMoreInfo) };
             yield return new object[] { new object[] { "query", HyperlinkType.ProjectUri, "blah" }, null };
             yield return new object[] { new object[] { 1, 2, 3, 4 }, null };
         }
