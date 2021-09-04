@@ -48,9 +48,9 @@ namespace NuGetConsole
 
                             Assumes.NotNull(_solutionManager);
 
-                            var productUpdateService = ServiceLocator.GetInstance<IProductUpdateService>();
-                            var packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
-                            var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+                            var productUpdateService = ServiceLocator.GetComponentModelService<IProductUpdateService>();
+                            var packageRestoreManager = ServiceLocator.GetComponentModelService<IPackageRestoreManager>();
+                            var deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
                             var shell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
 
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
