@@ -12,13 +12,13 @@ namespace NuGet.PackageManagement.UI
         {
             OpenSolutionCommand = command;
             FullPath = filePath;
-            FilePath = Path.GetDirectoryName(filePath);
+            Directory = Path.GetDirectoryName(filePath);
             SolutionName = Path.GetFileName(filePath);
         }
 
         public ICommand OpenSolutionCommand { get; }
 
-        public string FilePath { get; }
+        public string Directory { get; }
 
         public string SolutionName { get; }
 

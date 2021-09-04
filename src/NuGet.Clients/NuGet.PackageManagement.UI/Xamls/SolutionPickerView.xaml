@@ -3,17 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
+             MaxWidth="2000"
              x:Name="_solPickerView">
   <Grid>
-    <TextBlock Text="{x:Static nuget:Resources.Text_OpenInNuGetPackageManager}"
+    <TextBlock Text="{x:Static local:Resources.Text_OpenInNuGetPackageManager}"
                FontSize="24"
-               Margin="75,10,0,0"
+               Margin="75,10,500,0"
                FontWeight="Bold"/>
-    <TextBlock Text="{x:Static nuget:Resources.Text_RecentProjectsSolutions}"
+    <TextBlock Text="{x:Static local:Resources.Text_RecentProjectsSolutions}"
                FontSize="16"
                Margin="75,75,0,0"
                FontWeight="Bold"/>
@@ -26,20 +26,19 @@
           <Button
             Command="{Binding OpenSolutionCommand}"
             CommandParameter="{Binding FullPath}"
-            IsCancel="True"
             Background="Transparent"
             BorderThickness="0"
             HorizontalContentAlignment="Stretch"
             Padding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=Padding}">
-            <TextBlock TextWrapping="Wrap">
-             <Run
-               Text="{Binding SolutionName, Mode=OneWay}"
-               FontSize="16"/>
-             <LineBreak/>
-             <LineBreak/>
-             <Run Text="{Binding FilePath, Mode=OneWay}"/>
-             <LineBreak/>
-            </TextBlock>
+            <StackPanel>
+              <TextBlock
+                Text="{Binding SolutionName, Mode=OneWay}"
+                FontSize="16"
+                Margin="0,0,5,5"/>
+              <TextBlock
+                Text="{Binding Directory, Mode=OneWay}"
+                Margin="0,0,0,15"/>
+            </StackPanel>
           </Button>
         </DataTemplate>
       </ListBox.ItemTemplate>

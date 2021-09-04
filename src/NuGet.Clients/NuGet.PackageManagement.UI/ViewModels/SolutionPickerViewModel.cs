@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Windows.Input;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.CodeContainerManagement;
 using NuGet.VisualStudio;
@@ -18,13 +21,14 @@ namespace NuGet.PackageManagement.UI
 {
     public class SolutionPickerViewModel
     {
-        private ObservableCollection<SolutionPickerItemViewModel> _solutionPathList;
         private int _maxResults = 10;
-        private ICommand _openSolutionCommand;
+
+        public event EventHandler SolutionClicked;
 
         public SolutionPickerViewModel()
         {
-            _solutionPathList = new ObservableCollection<SolutionPickerItemViewModel>();
+            SolutionList = new ObservableCollection<SolutionPickerItemViewModel>();
+            OpenSolutionCommand = new SolutionOpenCommand(this);
         }
 
         public async Task PopulateSolutionListAsync(CodeContainerStorageManagerFactory storageManagerFactory)
@@ -54,28 +58,51 @@ namespace NuGet.PackageManagement.UI
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             foreach (CodeContainer cc in solutionList)
             {
-                var item = new SolutionPickerItemViewModel(OpenSolution, cc.LocalProperties.FullPath);
-                _solutionPathList.Add(item);
+                SolutionList.Add(new SolutionPickerItemViewModel(OpenSolutionCommand, cc.LocalProperties.FullPath));
             }
         }
 
-        public ObservableCollection<SolutionPickerItemViewModel> SolutionList
+        private void RaiseSolutionClicked()
         {
-            get
-            {
-                return _solutionPathList;
-            }
+            SolutionClicked?.Invoke(this, EventArgs.Empty);
         }
 
-        public ICommand OpenSolution
+        public ObservableCollection<SolutionPickerItemViewModel> SolutionList { get; }
+
+        public ICommand OpenSolutionCommand { get; }
+
+        private class SolutionOpenCommand : ICommand
         {
-            get
+            SolutionPickerViewModel _model;
+
+            public SolutionOpenCommand(SolutionPickerViewModel model)
             {
-                if (_openSolutionCommand == null)
+                _model = model;
+            }
+
+            // never raised
+            public event EventHandler CanExecuteChanged
+            {
+                add { CommandManager.RequerySuggested += value; }
+                remove { CommandManager.RequerySuggested -= value; }
+            }
+
+            public bool CanExecute(object parameter) => true;
+
+            public void Execute(object parameter)
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                var filePath = parameter.ToString();
+                if (File.Exists(filePath))
                 {
-                    _openSolutionCommand = new URISolutionOpenerCommand();
+                    var dte = Package.GetGlobalService(typeof(_DTE)) as DTE2;
+                    if (dte != null)
+                    {
+                        dte.Solution.Open(filePath);
+                        SolutionPickerViewModel model = new SolutionPickerViewModel();
+                        _model.RaiseSolutionClicked();
+                    }
                 }
-                return _openSolutionCommand;
             }
         }
     }

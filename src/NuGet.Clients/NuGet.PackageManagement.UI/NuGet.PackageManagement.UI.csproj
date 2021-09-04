@@ -85,7 +85,6 @@
     <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
     <Compile Include="SolutionPickerWindow.cs" />
-    <Compile Include="URISolutionOpenerCommand.cs" />
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />

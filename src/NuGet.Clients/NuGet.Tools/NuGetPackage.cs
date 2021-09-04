@@ -1026,7 +1026,6 @@ namespace NuGetVSExtension
                     handler = (s, e) =>
                     {
                         SolutionManager.Value.SolutionOpened -= handler;
-                        window.DialogResult = true;
 
                         NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                         {
@@ -1037,15 +1036,13 @@ namespace NuGetVSExtension
                         }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialogAsync));
                     };
                     SolutionManager.Value.SolutionOpened += handler;
+                    window.SizeToContent = SizeToContent.Width;
                     window.ShowModal();
 
                     if (window.DialogResult != true)
                     {
                         var dte = GetGlobalService(typeof(_DTE)) as DTE2;
-                        if (dte != null)
-                        {
-                            dte.ExecuteCommand("File.Exit");
-                        }
+                        dte?.ExecuteCommand("File.Exit");
                     }
                     return;
                 }
