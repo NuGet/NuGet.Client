@@ -73,11 +73,11 @@ namespace NuGet.PackageManagement.UI
 
         private class SolutionOpenCommand : ICommand
         {
-            SolutionPickerViewModel _model;
+            SolutionPickerViewModel _viewModel;
 
-            public SolutionOpenCommand(SolutionPickerViewModel model)
+            public SolutionOpenCommand(SolutionPickerViewModel viewModel)
             {
-                _model = model;
+                _viewModel = viewModel;
             }
 
             // never raised
@@ -100,7 +100,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         dte.Solution.Open(filePath);
                         SolutionPickerViewModel model = new SolutionPickerViewModel();
-                        _model.RaiseSolutionClicked();
+                        _viewModel.RaiseSolutionClicked();
                     }
                 }
             }

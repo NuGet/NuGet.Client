@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Windows;
-using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
     public class SolutionPickerWindow : VsDialogWindow
     {
+        SolutionPickerViewModel _viewModel;
+
         public SolutionPickerWindow(SolutionPickerViewModel viewModel)
         {
             if (viewModel == null)
@@ -16,15 +16,18 @@ namespace NuGet.PackageManagement.UI
                 throw new ArgumentNullException(nameof(viewModel));
             }
 
-            Content = new SolutionPickerView(viewModel);
+            _viewModel = viewModel;
 
-            EventHandler handler = null;
-            handler = (s, e) =>
-            {
-                viewModel.SolutionClicked -= handler;
-                DialogResult = true;
-            };
-            viewModel.SolutionClicked += handler;
+            Content = new SolutionPickerView(_viewModel);
+
+            _viewModel.SolutionClicked += ViewModelSolutionClicked;
+        }
+
+        private void ViewModelSolutionClicked(object sender, EventArgs e)
+        {
+            _viewModel.SolutionClicked -= ViewModelSolutionClicked;
+            DialogResult = true;
+            Close();
         }
     }
 }
