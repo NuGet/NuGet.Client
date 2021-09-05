@@ -20,9 +20,9 @@ namespace NuGet.PackageManagement.Test.Telemetry
         {
             var allData = new List<object[]>();
 
-            foreach ( var hyperlinkType in Enum.GetValues(typeof(HyperlinkType)) )
+            foreach (var hyperlinkType in Enum.GetValues(typeof(HyperlinkType)))
             {
-                foreach ( var filter in Enum.GetValues(typeof(ItemFilter)) )
+                foreach (var filter in Enum.GetValues(typeof(ItemFilter)))
                 {
                     allData.Add(new object[] { hyperlinkType, filter, true, "a search query" });
                     allData.Add(new object[] { hyperlinkType, filter, false, "a search query" });
