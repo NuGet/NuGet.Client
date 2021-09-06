@@ -99,7 +99,6 @@ namespace NuGet.PackageManagement.UI
                     if (dte != null)
                     {
                         dte.Solution.Open(filePath);
-                        SolutionPickerViewModel model = new SolutionPickerViewModel();
                         _viewModel.RaiseSolutionClicked();
                     }
                 }
