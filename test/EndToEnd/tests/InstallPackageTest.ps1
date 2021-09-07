@@ -2448,30 +2448,15 @@ function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 
 function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 {
-    # This test uses a particular profile which is available only in VS 2012.
-    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "12.0")
-    {
-        return
-    }
-
     # Arrange
     $p = New-ConsoleApplication -ProjectName Hello
 
-    # Change it to v4.5
-    $p.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5"
-
-    # after project retargetting, the $p reference is no longer valid. Need to find it again
-
-    $p = Get-Project -Name Hello
-
-    Assert-NotNull $p
-
     # Act
-    $p | Install-Package Microsoft.AspNet.Mvc -Version 4.0.30506
-    $p | Update-Package Microsoft.AspNet.Razor
+    $p | Install-Package NuGet.Protocol -Version 5.10.0
+    $p | Update-Package Newtonsoft.Json -Version 13.0.1
 
     # Assert
-    Assert-BindingRedirect $p app.config System.Web.Razor '0.0.0.0-3.0.0.0' '3.0.0.0'
+    Assert-BindingRedirect $p app.config Newtonsoft.Json '0.0.0.0-13.0.0.0' '13.0.0.0'
 }
 
 function Test-SpecifyDifferentVersionThenServerVersion
