@@ -351,60 +351,6 @@ function New-ClassLibraryNET46 {
     New-Project ClassLibrary46 $ProjectName $SolutionFolderName
 }
 
-function New-JavaScriptApplication
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    try
-    {
-        New-Project WinJS $ProjectName $SolutionFolder
-    }
-    catch {
-        # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test
-        throw "SKIP: $($_)"
-    }
-}
-
-function New-JavaScriptApplication81
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    try
-    {
-        New-Project WinJSBlue $ProjectName $SolutionFolder
-    }
-    catch {
-        # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test
-        throw "SKIP: $($_)"
-    }
-}
-
-function New-JavaScriptWindowsPhoneApp81
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    try
-    {
-        New-Project WindowsPhoneApp81JS $ProjectName $SolutionFolder
-    }
-    catch {
-        # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test
-        throw "SKIP: $($_)"
-    }
-}
-
 function New-NativeWinStoreApplication
 {
     param(

@@ -3,9 +3,9 @@ function Test-PackageRestore-SimpleTest {
     param($context)
 
     # Arrange
-    $p1 = New-ClassLibrary	
+    $p1 = New-ClassLibrary
     $p1 | Install-Package FakeItEasy -version 1.8.0
-    
+
     $p2 = New-ClassLibrary
     $p2 | Install-Package elmah -Version 1.1
 
@@ -40,18 +40,18 @@ function Test-PackageRestore-PackageSaveMode {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageSaveMode', 'nuspec')
 
         # Arrange
-        $p1 = New-ClassLibrary	
+        $p1 = New-ClassLibrary
         $p1 | Install-Package FakeItEasy -version 1.8.0
-    
+
         # delete the packages folder
         $packagesDir = Get-PackagesDir
         RemoveDirectory $packagesDir
         Assert-False (Test-Path $packagesDir)
-    
+
         # Act
         Build-Solution
 
-        # Assert	    
+        # Assert
         # the nuspec file should exist
         $nuspecFile = Join-Path $packagesDir "FakeItEasy.1.8.0\FakeItEasy.1.8.0.nuspec"
         Assert-PathExists $nuspecFile
@@ -63,7 +63,7 @@ function Test-PackageRestore-PackageSaveMode {
     finally {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageSaveMode', $null)
     }
-    
+
 }
 #>
 
@@ -72,34 +72,9 @@ function Test-PackageRestore-Website {
     param($context)
 
     # Arrange
-    $p = New-WebSite	
+    $p = New-WebSite
     $p | Install-Package JQuery
-    
-    # delete the packages folder
-    $packagesDir = Get-PackagesDir
-    Remove-Item -Recurse -Force $packagesDir
-    Assert-False (Test-Path $packagesDir)
 
-    # Act
-    Build-Solution
-
-    # Assert
-    Assert-True (Test-Path $packagesDir)
-    Assert-Package $p JQuery
-}
-
-# Tests that package restore works for JavaScript Windows Store app project
-function Test-PackageRestore-JavaScriptMetroProject {
-    param($context)
-
-    if ((Get-VSVersion) -eq '10.0') {
-        return
-    }
-
-    # Arrange
-    $p = New-JavaScriptApplication	
-    Install-Package JQuery -projectName $p.Name
-    
     # delete the packages folder
     $packagesDir = Get-PackagesDir
     Remove-Item -Recurse -Force $packagesDir
@@ -119,9 +94,9 @@ function Test-PackageRestore-UnloadedProjects{
     param($context)
 
     # Arrange
-    $p1 = New-ClassLibrary	
+    $p1 = New-ClassLibrary
     $p1 | Install-Package Microsoft.Bcl.Build -version 1.0.8
-    
+
     $p2 = New-ClassLibrary
 
     $solutionFile = Get-SolutionFullName
@@ -150,9 +125,9 @@ function Test-PackageRestore-ErrorMessage {
     param($context)
 
     # Arrange
-    $p = New-ClassLibrary	
+    $p = New-ClassLibrary
     Install-Package -Source $context.RepositoryRoot -Project $p.Name NonStrongNameB
-    
+
     # delete the packages folder
     $packagesDir = Get-PackagesDir
     Remove-Item -Recurse -Force $packagesDir
@@ -180,7 +155,7 @@ function Test-PackageRestore-PackageAlreadyInstalled {
     param($context)
 
     # Arrange
-    $p = New-ClassLibrary	
+    $p = New-ClassLibrary
     $p | Install-Package jQuery.Validation
 
     # Act
@@ -199,9 +174,9 @@ function Test-PackageRestore-CheckForMissingPackages {
     param($context)
 
     # Arrange
-    $p1 = New-ClassLibrary	
+    $p1 = New-ClassLibrary
     $p1 | Install-Package Newtonsoft.Json -Version 5.0.6
-    
+
     New-SolutionFolder 'Folder1'
     $p2 = New-ClassLibrary 'Folder1'
     $p2 | Install-Package elmah -Version 1.1
@@ -214,7 +189,7 @@ function Test-PackageRestore-CheckForMissingPackages {
     $packagesDir = Get-PackagesDir
     RemoveDirectory $packagesDir
     Assert-False (Test-Path $packagesDir)
-    
+
     try {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'false')
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'true')
@@ -236,16 +211,16 @@ function Test-PackageRestore-CheckForMissingPackages {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'true')
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'true')
     }
-}	
+}
 
 # Tests that package restore is a no-op when setting PackageRestoreIsAutomatic is false.
 function Test-PackageRestore-IsAutomaticIsFalse {
     param($context)
 
     # Arrange
-    $p1 = New-ClassLibrary	
+    $p1 = New-ClassLibrary
     $p1 | Install-Package FakeItEasy -version 1.8.0
-    
+
     $p2 = New-ClassLibrary
     $p2 | Install-Package elmah -Version 1.1
 
@@ -264,7 +239,7 @@ function Test-PackageRestore-IsAutomaticIsFalse {
         # Act
         Build-Solution
 
-        # Assert		
+        # Assert
         Assert-False (Test-Path $packagesDir)
     }
     finally {
@@ -276,20 +251,20 @@ function Test-PackageRestore-IsAutomaticIsFalse {
 # Test that during package restore, all sources are used.
 function Test-PackageRestore-AllSourcesAreUsed {
     param($context)
-    
+
     $tempDirectory = $Env:temp
     $source1 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName())
     $source2 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName())
 
     try {
-        # Arrange		
+        # Arrange
         New-Item $source1 -ItemType directory
         New-Item $source2 -ItemType directory
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('testSource1', $source1);
-        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('testSource2', $source2);	
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('testSource2', $source2);
         CreateTestPackage 'p1' '1.0' $source1
         CreateTestPackage 'p2' '1.0' $source2
-        
+
         # Arrange
         # create project and install packages
         $proj = New-ClassLibrary
@@ -317,7 +292,7 @@ function Test-PackageRestore-AllSourcesAreUsed {
     finally
     {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::RemoveSource('testSource1')
-        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::RemoveSource('testSource2')		
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::RemoveSource('testSource2')
         RemoveDirectory $source1
         RemoveDirectory $source2
 
@@ -335,13 +310,13 @@ function Test-VSRestore-AssemblyName-Considered-Over-ProjectFileName {
 
     # Arrange
     $customAssemblyName = "MySpecialAssemblyName"
-    $MSBuildExe = Get-MSBuildExe    
+    $MSBuildExe = Get-MSBuildExe
     $p1 = New-Project PackageReferenceClassLibrary
     $solutionFile = Get-SolutionFullName
     $projectDirectoryPath = $p1.Properties.Item("FullPath").Value
     $projectPath = $p1.FullName
     $binDirectory = Join-Path $projectDirectoryPath "bin"
-    $debugDirectory = Join-Path $binDirectory "debug"    
+    $debugDirectory = Join-Path $binDirectory "debug"
     SaveAs-Solution($solutionFile)
 
     # Change assembly name in .csproj file
@@ -353,12 +328,12 @@ function Test-VSRestore-AssemblyName-Considered-Over-ProjectFileName {
     $doc.Save($projectPath)
     Close-Solution
 
-    Open-Solution $solutionFile    
+    Open-Solution $solutionFile
     $project = Get-Project
 
     # Act VS restore
     Build-Solution  # generate asset file
-    
+
     # Assert VS restore
     $assetFilePath = Get-NetCoreLockFilePath $project
     $vsRestoredAsset = Get-Content -Raw -Path $assetFilePath
@@ -389,13 +364,13 @@ function Test-VSRestore-PackageId-Considered-Over-AssemblyName {
     # Arrange
     $customPackageId = "MySpecialPackageId"
     $customAssemblyName = "MySpecialAssemblyName"
-    $MSBuildExe = Get-MSBuildExe    
+    $MSBuildExe = Get-MSBuildExe
     $p1 = New-Project PackageReferenceClassLibrary
     $solutionFile = Get-SolutionFullName
     $projectDirectoryPath = $p1.Properties.Item("FullPath").Value
     $projectPath = $p1.FullName
     $binDirectory = Join-Path $projectDirectoryPath "bin"
-    $debugDirectory = Join-Path $binDirectory "debug"    
+    $debugDirectory = Join-Path $binDirectory "debug"
     SaveAs-Solution($solutionFile)
 
     # Change assembly name in .csproj file
@@ -404,20 +379,20 @@ function Test-VSRestore-PackageId-Considered-Over-AssemblyName {
     $ns.AddNamespace("ns", $doc.DocumentElement.NamespaceURI)
     $assemblyNameNode = $doc.SelectSingleNode("//ns:AssemblyName",$ns)
     $assemblyNameNode.InnerText = $customAssemblyName
-    $node = $doc.DocumentElement.ChildNodes[1]   
+    $node = $doc.DocumentElement.ChildNodes[1]
     $packageIdNode = $doc.CreateElement("PackageId",$doc.DocumentElement.NamespaceURI)
     $packageIdInnerNode = $doc.CreateTextNode($customPackageId);
-    $packageIdNode.AppendChild($packageIdInnerNode);    
+    $packageIdNode.AppendChild($packageIdInnerNode);
     $node.InsertAfter($packageIdNode, $node.FirstChild)
     $doc.Save($projectPath)
     Close-Solution
-    Open-Solution $solutionFile    
+    Open-Solution $solutionFile
 
     $project = Get-Project
 
     # Act VS restore
     Build-Solution  # generate asset file
-    
+
     # Assert VS restore
     $assetFilePath = Get-NetCoreLockFilePath $project
     $vsRestoredAsset = Get-Content -Raw -Path $assetFilePath
@@ -440,7 +415,7 @@ function Test-VSRestore-PackageId-Considered-Over-AssemblyName {
     Assert-True ($vsRestoredAsset -eq $msBuildRestoredAsset)
 }
 
-# Create a test package 
+# Create a test package
 function CreateTestPackage {
     param(
         [string]$id,
@@ -452,7 +427,7 @@ function CreateTestPackage {
     $builder.Authors.Add("test_author")
     $builder.Id = $id
     $builder.Version = New-Object NuGet.SemanticVersion($version)
-    $builder.Description = "description" 
+    $builder.Description = "description"
 
     # add one content file
     $tempFile = [IO.Path]::GetTempFileName()
@@ -488,7 +463,7 @@ function RemoveDirectory {
             Get-ChildItem $dir -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
         }
-        else 
+        else
         {
             break;
         }
