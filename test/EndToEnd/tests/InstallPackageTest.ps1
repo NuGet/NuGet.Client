@@ -2413,37 +2413,22 @@ function Test-InstallMetadataPackageAddPackageToProject
 
 function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 {
-    # This test uses a particular profile which is available only in VS 2012.
-    if ((Get-VSVersion) -ne "11.0")
-    {
-        return
-    }
-
     # Arrange
     $p1 = New-ConsoleApplication -ProjectName Hello
 
-    # Change it to v4.5
-    $p1.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5"
-
-    # after project retargetting, the $p1 reference is no longer valid. Needs to find it again.
-
-    $p1 = Get-Project -Name Hello
-
     Assert-NotNull $p1
 
-    # Profile104 is net45+sl4+wp7.5+win8
-    $p2 = New-PortableLibrary -Profile "Profile104"
-
-    Assert-NotNull $p2
-
-    Add-ProjectReference $p1 $p2
-
     # Act
-    @($p1, $p2) | Install-Package Microsoft.Net.Http -version 2.2.3-beta -pre
+    # NuGet.Protocol.dll 5.11.0 has a reference to System.Net.Http 4.2.0.0
+    $p1 | Install-Package NuGet.Protocol -version 5.11.0
+    # Microsoft.Extensions.Http.dll has a reference to System.Net.Http 4.0.0.0
+    $p1 | Install-Package Microsoft.Extensions.Http -version 5.0.0
 
     # Assert
-    Assert-BindingRedirect $p1 app.config System.Net.Http.Primitives '0.0.0.0-4.2.3.0' '4.2.3.0'
-    Assert-NoBindingRedirect $p1 app.config System.Runtime '0.0.0.0-1.5.11.0' '1.5.11.0'
+    Write-Host "Checking System.Runtime.CompilerServices.Unsafe"
+    Assert-BindingRedirect $p1 app.config System.Runtime.CompilerServices.Unsafe '0.0.0.0-5.0.0.0' '5.0.0.0'
+    Write-Host "Checking System.Net.Http"
+    Assert-NoBindingRedirect $p1 app.config System.Net.Http '0.0.0.0-5.2.0.0' '5.2.0.0'
 }
 
 function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
