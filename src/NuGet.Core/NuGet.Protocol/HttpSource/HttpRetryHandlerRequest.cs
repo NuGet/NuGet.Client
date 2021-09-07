@@ -24,7 +24,7 @@ namespace NuGet.Protocol
             CompletionOption = HttpCompletionOption.ResponseHeadersRead;
             MaxTries = DefaultMaxTries;
             RequestTimeout = TimeSpan.FromSeconds(100);
-            RetryDelay = HttpRetryHandler.EnhancedHttpRetryEnabled ? TimeSpan.FromMilliseconds(HttpRetryHandler.ExperimentalRetryDelayMilliseconds) : TimeSpan.FromMilliseconds(200);
+            RetryDelay = TimeSpan.FromMilliseconds(200);
             DownloadTimeout = DefaultDownloadTimeout;
         }
 

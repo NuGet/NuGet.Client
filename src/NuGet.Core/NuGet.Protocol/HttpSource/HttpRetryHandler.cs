@@ -19,92 +19,13 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpRetryHandler : IHttpRetryHandler
     {
-        private static IEnvironmentVariableReader EnvironmentVariableReader;
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
         public HttpRetryHandler() : this(EnvironmentVariableWrapper.Instance) { }
 
         internal HttpRetryHandler(IEnvironmentVariableReader environmentVariableReader)
         {
-            EnvironmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
-
-        #region Experimental Retry Settings
-
-        private static bool? EnhancedHttpRetryIsEnabled = null;
-        internal static bool EnhancedHttpRetryEnabled
-        {
-            get
-            {
-                if (EnhancedHttpRetryIsEnabled == null)
-                {
-                    try
-                    {
-                        EnhancedHttpRetryIsEnabled = false;
-                        var variableValue = EnvironmentVariableReader.GetEnvironmentVariable("NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY");
-                        if (!string.IsNullOrEmpty(variableValue))
-                        {
-                            if (bool.TryParse(variableValue, out bool parsed))
-                            {
-                                EnhancedHttpRetryIsEnabled = parsed;
-                            }
-                        }
-                    }
-                    catch (Exception) { }
-                }
-                return (bool)EnhancedHttpRetryIsEnabled;
-            }
-        }
-
-        private static int? ExperimentalMaxNetworkTryCountValue = null;
-        internal static int ExperimentalMaxNetworkTryCount
-        {
-            get
-            {
-                if (ExperimentalMaxNetworkTryCountValue == null)
-                {
-                    try
-                    {
-                        ExperimentalMaxNetworkTryCountValue = 6;
-                        var variableValue = EnvironmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT");
-                        if (!string.IsNullOrEmpty(variableValue))
-                        {
-                            if (int.TryParse(variableValue, out int parsed))
-                            {
-                                ExperimentalMaxNetworkTryCountValue = parsed;
-                            }
-                        }
-                    }
-                    catch (Exception) { }
-                }
-                return (int)ExperimentalMaxNetworkTryCountValue;
-            }
-        }
-
-        private static int? ExperimentalRetryDelayMillisecondsValue = null;
-        internal static int ExperimentalRetryDelayMilliseconds
-        {
-            get
-            {
-                if (ExperimentalRetryDelayMillisecondsValue == null)
-                {
-                    try
-                    {
-                        ExperimentalRetryDelayMillisecondsValue = 400;
-                        var variableValue = EnvironmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS");
-                        if (!string.IsNullOrEmpty(variableValue))
-                        {
-                            if (int.TryParse(variableValue, out int parsed))
-                            {
-                                ExperimentalRetryDelayMillisecondsValue = parsed;
-                            }
-                        }
-                    }
-                    catch (Exception) { }
-                }
-                return (int)ExperimentalRetryDelayMillisecondsValue;
-            }
-        }
-
-        #endregion
 
         internal const string StopwatchPropertyName = "NuGet_ProtocolDiagnostics_Stopwatches";
 
@@ -143,6 +64,12 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(source));
             }
 
+            // If specified via environment, override the default retry delay with the values provided
+            if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled)
+            {
+                request.RetryDelay = TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.ExperimentalRetryDelayMilliseconds);
+            }
+
             var tries = 0;
             HttpResponseMessage response = null;
             var success = false;
@@ -153,14 +80,17 @@ namespace NuGet.Protocol
                 // so the Delay() never actually occurs.
                 // When opted in to "enhanced retry", do the delay and have it increase exponentially where applicable
                 // (i.e. when "tries" is allowed to be > 1)
-                if (tries > 0 || (EnhancedHttpRetryEnabled && request.IsRetry))
+                if (tries > 0 || (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled && request.IsRetry))
                 {
                     // "Enhanced" retry: In the case where this is actually a 2nd-Nth try, back off exponentially with some random.
                     // In many cases due to the external retry loop, this will be always be 1 * request.RetryDelay.TotalMilliseconds + 0-200 ms
-                    if (EnhancedHttpRetryEnabled)
+                    if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled)
                     {
+                        if (tries >= 3 || (tries == 0 && request.IsRetry))
+                        {
+                            log.LogVerbose("Enhanced retry: HttpRetryHandler is in a state that retry would have been abandoned or not waited if it were not enabled.");
+                        }
                         await Task.Delay(TimeSpan.FromMilliseconds((Math.Pow(2, tries) * request.RetryDelay.TotalMilliseconds) + new Random().Next(200)));
-
                     }
                     // Old behavior; always delay a constant amount
                     else
