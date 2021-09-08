@@ -191,7 +191,7 @@ namespace NuGet.Commands
                         // Merge the node's package specific no warn to the one in the path.
                         var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(pathPackageSpecificNoWarn, nodePackageSpecificNoWarn);
 
-                        AddDependenciesToQueue(nodeDependencies,
+                        AddDependenciesToQueue(nodeDependencies.Where(i => !seen.ContainsKey(i.Name)),
                             queue,
                             mergedProjectWideNoWarn,
                             mergedPackageSpecificNoWarn);
@@ -228,7 +228,7 @@ namespace NuGet.Commands
                             }
                         }
 
-                        AddDependenciesToQueue(nodeDependencies,
+                        AddDependenciesToQueue(nodeDependencies.Where(i => !seen.ContainsKey(i.Name)),
                             queue,
                             pathWarningProperties.ProjectWide,
                             pathWarningProperties.PackageSpecific);
