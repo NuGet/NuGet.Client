@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
-using NuGet.VisualStudio.Internal.Contracts;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.Telemetry
         internal const string CurrentTabPropertyName = "CurrentTab";
         internal const string IsSolutionViewPropertyName = "IsSolutionView";
 
-        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ItemFilter currentTab, bool isSolutionView)
+        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ContractsItemFilter currentTab, bool isSolutionView)
             : base(HyperlinkClickedEventName)
         {
             base[HyperLinkTypePropertyName] = hyperlinkType;
@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.Telemetry
             base[IsSolutionViewPropertyName] = isSolutionView;
         }
 
-        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ItemFilter currentTab, bool isSolutionView, string alternativePackageId)
+        public HyperlinkClickedTelemetryEvent(HyperlinkType hyperlinkType, ContractsItemFilter currentTab, bool isSolutionView, string alternativePackageId)
             : this(hyperlinkType, currentTab, isSolutionView)
         {
             AddPiiData(AlternativePackageIdPropertyName, VSTelemetryServiceUtility.NormalizePackageId(alternativePackageId));

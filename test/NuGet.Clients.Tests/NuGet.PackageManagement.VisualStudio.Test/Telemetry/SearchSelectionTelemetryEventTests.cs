@@ -11,7 +11,7 @@ using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    public class SearchSelecitonTelemetryEventTests
+    public class SearchSelectionTelemetryEventTests
     {
         [InlineData(false, true, true)]
         [InlineData(true, true, true)]
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(true, true, false)]
         [InlineData(false, false, false)]
         [Theory]
-        public void SearchSelecitonTelemetryEvent_VulnerableAndDeprecationInfo_Suceeds(bool isPackageVulnerable, bool isPackageDeprecated, bool hasDeprecationAlternative)
+        public void SearchSelectionTelemetryEvent_VulnerableAndDeprecationInfo_Succeeds(bool isPackageVulnerable, bool isPackageDeprecated, bool hasDeprecationAlternative)
         {
             // Assert params
             Assert.False(isPackageDeprecated == false && hasDeprecationAlternative == true);

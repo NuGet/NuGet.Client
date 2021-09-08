@@ -9,8 +9,8 @@ using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.Test.Telemetry
 {
@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
             foreach (var hyperlinkType in Enum.GetValues(typeof(HyperlinkType)))
             {
-                foreach (var filter in Enum.GetValues(typeof(ItemFilter)))
+                foreach (var filter in Enum.GetValues(typeof(ContractsItemFilter)))
                 {
                     allData.Add(new object[] { hyperlinkType, filter, true, "a search query" });
                     allData.Add(new object[] { hyperlinkType, filter, false, "a search query" });
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
         [Theory]
         [MemberData(nameof(GetData))]
-        public void HyperlinkClicked_RoundTrip_Succeeds(HyperlinkType hyperlinkTab, ItemFilter currentTab, bool isSolutionView, string searchQuery)
+        public void HyperlinkClicked_RoundTrip_Succeeds(HyperlinkType hyperlinkTab, ContractsItemFilter currentTab, bool isSolutionView, string searchQuery)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
             var evtHyperlink = new HyperlinkClickedTelemetryEvent(
                 HyperlinkType.DeprecationAlternativeDetails,
-                ItemFilter.All,
+                ContractsItemFilter.All,
                 isSolutionView: false,
                 testPackageId);
 

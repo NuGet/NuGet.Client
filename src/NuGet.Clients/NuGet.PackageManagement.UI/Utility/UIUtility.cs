@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio.Shell;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -80,23 +81,23 @@ namespace NuGet.PackageManagement.UI
             return "packageid:" + query;
         }
 
-        public static NuGet.VisualStudio.Internal.Contracts.ItemFilter ToContractsItemFilter(ItemFilter filter)
+        public static ContractsItemFilter ToContractsItemFilter(ItemFilter filter)
         {
             switch (filter)
             {
                 case ItemFilter.All:
-                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.All;
+                    return ContractsItemFilter.All;
                 case ItemFilter.Consolidate:
-                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.Consolidate;
+                    return ContractsItemFilter.Consolidate;
                 case ItemFilter.Installed:
-                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.Installed;
+                    return ContractsItemFilter.Installed;
                 case ItemFilter.UpdatesAvailable:
-                    return NuGet.VisualStudio.Internal.Contracts.ItemFilter.UpdatesAvailable;
+                    return ContractsItemFilter.UpdatesAvailable;
                 default:
                     break;
             }
 
-            return NuGet.VisualStudio.Internal.Contracts.ItemFilter.All;
+            return ContractsItemFilter.All;
         }
     }
 }
