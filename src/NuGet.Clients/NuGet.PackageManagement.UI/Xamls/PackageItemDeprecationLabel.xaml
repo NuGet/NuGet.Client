@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <UserControl.Resources>
@@ -15,6 +15,7 @@
 
       <nuget:DeprecationToDeprecationLabelStateConverter x:Key="DataToStateConverter" />
       <nuget:FormattedStringPartConverter x:Key="FormattedStringPartConverter" />
+      <nuget:ParametersToHyperlinkTupleConverter x:Key="ParametersToHyperlinkTupleConverter" />
 
       <Style x:Key="DeprecationTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Bold" />
@@ -34,10 +35,15 @@
           <TextBlock
             Style="{StaticResource DeprecationTextBlockStyle}">
             <Hyperlink
-              Style="{StaticResource HyperlinkStyleNoUri}"
               ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
               Command="{x:Static nuget:Commands.SearchPackageCommand}"
-              CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=DataContext.AlternatePackage.PackageId, Mode=OneWay}">
+              Style="{StaticResource HyperlinkStyleNoUri}">
+              <Hyperlink.CommandParameter>
+                <MultiBinding Converter="{StaticResource ParametersToHyperlinkTupleConverter}" Mode="OneWay">
+                  <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="DataContext.AlternatePackage.PackageId" Mode="OneWay" />
+                  <Binding Source="{x:Static nugettel:HyperlinkType.DeprecationAlternativePackageItem}" />
+                </MultiBinding>
+              </Hyperlink.CommandParameter>
               <Run Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=DataContext.AlternatePackage.PackageId, Mode=OneWay}" />
             </Hyperlink>
           </TextBlock>
