@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -22,6 +23,12 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
+        private ConcurrentDictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository> _sourceRepositoryCache;
+
+        public ListPackageCommandRunner()
+        {
+            _sourceRepositoryCache = new ConcurrentDictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository>();
+        }
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
@@ -618,7 +625,7 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
-            var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
+            SourceRepository sourceRepository = GetOrAddSourceRepository(providers, packageSource);
             var packageMetadataResource = await sourceRepository
                 .GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
@@ -668,6 +675,17 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return result;
+        }
+
+        private SourceRepository GetOrAddSourceRepository(IEnumerable<Lazy<INuGetResourceProvider>> providers, PackageSource packageSource)
+        {
+            if (!_sourceRepositoryCache.TryGetValue((providers, packageSource), out SourceRepository sourceRepository))
+            {
+                sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
+                _sourceRepositoryCache[(providers, packageSource)] = sourceRepository;
+            }
+
+            return sourceRepository;
         }
     }
 }
