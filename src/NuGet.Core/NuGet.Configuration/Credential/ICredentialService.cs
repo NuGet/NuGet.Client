@@ -20,7 +20,6 @@ namespace NuGet.Configuration
         /// <param name="proxy">A web proxy.</param>
         /// <param name="type">The credential request type.</param>
         /// <param name="message">A message to display when prompting for credentials.</param>
-        /// <param name="isRetrying">If it's retry.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="ICredentials" />.</returns>
@@ -32,7 +31,6 @@ namespace NuGet.Configuration
             IWebProxy proxy,
             CredentialRequestType type,
             string message,
-            bool? isRetrying,
             CancellationToken cancellationToken);
 
         /// <summary>

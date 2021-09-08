@@ -59,6 +59,7 @@ NuGet.Configuration.ICredentialCache
 NuGet.Configuration.ICredentialCache.Add(System.Uri uri, System.Net.ICredentials credentials) -> void
 NuGet.Configuration.ICredentialCache.GetCredentials(System.Uri uri) -> System.Net.ICredentials
 NuGet.Configuration.ICredentialService
+NuGet.Configuration.ICredentialService.GetCredentialsAsync(System.Uri uri, System.Net.IWebProxy proxy, NuGet.Configuration.CredentialRequestType type, string message, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.ICredentials>
 NuGet.Configuration.ICredentialService.HandlesDefaultCredentials.get -> bool
 NuGet.Configuration.ICredentialService.TryGetLastKnownGoodCredentialsFromCache(System.Uri uri, bool isProxy, out System.Net.ICredentials credentials) -> bool
 NuGet.Configuration.IExtensionLocator
