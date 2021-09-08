@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
@@ -74,6 +75,8 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
         private Lazy<INuGetExperimentationService> _nuGetExperimentationService;
+
+        private readonly CpsBulkFileRestoreCoordinationEvent _cpsBulkFileRestoreCoordinationEvent;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -170,6 +173,8 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory);
             _solutionLoadedEvent = new AsyncManualResetEvent();
             _isCompleteEvent = new AsyncManualResetEvent();
+
+            _cpsBulkFileRestoreCoordinationEvent = new CpsBulkFileRestoreCoordinationEvent();
 
             Reset();
         }
@@ -517,6 +522,9 @@ namespace NuGet.SolutionRestoreManager
                             {
                                 if (isAllProjectsNominated)
                                 {
+                                    //counterfactual logging for bulk file restore coordinationscenario
+                                    TelemetryActivity.EmitTelemetryEvent(_cpsBulkFileRestoreCoordinationEvent);
+
                                     if (isBulkRestoreCoordinationEnabled)
                                     {
                                         var projectReadyCheckMeasurement = Stopwatch.StartNew();
