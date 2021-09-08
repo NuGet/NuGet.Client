@@ -3,8 +3,8 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.VisualStudio.Shell;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -74,6 +74,30 @@ namespace NuGet.PackageManagement.UI
                 v,
                 _scalingFactor[exp]);
             return s;
+        }
+
+        public static string CreateSearchQuery(string query)
+        {
+            return "packageid:" + query;
+        }
+
+        public static ContractsItemFilter ToContractsItemFilter(ItemFilter filter)
+        {
+            switch (filter)
+            {
+                case ItemFilter.All:
+                    return ContractsItemFilter.All;
+                case ItemFilter.Consolidate:
+                    return ContractsItemFilter.Consolidate;
+                case ItemFilter.Installed:
+                    return ContractsItemFilter.Installed;
+                case ItemFilter.UpdatesAvailable:
+                    return ContractsItemFilter.UpdatesAvailable;
+                default:
+                    break;
+            }
+
+            return ContractsItemFilter.All;
         }
     }
 }

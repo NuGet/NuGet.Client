@@ -140,6 +140,8 @@
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\GetInstalledPackagesAsyncTelemetryEvent.cs" />
     <Compile Include="Telemetry\CacheMissException.cs" />
+    <Compile Include="Telemetry\HyperlinkClickedTelemetryEvent.cs" />
+    <Compile Include="Telemetry\HyperlinkType.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
     <Compile Include="Telemetry\DiagnosticTelemetryEvent.cs" />
