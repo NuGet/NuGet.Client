@@ -2808,7 +2808,7 @@ EndProject";
                 // Assert
                 Assert.Equal(_failureCode, r.ExitCode);
                 Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.AllOutput);
-                Assert.Contains("Unable to find version '1.0.0' of package 'My.MVC.ASP'.", r.Item3);
+                Assert.Contains("NU1000: Restore error happened, 'Unable to find version '1.0.0' of package 'My.MVC.ASP'.", r.Item3);
             }
         }
 
@@ -3208,7 +3208,7 @@ EndProject";
             Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             // Even though there is eligible source SharedRepository exist but only opensourceRepositoryPath passed as option it'll fail to restore.
             Assert.Equal(_failureCode, r.ExitCode);
-            Assert.Contains("Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.", r.Item3);
+            Assert.Contains("NU1000: Restore error happened, 'Unable to find version '1.0.0' of package 'Contoso.Opensource'.", r.Item3);
         }
 
         [Fact]
