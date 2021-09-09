@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
@@ -60,7 +63,7 @@ namespace NuGet.PackageManagement.UI
             DialogResult = true;
         }
 
-        private void OnButtonKeyDown(object sender, KeyEventArgs e)
+        private void OnButtonKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.A)
             {
@@ -71,6 +74,25 @@ namespace NuGet.PackageManagement.UI
             {
                 DialogResult = false;
             }
+        }
+
+        private void LicenseAcceptanceWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            var screen = Screen.FromPoint(new System.Drawing.Point((int)Left, (int)Top));
+            var dpiScale = VisualTreeHelper.GetDpi(this);
+
+            double screenWidth = screen.WorkingArea.Width / dpiScale.DpiScaleX;
+            double screenHeight = screen.WorkingArea.Height / dpiScale.DpiScaleY;
+
+            int desiredLength = 450;
+            int heightPadding = 25; // Make window height at least this much smaller than the screen height.
+            Height = Math.Min(desiredLength, screenHeight - heightPadding);
+            MaxHeight = screenHeight;
+            MinHeight = Height;
+
+            Width = Math.Min(desiredLength, screenWidth);
+            MaxWidth = screenWidth;
+            MinWidth = Width;
         }
     }
 }
