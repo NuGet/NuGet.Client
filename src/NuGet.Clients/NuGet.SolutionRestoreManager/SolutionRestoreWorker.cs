@@ -15,7 +15,6 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
@@ -46,11 +45,11 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
-        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IComponentModel> _componentModel;
+        private readonly AsyncLazy<IComponentModel> _componentModel;
 
         private EnvDTE.SolutionEvents _solutionEvents;
         private CancellationTokenSource _workerCts;
-        private Microsoft.VisualStudio.Threading.AsyncLazy<bool> _backgroundJobRunner;
+        private AsyncLazy<bool> _backgroundJobRunner;
         private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
@@ -164,7 +163,7 @@ namespace NuGet.SolutionRestoreManager
             _joinableCollection = joinableTaskContextNode.CreateCollection();
             JoinableTaskFactory = joinableTaskContextNode.CreateFactory(_joinableCollection);
 
-            _componentModel = new Microsoft.VisualStudio.Threading.AsyncLazy<IComponentModel>(async () =>
+            _componentModel = new AsyncLazy<IComponentModel>(async () =>
                 {
                     return await asyncServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
                 },
@@ -336,7 +335,7 @@ namespace NuGet.SolutionRestoreManager
                         return true;
                     }
 
-                    Microsoft.VisualStudio.Threading.AsyncLazy<bool> backgroundJobRunner = _backgroundJobRunner;
+                    AsyncLazy<bool> backgroundJobRunner = _backgroundJobRunner;
 
                     if (backgroundJobRunner == null)
                     {
@@ -359,7 +358,7 @@ namespace NuGet.SolutionRestoreManager
                     // Otherwise, the current request will await the existing job to be completed.
                     if (shouldStartNewBGJobRunner)
                     {
-                        _backgroundJobRunner = new Microsoft.VisualStudio.Threading.AsyncLazy<bool>(
+                        _backgroundJobRunner = new AsyncLazy<bool>(
                            () => StartBackgroundJobRunnerAsync(_workerCts.Token),
                            JoinableTaskFactory);
                     }
@@ -519,7 +518,7 @@ namespace NuGet.SolutionRestoreManager
                                 if (isAllProjectsNominated)
                                 {
                                     // Counterfactual logging for bulk file restore coordination scenario
-                                    TelemetryActivity.EmitTelemetryEvent(new CpsBulkFileRestoreCoordinationEvent());
+                                    Common.TelemetryActivity.EmitTelemetryEvent(new CpsBulkFileRestoreCoordinationEvent());
 
                                     if (isBulkRestoreCoordinationEnabled)
                                     {
