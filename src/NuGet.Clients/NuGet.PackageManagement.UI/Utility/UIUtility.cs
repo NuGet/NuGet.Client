@@ -47,32 +47,35 @@ namespace NuGet.PackageManagement.UI
             return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
         }
 
-        private static readonly string[] _scalingFactor = new string[] {
-            String.Empty,
+        private static readonly string[] ScalingFactor = new string[] {
+            string.Empty,
             "K", // kilo
             "M", // mega, million
             "G", // giga, billion
-            "T"  // tera, trillion
+            "T",  // tera, trillion
+            "P"  // peta, quadrillion
         };
 
         // Convert numbers into strings like "1.2K", "33.4M" etc.
         // Precondition: number > 0.
         public static string NumberToString(long number, IFormatProvider culture)
         {
+            string format = number >= 950_000 && number <= 999_999 || number >= 950_000_000 && number <= 999_999_999 ? "{0:G4}{1}" : "{0:G3}{1}";
+
             double v = (double)number;
             int exp = 0;
 
             while (v >= 1000)
             {
-                v /= 1000;
+                v = Math.Round(v / 1000, 2);
                 ++exp;
             }
 
             var s = string.Format(
                 culture,
-                "{0:G3}{1}",
+                format,
                 v,
-                _scalingFactor[exp]);
+                ScalingFactor[exp]);
             return s;
         }
 
