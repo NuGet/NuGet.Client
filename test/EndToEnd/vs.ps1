@@ -852,16 +852,9 @@ function WaitUntilRebuildCompleted {
 
 function Get-VSFolderPath
 {
-    $ProgramFilesPath = ${env:ProgramFiles}
-
-    $VS17PreviewRelativePath = "Microsoft Visual Studio\2022\Preview"
-
-    # Give preference to preview installation of VS2022
-    if (Test-Path (Join-Path $ProgramFilesPath $VS17PreviewRelativePath))
-    {
-        $VSFolderPath = Join-Path $ProgramFilesPath $VS17PreviewRelativePath
-    }
-
+    $vsappiddir = $env:VSAPPIDDIR # gets vspath\Common7\IDE
+    $VSFolderPath = Join-Path $vsappiddir ".." -Resolve
+    $VSFolderPath = Join-Path $VSFolderPath ".." -Resolve
     return $VSFolderPath
 }
 
