@@ -943,15 +943,6 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NU1000: Restore error happened, &apos;{0}&apos;..
-        /// </summary>
-        internal static string RestoreErrorNU1000 {
-            get {
-                return ResourceManager.GetString("RestoreErrorNU1000", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package restore failed. Rolling back package changes for &apos;{0}&apos;..
         /// </summary>
         internal static string RestoreFailedRollingBack {

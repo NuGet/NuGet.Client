@@ -530,8 +530,4 @@
     <value>Package namespace match not found for package ID '{0}'</value>
     <comment>{0} - package id</comment>
   </data>
-  <data name="RestoreErrorNU1000" xml:space="preserve">
-    <value>NU1000: Restore error happened, '{0}'.</value>
-    <comment>{0} is the generic restore error details.</comment>
-  </data>
 </root>

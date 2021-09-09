@@ -480,8 +480,7 @@ namespace NuGet.PackageManagement
             {
                 if (!string.IsNullOrEmpty(exception.Message))
                 {
-                    var errorMessage = string.Format(Strings.RestoreErrorNU1000, exception.Message);
-                    nuGetProjectContext.Log(MessageLevel.Error, errorMessage);
+                    nuGetProjectContext.Log(RestoreLogMessage.CreateError(NuGetLogCode.NU1000, exception.Message));
                 }
 
                 if (packageRestoreContext.PackageRestoreFailedEvent != null)
