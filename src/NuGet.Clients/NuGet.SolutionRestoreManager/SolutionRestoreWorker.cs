@@ -517,6 +517,9 @@ namespace NuGet.SolutionRestoreManager
                             {
                                 if (isAllProjectsNominated)
                                 {
+                                    // Counterfactual logging for bulk file restore coordination scenario
+                                    Common.TelemetryActivity.EmitTelemetryEvent(new CpsBulkFileRestoreCoordinationEvent());
+
                                     if (isBulkRestoreCoordinationEnabled)
                                     {
                                         var projectReadyCheckMeasurement = Stopwatch.StartNew();
