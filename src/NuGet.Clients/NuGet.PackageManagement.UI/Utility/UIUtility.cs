@@ -52,8 +52,7 @@ namespace NuGet.PackageManagement.UI
             "K", // kilo
             "M", // mega, million
             "G", // giga, billion
-            "T",  // tera, trillion
-            "P"  // peta, quadrillion
+            "T"  // tera, trillion
         };
 
         // Convert numbers into strings like "1.2K", "33.4M" etc.

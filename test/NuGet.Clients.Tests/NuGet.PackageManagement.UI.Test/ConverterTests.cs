@@ -61,8 +61,6 @@ namespace NuGet.PackageManagement.UI.Test
         [InlineData(19_999_999_999_050, "20T")]
         [InlineData(99_999_999_999_050, "100T")]
         [InlineData(99_999_999_999_650, "100T")]
-        [InlineData(999_999_999_999_050, "1P")]
-        [InlineData(999_999_999_999_650, "1P")]
         public void DownloadCountToStringTest(long  num, string expected)
         {
             var s = UIUtility.NumberToString(num, CultureInfo.InvariantCulture); // force '.' decimal separator
