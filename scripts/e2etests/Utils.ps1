@@ -3,7 +3,7 @@ function CleanTempFolder()
     if (Test-Path $env:temp)
     {
         Write-Host 'Deleting temp folder'
-        rmdir $env:temp -Recurse -ErrorAction SilentlyContinue
+        Get-ChildItem $env:temp | Remove-Item -Recurse -ErrorAction SilentlyContinue
         Write-Host 'Done.'
     }
 }

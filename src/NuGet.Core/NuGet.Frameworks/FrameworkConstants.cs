@@ -16,6 +16,7 @@ namespace NuGet.Frameworks
         public static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
         public static readonly Version MaxVersion = new Version(int.MaxValue, 0, 0, 0);
         public static readonly Version Version5 = new Version(5, 0, 0, 0);
+        public static readonly Version Version6 = new Version(6, 0, 0, 0);
         public static readonly Version Version10 = new Version(10, 0, 0, 0);
         public static readonly FrameworkRange DotNetAll = new FrameworkRange(
                         new NuGetFramework(FrameworkIdentifiers.NetPlatform, FrameworkConstants.EmptyVersion),
@@ -88,6 +89,7 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework Net461 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 1, 0));
             public static readonly NuGetFramework Net462 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 2, 0));
             public static readonly NuGetFramework Net463 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 3, 0));
+            public static readonly NuGetFramework Net472 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 7, 2, 0));
 
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));
@@ -185,6 +187,7 @@ namespace NuGet.Frameworks
 
             // .NET 5.0 and later has NetCoreApp identifier
             public static readonly NuGetFramework Net50 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, Version5);
+            public static readonly NuGetFramework Net60 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, Version6);
         }
     }
 }
