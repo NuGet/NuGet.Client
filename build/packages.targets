@@ -26,7 +26,7 @@
         <PackageReference Update="MessagePack" Version="2.2.60" />
         <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
-        <PackageReference Update="Microsoft.Build.Locator" Version="1.2.6" />
+        <PackageReference Update="Microsoft.Build.Locator" Version="1.4.1" />
         <PackageReference Update="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
