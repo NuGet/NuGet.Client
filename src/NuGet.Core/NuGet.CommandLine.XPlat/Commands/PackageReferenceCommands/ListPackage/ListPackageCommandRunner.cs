@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -23,11 +22,11 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
-        private ConcurrentDictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository> _sourceRepositoryCache;
+        private Dictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository> _sourceRepositoryCache;
 
         public ListPackageCommandRunner()
         {
-            _sourceRepositoryCache = new ConcurrentDictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository>();
+            _sourceRepositoryCache = new Dictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository>();
         }
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
@@ -111,7 +110,15 @@ namespace NuGet.CommandLine.XPlat
                             {
                                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                                 {
-                                    await GetRegistrationMetadataAsync(packages, listPackageArgs);
+                                    IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
+                                    IEnumerable<PackageSource> sources = listPackageArgs.PackageSources;
+                                    foreach (PackageSource source in sources)
+                                    {
+                                        var sourceRepository = Repository.CreateSource(providers, source, FeedType.Undefined);
+                                        _sourceRepositoryCache[(providers, source)] = sourceRepository;
+                                    }
+
+                                    await GetRegistrationMetadataAsync(packages, listPackageArgs, providers);
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
                                 }
 
@@ -267,9 +274,11 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="packages">The packages found in a project.</param>
         /// <param name="listPackageArgs">List args for the token and source provider</param>
+        /// <param name="providers">List of nuget resource providers</param>
         private async Task GetRegistrationMetadataAsync(
             IEnumerable<FrameworkPackages> packages,
-            ListPackageArgs listPackageArgs)
+            ListPackageArgs listPackageArgs,
+            IEnumerable<Lazy<INuGetResourceProvider>> providers)
         {
             // Unique dictionary for packages and list of versions to handle different sources
             var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
@@ -280,7 +289,6 @@ namespace NuGet.CommandLine.XPlat
             var distinctPackageVersionsDict = GetUniqueResolvedPackages(packages);
 
             // Prepare requests for each of the packages
-            var providers = Repository.Provider.GetCoreV3();
             var resourceRequestTasks = new List<Task>();
             foreach (var packageIdAndVersions in distinctPackageVersionsDict)
             {
@@ -625,7 +633,7 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
-            SourceRepository sourceRepository = GetOrAddSourceRepository(providers, packageSource);
+            SourceRepository sourceRepository = _sourceRepositoryCache[(providers, packageSource)];
             var packageMetadataResource = await sourceRepository
                 .GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
@@ -675,17 +683,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return result;
-        }
-
-        private SourceRepository GetOrAddSourceRepository(IEnumerable<Lazy<INuGetResourceProvider>> providers, PackageSource packageSource)
-        {
-            if (!_sourceRepositoryCache.TryGetValue((providers, packageSource), out SourceRepository sourceRepository))
-            {
-                sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
-                _sourceRepositoryCache[(providers, packageSource)] = sourceRepository;
-            }
-
-            return sourceRepository;
         }
     }
 }
