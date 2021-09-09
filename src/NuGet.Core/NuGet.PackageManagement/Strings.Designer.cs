@@ -610,6 +610,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restore error NU1000 happened, please look at following message for details: &apos;{0}&apos;.
+        /// </summary>
+        internal static string NU1000_Restore {
+            get {
+                return ResourceManager.GetString("NU1000_Restore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Executing nuget actions took {0}.
         /// </summary>
         internal static string NugetActionsTotalTime {
