@@ -649,9 +649,8 @@ function Test-InstallPackageWithNonExistentFrameworkReferences {
 }
 
 function Test-InstallPackageWithFrameworkFacadeReference {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11221")]
+    param($context)
 
     # Arrange
     $p = New-ClassLibrary
@@ -797,9 +796,9 @@ function Test-SimpleBindingRedirectsClassLibraryReference {
 }
 
 function Test-SimpleBindingRedirectsIndirectReference {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ClassLibrary
@@ -822,9 +821,8 @@ function Test-SimpleBindingRedirectsIndirectReference {
 
 function Test-SimpleBindingRedirectsNonWeb {
     [SkipTest('https://github.com/NuGet/Home/issues/8402')]
-    param(
-        $context
-    )
+    param($context)
+
     # Arrange
     $a = New-ConsoleApplication
     $b = New-WPFApplication
@@ -843,9 +841,9 @@ function Test-SimpleBindingRedirectsNonWeb {
 }
 
 function Test-BindingRedirectComplex {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
@@ -885,9 +883,9 @@ function Test-SimpleBindingRedirectsWebsite {
 
 
 function Test-BindingRedirectInstallLargeProject {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
+    param($context)
+
     $numProjects = 25
     $projects = 0..$numProjects | %{ New-ClassLibrary $_ }
     $p = New-WebApplication
@@ -904,9 +902,9 @@ function Test-BindingRedirectInstallLargeProject {
 }
 
 function Test-BindingRedirectDuplicateReferences {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
@@ -929,9 +927,9 @@ function Test-BindingRedirectDuplicateReferences {
 }
 
 function Test-BindingRedirectClassLibraryWithDifferentDependents {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
@@ -954,9 +952,9 @@ function Test-BindingRedirectClassLibraryWithDifferentDependents {
 }
 
 function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocations {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
@@ -1006,9 +1004,8 @@ function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
 }
 
 function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembly {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
+    param($context)
 
     # Arrange
     $a = New-WebApplication
