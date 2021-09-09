@@ -46,11 +46,11 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
-        private readonly AsyncLazy<IComponentModel> _componentModel;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IComponentModel> _componentModel;
 
         private EnvDTE.SolutionEvents _solutionEvents;
         private CancellationTokenSource _workerCts;
-        private AsyncLazy<bool> _backgroundJobRunner;
+        private Microsoft.VisualStudio.Threading.AsyncLazy<bool> _backgroundJobRunner;
         private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
@@ -75,8 +75,6 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
         private Lazy<INuGetExperimentationService> _nuGetExperimentationService;
-
-        private readonly CpsBulkFileRestoreCoordinationEvent _cpsBulkFileRestoreCoordinationEvent;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -166,15 +164,13 @@ namespace NuGet.SolutionRestoreManager
             _joinableCollection = joinableTaskContextNode.CreateCollection();
             JoinableTaskFactory = joinableTaskContextNode.CreateFactory(_joinableCollection);
 
-            _componentModel = new AsyncLazy<IComponentModel>(async () =>
+            _componentModel = new Microsoft.VisualStudio.Threading.AsyncLazy<IComponentModel>(async () =>
                 {
                     return await asyncServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
                 },
                 JoinableTaskFactory);
             _solutionLoadedEvent = new AsyncManualResetEvent();
             _isCompleteEvent = new AsyncManualResetEvent();
-
-            _cpsBulkFileRestoreCoordinationEvent = new CpsBulkFileRestoreCoordinationEvent();
 
             Reset();
         }
@@ -340,7 +336,7 @@ namespace NuGet.SolutionRestoreManager
                         return true;
                     }
 
-                    AsyncLazy<bool> backgroundJobRunner = _backgroundJobRunner;
+                    Microsoft.VisualStudio.Threading.AsyncLazy<bool> backgroundJobRunner = _backgroundJobRunner;
 
                     if (backgroundJobRunner == null)
                     {
@@ -363,7 +359,7 @@ namespace NuGet.SolutionRestoreManager
                     // Otherwise, the current request will await the existing job to be completed.
                     if (shouldStartNewBGJobRunner)
                     {
-                        _backgroundJobRunner = new AsyncLazy<bool>(
+                        _backgroundJobRunner = new Microsoft.VisualStudio.Threading.AsyncLazy<bool>(
                            () => StartBackgroundJobRunnerAsync(_workerCts.Token),
                            JoinableTaskFactory);
                     }
@@ -522,8 +518,8 @@ namespace NuGet.SolutionRestoreManager
                             {
                                 if (isAllProjectsNominated)
                                 {
-                                    //counterfactual logging for bulk file restore coordinationscenario
-                                    TelemetryActivity.EmitTelemetryEvent(_cpsBulkFileRestoreCoordinationEvent);
+                                    // Counterfactual logging for bulk file restore coordination scenario
+                                    TelemetryActivity.EmitTelemetryEvent(new CpsBulkFileRestoreCoordinationEvent());
 
                                     if (isBulkRestoreCoordinationEnabled)
                                     {
