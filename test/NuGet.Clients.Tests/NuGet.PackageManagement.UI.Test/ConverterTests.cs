@@ -12,7 +12,9 @@ namespace NuGet.PackageManagement.UI.Test
         [Theory]
         [InlineData(1, "1")]
         [InlineData(90, "90")]
+        [InlineData(451, "451")]
         [InlineData(550, "550")]
+        [InlineData(998, "998")]
         [InlineData(999, "999")]
         [InlineData(1000, "1K")]
         [InlineData(1200, "1.2K")]
@@ -31,6 +33,9 @@ namespace NuGet.PackageManagement.UI.Test
 
         [InlineData(123_400, "123K")]
         [InlineData(899_560, "900K")]
+        [InlineData(998_999, "999K")]
+        [InlineData(999_000, "999K")]
+        [InlineData(999_001, "999K")]
         [InlineData(999_560, "999.6K")]
         [InlineData(1_234_000, "1.23M")]
         [InlineData(1_299_560, "1.3M")]
@@ -44,11 +49,13 @@ namespace NuGet.PackageManagement.UI.Test
         [InlineData(99_956_050, "100M")]
         [InlineData(99_956_650, "100M")]
         [InlineData(99_999_650, "100M")]
+        [InlineData(999_199_050, "999.2M")]
         [InlineData(999_260_050, "999.3M")]
         [InlineData(999_560_050, "999.6M")]
-        [InlineData(999_199_050, "999.2M")]
         [InlineData(999_999_050, "1G")]
+        [InlineData(1_000_000_001, "1G")]
         [InlineData(1_234_000_000, "1.23G")]
+        [InlineData(2_100_999_050, "2.1G")]
         [InlineData(9_234_000_000, "9.23G")]
         [InlineData(9_999_900_000, "10G")]
         [InlineData(99_199_199_650, "99.2G")]
@@ -61,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test
         [InlineData(19_999_999_999_050, "20T")]
         [InlineData(99_999_999_999_050, "100T")]
         [InlineData(99_999_999_999_650, "100T")]
-        public void DownloadCountToStringTest(long  num, string expected)
+        public void DownloadCountToStringTest(long num, string expected)
         {
             var s = UIUtility.NumberToString(num, CultureInfo.InvariantCulture); // force '.' decimal separator
             Assert.Equal(expected, s);

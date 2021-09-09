@@ -59,8 +59,6 @@ namespace NuGet.PackageManagement.UI
         // Precondition: number > 0.
         public static string NumberToString(long number, IFormatProvider culture)
         {
-            string format = number >= 950_000 && number <= 999_999 || number >= 950_000_000 && number <= 999_999_999 ? "{0:G4}{1}" : "{0:G3}{1}";
-
             double v = (double)number;
             int exp = 0;
 
@@ -69,6 +67,8 @@ namespace NuGet.PackageManagement.UI
                 v = Math.Round(v / 1000, 2);
                 ++exp;
             }
+
+            string format = v < 999 ? "{0:G3}{1}" : "{0:G4}{1}"; // If number is 999561 then v = 999.56 so with G3 which result in 1000k ~ 1E+03K, but with G4 it result in 999.6K.
 
             var s = string.Format(
                 culture,
