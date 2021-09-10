@@ -22,11 +22,11 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
-        private Dictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository> _sourceRepositoryCache;
+        private Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
 
         public ListPackageCommandRunner()
         {
-            _sourceRepositoryCache = new Dictionary<(IEnumerable<Lazy<INuGetResourceProvider>>, PackageSource), SourceRepository>();
+            _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
         }
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
@@ -110,15 +110,9 @@ namespace NuGet.CommandLine.XPlat
                             {
                                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                                 {
-                                    IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
-                                    IEnumerable<PackageSource> sources = listPackageArgs.PackageSources;
-                                    foreach (PackageSource source in sources)
-                                    {
-                                        var sourceRepository = Repository.CreateSource(providers, source, FeedType.Undefined);
-                                        _sourceRepositoryCache[(providers, source)] = sourceRepository;
-                                    }
 
-                                    await GetRegistrationMetadataAsync(packages, listPackageArgs, providers);
+                                    PopulateSourceRepositoryCache(listPackageArgs);
+                                    await GetRegistrationMetadataAsync(packages, listPackageArgs);
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
                                 }
 
@@ -274,11 +268,9 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="packages">The packages found in a project.</param>
         /// <param name="listPackageArgs">List args for the token and source provider</param>
-        /// <param name="providers">List of nuget resource providers</param>
         private async Task GetRegistrationMetadataAsync(
             IEnumerable<FrameworkPackages> packages,
-            ListPackageArgs listPackageArgs,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers)
+            ListPackageArgs listPackageArgs)
         {
             // Unique dictionary for packages and list of versions to handle different sources
             var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
@@ -299,7 +291,6 @@ namespace NuGet.CommandLine.XPlat
                             packageIdAndVersions.Key,
                             packageVersion,
                             listPackageArgs,
-                            providers,
                             packagesVersionsDict));
                 }
             }
@@ -309,6 +300,21 @@ namespace NuGet.CommandLine.XPlat
 
             // Save resolved versions within the InstalledPackageReference
             await GetVersionsFromDictAsync(packages, packagesVersionsDict, listPackageArgs);
+        }
+
+        /// <summary>
+        /// Pre-populate _sourceRepositoryCache so source repository can be reused between different calls.
+        /// </summary>
+        /// <param name="listPackageArgs">List args for the token and source provider</param>
+        private void PopulateSourceRepositoryCache(ListPackageArgs listPackageArgs)
+        {
+            IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
+            IEnumerable<PackageSource> sources = listPackageArgs.PackageSources;
+            foreach (PackageSource source in sources)
+            {
+                SourceRepository sourceRepository = Repository.CreateSource(providers, source, FeedType.Undefined);
+                _sourceRepositoryCache[source] = sourceRepository;
+            }
         }
 
         /// <summary>
@@ -552,7 +558,6 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageId">The package ID to get the current version metadata for</param>
         /// <param name="requestedVersion">The version of the requested package</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>A list of tasks for all current versions for packages from all sources</returns>
@@ -560,7 +565,6 @@ namespace NuGet.CommandLine.XPlat
             string packageId,
             NuGetVersion requestedVersion,
             ListPackageArgs listPackageArgs,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
             var requests = new List<Task>();
@@ -574,7 +578,6 @@ namespace NuGet.CommandLine.XPlat
                         listPackageArgs,
                         packageId,
                         requestedVersion,
-                        providers,
                         packagesVersionsDict));
             }
 
@@ -621,7 +624,6 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="packageId">Package to look for</param>
         /// <param name="requestedVersion">Requested package version</param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated package with the resolved version metadata from a single source</returns>
@@ -630,10 +632,9 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs,
             string packageId,
             NuGetVersion requestedVersion,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
-            SourceRepository sourceRepository = _sourceRepositoryCache[(providers, packageSource)];
+            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
             var packageMetadataResource = await sourceRepository
                 .GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
