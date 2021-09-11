@@ -708,7 +708,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             else
             {
                 var s = _packageSources.FirstOrDefault(
-                    p => StringComparer.CurrentCultureIgnoreCase.Equals(p, activePackageSource));
+                    p => StringComparer.OrdinalIgnoreCase.Equals(p, activePackageSource));
 
                 // if the old active source still exists. Keep it as the active source.
                 // if the old active source does not exist any more. In this case,
@@ -810,7 +810,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     safeAndDisplayName.Add(displayName);
                 }
                 // Sort with respect to the DisplayName
-                var sortedDisplayNames = safeAndDisplayName.OrderBy(i => i.Item2, StringComparer.CurrentCultureIgnoreCase).ToArray();
+                var sortedDisplayNames = safeAndDisplayName.OrderBy(i => i.Item2, StringComparer.OrdinalIgnoreCase).ToArray();
 
                 _projectSafeNames = sortedDisplayNames.Select(e => e.Item1).ToArray();
                 return _projectSafeNames;

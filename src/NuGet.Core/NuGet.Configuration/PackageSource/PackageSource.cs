@@ -145,7 +145,7 @@ namespace NuGet.Configuration
                 return false;
             }
 
-            return Name.Equals(other.Name, StringComparison.CurrentCultureIgnoreCase) &&
+            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) &&
                    Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
         }
 

@@ -48,7 +48,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 return false;
             }
 
-            return Name.Equals(other.Name, StringComparison.CurrentCultureIgnoreCase) &&
+            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) &&
                 Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
         }
 

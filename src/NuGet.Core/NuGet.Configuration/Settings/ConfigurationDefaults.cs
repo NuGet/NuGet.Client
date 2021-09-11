@@ -64,7 +64,7 @@ namespace NuGet.Configuration
                         // In a SettingValue representing a package source, the Key represents the name of the package source and the Value its source
                         _defaultPackageSources.Add(new PackageSource(source.GetValueAsPath(),
                             source.Key,
-                            isEnabled: !disabledPackageSources.Any(p => p.Key.Equals(source.Key, StringComparison.CurrentCultureIgnoreCase)),
+                            isEnabled: !disabledPackageSources.Any(p => p.Key.Equals(source.Key, StringComparison.OrdinalIgnoreCase)),
                             isOfficial: true));
                     }
                 }
