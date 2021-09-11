@@ -3,6 +3,8 @@ parameters:
   type: string
 - name: stageName
   type: string
+- name: stageDisplayName
+  type: string
 - name: dependsOn
   type: object
 - name: bootstrapperUrl
@@ -28,6 +30,7 @@ stages:
 - template: stages\visual-studio\base.yml@DartLabTemplates
   parameters:
     name: ${{parameters.stageName}}
+    displayName: ${{parameters.stageDisplayName}}
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
     testMachineDeploymentJobTimeoutInMinutes: 240
@@ -90,11 +93,6 @@ stages:
       inputs:
         scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
 
-    # - task: PowerShell@1
-    #   displayName: "SetupMachine.ps1"
-    #   inputs:
-    #     scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupMachine.ps1"
-
     - task: PowerShell@1
       displayName: "RunFunctionalTests.ps1 (stop on error)"
       timeoutInMinutes: 75
@@ -128,6 +126,6 @@ stages:
       inputs:
         scriptType: "inlineScript"
         inlineScript: |
-          . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-          SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
+          . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
+          SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(GitHubStatusName)"
       condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
