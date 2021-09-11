@@ -57,9 +57,16 @@ namespace NuGet.PackageManagement.UI.Test
         [InlineData(9_999_999_999_650, "10T")]
         [InlineData(19_999_999_999_050, "20T")]
         [InlineData(99_999_999_999_650, "100T")]
-        public void DownloadCountToStringTest(long num, string expected)
+
+        // there is localization
+        [InlineData(1939, "1.94K", "en-US")]
+        [InlineData(1939, "1,94K", "da-DK")]
+        [InlineData(9456, "9.46K", "en-US")]
+        [InlineData(9456, "9,46K", "da-DK")]
+        public void DownloadCountToStringTest(long num, string expected, string culture = null)
         {
-            var s = UIUtility.NumberToString(num, CultureInfo.InvariantCulture); // force '.' decimal separator
+            CultureInfo localCulture = string.IsNullOrWhiteSpace(culture) ? CultureInfo.InvariantCulture : new CultureInfo(culture); // Here CultureInfo.InvariantCulture forces '.' decimal separator
+            var s = UIUtility.NumberToString(num, localCulture);
             Assert.Equal(expected, s);
         }
     }

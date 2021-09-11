@@ -57,15 +57,6 @@ namespace NuGet.PackageManagement.UI
                 return val > 999 ? 999 : val;
             }
 
-            string GetFormatted(double num, string precisionString)
-            {
-                return string.Format(
-                   culture,
-                   "{0:G3}{1}",
-                   num,
-                   precisionString);
-            }
-
             const long thousand = 1_000L;
             const long million = 1_000_000L;
             const long billion = 1_000_000_000L;
@@ -78,20 +69,20 @@ namespace NuGet.PackageManagement.UI
 
             if (number < million)
             {
-                return GetFormatted(RoundDown(number, thousand), Resources.Thousand);
+                return string.Format(culture, Resources.Thousand, RoundDown(number, thousand));
             }
 
             if (number < billion)
             {
-                return GetFormatted(RoundDown(number, million), Resources.Million);
+                return string.Format(culture, Resources.Million, RoundDown(number, million));
             }
 
             if (number < trillion)
             {
-                return GetFormatted(RoundDown(number, billion), Resources.Billion);
+                return string.Format(culture, Resources.Billion, RoundDown(number, billion));
             }
 
-            return GetFormatted(RoundDown(number, trillion), Resources.Trillion);
+            return string.Format(culture, Resources.Trillion, RoundDown(number, trillion));
         }
 
         public static string CreateSearchQuery(string query)

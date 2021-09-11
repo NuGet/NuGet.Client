@@ -1006,19 +1006,19 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} is a NuGet package id (string)</comment>
   </data>
   <data name="Billion" xml:space="preserve">
-    <value>B</value>
-    <comment>1,000,000,000 in short format notation</comment>
+    <value>{0:G3}B</value>
+    <comment>Billions in short format notation</comment>
   </data>
   <data name="Million" xml:space="preserve">
-    <value>M</value>
-    <comment>1,000,000 in short format notation</comment>
+    <value>{0:G3}M</value>
+    <comment>Millions in short format notation</comment>
   </data>
   <data name="Thousand" xml:space="preserve">
-    <value>K</value>
-    <comment>1,000 in short format notation</comment>
+    <value>{0:G3}K</value>
+    <comment>Thousands in short format notation</comment>
   </data>
   <data name="Trillion" xml:space="preserve">
-    <value>T</value>
-    <comment>1,000,000,000,000 in short format notation</comment>
+    <value>{0:G3}T</value>
+    <comment>Trillions in short format notation</comment>
   </data>
 </root>

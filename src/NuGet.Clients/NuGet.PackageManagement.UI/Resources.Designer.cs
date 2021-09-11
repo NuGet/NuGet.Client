@@ -331,7 +331,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to B.
+        ///   Looks up a localized string similar to {0:G3}B.
         /// </summary>
         public static string Billion {
             get {
@@ -1474,7 +1474,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to M.
+        ///   Looks up a localized string similar to {0:G3}M.
         /// </summary>
         public static string Million {
             get {
@@ -2324,7 +2324,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to K.
+        ///   Looks up a localized string similar to {0:G3}K.
         /// </summary>
         public static string Thousand {
             get {
@@ -2441,7 +2441,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to T.
+        ///   Looks up a localized string similar to {0:G3}T.
         /// </summary>
         public static string Trillion {
             get {
