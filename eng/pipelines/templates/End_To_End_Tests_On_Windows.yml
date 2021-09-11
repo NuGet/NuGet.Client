@@ -48,7 +48,7 @@ stages:
     testLabPoolName: VS-Platform
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     visualStudioSigning: Test
-    testMachineCleanUpStrategy: ${{testMachineCleanUpStrategy}}
+    testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
     preTestMachineConfigurationStepList:
     - task: PowerShell@2
       displayName: Set 'VisualStudio.InstallationUnderTest.SetupParameters'
