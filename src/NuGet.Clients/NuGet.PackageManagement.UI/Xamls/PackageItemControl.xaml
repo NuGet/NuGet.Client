@@ -349,7 +349,7 @@
                         Width="16"
                         Height="16"
                         Cursor="Hand"
-                        Moniker="{x:Static nuget:PackageIconMonikers.UninstallIndicator}"/>
+                        Moniker="{x:Static catalog:KnownMonikers.Cancel}"/>
         </Button>
 
         <!-- install button. It occupies the same position of the install button -->
@@ -388,7 +388,7 @@
               </Style.Triggers>
             </Style>
           </Button.Style>
-          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}" />
+          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static catalog:KnownMonikers.Download}" />
         </Button>
 
         <!-- row 1: latest version and the update button-->
@@ -454,7 +454,7 @@
               <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
             </MultiBinding>
           </AutomationProperties.Name>
-          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
+          <imaging:CrispImage Cursor="Hand" Moniker="{x:Static catalog:KnownMonikers.Upload}" />
         </Button>
       </Grid>
     </Grid>
