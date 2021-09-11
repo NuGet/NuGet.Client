@@ -484,8 +484,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(1, r.Item1);
-                r.AllOutput.Should().NotContain("NU1000");
-                r.Errors.Should().Contain("Unable to find version");
+                r.Errors.Should().Contain("NU1000: Unable to find version '1.1.0' of package 'packageA'.");
             }
         }
 
@@ -2056,8 +2055,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
-            r.AllOutput.Should().NotContain("NU1000");
-            r.Errors.Should().Contain("Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.");
+            r.Errors.Should().Contain("NU1000: Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.");
         }
 
         public static CommandRunnerResult RunInstall(SimpleTestPathContext pathContext, string input, int expectedExitCode = 0, params string[] additionalArgs)
