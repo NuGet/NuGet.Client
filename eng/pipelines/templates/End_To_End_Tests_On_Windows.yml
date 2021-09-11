@@ -17,6 +17,12 @@ parameters:
   type: object
 - name: testExecutionJobTimeoutInMinutes
   type: number
+- name: testMachineCleanUpStrategy
+  type: string
+  default: delete
+  values:
+  - delete
+  - stop
 
 stages:
 - template: stages\visual-studio\base.yml@DartLabTemplates
@@ -39,6 +45,7 @@ stages:
     testLabPoolName: VS-Platform
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     visualStudioSigning: Test
+    testMachineCleanUpStrategy: ${{testMachineCleanUpStrategy}}
     preTestMachineConfigurationStepList:
     - task: PowerShell@2
       displayName: Set 'VisualStudio.InstallationUnderTest.SetupParameters'
