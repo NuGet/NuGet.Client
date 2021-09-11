@@ -47,39 +47,51 @@ namespace NuGet.PackageManagement.UI
             return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
         }
 
-        private static readonly string[] ScalingFactor = new string[] {
-            string.Empty,
-            "K", // kilo
-            "M", // mega, million
-            "G", // giga, billion
-            "T"  // tera, trillion
-        };
-
         // Convert numbers into strings like "1.2K", "33.4M" etc.
         // Precondition: number > 0.
         public static string NumberToString(long number, IFormatProvider culture)
         {
-            double v = (double)number;
-            int exp = 0;
-
-            while (v >= 1000)
+            double RoundDown(double num, long precision)
             {
-                v = Math.Round(v / 1000, 2);
-                ++exp;
+                double val = num / precision;
+                return val > 999 ? 999 : val;
             }
 
-            // If number is 999561 then v = 999.56 so with G3 which result in 1000k ~ 1E+03K.
-            if (v > 999)
+            string GetFormatted(double num, string precisionString)
             {
-                v = 999;
+                return string.Format(
+                   culture,
+                   "{0:G3}{1}",
+                   num,
+                   precisionString);
             }
 
-            var s = string.Format(
-                culture,
-                "{0:G3}{1}",
-                v,
-                ScalingFactor[exp]);
-            return s;
+            const long thousand = 1_000L;
+            const long million = 1_000_000L;
+            const long billion = 1_000_000_000L;
+            const long trillion = 1_000_000_000_000L;
+
+            if (number < thousand)
+            {
+                return number.ToString("G0", culture);
+            }
+
+            if (number < million)
+            {
+                return GetFormatted(RoundDown(number, thousand), Resources.Thousand);
+            }
+
+            if (number < billion)
+            {
+                return GetFormatted(RoundDown(number, million), Resources.Million);
+            }
+
+            if (number < trillion)
+            {
+                return GetFormatted(RoundDown(number, billion), Resources.Billion);
+            }
+
+            return GetFormatted(RoundDown(number, trillion), Resources.Trillion);
         }
 
         public static string CreateSearchQuery(string query)

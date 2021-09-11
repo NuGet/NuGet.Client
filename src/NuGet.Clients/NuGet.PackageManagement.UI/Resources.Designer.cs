@@ -331,6 +331,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to B.
+        /// </summary>
+        public static string Billion {
+            get {
+                return ResourceManager.GetString("Billion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select a Package Source Folder.
         /// </summary>
         public static string BrowseFolderDialogDescription {
@@ -1465,6 +1474,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to M.
+        /// </summary>
+        public static string Million {
+            get {
+                return ResourceManager.GetString("Million", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to (dependency of {0}).
         /// </summary>
         public static string NuGetUpgrade_PackageDependencyOf {
@@ -2306,6 +2324,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to K.
+        /// </summary>
+        public static string Thousand {
+            get {
+                return ResourceManager.GetString("Thousand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Following versions are unavailable due to additional constraints in the project or packages.config.
         /// </summary>
         public static string ToolTip_BlockedVersion {
@@ -2410,6 +2437,15 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_UpdateButton {
             get {
                 return ResourceManager.GetString("ToolTip_UpdateButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to T.
+        /// </summary>
+        public static string Trillion {
+            get {
+                return ResourceManager.GetString("Trillion", resourceCulture);
             }
         }
         

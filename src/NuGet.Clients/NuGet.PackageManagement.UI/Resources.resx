@@ -1005,4 +1005,20 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>This package version is deprecated. Use {0} instead.</value>
     <comment>{0} is a NuGet package id (string)</comment>
   </data>
+  <data name="Billion" xml:space="preserve">
+    <value>B</value>
+    <comment>1.000.000.000 in short format notation</comment>
+  </data>
+  <data name="Million" xml:space="preserve">
+    <value>M</value>
+    <comment>1.000.000 in short format notation</comment>
+  </data>
+  <data name="Thousand" xml:space="preserve">
+    <value>K</value>
+    <comment>1.000 in short format notation</comment>
+  </data>
+  <data name="Trillion" xml:space="preserve">
+    <value>T</value>
+    <comment>1.000.000.000.000 in short format notation</comment>
+  </data>
 </root>
