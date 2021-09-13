@@ -1007,7 +1007,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Billion" xml:space="preserve">
     <value>{0:G3}B</value>
-    <comment>Billions in short format notation</comment>
+    <comment>American billions in short format notation</comment>
   </data>
   <data name="Million" xml:space="preserve">
     <value>{0:G3}M</value>
@@ -1019,6 +1019,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Trillion" xml:space="preserve">
     <value>{0:G3}T</value>
-    <comment>Trillions in short format notation</comment>
+    <comment>American trillions in short format notation</comment>
   </data>
 </root>
