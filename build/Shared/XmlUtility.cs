@@ -27,10 +27,7 @@ namespace NuGet.Shared
         /// <returns>An <see cref="System.Xml.Linq.XDocument"/> that contains the contents of the specified file.</returns>
         internal static XDocument Load(string inputUri, LoadOptions options)
         {
-            using (var reader = XmlReader.Create(inputUri, GetXmlReaderSettings(options)))
-            {
-                return XDocument.Load(reader, options);
-            }
+            return Load(File.OpenRead(inputUri), options);
         }
 
         /// <summary>
