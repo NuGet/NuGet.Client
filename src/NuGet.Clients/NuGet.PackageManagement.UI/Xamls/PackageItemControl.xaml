@@ -5,7 +5,9 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
-  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+  xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
   x:Name="_self"
   mc:Ignorable="d"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
@@ -25,6 +27,7 @@
         x:Key="StringFormatConverter" />
       <nuget:NullToBooleanConverter
         x:Key="NullToBooleanConverter" />
+      <ui:BrushToColorConverter x:Key="BrushToColorConverter" />
 
       <!-- style for install, uninstall and update buttons -->
       <Style x:Key="buttonStyle" TargetType="{x:Type Button}">
@@ -51,12 +54,14 @@
             </ControlTemplate>
           </Setter.Value>
         </Setter>
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{Binding Background, ElementName=Bd}" />
         <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="imagingTheme:ImageThemingUtilities.ImageBackgroundColor" Value="{Binding Background, RelativeSource={RelativeSource self}, Converter={StaticResource BrushToColorConverter}}" />
         <Style.Triggers>
           <Trigger Property="IsMouseOver" Value="True">
-            <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ToolWindowButtonHoverActiveKey}}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ToolWindowButtonHoverActiveBorderKey}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.CommandBarMouseOverBackgroundGradientBrushKey}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.CommandBarBorderBrushKey}}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static nuget:Brushes.CommandBarTextHoverBrushKey}}"/>
           </Trigger>
           <Trigger Property="IsPressed" Value="True">
             <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ToolWindowButtonDownKey}}" />

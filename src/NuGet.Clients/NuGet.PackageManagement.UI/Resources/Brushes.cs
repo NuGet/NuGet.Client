@@ -78,13 +78,14 @@ namespace NuGet.PackageManagement.UI
 
         public static object ToolWindowButtonDownKey { get; private set; } = SystemColors.WindowBrushKey;
 
-        public static object ToolWindowButtonHoverActiveBorderKey { get; private set; } = SystemColors.WindowBrushKey;
-
-        public static object ToolWindowButtonHoverActiveKey { get; private set; } = SystemColors.WindowBrushKey;
-
         public static object UIText { get; private set; } = SystemColors.ControlTextBrushKey;
 
         public static object WindowTextKey { get; private set; } = SystemColors.WindowTextBrushKey;
+
+        public static object CommandBarBorderBrushKey { get; private set; }
+
+        public static object CommandBarMouseOverBackgroundGradientBrushKey { get; private set; }
+        public static object CommandBarTextHoverBrushKey { get; private set; }
 
         public static object CheckBoxBackgroundBrushKey { get; private set; } = SystemColors.WindowBrushKey;
 
@@ -199,10 +200,12 @@ namespace NuGet.PackageManagement.UI
             ToolWindowBorderKey = VsBrushes.ToolWindowBorderKey;
             ToolWindowButtonDownBorderKey = VsBrushes.ToolWindowButtonDownBorderKey;
             ToolWindowButtonDownKey = VsBrushes.ToolWindowButtonDownKey;
-            ToolWindowButtonHoverActiveBorderKey = VsBrushes.ToolWindowButtonHoverActiveBorderKey;
-            ToolWindowButtonHoverActiveKey = VsBrushes.ToolWindowButtonHoverActiveKey;
             UIText = isBgColorFlightEnabled ? CommonDocumentColors.PageTextBrushKey : VsBrushes.BrandedUITextKey;
             WindowTextKey = VsBrushes.WindowTextKey;
+
+            CommandBarBorderBrushKey = EnvironmentColors.CommandBarBorderBrushKey;
+            CommandBarMouseOverBackgroundGradientBrushKey = EnvironmentColors.CommandBarMouseOverBackgroundGradientBrushKey;
+            CommandBarTextHoverBrushKey = EnvironmentColors.CommandBarTextHoverBrushKey;
 
             HeaderColorsDefaultBrushKey = HeaderColors.DefaultBrushKey;
             HeaderColorsDefaultTextBrushKey = HeaderColors.DefaultTextBrushKey;
