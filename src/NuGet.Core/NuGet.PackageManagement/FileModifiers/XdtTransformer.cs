@@ -113,7 +113,8 @@ namespace NuGet.ProjectManagement
                             // make sure we close the input stream immediately so that we can override 
                             // the file below when we save to it.
                             string path = FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath);
-                            using (var reader = XmlReader.Create(new StreamReader(path), GetXmlReaderSettings(LoadOptions.PreserveWhitespace)))
+                            using var fileReader = new StreamReader(path);
+                            using (var reader = XmlReader.Create(fileReader, GetXmlReaderSettings(LoadOptions.PreserveWhitespace)))
                             {
                                 document.Load(reader);
                             }
