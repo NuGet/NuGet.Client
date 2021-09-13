@@ -7,8 +7,10 @@ using System.Linq;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
@@ -45,7 +47,9 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
-            var evt = new HyperlinkClickedTelemetryEvent(hyperlinkTab, currentTab, isSolutionView, searchQuery);
+            var sourceList = new List<PackageSourceContextInfo>() { new PackageSourceContextInfo(@"..\local\folder", "Test Source", true) };
+            var source = new PackageSourceMoniker("testSource", sourceList);
+            var evt = new HyperlinkClickedTelemetryEvent(hyperlinkTab, currentTab, isSolutionView, searchQuery, source);
 
             // Act
             service.EmitTelemetryEvent(evt);
@@ -72,12 +76,15 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
             var testPackageId = "testPackage.id";
             var testPackageVersion = new NuGetVersion(1, 0, 0);
+            var sourceList = new List<PackageSourceContextInfo>() { new PackageSourceContextInfo(@"..\local\folder", "Test Source", true) };
+            var source = new PackageSourceMoniker("testSource", sourceList);
 
             var evtHyperlink = new HyperlinkClickedTelemetryEvent(
                 HyperlinkType.DeprecationAlternativeDetails,
                 ContractsItemFilter.All,
                 isSolutionView: false,
-                testPackageId);
+                testPackageId,
+                source);
 
             var evtSearch = new SearchSelectionTelemetryEvent(
                 parentId: It.IsAny<Guid>(),
@@ -128,6 +135,30 @@ namespace NuGet.PackageManagement.Test.Telemetry
             var packageIds = packageIdsAction.Select(x => x.GetPiiData().First(x => x.Key == "id").Value);
             Assert.Equal(packageIdHyperlink, packageIdSearch);
             Assert.Contains(packageIdHyperlink, packageIds);
+        }
+
+        [Theory]
+        [InlineData(@"..\local\folder", SourceFeedType.LocalRelative, UriHostNameType.Unknown)]
+        [InlineData(@"folder", SourceFeedType.LocalRelative, UriHostNameType.Unknown)]
+        [InlineData(@"simple/folder", SourceFeedType.LocalRelative, UriHostNameType.Unknown)]
+        [InlineData(@"Z:\folder", SourceFeedType.LocalAbsolute, UriHostNameType.Basic)]
+        [InlineData(@"X:\", SourceFeedType.LocalAbsolute, UriHostNameType.Basic)]
+        [InlineData(@"C:\another\folder", SourceFeedType.LocalAbsolute, UriHostNameType.Basic)]
+        [InlineData(@"C:\another/forward", SourceFeedType.LocalAbsolute, UriHostNameType.Basic)]
+        [InlineData(@"\\shared\folder", SourceFeedType.Unc, UriHostNameType.Dns)]
+        [InlineData(@"file:///C:/Users/happyUser/NuGetFeed/", SourceFeedType.LocalAbsolute, UriHostNameType.Basic)]
+        [InlineData(@"https://a.happy.feed/index.json", SourceFeedType.Http, UriHostNameType.Dns)]
+        [InlineData(@"https://1.2.3.4/index.json", SourceFeedType.Http, UriHostNameType.IPv4)]
+        [InlineData(@"https://test-feed.org/index.json", SourceFeedType.Http, UriHostNameType.Dns)]
+        private void GetFeedInfo_SingleFeed_Succeeds(string path, SourceFeedType feedType, UriHostNameType hostType)
+        {
+            var sourceList = new List<PackageSourceContextInfo>() { new PackageSourceContextInfo(path, "Test Source", true) };
+            var source = new PackageSourceMoniker("testSource", sourceList);
+
+            var result = HyperlinkClickedTelemetryEvent.GetFeedInfo(source);
+
+            Assert.Equal(feedType, result.Item1);
+            Assert.Equal(hostType, result.Item2);
         }
     }
 }
