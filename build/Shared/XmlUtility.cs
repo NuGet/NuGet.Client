@@ -29,6 +29,7 @@ namespace NuGet.Shared
         {
             using var fileReader = new StreamReader(path);
             using var xmlReader = XmlReader.Create(fileReader, GetXmlReaderSettings(options));
+
             return XDocument.Load(xmlReader, options);
         }
 
