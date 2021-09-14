@@ -528,7 +528,7 @@
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" Condition=" '$(MSBuildRuntimeType)' == 'Full' " />
   <PropertyGroup>
     <TransformOnBuild>true</TransformOnBuild>
     <OverwriteReadOnlyOutputFiles>true</OverwriteReadOnlyOutputFiles>
