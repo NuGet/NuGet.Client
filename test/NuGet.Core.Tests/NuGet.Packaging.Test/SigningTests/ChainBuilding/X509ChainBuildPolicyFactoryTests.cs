@@ -21,6 +21,15 @@ namespace NuGet.Packaging.Test
             Assert.Equal("reader", exception.ParamName);
         }
 
+        [Fact]
+        public void Create_WhenArgumentIsValid_IsIdempotent()
+        {
+            IX509ChainBuildPolicy policy0 = X509ChainBuildPolicyFactory.Create(EnvironmentVariableWrapper.Instance);
+            IX509ChainBuildPolicy policy1 = X509ChainBuildPolicyFactory.Create(EnvironmentVariableWrapper.Instance);
+
+            Assert.Same(policy0, policy1);
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData(null)]
         [InlineData("")]
@@ -31,11 +40,11 @@ namespace NuGet.Packaging.Test
         [InlineData("0,1")]
         [InlineData("1,-2")]
         [InlineData("1,2,3")]
-        public void Create_OnWindowsWhenEnvironmentVariableIsInvalid_ReturnsDefaultPolicy(string value)
+        public void CreateWithoutCaching_OnWindowsWhenEnvironmentVariableIsInvalid_ReturnsDefaultPolicy(string value)
         {
             Mock<IEnvironmentVariableReader> reader = CreateMockEnvironmentVariableReader(value);
 
-            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.Create(reader.Object);
+            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.CreateWithoutCaching(reader.Object);
 
             Assert.IsType<DefaultX509ChainBuildPolicy>(policy);
 
@@ -45,11 +54,12 @@ namespace NuGet.Packaging.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("1,0")]
         [InlineData("3,7")]
-        public void Create_OnWindowsWhenEnvironmentVariableIsValid_ReturnsRetriablePolicy(string value)
+        [InlineData(" 5 , 9 ")]
+        public void CreateWithoutCaching_OnWindowsWhenEnvironmentVariableIsValid_ReturnsRetriablePolicy(string value)
         {
             Mock<IEnvironmentVariableReader> reader = CreateMockEnvironmentVariableReader(value);
 
-            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.Create(reader.Object);
+            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.CreateWithoutCaching(reader.Object);
 
             Assert.IsType<RetriableX509ChainBuildPolicy>(policy);
 
@@ -66,11 +76,11 @@ namespace NuGet.Packaging.Test
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public void Create_OnNonWindowsAlways_ReturnsDefaultPolicy()
+        public void CreateWithoutCaching_OnNonWindowsAlways_ReturnsDefaultPolicy()
         {
-            Mock<IEnvironmentVariableReader> reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
-            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.Create(reader.Object);
+            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.CreateWithoutCaching(reader.Object);
 
             Assert.IsType<DefaultX509ChainBuildPolicy>(policy);
 

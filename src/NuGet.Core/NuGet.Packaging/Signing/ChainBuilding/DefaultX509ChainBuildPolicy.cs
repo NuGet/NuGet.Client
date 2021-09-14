@@ -10,6 +10,8 @@ namespace NuGet.Packaging.Signing
     {
         internal static IX509ChainBuildPolicy Instance { get; } = new DefaultX509ChainBuildPolicy();
 
+        private DefaultX509ChainBuildPolicy() { }
+
         public bool Build(X509Chain chain, X509Certificate2 certificate)
         {
             if (chain is null)

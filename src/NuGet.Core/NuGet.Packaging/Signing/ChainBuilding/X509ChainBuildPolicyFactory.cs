@@ -12,7 +12,31 @@ namespace NuGet.Packaging.Signing
         internal const string EnvironmentVariableName = "NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY";
         internal const char ValueDelimiter = ',';
 
+        private static readonly object LockObject = new object();
+        private static IX509ChainBuildPolicy Policy;
+
         internal static IX509ChainBuildPolicy Create(IEnvironmentVariableReader reader)
+        {
+            if (reader is null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (Policy is object)
+            {
+                return Policy;
+            }
+
+            lock (LockObject)
+            {
+                Policy ??= CreateWithoutCaching(reader);
+            }
+
+            return Policy;
+        }
+
+        // This is non-private only to facilitate testing.
+        internal static IX509ChainBuildPolicy CreateWithoutCaching(IEnvironmentVariableReader reader)
         {
             if (reader is null)
             {
@@ -38,7 +62,7 @@ namespace NuGet.Packaging.Signing
                 {
                     TimeSpan sleepInterval = TimeSpan.FromMilliseconds(sleepIntervalInMilliseconds);
 
-                    return new RetriableX509ChainBuildPolicy(retryCount, sleepInterval);
+                    return new RetriableX509ChainBuildPolicy(DefaultX509ChainBuildPolicy.Instance, retryCount, sleepInterval);
                 }
             }
 

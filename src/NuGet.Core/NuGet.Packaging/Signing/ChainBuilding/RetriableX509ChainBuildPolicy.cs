@@ -10,11 +10,17 @@ namespace NuGet.Packaging.Signing
     internal sealed class RetriableX509ChainBuildPolicy : IX509ChainBuildPolicy
     {
         // These properties are non-private only to facilitate testing.
+        internal IX509ChainBuildPolicy InnerPolicy { get; }
         internal int RetryCount { get; }
         internal TimeSpan SleepInterval { get; }
 
-        internal RetriableX509ChainBuildPolicy(int retryCount, TimeSpan sleepInterval)
+        internal RetriableX509ChainBuildPolicy(IX509ChainBuildPolicy innerPolicy, int retryCount, TimeSpan sleepInterval)
         {
+            if (innerPolicy is null)
+            {
+                throw new ArgumentNullException(nameof(innerPolicy));
+            }
+
             if (retryCount < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(retryCount));
@@ -25,6 +31,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentOutOfRangeException(nameof(sleepInterval));
             }
 
+            InnerPolicy = innerPolicy;
             RetryCount = retryCount;
             SleepInterval = sleepInterval;
         }
@@ -41,7 +48,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            bool wasBuilt = chain.Build(certificate);
+            bool wasBuilt = InnerPolicy.Build(chain, certificate);
 
             for (var i = 0; i < RetryCount; ++i)
             {
@@ -68,7 +75,7 @@ namespace NuGet.Packaging.Signing
 
                 Thread.Sleep(SleepInterval);
 
-                wasBuilt = chain.Build(certificate);
+                wasBuilt = InnerPolicy.Build(chain, certificate);
             }
 
             return wasBuilt;
