@@ -114,9 +114,9 @@ namespace NuGet.ProjectManagement
                             // the file below when we save to it.
                             string path = FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath);
                             using var fileReader = new StreamReader(path);
-                            using (var reader = XmlReader.Create(fileReader, GetXmlReaderSettings(LoadOptions.PreserveWhitespace)))
+                            using (var xmlReader = XmlReader.Create(fileReader, GetXmlReaderSettings(LoadOptions.PreserveWhitespace)))
                             {
-                                document.Load(reader);
+                                document.Load(xmlReader);
                             }
 
                             var succeeded = transformation.Apply(document);

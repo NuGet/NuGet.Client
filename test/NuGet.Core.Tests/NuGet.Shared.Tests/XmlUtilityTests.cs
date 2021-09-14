@@ -17,10 +17,10 @@ namespace NuGet.Shared.Test
         public void Load_FilePathIsNull_Throws()
         {
             //Act
-            var exception = Assert.Throws<ArgumentNullException>(() => XmlUtility.Load(inputUri: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => XmlUtility.Load(path: null));
 
             //Assert
-            Assert.Equal("inputUri", exception.ParamName);
+            Assert.Equal("path", exception.ParamName);
         }
 
         [Fact]
@@ -94,6 +94,35 @@ namespace NuGet.Shared.Test
 
             Assert.NotEqual(invalidXml, encodedXml);
             Assert.Equal(encodedXml, "package_x0020_Sources");
+        }
+
+        [Fact]
+        public void Load_FileWithPAUCharactersInPath_Success()
+        {
+            using var root = TestDirectory.Create();
+
+            //Arrange
+            string path = Path.Combine(Path.GetDirectoryName(root), "U1[]U2[]U3[]", "packages.config");
+            path = Path.GetFullPath(path);
+
+            //Create a new directory under test working directory with PAU chars in the name
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            using (var writer = new StreamWriter(path))
+            {
+                writer.Write(
+@"<packages>
+<package id=""x"" version=""1.1.0"" targetFramework=""net45"" /> 
+<package id=""y"" version=""1.0.0"" targetFramework=""net45"" />
+</packages>");
+            }
+
+            //Act
+            XDocument doc = XmlUtility.Load(path);
+
+            //Assert
+            Assert.Equal("packages", doc.Root.Name);
+            Assert.Equal(2, doc.Root.Elements().Count());
         }
     }
 }

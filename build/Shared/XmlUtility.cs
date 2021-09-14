@@ -12,24 +12,24 @@ namespace NuGet.Shared
         /// <summary>
         /// Creates a new <see cref="System.Xml.Linq.XDocument"/> from a file.
         /// </summary>
-        /// <param name="inputUri">A URI string that references the file to load into a new <see cref="System.Xml.Linq.XDocument"/>.</param>
+        /// <param name="path">The complete file path to be read into a new <see cref="System.Xml.Linq.XDocument"/>.</param>
         /// <returns>An <see cref="System.Xml.Linq.XDocument"/> that contains the contents of the specified file.</returns>
-        internal static XDocument Load(string inputUri)
+        internal static XDocument Load(string path)
         {
-            return Load(inputUri, LoadOptions.None);
+            return Load(path, LoadOptions.None);
         }
 
         /// <summary>
         /// Creates a new <see cref="System.Xml.Linq.XDocument"/> from a file. Optionally, whitespace can be preserved.
         /// </summary>
-        /// <param name="inputUri">A URI string that references the file to load into a new <see cref="System.Xml.Linq.XDocument"/>.</param>
+        /// <param name="path">The complete file path to be read into a new <see cref="System.Xml.Linq.XDocument"/>.</param>
         /// <param name="options">A set of <see cref="LoadOptions"/>.</param>
         /// <returns>An <see cref="System.Xml.Linq.XDocument"/> that contains the contents of the specified file.</returns>
-        internal static XDocument Load(string inputUri, LoadOptions options)
+        internal static XDocument Load(string path, LoadOptions options)
         {
-            using var inputStreamReader = new StreamReader(inputUri);
-            using var reader = XmlReader.Create(inputStreamReader, GetXmlReaderSettings(options));
-            return XDocument.Load(reader, options);
+            using var fileReader = new StreamReader(path);
+            using var xmlReader = XmlReader.Create(fileReader, GetXmlReaderSettings(options));
+            return XDocument.Load(xmlReader, options);
         }
 
         /// <summary>
