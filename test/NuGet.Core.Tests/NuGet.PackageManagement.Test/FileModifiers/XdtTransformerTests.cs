@@ -138,6 +138,50 @@ namespace NuGet.PackageManagement.Test
         }
 
         [Fact]
+        public async Task TransformFileAsync_WithPAUCharactersInPathTransformsFile_Success()
+        {
+            using var test = new XdtTransformerTest("<a xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><x><y xdt:Transform=\"Insert\"><z>$c$</z></y></x></a>");
+
+            var projectFileOriginalContent = "<a><x /></a>";
+            File.WriteAllText(test.TargetFile.FullName, projectFileOriginalContent);
+
+            string pathWithPAUChars = Path.Combine(test.TargetFile.DirectoryName, "U1[]U2[]U3[]");
+            Directory.CreateDirectory(pathWithPAUChars);
+            string newTargetFile = Path.Combine(pathWithPAUChars, "target.file");
+            File.Move(test.TargetFile.FullName, newTargetFile);
+            test.TargetFile = new FileInfo(newTargetFile);
+
+            test.ProjectSystem.SetupGet(x => x.ProjectFullPath)
+                .Returns(test.TargetFile.DirectoryName);
+            test.ProjectSystem.SetupGet(x => x.ProjectName)
+                .Returns("ProjectName");
+            test.ProjectSystem.Setup(x => x.GetPropertyValue(It.IsNotNull<string>()))
+                .Returns("d");
+            test.ProjectSystem.Setup(x => x.AddFile(It.IsNotNull<string>(), It.IsNotNull<Stream>()))
+                .Callback<string, Stream>(
+                    (targetFilePath, stream) =>
+                    {
+                        Assert.Equal(test.TargetFile.Name, targetFilePath);
+
+                        stream.Seek(offset: 0, origin: SeekOrigin.Begin);
+
+                        using (var reader = new StreamReader(stream))
+                        {
+                            var actualResult = reader.ReadToEnd();
+                            var expectedResult = "<a>\r\n  <x>\r\n    <y>\r\n      <z>d</z>\r\n    </y>\r\n  </x>\r\n</a>";
+
+                            Assert.Equal(expectedResult, actualResult);
+                        }
+                    });
+
+            await test.Transformer.TransformFileAsync(
+                test.StreamTaskFactory,
+                test.TargetFile.Name,
+                test.ProjectSystem.Object,
+                CancellationToken.None);
+        }
+
+        [Fact]
         public async Task RevertFileAsync_ThrowsForNullStreamTaskFactory()
         {
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
@@ -241,7 +285,7 @@ namespace NuGet.PackageManagement.Test
 
             internal Mock<IMSBuildProjectSystem> ProjectSystem { get; }
             internal Func<Task<Stream>> StreamTaskFactory { get; }
-            internal FileInfo TargetFile { get; }
+            internal FileInfo TargetFile { get; set; }
             internal TestDirectory TestDirectory { get; }
             internal XdtTransformer Transformer { get; }
             internal string TransformStreamContent { get; }
