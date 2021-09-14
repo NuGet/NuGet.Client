@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -528,10 +528,25 @@
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
+  <PropertyGroup>
+    <TransformOnBuild>true</TransformOnBuild>
+    <OverwriteReadOnlyOutputFiles>true</OverwriteReadOnlyOutputFiles>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PMUIAssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</PMUIAssemblyVersion>
+  </PropertyGroup>
   <ItemGroup>
-    <Content Include="Resources\PackageIconMonikers.imagemanifest">
-      <SubType>Designer</SubType>
+    <T4ParameterValues Include="PMUIAssemblyVersion">
+      <Value>$(PMUIAssemblyVersion)</Value>
+      <Visible>false</Visible>
+    </T4ParameterValues>
+    <Content Include="Resources\PackageIconMonikers.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>PackageIconMonikers.imagemanifest</LastGenOutput>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
 </Project>
