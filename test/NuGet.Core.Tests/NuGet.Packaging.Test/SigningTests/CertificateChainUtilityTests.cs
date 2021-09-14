@@ -188,5 +188,29 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
+
+        [Fact]
+        public void BuildWithPolicy_WhenChainIsNull_Throws()
+        {
+            using (X509Certificate2 certificate = _fixture.GetDefaultCertificate())
+            {
+                ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                    () => CertificateChainUtility.BuildWithPolicy(chain: null, certificate));
+
+                Assert.Equal("chain", exception.ParamName);
+            }
+        }
+
+        [Fact]
+        public void BuildWithPolicy_WhenCertificateIsNull_Throws()
+        {
+            using (var chain = new X509Chain())
+            {
+                ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                    () => CertificateChainUtility.BuildWithPolicy(chain, certificate: null));
+
+                Assert.Equal("certificate", exception.ParamName);
+            }
+        }
     }
 }
