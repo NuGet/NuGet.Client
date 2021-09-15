@@ -866,7 +866,7 @@ namespace NuGet.Packaging
         /// <exception cref="PackagingException">When a validation rule is not met</exception>
         private void ValidateReadmeFile(IEnumerable<IPackageFile> files, string readmePath)
         {
-            if (!string.IsNullOrEmpty(readmePath))
+            if (!PackageTypes.Contains(PackageType.SymbolsPackage) && !string.IsNullOrEmpty(readmePath))
             {
                 // Validate readme extension
                 var extension = Path.GetExtension(readmePath);
