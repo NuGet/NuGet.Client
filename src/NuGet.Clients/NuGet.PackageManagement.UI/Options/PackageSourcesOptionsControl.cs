@@ -416,7 +416,7 @@ namespace NuGet.Options
                 return TryUpdateSourceResults.NotUpdated;
             }
 
-            if (selectedPackageSource.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && selectedPackageSource.Source.Equals(source, StringComparison.OrdinalIgnoreCase))
+            if (selectedPackageSource.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase) && selectedPackageSource.Source.Equals(source, StringComparison.OrdinalIgnoreCase))
             {
                 return TryUpdateSourceResults.Unchanged;
             }
@@ -425,7 +425,7 @@ namespace NuGet.Options
 
             // check to see if name has already been added
             // also make sure it's not the same as the aggregate source ('All')
-            bool hasName = sourcesList.Any(ps => ps != selectedPackageSource && string.Equals(name, ps.Name, StringComparison.OrdinalIgnoreCase));
+            bool hasName = sourcesList.Any(ps => ps != selectedPackageSource && string.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
             if (hasName)
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_UniqueName, Resources.ShowWarning_Title);

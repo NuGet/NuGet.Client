@@ -810,7 +810,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     safeAndDisplayName.Add(displayName);
                 }
                 // Sort with respect to the DisplayName
-                var sortedDisplayNames = safeAndDisplayName.OrderBy(i => i.Item2, StringComparer.OrdinalIgnoreCase).ToArray();
+                var sortedDisplayNames = safeAndDisplayName.OrderBy(i => i.Item2, StringComparer.CurrentCultureIgnoreCase).ToArray();
 
                 _projectSafeNames = sortedDisplayNames.Select(e => e.Item1).ToArray();
                 return _projectSafeNames;
