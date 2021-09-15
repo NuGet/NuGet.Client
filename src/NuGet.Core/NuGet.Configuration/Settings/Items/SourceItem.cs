@@ -77,8 +77,8 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Key, source.Key, StringComparison.Ordinal) &&
-                string.Equals(ProtocolVersion, source.ProtocolVersion, StringComparison.Ordinal);
+            return string.Equals(Key, source.Key, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(ProtocolVersion, source.ProtocolVersion, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
