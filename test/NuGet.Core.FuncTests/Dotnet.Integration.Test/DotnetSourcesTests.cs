@@ -410,6 +410,47 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void List_Sources_LocalizatedPackagesourceKeys_ConsideredDiffererent()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+                var nugetConfig =
+    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""encyclopaedia"" value=""https://source.test1"" />
+    <add key=""Encyclopaedia"" value=""https://source.test2"" />
+    <add key=""encyclopædia"" value=""https://source.test3"" />
+    <add key=""Encyclopædia"" value=""https://source.test4"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(settings.ConfigPath, nugetConfig);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "list",
+                    "source",
+                    "--configfile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0);
+                Assert.True(result.Output.StartsWith("Registered Sources:"));
+                Assert.Contains("encyclopaedia [Enabled]", result.Output);
+                Assert.Contains("encyclopædia [Enabled]", result.Output);
+                Assert.DoesNotContain("Encyclopaedia", result.Output);
+                Assert.DoesNotContain("Encyclopædia", result.Output);
+            }
+        }
 
         /// <summary>
         /// Verify non-zero status code and proper messages
