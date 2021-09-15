@@ -350,7 +350,7 @@ steps:
   displayName: 'Generate .runsettings files'
   inputs:
     solution: 'build\runsettings.proj'
-    msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /p:IncludeProfilingInputs=$(IsOfficialBuild)'
+    msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
@@ -370,7 +370,7 @@ steps:
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: artifactDropTask@0
-  displayName: 'OptProfV2:  publish the .runsettings file to artifact services'
+  displayName: 'Publish the .runsettings files to artifact services'
   inputs:
     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
     buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
