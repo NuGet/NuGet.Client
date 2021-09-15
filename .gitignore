@@ -199,7 +199,7 @@ launchSettings.json
 !test/EndToEnd/ProjectTemplates/**/*.pfx
 
 .idea
-.ionider
+.ionide
 
 # Image manifests are generated at build-time for VSIX
 *.imagemanifest
