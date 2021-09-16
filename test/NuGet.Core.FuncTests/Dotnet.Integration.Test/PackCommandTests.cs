@@ -5480,10 +5480,9 @@ namespace ClassLibrary
                     Assert.NotNull(nupkgReader.GetEntry("content/other/files.txt"));
                     Assert.NotNull(nupkgReader.GetEntry("utils/sources.txt"));
                     Assert.NotNull(nupkgReader.GetEntry("media/nested/sample.txt"));
-                    Assert.NotNull(nupkgReader.GetEntry("readme.md"));
                 }
                 var snupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.snupkg");
-                Assert.True(File.Exists(snupkgPath));
+                Assert.True(File.Exists(snupkgPath), "No snupkg was produced");
             }
         }
 
