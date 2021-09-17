@@ -383,7 +383,7 @@ namespace NuGet.Packaging.Test
             using (var directory = new TestSourcesDirectory())
             {
                 // Arrange
-                PackageBuilder builder = new PackageBuilder();
+                var builder = new PackageBuilder();
 
                 // Act
                 builder.AddFiles(directory.Path, source, destination);
