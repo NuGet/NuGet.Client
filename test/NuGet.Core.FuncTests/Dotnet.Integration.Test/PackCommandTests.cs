@@ -5467,7 +5467,7 @@ namespace ClassLibrary
                 .WithItem(itemType: "None", itemPath: "utils\\*", packagePath: "utils", pack: "true");
 
             // Act
-            using (var srcDir = msbuildFixture.Build(testDirBuilder))
+            using (TestDirectory srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
                 msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
