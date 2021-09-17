@@ -859,7 +859,7 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Validate that the readme file is of the correct size/type and can be opened properly.
+        /// Validate that the readme file is of the correct size/type and can be opened properly except for Symbol packages.
         /// </summary>
         /// <param name="files">Files resolved from the file entries in the nuspec</param>
         /// <param name="readmePath">readmepath found in the .nuspec</param>
