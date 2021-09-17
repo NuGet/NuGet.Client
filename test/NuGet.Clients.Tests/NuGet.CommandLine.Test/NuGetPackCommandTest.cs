@@ -6318,7 +6318,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11234")]
         public void PackCommand_PackReadme_DirSeparatorForwardSlash2_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
@@ -6372,7 +6372,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackReadmeSuccess(testDir, @"docs\readme.md");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11234")]
         public void PackCommand_PackReadme_DirSeparatorMix1_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
@@ -6426,7 +6426,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11234")]
         public void PackCommand_PackReadme_DirSeparatorMix4_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
