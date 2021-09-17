@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+#if !IS_CORECLR
 using System.Globalization;
+#endif
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+#if !IS_CORECLR
 using System.Threading;
-using System.Threading.Tasks;
+#endif
 using System.Xml;
 using System.Xml.Linq;
 using Moq;
@@ -361,6 +364,42 @@ namespace NuGet.Packaging.Test
                     {
                         Path = string.Format("Content{0}dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar),
                         EffectivePath = string.Format("dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar)
+                    }
+                };
+
+                var orderedExpectedResults = expectedResults.OrderBy(i => i.Path);
+                var orderedActualResults = builder.Files.Select(f => new { f.Path, f.EffectivePath }).OrderBy(i => i.Path);
+
+                Assert.Equal(orderedExpectedResults, orderedActualResults);
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(@"dir1\dir2\**", true, "Content")]
+        [InlineData("dir1/dir2/**", false, "Content")]
+        public void PackageBuilder_AddFiles_HasDifferentBehaviorDependingOnSlash(string source, bool expectFlattened, string destination)
+        {
+            // https://github.com/NuGet/Home/issues/11234
+            using (var directory = new TestSourcesDirectory())
+            {
+                // Arrange
+                PackageBuilder builder = new PackageBuilder();
+
+                // Act
+                builder.AddFiles(directory.Path, source, destination);
+
+                // Assert
+                var expectedResults = new[]
+                {
+                    new
+                    {
+                        Path = expectFlattened ? $"Content{Path.DirectorySeparatorChar}file1.txt" : $"Content{Path.DirectorySeparatorChar}dir1{Path.DirectorySeparatorChar}dir2{Path.DirectorySeparatorChar}file1.txt",
+                        EffectivePath = expectFlattened ? "file1.txt" : $"dir1{Path.DirectorySeparatorChar}dir2{Path.DirectorySeparatorChar}file1.txt"
+                    },
+                    new
+                    {
+                        Path = expectFlattened ? $"Content{Path.DirectorySeparatorChar}file2.txt" : $"Content{Path.DirectorySeparatorChar}dir1{Path.DirectorySeparatorChar}dir2{Path.DirectorySeparatorChar}file2.txt",
+                        EffectivePath = expectFlattened ? "file2.txt" : $"dir1{Path.DirectorySeparatorChar}dir2{Path.DirectorySeparatorChar}file2.txt"
                     }
                 };
 
