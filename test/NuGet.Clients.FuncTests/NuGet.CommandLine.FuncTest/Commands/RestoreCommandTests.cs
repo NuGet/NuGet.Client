@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -565,6 +566,56 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 result = RunRestore(pathContext, _successExitCode, "-LockedMode");
                 result.Success.Should().BeTrue(because: result.AllOutput);
                 new FileInfo(projectA.NuGetLockFileOutputPath).Exists.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task RestorePackagesConfig_WithPAUCharactersInFilePath_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var nugetExe = Util.GetNuGetExePath();
+
+                // Set up solution with PAU characters in the file path, project, and packages
+                var newsolutionRoot = Path.Combine(pathContext.SolutionRoot, "U1[]U2[]U3[]");
+                var solution = new SimpleTestSolutionContext(newsolutionRoot);
+
+                var net472 = NuGetFramework.Parse("net472");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    newsolutionRoot,
+                    net472);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net472/x.dll");
+
+                solution.Projects.Add(projectA);
+                solution.Create(newsolutionRoot);
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""x"" version=""1.0.0"" targetFramework=""net472"" />
+</packages>");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetExe,
+                    pathContext.WorkingDirectory.Path,
+                    $"restore {newsolutionRoot} -Verbosity detailed",
+                    waitForExit: true);
+
+                r.Success.Should().BeTrue(because: r.AllOutput);
             }
         }
 

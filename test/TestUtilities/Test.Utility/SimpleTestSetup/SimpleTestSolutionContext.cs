@@ -58,7 +58,7 @@ namespace NuGet.Test.Utility
             foreach (var project in Projects)
             {
                 sb.AppendLine("Project(\"{" + "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC" + "}"
-                    + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath + "\", \"{" + project.ProjectGuid.ToString().ToUpperInvariant() + "}\"");
+                    + $"\") = \"{project.ProjectName}\", " + "\"" + Common.PathUtility.GetRelativePath(SolutionPath, project.ProjectPath) + "\", \"{" + project.ProjectGuid.ToString().ToUpperInvariant() + "}\"");
                 sb.AppendLine("EndProject");
             }
 
