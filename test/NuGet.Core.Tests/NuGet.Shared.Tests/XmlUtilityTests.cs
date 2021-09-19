@@ -103,8 +103,6 @@ namespace NuGet.Shared.Test
 
             //Arrange
             string path = Path.Combine(Path.GetDirectoryName(root), "U1[]U2[]U3[]", "packages.config");
-            path = Path.GetFullPath(path);
-
             //Create a new directory under test working directory with PAU chars in the name
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
