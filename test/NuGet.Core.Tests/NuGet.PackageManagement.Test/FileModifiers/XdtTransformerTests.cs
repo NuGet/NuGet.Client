@@ -149,7 +149,6 @@ namespace NuGet.PackageManagement.Test
             Directory.CreateDirectory(pathWithPAUChars);
             string newTargetFile = Path.Combine(pathWithPAUChars, "target.file");
             File.Move(test.TargetFile.FullName, newTargetFile);
-            test.TargetFile = new FileInfo(newTargetFile);
 
             test.ProjectSystem.SetupGet(x => x.ProjectFullPath)
                 .Returns(test.TargetFile.DirectoryName);
@@ -161,7 +160,7 @@ namespace NuGet.PackageManagement.Test
                 .Callback<string, Stream>(
                     (targetFilePath, stream) =>
                     {
-                        Assert.Equal(test.TargetFile.Name, targetFilePath);
+                        Assert.Equal(newTargetFile, targetFilePath);
 
                         stream.Seek(offset: 0, origin: SeekOrigin.Begin);
 
@@ -174,9 +173,9 @@ namespace NuGet.PackageManagement.Test
                         }
                     });
 
-            await test.Transformer.TransformFileAsync(
+            await XdtTransformer.PerformXdtTransformAsync(
                 test.StreamTaskFactory,
-                test.TargetFile.Name,
+                newTargetFile,
                 test.ProjectSystem.Object,
                 CancellationToken.None);
         }
@@ -285,7 +284,7 @@ namespace NuGet.PackageManagement.Test
 
             internal Mock<IMSBuildProjectSystem> ProjectSystem { get; }
             internal Func<Task<Stream>> StreamTaskFactory { get; }
-            internal FileInfo TargetFile { get; set; }
+            internal FileInfo TargetFile { get; }
             internal TestDirectory TestDirectory { get; }
             internal XdtTransformer Transformer { get; }
             internal string TransformStreamContent { get; }
