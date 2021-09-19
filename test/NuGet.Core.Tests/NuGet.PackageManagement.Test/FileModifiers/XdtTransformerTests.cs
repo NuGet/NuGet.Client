@@ -138,7 +138,7 @@ namespace NuGet.PackageManagement.Test
         }
 
         [Fact]
-        public async Task TransformFileAsync_WithPAUCharactersInPathTransformsFile_Success()
+        public async Task TransformFileAsync_WithPUACharactersInPathTransformsFile_Success()
         {
             using var test = new XdtTransformerTest("<a xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><x><y xdt:Transform=\"Insert\"><z>$c$</z></y></x></a>");
 

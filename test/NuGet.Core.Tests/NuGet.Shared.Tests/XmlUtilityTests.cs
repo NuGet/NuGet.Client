@@ -97,7 +97,7 @@ namespace NuGet.Shared.Test
         }
 
         [Fact]
-        public void Load_FileWithPAUCharactersInPath_Success()
+        public void Load_FileWithPUACharactersInPath_Success()
         {
             using var root = TestDirectory.Create();
 
