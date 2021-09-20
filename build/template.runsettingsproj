@@ -36,6 +36,8 @@
       Text="TestDrop not specified" />
     <Error Condition=" '$(IncludeProfilingInputs)' == 'true' AND '$(ProfilingInputsDrop)' == ''"
       Text="ProfilingInputsDrop not specified" />
+    <Error Condition=" '$(VsConfigPath)' == '' AND '$(VsTargetMajorVersion)' == '' "
+      Text="Either VsConfigPath or VsTargetMajorVersion must be specified" />
   </Target>
 
   <ItemGroup Label="Test Stores">
