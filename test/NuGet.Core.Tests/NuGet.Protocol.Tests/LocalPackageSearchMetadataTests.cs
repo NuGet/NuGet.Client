@@ -37,6 +37,22 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public void DownloadCount_Always_Null()
+        {
+            var localPackageInfo = new LocalPackageInfo(
+                new PackageIdentity("id", NuGetVersion.Parse("1.0.0")),
+                "path",
+                new DateTime(2019, 8, 19),
+                new Lazy<NuspecReader>(() => null),
+                useFolder: false
+                );
+
+            var localPackageSearchMetadata = new LocalPackageSearchMetadata(localPackageInfo);
+
+            Assert.Null(localPackageSearchMetadata.DownloadCount);
+        }
+
+        [Fact]
         public void PackageReader_NotNull()
         {
             Assert.NotNull(_testData.TestData.PackageReader);

@@ -32,7 +32,7 @@ namespace NuGet.Protocol
         public string Description => _nuspec.GetDescription();
 
         /// <remarks>
-        /// Local packages always have 0 as the download count
+        /// Local package sources never provide a download count.
         /// </remarks>
         public long? DownloadCount => null;
 
