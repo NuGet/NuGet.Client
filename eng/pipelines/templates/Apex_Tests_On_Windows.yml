@@ -24,12 +24,6 @@ steps:
     msbuildArguments: "/t:Restore"
 
 - task: PowerShell@1
-  displayName: "Bootstrap.ps1"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/Bootstrap.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -verbose"
-
-- task: PowerShell@1
   displayName: "SetupFunctionalTests.ps1"
   inputs:
     scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"

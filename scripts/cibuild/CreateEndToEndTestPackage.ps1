@@ -121,6 +121,7 @@ try {
     $ScriptsSource = Join-Path $NuGetRoot Scripts\e2etests -Resolve
     Write-Verbose "Copying test scripts from '$ScriptsSource' to '$ScriptsDirectory'"
     Run-RoboCopy $ScriptsSource $ScriptsDirectory $(@('*.ps1') + $opts)
+    Copy-Item -Path (Join-Path $NuGetRoot scripts\utils\PostGitCommitStatus.ps1) -Destination $ScriptsDirectory
 
     if (-not (Test-Path $OutputDirectory)) {
         mkdir $OutputDirectory | Out-Null

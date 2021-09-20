@@ -45,7 +45,7 @@ function DisableTextTemplateSecurityWarning([string]$VSVersion)
 
 Function SuppressNuGetUI([Parameter(Mandatory = $True)] [string] $registryValueName)
 {
-    $success = SetRegistryKey -RegKey 'HKCU:\Software\NuGet' -RegName $registryValueName -ExpectedValue '1' -FriendlyKeyName $registryValueName
+    $success = SetRegistryKey -RegKey 'HKCU:\Software\NuGet' -RegName $registryValueName -ExpectedValue '1'
 
     If (!$success)
     {
@@ -53,8 +53,10 @@ Function SuppressNuGetUI([Parameter(Mandatory = $True)] [string] $registryValueN
     }
 }
 
-function  Set-VSINSTALLDIR {
-    $VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
+function  Set-VSINSTALLDIR
+{
+    # E2E CI agents should only have a single version of VS installed
+    $VSInstance = Get-LatestVSInstance
     $installationPath = $VSInstance.installationPath
     Write-Host "Setting $$env:VSINSTALLDIR = $installationPath"
     $env:VSINSTALLDIR = $installationPath
@@ -81,9 +83,6 @@ Write-Host 'Setting the environment variable needed to load NuGet.Tests powershe
 Write-Host -ForegroundColor Cyan 'You can now call Run-Test from any instance of Visual Studio ' `
 'as soon as you open Package Manager Console!'
 
-Write-Host -ForegroundColor Cyan 'Before running all the functional tests, ' `
-'please ensure that you have VS Enterprise with F#, Windows Phone tooling and Silverlight installed'
-
 Write-Host
 Write-Host 'Trying to set some registry keys to avoid dialog boxes popping during the functional test run...'
 
@@ -91,16 +90,7 @@ DisableTextTemplateSecurityWarning $VSVersion
 SuppressNuGetUI -registryValueName 'DoNotShowPreviewWindow'
 SuppressNuGetUI -registryValueName 'SuppressUILegalDisclaimer'
 
-$net35x86 = "C:\windows\Microsoft.NET\Framework\v3.5\msbuild.exe"
-$net35x64 = "C:\windows\Microsoft.NET\Framework64\v3.5\msbuild.exe"
-
-if (!(Test-Path $net35x86) -or !(Test-Path $net35x64))
-{
-    Write-Host -ForegroundColor Yellow 'WARNING: .NET 3.5 is not installed on the machine. Please install'
-    exit 1
-}
-
-EnableWindowsDeveloperMode
+#EnableWindowsDeveloperMode
 Set-VSINSTALLDIR
 
 Write-Host 'THE END!'

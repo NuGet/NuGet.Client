@@ -935,20 +935,9 @@ function WaitUntilRebuildCompleted {
 
 function Get-VSFolderPath
 {
-    $ProgramFilesPath = ${env:ProgramFiles}
-    if (Test-Path ${env:ProgramFiles(x86)})
-    {
-        $ProgramFilesPath = ${env:ProgramFiles(x86)}
-    }
-
-    $VS16PreviewRelativePath = "Microsoft Visual Studio\2019\Preview"
-
-    # Give preference to preview installation of VS2019
-    if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath))
-    {
-        $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
-    }
-
+    $vsappiddir = $env:VSAPPIDDIR # gets vspath\Common7\IDE
+    $VSFolderPath = Join-Path $vsappiddir ".." -Resolve
+    $VSFolderPath = Join-Path $VSFolderPath ".." -Resolve
     return $VSFolderPath
 }
 

@@ -153,6 +153,9 @@ function LaunchVS {
         [string]$ActivityLogFullPath
     )
 
+    $env:__VSDisableStartWindow=1
+    $env:__VSDisableNewProjectCreationExperience=1
+
     $VSPath = $VSInstance.productPath
     Write-Host 'Starting ' $VSPath
     if ($ActivityLogFullPath) {
