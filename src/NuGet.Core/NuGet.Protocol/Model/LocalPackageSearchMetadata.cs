@@ -34,7 +34,7 @@ namespace NuGet.Protocol
         /// <remarks>
         /// Local packages always have 0 as the download count
         /// </remarks>
-        public long? DownloadCount => 0;
+        public long? DownloadCount => null;
 
         public Uri IconUrl => GetIconUri();
 
