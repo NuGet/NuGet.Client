@@ -351,89 +351,6 @@ function New-ClassLibraryNET46 {
     New-Project ClassLibrary46 $ProjectName $SolutionFolderName
 }
 
-
-function New-PortableLibrary
-{
-    param(
-        [string]$ProjectName,
-        [string]$Profile = $null,
-        [string]$SolutionFolder
-    )
-
-    try
-    {
-        $project = New-Project PortableClassLibrary $ProjectName $SolutionFolder
-    }
-    catch {
-        # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test
-        throw "SKIP: $($_)"
-    }
-
-    if ($Profile)
-    {
-        $name = $project.Name
-        $project.Properties.Item("TargetFrameworkMoniker").Value = ".NETPortable,Version=v4.0,Profile=$Profile"
-        $project = Get-Project -Name $name
-    }
-
-    $project
-}
-
-function New-JavaScriptApplication
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    try
-    {
-        New-Project WinJS $ProjectName $SolutionFolder
-    }
-    catch {
-        # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test
-        throw "SKIP: $($_)"
-    }
-}
-
-function New-JavaScriptApplication81
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    try
-    {
-        New-Project WinJSBlue $ProjectName $SolutionFolder
-    }
-    catch {
-        # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test
-        throw "SKIP: $($_)"
-    }
-}
-
-function New-JavaScriptWindowsPhoneApp81
-{
-    param(
-        [string]$ProjectName,
-        [string]$SolutionFolder
-    )
-
-    try
-    {
-        New-Project WindowsPhoneApp81JS $ProjectName $SolutionFolder
-    }
-    catch {
-        # If we're unable to create the project that means we probably don't have some SDK installed
-        # Signal to the runner that we want to skip this test
-        throw "SKIP: $($_)"
-    }
-}
-
 function New-NativeWinStoreApplication
 {
     param(
@@ -935,16 +852,9 @@ function WaitUntilRebuildCompleted {
 
 function Get-VSFolderPath
 {
-    $ProgramFilesPath = ${env:ProgramFiles}
-
-    $VS17PreviewRelativePath = "Microsoft Visual Studio\2022\Preview"
-
-    # Give preference to preview installation of VS2022
-    if (Test-Path (Join-Path $ProgramFilesPath $VS17PreviewRelativePath))
-    {
-        $VSFolderPath = Join-Path $ProgramFilesPath $VS17PreviewRelativePath
-    }
-
+    $vsappiddir = $env:VSAPPIDDIR # gets vspath\Common7\IDE
+    $VSFolderPath = Join-Path $vsappiddir ".." -Resolve
+    $VSFolderPath = Join-Path $VSFolderPath ".." -Resolve
     return $VSFolderPath
 }
 
