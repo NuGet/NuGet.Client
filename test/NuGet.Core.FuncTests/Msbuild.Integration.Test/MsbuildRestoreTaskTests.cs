@@ -1594,7 +1594,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 // Assert
                 Assert.Equal(1, result.ExitCode);
                 Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", result.Output);
-                Assert.Contains("error NU1000: Unable to find version '1.0.0' of package 'My.MVC.ASP'.", result.Output);
+                Assert.Contains("error : Unable to find version '1.0.0' of package 'My.MVC.ASP'.", result.Output);
             }
         }
 
