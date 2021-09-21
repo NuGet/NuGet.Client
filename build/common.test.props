@@ -10,4 +10,9 @@
 
   <!-- Additional props -->
   <Import Project="common.project.props"/>
+
+  <!-- Disable .NET Analyzers for test projects -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>  
 </Project>
