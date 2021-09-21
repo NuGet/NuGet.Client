@@ -859,14 +859,14 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Validate that the readme file is of the correct size/type and can be opened properly.
+        /// Validate that the readme file is of the correct size/type and can be opened properly except for Symbol packages.
         /// </summary>
         /// <param name="files">Files resolved from the file entries in the nuspec</param>
         /// <param name="readmePath">readmepath found in the .nuspec</param>
         /// <exception cref="PackagingException">When a validation rule is not met</exception>
         private void ValidateReadmeFile(IEnumerable<IPackageFile> files, string readmePath)
         {
-            if (!string.IsNullOrEmpty(readmePath))
+            if (!PackageTypes.Contains(PackageType.SymbolsPackage) && !string.IsNullOrEmpty(readmePath))
             {
                 // Validate readme extension
                 var extension = Path.GetExtension(readmePath);
