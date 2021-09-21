@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement.Telemetry
         /// <param name="packageCount"></param>
         /// <param name="endTime"></param>
         /// <param name="duration"></param>
+        /// <param name="isPackageSourceMappingEnabled"></param>
         /// <returns></returns>
         public static VSActionsTelemetryEvent GetActionTelemetryEvent(
             string operationId,
@@ -45,7 +46,8 @@ namespace NuGet.PackageManagement.Telemetry
             DateTimeOffset startTime,
             NuGetOperationStatus status,
             int packageCount,
-            double duration)
+            double duration,
+            bool isPackageSourceMappingEnabled)
         {
             var sortedProjects = projects.OrderBy(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
@@ -62,7 +64,8 @@ namespace NuGet.PackageManagement.Telemetry
                 status,
                 packageCount,
                 DateTimeOffset.Now,
-                duration);
+                duration,
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
         }
 
         public static async Task<ProjectTelemetryEvent> GetProjectTelemetryEventAsync(NuGetProject nuGetProject)
@@ -137,6 +140,11 @@ namespace NuGet.PackageManagement.Telemetry
             }
 
             return projectType;
+        }
+
+        public static string NormalizePackageId(string packageId)
+        {
+            return packageId?.ToLowerInvariant() ?? "(empty package id)";
         }
     }
 }

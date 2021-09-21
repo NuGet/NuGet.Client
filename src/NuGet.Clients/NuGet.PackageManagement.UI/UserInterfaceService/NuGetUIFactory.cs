@@ -38,9 +38,6 @@ namespace NuGet.PackageManagement.UI
         [Import]
         private INuGetUILogger OutputConsoleLogger { get; set; }
 
-        [ImportMany]
-        private IEnumerable<Lazy<NuGet.VisualStudio.IVsPackageManagerProvider, IOrderable>> PackageManagerProviders { get; set; }
-
         [Import]
         private Lazy<IPackageRestoreManager> PackageRestoreManager { get; set; }
 
@@ -91,11 +88,6 @@ namespace NuGet.PackageManagement.UI
                 ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
                 adapterLogger);
 
-            // only pick up at most three integrated package managers
-            const int MaxPackageManager = 3;
-            var packageManagerProviders = PackageManagerProviderUtility.Sort(
-                PackageManagerProviders, MaxPackageManager);
-
             return await NuGetUI.CreateAsync(
                 serviceBroker,
                 CommonOperations,
@@ -107,7 +99,6 @@ namespace NuGet.PackageManagement.UI
                 OptionsPageActivator.Value,
                 SolutionUserOptions,
                 DeleteOnRestartManager.Value,
-                packageManagerProviders,
                 SolutionUserOptions,
                 LockService.Value,
                 OutputConsoleLogger,

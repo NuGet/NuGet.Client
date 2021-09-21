@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
@@ -1471,20 +1470,5 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         public JoinableTaskFactory JoinableTaskFactory { get; }
-
-        public void ExecuteSynchronously(Func<System.Threading.Tasks.Task> asyncAction)
-        {
-            JoinableTaskFactory.Run(asyncAction);
-        }
-
-        public T ExecuteSynchronously<T>(Func<Task<T>> asyncAction)
-        {
-            return JoinableTaskFactory.Run(asyncAction);
-        }
-
-        public void ThrowIfNotOnUIThread(string callerMemberName)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread(callerMemberName);
-        }
     }
 }

@@ -187,7 +187,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 var result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
@@ -259,7 +259,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().NotContain($"error NU3004");
@@ -334,7 +334,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -415,7 +415,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -497,7 +497,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                // Act                
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     workingDirectory, "restore",
                     ignoreExitCode: true,
@@ -1141,7 +1141,7 @@ EndGlobal";
                 // The test depends on the presence of these packages and their versions.
                 // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
                 var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
-                var directoryPackagesPropsContent = @"<Project>                    
+                var directoryPackagesPropsContent = @"<Project>
                         <PropertyGroup>
                             <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
                         </PropertyGroup>
@@ -1675,16 +1675,16 @@ EndGlobal";
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMapping>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
-                <namespace id=""{packageZ}*"" />
+                <package pattern=""{packageY}*"" />
+                <package pattern=""{packageZ}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
-                <namespace id=""{packageK}*"" /> 
+                <package pattern=""{packageX}*"" />
+                <package pattern=""{packageK}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1754,14 +1754,14 @@ EndGlobal";
     <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
-        <packageNamespaces>
+        <packageSourceMapping>
             <packageSource key=""source"">
-                <namespace id=""{packageY}*"" />
+                <package pattern=""{packageY}*"" />
             </packageSource>
             <packageSource key=""source2"">
-                <namespace id=""{packageX}*"" />
+                <package pattern=""{packageX}*"" />
             </packageSource>
-    </packageNamespaces>
+    </packageSourceMapping>
 </configuration>
 ";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
@@ -1774,6 +1774,160 @@ EndGlobal";
             Assert.Contains($"NU1100: Unable to resolve '{packageK} (= {version})'", result.AllOutput);
             Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
             Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task DotnetRestore_NameSpaceFilter_WithAllSourceOptions_Succeed()
+        {
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projFramework = FrameworkConstants.CommonFrameworks.Net50;
+            var projectPackageName = "projectA";
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+               projectPackageName,
+               pathContext.SolutionRoot,
+               projFramework);
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageY = "Y", packageZ = "Z", packageK = "K";
+
+            var packageX100 = new SimpleTestPackageContext(packageX, version);
+            var packageY100 = new SimpleTestPackageContext(packageY, version);
+            var packageZ100 = new SimpleTestPackageContext(packageZ, version);
+            var packageK100 = new SimpleTestPackageContext(packageK, version);
+
+            packageX100.Dependencies.Add(packageZ100);
+
+            projectA.AddPackageToAllFrameworks(packageX100);
+            projectA.AddPackageToAllFrameworks(packageY100);
+            projectA.AddPackageDownloadToAllFrameworks(packageK100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100,
+                    packageK100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100,
+                    packageZ100,
+                    packageK100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source1"" value=""{pathContext.PackageSource}"" />
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageSourceMapping>
+            <packageSource key=""source1"">
+                <package pattern=""{packageY}*"" />
+                <package pattern=""{packageZ}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <package pattern=""{packageX}*"" />
+                <package pattern=""{packageK}*"" />
+            </packageSource>
+    </packageSourceMapping>
+</configuration>
+";
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _msbuildFixture.RunDotnet(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} --source {packageSource2.FullName};{pathContext.PackageSource} -v d", ignoreExitCode: true);
+
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'Y' are: 'source1'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'Z' are: 'source1'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'X' are: 'source2'.", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'K' are: 'source2'.", result.AllOutput);
+        }
+
+        [Fact]
+        public async Task DotnetRestore_NameSpaceFilter_WithNotEnoughSourceOptions_Fails()
+        {
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projFramework = FrameworkConstants.CommonFrameworks.Net50;
+            var projectPackageName = "projectA";
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+               projectPackageName,
+               pathContext.SolutionRoot,
+               projFramework);
+
+            const string version = "1.0.0";
+            const string packageX = "X", packageY = "Y";
+
+            var packageX100 = new SimpleTestPackageContext(packageX, version);
+            var packageY100 = new SimpleTestPackageContext(packageY, version);
+
+
+            projectA.AddPackageToAllFrameworks(packageX100);
+            projectA.AddPackageToAllFrameworks(packageY100);
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var packageSource2 = new DirectoryInfo(Path.Combine(pathContext.WorkingDirectory, "source2"));
+            packageSource2.Create();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    packageSource2.FullName,
+                    PackageSaveMode.Defaultv3,
+                    packageX100,
+                    packageY100);
+
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source1"" value=""{pathContext.PackageSource}"" />
+        <add key=""source2"" value=""{packageSource2.FullName}"" />
+    </packageSources>
+        <packageSourceMapping>
+            <packageSource key=""source1"">
+                <package pattern=""{packageY}*"" />
+            </packageSource>
+            <packageSource key=""source2"">
+                <package pattern=""{packageX}*"" />
+            </packageSource>
+    </packageSourceMapping>
+</configuration>
+";
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName, "NuGet.Config"), configFile);
+
+            //Act
+            var result = _msbuildFixture.RunDotnet(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} --source {packageSource2.FullName} -v d", ignoreExitCode: true);
+
+            result.Success.Should().BeFalse(because: result.AllOutput);
+            Assert.Contains("Package namespace match not found for package ID 'Y'", result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageY} (>= {version})'", result.AllOutput);
+            Assert.Contains($"Package namespace matches found for package ID 'X' are: 'source2'.", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
         }
 
         private static SimpleTestPackageContext CreateNetstandardCompatiblePackage(string id, string version)

@@ -78,6 +78,23 @@
     </Setter>
   </Style>
 
+  <Style x:Key="GridSplitterFocusVisualStyle" TargetType="{x:Type Control}">
+    <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.GridSplitterFocusBrushKey}}"/>
+    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Rectangle x:Name="GridSplitterFocusVisualRectangle"
+            Fill="{TemplateBinding Background}"
+            Stroke="{TemplateBinding Foreground}"
+            StrokeThickness="1"
+            StrokeDashArray="1 2"
+            SnapsToDevicePixels="true"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <Style x:Key="MarginFocusVisualStyle" TargetType="{x:Type Control}" BasedOn="{StaticResource ControlsFocusVisualStyle}">
     <Setter Property="Margin" Value="4"/>
   </Style>
@@ -144,7 +161,7 @@
   </Style>
 
   <Style x:Key="{x:Type GridSplitter}" TargetType="{x:Type GridSplitter}" BasedOn="{StaticResource {x:Type GridSplitter}}">
-    <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
+    <Setter Property="FocusVisualStyle" Value="{StaticResource GridSplitterFocusVisualStyle}"/>
   </Style>
 
   <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Static nuget:Styles.ThemedComboStyleKey}}">

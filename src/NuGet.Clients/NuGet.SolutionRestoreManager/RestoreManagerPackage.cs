@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 // Duplicate type declarations due to Microsoft.Internal.VisualStudio.Shell.Embeddable.
@@ -43,6 +44,8 @@ namespace NuGet.SolutionRestoreManager
             CancellationToken cancellationToken,
             IProgress<ServiceProgressData> progress)
         {
+            NuGetVSTelemetryService.Initialize();
+
             _handler = await SolutionRestoreBuildHandler.InitializeAsync(this);
 
             await SolutionRestoreCommand.InitializeAsync(this);

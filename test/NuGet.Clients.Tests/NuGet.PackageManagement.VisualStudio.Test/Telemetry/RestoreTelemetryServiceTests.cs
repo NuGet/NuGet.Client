@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.VisualStudio;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -66,7 +68,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
-                new IntervalTracker("Activity"));
+                new IntervalTracker("Activity"),
+                isPackageSourceMappingEnabled: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -76,8 +79,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             VerifyTelemetryEventData(operationId, restoreTelemetryData, lastTelemetryEvent);
         }
 
-        [Fact]
-        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured()
+        [Theory]
+        [InlineData("")]
+        [InlineData("nuget.org,nuget")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ")]
+        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured(string packageNamespaces)
         {
             // Arrange
             var first = "first";
@@ -98,6 +104,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             var operationId = Guid.NewGuid().ToString();
+            PackageNamespacesConfiguration packageNamespacesConfiguration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
+            bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,
@@ -122,8 +130,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
-                tracker
-                );
+                tracker,
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -133,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(22, lastTelemetryEvent.Count);
+            Assert.Equal(23, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -146,7 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(20, actual.Count);
+            Assert.Equal(21, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 

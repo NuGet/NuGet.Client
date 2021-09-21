@@ -48,7 +48,8 @@ namespace NuGet.VisualStudio
             DateTimeOffset endTime,
             double duration,
             IDictionary<string, object> additionalTrackingData,
-            IntervalTracker intervalTimingTracker) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
+            IntervalTracker intervalTimingTracker,
+            bool isPackageSourceMappingEnabled) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
@@ -61,6 +62,7 @@ namespace NuGet.VisualStudio
             base[nameof(DotnetCliToolProjectsCount)] = dotnetCliToolProjectsCount;
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
+            base[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
 
             foreach (KeyValuePair<string, object> data in additionalTrackingData)
             {
@@ -98,5 +100,7 @@ namespace NuGet.VisualStudio
         public int DotnetCliToolProjectsCount => (int)base[nameof(DotnetCliToolProjectsCount)];
 
         public int PackagesConfigProjectsCount => (int)base[nameof(PackagesConfigProjectsCount)];
+
+        internal const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
     }
 }

@@ -27,8 +27,11 @@ namespace NuGet.Protocol
             new ConcurrentDictionary<string, NuspecReader>();
 
         private readonly HttpSource _httpSource;
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
 
-        public FindPackagesByIdNupkgDownloader(HttpSource httpSource)
+        public FindPackagesByIdNupkgDownloader(HttpSource httpSource) : this(httpSource, EnvironmentVariableWrapper.Instance) { }
+
+        internal FindPackagesByIdNupkgDownloader(HttpSource httpSource, IEnvironmentVariableReader environmentVariableReader)
         {
             if (httpSource == null)
             {
@@ -36,6 +39,7 @@ namespace NuGet.Protocol
             }
 
             _httpSource = httpSource;
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 
         /// <summary>
@@ -259,7 +263,8 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            const int maxRetries = 3;
+            int maxRetries = _enhancedHttpRetryHelper.EnhancedHttpRetryEnabled ? _enhancedHttpRetryHelper.ExperimentalMaxNetworkTryCount : 3;
+
             for (var retry = 1; retry <= maxRetries; ++retry)
             {
                 var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, isFirstAttempt: retry == 1);
@@ -300,6 +305,19 @@ namespace NuGet.Protocol
                         + ExceptionUtilities.DisplayMessage(ex);
 
                     logger.LogMinimal(message);
+
+                    if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled &&
+                        ex.InnerException != null &&
+                        ex.InnerException is IOException &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException is System.Net.Sockets.SocketException)
+                    {
+                        // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
+                        // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
+                        // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
+                        logger.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
+                        await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.ExperimentalRetryDelayMilliseconds));
+                    }
                 }
                 catch (Exception ex) when (retry == maxRetries)
                 {

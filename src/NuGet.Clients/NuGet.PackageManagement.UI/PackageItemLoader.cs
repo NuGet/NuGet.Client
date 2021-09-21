@@ -297,21 +297,6 @@ namespace NuGet.PackageManagement.UI
 
                 listItem.UpdatePackageStatus(_installedPackages);
 
-                if (!_context.IsSolution && _context.PackageManagerProviders.Any())
-                {
-                    listItem.ProvidersLoader = AsyncLazy.New(
-                        async () =>
-                        {
-                            string uniqueProjectName = await _context.Projects[0].GetUniqueNameOrNameAsync(
-                                _context.ServiceBroker,
-                                CancellationToken.None);
-
-                            return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
-                                _context.PackageManagerProviders,
-                                listItem.Id,
-                                uniqueProjectName);
-                        });
-                }
                 listItemViewModels.Add(listItem);
             }
 

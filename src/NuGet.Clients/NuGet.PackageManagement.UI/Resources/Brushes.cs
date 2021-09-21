@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Windows;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
@@ -155,15 +156,19 @@ namespace NuGet.PackageManagement.UI
 
         public static object ButtonFocusedStyleBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
 
-        public static object TabSelectedBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+        public static object GridSplitterFocusBrushKey { get; private set; } = SystemColors.HighlightBrushKey;
+
+        public static object TabSelectedIndicatorBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
 
         public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;
 
-        public static object TabPopupBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+        public static object TabPopupBrushKey { get; private set; } = SystemColors.HighlightBrushKey;
 
-        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrush;
+        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
 
-        public static object TabHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
+        public static object TabTextHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
+
+        public static object TabTextFocusedBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
         public static object ListItemBackgroundSelectedColorKey { get; private set; } = SystemColors.HighlightColorKey;
 
@@ -171,6 +176,11 @@ namespace NuGet.PackageManagement.UI
 
         public static void LoadVsBrushes(INuGetExperimentationService nuGetExperimentationService)
         {
+            if (nuGetExperimentationService == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetExperimentationService));
+            }
+
             bool isBgColorFlightEnabled = IsBackgroundColorFlightEnabled(nuGetExperimentationService);
 
             FocusVisualStyleBrushKey = VsBrushes.ToolWindowTextKey;
@@ -247,11 +257,10 @@ namespace NuGet.PackageManagement.UI
             ContentSelectedTextBrushKey = CommonDocumentColors.ListItemTextSelectedBrushKey;
 
             // Brushes/Colors for FilterLabel (Top Tabs)
-            TabSelectedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-            TabSelectedTextBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-            TabHoverBrushKey = CommonDocumentColors.InnerTabInactiveHoverTextBrushKey;
-            TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
-            TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
+            TabSelectedIndicatorBrushKey = CommonDocumentColors.InnerTabSelectedIndicatorBrushKey; // underline
+            TabSelectedTextBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey; // text
+            TabTextHoverBrushKey = CommonDocumentColors.InnerTabTextHoverBrushKey; //text hover
+            TabTextFocusedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
 
             // Mapping color keys directly for use to create brushes using these colors
             ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;

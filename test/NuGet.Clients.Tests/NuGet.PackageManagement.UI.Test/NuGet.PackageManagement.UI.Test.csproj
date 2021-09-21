@@ -34,6 +34,7 @@
     <Compile Include="Converters\DownloadCountToVisibilityConverterTests.cs" />
     <Compile Include="Converters\FormattedStringPartConverterTests.cs" />
     <Compile Include="Converters\DeprecationToDeprecationLabelStateConverterTests.cs" />
+    <Compile Include="Converters\ParametersToHyperlinkTupleConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
@@ -51,7 +52,6 @@
     <Compile Include="PackageLicenseUtilitiesTests.cs" />
     <Compile Include="PackageManagerListItemsTest.cs" />
     <Compile Include="TestNuGetUILogger.cs" />
-    <Compile Include="TestPackageManagerProviders.cs" />
     <Compile Include="TestPackageSearchMetadata.cs" />
     <Compile Include="UserInterfaceService\NuGetUIContextTests.cs" />
     <Compile Include="UserInterfaceService\NuGetUITests.cs" />
@@ -81,6 +81,7 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\customMetadata.jpeg" />
     <EmbeddedResource Include="Resources\grayicc.png" />
   </ItemGroup>
   <ItemGroup>

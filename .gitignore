@@ -200,3 +200,6 @@ launchSettings.json
 
 .idea
 .ionide
+
+# Image manifests are generated at build-time for VSIX
+*.imagemanifest

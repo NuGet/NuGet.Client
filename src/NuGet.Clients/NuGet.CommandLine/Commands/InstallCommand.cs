@@ -183,8 +183,14 @@ namespace NuGet.CommandLine
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 logger: Console);
 
+            var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+            if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+            {
+                packageSaveMode = EffectivePackageSaveMode;
+            }
+
             var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).Any();
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).Any();
 
             if (!missingPackageReferences)
             {
@@ -205,13 +211,15 @@ namespace NuGet.CommandLine
                 var projectContext = new ConsoleProjectContext(Console)
                 {
                     PackageExtractionContext = new PackageExtractionContext(
-                        Packaging.PackageSaveMode.Defaultv2,
+                        packageSaveMode,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         clientPolicyContext,
                         Console)
                 };
 
-                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
+                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+
+                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload, packageNamespacesConfiguration)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
@@ -244,10 +252,6 @@ namespace NuGet.CommandLine
         {
             return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
-
-
-
-
 
         private async Task InstallPackageAsync(
             string packageId,
@@ -367,7 +371,9 @@ namespace NuGet.CommandLine
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
-                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload)
+                    PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+
+                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload, packageNamespacesConfiguration)
                     {
                         ClientPolicyContext = clientPolicyContext
                     };

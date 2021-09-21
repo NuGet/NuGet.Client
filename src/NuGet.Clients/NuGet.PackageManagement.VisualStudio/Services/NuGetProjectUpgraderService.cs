@@ -110,9 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsSolutionManager? solutionManager = await _state.SolutionManager.GetValueAsync(cancellationToken);
             Assumes.NotNull(solutionManager);
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            string solutionDirectory = solutionManager.SolutionDirectory;
+            string solutionDirectory = await solutionManager.GetSolutionDirectoryAsync();
 
             await TaskScheduler.Default;
 
@@ -150,7 +148,7 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetPackageManager packageManager = await _state.GetPackageManagerAsync(cancellationToken);
             Assumes.NotNull(packageManager);
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+            INuGetProjectContext projectContext = await ServiceLocator.GetComponentModelServiceAsync<INuGetProjectContext>();
             Assumes.NotNull(projectContext);
 
             await packageManager.ExecuteNuGetProjectActionsAsync(
@@ -186,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetPackageManager packageManager = await _state.GetPackageManagerAsync(cancellationToken);
             Assumes.NotNull(packageManager);
 
-            INuGetProjectContext projectContext = await ServiceLocator.GetInstanceAsync<INuGetProjectContext>();
+            INuGetProjectContext projectContext = await ServiceLocator.GetComponentModelServiceAsync<INuGetProjectContext>();
             Assumes.NotNull(projectContext);
 
             await packageManager.ExecuteBuildIntegratedProjectActionsAsync(

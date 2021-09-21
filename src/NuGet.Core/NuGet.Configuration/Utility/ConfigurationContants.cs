@@ -21,7 +21,7 @@ namespace NuGet.Configuration
 
         public static readonly string Certificate = "certificate";
 
-        public static readonly string Namespace = "namespace";
+        public static readonly string Namespace = "package";
 
         public static readonly string Clear = "clear";
 
@@ -119,7 +119,7 @@ namespace NuGet.Configuration
 
         public static readonly string TrustedSigners = "trustedSigners";
 
-        public static readonly string PackageNamespaces = "packageNamespaces";
+        public static readonly string PackageNamespaces = "packageSourceMapping";
 
         public static readonly string UserKey = "http_proxy.user";
 
@@ -129,6 +129,6 @@ namespace NuGet.Configuration
 
         public static readonly string ValueAttribute = "value";
 
-        public static readonly string IdAttribute = "id";
+        public static readonly string IdAttribute = "pattern";
     }
 }

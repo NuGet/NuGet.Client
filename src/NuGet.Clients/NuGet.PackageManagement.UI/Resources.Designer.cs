@@ -331,6 +331,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0:G3}B.
+        /// </summary>
+        public static string Billion {
+            get {
+                return ResourceManager.GetString("Billion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select a Package Source Folder.
         /// </summary>
         public static string BrowseFolderDialogDescription {
@@ -727,7 +736,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package is deprecated..
+        ///   Looks up a localized string similar to This package version is deprecated..
         /// </summary>
         public static string Deprecation_PackageItemMessage {
             get {
@@ -736,7 +745,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package is deprecated. Use {0} instead..
+        ///   Looks up a localized string similar to This package version is deprecated. Use {0} instead..
         /// </summary>
         public static string Deprecation_PackageItemMessageAlternative {
             get {
@@ -1069,7 +1078,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have {0} deprecated package(s) installed..
+        ///   Looks up a localized string similar to You have {0} deprecated package versions installed..
         /// </summary>
         public static string Label_Installed_DeprecatedWarning {
             get {
@@ -1078,7 +1087,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have {0} vulnerable package(s) and {1} deprecated package(s) installed..
+        ///   Looks up a localized string similar to You have {0} vulnerable package versions and {1} deprecated package versions installed..
         /// </summary>
         public static string Label_Installed_VulnerableAndDeprecatedWarning {
             get {
@@ -1087,7 +1096,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have {0} vulnerable package(s) installed..
+        ///   Looks up a localized string similar to You have {0} vulnerable package versions installed..
         /// </summary>
         public static string Label_Installed_VulnerableWarning {
             get {
@@ -1330,24 +1339,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Incompatible: Use {0} instead.
-        /// </summary>
-        public static string Label_UseInstead {
-            get {
-                return ResourceManager.GetString("Label_UseInstead", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [Incompatible: Use {0} instead].
-        /// </summary>
-        public static string Label_UseInsteadInSolutionPackageManager {
-            get {
-                return ResourceManager.GetString("Label_UseInsteadInSolutionPackageManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Version:.
         /// </summary>
         public static string Label_Version {
@@ -1479,6 +1470,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Migrator_VersionColumnHeader {
             get {
                 return ResourceManager.GetString("Migrator_VersionColumnHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0:G3}M.
+        /// </summary>
+        public static string Million {
+            get {
+                return ResourceManager.GetString("Million", resourceCulture);
             }
         }
         
@@ -2324,6 +2324,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0:G3}K.
+        /// </summary>
+        public static string Thousand {
+            get {
+                return ResourceManager.GetString("Thousand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Following versions are unavailable due to additional constraints in the project or packages.config.
         /// </summary>
         public static string ToolTip_BlockedVersion {
@@ -2428,6 +2437,15 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_UpdateButton {
             get {
                 return ResourceManager.GetString("ToolTip_UpdateButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0:G3}T.
+        /// </summary>
+        public static string Trillion {
+            get {
+                return ResourceManager.GetString("Trillion", resourceCulture);
             }
         }
         

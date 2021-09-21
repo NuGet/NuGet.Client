@@ -416,25 +416,21 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        public string SolutionDirectory
-        {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    if (!await IsSolutionOpenAsync())
-                    {
-                        return null;
-                    }
-                    var solutionFilePath = await GetSolutionFilePathAsync();
+        public string SolutionDirectory => NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
 
-                    if (string.IsNullOrEmpty(solutionFilePath))
-                    {
-                        return null;
-                    }
-                    return Path.GetDirectoryName(solutionFilePath);
-                });
+        public async Task<string> GetSolutionDirectoryAsync()
+        {
+            if (!await IsSolutionOpenAsync())
+            {
+                return null;
             }
+            var solutionFilePath = await GetSolutionFilePathAsync();
+
+            if (string.IsNullOrEmpty(solutionFilePath))
+            {
+                return null;
+            }
+            return Path.GetDirectoryName(solutionFilePath);
         }
 
         public async Task<string> GetSolutionFilePathAsync()
@@ -606,7 +602,10 @@ namespace NuGet.PackageManagement.VisualStudio
                             RemoveVsProjectAdapterFromCache(item.FullName);
 
                             var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(item);
-                            await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                            if (await vsProjectAdapter.IsSupportedAsync())
+                            {
+                                await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                            }
                         }
                     }
                 }
@@ -734,11 +733,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task AddVsProjectAdapterToCacheAsync(IVsProjectAdapter vsProjectAdapter)
         {
-            if (!await vsProjectAdapter.IsSupportedAsync())
-            {
-                return;
-            }
-
             _projectSystemCache.TryGetProjectNameByShortName(vsProjectAdapter.ProjectName, out var oldProjectName);
 
             // Create the NuGet project first. If this throws we bail out and do not change the cache.
@@ -815,6 +809,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         return;
                     }
+
+                    NuGetVSTelemetryService.Initialize();
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

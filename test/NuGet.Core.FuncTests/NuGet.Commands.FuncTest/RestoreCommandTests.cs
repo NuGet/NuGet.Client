@@ -2977,7 +2977,7 @@ namespace NuGet.Commands.FuncTest
                 var newRequest = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
                 {
                     ProjectStyle = ProjectStyle.PackageReference,
-                    DependencyGraphSpec = dgSpec,
+                    DependencyGraphSpec = newDgSpec,
                     AllowNoOp = true,
                 };
                 var newCommand = new RestoreCommand(newRequest);

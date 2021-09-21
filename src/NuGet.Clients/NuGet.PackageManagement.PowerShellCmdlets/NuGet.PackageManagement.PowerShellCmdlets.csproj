@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -51,6 +51,7 @@
     <Compile Include="Utility\NuGetErrorId.cs" />
     <Compile Include="NuGetPowerShellBaseCommand.cs" />
     <Compile Include="Model\PowerShellPackage.cs" />
+    <Compile Include="Utility\PackageSourceMappingUtility.cs" />
     <Compile Include="Utility\PowerShellCmdletsUtility.cs" />
     <Compile Include="Utility\ProgressActivityIds.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

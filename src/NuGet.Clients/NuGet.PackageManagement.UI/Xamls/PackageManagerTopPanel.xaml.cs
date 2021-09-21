@@ -46,12 +46,13 @@ namespace NuGet.PackageManagement.UI
 
             var sp = new StackPanel()
             {
-                Orientation = Orientation.Horizontal
+                Orientation = Orientation.Horizontal,
             };
 
             var textConsolidate = new TextBlock();
             textConsolidate.Name = nameof(textConsolidate);
             textConsolidate.Text = Resx.Action_Consolidate;
+            textConsolidate.IsHitTestVisible = false;
             sp.Children.Add(textConsolidate);
 
             SetConsolidationAutomationProperties(tabConsolidate, count: 0);

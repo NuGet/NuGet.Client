@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -86,7 +85,7 @@ namespace NuGet.PackageManagement.UI
 
             Model = model;
             _uiLogger = uiLogger;
-            Settings = await ServiceLocator.GetInstanceAsync<ISettings>();
+            Settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
 
             _windowSearchHostFactory = await ServiceLocator.GetGlobalServiceAsync<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             _serviceBroker = model.Context.ServiceBroker;
@@ -97,7 +96,6 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
                     Model.Context.Projects,
-                    Model.Context.PackageManagerProviders,
                     CancellationToken.None);
             }
             else
@@ -883,7 +881,7 @@ namespace NuGet.PackageManagement.UI
                 _recommendPackages = true;
             }
 
-            NuGetExperimentationService = await ServiceLocator.GetInstanceAsync<INuGetExperimentationService>();
+            NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             // Check for A/B experiment here. For control group, return false instead of _recommendPackages
             if (IsRecommenderFlightEnabled(NuGetExperimentationService))
             {
@@ -1045,6 +1043,8 @@ namespace NuGet.PackageManagement.UI
             var operationId = _packageList.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
             var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+            var hasDeprecationAlternative = selectedPackage.DeprecationMetadata?.AlternatePackage != null;
+
             if (_topPanel.Filter == ItemFilter.All
                 && operationId.HasValue
                 && selectedIndex >= 0)
@@ -1054,7 +1054,10 @@ namespace NuGet.PackageManagement.UI
                     recommendedCount,
                     selectedIndex,
                     selectedPackage.Id,
-                    selectedPackage.Version));
+                    selectedPackage.Version,
+                    selectedPackage.IsPackageVulnerable,
+                    selectedPackage.IsPackageDeprecated,
+                    hasDeprecationAlternative));
             }
         }
 
@@ -1491,8 +1494,9 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var alternatePackageId = e.Parameter as string;
-            if (!string.IsNullOrWhiteSpace(alternatePackageId))
+            var tupleParam = e.Parameter as Tuple<string, HyperlinkType>;
+            var alternatePackageId = tupleParam?.Item1;
+            if (tupleParam != null && !string.IsNullOrWhiteSpace(alternatePackageId))
             {
                 if (_windowSearchHost?.IsEnabled == true)
                 {
@@ -1503,11 +1507,20 @@ namespace NuGet.PackageManagement.UI
                     }
                     if (_windowSearchHost.SearchTask == null)
                     {
+                        NuGet.VisualStudio.Internal.Contracts.ItemFilter currentTab = UIUtility.ToContractsItemFilter(ActiveFilter);
+
                         _topPanel.SelectFilter(ItemFilter.All);
-                        Search("packageid:" + alternatePackageId);
+                        var searchQuery = UIUtility.CreateSearchQuery(alternatePackageId);
+                        Search(searchQuery);
+
+                        var hyperlinkType = tupleParam.Item2;
+                        var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, currentTab, Model.IsSolution, alternatePackageId);
+                        TelemetryActivity.EmitTelemetryEvent(evt);
                     }
                 }
             }
+
+            e.Handled = true;
         }
 
         private async Task ExecuteRestartSearchCommandAsync()

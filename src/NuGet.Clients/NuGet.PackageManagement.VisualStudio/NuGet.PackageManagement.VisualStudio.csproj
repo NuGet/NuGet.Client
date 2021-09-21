@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -43,6 +43,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
+    <Compile Include="ProjectServices\CpsProjectSystemReferenceReader.cs" />
     <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Projects\ProjectPackages.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
@@ -66,8 +67,7 @@
     <Compile Include="Common\PackageCollectionItem.cs" />
     <Compile Include="Common\PackageCollectionItemExtensions.cs" />
     <Compile Include="PackageFeeds\LoadingStatusExtensionMethods.cs" />
-    <Compile Include="ProjectServices\GlobalProjectServiceProvider.cs" />
-    <Compile Include="ProjectServices\NetCoreProjectSystemServices.cs" />
+    <Compile Include="ProjectServices\CpsProjectSystemServices.cs" />
     <Compile Include="ProjectServices\VsCoreProjectSystemReferenceReader.cs" />
     <Compile Include="ProjectSystems\VsCoreProjectSystem.cs" />
     <Compile Include="Projects\VsMSBuildProjectSystemServices.cs" />
@@ -140,6 +140,8 @@
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\GetInstalledPackagesAsyncTelemetryEvent.cs" />
     <Compile Include="Telemetry\CacheMissException.cs" />
+    <Compile Include="Telemetry\HyperlinkClickedTelemetryEvent.cs" />
+    <Compile Include="Telemetry\HyperlinkType.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
     <Compile Include="Telemetry\DiagnosticTelemetryEvent.cs" />

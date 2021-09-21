@@ -127,8 +127,9 @@ namespace NuGet.PackageManagement
                     {
                         if (isPackageNamespaceEnabled)
                         {
-                            if (configuredPackageSources != null &&
-                                !configuredPackageSources.Contains(source.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase))
+                            if (configuredPackageSources == null ||
+                                configuredPackageSources.Count == 0 ||
+                                !configuredPackageSources.Contains(source.PackageSource.Name, StringComparer.OrdinalIgnoreCase))
                             {
                                 // This package's id prefix is not defined in current package source, let's skip.
                                 continue;

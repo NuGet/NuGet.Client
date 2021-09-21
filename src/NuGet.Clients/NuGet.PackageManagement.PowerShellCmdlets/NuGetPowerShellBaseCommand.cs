@@ -68,14 +68,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected NuGetPowerShellBaseCommand()
         {
-            _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-            ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
-            VsSolutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
+            _sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
+            ConfigSettings = ServiceLocator.GetComponentModelService<Configuration.ISettings>();
+            VsSolutionManager = ServiceLocator.GetComponentModelService<IVsSolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
-            SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
-            _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
-            PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
-            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            SourceControlManagerProvider = ServiceLocator.GetComponentModelService<ISourceControlManagerProvider>();
+            _commonOperations = ServiceLocator.GetComponentModelService<ICommonOperations>();
+            PackageRestoreManager = ServiceLocator.GetComponentModelService<IPackageRestoreManager>();
+            _deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
 
             var logger = new LoggerAdapter(this);
             PackageExtractionContext = new PackageExtractionContext(
@@ -249,7 +249,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected async Task CheckMissingPackagesAsync()
         {
-            var solutionDirectory = VsSolutionManager.SolutionDirectory;
+            var solutionDirectory = await VsSolutionManager.GetSolutionDirectoryAsync();
 
             var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
             if (packages.Any(p => p.IsMissing))

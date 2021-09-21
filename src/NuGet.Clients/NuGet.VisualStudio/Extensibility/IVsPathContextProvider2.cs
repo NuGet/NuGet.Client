@@ -17,6 +17,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Attempts to create an instance of <see cref="IVsPathContext2"/> for the solution.
         /// </summary>
+        /// <remarks>This API is free-threaded, but APIs on the returned IVsPathContext2 may not be.</remarks>
         /// <param name="context">The path context associated with this solution.</param>
         /// <returns>
         /// <code>True</code> if operation has succeeded and context was created.
@@ -30,6 +31,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Attempts to create an instance of <see cref="IVsPathContext2"/> for the solution.
         /// </summary>
+        /// <remarks>This API is free-threaded, but APIs on the returned IVsPathContext2 may not be.</remarks>
         /// <param name="solutionDirectory">
         /// path to the solution directory. Must be an absolute path.
         /// It will be performant to pass the solution directory if it's available.

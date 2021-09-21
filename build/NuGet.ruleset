@@ -7,6 +7,9 @@
     <Rule Id="CA2213" Action="Warning" />
     <Rule Id="CA2231" Action="Warning" />
   </Rules>
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp.CodeStyle" RuleNamespace="Microsoft.CodeQuality.Analyzers">
+    <Rule Id="IDE0055" Action="Warning" />
+  </Rules>
   <Rules AnalyzerId="Microsoft.CodeAnalysis.VersionCheckAnalyzer" RuleNamespace="Microsoft.CodeAnalysis.VersionCheckAnalyzer">
     <Rule Id="CA9999" Action="None" />
   </Rules>

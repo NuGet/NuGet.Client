@@ -137,37 +137,13 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task IconUrl_WithLocalPathAndColorProfile_LoadsImage()
         {
-            // Prepare
-            using (var testDir = TestDirectory.Create())
-            {
-                byte[] bytes;
-                Assembly testAssembly = typeof(PackageItemViewModelTests).Assembly;
+            await ReadIconFromEmbeddedResourceAsync("grayicc.png");
+        }
 
-                using (Stream sourceStream = testAssembly.GetManifestResourceStream("NuGet.PackageManagement.UI.Test.Resources.grayicc.png"))
-                using (var memoryStream = new MemoryStream())
-                {
-                    sourceStream.CopyTo(memoryStream);
-                    bytes = memoryStream.ToArray();
-                }
-
-                string grayiccImagePath = Path.Combine(testDir, "grayicc.png");
-                File.WriteAllBytes(grayiccImagePath, bytes);
-
-                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
-                {
-                    Id = "PackageId.IconUrl_WithLocalPathAndColorProfile_LoadsImage",
-                    Version = new NuGetVersion("1.0.0"),
-                    IconUrl = new Uri(grayiccImagePath, UriKind.Absolute),
-                    PackageFileService = _packageFileService,
-                };
-
-                // Act
-                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
-
-                // Assert
-                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
-                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
-            }
+        [Fact]
+        public async Task IconUrl_JpegFullReading_LoadsImage()
+        {
+            await ReadIconFromEmbeddedResourceAsync("customMetadata.jpeg");
         }
 
         [Fact]
@@ -359,7 +335,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
 
             BitmapSource result = packageItemViewModel.IconBitmap;
-            int millisecondsToWait = 3000;
+            int millisecondsToWait = 200000;
             while (!IconBitmapStatusUtility.GetIsCompleted(packageItemViewModel.BitmapStatus) && millisecondsToWait >= 0)
             {
                 await Task.Delay(250);
@@ -519,6 +495,46 @@ namespace NuGet.PackageManagement.UI.Test
             using (var fs = File.OpenWrite(path))
             {
                 encoder.Save(fs);
+            }
+        }
+
+        /// <summary>
+        /// Reads an Icon from test assembly resource
+        /// </summary>
+        /// <param name="imageFile">Relative path to the resource in test assembly</param>
+        /// <returns>An awitable Task</returns>
+        private async Task ReadIconFromEmbeddedResourceAsync(string imageFile)
+        {
+            // Prepare
+            using (var testDir = TestDirectory.Create())
+            {
+                byte[] bytes;
+                Assembly testAssembly = typeof(PackageItemViewModelTests).Assembly;
+
+                using (Stream sourceStream = testAssembly.GetManifestResourceStream($"NuGet.PackageManagement.UI.Test.Resources.{imageFile}"))
+                using (var memoryStream = new MemoryStream())
+                {
+                    sourceStream.CopyTo(memoryStream);
+                    bytes = memoryStream.ToArray();
+                }
+
+                string imageFilePath = Path.Combine(testDir, imageFile);
+                File.WriteAllBytes(imageFilePath, bytes);
+
+                var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
+                {
+                    Id = "TestPackageId",
+                    Version = new NuGetVersion("1.0.0"),
+                    IconUrl = new Uri(imageFilePath, UriKind.Absolute),
+                    PackageFileService = _packageFileService,
+                };
+
+                // Act
+                BitmapSource result = await GetFinalIconBitmapAsync(packageItemViewModel);
+
+                // Assert
+                VerifyImageResult(result, packageItemViewModel.BitmapStatus);
+                Assert.Equal(IconBitmapStatus.FetchedIcon, packageItemViewModel.BitmapStatus);
             }
         }
     }

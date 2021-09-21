@@ -25,6 +25,7 @@ namespace NuGet.VisualStudio
         /// fallback package folders are configured, an empty list is returned. The item type of this sequence is
         /// <see cref="string"/>.
         /// </summary>
+        /// <remarks>Can be called from a background thread.</remarks>
         IEnumerable FallbackPackageFolders { get; }
 
         /// <summary>

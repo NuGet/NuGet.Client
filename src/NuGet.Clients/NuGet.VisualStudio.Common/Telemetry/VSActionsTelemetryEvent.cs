@@ -18,12 +18,15 @@ namespace NuGet.VisualStudio
            NuGetOperationStatus status,
            int packageCount,
            DateTimeOffset endTime,
-           double duration) :
+           double duration,
+           bool isPackageSourceMappingEnabled) :
             base(operationId, projectIds, operationType, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(Source)] = source;
+            base[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
         }
 
         public OperationSource Source => (OperationSource)base[nameof(Source)];
+        internal const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
     }
 }

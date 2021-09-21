@@ -29,8 +29,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public PackageActionBaseCommand()
         {
-            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
-            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
+            _deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetComponentModelService<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     // update packages count to be logged under telemetry event
                     _packageCount = actions.Select(
-                        action => action.PackageIdentity.Id).Distinct().Count();
+                        action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
                 }
 
                 // stop telemetry event timer to avoid UI interaction

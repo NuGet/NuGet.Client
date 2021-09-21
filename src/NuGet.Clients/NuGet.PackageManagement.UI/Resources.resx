@@ -474,14 +474,6 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ToolTip_LatestVersion" xml:space="preserve">
     <value>Latest version: {0}</value>
   </data>
-  <data name="Label_UseInstead" xml:space="preserve">
-    <value>Incompatible: Use {0} instead</value>
-    <comment>The format string in the package list in the left pane. The string should contain exactly one instance of "{0}". No other formatting is supported.</comment>
-  </data>
-  <data name="Label_UseInsteadInSolutionPackageManager" xml:space="preserve">
-    <value>[Incompatible: Use {0} instead]</value>
-    <comment>The format string used for projects in the solution package manager. The string should contain exactly one instance of "{0}". No other formatting is supported.</comment>
-  </data>
   <data name="Label_SolutionNuGetWindowCaption" xml:space="preserve">
     <value>NuGet - Solution</value>
   </data>
@@ -878,7 +870,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Alternate package</value>
   </data>
   <data name="Label_Installed_DeprecatedWarning" xml:space="preserve">
-    <value>You have {0} deprecated package(s) installed.</value>
+    <value>You have {0} deprecated package versions installed.</value>
+    <comment>{0} is the number of installed package versions</comment>
   </data>
   <data name="Label_DeprecationReasons" xml:space="preserve">
     <value>Deprecation reason</value>
@@ -992,12 +985,12 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Details</value>
   </data>
   <data name="Label_Installed_VulnerableAndDeprecatedWarning" xml:space="preserve">
-    <value>You have {0} vulnerable package(s) and {1} deprecated package(s) installed.</value>
-    <comment>{0} and {1} are numbers of installed packages</comment>
+    <value>You have {0} vulnerable package versions and {1} deprecated package versions installed.</value>
+    <comment>{0} and {1} are numbers of installed package versions</comment>
   </data>
   <data name="Label_Installed_VulnerableWarning" xml:space="preserve">
-    <value>You have {0} vulnerable package(s) installed.</value>
-    <comment>{0} is the number of installed packages</comment>
+    <value>You have {0} vulnerable package versions installed.</value>
+    <comment>{0} is the number of installed package versions</comment>
   </data>
   <data name="Deprecation_MoreInfo" xml:space="preserve">
     <value>More info</value>
@@ -1011,5 +1004,21 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Deprecation_PackageItemMessageAlternative" xml:space="preserve">
     <value>This package version is deprecated. Use {0} instead.</value>
     <comment>{0} is a NuGet package id (string)</comment>
+  </data>
+  <data name="Billion" xml:space="preserve">
+    <value>{0:G3}B</value>
+    <comment>American billions in short format notation</comment>
+  </data>
+  <data name="Million" xml:space="preserve">
+    <value>{0:G3}M</value>
+    <comment>Millions in short format notation</comment>
+  </data>
+  <data name="Thousand" xml:space="preserve">
+    <value>{0:G3}K</value>
+    <comment>Thousands in short format notation</comment>
+  </data>
+  <data name="Trillion" xml:space="preserve">
+    <value>{0:G3}T</value>
+    <comment>American trillions in short format notation</comment>
   </data>
 </root>

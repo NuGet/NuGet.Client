@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -32,15 +33,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public VsCoreProjectSystemReferenceReader(
             IVsProjectAdapter vsProjectAdapter,
-            INuGetProjectServices projectServices)
+            IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsProjectAdapter);
-            Assumes.Present(projectServices);
+            Assumes.Present(threadingService);
 
             _vsProjectAdapter = vsProjectAdapter;
-
-            _threadingService = projectServices.GetGlobalService<IVsProjectThreadingService>();
-            Assumes.Present(_threadingService);
+            _threadingService = threadingService;
         }
 
         public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
@@ -130,7 +129,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private IEnumerable<Reference> GetVSProjectReferences()
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             var langProject = _vsProjectAdapter.Project.Object as VSProject;
             if (langProject != null)
@@ -148,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsEnumHierarchyItemsFactory itemsFactory,
             Common.ILogger logger)
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             var excludedReferences = new List<string>();
 
@@ -210,7 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool IsProjectReference(Reference3 reference, Common.ILogger logger)
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             try
             {
@@ -227,7 +226,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool IsReferenceResolved(Reference3 reference, Common.ILogger logger)
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             try
             {

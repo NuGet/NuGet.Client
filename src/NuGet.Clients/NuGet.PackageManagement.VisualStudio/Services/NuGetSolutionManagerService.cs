@@ -87,9 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-
-            return SolutionManager.SolutionDirectory;
+            return await SolutionManager.GetSolutionDirectoryAsync();
         }
 
         private static string CreateProjectActionId()

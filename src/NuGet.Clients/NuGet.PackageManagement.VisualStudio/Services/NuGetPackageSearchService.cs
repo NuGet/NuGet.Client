@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.VisualStudio
             CancellationToken cancellationToken)
         {
             var logger = new VisualStudioActivityLogger();
-            var uiLogger = ServiceLocator.GetInstance<INuGetUILogger>();
+            var uiLogger = await ServiceLocator.GetComponentModelServiceAsync<INuGetUILogger>();
             var packageFeeds = (mainFeed: (IPackageFeed?)null, recommenderFeed: (IPackageFeed?)null);
 
             if (itemFilter == ItemFilter.All && recommendPackages == false)
@@ -414,7 +414,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<SourceRepository> GetPackagesFolderSourceRepositoryAsync()
         {
             IVsSolutionManager solutionManager = await _sharedServiceState.SolutionManager.GetValueAsync();
-            ISettings settings = ServiceLocator.GetInstance<ISettings>();
+            ISettings settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
 
             return _sharedServiceState.SourceRepositoryProvider.CreateRepository(
                 new PackageSource(PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings)),

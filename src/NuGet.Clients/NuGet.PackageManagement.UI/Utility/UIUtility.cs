@@ -3,8 +3,8 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.VisualStudio.Shell;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -47,33 +47,66 @@ namespace NuGet.PackageManagement.UI
             return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
         }
 
-        private static readonly string[] _scalingFactor = new string[] {
-            String.Empty,
-            "K", // kilo
-            "M", // mega, million
-            "G", // giga, billion
-            "T"  // tera, trillion
-        };
-
         // Convert numbers into strings like "1.2K", "33.4M" etc.
         // Precondition: number > 0.
         public static string NumberToString(long number, IFormatProvider culture)
         {
-            double v = (double)number;
-            int exp = 0;
-
-            while (v >= 1000)
+            double RoundDown(double num, long precision)
             {
-                v /= 1000;
-                ++exp;
+                double val = num / precision;
+                return val > 999 ? 999 : val;
             }
 
-            var s = string.Format(
-                culture,
-                "{0:G3}{1}",
-                v,
-                _scalingFactor[exp]);
-            return s;
+            const long thousand = 1_000L;
+            const long million = 1_000_000L;
+            const long billion = 1_000_000_000L;
+            const long trillion = 1_000_000_000_000L;
+
+            if (number < thousand)
+            {
+                return number.ToString("G0", culture);
+            }
+
+            if (number < million)
+            {
+                return string.Format(culture, Resources.Thousand, RoundDown(number, thousand));
+            }
+
+            if (number < billion)
+            {
+                return string.Format(culture, Resources.Million, RoundDown(number, million));
+            }
+
+            if (number < trillion)
+            {
+                return string.Format(culture, Resources.Billion, RoundDown(number, billion));
+            }
+
+            return string.Format(culture, Resources.Trillion, RoundDown(number, trillion));
+        }
+
+        public static string CreateSearchQuery(string query)
+        {
+            return "packageid:" + query;
+        }
+
+        public static ContractsItemFilter ToContractsItemFilter(ItemFilter filter)
+        {
+            switch (filter)
+            {
+                case ItemFilter.All:
+                    return ContractsItemFilter.All;
+                case ItemFilter.Consolidate:
+                    return ContractsItemFilter.Consolidate;
+                case ItemFilter.Installed:
+                    return ContractsItemFilter.Installed;
+                case ItemFilter.UpdatesAvailable:
+                    return ContractsItemFilter.UpdatesAvailable;
+                default:
+                    break;
+            }
+
+            return ContractsItemFilter.All;
         }
     }
 }

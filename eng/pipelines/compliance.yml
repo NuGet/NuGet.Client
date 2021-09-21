@@ -13,7 +13,7 @@ jobs:
   - job: Static_Analysis
     displayName: "Static Analysis"
     timeoutInMinutes: 180
-    pool: VSEngStaticAnalysis
+    pool: VSEngSS-MicroBuild2019-1ES
 
     steps:
       - task: CredScan@2
@@ -31,20 +31,20 @@ jobs:
         displayName: "Download symbols - NonRTM artifact"
         inputs:
           source: specific
-          project: 'devdiv'
+          project: "devdiv"
           pipeline: NuGet.Client-Official
           artifact: "symbols - NonRTM"
-          path: $(Pipeline.Workspace)\symbols\NonRTM          
+          path: $(Pipeline.Workspace)\symbols\NonRTM
 
       ## Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
       - task: APIScan@2
         displayName: Run APIScan
         inputs:
           softwareFolder: $(Pipeline.Workspace)\symbols
-          softwareName: 'NuGet.Client'
-          softwareVersionNum: '$(Build.BuildId)'
+          softwareName: "NuGet.Client"
+          softwareVersionNum: "$(Build.BuildId)"
           isLargeApp: true
-          toolVersion: 'Latest'
+          toolVersion: "Latest"
         env:
           AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
 
