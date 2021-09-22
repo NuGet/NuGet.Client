@@ -429,7 +429,6 @@
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)microsoft.web.xdt\3.0.0\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
-      <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">
         <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
       </_VsixLocFiles>
