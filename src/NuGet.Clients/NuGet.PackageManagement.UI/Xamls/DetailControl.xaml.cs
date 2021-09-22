@@ -68,18 +68,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="e">Command arguments</param>
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
-            var hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink != null && hyperlink.NavigateUri != null)
-            {
-                Control.Model.UIController.LaunchExternalLink(hyperlink.NavigateUri);
-                e.Handled = true;
-
-                if (e.Parameter is not null and HyperlinkType hyperlinkType)
-                {
-                    var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, UIUtility.ToContractsItemFilter(Control.ActiveFilter), Control.Model.IsSolution);
-                    TelemetryActivity.EmitTelemetryEvent(evt);
-                }
-            }
+            UIUtility.ExecuteOpenLink(e, Control.Model.UIController, UIUtility.ToContractsItemFilter(Control.ActiveFilter), Control.Model.IsSolution);
         }
 
         public void ScrollToHome()

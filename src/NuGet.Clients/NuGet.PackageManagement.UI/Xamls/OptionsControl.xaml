@@ -1,6 +1,7 @@
 <UserControl x:Class="NuGet.PackageManagement.UI.OptionsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -110,7 +111,8 @@
           <Hyperlink
             NavigateUri="https://docs.nuget.org/consume/package-manager-ui#install-options"
             Style="{StaticResource HyperlinkStyle}"
-            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+            CommandParameter="{x:Static nugettel:HyperlinkType.OptionsInstall}">
             <Run Text="{x:Static nuget:Resources.Link_LearnAboutInstallOptions}" />
           </Hyperlink>
         </TextBlock>
@@ -154,7 +156,8 @@
           <Hyperlink
             NavigateUri="https://docs.nuget.org/consume/package-manager-ui#uninstall-options"
             Style="{StaticResource HyperlinkStyle}"
-            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+            Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+            CommandParameter="{x:Static nugettel:HyperlinkType.OptionsUninstall}">
             <Run Text="{x:Static nuget:Resources.Link_LearnAboutUninstallOptions}" />
           </Hyperlink>
         </TextBlock>

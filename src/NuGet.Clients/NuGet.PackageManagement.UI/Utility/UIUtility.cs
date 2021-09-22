@@ -3,7 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Windows.Documents;
+using System.Windows.Input;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI
@@ -107,6 +111,22 @@ namespace NuGet.PackageManagement.UI
             }
 
             return ContractsItemFilter.All;
+        }
+
+        public static void ExecuteOpenLink(ExecutedRoutedEventArgs e, INuGetUI nuGetUI, ContractsItemFilter currentFilter, bool isSolution)
+        {
+            var hyperlink = e.OriginalSource as Hyperlink;
+            if (hyperlink != null && hyperlink.NavigateUri != null)
+            {
+                nuGetUI.LaunchExternalLink(hyperlink.NavigateUri);
+                e.Handled = true;
+
+                if (e.Parameter is not null and HyperlinkType hyperlinkType)
+                {
+                    var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, currentFilter, isSolution);
+                    TelemetryActivity.EmitTelemetryEvent(evt);
+                }
+            }
         }
     }
 }

@@ -149,6 +149,7 @@
     <Compile Include="Telemetry\SearchPageTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchSelectionTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchTelemetryEvent.cs" />
+    <Compile Include="Telemetry\SourceFeedType.cs" />
     <Compile Include="Telemetry\SourceTelemetry.cs" />
     <Compile Include="Telemetry\VSTelemetryServiceUtility.cs" />
     <Compile Include="Utility\EnvDTEProjectUtility.cs" />

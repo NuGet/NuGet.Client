@@ -129,10 +129,45 @@ namespace NuGet.PackageManagement.UI.Test
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
             TelemetryEvent lastTelemetryEvent = null;
-            telemetrySession
+            _ = telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
 
+            // each package has its own max severity
+            var vulnerablePkgs = new List<PackageItemViewModel>()
+            {
+                new PackageItemViewModel(null)
+                {
+                    Id = "pkgA",
+                    Version = new NuGetVersion(1, 0, 0),
+                    Vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>()
+                    {
+                        new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
+                        new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
+                    }
+                },
+                new PackageItemViewModel(null)
+                {
+                    Id = "pkgB",
+                    Version = new NuGetVersion(1, 0, 0),
+                    Vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>()
+                    {
+                        new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
+                    }
+                },
+                new PackageItemViewModel(null)
+                {
+                    Id = "pkgC",
+                    Version = new NuGetVersion(1, 0, 0),
+                    Vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>()
+                    {
+                        new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
+                        new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
+                        new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 3),
+                    }
+                }
+            };
+           
             var operationId = Guid.NewGuid().ToString();
 
             var actionTelemetryData = new VSActionsTelemetryEvent(
@@ -152,12 +187,11 @@ namespace NuGet.PackageManagement.UI.Test
                 continueAfterPreview: true,
                 acceptedLicense: true,
                 userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0)),
+                selectedPackages: vulnerablePkgs,
                 selectedIndex: 0,
                 recommendedCount: 0,
                 recommendPackages: false,
                 recommenderVersion: null,
-                topLevelVulnerablePackagesCount: 3,
-                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 }, // each package has its own max severity
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,

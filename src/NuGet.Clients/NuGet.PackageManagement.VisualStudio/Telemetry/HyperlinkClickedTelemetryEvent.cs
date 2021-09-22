@@ -117,14 +117,4 @@ namespace NuGet.PackageManagement.Telemetry
             return (myFeedType, hostType, hostPart);
         }
     }
-
-    internal enum SourceFeedType
-    {
-        Http,
-        LocalAbsolute,
-        LocalRelative,
-        Unc,
-        MultiFeed,
-        Unknown,
-    }
 }

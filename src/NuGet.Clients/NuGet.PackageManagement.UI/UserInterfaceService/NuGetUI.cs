@@ -302,7 +302,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool ForceRemove { get; set; }
 
-        public PackageIdentity SelectedPackage { get; set; }
+        public IEnumerable<PackageItemViewModel> SelectedPackages { get; set; }
 
         public int SelectedIndex { get; set; }
 

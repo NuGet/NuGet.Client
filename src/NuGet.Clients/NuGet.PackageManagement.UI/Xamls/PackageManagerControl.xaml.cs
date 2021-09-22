@@ -1442,16 +1442,11 @@ namespace NuGet.PackageManagement.UI
             UninstallPackage(package.Id, new[] { package });
         }
 
-        private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> packages)
+        private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> selectedPackages)
         {
             var options = _detailModel.Options;
-            IEnumerable<PackageItemViewModel> vulnerablePkgs = packages?
-                .Where(x => x.Vulnerabilities?.Any() ?? false) ??
-                Enumerable.Empty<PackageItemViewModel>();
-            int vulnerablePkgsCount = vulnerablePkgs.Count();
-            IEnumerable<int> vulnerablePkgsMaxSeverities = vulnerablePkgs
-                .Select(pkg => pkg.Vulnerabilities.Max(v => v.Severity));
 
+            nugetUi.SelectedPackages = selectedPackages;
             nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
             nugetUi.RemoveDependencies = options.RemoveDependencies;
@@ -1460,8 +1455,6 @@ namespace NuGet.PackageManagement.UI
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
             nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
-            nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgsCount;
-            nugetUi.TopLevelVulnerablePackagesMaxSeverities = vulnerablePkgsMaxSeverities.ToList();
         }
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)

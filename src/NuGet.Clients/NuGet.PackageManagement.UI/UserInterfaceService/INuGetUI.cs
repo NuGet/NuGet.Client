@@ -80,9 +80,9 @@ namespace NuGet.PackageManagement.UI
         bool DisplayDeprecatedFrameworkWindow { get; }
 
         /// <summary>
-        /// Package currently selected in the UI
+        /// Packages currently selected in the UI
         /// </summary>
-        PackageIdentity SelectedPackage { get; }
+        IEnumerable<PackageItemViewModel> SelectedPackages { get; }
 
         /// <summary>
         /// Reports that an error has occurred.

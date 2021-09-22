@@ -18,6 +18,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
@@ -322,7 +323,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         Tuple<string, string> packageInfo = new Tuple<string, string>(
                             package.Identity.Id,
-                            (package.Identity.Version == null ? "" : package.Identity.Version.ToNormalizedString()));
+                            package.Identity.Version == null ? "" : package.Identity.Version.ToNormalizedString());
 
                         if (!existingPackages.Contains(packageInfo))
                         {
@@ -519,12 +520,11 @@ namespace NuGet.PackageManagement.UI
                         continueAfterPreview,
                         acceptedLicense,
                         userAction,
+                        nuGetUI.SelectedPackages,
                         nuGetUI?.SelectedIndex,
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
                         nuGetUI?.RecommenderVersion,
-                        nuGetUI?.TopLevelVulnerablePackagesCount ?? 0,
-                        nuGetUI?.TopLevelVulnerablePackagesMaxSeverities?.ToList() ?? new List<int>(),
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -539,18 +539,55 @@ namespace NuGet.PackageManagement.UI
             }, cancellationToken);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
+        internal static TelemetryEvent ToTelemetryPackage(string id, string version)
+        {
+            var subEvent = new TelemetryEvent(eventName: null);
+            subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(id));
+            subEvent["version"] = version;
+            return subEvent;
+        }
+
+        internal static TelemetryEvent ToTelemetryPackage(string id, NuGetVersion version) => ToTelemetryPackage(id, version.ToNormalizedString());
+
+        internal static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package) => ToTelemetryPackage(package.Item1, package.Item2);
+
+        internal static TelemetryEvent ToTelemetryVulnerablePackage(PackageItemViewModel package)
+        {
+            var evt = ToTelemetryPackage(package.Id, package.Version);
+
+            evt.ComplexData["Severities"] = package.Vulnerabilities.Select(v => v.Severity).ToList();
+
+            return evt;
+        }
+
+        internal static TelemetryEvent ToTelemetryDeprecatedPackage(PackageItemViewModel package)
+        {
+            var evt = ToTelemetryPackage(package.Id, package.Version);
+
+            evt["AlternativePackage"] = ToTelemetryPackage(
+                package.DeprecationMetadata.AlternatePackage.PackageId,
+                package.DeprecationMetadata.AlternatePackage.VersionRange.ToNormalizedString());
+
+            return evt;
+        }
+
+        static List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
+        {
+            var list = new List<TelemetryEvent>(packages.Count);
+            list.AddRange(packages.Select(ToTelemetryPackage));
+            return list;
+        }
+
         internal static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
             bool continueAfterPreview,
             bool acceptedLicense,
             UserAction userAction,
+            IEnumerable<PackageItemViewModel> selectedPackages,
             int? selectedIndex,
             int? recommendedCount,
             bool? recommendPackages,
             (string modelVersion, string vsixVersion)? recommenderVersion,
-            int topLevelVulnerablePackagesCount,
-            List<int> topLevelVulnerablePackagesMaxSeverities,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -558,21 +595,6 @@ namespace NuGet.PackageManagement.UI
             List<Tuple<string, string>> updatedPackagesNew,
             IReadOnlyCollection<string> targetFrameworks)
         {
-            static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
-            {
-                var subEvent = new TelemetryEvent(eventName: null);
-                subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(package.Item1));
-                subEvent["version"] = package.Item2;
-                return subEvent;
-            }
-
-            static List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
-            {
-                var list = new List<TelemetryEvent>(packages.Count);
-                list.AddRange(packages.Select(ToTelemetryPackage));
-                return list;
-            }
-
             // log possible cancel reasons
             if (!continueAfterPreview)
             {
@@ -596,8 +618,29 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
             }
 
-            actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;
-            actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = topLevelVulnerablePackagesMaxSeverities;
+            var vulnerablePkgs = selectedPackages?
+                 .Where(x => x.Vulnerabilities?.Any() ?? false)
+                 ?? Enumerable.Empty<PackageItemViewModel>();
+            int vulnerablePkgsCount = vulnerablePkgs.Count();
+            List<int> vulnerablePkgsMaxSeverities = vulnerablePkgs
+                .Select(pkg => pkg.Vulnerabilities.Max(v => v.Severity))
+                .ToList();
+            var vulnerablePkgsIds = vulnerablePkgs
+                .Select(p => Tuple.Create(p.Id, p.Version.ToNormalizedString()))
+                .ToList();
+
+            actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = vulnerablePkgsCount;
+            actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = vulnerablePkgsMaxSeverities;
+            actionTelemetryEvent.ComplexData["TopLevelVulnerablePackages"] = ToTelemetryPackageList(vulnerablePkgsIds);
+
+            var deprecatedPkgs = selectedPackages?
+                .Where(x => x.IsPackageDeprecated)
+                ?? Enumerable.Empty<PackageItemViewModel>();
+            var deprecatedPkgsIds = deprecatedPkgs
+                .Select(p => Tuple.Create(p.Id, p.Version.ToString()))
+                .ToList();
+
+            actionTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] = ToTelemetryPackageList(deprecatedPkgsIds);
 
             // log the installed package state
             if (existingPackages?.Count > 0)
@@ -631,7 +674,7 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var package in removedPackages)
                 {
-                    packages.Add(new TelemetryPiiProperty(package?.ToLowerInvariant() ?? "(empty package id)"));
+                    packages.Add(new TelemetryPiiProperty(VSTelemetryServiceUtility.NormalizePackageId(package)));
                 }
 
                 actionTelemetryEvent.ComplexData["RemovedPackages"] = packages;
