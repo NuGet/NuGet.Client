@@ -149,5 +149,7 @@ namespace NuGet.PackageManagement.Telemetry
         }
 
         public static string NormalizeVersion(NuGetVersion version) => version?.ToNormalizedString() ?? string.Empty;
+
+        public static string NormalizeVersion(VersionRange versionRange) => versionRange?.ToNormalizedString() ?? string.Empty;
     }
 }

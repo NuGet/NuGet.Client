@@ -373,18 +373,18 @@ namespace NuGet.PackageManagement.UI
                     {
                         // log rich info about added packages
                         addedPackages = results.SelectMany(result => result.Added)
-                            .Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString())))
+                            .Select(package => new Tuple<string, string>(package.Id, VSTelemetryServiceUtility.NormalizeVersion(package.Version)))
                             .Distinct()
                             .ToList();
                         var addCount = addedPackages.Count;
 
                         //updated packages can have an old and a new id.
                         updatedPackagesOld = results.SelectMany(result => result.Updated)
-                            .Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString())))
+                            .Select(package => new Tuple<string, string>(package.Old.Id, VSTelemetryServiceUtility.NormalizeVersion(package.Old.Version)))
                             .Distinct()
                             .ToList();
                         updatedPackagesNew = results.SelectMany(result => result.Updated)
-                            .Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString())))
+                            .Select(package => new Tuple<string, string>(package.New.Id, VSTelemetryServiceUtility.NormalizeVersion(package.New.Version)))
                             .Distinct()
                             .ToList();
                         var updateCount = updatedPackagesNew.Count;
@@ -570,8 +570,8 @@ namespace NuGet.PackageManagement.UI
             if (package.DeprecationMetadata?.AlternatePackage != null)
             {
                 evt["AlternativePackage"] = ToTelemetryPackage(
-                package.DeprecationMetadata.AlternatePackage.PackageId,
-                package.DeprecationMetadata.AlternatePackage.VersionRange.ToNormalizedString());
+                    VSTelemetryServiceUtility.NormalizePackageId(package.DeprecationMetadata.AlternatePackage.PackageId),
+                    VSTelemetryServiceUtility.NormalizeVersion(package.DeprecationMetadata.AlternatePackage.VersionRange));
             }
             if (package.DeprecationMetadata?.Reasons?.Count() > 0)
             {

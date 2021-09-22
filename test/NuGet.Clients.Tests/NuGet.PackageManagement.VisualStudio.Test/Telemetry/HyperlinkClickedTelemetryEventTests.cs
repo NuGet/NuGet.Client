@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
             // Simulate UIActionEngine.AddUiActionEngineTelemetryProperties()
             var pkgAdded = new TelemetryEvent(eventName: null);
             pkgAdded.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(testPackageId));
-            pkgAdded.AddPiiData("version", testPackageVersion.ToNormalizedString());
+            pkgAdded.AddPiiData("version", VSTelemetryServiceUtility.NormalizeVersion(testPackageVersion));
 
             var packages = new List<TelemetryEvent>
             {
