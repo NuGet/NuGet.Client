@@ -138,13 +138,18 @@ namespace NuGet.PackageManagement.UI.Test
             {
                 new PackageItemViewModel(null)
                 {
+                    Id = "NonVulnerablePackge",
+                    Version = new NuGetVersion(1, 0, 0),
+                },
+                new PackageItemViewModel(null)
+                {
                     Id = "pkgA",
                     Version = new NuGetVersion(1, 0, 0),
                     Vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>()
                     {
                         new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
                         new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
-                    }
+                    },
                 },
                 new PackageItemViewModel(null)
                 {
@@ -153,7 +158,7 @@ namespace NuGet.PackageManagement.UI.Test
                     Vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>()
                     {
                         new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
-                    }
+                    },
                 },
                 new PackageItemViewModel(null)
                 {
@@ -164,8 +169,8 @@ namespace NuGet.PackageManagement.UI.Test
                         new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
                         new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
                         new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 3),
-                    }
-                }
+                    },
+                },
             };
            
             var operationId = Guid.NewGuid().ToString();
@@ -188,9 +193,9 @@ namespace NuGet.PackageManagement.UI.Test
                 acceptedLicense: true,
                 userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0)),
                 selectedPackages: vulnerablePkgs,
-                selectedIndex: 0,
-                recommendedCount: 0,
-                recommendPackages: false,
+                selectedIndex: null,
+                recommendedCount: null,
+                recommendPackages: null,
                 recommenderVersion: null,
                 existingPackages: null,
                 addedPackages: null,
@@ -205,6 +210,8 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
+
+            // Vulnerabilities
             Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>);
             var pkgSeverities = lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>;
             Assert.Equal(lastTelemetryEvent["TopLevelVulnerablePackagesCount"], pkgSeverities.Count());
@@ -213,6 +220,30 @@ namespace NuGet.PackageManagement.UI.Test
                 item => Assert.Equal(1, item),
                 item => Assert.Equal(3, item));
             Assert.Equal(3, pkgSeverities.Count());
+            Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelVulnerablePackages"]);
+
+            // Action
+            Assert.Null(lastTelemetryEvent["AddedPackages"]);
+            Assert.Null(lastTelemetryEvent["RemovedPackages"]);
+            Assert.Null(lastTelemetryEvent["ExistingPackages"]);
+            Assert.Null(lastTelemetryEvent["TargetFrameworks"]);
+            Assert.Null(lastTelemetryEvent["UpdatedPackagesOld"]);
+            Assert.Null(lastTelemetryEvent["UpdatedPackagesNew"]);
+
+            // Deprecation
+            Assert.Null(lastTelemetryEvent["TopLevelDeprecatedPackages"]);
+
+            // User cancellation
+            Assert.Null(lastTelemetryEvent["AcceptedLicense"]);
+            Assert.Null(lastTelemetryEvent["CancelAfterPreview"]);
+
+            // Recommender
+            Assert.Null(lastTelemetryEvent["SelectedPackage"]);
+            Assert.Null(lastTelemetryEvent["SelectedIndex"]);
+            Assert.Null(lastTelemetryEvent["RecommendedCount"]);
+            Assert.Null(lastTelemetryEvent["RecommendPackages"]);
+            Assert.Null(lastTelemetryEvent["Recommender.ModelVersion"]);
+            Assert.Null(lastTelemetryEvent["Recommender.VsixVersion"]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity

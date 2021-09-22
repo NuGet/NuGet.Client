@@ -567,6 +567,7 @@ namespace NuGet.PackageManagement.UI
             evt["AlternativePackage"] = ToTelemetryPackage(
                 package.DeprecationMetadata.AlternatePackage.PackageId,
                 package.DeprecationMetadata.AlternatePackage.VersionRange.ToNormalizedString());
+            evt["Reasons"] = package.DeprecationMetadata.Reasons.ToList();
 
             return evt;
         }
@@ -574,7 +575,6 @@ namespace NuGet.PackageManagement.UI
         internal static List<TelemetryEvent> ToTelemetryPackageList(IEnumerable<Tuple<string, string>> packages) => ToTelemetryPackageList(packages, ToTelemetryPackage);
 
         internal static List<V> ToTelemetryPackageList<V, T>(IEnumerable<T> packages, Func<T, V> transformer) => packages.Select(transformer).ToList();
-
 
         internal static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
