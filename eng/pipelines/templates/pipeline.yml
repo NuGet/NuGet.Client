@@ -239,12 +239,6 @@ stages:
       visualStudioSigning: Test
       testExecutionJobTimeoutInMinutes: 150
       testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
-      preTestMachineConfigurationStepList:
-        - task: PowerShell@2
-          displayName: Set 'VisualStudio.InstallationUnderTest.SetupParameters'
-          inputs:
-            filePath: $(DartLab.Path)\Scripts\VisualStudio\Installation\Get-VisualStudioSetupParameters.ps1
-            arguments: -RunSettingsURI '$(runSettingsURI)' -InstallPath 'C:\Test\VisualStudio' -NoRestart -Quiet -Wait -OutVariableName 'VisualStudio.InstallationUnderTest.SetupParameters'
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
