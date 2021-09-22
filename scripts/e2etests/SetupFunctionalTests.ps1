@@ -72,13 +72,11 @@ trap
 
 $NuGetRoot = Split-Path $PSScriptRoot -Parent
 
-Write-Host "NuGetRoot variable value is:" + $NuGetRoot
+Write-Host "NuGetRoot variable value is:" $NuGetRoot
 
-$NuGetTestsPSM1 = Join-Path $NuGetRoot "test\EndToEnd\NuGet.Tests.psm1"
+$NuGetTestsPSM1 = Join-Path $NuGetRoot "NuGet.Tests.psm1"
 
-Write-Host "NuGetTestsPSM1 variable value is:" + $NuGetTestsPSM1
-
-Write-Host "Artifacts path is $(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
+Write-Host "NuGetTestsPSM1 variable value is:" $NuGetTestsPSM1
 
 Write-Host 'If successful, this script needs to be run only once on your machine!'
 

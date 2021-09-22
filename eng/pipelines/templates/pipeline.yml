@@ -86,6 +86,7 @@ stages:
   - stage: Build_For_Publishing
     displayName: Build NuGet published to nuget.org
     dependsOn: Initialize
+    condition: "false"
     jobs:
       - job: Build_and_UnitTest_RTM
         timeoutInMinutes: 170
@@ -104,6 +105,7 @@ stages:
 
   - stage: Source_Build
     dependsOn: Initialize
+    condition: "false"
     jobs:
       - job: Build_Source_Build
         timeoutInMinutes: 120
@@ -119,6 +121,7 @@ stages:
 
   - stage: CLI_Func_Tests
     dependsOn: Initialize
+    condition: "false"
     jobs:
       - job: Functional_Tests_On_Windows
         timeoutInMinutes: 120
