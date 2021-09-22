@@ -5,7 +5,6 @@
         <DisplayName>NuGet Package Manager for Visual Studio 2022</DisplayName>
         <Description>A collection of tools to automate the process of downloading, installing, upgrading, configuring, and removing packages from a VS Project.</Description>
         <PackageId>Microsoft.VisualStudio.NuGet.Core</PackageId>
-        <License>eula.rtf</License>
         <AllowClientRole>true</AllowClientRole>
     </Metadata>
     <Prerequisites>

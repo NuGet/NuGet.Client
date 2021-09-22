@@ -338,33 +338,14 @@
     <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
   </ItemGroup>
   <ItemGroup>
-    <Content Include="eula.rtf">
+    <Content Include="extension.vsixlangpack">
+      <IncludeInVSIX>false</IncludeInVSIX>
+    </Content>
+    <Content Include="NOTICES.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
   </ItemGroup>
-  <Choose>
-    <When Condition="'$(Configuration)' == 'Release'">
-      <ItemGroup>
-        <Content Include="extension.vsixlangpack">
-          <IncludeInVSIX>false</IncludeInVSIX>
-        </Content>
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <Content Include="LICENSE.txt">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(RepositoryRootDirectory)THIRD-PARTY-NOTICES.txt">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-          <Link>%(Filename)%(Extension)</Link>
-        </Content>
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
   <ItemGroup>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="$(VSSDKBuildToolsVersion)" PrivateAssets="All" GeneratePathProperty="true" />
   </ItemGroup>
