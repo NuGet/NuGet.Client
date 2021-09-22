@@ -210,7 +210,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] as List<TelemetryEvent>);
             var deprecated = lastTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] as List<TelemetryEvent>;
 
-            Assert.Equal(deprecated.Count, 2);
+            Assert.Equal(2, deprecated.Count);
         }
 
         private VSActionsTelemetryEvent CreateTestActionTelemetryEvent()

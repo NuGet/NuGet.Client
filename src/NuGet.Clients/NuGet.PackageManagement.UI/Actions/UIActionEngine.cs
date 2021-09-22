@@ -555,7 +555,10 @@ namespace NuGet.PackageManagement.UI
         {
             var evt = ToTelemetryPackage(package.Id, package.Version);
 
-            evt.ComplexData["Severities"] = package.Vulnerabilities.Select(v => v.Severity).ToList();
+            if (package.Vulnerabilities?.Count() > 0)
+            {
+                evt.ComplexData["Severities"] = package.Vulnerabilities.Select(v => v.Severity).ToList();
+            }
 
             return evt;
         }
@@ -564,10 +567,16 @@ namespace NuGet.PackageManagement.UI
         {
             var evt = ToTelemetryPackage(package.Id, package.Version);
 
-            evt["AlternativePackage"] = ToTelemetryPackage(
+            if (package.DeprecationMetadata?.AlternatePackage != null)
+            {
+                evt["AlternativePackage"] = ToTelemetryPackage(
                 package.DeprecationMetadata.AlternatePackage.PackageId,
                 package.DeprecationMetadata.AlternatePackage.VersionRange.ToNormalizedString());
-            evt["Reasons"] = package.DeprecationMetadata.Reasons.ToList();
+            }
+            if (package.DeprecationMetadata?.Reasons?.Count() > 0)
+            {
+                evt["Reasons"] = package.DeprecationMetadata.Reasons.ToList();
+            }
 
             return evt;
         }
@@ -626,13 +635,20 @@ namespace NuGet.PackageManagement.UI
 
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = vulnerablePkgsCount;
             actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = vulnerablePkgsMaxSeverities;
-            actionTelemetryEvent.ComplexData["TopLevelVulnerablePackages"] = ToTelemetryPackageList(vulnerablePkgs, ToTelemetryVulnerablePackage);
+
+            if (vulnerablePkgs.Any())
+            {
+                actionTelemetryEvent.ComplexData["TopLevelVulnerablePackages"] = ToTelemetryPackageList(vulnerablePkgs, ToTelemetryVulnerablePackage);
+            }
 
             var deprecatedPkgs = selectedPackages?
-                .Where(x => x.IsPackageDeprecated)
+                .Where(x => x.DeprecationMetadata != null)
                 ?? Enumerable.Empty<PackageItemViewModel>();
 
-            actionTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] = ToTelemetryPackageList(deprecatedPkgs, ToTelemetryDeprecatedPackage);
+            if (deprecatedPkgs.Any())
+            {
+                actionTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] = ToTelemetryPackageList(deprecatedPkgs, ToTelemetryDeprecatedPackage);
+            }
 
             // log the installed package state
             if (existingPackages?.Count > 0)
