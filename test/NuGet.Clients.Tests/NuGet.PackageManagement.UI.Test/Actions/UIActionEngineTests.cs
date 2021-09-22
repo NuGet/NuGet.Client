@@ -124,6 +124,111 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
+        public void AddUiActionEngineTelemetryProperties_AddsDeprecatedPackages_Succeeds()
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            _ = telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+
+            // each package has its own max severity
+            var mySelectedPackages = new List<PackageItemViewModel>()
+            {
+                new PackageItemViewModel(null)
+                {
+                    Id = "HappyPackage",
+                    Version = new NuGetVersion(1, 0, 0),
+                },
+                new PackageItemViewModel(null)
+                {
+                    Id = "pkgDeprecatedA",
+                    Version = new NuGetVersion(1, 0, 0),
+                    DeprecationMetadata = new PackageDeprecationMetadataContextInfo(
+                        message: "This package is no longer maintained",
+                        reasons: new [] {
+                            "Liberty",
+                            "Equality",
+                            "Faternity"
+                        },
+                        alternatePackageContextInfo: null),
+                },
+                new PackageItemViewModel(null)
+                {
+                    Id = "pkgB",
+                    Version = new NuGetVersion(1, 0, 0),
+                    Vulnerabilities = new List<PackageVulnerabilityMetadataContextInfo>()
+                    {
+                        new PackageVulnerabilityMetadataContextInfo(new Uri("https://a.random.uri/info"), 1),
+                    },
+                    DeprecationMetadata = new PackageDeprecationMetadataContextInfo(
+                        message: "This package is obsolete",
+                        reasons: new [] {
+                            "Liberty",
+                            "Equality",
+                            "Faternity"
+                        },
+                        alternatePackageContextInfo: new AlternatePackageMetadataContextInfo("newPackage", VersionRange.All)),
+                },
+                new PackageItemViewModel(null)
+                {
+                    Id = "pkgC",
+                    Version = new NuGetVersion(1, 0, 0),
+                },
+            };
+            PackageItemViewModel highlightedPackage = mySelectedPackages.First();
+
+            var actionTelemetryData = CreateTestActionTelemetryEvent();
+
+            UIActionEngine.AddUiActionEngineTelemetryProperties(
+                actionTelemetryEvent: actionTelemetryData,
+                continueAfterPreview: true,
+                acceptedLicense: true,
+                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version),
+                selectedPackages: mySelectedPackages,
+                selectedIndex: null,
+                recommendedCount: null,
+                recommendPackages: null,
+                recommenderVersion: null,
+                existingPackages: null,
+                addedPackages: null,
+                removedPackages: null,
+                updatedPackagesOld: null,
+                updatedPackagesNew: null,
+                targetFrameworks: null);
+
+            // Act
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
+            service.EmitTelemetryEvent(actionTelemetryData);
+
+            // Assert
+            Assert.NotNull(lastTelemetryEvent);
+
+            // Deprecation
+            Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"]);
+            Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] as List<TelemetryEvent>);
+            var deprecated = lastTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] as List<TelemetryEvent>;
+
+            Assert.Equal(deprecated.Count, 2);
+        }
+
+        private VSActionsTelemetryEvent CreateTestActionTelemetryEvent()
+        {
+            return new VSActionsTelemetryEvent(
+                operationId: Guid.NewGuid().ToString(),
+                projectIds: new[] { Guid.NewGuid().ToString() },
+                operationType: NuGetOperationType.Install,
+                source: OperationSource.PMC,
+                startTime: DateTimeOffset.Now.AddSeconds(-1),
+                status: NuGetOperationStatus.NoOp,
+                packageCount: 1,
+                endTime: DateTimeOffset.Now,
+                duration: .40,
+                isPackageSourceMappingEnabled: false);
+        }
+
+        [Fact]
         public void AddUiActionEngineTelemetryProperties_AddsVulnerabilityInfo_Succeeds()
         {
             // Arrange
@@ -134,7 +239,7 @@ namespace NuGet.PackageManagement.UI.Test
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
 
             // each package has its own max severity
-            var vulnerablePkgs = new List<PackageItemViewModel>()
+            var mySelectedPackages = new List<PackageItemViewModel>()
             {
                 new PackageItemViewModel(null)
                 {
@@ -172,27 +277,16 @@ namespace NuGet.PackageManagement.UI.Test
                     },
                 },
             };
-           
-            var operationId = Guid.NewGuid().ToString();
+            PackageItemViewModel highlightedPackage = mySelectedPackages.First();
 
-            var actionTelemetryData = new VSActionsTelemetryEvent(
-                operationId,
-                projectIds: new[] { Guid.NewGuid().ToString() },
-                operationType: NuGetOperationType.Install,
-                source: OperationSource.PMC,
-                startTime: DateTimeOffset.Now.AddSeconds(-1),
-                status: NuGetOperationStatus.NoOp,
-                packageCount: 1,
-                endTime: DateTimeOffset.Now,
-                duration: .40,
-                isPackageSourceMappingEnabled: false);
+            var actionTelemetryData = CreateTestActionTelemetryEvent();
 
             UIActionEngine.AddUiActionEngineTelemetryProperties(
                 actionTelemetryEvent: actionTelemetryData,
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0)),
-                selectedPackages: vulnerablePkgs,
+                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version),
+                selectedPackages: mySelectedPackages,
                 selectedIndex: null,
                 recommendedCount: null,
                 recommendPackages: null,
@@ -238,7 +332,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Null(lastTelemetryEvent["CancelAfterPreview"]);
 
             // Recommender
-            Assert.Null(lastTelemetryEvent["SelectedPackage"]);
+            Assert.NotNull(lastTelemetryEvent.ComplexData["SelectedPackage"]);
             Assert.Null(lastTelemetryEvent["SelectedIndex"]);
             Assert.Null(lastTelemetryEvent["RecommendedCount"]);
             Assert.Null(lastTelemetryEvent["RecommendPackages"]);
