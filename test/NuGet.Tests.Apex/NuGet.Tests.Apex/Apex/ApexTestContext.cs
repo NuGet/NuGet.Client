@@ -35,7 +35,7 @@ namespace NuGet.Tests.Apex
 
             if (addNetStandardFeeds)
             {
-                _pathContext.Settings.AddNetStandardFeeds();
+                //_pathContext.Settings.AddNetStandardFeeds();
             }
 
             _visualStudio = visualStudio;
