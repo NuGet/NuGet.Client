@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.VisualStudio;

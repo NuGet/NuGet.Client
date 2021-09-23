@@ -88,6 +88,8 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public abstract IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action);
 
+        internal PackageItemViewModel ViewModel => _searchResultPackage;
+
         public int SelectedIndex { get; private set; }
         public int RecommendedCount { get; private set; }
         public bool RecommendPackages { get; private set; }

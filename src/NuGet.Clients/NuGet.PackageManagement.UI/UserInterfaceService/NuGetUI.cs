@@ -312,10 +312,6 @@ namespace NuGet.PackageManagement.UI
 
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
 
-        public int TopLevelVulnerablePackagesCount { get; set; }
-
-        public IEnumerable<int> TopLevelVulnerablePackagesMaxSeverities { get; set; }
-
         public PackageSourceMoniker ActivePackageSourceMoniker
         {
             get
@@ -331,11 +327,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Configuration.ISettings Settings
+        public ISettings Settings
         {
             get
             {
-                Configuration.ISettings settings = null;
+                ISettings settings = null;
 
                 if (PackageManagerControl != null)
                 {

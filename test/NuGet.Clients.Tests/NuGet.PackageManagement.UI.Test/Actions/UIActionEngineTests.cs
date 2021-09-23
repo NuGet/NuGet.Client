@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.UI.Test
                         reasons: new [] {
                             "Liberty",
                             "Equality",
-                            "Faternity"
+                            "Fraternity"
                         },
                         alternatePackageContextInfo: null),
                 },
@@ -167,7 +167,6 @@ namespace NuGet.PackageManagement.UI.Test
                         reasons: new [] {
                             "Liberty",
                             "Equality",
-                            "Faternity"
                         },
                         alternatePackageContextInfo: new AlternatePackageMetadataContextInfo("newPackage", VersionRange.All)),
                 },
@@ -211,6 +210,30 @@ namespace NuGet.PackageManagement.UI.Test
             var deprecated = lastTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] as List<TelemetryEvent>;
 
             Assert.Equal(2, deprecated.Count);
+
+            var first = deprecated[0];
+
+            Assert.NotNull(first);
+            Assert.NotNull(first.ComplexData["Reasons"] as List<string>);
+            var reasons1 = first.ComplexData["Reasons"] as List<string>;
+            Assert.Collection(reasons1,
+                item1 => Assert.Equal("Liberty", item1),
+                item2 => Assert.Equal("Equality", item2),
+                item3 => Assert.Equal("Fraternity", item3));
+
+            var second = deprecated[1];
+            Assert.NotNull(second);
+            Assert.NotNull(second.ComplexData["Reasons"] as List<string>);
+            var reasons2 = second.ComplexData["Reasons"] as List<string>;
+            Assert.Collection(reasons2,
+                item1 => Assert.Equal("Liberty", item1),
+                item2 => Assert.Equal("Equality", item2));
+            Assert.NotNull(second.ComplexData["AlternativePackage"] as TelemetryEvent);
+
+            var altPackage = second.ComplexData["AlternativePackage"] as TelemetryEvent;
+
+            Assert.NotNull(altPackage.GetPiiData().Where(x => x.Key == "id").First());
+            Assert.NotNull(altPackage["version"]);
         }
 
         private VSActionsTelemetryEvent CreateTestActionTelemetryEvent()

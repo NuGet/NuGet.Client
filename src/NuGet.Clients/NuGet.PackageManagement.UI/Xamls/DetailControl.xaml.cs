@@ -162,6 +162,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
+                    nugetUi.SelectedPackages = new[] { model.ViewModel };
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
@@ -170,8 +171,6 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RecommendedCount = model.RecommendedCount;
                     nugetUi.RecommendPackages = model.RecommendPackages;
                     nugetUi.RecommenderVersion = model.RecommenderVersion;
-                    nugetUi.TopLevelVulnerablePackagesCount = model.IsPackageVulnerable ? 1 : 0;
-                    nugetUi.TopLevelVulnerablePackagesMaxSeverities = new List<int>() { model.PackageVulnerabilityMaxSeverity };
                 });
         }
     }

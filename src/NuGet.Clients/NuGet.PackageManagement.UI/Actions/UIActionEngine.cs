@@ -551,6 +551,11 @@ namespace NuGet.PackageManagement.UI
 
         internal static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package) => ToTelemetryPackage(package.Item1, package.Item2);
 
+        internal static TelemetryPiiProperty ToTelemetryDeletedPackage(string pkg)
+        {
+            return new TelemetryPiiProperty(VSTelemetryServiceUtility.NormalizePackageId(pkg));
+        }
+
         internal static TelemetryEvent ToTelemetryVulnerablePackage(PackageItemViewModel package)
         {
             var evt = ToTelemetryPackage(package.Id, package.Version);
@@ -569,13 +574,13 @@ namespace NuGet.PackageManagement.UI
 
             if (package.DeprecationMetadata?.AlternatePackage != null)
             {
-                evt["AlternativePackage"] = ToTelemetryPackage(
+                evt.ComplexData["AlternativePackage"] = ToTelemetryPackage(
                     VSTelemetryServiceUtility.NormalizePackageId(package.DeprecationMetadata.AlternatePackage.PackageId),
                     VSTelemetryServiceUtility.NormalizeVersion(package.DeprecationMetadata.AlternatePackage.VersionRange));
             }
             if (package.DeprecationMetadata?.Reasons?.Count() > 0)
             {
-                evt["Reasons"] = package.DeprecationMetadata.Reasons.ToList();
+                evt.ComplexData["Reasons"] = package.DeprecationMetadata.Reasons.ToList();
             }
 
             return evt;
@@ -664,7 +669,7 @@ namespace NuGet.PackageManagement.UI
 
             if (removedPackages?.Count > 0)
             {
-                actionTelemetryEvent.ComplexData["RemovedPackages"] = ToTelemetryPackageList(removedPackages, pkg => new TelemetryPiiProperty(VSTelemetryServiceUtility.NormalizePackageId(pkg)));
+                actionTelemetryEvent.ComplexData["RemovedPackages"] = ToTelemetryPackageList(removedPackages, ToTelemetryDeletedPackage);
             }
 
             // two collections for updated packages: pre and post upgrade
