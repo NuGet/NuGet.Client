@@ -242,45 +242,42 @@ stages:
       visualStudioSigning: Test
       testExecutionJobTimeoutInMinutes: 150
       testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
-      preTestExecutionJobList:
-        jobs:
-          - job: PreTestExecutionJobList
-            steps:
-              - checkout: self
-                clean: true
-                submodules: true
+      preRunTestsStepList:
+      - checkout: self
+        clean: true
+        submodules: true
 
-          - task: PowerShell@1
-            displayName: "Print Environment Variables"
-            inputs:
-              scriptType: "inlineScript"
-              inlineScript: |
-                Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+      - task: PowerShell@1
+        displayName: "Print Environment Variables"
+        inputs:
+          scriptType: "inlineScript"
+          inlineScript: |
+            Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-          - task: DownloadBuildArtifacts@0
-            displayName: "Download Build artifacts"
-            inputs:
-              artifactName: "VS15"
-              downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+      - task: DownloadBuildArtifacts@0
+        displayName: "Download Build artifacts"
+        inputs:
+          artifactName: "VS15"
+          downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
-          - task: MSBuild@1
-            displayName: "Bootstrap NuGet packages"
-            inputs:
-              solution: "build\\bootstrap.proj"
-              configuration: "$(BuildConfiguration)"
-              msbuildArguments: "/t:Restore"
+      - task: MSBuild@1
+        displayName: "Bootstrap NuGet packages"
+        inputs:
+          solution: "build\\bootstrap.proj"
+          configuration: "$(BuildConfiguration)"
+          msbuildArguments: "/t:Restore"
 
-          - powershell: |
-              $zipPath = "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip"
-              $dest = "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
-              Write-Output "Extracting '$zipPath' to '$dest'"
-              Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
-              $nugetExePath = "$(Build.Repository.Localpath)/artifacts/VS15/NuGet.exe"
-              Write-Output "Copying '$nugetExePath' to '$dest'"
-              Copy-Item -Path "$nugetExePath" -Destination "$dest"
-            displayName: "Extract EndToEnd.zip"
+      - powershell: |
+          $zipPath = "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip"
+          $dest = "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
+          Write-Output "Extracting '$zipPath' to '$dest'"
+          Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
+          $nugetExePath = "$(Build.Repository.Localpath)/artifacts/VS15/NuGet.exe"
+          Write-Output "Copying '$nugetExePath' to '$dest'"
+          Copy-Item -Path "$nugetExePath" -Destination "$dest"
+        displayName: "Extract EndToEnd.zip"
 
-          - task: PowerShell@1
-            displayName: "SetupFunctionalTests.ps1"
-            inputs:
-              scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
+      - task: PowerShell@1
+        displayName: "SetupFunctionalTests.ps1"
+        inputs:
+          scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
