@@ -242,6 +242,7 @@ stages:
       visualStudioSigning: Test
       testExecutionJobTimeoutInMinutes: 150
       testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
+      testAgentElevated: true
       preTestExecutionJobList:
         - job: PreTestJob
           steps:
