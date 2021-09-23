@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void ToComplexProperty_StringList_ReturnsStringList()
+        public void ToComplexProperty_StringListComplexProperty_RoundTrips()
         {
             // Arrange
             var stringList = new List<string>()
