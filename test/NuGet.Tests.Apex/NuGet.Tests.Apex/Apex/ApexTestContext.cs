@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.Common;
@@ -52,8 +53,12 @@ namespace NuGet.Tests.Apex
         public void Dispose()
         {
             _logger.LogInformation("Test complete, closing solution.");
-            SolutionService.Save();
-            SolutionService.Close();
+
+            if(File.Exists(SolutionService.FilePath))
+            {
+                SolutionService.Save();
+                SolutionService.Close();
+            }
 
             _pathContext.Dispose();
         }
