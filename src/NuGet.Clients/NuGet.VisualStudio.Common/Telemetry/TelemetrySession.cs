@@ -55,6 +55,10 @@ namespace NuGet.VisualStudio.Telemetry
 
         private static object ToComplexProperty(object value)
         {
+            if (value is string strValue)
+            {
+                return strValue;
+            }
             if (value is TelemetryEvent telemetryEvent)
             {
                 var dictionary = new Dictionary<string, object>();
