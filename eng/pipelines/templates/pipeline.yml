@@ -242,11 +242,13 @@ stages:
       visualStudioSigning: Test
       testExecutionJobTimeoutInMinutes: 150
       testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
-      postDeployMachinesStepList:
-        - checkout: self
-          clean: true
-          submodules: true
-      preDeployAndRunTestsStepList:
+      preTestExecutionJobList:
+        - job: PreTestExecutionJobList
+          steps:
+            - checkout: self
+              clean: true
+              submodules: true
+
         - task: PowerShell@1
           displayName: "Print Environment Variables"
           inputs:
