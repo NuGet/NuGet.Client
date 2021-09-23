@@ -237,12 +237,15 @@ stages:
           value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
       runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
       visualStudioBootstrapperURI: $(VsBootstrapperUrl)
-      runAsAdmin: "true"
       testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
       testExecutionJobTimeoutInMinutes: 150
       testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
+      postDeployMachinesStepList:
+        - checkout: self
+          clean: true
+          submodules: true
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
@@ -256,6 +259,13 @@ stages:
           inputs:
             artifactName: "VS15"
             downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+
+        - task: MSBuild@1
+          displayName: "Bootstrap NuGet packages"
+          inputs:
+            solution: "build\\bootstrap.proj"
+            configuration: "$(BuildConfiguration)"
+            msbuildArguments: "/t:Restore"
 
         - powershell: |
             $zipPath = "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip"
