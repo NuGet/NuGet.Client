@@ -342,7 +342,7 @@
       <IncludeInVSIX>false</IncludeInVSIX>
     </Content>
     <Content Include="NOTICES.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
   </ItemGroup>
