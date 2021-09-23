@@ -6,6 +6,9 @@
 project.lock.json
 artifacts/
 
+# Custom globalpackagesFolder
+globalPackagesFolder/
+
 # Tests
 .test/
 
