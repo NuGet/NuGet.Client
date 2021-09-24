@@ -227,7 +227,7 @@ stages:
   - template: Apex_Tests_On_Windows.yml
     parameters:
       stageName: Visual_Studio_Apex_Tests
-      stageDisplayName: Visual Studio Apex Tests
+      stageDisplayName: Apex Tests On Windows
       condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
       dependsOn:
         - Initialize
@@ -236,7 +236,7 @@ stages:
         - name: VsBootstrapperUrl
           value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
         - name: GitHubStatusName
-          value: Visual_Studio_Apex_Tests
+          value: Apex Tests On Windows
       runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       testExecutionJobTimeoutInMinutes: 150
