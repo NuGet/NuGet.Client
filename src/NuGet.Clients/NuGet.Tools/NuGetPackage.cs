@@ -999,6 +999,10 @@ namespace NuGetVSExtension
             var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
             if (packageManagerControl != null)
             {
+                if (packageManagerControl.ActiveFilter != UI.ItemFilter.All)
+                {
+                    packageManagerControl.ActiveFilter = UI.ItemFilter.All;
+                }
                 packageManagerControl.Search(searchText);
             }
         }

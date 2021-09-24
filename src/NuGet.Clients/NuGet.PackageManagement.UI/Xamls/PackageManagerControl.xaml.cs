@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.UI
 
         public ISettings Settings { get; private set; }
 
-        internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
+        public ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
 
         internal InfiniteScrollList PackageList => _packageList;
 
