@@ -1,6 +1,4 @@
 parameters:
-  - name: part
-    type: string
   - name: stageName
     type: string
   - name: stageDisplayName

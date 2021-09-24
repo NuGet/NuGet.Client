@@ -226,8 +226,8 @@ stages:
   # Dartlab's template defines this in its own stage
   - template: Apex_Tests_On_Windows.yml
     parameters:
-      name: Visual_Studio_Apex_Tests
-      displayName: Visual Studio Apex Tests
+      stageName: Visual_Studio_Apex_Tests
+      stageDisplayName: Visual Studio Apex Tests
       condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
       dependsOn:
         - Initialize
