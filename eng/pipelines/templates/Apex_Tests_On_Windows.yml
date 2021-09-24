@@ -68,3 +68,12 @@ stages:
           displayName: "SetupFunctionalTests.ps1"
           inputs:
             scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
+
+        - task: PowerShell@1
+          displayName: "Initialize Git Commit Status on GitHub"
+          inputs:
+            scriptType: "inlineScript"
+            inlineScript: |
+              . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
+              SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(GitHubStatusName)"
+          condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
