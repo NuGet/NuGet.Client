@@ -41,7 +41,7 @@ stages:
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
       testExecutionJobTimeoutInMinutes: 150
-      testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
+      testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
