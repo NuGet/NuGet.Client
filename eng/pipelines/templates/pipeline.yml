@@ -21,7 +21,7 @@ parameters:
       - delete
       - stop
   - name: ApexAgentCleanup
-    displayName: Delete or keep E2E Part 2 machine for debugging
+    displayName: Delete or keep VS Apex test machine for debugging
     type: string
     default: stop
     values:
