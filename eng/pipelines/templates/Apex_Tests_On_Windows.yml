@@ -71,7 +71,7 @@ stages:
           displayName: "SetupFunctionalTests.ps1"
           inputs:
             scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
-
+      postDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Initialize Git Commit Status on GitHub"
           inputs:
