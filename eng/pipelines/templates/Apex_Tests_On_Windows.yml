@@ -1,115 +1,72 @@
-steps:
-- checkout: self
-  clean: true
-  submodules: true
+parameters:
+  - name: part
+    type: string
+  - name: stageName
+    type: string
+  - name: stageDisplayName
+    type: string
+  - name: dependsOn
+    type: object
+  - name: bootstrapperUrl
+    type: string
+  - name: runSettingsURI
+    type: string
+  - name: DartLabEnvironment
+    type: string
+  - name: condition
+    type: string
+  - name: variables
+    type: object
+  - name: testExecutionJobTimeoutInMinutes
+    type: number
+  - name: testMachineCleanUpStrategy
+    type: string
+    default: delete
+    values:
+      - delete
+      - stop
 
-- task: PowerShell@1
-  displayName: "Print Environment Variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+stages:
+  - template: stages\visual-studio\single-runsettings.yml@DartLabTemplates
+    parameters:
+      name: ${{parameters.stageName}}
+      displayName: ${{parameters.stageDisplayName}}
+      condition: ${{parameters.condition}}
+      dependsOn: ${{parameters.dependsOn}}
+      variables:
+        - name: bootstrapperUrl
+          value: ${{parameters.bootstrapperUrl}}
+        - ${{parameters.variables}}
+      runSettingsURI: ${{parameters.runSettingsURI}}
+      visualStudioBootstrapperURI: $(bootstrapperUrl)
+      testLabPoolName: VS-Platform
+      dartLabEnvironment: ${{parameters.DartLabEnvironment}}
+      visualStudioSigning: Test
+      testExecutionJobTimeoutInMinutes: 150
+      testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
+      testAgentElevated: true
+      preDeployAndRunTestsStepList:
+        - task: PowerShell@1
+          displayName: "Print Environment Variables"
+          inputs:
+            scriptType: "inlineScript"
+            inlineScript: |
+              Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-- task: DownloadBuildArtifacts@0
-  displayName: "Download Build artifacts"
-  inputs:
-    artifactName: "VS15"
-    downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+        - task: DownloadBuildArtifacts@0
+          displayName: "Download Build artifacts"
+          inputs:
+            artifactName: "VS15"
+            downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
-- task: MSBuild@1
-  displayName: "Bootstrap NuGet packages"
-  inputs:
-    solution: "build\\bootstrap.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Restore"
+        - powershell: |
+            $zipPath = "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip"
+            $dest = "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
+            Write-Output "Extracting '$zipPath' to '$dest'"
+            Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
+          displayName: "Extract EndToEnd.zip"
 
-- task: PowerShell@1
-  displayName: "SetupFunctionalTests.ps1"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
-
-- task: PowerShell@1
-  displayName: "InstallNuGetVSIX.ps1"
-  inputs:
-    scriptName: "$(System.DefaultWorkingDirectory)/scripts/e2etests/InstallNuGetVSIX.ps1"
-    arguments: "-NuGetDropPath $(Build.Repository.LocalPath)\\artifacts\\VS15 -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -ProcessExitTimeoutInSeconds 180"
-    failOnStandardError: "false"
-
-# - task: PowerShell@1
-#   displayName: "Collect VS Logs"
-#   inputs:
-#     scriptType: "inlineScript"
-#     inlineScript: |
-#       Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
-#       if(-not (Test-Path $(EndToEndResultsDropPath)))
-#         {
-#           New-Item -Path $(EndToEndResultsDropPath) -ItemType Directory -Force
-#         }
-#       $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
-#   condition: "failed()"
-
-- task: NuGetCommand@2
-  displayName: "Add Apex Feed Source"
-  inputs:
-    command: "custom"
-    arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
-
-- task: MSBuild@1
-  displayName: "Restore Apex Tests"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-    msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
-
-- task: MSBuild@1
-  displayName: "Run Apex Tests (continue on error)"
-  timeoutInMinutes: 120
-  continueOnError: "true"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
-    maximumCpuCount: true
-  condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
-
-- task: MSBuild@1
-  displayName: "Run Apex Tests (stop on error)"
-  timeoutInMinutes: 120
-  continueOnError: "false"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-    msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber) /p:MSBuildEnableWorkloadResolver=false"
-    maximumCpuCount: true
-  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
-
-- task: PublishTestResults@2
-  displayName: "Publish Test Results"
-  inputs:
-    testRunner: "XUnit"
-    testResultsFiles: "*.xml"
-    searchFolder: "$(System.DefaultWorkingDirectory)\\build\\TestResults"
-    mergeTestResults: "true"
-    testRunTitle: "NuGet.Client Apex Tests On Windows"
-  condition: "succeededOrFailed()"
-
-- task: PowerShell@1
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Apex Tests On Windows"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
-- task: PowerShell@1
-  displayName: "Kill running instances of DevEnv"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
-      KillRunningInstancesOfVS (Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig))
-  condition: "always()"
+        - task: PowerShell@1
+          displayName: "SetupFunctionalTests.ps1"
+          inputs:
+            scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"

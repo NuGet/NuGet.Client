@@ -224,7 +224,7 @@ stages:
       testMachineCleanUpStrategy: ${{parameters.E2EPart2AgentCleanup}}
 
   # Dartlab's template defines this in its own stage
-  - template: stages\visual-studio\single-runsettings.yml@DartLabTemplates
+  - template: Apex_Tests_On_Windows.yml
     parameters:
       name: Visual_Studio_Apex_Tests
       displayName: Visual Studio Apex Tests
@@ -236,35 +236,7 @@ stages:
         - name: VsBootstrapperUrl
           value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
       runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
-      visualStudioBootstrapperURI: $(VsBootstrapperUrl)
-      testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
-      visualStudioSigning: Test
       testExecutionJobTimeoutInMinutes: 150
+      bootstrapperUrl: $(VsBootstrapperUrl)
       testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
-      testAgentElevated: true
-      preDeployAndRunTestsStepList:
-        - task: PowerShell@1
-          displayName: "Print Environment Variables"
-          inputs:
-            scriptType: "inlineScript"
-            inlineScript: |
-              Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
-        - task: DownloadBuildArtifacts@0
-          displayName: "Download Build artifacts"
-          inputs:
-            artifactName: "VS15"
-            downloadPath: "$(Build.Repository.LocalPath)/artifacts"
-
-        - powershell: |
-            $zipPath = "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip"
-            $dest = "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
-            Write-Output "Extracting '$zipPath' to '$dest'"
-            Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
-          displayName: "Extract EndToEnd.zip"
-
-        - task: PowerShell@1
-          displayName: "SetupFunctionalTests.ps1"
-          inputs:
-            scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
