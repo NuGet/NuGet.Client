@@ -35,7 +35,7 @@ namespace NuGet.Tests.Apex
 
             if (addNetStandardFeeds)
             {
-                //_pathContext.Settings.AddNetStandardFeeds();
+                _pathContext.Settings.AddNetStandardFeeds();
             }
 
             _visualStudio = visualStudio;
@@ -54,7 +54,8 @@ namespace NuGet.Tests.Apex
         {
             _logger.LogInformation("Test complete, closing solution.");
 
-            if(File.Exists(SolutionService.FilePath))
+            if(!SolutionService.IsDirty &&
+                File.Exists(SolutionService.FilePath))
             {
                 SolutionService.Save();
                 SolutionService.Close();
