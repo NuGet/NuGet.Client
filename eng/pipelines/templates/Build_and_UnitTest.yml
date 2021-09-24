@@ -315,7 +315,7 @@ steps:
 - task: MicroBuildBuildVSBootstrapper@2
   displayName: 'Build a Visual Studio bootstrapper'
   inputs:
-    channelName: "pre"
+    channelName: "$(VsTargetBranch)"
     vsMajorVersion: "$(VsTargetMajorVersion)"
     manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
