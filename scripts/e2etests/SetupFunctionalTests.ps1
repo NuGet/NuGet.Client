@@ -72,8 +72,6 @@ trap
 
 $NuGetRoot = Split-Path $PSScriptRoot -Parent
 
-Write-Host "NuGetRoot variable value is:" $NuGetRoot
-
 $NuGetTestsPSM1 = Join-Path $NuGetRoot "NuGet.Tests.psm1"
 
 Write-Host "NuGetTestsPSM1 variable value is:" $NuGetTestsPSM1
