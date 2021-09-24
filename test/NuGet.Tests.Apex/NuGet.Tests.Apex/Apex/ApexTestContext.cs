@@ -54,13 +54,7 @@ namespace NuGet.Tests.Apex
         {
             _logger.LogInformation("Test complete, closing solution.");
 
-            if(!SolutionService.IsDirty &&
-                File.Exists(SolutionService.FilePath))
-            {
-                SolutionService.Save();
-                SolutionService.Close();
-            }
-
+            SolutionService.SaveAndClose();
             _pathContext.Dispose();
         }
     }
