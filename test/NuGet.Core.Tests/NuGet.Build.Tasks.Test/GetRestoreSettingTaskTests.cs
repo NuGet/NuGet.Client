@@ -94,7 +94,7 @@ namespace NuGet.Build.Tasks.Test
                 var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, null, machineWideSettings);
                 var filePaths = settings.GetConfigFilePaths();
 
-                Assert.Equal(3, filePaths.Count()); // Solution, app data + machine wide
+                Assert.Equal(4, filePaths.Count()); // Solution, app data + machine wide
                 Assert.True(filePaths.Contains(Path.Combine(solutionDirectoryConfig, baseConfigPath)));
                 Assert.True(filePaths.Contains(Path.Combine(machineWide, baseConfigPath)));
 
@@ -442,7 +442,7 @@ namespace NuGet.Build.Tasks.Test
                 var settings = RestoreSettingsUtils.ReadSettings(null, probePath, null, machineWideSettings);
                 var filePaths = settings.GetConfigFilePaths();
 
-                Assert.Equal(4, filePaths.Count()); // base, parent, app data + machine wide
+                Assert.Equal(5, filePaths.Count()); // base, parent, app data + machine wide
                 Assert.Contains(Path.Combine(basePath, configName), filePaths);
                 Assert.Contains(Path.Combine(mockParentDirectory, configName), filePaths);
                 Assert.DoesNotContain(Path.Combine(unreachablePath, configName), filePaths);
@@ -504,7 +504,7 @@ namespace NuGet.Build.Tasks.Test
                     var settings = RestoreSettingsUtils.ReadSettings(null, probePath, null, machineWideSettings, settingsLoadingContext);
                     var filePaths = settings.GetConfigFilePaths();
 
-                    Assert.Equal(4, filePaths.Count()); // base, parent, app data + machine wide
+                    Assert.Equal(5, filePaths.Count()); // base, parent, app data + machine wide
                     Assert.Contains(Path.Combine(basePath, configName), filePaths);
                     Assert.Contains(Path.Combine(mockParentDirectory, configName), filePaths);
                     Assert.DoesNotContain(Path.Combine(unreachablePath, configName), filePaths);
