@@ -146,6 +146,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool IsLatestVersionDeprecated { get; set; }
+        public bool IsLatestVersionVulnerable { get; set; }
+
         /// <summary>
         /// True if the package is AutoReferenced
         /// </summary>
@@ -629,7 +632,7 @@ namespace NuGet.PackageManagement.UI
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
         }
 
-        private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
+        private async Task ReloadPackageVersionsAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
@@ -638,14 +641,16 @@ namespace NuGet.PackageManagement.UI
 
                 // filter package versions based on allowed versions in packages.config
                 packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
-                NuGetVersion result = packageVersions
-                    .Select(p => p.Version)
-                    .MaxOrDefault();
+                VersionInfoContextInfo result = packageVersions
+                    .OrderByDescending(v => v.Version, VersionComparer.Default)
+                    .FirstOrDefault();
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                LatestVersion = result;
+                LatestVersion = result.Version;
+                IsLatestVersionDeprecated = result?.PackageDeprecationMetadata != null;
+                IsLatestVersionVulnerable = result?.PackageSearchMetadata?.Vulnerabilities != null;
                 Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

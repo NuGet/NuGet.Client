@@ -68,6 +68,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 item4 => AssertElement(item4, "strings"));
         }
 
+        [Fact]
+        public void ToProperty_BooleanProperty_RoundTrips()
+        {
+            var telObject = new TelemetryEvent("test/event/name");
+            telObject["simpleTrue"] = true;
+            telObject["simpleFalse"] = false;
+
+            var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(telObject);
+            object trueValue = vsTelemetryEvent.Properties["VS.NuGet.simpleTrue"];
+            object falseValue = vsTelemetryEvent.Properties["VS.NuGet.simpleFalse"];
+
+            Assert.NotNull(trueValue);
+            Assert.NotNull(falseValue);
+        }
+
+
         private static void AssertElement(object element, string expected)
         {
             Assert.IsType<string>(element);

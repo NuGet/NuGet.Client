@@ -520,7 +520,8 @@ namespace NuGet.PackageManagement.UI
                         continueAfterPreview,
                         acceptedLicense,
                         userAction,
-                        nuGetUI.SelectedPackages,
+                        nuGetUI?.SelectedPackages,
+                        nuGetUI?.ActiveDetailPackage,
                         nuGetUI?.SelectedIndex,
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
@@ -556,31 +557,49 @@ namespace NuGet.PackageManagement.UI
             return new TelemetryPiiProperty(VSTelemetryServiceUtility.NormalizePackageId(pkg));
         }
 
+        internal static TelemetryEvent ToTelemetryVulnerablePackage(string id, NuGetVersion version, IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
+        {
+            var evt = ToTelemetryPackage(id, version);
+
+            if (vulnerabilities?.Count() > 0)
+            {
+                evt.ComplexData["Severities"] = vulnerabilities.Select(v => v.Severity).ToList();
+            }
+
+            return evt;
+        }
+
         internal static TelemetryEvent ToTelemetryVulnerablePackage(PackageItemViewModel package)
         {
-            var evt = ToTelemetryPackage(package.Id, package.Version);
+            var evt = ToTelemetryVulnerablePackage(package.Id, package.Version, package.Vulnerabilities);
 
-            if (package.Vulnerabilities?.Count() > 0)
-            {
-                evt.ComplexData["Severities"] = package.Vulnerabilities.Select(v => v.Severity).ToList();
-            }
+            evt["IsLatestVersionVulnerable"] = package.IsLatestVersionVulnerable;
 
             return evt;
         }
 
         internal static TelemetryEvent ToTelemetryDeprecatedPackage(PackageItemViewModel package)
         {
-            var evt = ToTelemetryPackage(package.Id, package.Version);
+            var evt = ToTelemetryDeprecatedPackage(package.Id, package.Version, package.DeprecationMetadata);
 
-            if (package.DeprecationMetadata?.AlternatePackage != null)
+            evt["IsLatestVersionDeprecated"] = package.IsLatestVersionDeprecated;
+
+            return evt;
+        }
+
+        internal static TelemetryEvent ToTelemetryDeprecatedPackage(string id, NuGetVersion version, PackageDeprecationMetadataContextInfo deprecation)
+        {
+            var evt = ToTelemetryPackage(id, version);
+
+            if (deprecation?.AlternatePackage != null)
             {
                 evt.ComplexData["AlternativePackage"] = ToTelemetryPackage(
-                    VSTelemetryServiceUtility.NormalizePackageId(package.DeprecationMetadata.AlternatePackage.PackageId),
-                    VSTelemetryServiceUtility.NormalizeVersion(package.DeprecationMetadata.AlternatePackage.VersionRange));
+                    VSTelemetryServiceUtility.NormalizePackageId(deprecation.AlternatePackage.PackageId),
+                    VSTelemetryServiceUtility.NormalizeVersion(deprecation.AlternatePackage.VersionRange));
             }
-            if (package.DeprecationMetadata?.Reasons?.Count() > 0)
+            if (deprecation?.Reasons?.Count() > 0)
             {
-                evt.ComplexData["Reasons"] = package.DeprecationMetadata.Reasons.ToList();
+                evt.ComplexData["Reasons"] = deprecation.Reasons.ToList();
             }
 
             return evt;
@@ -596,6 +615,7 @@ namespace NuGet.PackageManagement.UI
             bool acceptedLicense,
             UserAction userAction,
             IEnumerable<PackageItemViewModel> selectedPackages,
+            DetailControlModel activePackageDetail,
             int? selectedIndex,
             int? recommendedCount,
             bool? recommendPackages,
@@ -630,29 +650,57 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
             }
 
-            var vulnerablePkgs = selectedPackages?
-                 .Where(x => x.Vulnerabilities?.Any() ?? false)
-                 ?? Enumerable.Empty<PackageItemViewModel>();
-            int vulnerablePkgsCount = vulnerablePkgs.Count();
-            List<int> vulnerablePkgsMaxSeverities = vulnerablePkgs
-                .Select(pkg => pkg.Vulnerabilities.Max(v => v.Severity))
-                .ToList();
+            IEnumerable<PackageItemViewModel> vulnerableSelectedPkgs = Enumerable.Empty<PackageItemViewModel>();
+            IEnumerable<PackageItemViewModel> deprecatedSelectedPkgs = Enumerable.Empty<PackageItemViewModel>();
+            int vulnerablePkgsCount = 0;
+            List<int> vulnerablePkgsMaxSeverities = new List<int>();
 
+            // Selected packages in packages list
+            if (selectedPackages != null)
+            {
+                vulnerableSelectedPkgs = selectedPackages?
+                 .Where(x => x.IsPackageVulnerable || (x.Vulnerabilities?.Any() ?? false))
+                 ?? Enumerable.Empty<PackageItemViewModel>();
+                vulnerablePkgsCount = vulnerableSelectedPkgs.Count();
+                vulnerablePkgsMaxSeverities = vulnerableSelectedPkgs
+                    .Select(pkg => pkg?.Vulnerabilities?.Max(v => v.Severity) ?? -1)
+                    .ToList();
+
+                deprecatedSelectedPkgs = selectedPackages?
+                    .Where(x => x.IsPackageDeprecated || x.DeprecationMetadata != null)
+                    ?? Enumerable.Empty<PackageItemViewModel>();
+            }
+
+            if (vulnerableSelectedPkgs.Any())
+            {
+                actionTelemetryEvent.ComplexData["TopLevelVulnerablePackages"] = ToTelemetryPackageList(vulnerableSelectedPkgs, ToTelemetryVulnerablePackage);
+            }
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = vulnerablePkgsCount;
             actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = vulnerablePkgsMaxSeverities;
 
-            if (vulnerablePkgs.Any())
+            if (deprecatedSelectedPkgs.Any())
             {
-                actionTelemetryEvent.ComplexData["TopLevelVulnerablePackages"] = ToTelemetryPackageList(vulnerablePkgs, ToTelemetryVulnerablePackage);
+                actionTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] = ToTelemetryPackageList(deprecatedSelectedPkgs, ToTelemetryDeprecatedPackage);
             }
 
-            var deprecatedPkgs = selectedPackages?
-                .Where(x => x.DeprecationMetadata != null)
-                ?? Enumerable.Empty<PackageItemViewModel>();
-
-            if (deprecatedPkgs.Any())
+            // package in detail pane
+            if (activePackageDetail != null)
             {
-                actionTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] = ToTelemetryPackageList(deprecatedPkgs, ToTelemetryDeprecatedPackage);
+                if (activePackageDetail.IsPackageDeprecated || activePackageDetail.PackageMetadata?.DeprecationMetadata != null)
+                {
+                    actionTelemetryEvent.ComplexData["DetailDeprecatedPackage"] = ToTelemetryDeprecatedPackage(
+                        activePackageDetail.Id,
+                        activePackageDetail.SelectedVersion.Version,
+                        activePackageDetail.PackageMetadata.DeprecationMetadata);
+                }
+
+                if (activePackageDetail.IsPackageVulnerable || activePackageDetail.PackageMetadata?.Vulnerabilities != null)
+                {
+                    actionTelemetryEvent.ComplexData["DetailVulnerablePackage"] = ToTelemetryVulnerablePackage(
+                        activePackageDetail.Id,
+                        activePackageDetail.SelectedVersion.Version,
+                        activePackageDetail.PackageMetadata.Vulnerabilities);
+                }
             }
 
             // log the installed package state

@@ -2,14 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
-using NuGet.Common;
-using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -101,7 +97,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version);
+                    model.SelectedVersion.Version); //diferent from view
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -162,7 +158,8 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
-                    nugetUi.SelectedPackages = new[] { model.ViewModel };
+                    nugetUi.SelectedPackages = new[] { Control.PackageList.SelectedItem };
+                    nugetUi.ActiveDetailPackage = model;
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;

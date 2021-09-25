@@ -32,6 +32,9 @@
       Command="{x:Static nuget:Commands.InstallPackageCommand}"
       Executed="ExecuteInstallPackageCommand" />
     <CommandBinding
+      Command="{x:Static nuget:Commands.UpdatePackageCommand}"
+      Executed="ExecuteUpdatePackageCommand" />
+    <CommandBinding
       Command="{x:Static nuget:Commands.RestartSearchCommand}" 
       Executed="ExecuteRestartSearchCommand"/>
     <CommandBinding

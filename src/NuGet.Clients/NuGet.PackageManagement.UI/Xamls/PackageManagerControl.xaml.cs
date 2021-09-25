@@ -1442,11 +1442,31 @@ namespace NuGet.PackageManagement.UI
             UninstallPackage(package.Id, new[] { package });
         }
 
+        private void ExecuteUpdatePackageCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            var package = e.Parameter as PackageItemViewModel;
+            if (package == null || Model.IsSolution)
+            {
+                return;
+            }
+            var selectedPackages = new List<PackageItemViewModel>()
+            {
+                package
+            };
+
+            var packagesToUpdate = selectedPackages
+                .Select(package => new PackageIdentity(package.Id, package.LatestVersion))
+                .ToList();
+
+            UpdatePackage(packagesToUpdate, selectedPackages);
+        }
+
         private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> selectedPackages)
         {
             var options = _detailModel.Options;
 
             nugetUi.SelectedPackages = selectedPackages;
+            nugetUi.ActiveDetailPackage = null;
             nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
             nugetUi.RemoveDependencies = options.RemoveDependencies;
