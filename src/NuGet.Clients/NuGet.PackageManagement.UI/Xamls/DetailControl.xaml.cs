@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version, UIActionSource.DetailsPane); //diferent from view
+                    model.SelectedVersion.Version, UINuGetActionSource.DetailsPane); //diferent from view
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -109,7 +109,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, UIActionSource.DetailsPane);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, UINuGetActionSource.DetailsPane);
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }
@@ -122,7 +122,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version, UIActionSource.DetailsPane);
+                    model.SelectedVersion.Version, UINuGetActionSource.DetailsPane);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, UIActionSource.DetailsPane);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, UINuGetActionSource.DetailsPane);
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }

@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class UserAction
     {
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, UIActionSource uiActionSource)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, UINuGetActionSource uiActionSource)
             : this(action, uiActionSource)
         {
             if (string.IsNullOrEmpty(packageId))
@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI
             Version = packageVersion;
         }
 
-        private UserAction(NuGetProjectActionType action, UIActionSource uiActionSource)
+        private UserAction(NuGetProjectActionType action, UINuGetActionSource uiActionSource)
         {
             Action = action;
             UIActionSource = uiActionSource;
@@ -33,9 +33,9 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetVersion Version { get; }
 
-        public UIActionSource UIActionSource { get; private set; }
+        public UINuGetActionSource UIActionSource { get; private set; }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, UIActionSource uiActionSource)
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, UINuGetActionSource uiActionSource)
         {
             if (packageVersion == null)
             {
@@ -45,12 +45,12 @@ namespace NuGet.PackageManagement.UI
             return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, uiActionSource);
         }
 
-        public static UserAction CreateUnInstallAction(string packageId, UIActionSource uiActionSource)
+        public static UserAction CreateUnInstallAction(string packageId, UINuGetActionSource uiActionSource)
         {
             return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, uiActionSource);
         }
 
-        public static UserAction CreateUpdateAction(UIActionSource uiActionSource)
+        public static UserAction CreateUpdateAction(UINuGetActionSource uiActionSource)
         {
             return new UserAction(NuGetProjectActionType.Uninstall, uiActionSource);
         }

@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement.UI
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
-            UIActionSource uIActionSource,
+            UINuGetActionSource uIActionSource,
             CancellationToken cancellationToken)
         {
             IServiceBroker serviceBroker = uiService.UIContext.ServiceBroker;

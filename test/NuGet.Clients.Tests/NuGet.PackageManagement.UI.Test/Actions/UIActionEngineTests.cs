@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.UI.Test
             actionTelemetryData.AddUiActionEngineTelemetryProperties(
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version, UIActionSource.DetailsPane),
+                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version, UINuGetActionSource.DetailsPane),
                 selectedPackages: mySelectedPackages,
                 selectedIndex: null,
                 activePackageDetail: null,
@@ -307,7 +307,7 @@ namespace NuGet.PackageManagement.UI.Test
             actionTelemetryData.AddUiActionEngineTelemetryProperties(
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version, UIActionSource.DetailsPane),
+                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version, UINuGetActionSource.DetailsPane),
                 selectedPackages: mySelectedPackages,
                 activePackageDetail: null,
                 selectedIndex: null,
