@@ -98,12 +98,12 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
-                bool isPackageSourceMappingEnabled = downloadContext.packageSourceMappingConfiguration?.IsEnabled == true;
+                bool isPackageSourceMappingEnabled = downloadContext.PackageSourceMappingConfiguration?.IsEnabled == true;
                 IReadOnlyList<string> configuredPackageSources = null;
 
                 if (isPackageSourceMappingEnabled)
                 {
-                    configuredPackageSources = downloadContext.packageSourceMappingConfiguration.GetConfiguredPackageSources(packageIdentity.Id);
+                    configuredPackageSources = downloadContext.PackageSourceMappingConfiguration.GetConfiguredPackageSources(packageIdentity.Id);
 
                     if (configuredPackageSources != null)
                     {

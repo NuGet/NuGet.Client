@@ -48,7 +48,7 @@ namespace NuGet.Protocol.Core.Types
             directDownloadDirectory,
             directDownload)
         {
-            packageSourceMappingConfiguration = packageSourceMappingConfiguration;
+            PackageSourceMappingConfiguration = packageSourceMappingConfiguration;
         }
 
         public SourceCacheContext SourceCacheContext { get; }
@@ -58,6 +58,6 @@ namespace NuGet.Protocol.Core.Types
         public Guid ParentId { get; set; }
 
         public ClientPolicyContext ClientPolicyContext { get; set; }
-        public PackageSourceMappingConfiguration packageSourceMappingConfiguration { get; }
+        public PackageSourceMappingConfiguration PackageSourceMappingConfiguration { get; }
     }
 }

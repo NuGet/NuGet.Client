@@ -20,9 +20,9 @@ namespace NuGet.PackageManagement
             AllowDowngrades = true;
         }
 
-        public GatherContext(PackageSourceMappingConfiguration packageSourceMappingConfiguration) : this()
+        public GatherContext(PackageSourceMappingConfiguration _packageSourceMappingConfiguration) : this()
         {
-            packageSourceMappingConfiguration = packageSourceMappingConfiguration;
+            packageSourceMappingConfiguration = _packageSourceMappingConfiguration;
         }
 
         /// <summary>
