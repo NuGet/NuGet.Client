@@ -376,18 +376,18 @@ namespace NuGet.PackageManagement.UI
                     {
                         // log rich info about added packages
                         addedPackages = results.SelectMany(result => result.Added)
-                            .Select(package => new Tuple<string, string>(package.Id, VSTelemetryServiceUtility.NormalizeVersion(package.Version)))
+                            .Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString())))
                             .Distinct()
                             .ToList();
                         var addCount = addedPackages.Count;
 
                         //updated packages can have an old and a new id.
                         updatedPackagesOld = results.SelectMany(result => result.Updated)
-                            .Select(package => new Tuple<string, string>(package.Old.Id, VSTelemetryServiceUtility.NormalizeVersion(package.Old.Version)))
+                            .Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString())))
                             .Distinct()
                             .ToList();
                         updatedPackagesNew = results.SelectMany(result => result.Updated)
-                            .Select(package => new Tuple<string, string>(package.New.Id, VSTelemetryServiceUtility.NormalizeVersion(package.New.Version)))
+                            .Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString())))
                             .Distinct()
                             .ToList();
                         var updateCount = updatedPackagesNew.Count;
@@ -558,13 +558,6 @@ namespace NuGet.PackageManagement.UI
 
         internal static TelemetryEvent ToTelemetryPackage(string id, NuGetVersion version) => ToTelemetryPackage(id, VSTelemetryServiceUtility.NormalizeVersion(version));
 
-        internal static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package) => ToTelemetryPackage(package.Item1, package.Item2);
-
-        internal static TelemetryPiiProperty ToTelemetryDeletedPackage(string pkg)
-        {
-            return new TelemetryPiiProperty(VSTelemetryServiceUtility.NormalizePackageId(pkg));
-        }
-
         internal static TelemetryEvent ToTelemetryVulnerablePackage(string id, NuGetVersion version, IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
         {
             var evt = ToTelemetryPackage(id, version);
@@ -613,10 +606,7 @@ namespace NuGet.PackageManagement.UI
             return evt;
         }
 
-        internal static List<TelemetryEvent> ToTelemetryPackageList(IEnumerable<Tuple<string, string>> packages) => ToTelemetryPackageList(packages, ToTelemetryPackage);
-
-        internal static List<V> ToTelemetryPackageList<V, T>(IEnumerable<T> packages, Func<T, V> transformer) => packages.Select(transformer).ToList();
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
         internal static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
             bool continueAfterPreview,
@@ -635,6 +625,23 @@ namespace NuGet.PackageManagement.UI
             List<Tuple<string, string>> updatedPackagesNew,
             IReadOnlyCollection<string> targetFrameworks)
         {
+            static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
+            {
+                var subEvent = new TelemetryEvent(eventName: null);
+                subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(package.Item1));
+                subEvent["version"] = package.Item2;
+                return subEvent;
+            }
+
+            static List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
+            {
+                var list = new List<TelemetryEvent>(packages.Count);
+                list.AddRange(packages.Select(ToTelemetryPackage));
+                return list;
+            }
+
+            static List<V> ToTelemetryPackageListGeneric<V, T>(IEnumerable<T> packages, Func<T, V> transformer) => packages.Select(transformer).ToList();
+
             // log possible cancel reasons
             if (!continueAfterPreview)
             {
@@ -681,14 +688,14 @@ namespace NuGet.PackageManagement.UI
 
             if (vulnerableSelectedPkgs.Any())
             {
-                actionTelemetryEvent.ComplexData["TopLevelVulnerablePackages"] = ToTelemetryPackageList(vulnerableSelectedPkgs, ToTelemetryVulnerablePackage);
+                actionTelemetryEvent.ComplexData["TopLevelVulnerablePackages"] = ToTelemetryPackageListGeneric(vulnerableSelectedPkgs, ToTelemetryVulnerablePackage);
             }
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = vulnerablePkgsCount;
             actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = vulnerablePkgsMaxSeverities;
 
             if (deprecatedSelectedPkgs.Any())
             {
-                actionTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] = ToTelemetryPackageList(deprecatedSelectedPkgs, ToTelemetryDeprecatedPackage);
+                actionTelemetryEvent.ComplexData["TopLevelDeprecatedPackages"] = ToTelemetryPackageListGeneric(deprecatedSelectedPkgs, ToTelemetryDeprecatedPackage);
             }
 
             // package in detail pane
@@ -739,7 +746,14 @@ namespace NuGet.PackageManagement.UI
 
             if (removedPackages?.Count > 0)
             {
-                actionTelemetryEvent.ComplexData["RemovedPackages"] = ToTelemetryPackageList(removedPackages, ToTelemetryDeletedPackage);
+                var packages = new List<TelemetryPiiProperty>();
+
+                foreach (var package in removedPackages)
+                {
+                    packages.Add(new TelemetryPiiProperty(package?.ToLowerInvariant() ?? "(empty package id)"));
+                }
+
+                actionTelemetryEvent.ComplexData["RemovedPackages"] = packages;
             }
 
             // two collections for updated packages: pre and post upgrade
