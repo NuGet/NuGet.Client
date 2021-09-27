@@ -180,13 +180,13 @@ namespace NuGet.PackageManagement.UI.Test
 
             var actionTelemetryData = CreateTestActionTelemetryEvent();
 
-            UIActionEngine.AddUiActionEngineTelemetryProperties(
-                actionTelemetryEvent: actionTelemetryData,
+            actionTelemetryData.AddUiActionEngineTelemetryProperties(
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version),
+                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version, UIActionSource.DetailsPane),
                 selectedPackages: mySelectedPackages,
                 selectedIndex: null,
+                activePackageDetail: null,
                 recommendedCount: null,
                 recommendPackages: null,
                 recommenderVersion: null,
@@ -304,12 +304,12 @@ namespace NuGet.PackageManagement.UI.Test
 
             var actionTelemetryData = CreateTestActionTelemetryEvent();
 
-            UIActionEngine.AddUiActionEngineTelemetryProperties(
-                actionTelemetryEvent: actionTelemetryData,
+            actionTelemetryData.AddUiActionEngineTelemetryProperties(
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version),
+                userAction: UserAction.CreateInstallAction(highlightedPackage.Id, highlightedPackage.Version, UIActionSource.DetailsPane),
                 selectedPackages: mySelectedPackages,
+                activePackageDetail: null,
                 selectedIndex: null,
                 recommendedCount: null,
                 recommendPackages: null,

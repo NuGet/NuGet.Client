@@ -1458,7 +1458,7 @@ namespace NuGet.PackageManagement.UI
                 .Select(package => new PackageIdentity(package.Id, package.LatestVersion))
                 .ToList();
 
-            UpdatePackage(packagesToUpdate, selectedPackages);
+            UpdatePackage(packagesToUpdate, selectedPackages, UIActionSource.PackagesList);
         }
 
         private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType, IEnumerable<PackageItemViewModel> selectedPackages)
@@ -1494,7 +1494,7 @@ namespace NuGet.PackageManagement.UI
                 .Select(package => new PackageIdentity(package.Id, package.Version))
                 .ToList();
 
-            UpdatePackage(packagesToUpdate, selectedPackages);
+            UpdatePackage(packagesToUpdate, selectedPackages, UIActionSource.UpdateButton);
         }
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
@@ -1550,7 +1550,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void InstallPackage(string packageId, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateInstallAction(packageId, version);
+            var action = UserAction.CreateInstallAction(packageId, version, UIActionSource.PackagesList);
 
             ExecuteAction(
                 () =>
@@ -1570,7 +1570,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void UninstallPackage(string packageId, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateUnInstallAction(packageId);
+            var action = UserAction.CreateUnInstallAction(packageId, UIActionSource.PackagesList);
 
             ExecuteAction(
                 () =>
@@ -1588,7 +1588,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="packages">Packages identities to update</param>
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
-        internal void UpdatePackage(List<PackageIdentity> packages, IEnumerable<PackageItemViewModel> packagesInfo)
+        internal void UpdatePackage(List<PackageIdentity> packages, IEnumerable<PackageItemViewModel> packagesInfo, UIActionSource uIActionSource)
         {
             if (packages.Count == 0)
             {
@@ -1601,6 +1601,7 @@ namespace NuGet.PackageManagement.UI
                     return Model.Context.UIActionEngine.PerformUpdateAsync(
                         Model.UIController,
                         packages,
+                        uIActionSource,
                         CancellationToken.None);
                 },
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Update, packagesInfo));
