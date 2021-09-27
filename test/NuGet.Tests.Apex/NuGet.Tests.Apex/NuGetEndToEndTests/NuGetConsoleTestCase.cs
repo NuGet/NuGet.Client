@@ -295,7 +295,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task InstallPackageForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPC_PackageSourceMapping_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -340,7 +340,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task UpdatePackageForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPC_PackageSourceMapping_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -388,7 +388,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task InstallPackageForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -451,7 +451,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task UpdatePackageForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();

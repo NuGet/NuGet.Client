@@ -84,7 +84,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task SimpleInstallFromIVsInstaller_PackageNamespace_WithSingleFeed()
+        public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithSingleFeed()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -131,7 +131,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task SimpleUpdateFromIVsInstaller_PackageNamespace_WithSingleFeed()
+        public async Task SimpleUpdateFromIVsInstaller_PackageSourceMapping_WithSingleFeed()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -186,7 +186,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task SimpleInstallFromIVsInstaller_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage()
+        public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -251,7 +251,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task SimpleUpdateFromIVsInstaller_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage()
+        public async Task SimpleUpdateFromIVsInstaller_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage()
         {
             // Arrange
             EnsureVisualStudioHost();

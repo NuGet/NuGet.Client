@@ -159,7 +159,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageFromUI_PackageNamespace_WithSingleFeed_Match_Succeeds()
+        public async Task InstallPackageFromUI_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -206,7 +206,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageToProjectsFromUI_PackageNamespace_WithSingleFeed_Match_Succeeds()
+        public async Task InstallPackageToProjectsFromUI_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -260,7 +260,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageFromUI_PackageNamespace_WithMultiFeed_Succeed()
+        public async Task InstallPackageFromUI_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -318,7 +318,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageFromUI_PackageNamespace_WithMultiFeed_Fails()
+        public async Task InstallPackageFromUI_PackageSourceMapping_WithMultiFeed_Fails()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -373,7 +373,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task UpdatePackageFromUI_PackageNamespace_WithSingleFeed_Succeeds()
+        public async Task UpdatePackageFromUI_PackageSourceMapping_WithSingleFeed_Succeeds()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -427,7 +427,7 @@ namespace NuGet.Tests.Apex
 
 
         [StaFact]
-        public async Task UpdatePackageFromUI_PackageNamespace_WithMultiFeed_Succeed()
+        public async Task UpdatePackageFromUI_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
             EnsureVisualStudioHost();

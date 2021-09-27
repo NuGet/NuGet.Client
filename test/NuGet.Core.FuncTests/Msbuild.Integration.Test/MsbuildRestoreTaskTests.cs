@@ -972,7 +972,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceFull_Succeed()
+        public async Task MsbuildRestore_PackageSourceMappingFull_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1086,7 +1086,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceFull_Fails()
+        public async Task MsbuildRestore_PackageSourceMappingFull_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1185,7 +1185,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespacePartial_Succeed()
+        public async Task MsbuildRestore_PackageSourceMappingPartial_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1296,7 +1296,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespacePartial_Fails()
+        public async Task MsbuildRestore_PackageSourceMappingPartial_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1395,7 +1395,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceLongerMatches_Succeed()
+        public async Task MsbuildRestore_PackageSourceMappingLongerMatches_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1511,7 +1511,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceLongerMatches_NoNamespaceMatchesLog()
+        public async Task MsbuildRestore_PackageSourceMappingLongerMatches_NoNamespaceMatchesLog()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1769,7 +1769,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PR_PackageNamespace_WithAllRestoreSourceProperies_Succeed()
+        public async Task MsbuildRestore_PR_PackageSourceMapping_WithAllRestoreSourceProperies_Succeed()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1855,7 +1855,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PR_PackageNamespace_WithNotEnoughRestoreSourceProperty_Fails()
+        public async Task MsbuildRestore_PR_PackageSourceMapping_WithNotEnoughRestoreSourceProperty_Fails()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();

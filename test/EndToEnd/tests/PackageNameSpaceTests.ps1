@@ -1,4 +1,4 @@
-function Test-PackageNamespaceRestore-WithSingleFeed
+function Test-PackageSourceMappingRestore-WithSingleFeed
 {
     param($context)
 
@@ -52,7 +52,7 @@ function Test-PackageNamespaceRestore-WithSingleFeed
     }
 }
 
-function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackage
+function Test-PackageSourceMappingRestore-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackage
 {
     param($context)
 
@@ -115,7 +115,7 @@ function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-Res
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-Succeed {
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithSingleFeed-Succeed {
     param(
         $context
     )
@@ -161,7 +161,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-Fails {
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithSingleFeed-Fails {
     param(
         $context
     )
@@ -204,7 +204,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithSpecifiedVersion
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithSpecifiedVersion
 {
     param($context)
 
@@ -265,7 +265,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithLatestVersion
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithLatestVersion
 {
     param($context)
 
@@ -326,7 +326,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     }
 }
 
-function Test-PC-PackageNamespaceInstall-Succeed
+function Test-PC-PackageSourceMappingInstall-Succeed
 {
     param($context)
 
@@ -367,7 +367,7 @@ function Test-PC-PackageNamespaceInstall-Succeed
     }
 }
 
-function Test-PC-PackageNamespaceInstall-Fails
+function Test-PC-PackageSourceMappingInstall-Fails
 {
     param($context)
 
@@ -408,7 +408,7 @@ function Test-PC-PackageNamespaceInstall-Fails
     }
 }
 
-function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
+function Test-PC-PackageSourceMappingInstall-WithCorrectSourceOption-Succeed
 {
     param($context)
 
@@ -467,7 +467,7 @@ function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
     }
 }
 
-function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
+function Test-PC-PackageSourceMappingInstall-WithWrongSourceOption-Fails
 {
     param($context)
 
@@ -516,7 +516,7 @@ function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
     }
 }
 
-function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
+function Test-PC-PackageSourceMappingUpdate-WithCorrectSourceOption-Succeed
 {
     param($context)
 
