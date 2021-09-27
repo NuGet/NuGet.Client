@@ -194,7 +194,7 @@ function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithSingleF
         $p = New-ClassLibrary
 
         # Act & Assert
-        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from SecretPackages repository so it'll fail.
+        # Even though SolutionLevelPkg package exist in $repoDirectory since package source mapping filter set SolutionLevelPkg can be restored only from SecretPackages repository so it'll fail.
         $exceptionMessage = "Exception calling `"InstallLatestPackageApi`" with `"2`" argument(s): `"Package 'SolutionLevelPkg 1.0.0' is not found in the following primary source(s): '"+ $repoDirectory + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly.`""
         Assert-Throws { [API.Test.InternalAPITestHook]::InstallLatestPackageApi("SolutionLevelPkg", $false)  } $exceptionMessage
         Assert-NoPackage $p SolutionLevelPkg 1.0.0
@@ -398,7 +398,7 @@ function Test-PC-PackageSourceMappingInstall-Fails
         $p = New-ConsoleApplication
 
         # Act & Assert
-        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from PrivateRepository repository so it'll fail.
+        # Even though SolutionLevelPkg package exist in $repoDirectory since package source mapping filter set SolutionLevelPkg can be restored only from PrivateRepository repository so it'll fail.
         $exceptionMessage = "Package 'SolutionLevelPkg 1.0' is not found in the following primary source(s): '" + $context.RepositoryRoot + "," + $privateRepo + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly."
         Assert-Throws { $p | Install-Package SolutionLevelPkg -Version 1.0 } $exceptionMessage
         Assert-NoPackage $p SolutionLevelPkg 1.0.0

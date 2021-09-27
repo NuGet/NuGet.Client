@@ -1671,10 +1671,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""SharedRepository1"">
-            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package source mapping prefix matches both repository -->
         </packageSource>
         <packageSource key=""SharedRepository2"">
-            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package source mapping prefix matches both repository -->
         </packageSource>
     </packageSourceMapping>
 </configuration>";

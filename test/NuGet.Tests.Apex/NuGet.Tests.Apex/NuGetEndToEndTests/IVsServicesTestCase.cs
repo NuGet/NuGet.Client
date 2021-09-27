@@ -102,7 +102,7 @@ namespace NuGet.Tests.Apex
 
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -151,7 +151,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV1, "Thisisfromprivaterepo1.txt");
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2, "Thisisfromprivaterepo2.txt");
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -212,7 +212,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV1, "Thisisfromprivaterepo1.txt");
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2, "Thisisfromprivaterepo2.txt");
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -277,7 +277,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV1, "Thisisfromprivaterepo1.txt");
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2, "Thisisfromprivaterepo2.txt");
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(mainDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
