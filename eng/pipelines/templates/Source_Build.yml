@@ -16,5 +16,5 @@ steps:
     ArtifactName: "Source-build log"
     ArtifactType: Container
 
-- template: ./eng/common/publish-build-assets.yml
+- template: ../../common/templates/job/publish-build-assets.yml
 
