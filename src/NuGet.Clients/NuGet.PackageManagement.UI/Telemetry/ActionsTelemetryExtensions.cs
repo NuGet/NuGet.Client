@@ -212,33 +212,5 @@ namespace NuGet.VisualStudio
         internal static List<TelemetryEvent> ToTelemetryPackageList(IEnumerable<Tuple<string, string>> packages) => ToTelemetryPackageList(packages, ToTelemetryPackage);
 
         internal static List<V> ToTelemetryPackageList<V, T>(IEnumerable<T> packages, Func<T, V> transformer) => packages.Select(transformer).ToList();
-
-        private static void CalculateUserAction(object before, object after)
-
-        {
-            // What the user is doing ? : Install, Update, Uninstall
-            // From operationType action event
-
-            // Where ? SolutionView, ProjectView
-            // From IsSolutionViev
-
-            // Which Tab ? Browse, Install, Updates, Consolidate
-            // From ActiveFileter 
-
-            // From ? Packages Pane, Detail Pane, Update Button
-
-
-            // Project View:
-            // Install: Is user adding a new Deprecated/Consolidaded package?
-            // Uninstall: Is user deleting a Deprecated/Consolidaded package?
-            // Single Update: Is user updating from a Deprecated/Consolidaded package?
-            // Bulk Update: Is user updating to a Deprecated/Consolidaded package?
-
-            // Solution View
-            // Install: Is user adding a new Deprecated/Consolidaded package?
-            // Uninstall: Is user deleting a Deprecated/Consolidaded package?
-            // Single Update: Is user updating from a Deprecated/Consolidaded package?
-            // Bulk Update: Is user updating to a Deprecated/Consolidaded package?
-        }
     }
 }
