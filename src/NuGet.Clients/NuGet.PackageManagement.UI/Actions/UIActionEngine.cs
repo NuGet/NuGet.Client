@@ -326,7 +326,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         Tuple<string, string> packageInfo = new Tuple<string, string>(
                             package.Identity.Id,
-                            package.Identity.Version == null ? "" : package.Identity.Version.ToNormalizedString());
+                            (package.Identity.Version == null ? "" : package.Identity.Version.ToNormalizedString()));
 
                         if (!existingPackages.Contains(packageInfo))
                         {
@@ -650,7 +650,7 @@ namespace NuGet.PackageManagement.UI
             if (userAction != null)
             {
                 // userAction.Version can be null for deleted packages.
-                actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(userAction.PackageId, userAction.Version);
+                actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
                 actionTelemetryEvent["RecommendedCount"] = recommendedCount;
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
@@ -714,13 +714,27 @@ namespace NuGet.PackageManagement.UI
             // log the installed package state
             if (existingPackages?.Count > 0)
             {
-                actionTelemetryEvent.ComplexData["ExistingPackages"] = ToTelemetryPackageList(existingPackages);
+                var packages = new List<TelemetryEvent>();
+
+                foreach (var package in existingPackages)
+                {
+                    packages.Add(ToTelemetryPackage(package));
+                }
+
+                actionTelemetryEvent.ComplexData["ExistingPackages"] = packages;
             }
 
             // other packages can be added, removed, or upgraded as part of bulk upgrade or as part of satisfying package dependencies, so log that also
             if (addedPackages?.Count > 0)
             {
-                actionTelemetryEvent.ComplexData["AddedPackages"] = ToTelemetryPackageList(addedPackages);
+                var packages = new List<TelemetryEvent>();
+
+                foreach (var package in addedPackages)
+                {
+                    packages.Add(ToTelemetryPackage(package));
+                }
+
+                actionTelemetryEvent.ComplexData["AddedPackages"] = packages;
             }
 
             if (removedPackages?.Count > 0)
