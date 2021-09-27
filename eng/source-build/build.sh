@@ -69,5 +69,15 @@ ReadGlobalVersion Microsoft.DotNet.Arcade.Sdk
 export ARCADE_VERSION=$_ReadGlobalVersion
 ReadGlobalVersion dotnet
 export SDK_VERSION=$_ReadGlobalVersion
+
+mkdir -p cli
+curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
+
+if (( $? )); then
+	echo "Could not download 'dotnet-install.sh' script. Please check your network and try again!"
+	exit 1
+fi
+chmod +x cli/dotnet-install.sh
+
 ../../cli/dotnet-install.sh -v $SDK_VERSION
 "$DOTNET" msbuild "$scriptroot/source-build.proj" /p:Configuration=$configuration /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog" $args
