@@ -79,7 +79,7 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 clientPolicyContext,
-                packageNamespaces: PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance),
+                packageSourceMapping: PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance),
                 log,
                 new LockFileBuilderCache())
         {
@@ -159,7 +159,7 @@ namespace NuGet.Commands.Test
             IEnumerable<PackageSource> sources,
             string packagesDirectory,
             SourceCacheContext cacheContext,
-            PackageNamespacesConfiguration packageNamespacesConfiguration,
+            PackageSourceMappingConfiguration packageSourceMappingConfiguration,
             ILogger log) : base(
                 project,
                 RestoreCommandProviders.Create(
@@ -171,7 +171,7 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
-                packageNamespacesConfiguration,
+                packageSourceMappingConfiguration,
                 log,
                 new LockFileBuilderCache())
         {
@@ -196,7 +196,7 @@ namespace NuGet.Commands.Test
                 log: log),
             cacheContext,
             clientPolicyContext,
-            packageNamespaces: PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance),
+            packageSourceMapping: PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance),
             log,
             lockFileBuilderCache)
         {

@@ -70,7 +70,7 @@ namespace NuGet.DependencyResolver {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package namespace matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Package source mapping pattern matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;..
         /// </summary>
         internal static string Log_MatchingSourceFoundForPackage {
             get {
@@ -79,7 +79,7 @@ namespace NuGet.DependencyResolver {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package namespace match not found for package ID &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Package source mapping pattern match not found for package ID &apos;{0}&apos;..
         /// </summary>
         internal static string Log_NoMatchingSourceFoundForPackage {
             get {

@@ -10,14 +10,14 @@ using Xunit;
 
 namespace NuGet.Configuration.Test
 {
-    public class NamespaceItemTests
+    public class PackagePatternItemTests
     {
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void Constructor_WithInvalidNamespace_Throws(string name)
+        public void Constructor_WithInvalidPackagePattern_Throws(string name)
         {
-            Assert.Throws<ArgumentException>(() => new NamespaceItem(name));
+            Assert.Throws<ArgumentException>(() => new PackagePatternItem(name));
         }
 
         [Theory]
@@ -26,24 +26,24 @@ namespace NuGet.Configuration.Test
         [InlineData("NuGet.*", "NuGet.*")]
         [InlineData("NuGet.*", "nuget.*")]
         [InlineData("*", "*")]
-        public void Equals_WithEquivalentNamespaces_ReturnsTrue(string first, string second)
+        public void Equals_WithEquivalentPatterns_ReturnsTrue(string first, string second)
         {
-            var firstNamespace = new NamespaceItem(first);
-            var secondNamespace = new NamespaceItem(second);
+            var firstPatternItem = new PackagePatternItem(first);
+            var secondPatternItem = new PackagePatternItem(second);
 
-            firstNamespace.Equals(secondNamespace).Should().BeTrue();
+            firstPatternItem.Equals(secondPatternItem).Should().BeTrue();
         }
 
         [Theory]
         [InlineData("NuGet.", "NuGet.Common")]
         [InlineData("NuGet.*", "stuff")]
         [InlineData("NuGet.*", "NuGet.")]
-        public void Equals_WithUnequivalentNamespaces_ReturnsFalse(string first, string second)
+        public void Equals_WithUnequivalentPatterns_ReturnsFalse(string first, string second)
         {
-            var firstNamespace = new NamespaceItem(first);
-            var secondNamespace = new NamespaceItem(second);
+            var firstPatternItem = new PackagePatternItem(first);
+            var secondPatternItem = new PackagePatternItem(second);
 
-            firstNamespace.Equals(secondNamespace).Should().BeFalse();
+            firstPatternItem.Equals(secondPatternItem).Should().BeFalse();
         }
 
         [Theory]
@@ -51,24 +51,24 @@ namespace NuGet.Configuration.Test
         [InlineData("nuget.common", "NuGet.Common")]
         [InlineData("NuGet.*", "NuGet.*")]
         [InlineData("NuGet.*", "nuget.*")]
-        public void HashCode_WithEquivalentNamespaces_ReturnsTrue(string first, string second)
+        public void HashCode_WithEquivalentPatterns_ReturnsTrue(string first, string second)
         {
-            var firstNamespace = new NamespaceItem(first);
-            var secondNamespace = new NamespaceItem(second);
+            var firstPatternItem = new PackagePatternItem(first);
+            var secondPatternItem = new PackagePatternItem(second);
 
-            firstNamespace.GetHashCode().Should().Equals(secondNamespace.GetHashCode());
+            firstPatternItem.GetHashCode().Should().Equals(secondPatternItem.GetHashCode());
         }
 
         [Theory]
         [InlineData("NuGet.", "NuGet.Common")]
         [InlineData("NuGet.*", "stuff")]
         [InlineData("NuGet.*", "NuGet.")]
-        public void HashCode_WithUnequivalentNamespaces_ReturnsFalse(string first, string second)
+        public void HashCode_WithUnequivalentPatterns_ReturnsFalse(string first, string second)
         {
-            var firstNamespace = new NamespaceItem(first);
-            var secondNamespace = new NamespaceItem(second);
+            var firstPatternItem = new PackagePatternItem(first);
+            var secondPatternItem = new PackagePatternItem(second);
 
-            firstNamespace.GetHashCode().Equals(secondNamespace.GetHashCode()).Should().BeFalse();
+            firstPatternItem.GetHashCode().Equals(secondPatternItem.GetHashCode()).Should().BeFalse();
         }
 
         [Theory]
@@ -76,27 +76,27 @@ namespace NuGet.Configuration.Test
         [InlineData("nuget.common")]
         [InlineData("NuGet.*")]
         [InlineData("nuget.*")]
-        public void Clone_CreatesEquivalentObjects(string namespaceName)
+        public void Clone_CreatesEquivalentObjects(string patternName)
         {
-            var original = new NamespaceItem(namespaceName);
-            var clone = original.Clone() as NamespaceItem;
+            var original = new PackagePatternItem(patternName);
+            var clone = original.Clone() as PackagePatternItem;
 
             original.Equals(clone).Should().BeTrue();
             original.GetHashCode().Equals(clone.GetHashCode()).Should().BeTrue();
             SettingsTestUtils.DeepEquals(original, clone).Should().BeTrue();
             ReferenceEquals(original, clone).Should().BeFalse();
-            original.Id.Equals(clone.Id);
+            original.Pattern.Equals(clone.Pattern);
         }
 
         [Fact]
-        public void ElementNameGetter_ReturnsNamespace()
+        public void ElementNameGetter_ReturnsPattern()
         {
-            var original = new NamespaceItem("item");
+            var original = new PackagePatternItem("item");
             original.ElementName.Should().Be("package");
         }
 
         [Fact]
-        public void NamespaceItemParse_WithoutId_Throws()
+        public void PackagePatternItemParse_WithoutId_Throws()
         {
             // Arrange
             var config = @"
@@ -120,7 +120,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void NamespaceItemParse_WithChildren_Throws()
+        public void PackagePatternItemParse_WithChildren_Throws()
         {
             // Arrange
             var config = @"
@@ -146,7 +146,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void NamespaceItemParse_WithValidData_ParsesCorrectly()
+        public void PackagePatternItemParse_WithValidData_ParsesCorrectly()
         {
             // Arrange
             var config = @"
@@ -167,9 +167,9 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var item = (section.Items.First() as PackageNamespacesSourceItem).Namespaces.First();
+            var item = (section.Items.First() as PackageSourceMappingSourceItem).Patterns.First();
 
-            var expectedItem = new NamespaceItem("sadas");
+            var expectedItem = new PackagePatternItem("sadas");
             SettingsTestUtils.DeepEquals(item, expectedItem).Should().BeTrue();
         }
 
@@ -195,10 +195,10 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespacesItem = section.Items.First() as PackageNamespacesSourceItem;
-            var updatedItem = new NamespaceItem("updated");
-            packageSourceNamespacesItem.Namespaces.First().Update(updatedItem);
-            SettingsTestUtils.DeepEquals(packageSourceNamespacesItem.Namespaces.First(), updatedItem).Should().BeTrue();
+            var packageSourcePatternsItem = section.Items.First() as PackageSourceMappingSourceItem;
+            var updatedItem = new PackagePatternItem("updated");
+            packageSourcePatternsItem.Patterns.First().Update(updatedItem);
+            SettingsTestUtils.DeepEquals(packageSourcePatternsItem.Patterns.First(), updatedItem).Should().BeTrue();
 
             settingsFile.SaveToDisk();
 

@@ -1422,7 +1422,7 @@ namespace NuGet.Test
         }
 
         /// <summary>
-        /// Test package namespace filters are respected and succeeds.
+        /// Test package pacckage patterns filters are respected and succeeds.
         /// </summary>
         [Theory]
         [InlineData("public,Nuget", "Nuget")]
@@ -1435,11 +1435,11 @@ namespace NuGet.Test
         [InlineData("public,Contoso.Opensource.* ", "Contoso.Opensource.MVC.ASP")]
         [InlineData("nuget.org,nuget|privateRepository,private*", "nuget")]
         [InlineData("nuget.org,nuget|privateRepository,private*", "private1")]
-        public async Task ResolverGather_PackageNamespace_Succeed(string packageNamespaces, string packageId)
+        public async Task ResolverGather_PackageSourceMapping_Succeed(string packagePatterns, string packageId)
         {
             // Arrange
-            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
-            IReadOnlyList<string> configuredSources = namespacesConfiguration.GetConfiguredPackageSources(packageId);
+            PackageSourceMappingConfiguration sourceMappingConfiguration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            IReadOnlyList<string> configuredSources = sourceMappingConfiguration.GetConfiguredPackageSources(packageId);
             var target = new PackageIdentity(packageId, new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
 
@@ -1476,7 +1476,7 @@ namespace NuGet.Test
 
             var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
 
-            var context = new GatherContext(namespacesConfiguration)
+            var context = new GatherContext(sourceMappingConfiguration)
             {
                 PrimaryTargets = targets.ToList(),
                 InstalledPackages = new List<PackageIdentity>(),
@@ -1494,18 +1494,18 @@ namespace NuGet.Test
             List<SourcePackageDependencyInfo> check = results.OrderBy(e => e.Id).ToList();
 
             // Assert
-            Assert.True(namespacesConfiguration.AreNamespacesEnabled);
+            Assert.True(sourceMappingConfiguration.IsEnabled);
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal(1, check.Count);
-            // Only match to repository set in Package namespace filter.
+            // Only match to repository set in Package source mapping filter.
             Assert.Equal(configuredSources[0], check[0].Source.PackageSource.Name);
 
             // Assert log.
-            Assert.Equal($"Package namespace matches found for package ID '{packageId}' are: '{configuredSources[0]}' ", testNuGetProjectContext.Logs.Value[0]);
+            Assert.Equal($"Package source mapping pattern matches found for package ID '{packageId}' are: '{configuredSources[0]}' ", testNuGetProjectContext.Logs.Value[0]);
         }
 
         /// <summary>
-        /// Test package namespace filters are respected and fails if not found.
+        /// Test package source mapping filters are respected and fails if not found.
         /// </summary>
         [Theory]
         [InlineData("public,nuget", "nuge")]
@@ -1517,11 +1517,11 @@ namespace NuGet.Test
         [InlineData("nuget.org,nuget|privateRepository,private*", "privat")]
         [InlineData("-", "privat")]
         [InlineData("public,nuget", "-")]
-        public async Task ResolverGather_PackageNamespace_Fails(string packageNamespaces, string packageId)
+        public async Task ResolverGather_PackageSourceMapping_Fails(string packagePatterns, string packageId)
         {
             // Arrange
-            PackageNamespacesConfiguration namespacesConfiguration = PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
-            IReadOnlyList<string> configuredSources = namespacesConfiguration.GetConfiguredPackageSources(packageId);
+            PackageSourceMappingConfiguration sourceMappingConfiguration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            IReadOnlyList<string> configuredSources = sourceMappingConfiguration.GetConfiguredPackageSources(packageId);
             var target = new PackageIdentity(packageId, new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
 
@@ -1558,7 +1558,7 @@ namespace NuGet.Test
 
             var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
 
-            var context = new GatherContext(namespacesConfiguration)
+            var context = new GatherContext(sourceMappingConfiguration)
             {
                 PrimaryTargets = targets.ToList(),
                 InstalledPackages = new List<PackageIdentity>(),
@@ -1575,7 +1575,7 @@ namespace NuGet.Test
                 () => ResolverGather.GatherAsync(context, CancellationToken.None));
 
             // Assert
-            Assert.True(namespacesConfiguration.AreNamespacesEnabled);
+            Assert.True(sourceMappingConfiguration.IsEnabled);
             Assert.Null(configuredSources);
 
             // Assert log.

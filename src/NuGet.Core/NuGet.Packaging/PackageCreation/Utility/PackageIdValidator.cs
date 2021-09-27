@@ -12,7 +12,7 @@ namespace NuGet.Packaging
     {
         /// <summary>
         /// Max allowed length for package Id.
-        /// In case update this value please update in src\NuGet.Core\NuGet.Configuration\PackageNamespaces\PackageNamespacesConfiguration.cs too.
+        /// In case update this value please update in src\NuGet.Core\NuGet.Configuration\PackageSourceMapping\PackageSourceMappingConfiguration.cs too.
         /// </summary>
         public const int MaxPackageIdLength = 100;
         private static readonly Regex IdRegex = new Regex(pattern: @"^\w+([.-]\w+)*$",

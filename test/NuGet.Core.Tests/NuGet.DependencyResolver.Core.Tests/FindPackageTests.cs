@@ -29,7 +29,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta.1"), LibraryType.Package);
@@ -79,7 +79,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package);
@@ -120,7 +120,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package);
@@ -156,7 +156,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), testLogger);
             var token = CancellationToken.None;
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
             var actualIdentity = new LibraryIdentity("X", NuGetVersion.Parse("1.0.0-bEta"), LibraryType.Package);
@@ -190,7 +190,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var cacheContext = new SourceCacheContext();
             var testLogger = new TestLogger();
             var framework = NuGetFramework.Parse("net45");
-            var context = new RemoteWalkContext(cacheContext, PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(NullSettings.Instance), testLogger);
+            var context = new RemoteWalkContext(cacheContext, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), testLogger);
             var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
 
             var remoteProvider = new Mock<IRemoteDependencyProvider>();
@@ -206,7 +206,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public async Task FindPackage_VerifyPackageSourcesAreFilteredWhenPackageNamespacesAreConfigured_Success()
+        public async Task FindPackage_VerifyPackageSourcesAreFilteredWhenPackageSourceMappingIsEnabled_Success()
         {
             // Arrange
             const string packageX = "x", packageY = "y", version = "1.0.0-beta.1", source1 = "source1", source2 = "source2";
@@ -222,12 +222,12 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             var downloadCount = 0;
 
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add(source2, new List<string>() { packageX });
-            namespaces.Add(source1, new List<string>() { packageY });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
-            var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
+            //package source mapping configuration
+            Dictionary<string, IReadOnlyList<string>> patterns = new();
+            patterns.Add(source2, new List<string>() { packageX });
+            patterns.Add(source1, new List<string>() { packageY });
+            PackageSourceMappingConfiguration sourceMappingConfiguration = new(patterns);
+            var context = new RemoteWalkContext(cacheContext, sourceMappingConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1
             var remoteProvider = new Mock<IRemoteDependencyProvider>();
@@ -259,13 +259,13 @@ namespace NuGet.DependencyResolver.Core.Tests
             Assert.Equal(1, downloadCount);
             Assert.Equal(1, testLogger.DebugMessages.Count);
             testLogger.DebugMessages.TryPeek(out string message);
-            Assert.Equal($"Package namespace matches found for package ID '{packageX}' are: '{source2}'.", message);
+            Assert.Equal($"Package source mapping pattern matches found for package ID '{packageX}' are: '{source2}'.", message);
             Assert.Equal(version, result.Key.Version.ToString());
             Assert.Equal(source2, result.Data.Match.Provider.Source.Name);
         }
 
         [Fact]
-        public async Task FindPackage_WhenNoPackageNamespacesAreConfiguredForAPackage_Fails()
+        public async Task FindPackage_WhenNoPackageSourceMappingIsEnabledForAPackage_Fails()
         {
             // Arrange
             const string packageX = "x", version = "1.0.0-beta.1";
@@ -282,12 +282,12 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             var downloadCount = 0;
 
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("source2", new List<string>() { "z" });
-            namespaces.Add("source1", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
-            var context = new RemoteWalkContext(cacheContext, namespacesConfiguration, testLogger);
+            //package source mapping configuration
+            Dictionary<string, IReadOnlyList<string>> patterns = new();
+            patterns.Add("source2", new List<string>() { "z" });
+            patterns.Add("source1", new List<string>() { "y" });
+            PackageSourceMappingConfiguration sourceMappingConfiguration = new(patterns);
+            var context = new RemoteWalkContext(cacheContext, sourceMappingConfiguration, testLogger);
 
             // Source1 returns 1.0.0-beta.1
             var remoteProvider = new Mock<IRemoteDependencyProvider>();
@@ -318,7 +318,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Assert.Equal(0, testLogger.Errors);
             Assert.Equal(1, testLogger.DebugMessages.Count);
             testLogger.DebugMessages.TryPeek(out string message);
-            Assert.Equal($"Package namespace match not found for package ID '{packageX}'.", message);
+            Assert.Equal($"Package source mapping pattern match not found for package ID '{packageX}'.", message);
         }
     }
 }

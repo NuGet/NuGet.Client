@@ -16,7 +16,7 @@ namespace NuGet.DependencyResolver
 {
     public class RemoteWalkContext
     {
-        public RemoteWalkContext(SourceCacheContext cacheContext, PackageNamespacesConfiguration packageNamespaces, ILogger logger)
+        public RemoteWalkContext(SourceCacheContext cacheContext, PackageSourceMappingConfiguration packageSourceMapping, ILogger logger)
         {
             CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -24,7 +24,7 @@ namespace NuGet.DependencyResolver
             ProjectLibraryProviders = new List<IDependencyProvider>();
             LocalLibraryProviders = new List<IRemoteDependencyProvider>();
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
-            PackageNamespaces = packageNamespaces ?? throw new ArgumentNullException(nameof(packageNamespaces));
+            PackageSourceMapping = packageSourceMapping ?? throw new ArgumentNullException(nameof(packageSourceMapping));
 
             FindLibraryEntryCache = new ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>>();
 
@@ -36,7 +36,7 @@ namespace NuGet.DependencyResolver
         public IList<IDependencyProvider> ProjectLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> LocalLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> RemoteLibraryProviders { get; }
-        public PackageNamespacesConfiguration PackageNamespaces { get; }
+        public PackageSourceMappingConfiguration PackageSourceMapping { get; }
 
         /// <summary>
         /// Packages lock file libraries to be used while generating restore graph.
@@ -54,19 +54,19 @@ namespace NuGet.DependencyResolver
         public bool IsMsBuildBased { get; set; }
 
         /// <summary>
-        /// Applies Package namespace filtering for a given package
+        /// Applies source mapping pattern filtering for a given package
         /// </summary>
         /// <param name="libraryRange"></param>
-        /// <returns>Returns a subset of sources when namespaces are configured otherwise returns all the sources</returns>
+        /// <returns>Returns a subset of sources when source mapping patterns are configured otherwise returns all the sources</returns>
         public IList<IRemoteDependencyProvider> FilterDependencyProvidersForLibrary(LibraryRange libraryRange)
         {
             if (libraryRange == default)
                 throw new ArgumentNullException(nameof(libraryRange));
 
-            // filter package namespaces if enabled            
-            if (PackageNamespaces?.AreNamespacesEnabled == true && libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
+            // filter package patterns if enabled            
+            if (PackageSourceMapping?.IsEnabled == true && libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
             {
-                IReadOnlyList<string> sources = PackageNamespaces.GetConfiguredPackageSources(libraryRange.Name);
+                IReadOnlyList<string> sources = PackageSourceMapping.GetConfiguredPackageSources(libraryRange.Name);
 
                 if (sources == null || sources.Count == 0)
                 {

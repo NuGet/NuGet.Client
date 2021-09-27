@@ -98,21 +98,21 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
-                bool isPackageNamespaceEnabled = downloadContext.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
+                bool isPackageSourceMappingEnabled = downloadContext.packageSourceMappingConfiguration?.IsEnabled == true;
                 IReadOnlyList<string> configuredPackageSources = null;
 
-                if (isPackageNamespaceEnabled)
+                if (isPackageSourceMappingEnabled)
                 {
-                    configuredPackageSources = downloadContext.PackageNamespacesConfiguration.GetConfiguredPackageSources(packageIdentity.Id);
+                    configuredPackageSources = downloadContext.packageSourceMappingConfiguration.GetConfiguredPackageSources(packageIdentity.Id);
 
                     if (configuredPackageSources != null)
                     {
                         var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
-                        logger.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
+                        logger.LogDebug(StringFormatter.Log_PackageSourceMappingMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
                     }
                     else
                     {
-                        logger.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound(packageIdentity.Id));
+                        logger.LogDebug(StringFormatter.Log_PackageSourceMappingNoMatchFound(packageIdentity.Id));
                     }
                 }
 
@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement
 
                     foreach (SourceRepository source in sourceGroup)
                     {
-                        if (isPackageNamespaceEnabled)
+                        if (isPackageSourceMappingEnabled)
                         {
                             if (configuredPackageSources == null ||
                                 configuredPackageSources.Count == 0 ||

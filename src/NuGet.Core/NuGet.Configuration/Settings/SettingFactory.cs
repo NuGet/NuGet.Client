@@ -51,14 +51,14 @@ namespace NuGet.Configuration
                     case SettingElementType.PackageSourceMapping:
                         if (elementType == SettingElementType.PackageSource)
                         {
-                            return new PackageNamespacesSourceItem(element, origin);
+                            return new PackageSourceMappingSourceItem(element, origin);
                         }
                         break;
 
                     case SettingElementType.PackageSource:
                         if (elementType == SettingElementType.Package)
                         {
-                            return new NamespaceItem(element, origin);
+                            return new PackagePatternItem(element, origin);
                         }
                         break;
                 }

@@ -1,2 +1,2 @@
-NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload, NuGet.Configuration.PackageNamespacesConfiguration packageNamespacesConfiguration) -> void
-NuGet.Protocol.Core.Types.PackageDownloadContext.PackageNamespacesConfiguration.get -> NuGet.Configuration.PackageNamespacesConfiguration
+NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload, NuGet.Configuration.packageSourceMappingConfiguration packageSourceMappingConfiguration) -> void
+NuGet.Protocol.Core.Types.PackageDownloadContext.packageSourceMappingConfiguration.get -> NuGet.Configuration.packageSourceMappingConfiguration

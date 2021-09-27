@@ -226,7 +226,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WhenPackageNamespacesConfiguredAndNoMatchingSourceFound_Fails()
+        public async Task AddPkg_WhenPackageSourceMappingConfiguredAndNoMatchingSourceFound_Fails()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -287,7 +287,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WhenPackageNamespacesConfiguredInstallsPackagesFromExpectedSources_Success()
+        public async Task AddPkg_WhenPackageSourceMappingConfiguredInstallsPackagesFromExpectedSources_Success()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -351,7 +351,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WhenPackageNamespacesConfiguredInstallsPackagesFromSourcesUriOption_Success()
+        public async Task AddPkg_WhenPackageSourceMappingConfiguredInstallsPackagesFromSourcesUriOption_Success()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -417,7 +417,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WhenPackageNamespacesConfiguredCanotInstallsPackagesFromSourcesUriOption_Fails()
+        public async Task AddPkg_WhenPackageSourceMappingConfiguredCanotInstallsPackagesFromSourcesUriOption_Fails()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -482,7 +482,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WhenPackageNamespacesConfiguredInstallsPackagesFromRestoreSources_Success()
+        public async Task AddPkg_WhenPackageSourceMappingConfiguredInstallsPackagesFromRestoreSources_Success()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -551,7 +551,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WhenPackageNamespacesConfiguredCanotInstallsPackagesFromRestoreSources_Fails()
+        public async Task AddPkg_WhenPackageSourceMappingConfiguredCanotInstallsPackagesFromRestoreSources_Fails()
         {
             using var pathContext = new SimpleTestPathContext();
 

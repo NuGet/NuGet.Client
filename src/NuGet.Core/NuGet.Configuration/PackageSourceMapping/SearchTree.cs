@@ -11,7 +11,7 @@ namespace NuGet.Configuration
     {
         private readonly SearchNode _root;
 
-        internal SearchTree(PackageNamespacesConfiguration configuration)
+        internal SearchTree(PackageSourceMappingConfiguration configuration)
         {
             if (configuration == null)
             {
@@ -20,36 +20,36 @@ namespace NuGet.Configuration
 
             _root = new SearchNode();
 
-            foreach (KeyValuePair<string, IReadOnlyList<string>> namespacePerSource in configuration.Namespaces)
+            foreach (KeyValuePair<string, IReadOnlyList<string>> patternsPerSource in configuration.Patterns)
             {
-                foreach (string namespaceId in namespacePerSource.Value)
+                foreach (string namespaceId in patternsPerSource.Value)
                 {
-                    Add(namespacePerSource.Key, namespaceId);
+                    Add(patternsPerSource.Key, namespaceId);
                 }
             }
         }
 
-        private void Add(string packageSourceKey, string namespaceId)
+        private void Add(string packageSourceKey, string packagePattern)
         {
             SearchNode currentNode = _root;
 
-            if (string.IsNullOrWhiteSpace(namespaceId))
+            if (string.IsNullOrWhiteSpace(packagePattern))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly, nameof(namespaceId));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly, nameof(packagePattern));
             }
 
             // To prevent from unwanted behaviour.
-            if (namespaceId.Length > PackageNamespacesConfiguration.PackageIdMaxLength)
+            if (packagePattern.Length > PackageSourceMappingConfiguration.PackageIdMaxLength)
             {
-                throw new ArgumentOutOfRangeException(nameof(namespaceId));
+                throw new ArgumentOutOfRangeException(nameof(packagePattern));
             }
 
             packageSourceKey = packageSourceKey.Trim();
-            namespaceId = namespaceId.ToLower(CultureInfo.CurrentCulture).Trim();
+            packagePattern = packagePattern.ToLower(CultureInfo.CurrentCulture).Trim();
 
-            for (int i = 0; i < namespaceId.Length; i++)
+            for (int i = 0; i < packagePattern.Length; i++)
             {
-                char c = namespaceId[i];
+                char c = packagePattern[i];
 
                 if (c == '*')
                 {
@@ -75,10 +75,10 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Get package source names with matching prefix "term" from package namespaces section.
+        /// Get package source names with matching prefix "term" from package source mapping section.
         /// </summary>
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
-        /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
+        /// <returns>Package source names with matching prefix "term" from package source mapping section.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {

@@ -10,10 +10,10 @@ using Xunit;
 
 namespace NuGet.Configuration.Test
 {
-    public class PackageNamespacesConfigurationTests
+    public class PackageSourceMappingConfigurationTests
     {
         [Fact]
-        public void GetPackageNamespacesConfiguration_WithOneSource()
+        public void GetpackageSourceMappingConfiguration_WithOneSource()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -30,16 +30,16 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
-            var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            configuration.AreNamespacesEnabled.Should().BeTrue();
-            configuration.Namespaces.Should().HaveCount(1);
-            KeyValuePair<string, IReadOnlyList<string>> namespaceForSource = configuration.Namespaces.First();
-            namespaceForSource.Key.Should().Be("nuget.org");
-            namespaceForSource.Value.Should().BeEquivalentTo(new string[] { "stuff" });
+            var configuration = PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(settings);
+            configuration.IsEnabled.Should().BeTrue();
+            configuration.Patterns.Should().HaveCount(1);
+            KeyValuePair<string, IReadOnlyList<string>> patternsForSource = configuration.Patterns.First();
+            patternsForSource.Key.Should().Be("nuget.org");
+            patternsForSource.Value.Should().BeEquivalentTo(new string[] { "stuff" });
         }
 
         [Fact]
-        public void GetPackageNamespacesConfiguration_WithMultipleSources()
+        public void GetpackageSourceMappingConfiguration_WithMultipleSources()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -58,15 +58,15 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
-            var configuration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            configuration.AreNamespacesEnabled.Should().BeTrue();
-            configuration.Namespaces.Should().HaveCount(2);
+            var configuration = PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(settings);
+            configuration.IsEnabled.Should().BeTrue();
+            configuration.Patterns.Should().HaveCount(2);
 
-            IReadOnlyList<string> nugetNamespaces = configuration.Namespaces["nuget.org"];
-            nugetNamespaces.Should().BeEquivalentTo(new string[] { "stuff" });
+            IReadOnlyList<string> nugetPatterns = configuration.Patterns["nuget.org"];
+            nugetPatterns.Should().BeEquivalentTo(new string[] { "stuff" });
 
-            IReadOnlyList<string> contosoNamespace = configuration.Namespaces["contoso"];
-            contosoNamespace.Should().BeEquivalentTo(new string[] { "moreStuff" });
+            IReadOnlyList<string> contosoPattern = configuration.Patterns["contoso"];
+            contosoPattern.Should().BeEquivalentTo(new string[] { "moreStuff" });
         }
     }
 }

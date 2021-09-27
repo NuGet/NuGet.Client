@@ -11,104 +11,104 @@ using Xunit;
 
 namespace NuGet.Configuration.Test
 {
-    public class PackageNamespacesSourceItemTests
+    public class PackageSourceMappingSourceItemTests
     {
         [Theory]
         [InlineData("")]
         [InlineData(null)]
         public void Constructor_WithInvalidKey_Throws(string key)
         {
-            Assert.Throws<ArgumentException>(() => new PackageNamespacesSourceItem(key, new List<NamespaceItem>() { new NamespaceItem("stuff") }));
+            Assert.Throws<ArgumentException>(() => new PackageSourceMappingSourceItem(key, new List<PackagePatternItem>() { new PackagePatternItem("stuff") }));
         }
 
         [Fact]
-        public void Constructor_WithEmptyNamespaces_Throws()
+        public void Constructor_WithEmptyPackagePatterns_Throws()
         {
-            Assert.Throws<ArgumentException>(() => new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { }));
+            Assert.Throws<ArgumentException>(() => new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { }));
         }
 
         [Fact]
-        public void Constructor_WithNullNamespaces_Throws()
+        public void Constructor_WithNullPackagePatterns_Throws()
         {
-            Assert.Throws<ArgumentException>(() => new PackageNamespacesSourceItem("name", null));
+            Assert.Throws<ArgumentException>(() => new PackageSourceMappingSourceItem("name", null));
         }
 
         [Fact]
         public void Equals_WithEquivalentName_ReturnsTrue()
         {
-            var left = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff") });
+            var left = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
             left.Equals(right).Should().BeTrue();
         }
 
         [Fact]
         public void Equals_WithDifferentlyCasedName_ReturnsTrue()
         {
-            var left = new PackageNamespacesSourceItem("NAME", new List<NamespaceItem>() { new NamespaceItem("stuff") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff") });
+            var left = new PackageSourceMappingSourceItem("NAME", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
             left.Equals(right).Should().BeTrue();
         }
 
         [Fact]
         public void Equals_WithDifferentNames_ReturnsFalse()
         {
-            var left = new PackageNamespacesSourceItem("name2", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
+            var left = new PackageSourceMappingSourceItem("name2", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
             left.Equals(right).Should().BeFalse();
         }
 
         [Fact]
-        public void Equals_WithDifferentNamespaces_ReturnsTrue()
+        public void Equals_WithDifferentPackagePatterns_ReturnsTrue()
         {
-            var left = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff3") });
+            var left = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff3") });
             left.Equals(right).Should().BeTrue();
         }
 
         [Fact]
-        public void HashCode_WithEquivalentNamespaces_ReturnsTrue()
+        public void HashCode_WithEquivalentPackagePatterns_ReturnsTrue()
         {
-            var left = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff") });
+            var left = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
             left.GetHashCode().Equals(right.GetHashCode()).Should().BeTrue();
         }
 
         [Fact]
         public void HashCode_WithDifferentlyCasedName_ReturnsTrue()
         {
-            var left = new PackageNamespacesSourceItem("NAME", new List<NamespaceItem>() { new NamespaceItem("stuff") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff") });
+            var left = new PackageSourceMappingSourceItem("NAME", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff") });
             left.GetHashCode().Equals(right.GetHashCode()).Should().BeTrue();
         }
 
         [Fact]
         public void HashCode_WithDifferentNames_ReturnsFalse()
         {
-            var left = new PackageNamespacesSourceItem("name2", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
+            var left = new PackageSourceMappingSourceItem("name2", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
             left.GetHashCode().Equals(right.GetHashCode()).Should().BeFalse();
         }
 
         [Fact]
-        public void HashCode_WithDifferentNamespaces_ReturnsTrue()
+        public void HashCode_WithDifferentPackagePatterns_ReturnsTrue()
         {
-            var left = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
-            var right = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff3") });
+            var left = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
+            var right = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff3") });
             left.GetHashCode().Equals(right.GetHashCode()).Should().BeTrue();
         }
 
         [Fact]
         public void ElementNameGetter_ReturnsPackageSource()
         {
-            var original = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
+            var original = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
             original.ElementName.Should().Be("packageSource");
         }
 
         [Fact]
-        public void Clone_CreatesEquivalentNamespaces()
+        public void Clone_CreatesEquivalentPackagePatterns()
         {
-            var original = new PackageNamespacesSourceItem("name", new List<NamespaceItem>() { new NamespaceItem("stuff"), new NamespaceItem("stuff2") });
-            var clone = original.Clone() as PackageNamespacesSourceItem;
+            var original = new PackageSourceMappingSourceItem("name", new List<PackagePatternItem>() { new PackagePatternItem("stuff"), new PackagePatternItem("stuff2") });
+            var clone = original.Clone() as PackageSourceMappingSourceItem;
             original.Equals(clone).Should().BeTrue();
             original.GetHashCode().Equals(clone.GetHashCode()).Should().BeTrue();
             SettingsTestUtils.DeepEquals(original, clone).Should().BeTrue();
@@ -117,7 +117,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void PackageSourceNamespacesItemParse_WithoutKey_Throws()
+        public void PackageSourcePatternItemParse_WithoutKey_Throws()
         {
             // Arrange
             var config = @"
@@ -141,7 +141,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void PackageSourceNamespacesItemParse_WithoutNamespaces_Throws()
+        public void PackageSourceMappingSourceItemParse_WithoutPattern_Throws()
         {
             // Arrange
             var config = @"
@@ -160,11 +160,11 @@ namespace NuGet.Configuration.Test
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<NuGetConfigurationException>();
-            ex.Message.Should().Be(string.Format("Package source namespace '{0}' must have at least one namespace. Path: '{1}'", "nuget.org", Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            ex.Message.Should().Be(string.Format("Package source '{0}' must have at least one package pattern. Path: '{1}'", "nuget.org", Path.Combine(mockBaseDirectory, nugetConfigPath)));
         }
 
         [Fact]
-        public void PackageSourceNamespacesItemParse_WithValidData_ParsesCorrectly()
+        public void PackageSourceMappingSourceItemParse_WithValidData_ParsesCorrectly()
         {
             // Arrange
             var config = @"
@@ -185,14 +185,14 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespaceItem = section.Items.First() as PackageNamespacesSourceItem;
-            var item = packageSourceNamespaceItem.Namespaces.First();
-            var expectedItem = new NamespaceItem("sadas");
+            var packageSourceMappingSourceItem = section.Items.First() as PackageSourceMappingSourceItem;
+            var item = packageSourceMappingSourceItem.Patterns.First();
+            var expectedItem = new PackagePatternItem("sadas");
             SettingsTestUtils.DeepEquals(item, expectedItem).Should().BeTrue();
         }
 
         [Fact]
-        public void PackageSourceNamespacesItemParse_WithUnrecognizedItems_UnknownItemsAreIgnored()
+        public void PackageSourceMappingSourceItemParse_WithUnrecognizedItems_UnknownItemsAreIgnored()
         {
             // Arrange
             // Arrange
@@ -215,14 +215,14 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespaceItem = section.Items.First() as PackageNamespacesSourceItem;
-            var item = packageSourceNamespaceItem.Namespaces.First();
-            var expectedItem = new NamespaceItem("sadas");
+            var packageSourceMappingSourceItem = section.Items.First() as PackageSourceMappingSourceItem;
+            var item = packageSourceMappingSourceItem.Patterns.First();
+            var expectedItem = new PackagePatternItem("sadas");
             SettingsTestUtils.DeepEquals(item, expectedItem).Should().BeTrue();
         }
 
         [Fact]
-        public void Update_WithAdditionalNamespace_AddsAdditionalNamespace()
+        public void Update_WithAdditionalPatterns_AddsAdditionalPattern()
         {
             // Arrange
             var config = @"
@@ -243,13 +243,13 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespacesItem = section.Items.First() as PackageNamespacesSourceItem;
-            packageSourceNamespacesItem.Namespaces.Should().HaveCount(1);
+            var packageSourceMappingSourceItem = section.Items.First() as PackageSourceMappingSourceItem;
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(1);
 
-            var clone = packageSourceNamespacesItem.Clone() as PackageNamespacesSourceItem;
-            clone.Namespaces.Add(new NamespaceItem("second"));
+            var clone = packageSourceMappingSourceItem.Clone() as PackageSourceMappingSourceItem;
+            clone.Patterns.Add(new PackagePatternItem("second"));
 
-            packageSourceNamespacesItem.Update(clone);
+            packageSourceMappingSourceItem.Update(clone);
             settingsFile.SaveToDisk();
 
             // Assert
@@ -269,7 +269,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_WithRemovedNamespace_RemovesNamespace()
+        public void Update_WithRemovedPattern_RemovesPattern()
         {
             // Arrange
             var config = @"
@@ -291,13 +291,13 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespacesItem = section.Items.First() as PackageNamespacesSourceItem;
-            packageSourceNamespacesItem.Namespaces.Should().HaveCount(2);
+            var packageSourceMappingSourceItem = section.Items.First() as PackageSourceMappingSourceItem;
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(2);
 
-            var clone = packageSourceNamespacesItem.Clone() as PackageNamespacesSourceItem;
-            clone.Namespaces.RemoveAt(1);
+            var clone = packageSourceMappingSourceItem.Clone() as PackageSourceMappingSourceItem;
+            clone.Patterns.RemoveAt(1);
 
-            packageSourceNamespacesItem.Update(clone);
+            packageSourceMappingSourceItem.Update(clone);
             settingsFile.SaveToDisk();
 
             // Assert
@@ -316,7 +316,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void Update_WithoutAnyNamespaces_Throws()
+        public void Update_WithoutAnyPackagePattern_Throws()
         {
             // Arrange
             var config = @"
@@ -337,21 +337,21 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespacesItem = section.Items.First() as PackageNamespacesSourceItem;
-            packageSourceNamespacesItem.Namespaces.Should().HaveCount(1);
+            var packageSourceMappingSourceItem = section.Items.First() as PackageSourceMappingSourceItem;
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(1);
 
-            var clone = packageSourceNamespacesItem.Clone() as PackageNamespacesSourceItem;
-            clone.Namespaces.Clear();
+            var clone = packageSourceMappingSourceItem.Clone() as PackageSourceMappingSourceItem;
+            clone.Patterns.Clear();
 
-            var ex = Record.Exception(() => packageSourceNamespacesItem.Update(clone));
+            var ex = Record.Exception(() => packageSourceMappingSourceItem.Update(clone));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<InvalidOperationException>();
-            ex.Message.Should().Be(string.Format("Package source namespace 'nuget.org' must have at least one namespace."));
+            ex.Message.Should().Be(string.Format("Package source 'nuget.org' must have at least one package pattern."));
         }
 
         [Fact]
-        public void Update_WithAddedAndRemovedNamespaces_CorrectlyAddsAndRemovesNamspaces()
+        public void Update_WithAddedAndRemovedPatterns_CorrectlyAddsAndRemovesPatterns()
         {
             // Arrange
             var config = @"
@@ -373,14 +373,14 @@ namespace NuGet.Configuration.Test
             section.Should().NotBeNull();
 
             section.Items.Count.Should().Be(1);
-            var packageSourceNamespacesItem = section.Items.First() as PackageNamespacesSourceItem;
-            packageSourceNamespacesItem.Namespaces.Should().HaveCount(2);
+            var packageSourceMappingSourceItem = section.Items.First() as PackageSourceMappingSourceItem;
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(2);
 
-            var clone = packageSourceNamespacesItem.Clone() as PackageNamespacesSourceItem;
-            clone.Namespaces.RemoveAt(1);
-            clone.Namespaces.Add(new NamespaceItem("third"));
+            var clone = packageSourceMappingSourceItem.Clone() as PackageSourceMappingSourceItem;
+            clone.Patterns.RemoveAt(1);
+            clone.Patterns.Add(new PackagePatternItem("third"));
 
-            packageSourceNamespacesItem.Update(clone);
+            packageSourceMappingSourceItem.Update(clone);
             settingsFile.SaveToDisk();
 
             // Assert

@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NuGet.Configuration
 {
-    public class PackageNamespacesConfiguration
+    public class PackageSourceMappingConfiguration
     {
         /// <summary>
         /// Max allowed length for package Id.
@@ -16,70 +16,70 @@ namespace NuGet.Configuration
         internal static int PackageIdMaxLength { get; } = 100;
 
         /// <summary>
-        /// Source name to package namespace list.
+        /// Source name to package patterns list.
         /// </summary>
-        internal Dictionary<string, IReadOnlyList<string>> Namespaces { get; }
+        internal Dictionary<string, IReadOnlyList<string>> Patterns { get; }
 
         private Lazy<SearchTree> SearchTree { get; }
 
         /// <summary>
-        /// Indicate if any packageSource exist in package namespace section
+        /// Indicate if any packageSource exist in package source mapping section
         /// </summary>
-        public bool AreNamespacesEnabled { get; }
+        public bool IsEnabled { get; }
 
         /// <summary>
-        /// Get package source names with matching prefix "term" from package namespaces section.
+        /// Get package source names with matching prefix "term" from package source mapping section.
         /// </summary>
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
-        /// <returns>Package source names with matching prefix "term" from package namespaces.</returns>
+        /// <returns>Package source names with matching prefix "term" from package patterns.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string term)
         {
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
 
-        internal PackageNamespacesConfiguration(Dictionary<string, IReadOnlyList<string>> namespaces)
+        internal PackageSourceMappingConfiguration(Dictionary<string, IReadOnlyList<string>> patterns)
         {
-            Namespaces = namespaces ?? throw new ArgumentNullException(nameof(namespaces));
-            AreNamespacesEnabled = Namespaces.Keys.Count > 0;
+            Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
+            IsEnabled = Patterns.Keys.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
         }
 
         /// <summary>
-        /// Generates a <see cref="PackageNamespacesConfiguration"/> based on the settings object.
+        /// Generates a <see cref="PackageSourceMappingConfiguration"/> based on the settings object.
         /// </summary>
         /// <param name="settings">Search term. Cannot be null, empty, or whitespace only. </param>
-        /// <returns>A <see cref="PackageNamespacesConfiguration"/> based on the settings.</returns>
+        /// <returns>A <see cref="PackageSourceMappingConfiguration"/> based on the settings.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="settings"/> is null.</exception>
-        public static PackageNamespacesConfiguration GetPackageNamespacesConfiguration(ISettings settings)
+        public static PackageSourceMappingConfiguration GetPackageSourceMappingConfiguration(ISettings settings)
         {
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var packageNamespacesProvider = new PackageNamespacesProvider(settings);
+            var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
 
-            var namespaces = new Dictionary<string, IReadOnlyList<string>>();
+            var patterns = new Dictionary<string, IReadOnlyList<string>>();
 
-            foreach (PackageNamespacesSourceItem packageSourceNamespaceItem in packageNamespacesProvider.GetPackageSourceNamespaces())
+            foreach (PackageSourceMappingSourceItem packageSourceNamespaceItem in packageSourceMappingProvider.GetPackageSourceMappingItems())
             {
-                namespaces.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Namespaces.Select(e => e.Id)));
+                patterns.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Patterns.Select(e => e.Pattern)));
             }
 
-            return new PackageNamespacesConfiguration(namespaces);
+            return new PackageSourceMappingConfiguration(patterns);
         }
 
         private SearchTree GetSearchTree()
         {
-            SearchTree namespaceLookup = null;
+            SearchTree patternsLookup = null;
 
-            if (AreNamespacesEnabled)
+            if (IsEnabled)
             {
-                namespaceLookup = new SearchTree(this);
+                patternsLookup = new SearchTree(this);
             }
 
-            return namespaceLookup;
+            return patternsLookup;
         }
     }
 }

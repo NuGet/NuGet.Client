@@ -1506,7 +1506,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 }
 
                 Assert.True(result.ExitCode == 0);
-                Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", result.Output);
+                Assert.Contains("Package source mapping pattern matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", result.Output);
             }
         }
 
@@ -1593,14 +1593,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
-                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", result.Output);
+                Assert.Contains("Package source mapping pattern match not found for package ID 'My.MVC.ASP'", result.Output);
                 Assert.Contains("warning : Unable to find version '1.0.0' of package 'My.MVC.ASP'.", result.Output);
                 Assert.Contains("error MSB4181: The \"RestoreTask\" task returned false but did not log an error.", result.Output);
             }
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackageNamespaceSameMatchesMultipleSources_Succeed()
+        public async Task MsbuildRestore_PackageSourceMappingPatternMatchesMultipleSources_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1699,7 +1699,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_NoPackageNamespacesection_NoSourceRelatedLogMessage()
+        public async Task MsbuildRestore_NoPackageSourceMappingsection_NoSourceRelatedLogMessage()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1846,8 +1846,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
             // Assert
             Assert.True(r.ExitCode == 0);
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'PrivateRepository'", r.Output);
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
+            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.MVC.ASP' are: 'PrivateRepository'", r.Output);
+            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
             var localResolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
             var contosoMvcMetadataPath = localResolver.GetNupkgMetadataPath(packageContosoMvcReal.Identity.Id, packageContosoMvcReal.Identity.Version);
             NupkgMetadataFile contosoMvcmetadata = NupkgMetadataFileFormat.Read(contosoMvcMetadataPath);
@@ -1932,8 +1932,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
             // Assert
             Assert.True(r.ExitCode == 1);
-            Assert.Contains($"Package namespace match not found for package ID 'Contoso.MVC.ASP'.", r.Output);
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
+            Assert.Contains($"Package source mapping pattern match not found for package ID 'Contoso.MVC.ASP'.", r.Output);
+            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
         }
     }
 }

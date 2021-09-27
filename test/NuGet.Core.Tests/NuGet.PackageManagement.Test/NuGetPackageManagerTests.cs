@@ -7036,7 +7036,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManPreview_InstallForPC_PackageNamespace_WithSingleFeed_Succeeds()
+        public async Task TestPacManPreview_InstallForPC_PackageSourceMapping_WithSingleFeed_Succeeds()
         {
             // Arrange
             using (var testSolutionManager = new TestSolutionManager())
@@ -7115,7 +7115,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManPreview_InstallForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_RestoresCorrectPackage()
+        public async Task TestPacManPreview_InstallForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_RestoresCorrectPackage()
         {
             // This test same as having multiple source repositories and `All` option is selected in PMUI.
             // Arrange
@@ -7216,7 +7216,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManPreview_InstallForPC_PackageNamespace_WithMultipleFeeds_SecondarySourcesNotConsidered()
+        public async Task TestPacManPreview_InstallForPC_PackageSourceMapping_WithMultipleFeeds_SecondarySourcesNotConsidered()
         {
             // This test same as having multiple source repositories but only 1 sourcerepository is selected in PMUI.
             // Direct package dependencies doesn't consider secondary sources(not selected sources on UI).
@@ -7322,7 +7322,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManPreview_InstallForPC_PackageNamespace_WithMultipleFeeds_ForTransitiveDepency_SecondarySourcesConsidered()
+        public async Task TestPacManPreview_InstallForPC_PackageSourceMapping_WithMultipleFeeds_ForTransitiveDepency_SecondarySourcesConsidered()
         {
             // This test same as having multiple source repositories but only 1 sourcerepository is selected in PMUI.
             // Even though direct package dependencies doesn't consider secondary sources(not selected sources on UI), but transitive dependencies do consider it.
@@ -7432,7 +7432,7 @@ namespace NuGet.Test
                 Assert.Equal(2, packageActions.Count());
                 Assert.True(contosoPackageIdentity.Equals(packageActions[0].PackageIdentity));
                 Assert.Equal(NuGetProjectActionType.Install, packageActions[0].NuGetProjectActionType);
-                // Contoso.A comes from PrivateRepository due to package namespace filtering even though same package Id exist in Externalrepository.
+                // Contoso.A comes from PrivateRepository due to package source mapping filtering even though same package Id exist in Externalrepository.
                 Assert.Equal(privateRepositoryPath,
                     packageActions[0].SourceRepository.PackageSource.Source);
 
@@ -7445,7 +7445,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManPreview_UpdateForPC_PackageNamespace_WithMultipleFeeds_SecondarySourcesNotConsidered()
+        public async Task TestPacManPreview_UpdateForPC_PackageSourceMapping_WithMultipleFeeds_SecondarySourcesNotConsidered()
         {
             // This test same as having multiple source repositories but only 1 sourcerepository is selected in PMUI.
             // Arrange
@@ -7608,7 +7608,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManPreview_UpdateForPC_PackageNamespace_WithMultipleFeeds_Fails()
+        public async Task TestPacManPreview_UpdateForPC_PackageSourceMapping_WithMultipleFeeds_Fails()
         {
             // Arrange
             using (var testSolutionManager = new TestSolutionManager())

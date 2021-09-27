@@ -9,8 +9,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         public static bool IsMappingEnabled(ISettings settings)
         {
-            var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(settings);
-            bool isMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            var packageSourceMappingConfiguration = PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(settings);
+            bool isMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
             return isMappingEnabled;
         }
     }
