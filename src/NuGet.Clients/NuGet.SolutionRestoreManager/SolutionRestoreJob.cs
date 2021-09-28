@@ -177,7 +177,7 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
             var sources = _sourceRepositoryProvider.GetRepositories();
-            PackageSourceMapping PackageSourceMapping = PackageSourceMapping.GetPackageSourceMappingConfiguration(_settings);
+            PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(_settings);
 
             using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore, packageSourceMappingConfiguration))
             {
@@ -304,7 +304,7 @@ namespace NuGet.SolutionRestoreManager
                 .GroupBy(x => x.ProjectStyle)
                 .ToDictionary(x => x.Key, y => y.Count());
 
-            PackageSourceMapping PackageSourceMapping = PackageSourceMapping.GetPackageSourceMappingConfiguration(_settings);
+            PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(_settings);
             bool isPackageSourceMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
@@ -706,7 +706,7 @@ namespace NuGet.SolutionRestoreManager
 
             using (var cacheContext = new SourceCacheContext())
             {
-                PackageSourceMapping PackageSourceMapping = PackageSourceMapping.GetPackageSourceMappingConfiguration(_settings);
+                PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(_settings);
 
                 var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageSourceMappingConfiguration)
                 {

@@ -550,7 +550,7 @@ namespace NuGet.Build.Tasks
             {
                 cacheContext.NoCache = noCache;
 
-                PackageSourceMapping PackageSourceMapping = PackageSourceMapping.GetPackageSourceMappingConfiguration(settings);
+                PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(settings);
 
                 var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false, packageSourceMappingConfiguration)
                 {

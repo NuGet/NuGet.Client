@@ -39,7 +39,7 @@ namespace NuGet.Configuration
             }
 
             // To prevent from unwanted behaviour.
-            if (packagePattern.Length > PackageSourceMappingConfiguration.PackageIdMaxLength)
+            if (packagePattern.Length > PackageSourceMapping.PackageIdMaxLength)
             {
                 throw new ArgumentOutOfRangeException(nameof(packagePattern));
             }

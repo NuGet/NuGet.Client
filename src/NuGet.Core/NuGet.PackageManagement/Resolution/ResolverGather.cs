@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement
             _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
 
             _cache = _context.ResolutionContext?.GatherCache;
-            _isSourceMappingConfigured = _context.packageSourceMappingConfiguration?.IsEnabled == true;
+            _isSourceMappingConfigured = _context.PackageSourceMapping?.IsEnabled == true;
         }
 
         /// <summary>
@@ -540,7 +540,7 @@ namespace NuGet.PackageManagement
             if (_isSourceMappingConfigured)
             {
 
-                configuredPackageSources = _context.packageSourceMappingConfiguration.GetConfiguredPackageSources(package.Id);
+                configuredPackageSources = _context.PackageSourceMapping.GetConfiguredPackageSources(package.Id);
 
                 if (configuredPackageSources != null)
                 {

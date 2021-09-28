@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio.Telemetry
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageSourceMapping packageSourceMappingConfiguration)
             : this(sources, parentId, action)
         {
-            _PackageSourceMapping = packageSourceMappingConfiguration;
+            _packageSourceMappingConfiguration = packageSourceMappingConfiguration;
         }
 
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
