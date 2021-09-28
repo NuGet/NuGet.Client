@@ -109,9 +109,6 @@ stages:
       vmImage: ubuntu-latest
     steps:
     - template: Source_Build.yml
-  - job: Publish_Assets
-    steps:
-    - template: ../../common/templates/job/publish-build-assets.yml
 
 - stage: CLI_Func_Tests
   dependsOn: Initialize
@@ -234,3 +231,14 @@ stages:
       - Allow_NuGet_Apex_Tests -equals true
     steps:
     - template: Apex_Tests_On_Windows.yml
+
+- stage: Publish_Build_Assets
+  dependsOn:
+  - Source_Build
+  - Build_Insertable
+  - Build_For_Publishing
+  condition: "succeeded()"
+  jobs:
+  - job: Publish_To_BAR
+    steps:
+    - template: Publish_To_BAR.yml
