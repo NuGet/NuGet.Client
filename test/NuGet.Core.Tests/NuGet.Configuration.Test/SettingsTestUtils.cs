@@ -128,13 +128,13 @@ namespace NuGet.Configuration.Test
             {
                 return FileClientCertItem_DeepEquals(setting1 as FileClientCertItem, setting2 as FileClientCertItem);
             }
-            else if (setting1 is NamespaceItem)
+            else if (setting1 is PackagePatternItem)
             {
-                return NamespaceItem_DeepEquals(setting1 as NamespaceItem, setting2 as NamespaceItem);
+                return PackagePatternItem_DeepEquals(setting1 as PackagePatternItem, setting2 as PackagePatternItem);
             }
-            else if (setting2 is PackageNamespacesSourceItem)
+            else if (setting2 is PackageSourceMappingSourceItem)
             {
-                return PackageSourceNamespaceItem_Equals(setting1 as PackageNamespacesSourceItem, setting2 as PackageNamespacesSourceItem);
+                return PackageSourceMappingSourceItem_Equals(setting1 as PackageSourceMappingSourceItem, setting2 as PackageSourceMappingSourceItem);
             }
 
             return false;
@@ -305,19 +305,19 @@ namespace NuGet.Configuration.Test
             return ItemBase_DeepEquals(item1, item2);
         }
 
-        private static bool NamespaceItem_DeepEquals(NamespaceItem item1, NamespaceItem item2)
+        private static bool PackagePatternItem_DeepEquals(PackagePatternItem item1, PackagePatternItem item2)
         {
             return ItemBase_DeepEquals(item1, item2);
         }
 
-        private static bool PackageSourceNamespaceItem_Equals(PackageNamespacesSourceItem item1, PackageNamespacesSourceItem item2)
+        private static bool PackageSourceMappingSourceItem_Equals(PackageSourceMappingSourceItem item1, PackageSourceMappingSourceItem item2)
         {
             if (!ItemBase_DeepEquals(item1, item2))
             {
                 return false;
             }
 
-            return item1.Namespaces.OrderedEquals(item2.Namespaces, e => e.Id, StringComparer.OrdinalIgnoreCase);
+            return item1.Patterns.OrderedEquals(item2.Patterns, e => e.Pattern, StringComparer.OrdinalIgnoreCase);
         }
 
     }

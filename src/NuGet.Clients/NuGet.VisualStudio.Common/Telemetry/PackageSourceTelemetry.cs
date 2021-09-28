@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly Guid _parentId;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
-        private readonly PackageNamespacesConfiguration _packageNamespacesConfiguration;
+        private readonly PackageSourceMapping _packageSourceMappingConfiguration;
 
         internal const string EventName = "PackageSourceDiagnostics";
 
@@ -33,10 +33,10 @@ namespace NuGet.VisualStudio.Telemetry
             Search
         }
 
-        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageNamespacesConfiguration packageNamespacesConfiguration)
+        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageSourceMapping packageSourceMappingConfiguration)
             : this(sources, parentId, action)
         {
-            _packageNamespacesConfiguration = packageNamespacesConfiguration;
+            _packageSourceMappingConfiguration = packageSourceMappingConfiguration;
         }
 
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
@@ -208,7 +208,7 @@ namespace NuGet.VisualStudio.Telemetry
                     sourceRepository = new SourceRepository(new PackageSource(source), Repository.Provider.GetCoreV3());
                 }
 
-                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName, _packageNamespacesConfiguration);
+                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName, _packageSourceMappingConfiguration);
 
                 if (telemetry != null)
                 {
@@ -217,7 +217,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageNamespacesConfiguration packageNamespacesConfiguration)
+        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMapping packageSourceMappingConfiguration)
         {
             if (data.Resources.Count == 0)
             {
@@ -229,7 +229,7 @@ namespace NuGet.VisualStudio.Telemetry
             TelemetryEvent telemetry;
             lock (data._lock)
             {
-                bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+                bool isPackageSourceMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
 
                 telemetry = new TelemetryEvent(EventName,
                     new Dictionary<string, object>()

@@ -11,16 +11,16 @@ using Xunit;
 
 namespace NuGet.Configuration.Test
 {
-    public class PackageNamespacesProviderTests
+    public class PackageSourceMappingProviderTests
     {
         [Fact]
         public void Constructor_WithNullSettingsThrows()
         {
-            Assert.Throws<ArgumentNullException>(() => new PackageNamespacesProvider(null));
+            Assert.Throws<ArgumentNullException>(() => new PackageSourceMappingProvider(null));
         }
 
         [Fact]
-        public void GetPackageSourceNamespaces_WithOneConfig_ReturnsCorrectNamespaces()
+        public void GetPackageSourceMappingItems_WithOneConfig_ReturnsCorrectPatterns()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -37,17 +37,17 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            packageSourceNamespaces.Should().HaveCount(1);
-            var packageSourceNamespace = packageSourceNamespaces.First();
-            packageSourceNamespace.Key.Should().Be("nuget.org");
-            packageSourceNamespace.Namespaces.Should().HaveCount(1);
-            packageSourceNamespace.Namespaces.First().Id.Should().Be("stuff");
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(1);
+            var packageSourceMappingSourceItem = packageSourceMappingItems.First();
+            packageSourceMappingSourceItem.Key.Should().Be("nuget.org");
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(1);
+            packageSourceMappingSourceItem.Patterns.First().Pattern.Should().Be("stuff");
         }
 
         [Fact]
-        public void GetPackageSourceNamespaces_WithMultipleConfigs_ReturnsClosestNamespaces()
+        public void GetPackageSourceMappingItems_WithMultipleConfigs_ReturnsClosestPatterns()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -72,17 +72,17 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            packageSourceNamespaces.Should().HaveCount(1);
-            var packageSourceNamespace = packageSourceNamespaces.First();
-            packageSourceNamespace.Key.Should().Be("nuget.org");
-            packageSourceNamespace.Namespaces.Should().HaveCount(1);
-            packageSourceNamespace.Namespaces.First().Id.Should().Be("stuff");
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(1);
+            var packageSourceMappingSourceItem = packageSourceMappingItems.First();
+            packageSourceMappingSourceItem.Key.Should().Be("nuget.org");
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(1);
+            packageSourceMappingSourceItem.Patterns.First().Pattern.Should().Be("stuff");
         }
 
         [Fact]
-        public void GetPackageSourceNamespaces_WithMultipleConfigs_CombinesDifferentKeys()
+        public void GetPackageSourceMappingItems_WithMultipleConfigs_CombinesDifferentKeys()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -107,23 +107,23 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            packageSourceNamespaces.Should().HaveCount(2);
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(2);
 
-            var contosoNamespace = packageSourceNamespaces.First();
-            contosoNamespace.Key.Should().Be("contoso");
-            contosoNamespace.Namespaces.Should().HaveCount(1);
-            contosoNamespace.Namespaces.First().Id.Should().Be("stuff2");
+            var contosoSourceItem = packageSourceMappingItems.First();
+            contosoSourceItem.Key.Should().Be("contoso");
+            contosoSourceItem.Patterns.Should().HaveCount(1);
+            contosoSourceItem.Patterns.First().Pattern.Should().Be("stuff2");
 
-            var nugetOrgNamespace = packageSourceNamespaces.Last();
-            nugetOrgNamespace.Key.Should().Be("nuget.org");
-            nugetOrgNamespace.Namespaces.Should().HaveCount(1);
-            nugetOrgNamespace.Namespaces.First().Id.Should().Be("stuff");
+            var nugetOrgSourceItem = packageSourceMappingItems.Last();
+            nugetOrgSourceItem.Key.Should().Be("nuget.org");
+            nugetOrgSourceItem.Patterns.Should().HaveCount(1);
+            nugetOrgSourceItem.Patterns.First().Pattern.Should().Be("stuff");
         }
 
         [Fact]
-        public void GetPackageSourceNamespaces_WithMultipleConfigs_RespectsClearTag()
+        public void GetPackageSourceMappingItems_WithMultipleConfigs_RespectsClearTag()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -149,14 +149,14 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            packageSourceNamespaces.Should().HaveCount(1);
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(1);
 
-            var contosoNamespace = packageSourceNamespaces.First();
-            contosoNamespace.Key.Should().Be("nuget.org");
-            contosoNamespace.Namespaces.Should().HaveCount(1);
-            contosoNamespace.Namespaces.First().Id.Should().Be("stuff");
+            var contosoSourceItem = packageSourceMappingItems.First();
+            contosoSourceItem.Key.Should().Be("nuget.org");
+            contosoSourceItem.Patterns.Should().HaveCount(1);
+            contosoSourceItem.Patterns.First().Pattern.Should().Be("stuff");
         }
 
         [Fact]
@@ -178,13 +178,13 @@ namespace NuGet.Configuration.Test
 </configuration>");
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            packageSourceNamespaces.Should().HaveCount(2);
-            var contosoNamespace = packageSourceNamespaces.First(e => e.Key.Equals("contoso"));
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(2);
+            var contosoSourceItem = packageSourceMappingItems.First(e => e.Key.Equals("contoso"));
 
             // Act & Assert
-            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { contosoNamespace });
+            sourceMappingProvider.Remove(new PackageSourceMappingSourceItem[] { contosoSourceItem });
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSourceMapping>
@@ -219,12 +219,12 @@ namespace NuGet.Configuration.Test
             SettingsTestUtils.CreateConfigurationFile(configPath1, configContent);
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            packageSourceNamespaces.Should().HaveCount(2);
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(2);
 
             // Act & Assert
-            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { new PackageNamespacesSourceItem("localConfig", new NamespaceItem[] { new NamespaceItem("item") }) });
+            sourceMappingProvider.Remove(new PackageSourceMappingSourceItem[] { new PackageSourceMappingSourceItem("localConfig", new PackagePatternItem[] { new PackagePatternItem("item") }) });
 
 
             File.ReadAllText(configPath1).Replace("\r\n", "\n")
@@ -257,9 +257,9 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            namespaceProvider.Remove(new PackageNamespacesSourceItem[] { packageSourceNamespaces.Last() });
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            sourceMappingProvider.Remove(new PackageSourceMappingSourceItem[] { packageSourceMappingItems.Last() });
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>";
@@ -270,7 +270,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AddOrUpdatePackageSourceNamespace_WithUpdatedNamespace()
+        public void AddOrUpdatePackageSourceMapping_WithUpdatedPatterns()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -295,11 +295,11 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            IReadOnlyList<PackageNamespacesSourceItem> packageSourceNamespaces = namespaceProvider.GetPackageSourceNamespaces();
-            var namespaceToUpdate = packageSourceNamespaces.Last();
-            namespaceToUpdate.Namespaces.Add(new NamespaceItem("added"));
-            namespaceProvider.AddOrUpdatePackageSourceNamespace(namespaceToUpdate);
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            var packageSourceMappingItem = packageSourceMappingItems.Last();
+            packageSourceMappingItem.Patterns.Add(new PackagePatternItem("added"));
+            sourceMappingProvider.AddOrUpdatePackageSourceMappingSourceItem(packageSourceMappingItem);
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSourceMapping>
@@ -316,7 +316,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AddOrUpdatePackageSourceNamespace_WithANewNamespace_AddInFurthestConfig()
+        public void AddOrUpdatePackageSourceMapping_WithANewPattern_AddInFurthestConfig()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -341,9 +341,9 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            var namespaceToAdd = new PackageNamespacesSourceItem("localSource", new NamespaceItem[] { new NamespaceItem("added") });
-            namespaceProvider.AddOrUpdatePackageSourceNamespace(namespaceToAdd);
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            var patternToAdd = new PackageSourceMappingSourceItem("localSource", new PackagePatternItem[] { new PackagePatternItem("added") });
+            sourceMappingProvider.AddOrUpdatePackageSourceMappingSourceItem(patternToAdd);
 
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -363,7 +363,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void AddOrUpdatePackageSourceNamespace_WithAClearItem_WithANewNamespace_AddInFurthestMatchingConfig()
+        public void AddOrUpdatePackageSourceMapping_WithAClearItem_WithANewPattern_AddInFurthestMatchingConfig()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -389,9 +389,9 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
 
             // Act & Assert
-            var namespaceProvider = new PackageNamespacesProvider(settings);
-            var namespaceToAdd = new PackageNamespacesSourceItem("localSource", new NamespaceItem[] { new NamespaceItem("added") });
-            namespaceProvider.AddOrUpdatePackageSourceNamespace(namespaceToAdd);
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            var patternToAdd = new PackageSourceMappingSourceItem("localSource", new PackagePatternItem[] { new PackagePatternItem("added") });
+            sourceMappingProvider.AddOrUpdatePackageSourceMappingSourceItem(patternToAdd);
 
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>

@@ -24,7 +24,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public void FilterDependencyProvidersForLibrary_WhenPackageNamespacesAreNotConfiguredReturnsAllProviders_Success()
+        public void FilterDependencyProvidersForLibrary_WhenPackageSourceMappingIsNotEnabledReturnsAllProviders_Success()
         {
             var context = new TestRemoteWalkContext();
 
@@ -45,15 +45,15 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public void FilterDependencyProvidersForLibrary_WhenPackageNamespacesAreConfiguredReturnsOnlyApplicableProviders_Success()
+        public void FilterDependencyProvidersForLibrary_WhenPackageSourceMappingIsEnabledReturnsOnlyApplicableProviders_Success()
         {
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("Source1", new List<string>() { "x" });
-            namespaces.Add("Source2", new List<string>() { "y" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            //package source mapping configuration
+            Dictionary<string, IReadOnlyList<string>> patterns = new();
+            patterns.Add("Source1", new List<string>() { "x" });
+            patterns.Add("Source2", new List<string>() { "y" });
+            PackageSourceMapping sourceMappingConfiguration = new(patterns);
 
-            var context = new TestRemoteWalkContext(namespacesConfiguration, NullLogger.Instance);
+            var context = new TestRemoteWalkContext(sourceMappingConfiguration, NullLogger.Instance);
 
             // Source1
             var remoteProvider1 = CreateRemoteDependencyProvider("Source1");
@@ -72,17 +72,17 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public void FilterDependencyProvidersForLibrary_WhenPackageNamespaceToSourceMappingIsNotConfiguredReturnsNoProviders_Success()
+        public void FilterDependencyProvidersForLibrary_WhenPackagePatternToSourceMappingIsNotConfiguredReturnsNoProviders_Success()
         {
             var logger = new TestLogger();
 
-            //package namespaces configuration
-            Dictionary<string, IReadOnlyList<string>> namespaces = new();
-            namespaces.Add("Source1", new List<string>() { "y" });
-            namespaces.Add("Source2", new List<string>() { "z" });
-            PackageNamespacesConfiguration namespacesConfiguration = new(namespaces);
+            //package source mapping configuration
+            Dictionary<string, IReadOnlyList<string>> patterns = new();
+            patterns.Add("Source1", new List<string>() { "y" });
+            patterns.Add("Source2", new List<string>() { "z" });
+            PackageSourceMapping sourceMappingConfiguration = new(patterns);
 
-            var context = new TestRemoteWalkContext(namespacesConfiguration, logger);
+            var context = new TestRemoteWalkContext(sourceMappingConfiguration, logger);
 
             // Source1
             var remoteProvider1 = CreateRemoteDependencyProvider("Source1");

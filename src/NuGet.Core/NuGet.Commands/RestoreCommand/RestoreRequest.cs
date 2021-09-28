@@ -29,7 +29,7 @@ namespace NuGet.Commands
             RestoreCommandProviders dependencyProviders,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
-            ILogger log) : this(project, dependencyProviders, cacheContext, clientPolicyContext, packageNamespaces: null, log, new LockFileBuilderCache())
+            ILogger log) : this(project, dependencyProviders, cacheContext, clientPolicyContext, packageSourceMapping: null, log, new LockFileBuilderCache())
         {
         }
 
@@ -38,7 +38,7 @@ namespace NuGet.Commands
             RestoreCommandProviders dependencyProviders,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
-            PackageNamespacesConfiguration packageNamespaces,
+            PackageSourceMapping packageSourceMapping,
             ILogger log,
             LockFileBuilderCache lockFileBuilderCache)
         {
@@ -48,7 +48,7 @@ namespace NuGet.Commands
             Project = project ?? throw new ArgumentNullException(nameof(project));
             DependencyProviders = dependencyProviders ?? throw new ArgumentNullException(nameof(dependencyProviders));
             ClientPolicyContext = clientPolicyContext;
-            PackageNameSpaces = packageNamespaces;
+            PackageSourceMapping = packageSourceMapping;
 
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
@@ -190,7 +190,7 @@ namespace NuGet.Commands
 
         public ClientPolicyContext ClientPolicyContext { get; }
 
-        public PackageNamespacesConfiguration PackageNameSpaces { get; }
+        public PackageSourceMapping PackageSourceMapping { get; }
 
         /// <remarks>
         /// This property should only be used to override the default verifier on tests.
