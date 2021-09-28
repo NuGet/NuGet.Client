@@ -43,7 +43,7 @@ namespace NuGet.Configuration
 
         StoreCert,
 
-        /** Package Patterns **/
+        /** Package Source Mapping **/
 
         PackageSourceMapping,
 
