@@ -11,7 +11,7 @@ namespace NuGet.Configuration
     {
         private readonly SearchNode _root;
 
-        internal SearchTree(PackageSourceMappingConfiguration configuration)
+        internal SearchTree(PackageSourceMapping configuration)
         {
             if (configuration == null)
             {

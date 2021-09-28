@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NuGet.Configuration
 {
-    public class PackageSourceMappingConfiguration
+    public class PackageSourceMapping
     {
         /// <summary>
         /// Max allowed length for package Id.
@@ -38,7 +38,7 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(term);
         }
 
-        internal PackageSourceMappingConfiguration(Dictionary<string, IReadOnlyList<string>> patterns)
+        internal PackageSourceMapping(Dictionary<string, IReadOnlyList<string>> patterns)
         {
             Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
             IsEnabled = Patterns.Keys.Count > 0;
@@ -46,12 +46,12 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Generates a <see cref="PackageSourceMappingConfiguration"/> based on the settings object.
+        /// Generates a <see cref="PackageSourceMapping"/> based on the settings object.
         /// </summary>
         /// <param name="settings">Search term. Cannot be null, empty, or whitespace only. </param>
-        /// <returns>A <see cref="PackageSourceMappingConfiguration"/> based on the settings.</returns>
+        /// <returns>A <see cref="PackageSourceMapping"/> based on the settings.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="settings"/> is null.</exception>
-        public static PackageSourceMappingConfiguration GetPackageSourceMappingConfiguration(ISettings settings)
+        public static PackageSourceMapping GetPackageSourceMappingConfiguration(ISettings settings)
         {
             if (settings == null)
             {
@@ -67,7 +67,7 @@ namespace NuGet.Configuration
                 patterns.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Patterns.Select(e => e.Pattern)));
             }
 
-            return new PackageSourceMappingConfiguration(patterns);
+            return new PackageSourceMapping(patterns);
         }
 
         private SearchTree GetSearchTree()

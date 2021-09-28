@@ -2067,7 +2067,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, P.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2116,7 +2116,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2165,7 +2165,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2214,7 +2214,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2263,7 +2263,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2312,7 +2312,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2361,7 +2361,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -2410,7 +2410,7 @@ namespace NuGet.Commands.FuncTest
                     var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                     var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, new LocalPackageFileCache(), logger);
-                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
+                    var request = new RestoreRequest(spec, provider, context, clientPolicyContext: null, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), log: logger, lockFileBuilderCache: new LockFileBuilderCache())
                     {
                         LockFilePath = Path.Combine(projectDir, "project.lock.json")
                     };
@@ -3247,7 +3247,7 @@ namespace NuGet.Commands.FuncTest
             Dictionary<string, IReadOnlyList<string>> patterns = new();
             patterns.Add(packageSource2, new List<string>() { packageA });
             patterns.Add(pathContext.PackageSource, new List<string>() { packageB });
-            PackageSourceMappingConfiguration sourceMappingConfiguration = new(patterns);
+            PackageSourceMapping sourceMappingConfiguration = new(patterns);
 
             var request = new TestRestoreRequest(projectSpec,
                 sources,
@@ -3336,7 +3336,7 @@ namespace NuGet.Commands.FuncTest
             //package source mapping configuration
             Dictionary<string, IReadOnlyList<string>> patterns = new();
             patterns.Add(packageSource2, new List<string>() { packageA });
-            PackageSourceMappingConfiguration sourceMappingConfiguration = new(patterns);
+            PackageSourceMapping sourceMappingConfiguration = new(patterns);
 
             var request = new TestRestoreRequest(projectSpec,
                 sources,

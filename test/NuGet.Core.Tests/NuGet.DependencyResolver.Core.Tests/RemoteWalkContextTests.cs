@@ -51,7 +51,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Dictionary<string, IReadOnlyList<string>> patterns = new();
             patterns.Add("Source1", new List<string>() { "x" });
             patterns.Add("Source2", new List<string>() { "y" });
-            PackageSourceMappingConfiguration sourceMappingConfiguration = new(patterns);
+            PackageSourceMapping sourceMappingConfiguration = new(patterns);
 
             var context = new TestRemoteWalkContext(sourceMappingConfiguration, NullLogger.Instance);
 
@@ -80,7 +80,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Dictionary<string, IReadOnlyList<string>> patterns = new();
             patterns.Add("Source1", new List<string>() { "y" });
             patterns.Add("Source2", new List<string>() { "z" });
-            PackageSourceMappingConfiguration sourceMappingConfiguration = new(patterns);
+            PackageSourceMapping sourceMappingConfiguration = new(patterns);
 
             var context = new TestRemoteWalkContext(sourceMappingConfiguration, logger);
 

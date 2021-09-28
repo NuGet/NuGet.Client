@@ -38,7 +38,7 @@ namespace NuGet.Commands
             RestoreCommandProviders dependencyProviders,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
-            PackageSourceMappingConfiguration packageSourceMapping,
+            PackageSourceMapping packageSourceMapping,
             ILogger log,
             LockFileBuilderCache lockFileBuilderCache)
         {
@@ -190,7 +190,7 @@ namespace NuGet.Commands
 
         public ClientPolicyContext ClientPolicyContext { get; }
 
-        public PackageSourceMappingConfiguration PackageSourceMapping { get; }
+        public PackageSourceMapping PackageSourceMapping { get; }
 
         /// <remarks>
         /// This property should only be used to override the default verifier on tests.

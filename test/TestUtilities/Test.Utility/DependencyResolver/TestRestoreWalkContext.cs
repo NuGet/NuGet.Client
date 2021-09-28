@@ -11,11 +11,11 @@ namespace Test.Utility
     public class TestRemoteWalkContext : RemoteWalkContext
     {
         public TestRemoteWalkContext() :
-            base(new TestSourceCacheContext(), PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(NullSettings.Instance), NullLogger.Instance)
+            base(new TestSourceCacheContext(), PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), NullLogger.Instance)
         {
         }
 
-        public TestRemoteWalkContext(PackageSourceMappingConfiguration packageSourceMapping, ILogger logger) :
+        public TestRemoteWalkContext(PackageSourceMapping packageSourceMapping, ILogger logger) :
             base(new TestSourceCacheContext(), packageSourceMapping, logger)
         {
         }

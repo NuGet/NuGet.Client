@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData("")]
         [InlineData("nuget.org,nuget")]
         [InlineData(" nuget.org , nuget | privateRepository , private* ")]
-        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured(string packageSourceMapping)
+        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured(string _packageSourceMapping)
         {
             // Arrange
             var first = "first";
@@ -104,8 +104,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             var operationId = Guid.NewGuid().ToString();
-            PackageSourceMappingConfiguration packageSourceMappingConfiguration = string.IsNullOrEmpty(packageSourceMapping) ? null : PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packageSourceMapping);
-            bool isPackageSourceMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
+            PackageSourceMapping packageSourceMapping = string.IsNullOrEmpty(_packageSourceMapping) ? null : PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(_packageSourceMapping);
+            bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,

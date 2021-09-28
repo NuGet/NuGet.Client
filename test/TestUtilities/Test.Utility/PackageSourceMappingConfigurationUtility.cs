@@ -8,7 +8,7 @@ namespace Test.Utility
 {
     public class PackageSourceMappingConfigurationUtility
     {
-        public static PackageSourceMappingConfiguration GetpackageSourceMappingConfiguration(string packagePatterns)
+        public static PackageSourceMapping GetpackageSourceMappingConfiguration(string packagePatterns)
         {
             string[] sections = packagePatterns.Split('|');
             var patterns = new Dictionary<string, IReadOnlyList<string>>();
@@ -32,7 +32,7 @@ namespace Test.Utility
                 patterns[sourceKey] = patternsList;
             }
             ;
-            return new PackageSourceMappingConfiguration(patterns);
+            return new PackageSourceMapping(patterns);
         }
     }
 }

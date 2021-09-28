@@ -159,7 +159,7 @@ namespace NuGet.Commands
             var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
-            PackageSourceMappingConfiguration packageSourceMapping = PackageSourceMappingConfiguration.GetPackageSourceMappingConfiguration(settings);
+            PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMappingConfiguration(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,

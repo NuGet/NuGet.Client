@@ -35,7 +35,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_WithOneSource_Match(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMappingConfiguration configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -68,7 +68,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_WithMultipleSources_Match(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMappingConfiguration configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -84,7 +84,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_InternationalSources_MatchesWithOne(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMappingConfiguration configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -205,7 +205,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_InvalidSearchInput_Throws(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMappingConfiguration configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
 
             // Act & Assert
             configuration.IsEnabled.Should().BeTrue();

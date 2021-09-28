@@ -16,7 +16,7 @@ namespace NuGet.DependencyResolver
 {
     public class RemoteWalkContext
     {
-        public RemoteWalkContext(SourceCacheContext cacheContext, PackageSourceMappingConfiguration packageSourceMapping, ILogger logger)
+        public RemoteWalkContext(SourceCacheContext cacheContext, PackageSourceMapping packageSourceMapping, ILogger logger)
         {
             CacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -36,7 +36,7 @@ namespace NuGet.DependencyResolver
         public IList<IDependencyProvider> ProjectLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> LocalLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> RemoteLibraryProviders { get; }
-        public PackageSourceMappingConfiguration PackageSourceMapping { get; }
+        public PackageSourceMapping PackageSourceMapping { get; }
 
         /// <summary>
         /// Packages lock file libraries to be used while generating restore graph.

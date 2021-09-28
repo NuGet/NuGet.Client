@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly Guid _parentId;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
-        private readonly PackageSourceMappingConfiguration _packageSourceMappingConfiguration;
+        private readonly PackageSourceMapping _packageSourceMappingConfiguration;
 
         internal const string EventName = "PackageSourceDiagnostics";
 
@@ -33,10 +33,10 @@ namespace NuGet.VisualStudio.Telemetry
             Search
         }
 
-        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageSourceMappingConfiguration packageSourceMappingConfiguration)
+        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageSourceMapping packageSourceMappingConfiguration)
             : this(sources, parentId, action)
         {
-            _packageSourceMappingConfiguration = packageSourceMappingConfiguration;
+            _PackageSourceMapping = packageSourceMappingConfiguration;
         }
 
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
@@ -217,7 +217,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMappingConfiguration packageSourceMappingConfiguration)
+        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMapping packageSourceMappingConfiguration)
         {
             if (data.Resources.Count == 0)
             {

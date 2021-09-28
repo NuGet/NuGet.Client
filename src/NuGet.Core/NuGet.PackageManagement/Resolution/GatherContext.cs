@@ -20,9 +20,9 @@ namespace NuGet.PackageManagement
             AllowDowngrades = true;
         }
 
-        public GatherContext(PackageSourceMappingConfiguration _packageSourceMappingConfiguration) : this()
+        public GatherContext(PackageSourceMapping _packageSourceMappingConfiguration) : this()
         {
-            packageSourceMappingConfiguration = _packageSourceMappingConfiguration;
+            PackageSourceMapping = _packageSourceMappingConfiguration;
         }
 
         /// <summary>
@@ -81,9 +81,9 @@ namespace NuGet.PackageManagement
         public bool IsUpdateAll { get; set; }
 
         /// <summary>
-        /// PackageSourceMappingConfiguration section value from nuget.config file, if section doesn't exist then it's null.
+        /// PackageSourceMapping section value from nuget.config file, if section doesn't exist then it's null.
         /// </summary>
-        public PackageSourceMappingConfiguration packageSourceMappingConfiguration { get; }
+        public PackageSourceMapping PackageSourceMapping { get; }
 
         /// <summary>
         /// Logging adapter
