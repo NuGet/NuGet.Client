@@ -1861,7 +1861,7 @@ EndGlobal";
         }
 
         [Fact]
-        public async Task DotnetRestore_NameSpaceFilter_WithNotEnoughSourceOptions_Fails()
+        public async Task DotnetRestore_PackageSourceMappingFilter_WithNotEnoughSourceOptions_Fails()
         {
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
 
@@ -1926,7 +1926,7 @@ EndGlobal";
             result.Success.Should().BeFalse(because: result.AllOutput);
             Assert.Contains("Package source mapping pattern match not found for package ID 'Y'", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageY} (>= {version})'", result.AllOutput);
-            Assert.Contains($"Package source mapping pattern matches found for package ID'X' are: 'source2'.", result.AllOutput);
+            Assert.Contains($"Package source mapping pattern matches found for package ID 'X' are: 'source2'.", result.AllOutput);
             Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
         }
 
