@@ -29,10 +29,17 @@ namespace NuGet.VisualStudio
 
         public bool IsExperimentEnabled(ExperimentationConstants experimentation)
         {
-            var isEnvVarEnabled = !string.IsNullOrEmpty(experimentation.FlightEnvironmentVariable)
-                && _environmentVariableReader.GetEnvironmentVariable(experimentation.FlightEnvironmentVariable) == "1";
+            bool isExpForcedEnabled = false;
+            bool isExpForcedDisabled = false;
+            if (!string.IsNullOrEmpty(experimentation.FlightEnvironmentVariable))
+            {
+                string envVarOverride = _environmentVariableReader.GetEnvironmentVariable(experimentation.FlightEnvironmentVariable);
 
-            return isEnvVarEnabled || _experimentationService.IsCachedFlightEnabled(experimentation.FlightFlag);
+                isExpForcedDisabled = envVarOverride == "0";
+                isExpForcedEnabled = envVarOverride == "1";
+            }
+
+            return !isExpForcedDisabled && (isExpForcedEnabled || _experimentationService.IsCachedFlightEnabled(experimentation.FlightFlag));
         }
     }
 }
