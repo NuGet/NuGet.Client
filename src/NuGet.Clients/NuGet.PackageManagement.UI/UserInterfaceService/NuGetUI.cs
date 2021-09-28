@@ -304,7 +304,7 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<PackageItemViewModel> SelectedPackages { get; set; }
 
-        public DetailControlModel ActiveDetailPackage { get; set; }
+        public DetailControlModel ActiveDetailControlModel { get; set; }
 
         public int SelectedIndex { get; set; }
 

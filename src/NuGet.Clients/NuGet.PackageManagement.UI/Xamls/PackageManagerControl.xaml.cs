@@ -1466,7 +1466,7 @@ namespace NuGet.PackageManagement.UI
             var options = _detailModel.Options;
 
             nugetUi.SelectedPackages = selectedPackages;
-            nugetUi.ActiveDetailPackage = null;
+            nugetUi.ActiveDetailControlModel = null;
             nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
             nugetUi.RemoveDependencies = options.RemoveDependencies;

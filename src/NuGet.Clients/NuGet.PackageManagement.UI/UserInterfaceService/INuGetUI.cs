@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Package shown in Detail pane
         /// </summary>
-        DetailControlModel ActiveDetailPackage { get; }
+        DetailControlModel ActiveDetailControlModel { get; }
 
         /// <summary>
         /// Reports that an error has occurred.

@@ -159,7 +159,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
                     nugetUi.SelectedPackages = new[] { Control.PackageList.SelectedItem };
-                    nugetUi.ActiveDetailPackage = model;
+                    nugetUi.ActiveDetailControlModel = model;
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;

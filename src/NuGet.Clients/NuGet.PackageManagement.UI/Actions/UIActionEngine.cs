@@ -529,7 +529,7 @@ namespace NuGet.PackageManagement.UI
                         acceptedLicense,
                         userAction,
                         nuGetUI?.SelectedPackages,
-                        nuGetUI?.ActiveDetailPackage,
+                        nuGetUI?.ActiveDetailControlModel,
                         nuGetUI?.SelectedIndex,
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
