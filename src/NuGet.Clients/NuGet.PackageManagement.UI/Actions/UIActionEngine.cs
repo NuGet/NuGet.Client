@@ -499,7 +499,7 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
-                    var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(uiService.Settings);
+                    var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(uiService.Settings);
                     bool isPackageSourceMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),

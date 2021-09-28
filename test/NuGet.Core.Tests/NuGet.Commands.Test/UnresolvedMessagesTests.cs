@@ -445,7 +445,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var provider = GetProvider("http://nuget.org/a/", versions);
             var cacheContext = new Mock<SourceCacheContext>();
-            var remoteWalkContext = new RemoteWalkContext(cacheContext.Object, PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance), NullLogger.Instance);
+            var remoteWalkContext = new RemoteWalkContext(cacheContext.Object, PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance), NullLogger.Instance);
             var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider.Object };
             var targetGraphName = "abc";
 

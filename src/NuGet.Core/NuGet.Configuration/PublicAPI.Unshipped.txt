@@ -21,7 +21,7 @@ override NuGet.Configuration.PackageSourceMappingSourceItem.ElementName.get -> s
 override NuGet.Configuration.PackageSourceMappingSourceItem.Equals(object other) -> bool
 override NuGet.Configuration.PackageSourceMappingSourceItem.GetHashCode() -> int
 override NuGet.Configuration.PackageSourceMappingSourceItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
-static NuGet.Configuration.PackageSourceMapping.GetPackageSourceMappingConfiguration(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageSourceMapping
+static NuGet.Configuration.PackageSourceMapping.GetPackageSourceMapping(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageSourceMapping
 static readonly NuGet.Configuration.ConfigurationConstants.Package -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageSourceMapping -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PatternAttribute -> string

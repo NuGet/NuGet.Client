@@ -382,7 +382,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(Settings);
+                var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
                 var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, packageSourceMappingConfiguration)
                 {

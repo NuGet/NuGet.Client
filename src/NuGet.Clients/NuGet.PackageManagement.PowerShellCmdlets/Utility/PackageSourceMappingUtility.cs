@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         public static bool IsMappingEnabled(ISettings settings)
         {
-            var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(settings);
+            var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(settings);
             bool isMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
             return isMappingEnabled;
         }

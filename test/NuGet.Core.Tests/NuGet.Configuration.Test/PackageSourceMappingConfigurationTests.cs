@@ -30,7 +30,7 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
-            var configuration = PackageSourceMapping.GetPackageSourceMappingConfiguration(settings);
+            var configuration = PackageSourceMapping.GetPackageSourceMapping(settings);
             configuration.IsEnabled.Should().BeTrue();
             configuration.Patterns.Should().HaveCount(1);
             KeyValuePair<string, IReadOnlyList<string>> patternsForSource = configuration.Patterns.First();
@@ -58,7 +58,7 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
-            var configuration = PackageSourceMapping.GetPackageSourceMappingConfiguration(settings);
+            var configuration = PackageSourceMapping.GetPackageSourceMapping(settings);
             configuration.IsEnabled.Should().BeTrue();
             configuration.Patterns.Should().HaveCount(2);
 

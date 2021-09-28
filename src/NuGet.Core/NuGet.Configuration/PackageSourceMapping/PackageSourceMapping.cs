@@ -51,7 +51,7 @@ namespace NuGet.Configuration
         /// <param name="settings">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>A <see cref="PackageSourceMapping"/> based on the settings.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="settings"/> is null.</exception>
-        public static PackageSourceMapping GetPackageSourceMappingConfiguration(ISettings settings)
+        public static PackageSourceMapping GetPackageSourceMapping(ISettings settings)
         {
             if (settings == null)
             {

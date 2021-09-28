@@ -79,7 +79,7 @@ namespace NuGet.Commands.Test
                     log: log),
                 cacheContext,
                 clientPolicyContext,
-                packageSourceMapping: PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance),
+                packageSourceMapping: PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance),
                 log,
                 new LockFileBuilderCache())
         {
@@ -196,7 +196,7 @@ namespace NuGet.Commands.Test
                 log: log),
             cacheContext,
             clientPolicyContext,
-            packageSourceMapping: PackageSourceMapping.GetPackageSourceMappingConfiguration(NullSettings.Instance),
+            packageSourceMapping: PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance),
             log,
             lockFileBuilderCache)
         {

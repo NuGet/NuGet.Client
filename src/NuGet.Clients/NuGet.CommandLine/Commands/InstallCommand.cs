@@ -217,7 +217,7 @@ namespace NuGet.CommandLine
                         Console)
                 };
 
-                PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(Settings);
+                var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
                 var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload, packageSourceMappingConfiguration)
                 {
@@ -371,7 +371,7 @@ namespace NuGet.CommandLine
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
-                    PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(Settings);
+                    var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
                     var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload, packageSourceMappingConfiguration)
                     {

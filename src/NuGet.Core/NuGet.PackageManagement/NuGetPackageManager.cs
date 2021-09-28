@@ -1109,7 +1109,7 @@ namespace NuGet.PackageManagement
                     }
                 }
 
-                PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(Settings);
+                var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
                 var gatherContext = new GatherContext(packageSourceMappingConfiguration)
                 {
@@ -1738,7 +1738,7 @@ namespace NuGet.PackageManagement
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
 
                     HashSet<SourcePackageDependencyInfo> availablePackageDependencyInfoWithSourceSet = null;
-                    PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMappingConfiguration(Settings);
+                    var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
                     var gatherContext = new GatherContext(packageSourceMappingConfiguration)
                     {
