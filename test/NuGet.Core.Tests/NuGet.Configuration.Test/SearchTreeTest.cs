@@ -35,7 +35,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_WithOneSource_Match(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            var configuration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -68,7 +68,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_WithMultipleSources_Match(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            var configuration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -84,7 +84,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_InternationalSources_MatchesWithOne(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            var configuration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
@@ -205,7 +205,7 @@ namespace NuGet.Configuration.Test
         public void SearchTree_InvalidSearchInput_Throws(string packagePatterns, string term)
         {
             // Arrange
-            PackageSourceMapping configuration = PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns);
+            var configuration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
 
             // Act & Assert
             configuration.IsEnabled.Should().BeTrue();
@@ -218,7 +218,7 @@ namespace NuGet.Configuration.Test
 
         private SearchTree GetSearchTree(string packagePatterns)
         {
-            return new SearchTree(PackageSourceMappingConfigurationUtility.GetpackageSourceMappingConfiguration(packagePatterns));
+            return new SearchTree(PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns));
         }
     }
 }
