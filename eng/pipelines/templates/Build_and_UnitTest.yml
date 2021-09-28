@@ -3,7 +3,7 @@ steps:
   displayName: 'Add the Microbuildtoolset package source'
   inputs:
     command: 'custom'
-    arguments: 'sources add -Name VS -Source https://devdiv.pkgs.visualstudio.com/_packaging/microbuildtoolset/nuget/v3/index.json -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
+    arguments: 'sources add -Name MicrobuildtoolsetSource -Source https://devdiv.pkgs.visualstudio.com/_packaging/microbuildtoolset/nuget/v3/index.json -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
