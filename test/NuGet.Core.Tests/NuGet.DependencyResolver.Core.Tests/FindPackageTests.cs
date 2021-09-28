@@ -259,7 +259,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Assert.Equal(1, downloadCount);
             Assert.Equal(1, testLogger.DebugMessages.Count);
             testLogger.DebugMessages.TryPeek(out string message);
-            Assert.Equal($"Package source mapping pattern matches found for package ID '{packageX}' are: '{source2}'.", message);
+            Assert.Equal($"Package source mapping matches found for package ID '{packageX}' are: '{source2}'.", message);
             Assert.Equal(version, result.Key.Version.ToString());
             Assert.Equal(source2, result.Data.Match.Provider.Source.Name);
         }
@@ -318,7 +318,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             Assert.Equal(0, testLogger.Errors);
             Assert.Equal(1, testLogger.DebugMessages.Count);
             testLogger.DebugMessages.TryPeek(out string message);
-            Assert.Equal($"Package source mapping pattern match not found for package ID '{packageX}'.", message);
+            Assert.Equal($"Package source mapping match not found for package ID '{packageX}'.", message);
         }
     }
 }

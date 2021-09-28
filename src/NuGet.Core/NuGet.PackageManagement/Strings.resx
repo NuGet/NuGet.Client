@@ -522,12 +522,12 @@
 3 - Package Sources</comment>
   </data>
   <data name="PackageSourceMappingPatternMatchFound" xml:space="preserve">
-    <value>Package source mapping pattern matches found for package ID '{0}' are: '{1}'</value>
+    <value>Package source mapping matches found for package ID '{0}' are: '{1}'</value>
     <comment>{0} - package id
 {1} - sources ids</comment>
   </data>
   <data name="PackageSourceMappingPatternNoMatchFound" xml:space="preserve">
-    <value>Package source mapping pattern match not found for package ID '{0}'</value>
+    <value>Package source mapping match not found for package ID '{0}'</value>
     <comment>{0} - package id</comment>
   </data>
 </root>

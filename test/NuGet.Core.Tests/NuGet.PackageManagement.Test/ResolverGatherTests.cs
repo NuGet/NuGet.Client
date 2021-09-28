@@ -1501,7 +1501,7 @@ namespace NuGet.Test
             Assert.Equal(configuredSources[0], check[0].Source.PackageSource.Name);
 
             // Assert log.
-            Assert.Equal($"Package source mapping pattern matches found for package ID '{packageId}' are: '{configuredSources[0]}' ", testNuGetProjectContext.Logs.Value[0]);
+            Assert.Equal($"Package source mapping matches found for package ID '{packageId}' are: '{configuredSources[0]}' ", testNuGetProjectContext.Logs.Value[0]);
         }
 
         /// <summary>

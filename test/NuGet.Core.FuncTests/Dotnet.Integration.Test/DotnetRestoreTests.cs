@@ -1854,10 +1854,10 @@ EndGlobal";
             Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
             Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
             Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Y' are: 'source1'.", result.AllOutput);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Z' are: 'source1'.", result.AllOutput);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'X' are: 'source2'.", result.AllOutput);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'K' are: 'source2'.", result.AllOutput);
+            Assert.Contains($"Package source mapping matches found for package ID 'Y' are: 'source1'.", result.AllOutput);
+            Assert.Contains($"Package source mapping matches found for package ID 'Z' are: 'source1'.", result.AllOutput);
+            Assert.Contains($"Package source mapping matches found for package ID 'X' are: 'source2'.", result.AllOutput);
+            Assert.Contains($"Package source mapping matches found for package ID 'K' are: 'source2'.", result.AllOutput);
         }
 
         [Fact]
@@ -1924,9 +1924,9 @@ EndGlobal";
             var result = _msbuildFixture.RunDotnet(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} --source {packageSource2.FullName} -v d", ignoreExitCode: true);
 
             result.Success.Should().BeFalse(because: result.AllOutput);
-            Assert.Contains("Package source mapping pattern match not found for package ID 'Y'", result.AllOutput);
+            Assert.Contains("Package source mapping match not found for package ID 'Y'", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageY} (>= {version})'", result.AllOutput);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'X' are: 'source2'.", result.AllOutput);
+            Assert.Contains($"Package source mapping matches found for package ID 'X' are: 'source2'.", result.AllOutput);
             Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
         }
 

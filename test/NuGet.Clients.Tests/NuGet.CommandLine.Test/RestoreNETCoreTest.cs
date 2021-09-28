@@ -10941,8 +10941,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
             // Assert
             // If we pass source then log include actual path to repository instead of repository name.
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.MVC.ASP' are: 'PrivateRepository'", r.Output);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'PrivateRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
             var contosoRestorePath = Path.Combine(packagePath, packageContosoMvcReal.Id.ToString(), packageContosoMvcReal.Version.ToString(), packageContosoMvcReal.ToString() + ".nupkg");
             var localResolver = new VersionFolderPathResolver(packagePath);
             var contosoMvcMetadataPath = localResolver.GetNupkgMetadataPath(packageContosoMvcReal.Identity.Id, packageContosoMvcReal.Identity.Version);
@@ -11034,7 +11034,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1, args);
 
             // Assert
-            Assert.Contains("Package source mapping pattern match not found for package ID 'Contoso.MVC.ASP'.", r.Output);
+            Assert.Contains("Package source mapping match not found for package ID 'Contoso.MVC.ASP'.", r.Output);
             // Even though there is eligible source SharedRepository exist but only opensourceRepositoryPath passed as option it'll fail to restore.
             Assert.Contains($"Failed to restore {projectA.ProjectPath}", r.Output);
         }

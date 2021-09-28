@@ -781,7 +781,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source mapping pattern matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Package source mapping matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;.
         /// </summary>
         internal static string PackageSourceMappingPatternMatchFound {
             get {
@@ -790,7 +790,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source mapping pattern match not found for package ID &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Package source mapping match not found for package ID &apos;{0}&apos;.
         /// </summary>
         internal static string PackageSourceMappingPatternNoMatchFound {
             get {

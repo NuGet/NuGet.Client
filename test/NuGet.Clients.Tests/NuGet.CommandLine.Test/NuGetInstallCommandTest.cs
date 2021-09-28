@@ -1907,7 +1907,7 @@ namespace NuGet.CommandLine.Test
             // Assert
             Assert.Equal(0, r1.Item1);
             Assert.Equal(0, r2.Item1);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r1.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r1.Output);
             var packageFileContosoMVCASP = Path.Combine(workingPath, "outputDir", "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
             var packageFileContosoOpensource = Path.Combine(workingPath, "outputDir", "Contoso.Opensource.1.0.0", "Contoso.Opensource.1.0.0.nupkg");
             Assert.True(File.Exists(packageFileContosoMVCASP));
@@ -1953,7 +1953,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Assert.Equal(1, r.Item1);
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             r.AllOutput.Should().NotContain("NU1000");
             r.Errors.Should().Contain("Package 'Contoso.MVC.ASP 1.0.0' is not found in the following primary source(s):");
         }
@@ -2003,7 +2003,7 @@ namespace NuGet.CommandLine.Test
                 $"{opensourceRepositoryPath};{sharedRepositoryPath}");  // We pass both repositories.
 
             // Assert
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             var packageFileContosoMVCASP = Path.Combine(workingPath, "outputDir", "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
             var packageFileContosoOpensource = Path.Combine(workingPath, "outputDir", "Contoso.Opensource.1.0.0", "Contoso.Opensource.1.0.0.nupkg");
             Assert.True(File.Exists(packageFileContosoMVCASP));
@@ -2055,7 +2055,7 @@ namespace NuGet.CommandLine.Test
                 opensourceRepositoryPath);  // We pass 1 repository.
 
             // Assert
-            Assert.Contains($"Package source mapping pattern matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             r.AllOutput.Should().NotContain("NU1000");
             r.Errors.Should().Contain("Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.");
         }
