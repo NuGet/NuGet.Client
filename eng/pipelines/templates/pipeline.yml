@@ -109,6 +109,8 @@ stages:
       vmImage: ubuntu-latest
     steps:
     - template: Source_Build.yml
+  - job: Publish_Assets
+    - template: ../common/templates/job/publish-build-assets.yml
 
 - stage: CLI_Func_Tests
   dependsOn: Initialize
