@@ -28,14 +28,14 @@ namespace NuGet.Configuration
         public bool IsEnabled { get; }
 
         /// <summary>
-        /// Get package source names with matching prefix "term" from package source mapping section.
+        /// Get package source names with matching prefix "packageId" from package source mapping section.
         /// </summary>
-        /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
-        /// <returns>Package source names with matching prefix "term" from package patterns.</returns>
-        /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
-        public IReadOnlyList<string> GetConfiguredPackageSources(string term)
+        /// <param name="packageId">Search packageId. Cannot be null, empty, or whitespace only. </param>
+        /// <returns>Package source names with matching prefix "packageId" from package patterns.</returns>
+        /// <exception cref="ArgumentException"> if <paramref name="packageId"/> is null, empty, or whitespace only.</exception>
+        public IReadOnlyList<string> GetConfiguredPackageSources(string packageId)
         {
-            return SearchTree.Value?.GetConfiguredPackageSources(term);
+            return SearchTree.Value?.GetConfiguredPackageSources(packageId);
         }
 
         internal PackageSourceMapping(Dictionary<string, IReadOnlyList<string>> patterns)
@@ -48,7 +48,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Generates a <see cref="PackageSourceMapping"/> based on the settings object.
         /// </summary>
-        /// <param name="settings">Search term. Cannot be null, empty, or whitespace only. </param>
+        /// <param name="settings">Search packageId. Cannot be null, empty, or whitespace only. </param>
         /// <returns>A <see cref="PackageSourceMapping"/> based on the settings.</returns>
         /// <exception cref="ArgumentNullException"> if <paramref name="settings"/> is null.</exception>
         public static PackageSourceMapping GetPackageSourceMapping(ISettings settings)
