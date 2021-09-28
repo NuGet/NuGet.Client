@@ -1,4 +1,11 @@
 steps:
+- task: NuGetCommand@2
+  displayName: 'Add the Microbuildtoolset package source'
+  inputs:
+    command: 'custom'
+    arguments: 'sources add -Name VS -Source https://devdiv.pkgs.visualstudio.com/_packaging/microbuildtoolset/nuget/v3/index.json -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
@@ -34,20 +41,6 @@ steps:
     signType: "$(SigningType)"
     esrpSigning: "true"
   displayName: "Install Signing Plugin"
-
-- task: NuGetCommand@2
-  displayName: 'Add the Microbuildtoolset package source'
-  inputs:
-    command: 'custom'
-    arguments: 'sources add -Name VS -Source https://devdiv.pkgs.visualstudio.com/_packaging/microbuildtoolset/nuget/v3/index.json -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: NuGetCommand@2
-  displayName: 'Install the NuGet package for MicroBuildTasks'
-  inputs:
-    command: 'custom'
-    arguments: 'install Microsoft.VisualStudioEng.MicroBuild.Core -Version 1.0.0 -Source https://devdiv.pkgs.visualstudio.com/_packaging/microbuildtoolset/nuget/v3/index.json -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: ms-vseng.MicroBuildTasks.32f78468-e895-4f47-962c-58a699361df8.MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
