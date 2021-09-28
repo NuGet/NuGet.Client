@@ -13,7 +13,7 @@ namespace NuGet.Configuration.Test
     public class PackageSourceMappingConfigurationTests
     {
         [Fact]
-        public void GetpackageSourceMappingConfiguration_WithOneSource()
+        public void GetPackageSourceMappingConfiguration_WithOneSource()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -39,7 +39,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetpackageSourceMappingConfiguration_WithMultipleSources()
+        public void GetPackageSourceMappingConfiguration_WithMultipleSources()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();

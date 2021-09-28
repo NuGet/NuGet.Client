@@ -2868,7 +2868,7 @@ EndProject";
     <add key=""SharedRepositoryPath2"" value=""{sharedRepositoryPath2}"" />
     </packageSources>
     <packageSourceMapping>
-        <!--Empty packagesourceMapping -->
+        <!--Empty packageSourceMapping -->
     </packageSourceMapping>
 </configuration>");
 
