@@ -30,10 +30,10 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
-            var configuration = PackageSourceMapping.GetPackageSourceMapping(settings);
-            configuration.IsEnabled.Should().BeTrue();
-            configuration.Patterns.Should().HaveCount(1);
-            KeyValuePair<string, IReadOnlyList<string>> patternsForSource = configuration.Patterns.First();
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            packageSourceMapping.IsEnabled.Should().BeTrue();
+            packageSourceMapping.Patterns.Should().HaveCount(1);
+            KeyValuePair<string, IReadOnlyList<string>> patternsForSource = packageSourceMapping.Patterns.First();
             patternsForSource.Key.Should().Be("nuget.org");
             patternsForSource.Value.Should().BeEquivalentTo(new string[] { "stuff" });
         }
@@ -58,14 +58,14 @@ namespace NuGet.Configuration.Test
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
-            var configuration = PackageSourceMapping.GetPackageSourceMapping(settings);
-            configuration.IsEnabled.Should().BeTrue();
-            configuration.Patterns.Should().HaveCount(2);
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            packageSourceMapping.IsEnabled.Should().BeTrue();
+            packageSourceMapping.Patterns.Should().HaveCount(2);
 
-            IReadOnlyList<string> nugetPatterns = configuration.Patterns["nuget.org"];
+            IReadOnlyList<string> nugetPatterns = packageSourceMapping.Patterns["nuget.org"];
             nugetPatterns.Should().BeEquivalentTo(new string[] { "stuff" });
 
-            IReadOnlyList<string> contosoPattern = configuration.Patterns["contoso"];
+            IReadOnlyList<string> contosoPattern = packageSourceMapping.Patterns["contoso"];
             contosoPattern.Should().BeEquivalentTo(new string[] { "moreStuff" });
         }
     }
