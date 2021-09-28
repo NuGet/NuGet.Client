@@ -80,5 +80,5 @@ if (( $? )); then
 fi
 chmod +x "$scriptroot/../../cli/dotnet-install.sh"
 
-"$scriptroot/../../cli/dotnet-install.sh" -v $SDK_VERSION
+"$scriptroot/../../cli/dotnet-install.sh" -v $SDK_VERSION -i "$scriptroot/../../cli"
 "$DOTNET" msbuild "$scriptroot/source-build.proj" /p:Configuration=$configuration /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog" $args
