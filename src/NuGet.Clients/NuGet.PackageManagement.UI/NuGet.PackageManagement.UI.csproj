@@ -82,8 +82,7 @@
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
-    <Compile Include="Telemetry\ActionsTelemetryExtensions.cs" />
-    <Compile Include="Telemetry\UIActionSource.cs" />
+    <Compile Include="Telemetry\UINuGetActionSource.cs" />
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
