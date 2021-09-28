@@ -111,7 +111,7 @@ stages:
     - template: Source_Build.yml
   - job: Publish_Assets
     steps:
-    - template: ../common/templates/job/publish-build-assets.yml
+    - template: ../../common/templates/job/publish-build-assets.yml
 
 - stage: CLI_Func_Tests
   dependsOn: Initialize
