@@ -49,7 +49,4 @@
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <ItemGroup>
-    <AdditionalFiles Remove="C:\repos\NuGet.Client\src\NuGet.Core\NuGet.Protocol\PublicAPI\net472\PublicAPI.Unshipped.txt" />
-  </ItemGroup>
 </Project>
