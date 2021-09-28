@@ -22,6 +22,8 @@ namespace NuGet.PackageManagement.VisualStudio
         // GUID of the General page, defined in GeneralOptionsPage.cs
         private const string _generalGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
 
+        private const string GeneralPageGuid = "9A9BC6E5-E2E3-4DB3-BA9E-2A4C6A409276";
+
         private Action _closeCallback;
         private readonly AsyncLazy<IVsUIShell> _vsUIShell;
 
@@ -55,7 +57,15 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
-                    await ShowOptionsPageAsync(_generalGUID);
+                    bool x = true;
+                    if (x)
+                    {
+                        await ShowOptionsPageAsync(GeneralPageGuid);
+                    }
+                    else
+                    {
+                        await ShowOptionsPageAsync(_generalGUID);
+                    }
                 }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else if (page == OptionsPage.PackageSources)
