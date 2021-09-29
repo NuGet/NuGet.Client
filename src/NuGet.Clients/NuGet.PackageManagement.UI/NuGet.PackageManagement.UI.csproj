@@ -58,7 +58,6 @@
     <Compile Include="Automation\ListViewToggleableItemsAutomationPeer.cs" />
     <Compile Include="Automation\ToggleableItemAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
-    <Compile Include="Converters\StringResourceToAccessKeyConverter.cs" />
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
     <Compile Include="Converters\DeprecationToDeprecationLabelStateConverter.cs" />
