@@ -40,7 +40,8 @@ stages:
       testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
-      testExecutionJobTimeoutInMinutes: 150
+      testMachineDeploymentJobTimeoutInMinutes: 240
+      testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
       preDeployAndRunTestsStepList:
