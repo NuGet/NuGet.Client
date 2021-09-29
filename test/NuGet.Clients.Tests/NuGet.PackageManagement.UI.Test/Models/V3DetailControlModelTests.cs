@@ -132,17 +132,16 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public void PackageVulnerabilitiesWhenMetadataHasVulnerability_OrderedBySeverityDescending()
+        public void PackageVulnerabilities_WhenMetadataHasVulnerability_IsOrderedBySeverityDescending()
         {
-            Assert.Collection(_testInstance.PackageVulnerabilities,
-                item =>
-                {
-                    Assert.Equal(3, item.Severity);
-                },
-                item =>
-                {
-                    Assert.Equal(2, item.Severity);
-                });
+            var sortedTestVulnerabilities =
+                _testData.TestData.Vulnerabilities
+                .OrderByDescending(v => v.Severity)
+                .Select(v => new Action<PackageVulnerabilityMetadataContextInfo>(
+                    (item) => Assert.Equal(v.Severity, item.Severity))
+                ).ToArray();
+
+            Assert.Collection(_testInstance.PackageVulnerabilities, sortedTestVulnerabilities);
         }
 
         [Fact]
