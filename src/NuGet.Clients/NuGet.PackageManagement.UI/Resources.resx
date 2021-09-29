@@ -217,7 +217,8 @@
     <value>NuGet Package Manager: {0}</value>
   </data>
   <data name="Button_OK" xml:space="preserve">
-    <value>OK</value>
+    <value>_OK</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Label_InstalledPackages" xml:space="preserve">
     <value>Installing:</value>
@@ -226,10 +227,12 @@
     <value>Uninstalling:</value>
   </data>
   <data name="Button_IAccept" xml:space="preserve">
-    <value>I Accept</value>
+    <value>I _Accept</value>
+    <comment>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_IDecline" xml:space="preserve">
-    <value>I Decline</value>
+    <value>I _Decline</value>
+    <comment>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Text_LicenseHeaderText" xml:space="preserve">
     <value>The following package(s) require that you accept their license terms before installing.</value>
@@ -260,17 +263,17 @@
   </data>
   <data name="Button_Preview" xml:space="preserve">
     <value>Preview</value>
-  </data>`
+  </data>
   <data name="WindowTitle_FileConflict" xml:space="preserve">
     <value>File Conflict</value>
   </data>
   <data name="Button_No" xml:space="preserve">
     <value>_No</value>
-    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll should have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
+    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_NoToAll" xml:space="preserve">
     <value>No to A_ll</value>
-    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll should have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
+    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_Yes" xml:space="preserve">
     <value>_Yes</value>
@@ -284,10 +287,12 @@
     <value>Prompt</value>
   </data>
   <data name="Button_Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>_Cancel</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_Copy" xml:space="preserve">
-    <value>Copy</value>
+    <value>Co_py</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Text_Loading" xml:space="preserve">
     <value>Loading...</value>
@@ -425,7 +430,8 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Report Abuse:</value>
   </data>
   <data name="DoNotShowThisAgain" xml:space="preserve">
-    <value>Do not show this again</value>
+    <value>_Do not show this again</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/uwp/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Action_Downgrade" xml:space="preserve">
     <value>Downgrade</value>
