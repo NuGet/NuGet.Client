@@ -459,10 +459,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 Name = projectName,
                 Version = new NuGetVersion(_vsProjectAdapter.Version),
-                Authors = Array.Empty<string>(),
-                Owners = Array.Empty<string>(),
-                Tags = Array.Empty<string>(),
-                ContentFiles = Array.Empty<string>(),
                 FilePath = _projectFullPath,
                 RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata

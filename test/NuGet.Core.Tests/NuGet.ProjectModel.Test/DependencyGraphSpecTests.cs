@@ -651,7 +651,6 @@ namespace NuGet.ProjectModel.Test
         {
             var expectedResult = new PackageSpec()
             {
-                IsDefaultVersion = false,
                 RestoreMetadata = new ProjectRestoreMetadata()
             };
             IReadOnlyList<PackageSpec> closure = new[] { expectedResult };
