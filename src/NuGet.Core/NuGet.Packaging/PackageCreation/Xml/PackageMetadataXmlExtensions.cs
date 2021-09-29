@@ -69,8 +69,8 @@ namespace NuGet.Packaging.Xml
                     }
                 }
                 AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
-
                 AddElementIfNotNull(elem, ns, "icon", metadata.Icon);
+                AddElementIfNotNull(elem, ns, "readme", metadata.Readme);
             }
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
             AddElementIfNotNull(elem, ns, "iconUrl", metadata.IconUrl);
@@ -80,7 +80,6 @@ namespace NuGet.Packaging.Xml
             AddElementIfNotNull(elem, ns, "copyright", metadata.Copyright);
             AddElementIfNotNull(elem, ns, "language", metadata.Language);
             AddElementIfNotNull(elem, ns, "tags", metadata.Tags);
-            AddElementIfNotNull(elem, ns, "readme", metadata.Readme);
             if (metadata.Serviceable)
             {
                 elem.Add(new XElement(ns + "serviceable", metadata.Serviceable));

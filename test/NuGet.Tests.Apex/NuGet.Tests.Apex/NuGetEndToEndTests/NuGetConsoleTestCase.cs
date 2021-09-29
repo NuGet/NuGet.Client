@@ -295,7 +295,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task InstallPackageForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPC_PackageSourceMapping_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -310,7 +310,7 @@ namespace NuGet.Tests.Apex
 
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
 
-            //Create nuget.config with Package namespace filtering rules.
+            //Create nuget.config with Package source mapping filtering rules.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -340,7 +340,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task UpdatePackageForPC_PackageNamespace_WithSingleFeed(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPC_PackageSourceMapping_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -357,7 +357,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1);
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2);
 
-            //Create nuget.config with Package namespace filtering rules.
+            //Create nuget.config with Package source mapping filtering rules.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -388,7 +388,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task InstallPackageForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -411,7 +411,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1, "Thisisfromprivaterepo1.txt");
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2, "Thisisfromprivaterepo2.txt");
 
-            //Create nuget.config with Package namespace filtering rules.
+            //Create nuget.config with Package source mapping filtering rules.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -451,7 +451,7 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task UpdatePackageForPC_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -474,7 +474,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1, "Thisisfromprivaterepo1.txt");
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2, "Thisisfromprivaterepo2.txt");
 
-            //Create nuget.config with Package namespace filtering rules.
+            //Create nuget.config with Package source mapping filtering rules.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>

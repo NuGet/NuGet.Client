@@ -2729,7 +2729,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SettingsFileParse_WithUnknownElements_IgnoredWhenNamespacesAreUpdated()
+        public void SettingsFileParse_WithUnknownElements_IgnoredWhenPackagePatternsAreUpdated()
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
@@ -2749,7 +2749,7 @@ namespace NuGet.Configuration.Test
             var settings = new Settings(new SettingsFile[] { settingsFile });
 
             // Act &
-            settings.AddOrUpdate(settingsFile, "packageSourceMapping", new PackageNamespacesSourceItem("nuget.org", new List<NamespaceItem>() { new NamespaceItem("moreStuff") }));
+            settings.AddOrUpdate(settingsFile, "packageSourceMapping", new PackageSourceMappingSourceItem("nuget.org", new List<PackagePatternItem>() { new PackagePatternItem("moreStuff") }));
             settings.SaveToDisk();
 
             var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>

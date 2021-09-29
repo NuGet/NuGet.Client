@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
@@ -39,7 +40,7 @@ namespace NuGetConsole
                     await System.Threading.Tasks.Task.Run(
                         async () =>
                         {
-                            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
+                            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
                             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
                             _solutionManager = await serviceBroker.GetProxyAsync<INuGetSolutionManagerService>(
@@ -48,10 +49,11 @@ namespace NuGetConsole
 
                             Assumes.NotNull(_solutionManager);
 
-                            var productUpdateService = ServiceLocator.GetComponentModelService<IProductUpdateService>();
-                            var packageRestoreManager = ServiceLocator.GetComponentModelService<IPackageRestoreManager>();
-                            var deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
-                            var shell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
+                            IComponentModel componentModel = await ServiceLocator.GetComponentModelAsync();
+                            var productUpdateService = componentModel.GetService<IProductUpdateService>();
+                            var packageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
+                            var deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
+                            var shell = await ServiceLocator.GetGlobalServiceAsync<SVsShell, IVsShell4>();
 
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

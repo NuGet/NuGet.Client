@@ -1,4 +1,4 @@
-function Test-PackageNamespaceRestore-WithSingleFeed
+function Test-PackageSourceMappingRestore-WithSingleFeed
 {
     param($context)
 
@@ -52,7 +52,7 @@ function Test-PackageNamespaceRestore-WithSingleFeed
     }
 }
 
-function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackage
+function Test-PackageSourceMappingRestore-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackage
 {
     param($context)
 
@@ -115,7 +115,7 @@ function Test-PackageNamespaceRestore-WithMultipleFeedsWithIdenticalPackages-Res
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-Succeed {
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithSingleFeed-Succeed {
     param(
         $context
     )
@@ -161,7 +161,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-Fails {
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithSingleFeed-Fails {
     param(
         $context
     )
@@ -194,7 +194,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
         $p = New-ClassLibrary
 
         # Act & Assert
-        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from SecretPackages repository so it'll fail.
+        # Even though SolutionLevelPkg package exist in $repoDirectory since package source mapping filter set SolutionLevelPkg can be restored only from SecretPackages repository so it'll fail.
         $exceptionMessage = "Exception calling `"InstallLatestPackageApi`" with `"2`" argument(s): `"Package 'SolutionLevelPkg 1.0.0' is not found in the following primary source(s): '"+ $repoDirectory + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly.`""
         Assert-Throws { [API.Test.InternalAPITestHook]::InstallLatestPackageApi("SolutionLevelPkg", $false)  } $exceptionMessage
         Assert-NoPackage $p SolutionLevelPkg 1.0.0
@@ -204,7 +204,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithSingleFeed-
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithSpecifiedVersion
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithSpecifiedVersion
 {
     param($context)
 
@@ -265,7 +265,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     }
 }
 
-function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithLatestVersion
+function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithLatestVersion
 {
     param($context)
 
@@ -326,7 +326,7 @@ function Test-VsPackageInstallerServices-PackageNamespaceInstall-WithMultipleFee
     }
 }
 
-function Test-PC-PackageNamespaceInstall-Succeed
+function Test-PC-PackageSourceMappingInstall-Succeed
 {
     param($context)
 
@@ -367,7 +367,7 @@ function Test-PC-PackageNamespaceInstall-Succeed
     }
 }
 
-function Test-PC-PackageNamespaceInstall-Fails
+function Test-PC-PackageSourceMappingInstall-Fails
 {
     param($context)
 
@@ -398,7 +398,7 @@ function Test-PC-PackageNamespaceInstall-Fails
         $p = New-ConsoleApplication
 
         # Act & Assert
-        # Even though SolutionLevelPkg package exist in $repoDirectory since package namespace filter set SolutionLevelPkg can be restored only from PrivateRepository repository so it'll fail.
+        # Even though SolutionLevelPkg package exist in $repoDirectory since package source mapping filter set SolutionLevelPkg can be restored only from PrivateRepository repository so it'll fail.
         $exceptionMessage = "Package 'SolutionLevelPkg 1.0' is not found in the following primary source(s): '" + $context.RepositoryRoot + "," + $privateRepo + "'. Please verify all your online package sources are available (OR) package id, version are specified correctly."
         Assert-Throws { $p | Install-Package SolutionLevelPkg -Version 1.0 } $exceptionMessage
         Assert-NoPackage $p SolutionLevelPkg 1.0.0
@@ -408,7 +408,7 @@ function Test-PC-PackageNamespaceInstall-Fails
     }
 }
 
-function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
+function Test-PC-PackageSourceMappingInstall-WithCorrectSourceOption-Succeed
 {
     param($context)
 
@@ -467,7 +467,7 @@ function Test-PC-PackageNamespaceInstall-WithCorrectSourceOption-Succeed
     }
 }
 
-function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
+function Test-PC-PackageSourceMappingInstall-WithWrongSourceOption-Fails
 {
     param($context)
 
@@ -516,7 +516,7 @@ function Test-PC-PackageNamespaceInstall-WithWrongSourceOption-Fails
     }
 }
 
-function Test-PC-PackageNamespaceUpdate-WithCorrectSourceOption-Succeed
+function Test-PC-PackageSourceMappingUpdate-WithCorrectSourceOption-Succeed
 {
     param($context)
 

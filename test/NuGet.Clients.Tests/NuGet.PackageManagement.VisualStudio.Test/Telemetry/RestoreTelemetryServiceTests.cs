@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData("")]
         [InlineData("nuget.org,nuget")]
         [InlineData(" nuget.org , nuget | privateRepository , private* ")]
-        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured(string packageNamespaces)
+        public void RestoreTelemetryService_EmitRestoreEvent_IntervalsAreCaptured(string _packageSourceMapping)
         {
             // Arrange
             var first = "first";
@@ -104,8 +104,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             var operationId = Guid.NewGuid().ToString();
-            PackageNamespacesConfiguration packageNamespacesConfiguration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
-            bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            var packageSourceMapping = string.IsNullOrEmpty(_packageSourceMapping) ? null : PackageSourceMappingUtility.GetpackageSourceMapping(_packageSourceMapping);
+            bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,

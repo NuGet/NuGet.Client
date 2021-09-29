@@ -5,19 +5,19 @@ namespace NuGet.PackageManagement
 {
     internal static class StringFormatter
     {
-        internal static string Log_PackageNamespaceMatchFound(
+        internal static string Log_PackageSourceMappingMatchFound(
             string packageId,
             string packageSourcesAtPrefix)
         {
-            return string.Format(Strings.PackageNamespaceMatchFound,
+            return string.Format(Strings.PackageSourceMappingPatternMatchFound,
                 packageId,
                 packageSourcesAtPrefix);
         }
 
-        internal static string Log_PackageNamespaceNoMatchFound(
+        internal static string Log_PackageSourceMappingNoMatchFound(
             string packageId)
         {
-            return string.Format(Strings.PackageNamespaceNoMatchFound,
+            return string.Format(Strings.PackageSourceMappingPatternNoMatchFound,
                 packageId);
         }
     }

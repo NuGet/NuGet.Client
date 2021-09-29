@@ -159,7 +159,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageFromUI_PackageNamespace_WithSingleFeed_Match_Succeeds()
+        public async Task InstallPackageFromUI_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -175,7 +175,7 @@ namespace NuGet.Tests.Apex
 
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -206,7 +206,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageToProjectsFromUI_PackageNamespace_WithSingleFeed_Match_Succeeds()
+        public async Task InstallPackageToProjectsFromUI_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -222,7 +222,7 @@ namespace NuGet.Tests.Apex
 
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -260,7 +260,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageFromUI_PackageNamespace_WithMultiFeed_Succeed()
+        public async Task InstallPackageFromUI_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -279,7 +279,7 @@ namespace NuGet.Tests.Apex
             Directory.CreateDirectory(privateRepositoryPath);
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1);
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -318,7 +318,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task InstallPackageFromUI_PackageNamespace_WithMultiFeed_Fails()
+        public async Task InstallPackageFromUI_PackageSourceMapping_WithMultiFeed_Fails()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -336,7 +336,7 @@ namespace NuGet.Tests.Apex
             var packageVersion = "1.0.0";
             await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -373,7 +373,7 @@ namespace NuGet.Tests.Apex
         }
 
         [StaFact]
-        public async Task UpdatePackageFromUI_PackageNamespace_WithSingleFeed_Succeeds()
+        public async Task UpdatePackageFromUI_PackageSourceMapping_WithSingleFeed_Succeeds()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -391,7 +391,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV1);
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2);
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -427,7 +427,7 @@ namespace NuGet.Tests.Apex
 
 
         [StaFact]
-        public async Task UpdatePackageFromUI_PackageNamespace_WithMultiFeed_Succeed()
+        public async Task UpdatePackageFromUI_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -449,7 +449,7 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1);
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2);
 
-            // Create nuget.config with Package namespace filtering rules before project is created.
+            // Create nuget.config with Package source mapping filtering rules before project is created.
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>

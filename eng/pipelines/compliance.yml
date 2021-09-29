@@ -13,7 +13,7 @@ jobs:
   - job: Static_Analysis
     displayName: "Static Analysis"
     timeoutInMinutes: 180
-    pool: VSEngSS-MicroBuild2019
+    pool: VSEngSS-MicroBuild2019-1ES
 
     steps:
       - task: CredScan@2

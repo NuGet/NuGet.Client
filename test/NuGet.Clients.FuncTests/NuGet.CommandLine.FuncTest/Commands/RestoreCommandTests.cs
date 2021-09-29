@@ -978,7 +978,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public async Task Restore_PackageNamespace_Succeed()
+        public async Task Restore_PackageSourceMapping_Succeed()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1084,7 +1084,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
 
         [Fact]
-        public async Task Restore_PackageNamespace_Fails()
+        public async Task Restore_PackageSourceMapping_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())

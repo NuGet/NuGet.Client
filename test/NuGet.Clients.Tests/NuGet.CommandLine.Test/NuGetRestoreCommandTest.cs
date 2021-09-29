@@ -2403,7 +2403,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NameSpaceFilter_Succeed()
+        public void RestoreCommand_PackageSourceMappingFilter_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2565,7 +2565,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NameSpaceFilter_Fails()
+        public void RestoreCommand_PackageSourceMappingFilter_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2652,7 +2652,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespaceLongerMatches_Succeed()
+        public void RestoreCommand_LongestPackageSourceMappingPatternMatches_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2733,7 +2733,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.Contains("Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+                Assert.Contains("Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             }
         }
 
@@ -2807,7 +2807,7 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_failureCode, r.ExitCode);
-                Assert.Contains("Package namespace match not found for package ID 'My.MVC.ASP'", r.AllOutput);
+                Assert.Contains("Package source mapping match not found for package ID 'My.MVC.ASP'", r.AllOutput);
                 Assert.Contains("Unable to find version '1.0.0' of package 'My.MVC.ASP'.", r.Item3);
             }
         }
@@ -2862,10 +2862,10 @@ EndProject";
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""SharedRepositoryPath1"">
-            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package pattern prefix matches both repository -->
         </packageSource>
         <packageSource key=""SharedRepositoryPath2"">
-            <package pattern=""Contoso.MVC.*"" /> <!--Same package namespace prefix matches both repository -->
+            <package pattern=""Contoso.MVC.*"" /> <!--Same package pattern prefix matches both repository -->
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -2895,7 +2895,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespaceEmptyPackageSource_Succeed()
+        public void RestoreCommand_PackageSourceMappingEmptyPackageSource_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -2943,7 +2943,7 @@ EndProject";
     <add key=""SharedRepositoryPath2"" value=""{sharedRepositoryPath2}"" />
     </packageSources>
     <packageSourceMapping>
-        <!--Empty packageNamespaces -->
+        <!--Empty packageSourceMapping -->
     </packageSourceMapping>
 </configuration>");
 
@@ -2972,7 +2972,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_NoPackageNamespacesection_NoSourceRelatedLogMessage()
+        public void RestoreCommand_NoPackageSourceMappingsection_NoSourceRelatedLogMessage()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3036,12 +3036,12 @@ EndProject";
 
                 // Assert
                 Assert.Equal(_successCode, r.ExitCode);
-                Assert.DoesNotContain("namespace", r.Output);
+                Assert.DoesNotContain("pattern", r.Output);
             }
         }
 
         [Fact]
-        public void RestoreCommand_NameSpaceFilter_Cli_WithAllSourceOptions_Succeed()
+        public void RestoreCommand_PackageSourceMappingFilter_Cli_WithAllSourceOptions_Succeed()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3121,12 +3121,12 @@ EndProject";
             // Assert
             Assert.Equal(_successCode, r.ExitCode);
             // If we pass source then log include actual path to repository instead of repository name.
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.Opensource.A' are: 'PublicRepository'", r.Output);
         }
 
         [Fact]
-        public void RestoreCommand_NameSpaceFilter_Cli_WithNotEnoughSourceOption_Fails()
+        public void RestoreCommand_PackageSourceMappingFilter_Cli_WithNotEnoughSourceOption_Fails()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3205,7 +3205,7 @@ EndProject";
                 waitForExit: true);
 
             // Assert
-            Assert.Contains($"Package namespace matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
+            Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             // Even though there is eligible source SharedRepository exist but only opensourceRepositoryPath passed as option it'll fail to restore.
             Assert.Equal(_failureCode, r.ExitCode);
             Assert.Contains("Unable to find version '1.0.0' of package 'Contoso.Opensource'.", r.Item3);
@@ -3213,7 +3213,7 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_PackageNamespace_InternationalSources_SearchMatchWithOneSource()
+        public void RestoreCommand_PackageSourceMapping_InternationalSources_SearchMatchWithOneSource()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();

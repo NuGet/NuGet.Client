@@ -240,19 +240,19 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         [InlineData("")]
         [InlineData("nuget.org,nuget")]
         [InlineData(" nuget.org , nuget | privateRepository , private* ")]
-        public async Task ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject(string packageNamespaces)
+        public async Task ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject(string packageSourceMapping)
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
             data.NupkgCount = 0;
             data.Resources.Clear();
             data.Http.Requests = 0;
-            PackageNamespacesConfiguration configuration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
+            var configuration = string.IsNullOrEmpty(packageSourceMapping) ? null : PackageSourceMappingUtility.GetpackageSourceMapping(packageSourceMapping);
 
             var sourceRepository = new SourceRepository(new PackageSource("source"), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageNamespacesConfiguration: configuration);
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageSourceMappingConfiguration: configuration);
 
             // Assert
             Assert.Null(result);
@@ -262,7 +262,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         [InlineData("")]
         [InlineData("nuget.org,nuget")]
         [InlineData(" nuget.org , nuget | privateRepository , private* ")]
-        public async Task ToTelemetry_WithData_CreatesTelemetryProperties(string packageNamespaces)
+        public async Task ToTelemetry_WithData_CreatesTelemetryProperties(string packageSourceMapping)
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
@@ -285,12 +285,12 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             httpData.Failed = 1;
             httpData.StatusCodes.Add(200, 7);
             httpData.StatusCodes.Add(404, 3);
-            PackageNamespacesConfiguration configuration = string.IsNullOrEmpty(packageNamespaces) ? null : PackageNamespacesConfigurationUtility.GetPackageNamespacesConfiguration(packageNamespaces);
+            var configuration = string.IsNullOrEmpty(packageSourceMapping) ? null : PackageSourceMappingUtility.GetpackageSourceMapping(packageSourceMapping);
 
             var source = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageNamespacesConfiguration: configuration);
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageSourceMappingConfiguration: configuration);
 
             // Assert
             Assert.NotNull(result);
@@ -327,7 +327,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(httpData.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Total]);
             Assert.Equal(httpData.HeaderDuration.Value.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Header]);
 
-            if (string.IsNullOrEmpty(packageNamespaces))
+            if (string.IsNullOrEmpty(packageSourceMapping))
             {
                 Assert.False((bool)result["PackageSourceMapping.IsMappingEnabled"]);
             }

@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Core.Types
             sourceCacheContext,
             directDownloadDirectory: null,
             directDownload: false,
-            packageNamespacesConfiguration: null)
+            packageSourceMappingConfiguration: null)
         {
         }
 
@@ -43,12 +43,12 @@ namespace NuGet.Protocol.Core.Types
             SourceCacheContext sourceCacheContext,
             string directDownloadDirectory,
             bool directDownload,
-            PackageNamespacesConfiguration packageNamespacesConfiguration) : this(
+            PackageSourceMapping packageSourceMappingConfiguration) : this(
             sourceCacheContext,
             directDownloadDirectory,
             directDownload)
         {
-            PackageNamespacesConfiguration = packageNamespacesConfiguration;
+            PackageSourceMapping = packageSourceMappingConfiguration;
         }
 
         public SourceCacheContext SourceCacheContext { get; }
@@ -58,6 +58,6 @@ namespace NuGet.Protocol.Core.Types
         public Guid ParentId { get; set; }
 
         public ClientPolicyContext ClientPolicyContext { get; set; }
-        public PackageNamespacesConfiguration PackageNamespacesConfiguration { get; }
+        public PackageSourceMapping PackageSourceMapping { get; }
     }
 }

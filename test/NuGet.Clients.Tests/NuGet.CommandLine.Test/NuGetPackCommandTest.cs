@@ -894,8 +894,10 @@ namespace Proj2
             }
         }
 
-        [SkipMono]
-        public void PackCommand_PclProjectWithProjectJsonAndTargetsNetStandard()
+        [SkipMonoTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PackCommand_PclProjectWithProjectJsonAndTargetsNetStandard(bool packEnabled)
         {
             // This bug tests issue: https://github.com/NuGet/Home/issues/3108
             var nugetexe = Util.GetNuGetExePath();
@@ -953,11 +955,19 @@ namespace Proj1
             }
             ");
 
+                var environmentVariables = new Dictionary<string, string>();
+
+                if (packEnabled)
+                {
+                    environmentVariables.Add("NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK", "true");
+                }
+
                 var t = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
                     $"restore {project1Path}",
-                    waitForExit: true);
+                    waitForExit: true,
+                    environmentVariables: environmentVariables);
                 Assert.True(t.Success, t.AllOutput);
 
                 // Act
@@ -965,23 +975,36 @@ namespace Proj1
                     nugetexe,
                     proj1Directory,
                     "pack proj1.csproj -build ",
-                    waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                    waitForExit: true,
+                    environmentVariables: environmentVariables);
 
                 // Assert
-                var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
-                Assert.True(File.Exists(nupkgName));
-                var package = new OptimizedZipPackage(nupkgName);
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
-                Array.Sort(files);
-                Assert.Equal(
-                    new string[]
-                    {
+                if (packEnabled)
+                {
+                    Assert.True(0 == r.Item1, r.AllOutput);
+                    var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
+                    Assert.True(File.Exists(nupkgName));
+                    var package = new OptimizedZipPackage(nupkgName);
+                    var files = package.GetFiles().Select(f => f.Path).ToArray();
+                    Array.Sort(files);
+                    Assert.Equal(
+                        new string[]
+                        {
                         Path.Combine("lib", "netstandard1.3", "proj1.dll")
-                    },
-                    files);
+                        },
+                        files);
 
-                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj1"), r.Item2);
+                    Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj1"), r.AllOutput);
+                }
+                else
+                {
+                    Assert.True(1 == r.Item1, r.AllOutput);
+                    var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
+                    Assert.False(File.Exists(nupkgName));
+
+                    Assert.Contains(
+                        string.Format(NuGetResources.Error_ProjectJson_Deprecated_And_Removed, "proj1", "NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK"), r.Errors);
+                }
             }
         }
 
@@ -6318,7 +6341,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11234")]
         public void PackCommand_PackReadme_DirSeparatorForwardSlash2_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
@@ -6372,7 +6395,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackReadmeSuccess(testDir, @"docs\readme.md");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11234")]
         public void PackCommand_PackReadme_DirSeparatorMix1_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
@@ -6426,7 +6449,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackReadmeSuccess(testDir, @"docs/readme.md");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11234")]
         public void PackCommand_PackReadme_DirSeparatorMix4_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();

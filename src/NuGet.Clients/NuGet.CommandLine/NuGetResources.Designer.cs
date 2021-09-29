@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class NuGetResources {
@@ -3108,6 +3108,17 @@ namespace NuGet.CommandLine {
         public static string Error_ProcessingNuspecFile_trk {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to `project.json` pack is disabled in the current NuGet version, and will be permanently removed in a future version.
+        ///Please consider migrating &apos;{0}&apos; to `PackageReference` and using the pack targets.
+        ///You can set the &apos;{1}&apos; environment variable to &apos;true&apos; to temporarily reenable this functionality..
+        /// </summary>
+        public static string Error_ProjectJson_Deprecated_And_Removed {
+            get {
+                return ResourceManager.GetString("Error_ProjectJson_Deprecated_And_Removed", resourceCulture);
             }
         }
         

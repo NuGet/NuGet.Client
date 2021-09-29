@@ -728,19 +728,18 @@ namespace NuGet.ProjectModel.Test
 
             var packageSpec = new PackageSpec()
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 Authors = unsortedArray,
                 BuildOptions = new BuildOptions() { OutputName = "outputName" },
                 ContentFiles = new List<string>(unsortedArray),
                 Copyright = "copyright",
                 Dependencies = new List<LibraryDependency>() { libraryDependency, libraryDependencyWithNoWarnGlobal },
                 Description = "description",
-                FilePath = "filePath",
                 HasVersionSnapshot = true,
                 IconUrl = "iconUrl",
                 IsDefaultVersion = false,
                 Language = "language",
                 LicenseUrl = "licenseUrl",
-                Name = "name",
                 Owners = unsortedArray,
                 PackOptions = new PackOptions()
                 {
@@ -755,6 +754,11 @@ namespace NuGet.ProjectModel.Test
                 ProjectUrl = "projectUrl",
                 ReleaseNotes = "releaseNotes",
                 RequireLicenseAcceptance = true,
+                Summary = "summary",
+                Tags = unsortedArray,
+#pragma warning restore CS0612 // Type or member is obsolete
+                Name = "name",
+                FilePath = "filePath",
                 RestoreMetadata = new ProjectRestoreMetadata()
                 {
                     CrossTargeting = true,
@@ -778,8 +782,6 @@ namespace NuGet.ProjectModel.Test
                             new ProjectRestoreMetadataFrameworkInfo(nugetFramework)
                         }
                 },
-                Summary = "summary",
-                Tags = unsortedArray,
                 Title = "title",
                 Version = new NuGetVersion("1.2.3")
             };
@@ -794,9 +796,11 @@ namespace NuGet.ProjectModel.Test
                 packageSpec.RestoreMetadata.ProjectWideWarningProperties = warningProperties;
             }
 
+#pragma warning disable CS0612 // Type or member is obsolete
             packageSpec.PackInclude.Add("b", "d");
             packageSpec.PackInclude.Add("a", "e");
             packageSpec.PackInclude.Add("c", "f");
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var runtimeDependencySet = new RuntimeDependencySet("id", new[]
             {
@@ -813,9 +817,11 @@ namespace NuGet.ProjectModel.Test
 
             packageSpec.RuntimeGraph = new RuntimeGraph(runtimes, compatibilityProfiles);
 
+#pragma warning disable CS0612 // Type or member is obsolete
             packageSpec.Scripts.Add("b", unsortedArray);
             packageSpec.Scripts.Add("a", unsortedArray);
             packageSpec.Scripts.Add("c", unsortedArray);
+#pragma warning restore CS0612 // Type or member is obsolete
 
             packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation()
             {

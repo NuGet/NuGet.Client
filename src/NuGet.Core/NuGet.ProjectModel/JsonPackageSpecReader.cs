@@ -99,6 +99,7 @@ namespace NuGet.ProjectModel
 
                 switch (propertyName)
                 {
+#pragma warning disable CS0612 // Type or member is obsolete
                     case "authors":
                         packageSpec.Authors = ReadStringArray(jsonReader) ?? Array.Empty<string>();
                         break;
@@ -119,6 +120,7 @@ namespace NuGet.ProjectModel
                     case "copyright":
                         packageSpec.Copyright = jsonReader.ReadNextTokenAsString();
                         break;
+#pragma warning restore CS0612 // Type or member is obsolete
 
                     case "dependencies":
                         ReadDependencies(
@@ -128,14 +130,17 @@ namespace NuGet.ProjectModel
                             isGacOrFrameworkReference: false);
                         break;
 
+#pragma warning disable CS0612 // Type or member is obsolete
                     case "description":
                         packageSpec.Description = jsonReader.ReadNextTokenAsString();
                         break;
+#pragma warning restore CS0612 // Type or member is obsolete
 
                     case "frameworks":
                         ReadFrameworks(jsonReader, packageSpec);
                         break;
 
+#pragma warning disable CS0612 // Type or member is obsolete
                     case "language":
                         packageSpec.Language = jsonReader.ReadNextTokenAsString();
                         break;
@@ -148,6 +153,7 @@ namespace NuGet.ProjectModel
                         ReadPackOptions(jsonReader, packageSpec, ref isMappingsNull);
                         wasPackOptionsSet = true;
                         break;
+#pragma warning restore CS0612 // Type or member is obsolete
 
                     case "restore":
                         ReadMSBuildMetadata(jsonReader, packageSpec);
@@ -157,9 +163,11 @@ namespace NuGet.ProjectModel
                         runtimeDescriptions = ReadRuntimes(jsonReader);
                         break;
 
+#pragma warning disable CS0612 // Type or member is obsolete
                     case "scripts":
                         ReadScripts(jsonReader, packageSpec);
                         break;
+#pragma warning restore CS0612 // Type or member is obsolete
 
                     case "supports":
                         compatibilityProfiles = ReadSupports(jsonReader);
@@ -176,7 +184,9 @@ namespace NuGet.ProjectModel
                         {
                             try
                             {
+#pragma warning disable CS0612 // Type or member is obsolete
                                 packageSpec.HasVersionSnapshot = PackageSpecUtility.IsSnapshotVersion(version);
+#pragma warning restore CS0612 // Type or member is obsolete
                                 packageSpec.Version = PackageSpecUtility.SpecifySnapshot(version, snapshotValue);
                             }
                             catch (Exception ex)
@@ -191,6 +201,7 @@ namespace NuGet.ProjectModel
             packageSpec.Name = name;
             packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
+#pragma warning disable CS0612 // Type or member is obsolete
             if (!wasPackOptionsSet)
             {
                 packageSpec.Owners = Array.Empty<string>();
@@ -205,6 +216,7 @@ namespace NuGet.ProjectModel
             {
                 packageSpec.PackOptions.Mappings = null;
             }
+#pragma warning restore CS0612 // Type or member is obsolete
 
             packageSpec.RuntimeGraph = new RuntimeGraph(
                 runtimeDescriptions ?? Enumerable.Empty<RuntimeDescription>(),
@@ -232,6 +244,7 @@ namespace NuGet.ProjectModel
             return new PackageType(name, Packaging.Core.PackageType.EmptyVersion);
         }
 
+        [Obsolete]
         private static void ReadBuildOptions(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
             packageSpec.BuildOptions = new BuildOptions();
@@ -1226,10 +1239,12 @@ namespace NuGet.ProjectModel
                             throw new InvalidCastException();
                     }
 
+#pragma warning disable CS0612 // Type or member is obsolete
                     if (packageTypes != null)
                     {
                         packageSpec.PackOptions.PackageType = packageTypes;
                     }
+#pragma warning restore CS0612 // Type or member is obsolete
                 }
             }
             catch (Exception)
@@ -1245,6 +1260,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete]
         private static void ReadPackInclude(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
             jsonReader.ReadObject(propertyName =>
@@ -1255,6 +1271,7 @@ namespace NuGet.ProjectModel
             });
         }
 
+        [Obsolete]
         private static void ReadPackOptions(JsonTextReader jsonReader, PackageSpec packageSpec, ref bool isMappingsNull)
         {
             var wasMappingsRead = false;
@@ -1318,6 +1335,7 @@ namespace NuGet.ProjectModel
             isMappingsNull = isPackOptionsValueAnObject && !wasMappingsRead;
         }
 
+        [Obsolete]
         private static bool ReadPackOptionsFiles(PackageSpec packageSpec, JsonTextReader jsonReader, bool wasMappingsRead)
         {
             IReadOnlyList<string> excludeFiles = null;
@@ -1429,6 +1447,7 @@ namespace NuGet.ProjectModel
             return runtimeDescriptions;
         }
 
+        [Obsolete]
         private static void ReadScripts(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
             jsonReader.ReadObject(propertyName =>
