@@ -1,0 +1,41 @@
+﻿// This file is used by Code Analysis to maintain SuppressMessage
+// attributes that are applied to this project.
+// Project-level suppressions either have no target or are given
+// a specific target and scoped to a namespace, type, member, etc.
+
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.BatchEventsApi(System.String,System.String)~System.Boolean")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.ExecuteInitScript(System.String,System.String,System.Int32)~System.Boolean")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.InstallLatestPackageApi(System.String,System.Boolean)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.InstallPackageApi(System.String,System.String,System.String,System.Boolean)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.IsFileExistsInProject(System.String,System.String)~System.Boolean")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.MigrateJsonProject(System.String)~NuGet.VisualStudio.IVsProjectJsonToPackageReferenceMigrateResult")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.RestorePackageApi")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.InternalAPITestHook.UninstallPackageApi(System.String,System.Boolean)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSHelper.FocusStoredPSWindow")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSHelper.GetBuildOutput~System.String")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSHelper.GetErrors~System.String[]")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSHelper.GetVSVersion~System.String")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSHelper.GetWarnings~System.String[]")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSHelper.NewTextFile")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSHelper.StorePSWindow")]
+[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSProjectHelper.CloseOpenDocumentsAsync(EnvDTE80.DTE2)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSProjectHelper.NewProject(System.String,System.String,System.String,System.String,System.String)~System.Object")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.AdviseSolutionEvents")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.BuildSolution")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.CleanSolution")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.CloseSolution")]
+[assembly: SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.CreateNewSolution(System.String)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.CreateSolution(System.String,System.String)")]
+[assembly: SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.GetProjectAsync(EnvDTE.Project,System.String)~System.Threading.Tasks.Task{EnvDTE.Project}")]
+[assembly: SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.GetProjectAsync(EnvDTE80.Solution2,System.String)~System.Threading.Tasks.Task{EnvDTE.Project}")]
+[assembly: SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.GetSolutionFolderProjectAsync(EnvDTE80.Solution2,System.String)~System.Threading.Tasks.Task{EnvDTE.Project}")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.GetSolutionFullName~System.String")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.NewSolutionFolder(System.String,System.String)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.OpenSolution(System.String)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.RebuildSolution")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.RenameSolutionFolder(System.String,System.String)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.SaveAsSolution(System.String)")]
+[assembly: SuppressMessage("Usage", "VSTHRD104:Offer async methods", Justification = "<Pending>", Scope = "member", Target = "~M:API.Test.VSSolutionHelper.UnadviseSolutionEvents")]
+[assembly: SuppressMessage("Usage", "VSTHRD102:Implement internal logic asynchronously", Justification = "<Pending>", Scope = "member", Target = "~P:API.Test.ServiceLocator.ComponentModel")]
