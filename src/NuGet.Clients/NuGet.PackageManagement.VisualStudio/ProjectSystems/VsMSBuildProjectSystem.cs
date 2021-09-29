@@ -543,7 +543,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void AddBindingRedirects()
         {
-            var settings = ServiceLocator.GetInstanceSafe<Configuration.ISettings>();
+            var settings = ServiceLocator.GetComponentModelService<Configuration.ISettings>();
 
             var behavior = new BindingRedirectBehavior(settings);
 
@@ -594,7 +594,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (!_bindingRedirectsRelatedInitialized)
             {
-                var solutionManager = ServiceLocator.GetInstanceSafe<ISolutionManager>();
+                var solutionManager = ServiceLocator.GetComponentModelService<ISolutionManager>();
                 VSSolutionManager = (solutionManager != null) ? (solutionManager as VSSolutionManager) : null;
                 VSFrameworkMultiTargeting = ServiceLocator.GetGlobalService<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
             }

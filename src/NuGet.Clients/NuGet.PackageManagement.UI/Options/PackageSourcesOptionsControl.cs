@@ -158,7 +158,7 @@ namespace NuGet.Options
 
                 _initialized = true;
 
-                IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetInstanceAsync<IServiceBrokerProvider>();
+                IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
                 IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings

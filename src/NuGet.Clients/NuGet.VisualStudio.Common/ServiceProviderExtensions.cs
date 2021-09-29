@@ -15,13 +15,13 @@ namespace NuGet.VisualStudio
     public static class ServiceProviderExtensions
     {
         public static Task<EnvDTE.DTE> GetDTEAsync(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
+            this IAsyncServiceProvider site)
         {
             return site.GetServiceAsync<SDTE, EnvDTE.DTE>();
         }
 
         public static Task<IComponentModel> GetComponentModelAsync(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
+            this IAsyncServiceProvider site)
         {
             return site.GetServiceAsync<SComponentModel, IComponentModel>();
         }
