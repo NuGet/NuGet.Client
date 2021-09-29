@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -58,9 +58,7 @@
     <Compile Include="Automation\ListViewToggleableItemsAutomationPeer.cs" />
     <Compile Include="Automation\ToggleableItemAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
-    <Compile Include="Common\NuGetEvent.cs" />
-    <Compile Include="Common\NuGetEventTrigger.cs" />
-    <Compile Include="Converters\AcceleratorKeyConverter.cs" />
+    <Compile Include="Converters\StringResourceToAccessKeyConverter.cs" />
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
     <Compile Include="Converters\DeprecationToDeprecationLabelStateConverter.cs" />
