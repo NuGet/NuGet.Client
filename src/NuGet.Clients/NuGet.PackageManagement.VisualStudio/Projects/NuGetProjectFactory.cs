@@ -69,13 +69,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (vsProjectAdapter.VsHierarchy != null &&
-                VsHierarchyUtility.IsCPSCapabilityCompliant(vsProjectAdapter.VsHierarchy))
-            {
-                // Lazy load the CPS enabled JoinableTaskFactory for the UI.
-                NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
-            }
-
             var exceptions = new List<Exception>();
             foreach (var provider in _providers)
             {
@@ -127,13 +120,6 @@ namespace NuGet.PackageManagement.VisualStudio
             if (provider == null)
             {
                 return null;
-            }
-
-            if (vsProjectAdapter.VsHierarchy != null &&
-                VsHierarchyUtility.IsCPSCapabilityCompliant(vsProjectAdapter.VsHierarchy))
-            {
-                // Lazy load the CPS enabled JoinableTaskFactory for the UI.
-                NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
             }
 
             try

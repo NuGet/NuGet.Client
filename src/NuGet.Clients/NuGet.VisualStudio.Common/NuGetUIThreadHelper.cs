@@ -33,34 +33,6 @@ namespace NuGet.VisualStudio
             }
         }
 
-        /// <summary>
-        /// Retrieve the CPS enabled JoinableTaskFactory for the current version of Visual Studio.
-        /// This overrides the default VsTaskLibraryHelper.ServiceInstance JTF.
-        /// </summary>
-        public static void SetJoinableTaskFactoryFromService(IProjectServiceAccessor projectServiceAccessor)
-        {
-            if (projectServiceAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(projectServiceAccessor));
-            }
-
-            if (LazyJoinableTaskFactory == null)
-            {
-                LazyJoinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
-                {
-                    // Use IProjectService for Visual Studio 2017
-                    var projectService = projectServiceAccessor.GetProjectService();
-                    return projectService.Services.ThreadingPolicy.JoinableTaskFactory;
-                },
-                // This option helps avoiding deadlocks caused by CPS trying to create ProjectServiceHost
-                // PublicationOnly mode lets parallel threads execute value factory method without
-                // being blocked on each other.
-                // It is correct behavior in this case as the value factory provides the same value
-                // each time it is called and Lazy is used just for caching the value for perf reasons.
-                LazyThreadSafetyMode.PublicationOnly);
-            }
-        }
-
         public static void SetCustomJoinableTaskFactory(JoinableTaskFactory joinableTaskFactory)
         {
             Assumes.Present(joinableTaskFactory);

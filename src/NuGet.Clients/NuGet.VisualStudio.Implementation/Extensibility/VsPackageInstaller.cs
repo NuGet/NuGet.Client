@@ -38,7 +38,6 @@ namespace NuGet.VisualStudio
         private readonly ISettings _settings;
         private readonly IVsSolutionManager _solutionManager;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
-        private bool _isCPSJTFLoaded;
         private readonly INuGetTelemetryProvider _telemetryProvider;
 
         // Reason it's lazy<object> is because we don't want to load any CPS assemblies until
@@ -60,34 +59,9 @@ namespace NuGet.VisualStudio
             _settings = settings;
             _solutionManager = solutionManager;
             _deleteOnRestartManager = deleteOnRestartManager;
-            _isCPSJTFLoaded = false;
             _telemetryProvider = telemetryProvider;
 
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
-        }
-
-        private void RunJTFWithCorrectContext(Project project, Func<Task> asyncTask)
-        {
-            if (!_isCPSJTFLoaded)
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    IVsHierarchy vsHierarchy = await project.ToVsHierarchyAsync();
-                    if (vsHierarchy != null &&
-                        VsHierarchyUtility.IsCPSCapabilityCompliant(vsHierarchy))
-                    {
-                        // Lazy load the CPS enabled JoinableTaskFactory for the UI.
-                        NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
-
-                        PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
-                        _isCPSJTFLoaded = true;
-                    }
-                });
-            }
-
-            PumpingJTF.Run(asyncTask);
         }
 
         public void InstallLatestPackage(
@@ -99,7 +73,7 @@ namespace NuGet.VisualStudio
         {
             try
             {
-                RunJTFWithCorrectContext(project, () => InstallPackageAsync(
+                PumpingJTF.Run(() => InstallPackageAsync(
                     source,
                     project,
                     packageId,
@@ -125,7 +99,7 @@ namespace NuGet.VisualStudio
                     semVer = new NuGetVersion(version);
                 }
 
-                RunJTFWithCorrectContext(project, () => InstallPackageAsync(
+                PumpingJTF.Run(() => InstallPackageAsync(
                     source,
                     project,
                     packageId,
@@ -151,7 +125,7 @@ namespace NuGet.VisualStudio
                     _ = NuGetVersion.TryParse(version, out semVer);
                 }
 
-                RunJTFWithCorrectContext(project, () => InstallPackageAsync(
+                PumpingJTF.Run(() => InstallPackageAsync(
                     source,
                     project,
                     packageId,
@@ -224,7 +198,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                RunJTFWithCorrectContext(project, async () =>
+                PumpingJTF.Run(async () =>
                     {
                         // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source 
                         // (located at C:\Program Files (x86)\Microsoft SDKs\NuGetPackages) follows the V3
@@ -300,7 +274,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                RunJTFWithCorrectContext(project, () =>
+                PumpingJTF.Run(() =>
                     {
                         var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
                         repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
