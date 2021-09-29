@@ -217,9 +217,9 @@ namespace NuGet.CommandLine
                         Console)
                 };
 
-                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+                var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
-                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload, packageNamespacesConfiguration)
+                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload, packageSourceMappingConfiguration)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
@@ -371,9 +371,9 @@ namespace NuGet.CommandLine
                     resolutionContext.SourceCacheContext.NoCache = NoCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
-                    PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+                    var packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
-                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload, packageNamespacesConfiguration)
+                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload, packageSourceMappingConfiguration)
                     {
                         ClientPolicyContext = clientPolicyContext
                     };

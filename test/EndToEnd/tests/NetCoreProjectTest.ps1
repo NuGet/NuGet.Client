@@ -187,7 +187,9 @@ function Test-NetCoreTargetFrameworksVSandMSBuildNoOp {
 }
 
 function Test-NetCoreMultipleTargetFrameworksVSandMSBuildNoOp {
-    
+    [SkipTest('https://github.com/NuGet/Home/issues/11231')]
+    param ()
+
     # Arrange
     $project = New-NetCoreConsoleMultipleTargetFrameworksApp ConsoleApp
     Build-Solution

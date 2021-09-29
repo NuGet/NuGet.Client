@@ -106,16 +106,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _runspaceManager = runspaceManager;
 
             // TODO: Take these as ctor arguments
-            _sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
-            _solutionManager = new Lazy<IVsSolutionManager>(() => ServiceLocator.GetComponentModelService<IVsSolutionManager>());
-            _settings = new Lazy<ISettings>(() => ServiceLocator.GetComponentModelService<ISettings>());
-            _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>());
-            _scriptExecutor = new Lazy<IScriptExecutor>(() => ServiceLocator.GetComponentModelService<IScriptExecutor>());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
+            _solutionManager = new Lazy<IVsSolutionManager>(() => componentModel.GetService<IVsSolutionManager>());
+            _settings = new Lazy<ISettings>(() => componentModel.GetService<ISettings>());
+            _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => componentModel.GetService<IDeleteOnRestartManager>());
+            _scriptExecutor = new Lazy<IScriptExecutor>(() => componentModel.GetService<IScriptExecutor>());
 
             _dte = new Lazy<DTE>(() => ServiceLocator.GetInstance<DTE>());
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
-                () => ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>());
-            _commonOperations = new Lazy<ICommonOperations>(() => ServiceLocator.GetInstanceSafe<ICommonOperations>());
+                () => componentModel.GetService<ISourceControlManagerProvider>());
+            _commonOperations = new Lazy<ICommonOperations>(() => componentModel.GetService<ICommonOperations>());
             _name = name;
             IsCommandEnabled = true;
 

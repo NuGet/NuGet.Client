@@ -162,9 +162,9 @@ namespace NuGet.PackageManagement.UI
 
         public static object TabSelectedTextBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColorKey;
 
-        public static object TabPopupBrushKey { get; private set; } = SystemColors.ActiveCaptionTextColor;
+        public static object TabPopupBrushKey { get; private set; } = SystemColors.HighlightBrushKey;
 
-        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrush;
+        public static object TabPopupTextBrushKey { get; private set; } = SystemColors.HighlightTextBrushKey;
 
         public static object TabTextHoverBrushKey { get; private set; } = SystemColors.HotTrackBrushKey;
 
@@ -261,8 +261,6 @@ namespace NuGet.PackageManagement.UI
             TabSelectedTextBrushKey = CommonDocumentColors.InnerTabSelectedTextBrushKey; // text
             TabTextHoverBrushKey = CommonDocumentColors.InnerTabTextHoverBrushKey; //text hover
             TabTextFocusedBrushKey = CommonDocumentColors.InnerTabTextFocusedBrushKey;
-            TabPopupBrushKey = CommonControlsColors.ButtonPressedBrushKey;
-            TabPopupTextBrushKey = CommonControlsColors.ButtonPressedTextBrushKey;
 
             // Mapping color keys directly for use to create brushes using these colors
             ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;

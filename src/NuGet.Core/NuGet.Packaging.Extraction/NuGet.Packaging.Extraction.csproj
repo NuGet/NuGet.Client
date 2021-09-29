@@ -177,6 +177,10 @@
     <Compile Include="..\NuGet.Packaging\Signing\Archive\Crc32.cs" Link="NuGet.Packaging\Signing\Archive\Crc32.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\UnsignedPackageArchiveMetadata.cs" Link="NuGet.Packaging\Signing\Archive\UnsignedPackageArchiveMetadata.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Archive\SignedPackageArchiveMetadata.cs" Link="NuGet.Packaging\Signing\Archive\SignedPackageArchiveMetadata.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\ChainBuilding\DefaultX509ChainBuildPolicy.cs" Link="NuGet.Packaging\Signing\ChainBuilding\DefaultX509ChainBuildPolicy.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\ChainBuilding\IX509ChainBuildPolicy.cs" Link="NuGet.Packaging\Signing\ChainBuilding\IX509ChainBuildPolicy.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\ChainBuilding\RetriableX509ChainBuildPolicy.cs" Link="NuGet.Packaging\Signing\ChainBuilding\RetriableX509ChainBuildPolicy.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\ChainBuilding\X509ChainBuildPolicyFactory.cs" Link="NuGet.Packaging\Signing\ChainBuilding\X509ChainBuildPolicyFactory.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\CmsFactory.cs" Link="NuGet.Packaging\Signing\Cms\CmsFactory.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\ICms.cs" Link="NuGet.Packaging\Signing\Cms\ICms.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Cms\NativeCms.cs" Link="NuGet.Packaging\Signing\Cms\NativeCms.cs" />

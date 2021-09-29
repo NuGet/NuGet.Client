@@ -25,8 +25,9 @@ namespace NuGet.Options
         public GeneralOptionControl()
         {
             InitializeComponent();
-            _settings = ServiceLocator.GetComponentModelService<ISettings>();
-            _outputConsoleLogger = ServiceLocator.GetComponentModelService<INuGetUILogger>();
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            _settings = componentModel.GetService<ISettings>();
+            _outputConsoleLogger = componentModel.GetService<INuGetUILogger>();
             _localsCommandRunner = new LocalsCommandRunner();
             AutoScroll = true;
             Debug.Assert(_settings != null);

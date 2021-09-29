@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement
         private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _maxDegreeOfParallelism;
         private readonly ConcurrentDictionary<string, TimeSpan> _timeTaken = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
-        private readonly bool _areNamespacesEnabled;
+        private readonly bool _isSourceMappingConfigured;
 
         private ResolverGather(GatherContext context)
         {
@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement
             _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
 
             _cache = _context.ResolutionContext?.GatherCache;
-            _areNamespacesEnabled = _context.PackageNamespacesConfiguration?.AreNamespacesEnabled == true;
+            _isSourceMappingConfigured = _context.PackageSourceMapping?.IsEnabled == true;
         }
 
         /// <summary>
@@ -537,19 +537,19 @@ namespace NuGet.PackageManagement
         {
             IReadOnlyList<string> configuredPackageSources = null;
 
-            if (_areNamespacesEnabled)
+            if (_isSourceMappingConfigured)
             {
 
-                configuredPackageSources = _context.PackageNamespacesConfiguration.GetConfiguredPackageSources(package.Id);
+                configuredPackageSources = _context.PackageSourceMapping.GetConfiguredPackageSources(package.Id);
 
                 if (configuredPackageSources != null)
                 {
                     var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
-                    _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceMatchFound((package.Id), packageSourcesAtPrefix));
+                    _context.Log.LogDebug(StringFormatter.Log_PackageSourceMappingMatchFound((package.Id), packageSourcesAtPrefix));
                 }
                 else
                 {
-                    _context.Log.LogDebug(StringFormatter.Log_PackageNamespaceNoMatchFound((package.Id)));
+                    _context.Log.LogDebug(StringFormatter.Log_PackageSourceMappingNoMatchFound((package.Id)));
                 }
             }
 
@@ -560,7 +560,7 @@ namespace NuGet.PackageManagement
             {
                 foreach (SourceResource source in sources)
                 {
-                    if (_areNamespacesEnabled)
+                    if (_isSourceMappingConfigured)
                     {
                         if (configuredPackageSources == null ||
                             configuredPackageSources.Count == 0 ||

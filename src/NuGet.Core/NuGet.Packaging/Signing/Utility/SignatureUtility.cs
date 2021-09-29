@@ -619,13 +619,13 @@ namespace NuGet.Packaging.Signing
 
             using (var chainHolder = new X509ChainHolder())
             {
-                var chain = chainHolder.Chain;
+                X509Chain chain = chainHolder.Chain;
 
                 chain.ChainPolicy.ExtraStore.AddRange(extraStore);
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
 
-                chain.Build(certificate);
+                CertificateChainUtility.BuildWithPolicy(chain, certificate);
 
                 if (chain.ChainStatus.Any(chainStatus =>
                     chainStatus.Status.HasFlag(X509ChainStatusFlags.Cyclic) ||
