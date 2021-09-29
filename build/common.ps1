@@ -240,7 +240,7 @@ Function Install-DotnetCLI {
 
         #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
         if ($Force -or -not (Test-Path $probeDotnetPath)) {
-            $channelMainVersion = "5"
+            $channelMainVersion = ""
             foreach($channelPart in $cli.Channel.Split('/'))
             {
                 if($channelPart -match "\d+.*")
@@ -249,6 +249,11 @@ Function Install-DotnetCLI {
                     Break
                 }
             }
+
+            if ([string]::IsNullOrEmpty($channelMainVersion)) {
+                Error-Log "Unable to detect channel version for dotnetinstall.ps1. The CLI install cannot be initiated." -Fatal
+            }
+
             Trace-Log "$DotNetInstall -Channel $($channelMainVersion) -Quality Daily -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
             & $DotNetInstall -Channel $channelMainVersion -Quality Daily -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
