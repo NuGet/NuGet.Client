@@ -243,7 +243,7 @@ Function Install-DotnetCLI {
             $channelMainVersion = ""
             foreach($channelPart in $cli.Channel.Split('/'))
             {
-                if($channelPart -match "\d+.*")
+                if ($channelPart -match "\d+.*")
                 {
                     $channelMainVersion = $channelPart.Split('.')[0]
                     Break
