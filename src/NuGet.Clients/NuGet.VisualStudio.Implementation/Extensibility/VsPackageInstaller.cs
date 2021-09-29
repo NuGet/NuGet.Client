@@ -40,11 +40,6 @@ namespace NuGet.VisualStudio
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly INuGetTelemetryProvider _telemetryProvider;
 
-        // Reason it's lazy<object> is because we don't want to load any CPS assemblies until
-        // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
-        [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
-        private Lazy<object> ProjectServiceAccessor { get; set; }
-
         private JoinableTaskFactory PumpingJTF { get; set; }
 
         [ImportingConstructor]
