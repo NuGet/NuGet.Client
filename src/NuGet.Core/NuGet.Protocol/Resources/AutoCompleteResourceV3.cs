@@ -49,10 +49,12 @@ namespace NuGet.Protocol
 
             queryUrl.Query = queryString;
 
+            Common.ILogger logger = log ?? Common.NullLogger.Instance;
+
             var queryUri = queryUrl.Uri;
             var results = await _client.GetJObjectAsync(
-                new HttpSourceRequest(queryUri, log ?? Common.NullLogger.Instance),
-                log ?? Common.NullLogger.Instance,
+                new HttpSourceRequest(queryUri, logger),
+                logger,
                 token);
             token.ThrowIfCancellationRequested();
             if (results == null)
@@ -86,8 +88,10 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
+            Common.ILogger logger = log ?? Common.NullLogger.Instance;
+
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ?
-            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, log ?? Common.NullLogger.Instance, token);
+            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, logger, token);
             var versions = new List<NuGetVersion>();
             foreach (var package in packages)
             {
