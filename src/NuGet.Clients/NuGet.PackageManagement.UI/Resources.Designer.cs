@@ -358,7 +358,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cancel.
+        ///   Looks up a localized string similar to _Cancel.
         /// </summary>
         public static string Button_Cancel {
             get {
@@ -367,7 +367,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy.
+        ///   Looks up a localized string similar to Co_py.
         /// </summary>
         public static string Button_Copy {
             get {
@@ -385,7 +385,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to I Accept.
+        ///   Looks up a localized string similar to I _Accept.
         /// </summary>
         public static string Button_IAccept {
             get {
@@ -394,7 +394,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to I Decline.
+        ///   Looks up a localized string similar to I _Decline.
         /// </summary>
         public static string Button_IDecline {
             get {
@@ -412,7 +412,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No.
+        ///   Looks up a localized string similar to _No.
         /// </summary>
         public static string Button_No {
             get {
@@ -421,7 +421,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No to All.
+        ///   Looks up a localized string similar to No to A_ll.
         /// </summary>
         public static string Button_NoToAll {
             get {
@@ -430,7 +430,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to OK.
+        ///   Looks up a localized string similar to _OK.
         /// </summary>
         public static string Button_OK {
             get {
@@ -502,7 +502,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Yes.
+        ///   Looks up a localized string similar to _Yes.
         /// </summary>
         public static string Button_Yes {
             get {
@@ -511,7 +511,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Yes to All.
+        ///   Looks up a localized string similar to Yes to _All.
         /// </summary>
         public static string Button_YesToAll {
             get {
@@ -763,7 +763,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do not show this again.
+        ///   Looks up a localized string similar to _Do not show this again.
         /// </summary>
         public static string DoNotShowThisAgain {
             get {
