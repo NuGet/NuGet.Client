@@ -5,6 +5,7 @@ using System;
 
 namespace NuGet.Protocol.Core.Types
 {
+    [Serializable]
     public class RetriableProtocolException : NuGetProtocolException
     {
         public RetriableProtocolException(string message) : base(message)
