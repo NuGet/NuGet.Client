@@ -65,9 +65,6 @@ steps:
 - task: DownloadPipelineArtifact@2
   displayName: "Download CredScan artifact"
   inputs:
-    # source: specific
-    project: "devdiv"
-    pipeline: DartLab
     artifact: "CodeAnalysisLogs"
     path: $(Pipeline.Workspace)\CodeAnalysisLogs
 
@@ -76,14 +73,15 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
+      Write-Host "Current loc"
+      pwd
       try {
-        Get-ChildItem -Path  #/BUILD_CONTAINERID -recurse
+        ls $(Pipeline.Workspace)\CodeAnalysisLogs
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
       }    
       try {
-        Get-ChildItem -Path  #/BUILD_CONTAINERID -recurse
-        Get-ChildItem -Path $(Pipeline.Workspace) -recurse
+        Get-ChildItem -Path $($(Pipeline.Workspace)\CodeAnalysisLogs) -recurse
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
         exit 1
