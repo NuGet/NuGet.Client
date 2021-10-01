@@ -156,19 +156,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     RefreshUI(actions);
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) when (ex.InnerException is PackageAlreadyInstalledException)
             {
-                if (ex.InnerException is PackageAlreadyInstalledException)
-                {
-                    // Set nuget operation status to NoOp for telemetry event when package
-                    // is already installed.
-                    _status = NuGetOperationStatus.NoOp;
-                    Log(MessageLevel.Info, ex.Message);
-                }
-                else
-                {
-                    throw;
-                }
+                // Set nuget operation status to NoOp for telemetry event when package
+                // is already installed.
+                _status = NuGetOperationStatus.NoOp;
+                Log(MessageLevel.Info, ex.Message);
             }
         }
 
@@ -230,19 +223,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     RefreshUI(actions);
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) when (ex.InnerException is PackageAlreadyInstalledException)
             {
-                if (ex.InnerException is PackageAlreadyInstalledException)
-                {
-                    // Set nuget operation status to NoOp for telemetry event when package
-                    // is already installed.
-                    _status = NuGetOperationStatus.NoOp;
-                    Log(MessageLevel.Info, ex.Message);
-                }
-                else
-                {
-                    throw;
-                }
+                // Set nuget operation status to NoOp for telemetry event when package
+                // is already installed.
+                _status = NuGetOperationStatus.NoOp;
+                Log(MessageLevel.Info, ex.Message);
             }
         }
 
