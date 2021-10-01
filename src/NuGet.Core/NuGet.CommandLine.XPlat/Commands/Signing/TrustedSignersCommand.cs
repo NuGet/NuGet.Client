@@ -32,7 +32,8 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     listCommand.HelpOption(XPlatUtility.HelpOption);
-                    CommandOption verbosity = listCommand.AddVerbosity();
+
+                    CommandOption verbosity = listCommand.VerbosityOption();
 
                     listCommand.OnExecute(async () =>
                     {
@@ -50,7 +51,7 @@ namespace NuGet.CommandLine.XPlat
 
                     syncCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = syncCommand.AddVerbosity(); ;
+                    CommandOption verbosity = syncCommand.VerbosityOption(); ;
 
                     CommandArgument name = syncCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameExists);
@@ -71,7 +72,8 @@ namespace NuGet.CommandLine.XPlat
 
                     syncCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = syncCommand.AddVerbosity();
+                    CommandOption verbosity = syncCommand.VerbosityOption();
+
                     CommandArgument name = syncCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameToRemove);
 
@@ -97,7 +99,8 @@ namespace NuGet.CommandLine.XPlat
 
                     authorCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = authorCommand.AddVerbosity();
+                    CommandOption verbosity = authorCommand.VerbosityOption();
+
                     CommandArgument name = authorCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameToAdd);
                     CommandArgument package = authorCommand.Argument("<PACKAGE>",
@@ -130,7 +133,8 @@ namespace NuGet.CommandLine.XPlat
                         Strings.TrustCommandOwners,
                         CommandOptionType.MultipleValue);
 
-                    CommandOption verbosity = repositoryCommand.AddVerbosity();
+                    CommandOption verbosity = repositoryCommand.VerbosityOption();
+
                     CommandArgument name = repositoryCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameToAdd);
                     CommandArgument package = repositoryCommand.Argument("<PACKAGE>",
@@ -163,7 +167,8 @@ namespace NuGet.CommandLine.XPlat
 
                     certificateCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = certificateCommand.AddVerbosity();
+                    CommandOption verbosity = certificateCommand.VerbosityOption();
+
                     CommandArgument name = certificateCommand.Argument("<NAME>",
                                                Strings.TrustedCertificateSignerNameToAdd);
                     CommandArgument fingerprint = certificateCommand.Argument("<FINGERPRINT>",
@@ -196,7 +201,8 @@ namespace NuGet.CommandLine.XPlat
                         Strings.TrustSourceUrl,
                         CommandOptionType.SingleValue);
 
-                    CommandOption verbosity = sourceCommand.AddVerbosity();
+                    CommandOption verbosity = sourceCommand.VerbosityOption();
+
                     CommandArgument name = sourceCommand.Argument("<NAME>",
                         Strings.TrustSourceSignerName);
 
@@ -215,7 +221,8 @@ namespace NuGet.CommandLine.XPlat
 
                 trustedSignersCmd.HelpOption(XPlatUtility.HelpOption);
 
-                CommandOption mainVerbosity = trustedSignersCmd.AddVerbosity();
+                CommandOption mainVerbosity = trustedSignersCmd.VerbosityOption();
+
                 trustedSignersCmd.OnExecute(async () =>
                 {
                     // If no command specified then default to List command.
@@ -308,7 +315,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public static CommandOption AddVerbosity(this CommandLineApplication command)
+        private static CommandOption VerbosityOption(this CommandLineApplication command)
         {
             return command.Option(
                 "-v|--verbosity",
