@@ -436,5 +436,54 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
             }
         }
+
+        [Fact]
+        public void SourcesList__LocalizatedPackagesourceKeys_ConsideredDiffererent()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""encyclopaedia"" value=""https://source.test1"" />
+    <add key=""Encyclopaedia"" value=""https://source.test2"" />
+    <add key=""encyclopædia"" value=""https://source.test3"" />
+    <add key=""Encyclopædia"" value=""https://source.test4"" />
+  </packageSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "list",
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Main Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                // test to ensure detailed format is the default
+                Assert.True(result.Output.StartsWith("Registered Sources:"));
+                Assert.True(result.ExitCode == 0);
+                Assert.Contains("encyclopaedia [Enabled]", result.Output);
+                Assert.Contains("encyclopædia [Enabled]", result.Output);
+                Assert.DoesNotContain("Encyclopaedia", result.Output);
+                Assert.DoesNotContain("Encyclopædia", result.Output);
+            }
+        }
     }
 }

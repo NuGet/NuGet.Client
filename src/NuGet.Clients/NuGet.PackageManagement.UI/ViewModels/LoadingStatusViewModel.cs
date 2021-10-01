@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -22,7 +23,7 @@ namespace NuGet.PackageManagement.UI
             PackageSearchStatus = Convert(loaderState.LoadingStatus);
             ItemsFound = loaderState.ItemsCount;
 
-            var convertedList = new System.Collections.SortedList();
+            var convertedList = new System.Collections.SortedList(StringComparer.OrdinalIgnoreCase);
             foreach (var kv in loaderState.SourceLoadingStatus)
             {
                 convertedList.Add(kv.Key, Convert(kv.Value));

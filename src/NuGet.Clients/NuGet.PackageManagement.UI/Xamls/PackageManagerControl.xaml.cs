@@ -754,7 +754,7 @@ namespace NuGet.PackageManagement.UI
             {
                 SelectedSource = PackageSources
                     // if the old active source still exists. Keep it as the active source.
-                    .FirstOrDefault(i => StringComparer.CurrentCultureIgnoreCase.Equals(i.SourceName, selectedSourceName))
+                    .FirstOrDefault(i => StringComparer.OrdinalIgnoreCase.Equals(i.SourceName, selectedSourceName))
                     // If the old active source does not exist any more. In this case,
                     // use the first (non-aggregate) enabled source as the active source.
                     ?? PackageSources.FirstOrDefault(psm => !psm.IsAggregateSource);

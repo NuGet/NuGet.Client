@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement
                 }
 
                 var packageSource = packageSourceProvider.LoadPackageSources()
-                    .FirstOrDefault(p => p.Name.Equals(source, StringComparison.CurrentCultureIgnoreCase));
+                    .FirstOrDefault(p => p.Name.Equals(source, StringComparison.OrdinalIgnoreCase));
                 return (packageSource != null) && IsHttpSource(packageSource.Source);
             }
 

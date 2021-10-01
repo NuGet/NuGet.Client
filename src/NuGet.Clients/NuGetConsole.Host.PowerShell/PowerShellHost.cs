@@ -709,7 +709,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             else
             {
                 var s = _packageSources.FirstOrDefault(
-                    p => StringComparer.CurrentCultureIgnoreCase.Equals(p, activePackageSource));
+                    p => StringComparer.OrdinalIgnoreCase.Equals(p, activePackageSource));
 
                 // if the old active source still exists. Keep it as the active source.
                 // if the old active source does not exist any more. In this case,
