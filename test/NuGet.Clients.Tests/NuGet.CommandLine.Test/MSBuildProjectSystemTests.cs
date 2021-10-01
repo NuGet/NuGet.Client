@@ -65,7 +65,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11277")]
         public void MSBuildProjectSystem_RemoveFile()
         {
             // Arrange
