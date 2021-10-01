@@ -338,33 +338,14 @@
     <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
   </ItemGroup>
   <ItemGroup>
-    <Content Include="eula.rtf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="extension.vsixlangpack">
+      <IncludeInVSIX>false</IncludeInVSIX>
+    </Content>
+    <Content Include="NOTICES.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
   </ItemGroup>
-  <Choose>
-    <When Condition="'$(Configuration)' == 'Release'">
-      <ItemGroup>
-        <Content Include="extension.vsixlangpack">
-          <IncludeInVSIX>false</IncludeInVSIX>
-        </Content>
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <Content Include="LICENSE.txt">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(RepositoryRootDirectory)THIRD-PARTY-NOTICES.txt">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <IncludeInVSIX>true</IncludeInVSIX>
-          <Link>%(Filename)%(Extension)</Link>
-        </Content>
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
   <ItemGroup>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="$(VSSDKBuildToolsVersion)" PrivateAssets="All" GeneratePathProperty="true" />
   </ItemGroup>
@@ -448,7 +429,6 @@
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)microsoft.web.xdt\3.0.0\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
-      <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">
         <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
       </_VsixLocFiles>
