@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.UI
             set => _topPanel.SourceRepoList.SelectedItem = value;
         }
 
-        internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
+        internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.PackageSources;
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
@@ -741,13 +741,13 @@ namespace NuGet.PackageManagement.UI
         private ValueTask PopulateSourceRepoListAsync(IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers, string optionalSelectSourceName, CancellationToken cancellationToken)
         {
             // init source repo list
-            _topPanel.SourceRepoList.Items.Clear();
+            _topPanel.PackageSources.Clear();
 
             var selectedSourceName = optionalSelectSourceName ?? SelectedSource?.SourceName;
 
             foreach (PackageSourceMoniker packageSourceMoniker in packageSourceMonikers)
             {
-                _topPanel.SourceRepoList.Items.Add(packageSourceMoniker);
+                _topPanel.PackageSources.Add(packageSourceMoniker);
             }
 
             if (selectedSourceName != null)
