@@ -81,7 +81,7 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
       }    
       try {
-        Get-ChildItem -Path $($(Pipeline.Workspace)\CodeAnalysisLogs) -recurse
+        Get-ChildItem -Path $(Pipeline.Workspace)\CodeAnalysisLogs -recurse
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
         exit 1
