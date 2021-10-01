@@ -32,11 +32,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
 
                     listCommand.HelpOption(XPlatUtility.HelpOption);
-
-                    CommandOption verbosity = listCommand.Option(
-                        "-v|--verbosity",
-                        Strings.Verbosity_Description,
-                        CommandOptionType.SingleValue);
+                    CommandOption verbosity = listCommand.AddVerbosity();
 
                     listCommand.OnExecute(async () =>
                     {
@@ -54,10 +50,7 @@ namespace NuGet.CommandLine.XPlat
 
                     syncCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = syncCommand.Option(
-                        "-v|--verbosity",
-                        Strings.Verbosity_Description,
-                        CommandOptionType.SingleValue);
+                    CommandOption verbosity = syncCommand.AddVerbosity(); ;
 
                     CommandArgument name = syncCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameExists);
@@ -78,11 +71,7 @@ namespace NuGet.CommandLine.XPlat
 
                     syncCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = syncCommand.Option(
-                        "-v|--verbosity",
-                        Strings.Verbosity_Description,
-                        CommandOptionType.SingleValue);
-
+                    CommandOption verbosity = syncCommand.AddVerbosity();
                     CommandArgument name = syncCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameToRemove);
 
@@ -108,11 +97,7 @@ namespace NuGet.CommandLine.XPlat
 
                     authorCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = authorCommand.Option(
-                        "-v|--verbosity",
-                        Strings.Verbosity_Description,
-                        CommandOptionType.SingleValue);
-
+                    CommandOption verbosity = authorCommand.AddVerbosity();
                     CommandArgument name = authorCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameToAdd);
                     CommandArgument package = authorCommand.Argument("<PACKAGE>",
@@ -145,11 +130,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.TrustCommandOwners,
                         CommandOptionType.MultipleValue);
 
-                    CommandOption verbosity = repositoryCommand.Option(
-                        "-v|--verbosity",
-                        Strings.Verbosity_Description,
-                        CommandOptionType.SingleValue);
-
+                    CommandOption verbosity = repositoryCommand.AddVerbosity();
                     CommandArgument name = repositoryCommand.Argument("<NAME>",
                                                Strings.TrustedSignerNameToAdd);
                     CommandArgument package = repositoryCommand.Argument("<PACKAGE>",
@@ -182,11 +163,7 @@ namespace NuGet.CommandLine.XPlat
 
                     certificateCommand.HelpOption(XPlatUtility.HelpOption);
 
-                    CommandOption verbosity = certificateCommand.Option(
-                        "-v|--verbosity",
-                        Strings.Verbosity_Description,
-                        CommandOptionType.SingleValue);
-
+                    CommandOption verbosity = certificateCommand.AddVerbosity();
                     CommandArgument name = certificateCommand.Argument("<NAME>",
                                                Strings.TrustedCertificateSignerNameToAdd);
                     CommandArgument fingerprint = certificateCommand.Argument("<FINGERPRINT>",
@@ -219,11 +196,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.TrustSourceUrl,
                         CommandOptionType.SingleValue);
 
-                    CommandOption verbosity = sourceCommand.Option(
-                        "-v|--verbosity",
-                        Strings.Verbosity_Description,
-                        CommandOptionType.SingleValue);
-
+                    CommandOption verbosity = sourceCommand.AddVerbosity();
                     CommandArgument name = sourceCommand.Argument("<NAME>",
                         Strings.TrustSourceSignerName);
 
@@ -242,11 +215,7 @@ namespace NuGet.CommandLine.XPlat
 
                 trustedSignersCmd.HelpOption(XPlatUtility.HelpOption);
 
-                CommandOption mainVerbosity = trustedSignersCmd.Option(
-                    "-v|--verbosity",
-                    Strings.Verbosity_Description,
-                    CommandOptionType.SingleValue);
-
+                CommandOption mainVerbosity = trustedSignersCmd.AddVerbosity();
                 trustedSignersCmd.OnExecute(async () =>
                 {
                     // If no command specified then default to List command.
@@ -300,43 +269,51 @@ namespace NuGet.CommandLine.XPlat
                 Task<int> trustedSignTask = runner.ExecuteCommandAsync(trustedSignersArgs);
                 return await trustedSignTask;
             }
-            catch (Exception e)
+            catch (InvalidOperationException e)
             {
                 // nuget trust command handled exceptions.
-                if (e is InvalidOperationException)
+                if (!string.IsNullOrWhiteSpace(name))
                 {
-                    if (!string.IsNullOrWhiteSpace(name))
+                    var error_TrustedSignerAlreadyExistsMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name);
+
+                    if (e.Message == error_TrustedSignerAlreadyExistsMessage)
                     {
-                        var error_TrustedSignerAlreadyExistsMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name);
-
-                        if (e.Message == error_TrustedSignerAlreadyExistsMessage)
-                        {
-                            logger.LogError(error_TrustedSignerAlreadyExistsMessage);
-                            return 1;
-                        }
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(sourceUrl))
-                    {
-                        var error_TrustedRepoAlreadyExists = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, sourceUrl);
-
-                        if (e.Message == error_TrustedRepoAlreadyExists)
-                        {
-                            logger.LogError(error_TrustedRepoAlreadyExists);
-                            return 1;
-                        }
+                        logger.LogError(error_TrustedSignerAlreadyExistsMessage);
+                        return 1;
                     }
                 }
 
-                if (e is ArgumentException && e.Data is System.Collections.IDictionary)
+                if (!string.IsNullOrWhiteSpace(sourceUrl))
+                {
+                    var error_TrustedRepoAlreadyExists = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, sourceUrl);
+
+                    if (e.Message == error_TrustedRepoAlreadyExists)
+                    {
+                        logger.LogError(error_TrustedRepoAlreadyExists);
+                        return 1;
+                    }
+                }
+
+                throw;
+            }
+            catch (ArgumentException e)
+            {
+                if (e.Data is System.Collections.IDictionary)
                 {
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustFingerPrintAlreadyExist));
                     return 1;
                 }
 
-                // Unhandled exceptions bubble up.
                 throw;
             }
+        }
+
+        public static CommandOption AddVerbosity(this CommandLineApplication command)
+        {
+            return command.Option(
+                "-v|--verbosity",
+                Strings.Verbosity_Description,
+                CommandOptionType.SingleValue);
         }
 
         private static TrustedSignersAction MapTrustEnumAction(TrustCommand trustCommand)
