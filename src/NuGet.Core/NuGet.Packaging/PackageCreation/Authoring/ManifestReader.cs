@@ -168,7 +168,7 @@ namespace NuGet.Packaging
                 // and include a hint about replacement tokens.
                 if (ex is InvalidDataException)
                 {
-                    throw ex;
+                    throw;
                 }
                 else
                 {
@@ -339,7 +339,7 @@ namespace NuGet.Packaging
                 return new List<PackageDependencyGroup>();
             }
 
-            // Disallow the <dependencies> element to contain both <dependency> and 
+            // Disallow the <dependencies> element to contain both <dependency> and
             // <group> child elements. Unfortunately, this cannot be enforced by XSD.
             if (dependenciesElement.ElementsNoNamespace("dependency").Any() &&
                 dependenciesElement.ElementsNoNamespace("group").Any())
@@ -421,7 +421,7 @@ namespace NuGet.Packaging
                 var target = file.GetOptionalAttributeValue("target").SafeTrim()?.TrimStart(slashes);
                 var exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
 
-                // Multiple sources can be specified by using semi-colon separated values. 
+                // Multiple sources can be specified by using semi-colon separated values.
                 files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s =>
                     new ManifestFile
                     {

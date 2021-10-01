@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    throw ex;
+                    throw;
                 }
             }
         }
@@ -241,7 +241,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
-                    throw ex;
+                    throw;
                 }
             }
         }
