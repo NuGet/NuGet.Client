@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Configuration
 {
+    [Serializable]
     public class NuGetConfigurationException : Exception
     {
         public NuGetConfigurationException(string message)

@@ -6,6 +6,7 @@ using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
 {
+    [Serializable]
     public class FatalProtocolException : NuGetProtocolException
     {
         public FatalProtocolException(string message) : base(message)

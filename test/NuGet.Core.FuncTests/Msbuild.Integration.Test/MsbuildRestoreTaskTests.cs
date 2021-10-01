@@ -1594,8 +1594,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 // Assert
                 Assert.Equal(1, result.ExitCode);
                 Assert.Contains("Package source mapping match not found for package ID 'My.MVC.ASP'", result.Output);
-                Assert.Contains("warning : Unable to find version '1.0.0' of package 'My.MVC.ASP'.", result.Output);
-                Assert.Contains("error MSB4181: The \"RestoreTask\" task returned false but did not log an error.", result.Output);
+                Assert.Contains("error : Unable to find version '1.0.0' of package 'My.MVC.ASP'.", result.Output);
             }
         }
 
