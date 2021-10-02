@@ -19,7 +19,6 @@ namespace NuGet.Common
         {
             // initially define as hours
             double result = time.TotalHours;
-            string type = "hr";
 
             if (time.TotalSeconds < 1)
             {
@@ -34,20 +33,20 @@ namespace NuGet.Common
                     result = Math.Round(result, 1);
                 }
 
-                type = "ms"; // milliseconds
+                return string.Format(Strings.TimeUnits_Millisecond, result);
             }
             else if (time.TotalMinutes < 1)
             {
                 result = time.TotalSeconds;
-                type = "sec"; // seconds
+                return string.Format(Strings.TimeUnits_Second, result);
             }
             else if (time.TotalHours < 1)
             {
                 result = time.TotalMinutes;
-                type = "min"; // minutes
+                return string.Format(Strings.TimeUnits_Second, result);
             }
 
-            return string.Format("{0:0.##} {1}", result, type);
+            return string.Format(Strings.TimeUnits_Hour, result);
         }
     }
 }

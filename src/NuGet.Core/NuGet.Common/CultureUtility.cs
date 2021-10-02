@@ -12,7 +12,7 @@ namespace NuGet.Common
             SetCulture(CultureInfo.InvariantCulture);
         }
 
-        private static void SetCulture(CultureInfo culture)
+        internal static void SetCulture(CultureInfo culture)
         {
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;

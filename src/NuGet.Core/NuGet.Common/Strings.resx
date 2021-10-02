@@ -141,6 +141,22 @@
   <data name="PackageFolderNotFound" xml:space="preserve">
     <value>Package folder not found: '{0}'.</value>
   </data>
+  <data name="TimeUnits_Hour" xml:space="preserve">
+    <value>{0:0.##} hr</value>
+    <comment>{0:0.##} is number of hours, abbreviated, with two decimal digits</comment>
+  </data>
+  <data name="TimeUnits_Millisecond" xml:space="preserve">
+    <value>{0:0.##} ms</value>
+    <comment>{0:0.##} is number of milliseconds, abbreviated, with two decimal digits</comment>
+  </data>
+  <data name="TimeUnits_Minute" xml:space="preserve">
+    <value>{0:0.##} min</value>
+    <comment>{0:0.##} is number of minutes, abbreviated, with two decimal digits</comment>
+  </data>
+  <data name="TimeUnits_Second" xml:space="preserve">
+    <value>{0:0.##} sec</value>
+    <comment>{0:0.##} is number of seconds, abbreviated, with two decimal digits</comment>
+  </data>
   <data name="UnableToDetemineClientVersion" xml:space="preserve">
     <value>Unable to determine the current NuGet client version.</value>
   </data>
