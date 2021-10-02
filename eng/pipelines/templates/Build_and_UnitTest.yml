@@ -73,16 +73,25 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      Write-Host "Current loc"
-      pwd
       try {
-        ls $(Pipeline.Workspace)\CodeAnalysisLogs
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
-      }    
-      try {
-        Get-ChildItem -Path $(Pipeline.Workspace)\CodeAnalysisLogs -recurse
-      } catch {
+        $credentialScannerMatches = Join-Path $(Pipeline.Workspace)\CodeAnalysisLogs CredentialScanner 
+        $credentialScannerMatches = Join-Path $credentialScannerMatches CredentialScanner-matches.xml
+        $credScannerXml = [xml](Get-Content $credentialScannerMatches)
+
+        if($credScannerXml.DEFECTS -eq $null)
+        {
+          Write-Host "Unable to verify CodeAnalysisLogs artifact content, please manually verify it." 
+          exit 1          
+        }
+
+        if ($credScannerXml.DEFECTS.DEFECT -ne $null) {
+          Write-Host "CredentialScanner found following credential in this PR, please remove them from PR and use git squash to remove commits with credential from git history then do force push:" 
+          $credScannerXml.DEFECTS.DEFECT
+          exit 1
+        }
+      } 
+      catch 
+      {
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
         exit 1
       }
