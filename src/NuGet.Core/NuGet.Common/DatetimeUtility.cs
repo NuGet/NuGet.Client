@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace NuGet.Common
 {
@@ -43,7 +44,7 @@ namespace NuGet.Common
             else if (time.TotalHours < 1)
             {
                 result = time.TotalMinutes;
-                return string.Format(Strings.TimeUnits_Second, result);
+                return string.Format(Strings.TimeUnits_Minute, result);
             }
 
             return string.Format(Strings.TimeUnits_Hour, result);

@@ -3,17 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Xunit;
 
 namespace NuGet.Common.Test
 {
     public class DateTimeUtilityCultureInvariantTests
     {
-        public DateTimeUtilityCultureInvariantTests()
-        {
-            CultureUtility.DisableLocalization();
-        }
-
         public static IEnumerable<object[]> GetData()
         {
             return new[]
@@ -24,6 +20,7 @@ namespace NuGet.Common.Test
                 new object[] { "1 ms", TimeSpan.FromMilliseconds(1.21d) }, // round down
                 new object[] { "92183.91 hr", TimeSpan.FromHours(92183.91d) },
                 new object[] { "1 hr", TimeSpan.FromSeconds(3600.0d) },
+                new object[] { "3.6 min", TimeSpan.FromMinutes(3.6d) },
                 new object[] { "72 hr", TimeSpan.FromDays(3.0d) },
             };
         }
@@ -32,9 +29,23 @@ namespace NuGet.Common.Test
         [MemberData(nameof(GetData))]
         public void ToReadableTimeFormat_CultureInvariant_Succeeds(string expected, TimeSpan time)
         {
-            var actual = DatetimeUtility.ToReadableTimeFormat(time);
+            // Arrange
+            var originalCulture = CultureInfo.DefaultThreadCurrentCulture;
+            var originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
+            try
+            {
+                // Act
+                CultureUtility.SetCulture(CultureInfo.InvariantCulture);
+                var actual = DatetimeUtility.ToReadableTimeFormat(time);
 
-            Assert.Equal(expected, actual);
+                // Assert
+                Assert.Equal(expected, actual);
+            }
+            finally
+            {
+                CultureInfo.DefaultThreadCurrentCulture = originalCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = originalUICulture;
+            }
         }
     }
 }
