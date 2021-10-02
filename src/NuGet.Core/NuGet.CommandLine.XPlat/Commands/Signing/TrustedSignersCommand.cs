@@ -131,7 +131,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandOption owners = repositoryCommand.Option(
                         "--owners",
                         Strings.TrustCommandOwners,
-                        CommandOptionType.MultipleValue);
+                        CommandOptionType.SingleValue);
 
                     CommandOption verbosity = repositoryCommand.VerbosityOption();
 
@@ -194,7 +194,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandOption owners = sourceCommand.Option(
                         "--owners",
                         Strings.TrustCommandOwners,
-                        CommandOptionType.MultipleValue);
+                        CommandOptionType.SingleValue);
 
                     CommandOption sourceUrl = sourceCommand.Option(
                         "--source-url",

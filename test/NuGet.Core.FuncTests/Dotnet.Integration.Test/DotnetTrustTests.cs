@@ -363,6 +363,7 @@ namespace Dotnet.Integration.Test
         [CIOnlyTheory]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
+        [InlineData(true, "one")]
         [InlineData(false, null)]
         [InlineData(false, "one;two;three")]
         public async Task DotnetTrust_RepositoryAction_Succeeds(bool allowUntrustedRoot, string owners)
