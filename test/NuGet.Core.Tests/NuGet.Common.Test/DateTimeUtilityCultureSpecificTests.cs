@@ -7,14 +7,12 @@ using Xunit;
 
 namespace NuGet.Common.Test
 {
+    [Collection(LocalizedTestCollection.TestName)]
     public class DatetimeUtilityCultureSpecificTests
     {
         [Fact]
         public void ToReadableTimeFormat_NumberFormat_LocaleSensitive_Suceeds()
         {
-            // Prepare
-            var originalCulture = CultureInfo.DefaultThreadCurrentCulture;
-            var originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
             try
             {
                 CultureUtility.SetCulture(new CultureInfo("es-ES"));
@@ -27,8 +25,7 @@ namespace NuGet.Common.Test
             }
             finally
             {
-                CultureInfo.DefaultThreadCurrentCulture = originalCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = originalUICulture;
+                LocalizedTestCollection.Reset();
             }
         }
     }

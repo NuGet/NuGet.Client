@@ -8,6 +8,7 @@ using Xunit;
 
 namespace NuGet.Common.Test
 {
+    [Collection(LocalizedTestCollection.TestName)]
     public class DateTimeUtilityCultureInvariantTests
     {
         public static IEnumerable<object[]> GetData()
@@ -30,8 +31,6 @@ namespace NuGet.Common.Test
         public void ToReadableTimeFormat_CultureInvariant_Succeeds(string expected, TimeSpan time)
         {
             // Arrange
-            var originalCulture = CultureInfo.DefaultThreadCurrentCulture;
-            var originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
             try
             {
                 // Act
@@ -43,8 +42,7 @@ namespace NuGet.Common.Test
             }
             finally
             {
-                CultureInfo.DefaultThreadCurrentCulture = originalCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = originalUICulture;
+                LocalizedTestCollection.Reset();
             }
         }
     }
