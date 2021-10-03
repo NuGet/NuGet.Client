@@ -499,8 +499,8 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
-                    var packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(uiService.Settings);
-                    bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(uiService.Settings);
+                    bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,

@@ -6,12 +6,12 @@ using NuGet.Configuration;
 
 namespace Test.Utility
 {
-    public class PackageNamespacesConfigurationUtility
+    public class PackageSourceMappingUtility
     {
-        public static PackageNamespacesConfiguration GetPackageNamespacesConfiguration(string packageNamespaces)
+        public static PackageSourceMapping GetpackageSourceMapping(string packagePatterns)
         {
-            string[] sections = packageNamespaces.Split('|');
-            var namespaces = new Dictionary<string, IReadOnlyList<string>>();
+            string[] sections = packagePatterns.Split('|');
+            var patterns = new Dictionary<string, IReadOnlyList<string>>();
 
             foreach (string section in sections)
             {
@@ -23,16 +23,16 @@ namespace Test.Utility
                     continue;
                 }
 
-                var namespaceList = new List<string>();
+                var patternsList = new List<string>();
                 for (int i = 1; i < parts.Length; i++)
                 {
-                    namespaceList.Add(parts[i]);
+                    patternsList.Add(parts[i]);
                 }
 
-                namespaces[sourceKey] = namespaceList;
+                patterns[sourceKey] = patternsList;
             }
             ;
-            return new PackageNamespacesConfiguration(namespaces);
+            return new PackageSourceMapping(patterns);
         }
     }
 }

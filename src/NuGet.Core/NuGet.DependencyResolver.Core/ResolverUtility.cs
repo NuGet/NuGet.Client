@@ -47,7 +47,7 @@ namespace NuGet.DependencyResolver
             var currentCacheContext = context.CacheContext;
 
             IList<IRemoteDependencyProvider> remoteDependencyProviders = context.FilterDependencyProvidersForLibrary(libraryRange);
-            LogSourcesIfPackageNamespacesAreEnabled(libraryRange.Name, context, remoteDependencyProviders);
+            LogIfPackageSourceMappingIsEnabled(libraryRange.Name, context, remoteDependencyProviders);
 
             // Try up to two times to get the package. The second
             // retry will refresh the cache if a package is listed 
@@ -237,7 +237,7 @@ namespace NuGet.DependencyResolver
         private static async Task<Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchAsync(LibraryRange libraryRange, RemoteWalkContext remoteWalkContext, CancellationToken cancellationToken)
         {
             IList<IRemoteDependencyProvider> remoteDependencyProviders = remoteWalkContext.FilterDependencyProvidersForLibrary(libraryRange);
-            LogSourcesIfPackageNamespacesAreEnabled(libraryRange.Name, remoteWalkContext, remoteDependencyProviders);
+            LogIfPackageSourceMappingIsEnabled(libraryRange.Name, remoteWalkContext, remoteDependencyProviders);
 
             var match = await FindPackageLibraryMatchAsync(libraryRange, NuGetFramework.AnyFramework, remoteDependencyProviders, remoteWalkContext.LocalLibraryProviders, remoteWalkContext.CacheContext, remoteWalkContext.Logger, cancellationToken);
             if (match == null)
@@ -506,9 +506,9 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        private static void LogSourcesIfPackageNamespacesAreEnabled(string packageName, RemoteWalkContext context, IList<IRemoteDependencyProvider> remoteDependencyProviders)
+        private static void LogIfPackageSourceMappingIsEnabled(string packageName, RemoteWalkContext context, IList<IRemoteDependencyProvider> remoteDependencyProviders)
         {
-            if (context.PackageNamespaces?.AreNamespacesEnabled == true)
+            if (context.PackageSourceMapping?.IsEnabled == true)
             {
                 if (remoteDependencyProviders.Count == 0)
                     context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoMatchingSourceFoundForPackage, packageName));

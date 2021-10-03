@@ -142,6 +142,7 @@ namespace NuGet.ProjectModel.Test
             return dependency;
         }
 
+        [Obsolete]
         private IncludeExcludeFiles CreateIncludeExcludeFiles()
         {
             var files = new IncludeExcludeFiles();
@@ -152,10 +153,11 @@ namespace NuGet.ProjectModel.Test
             return files;
         }
 
+        [Obsolete]
         private PackOptions CreatePackOptions()
         {
             var originalPackOptions = new PackOptions();
-            originalPackOptions.PackageType = new List<PackageType>() { new PackageType("PackageA", new System.Version("1.0.0")) };
+            originalPackOptions.PackageType = new List<PackageType>() { new PackageType("PackageA", new Version("1.0.0")) };
             originalPackOptions.IncludeExcludeFiles = CreateIncludeExcludeFiles();
             return originalPackOptions;
         }
@@ -168,7 +170,8 @@ namespace NuGet.ProjectModel.Test
             packageSpec.FilePath = "FilePath";
             packageSpec.Name = "Name";
             packageSpec.Title = "Title";
-            packageSpec.Version = new Versioning.NuGetVersion("1.0.0");
+            packageSpec.Version = new NuGetVersion("1.0.0");
+#pragma warning disable CS0612 // Type or member is obsolete
             packageSpec.HasVersionSnapshot = true;
             packageSpec.Description = "Description";
             packageSpec.Summary = "Summary";
@@ -184,7 +187,6 @@ namespace NuGet.ProjectModel.Test
             packageSpec.Tags = new string[] { "Tags" };
             packageSpec.BuildOptions = CreateBuildOptions();
             packageSpec.ContentFiles = new List<string>() { "contentFile1", "contentFile2" };
-            packageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
 
             packageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
             packageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
@@ -192,7 +194,9 @@ namespace NuGet.ProjectModel.Test
             packageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
             packageSpec.PackOptions = CreatePackOptions();
+#pragma warning restore CS0612 // Type or member is obsolete
 
+            packageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
             packageSpec.RuntimeGraph = CreateRuntimeGraph();
             packageSpec.RestoreSettings = CreateProjectRestoreSettings();
             return packageSpec;
@@ -257,6 +261,7 @@ namespace NuGet.ProjectModel.Test
 
         public class PackageSpecModify
         {
+            [Obsolete]
             public static void ModifyAuthors(PackageSpec packageSpec)
             {
                 packageSpec.Authors[0] = "NewAuthor";
@@ -282,21 +287,25 @@ namespace NuGet.ProjectModel.Test
                 packageSpec.Version = new Versioning.NuGetVersion("2.0.0");
             }
 
+            [Obsolete]
             public static void ModifyOwners(PackageSpec packageSpec)
             {
                 packageSpec.Owners[0] = "BetterOwner";
             }
 
+            [Obsolete]
             public static void ModifyTags(PackageSpec packageSpec)
             {
                 packageSpec.Tags[0] = "better tag!";
             }
 
+            [Obsolete]
             public static void ModifyBuildOptions(PackageSpec packageSpec)
             {
                 packageSpec.BuildOptions.OutputName = Guid.NewGuid().ToString();
             }
 
+            [Obsolete]
             public static void ModifyContentFiles(PackageSpec packageSpec)
             {
                 packageSpec.ContentFiles.Add("New fnacy content file");
@@ -307,11 +316,13 @@ namespace NuGet.ProjectModel.Test
                 packageSpec.Dependencies.Add(CreateLibraryDependency());
             }
 
+            [Obsolete]
             public static void ModifyScriptsAdd(PackageSpec packageSpec)
             {
                 packageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
             }
 
+            [Obsolete]
             public static void ModifyScriptsEdit(PackageSpec packageSpec)
             {
                 var enumerator = packageSpec.Scripts.Keys.GetEnumerator();
@@ -320,11 +331,13 @@ namespace NuGet.ProjectModel.Test
                 ((List<string>)packageSpec.Scripts[key]).Add(Guid.NewGuid().ToString());
             }
 
+            [Obsolete]
             public static void ModifyPackInclude(PackageSpec packageSpec)
             {
                 packageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
             }
 
+            [Obsolete]
             public static void ModifyPackOptions(PackageSpec packageSpec)
             {
                 ((List<PackageType>)packageSpec.PackOptions.PackageType).Add(PackageType.DotnetCliTool);
@@ -780,6 +793,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(2, clone.RestoreContexts.Count);
         }
 
+        [Obsolete]
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

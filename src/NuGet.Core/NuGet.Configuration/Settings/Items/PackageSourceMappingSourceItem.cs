@@ -11,22 +11,22 @@ using NuGet.Shared;
 namespace NuGet.Configuration
 {
     /// <summary>
-    /// A PackageNamespacesSourceItem has only a key and at least 1 <see cref="NamespaceItem"/> child item.
+    /// A PackageSourceMappingSourceItem has only a key and at least 1 <see cref="PackagePatternItem"/> child item.
     ///     - [Required] Key
     /// </summary>
-    public class PackageNamespacesSourceItem : SettingItem
+    public class PackageSourceMappingSourceItem : SettingItem
     {
         protected override bool CanHaveChildren => true;
 
         /// <summary>
-        /// List of namespaces items part of this package source namespace element.
+        /// List of package pattern items part of this package source element.
         /// </summary>
-        public IList<NamespaceItem> Namespaces { get; }
+        public IList<PackagePatternItem> Patterns { get; }
 
         public override string ElementName => ConfigurationConstants.PackageSourceAttribute;
 
         /// <summary>
-        /// Each PackageSourceNamespaces item needs a key.
+        /// Each PackageSourceMappingSourceItem item needs a key.
         /// The key should correspond a package source key.
         /// </summary>
         public virtual string Key => Attributes[ConfigurationConstants.KeyAttribute];
@@ -46,12 +46,12 @@ namespace NuGet.Configuration
         internal readonly IEnumerable<SettingBase> _parsedDescendants;
 
         /// <summary>
-        /// Creates a package source namespace item with the given name, which equals the key and non-empty list of naemspace items.
+        /// Creates a package source mapping source item with the given name, which equals the key and non-empty list of package patters items.
         /// </summary>
         /// <param name="name">A non-empty name of the item which corresponds a package source name.</param>
-        /// <param name="namespaceItems">A non empty list of namespace items.</param>
-        /// <exception cref="ArgumentException">If <paramref name="name"/> is null or empty, or <paramref name="namespaceItems"/> is null or empty.</exception>
-        public PackageNamespacesSourceItem(string name, IEnumerable<NamespaceItem> namespaceItems)
+        /// <param name="packagePatternItems">A non empty list of package pattern items.</param>
+        /// <exception cref="ArgumentException">If <paramref name="name"/> is null or empty, or <paramref name="packagePatternItems"/> is null or empty.</exception>
+        public PackageSourceMappingSourceItem(string name, IEnumerable<PackagePatternItem> packagePatternItems)
             : base()
         {
             if (string.IsNullOrEmpty(name))
@@ -59,44 +59,44 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
-            if (namespaceItems == null || !namespaceItems.Any())
+            if (packagePatternItems == null || !packagePatternItems.Any())
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOneNamespace, name));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOnePackagePattern, name));
             }
 
             AddAttribute(ConfigurationConstants.KeyAttribute, name);
 
-            Namespaces = new List<NamespaceItem>();
+            Patterns = new List<PackagePatternItem>();
 
-            foreach (NamespaceItem @namespace in namespaceItems)
+            foreach (PackagePatternItem patternItem in packagePatternItems)
             {
-                Namespaces.Add(@namespace);
+                Patterns.Add(patternItem);
             }
         }
 
-        internal PackageNamespacesSourceItem(XElement element, SettingsFile origin)
+        internal PackageSourceMappingSourceItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
             _parsedDescendants = element.Nodes().Where(n => n is XElement || n is XText text && !string.IsNullOrWhiteSpace(text.Value))
                 .Select(e => SettingFactory.Parse(e, origin));
 
-            var parsedNamespaceItems = _parsedDescendants.OfType<NamespaceItem>().ToList();
+            var parsedPackagePatternItems = _parsedDescendants.OfType<PackagePatternItem>().ToList();
 
-            if (parsedNamespaceItems.Count == 0)
+            if (parsedPackagePatternItems.Count == 0)
             {
-                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOneNamespaceWithPath, Key, origin.ConfigFilePath));
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOnePackagePatternWithPath, Key, origin.ConfigFilePath));
             }
 
-            Namespaces = parsedNamespaceItems;
+            Patterns = parsedPackagePatternItems;
         }
 
         internal override void SetOrigin(SettingsFile origin)
         {
             base.SetOrigin(origin);
 
-            foreach (NamespaceItem @namespace in Namespaces)
+            foreach (PackagePatternItem packagePatternItem in Patterns)
             {
-                @namespace.SetOrigin(origin);
+                packagePatternItem.SetOrigin(origin);
             }
         }
 
@@ -104,7 +104,7 @@ namespace NuGet.Configuration
         {
             base.RemoveFromSettings();
 
-            foreach (NamespaceItem @namespace in Namespaces)
+            foreach (PackagePatternItem @namespace in Patterns)
             {
                 @namespace.RemoveFromSettings();
             }
@@ -112,9 +112,9 @@ namespace NuGet.Configuration
 
         public override SettingBase Clone()
         {
-            var newItem = new PackageNamespacesSourceItem(
+            var newItem = new PackageSourceMappingSourceItem(
                 Key,
-                Namespaces.Select(c => c.Clone() as NamespaceItem).ToArray());
+                Patterns.Select(c => c.Clone() as PackagePatternItem).ToArray());
 
             if (Origin != null)
             {
@@ -133,9 +133,9 @@ namespace NuGet.Configuration
 
             var element = new XElement(ElementName);
 
-            foreach (NamespaceItem packageNamespaceItem in Namespaces)
+            foreach (PackagePatternItem packagePatternItem in Patterns)
             {
-                element.Add(packageNamespaceItem.AsXNode());
+                element.Add(packagePatternItem.AsXNode());
             }
 
             foreach (KeyValuePair<string, string> attr in Attributes)
@@ -148,39 +148,39 @@ namespace NuGet.Configuration
 
         internal override void Update(SettingItem other)
         {
-            var packageSourceNamespaces = other as PackageNamespacesSourceItem;
+            var packageSourceMappingSourceItem = other as PackageSourceMappingSourceItem;
 
-            if (!packageSourceNamespaces.Namespaces.Any())
+            if (!packageSourceMappingSourceItem.Patterns.Any())
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOneNamespace, packageSourceNamespaces.Key));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_ItemNeedsAtLeastOnePackagePattern, packageSourceMappingSourceItem.Key));
             }
 
             base.Update(other);
 
-            Dictionary<NamespaceItem, NamespaceItem> otherNamespaces = packageSourceNamespaces.Namespaces.ToDictionary(c => c, c => c);
-            var immutableNamespaces = new List<NamespaceItem>(Namespaces);
-            foreach (NamespaceItem namespaceItem in immutableNamespaces)
+            Dictionary<PackagePatternItem, PackagePatternItem> otherPatterns = packageSourceMappingSourceItem.Patterns.ToDictionary(c => c, c => c);
+            var immutablePatterns = new List<PackagePatternItem>(Patterns);
+            foreach (PackagePatternItem packagePatternItem in immutablePatterns)
             {
-                if (otherNamespaces.TryGetValue(namespaceItem, out NamespaceItem otherChild))
+                if (otherPatterns.TryGetValue(packagePatternItem, out PackagePatternItem otherChild))
                 {
-                    otherNamespaces.Remove(namespaceItem);
+                    otherPatterns.Remove(packagePatternItem);
                 }
 
                 if (otherChild == null)
                 {
-                    Namespaces.Remove(namespaceItem);
-                    namespaceItem.RemoveFromSettings();
+                    Patterns.Remove(packagePatternItem);
+                    packagePatternItem.RemoveFromSettings();
                 }
-                else if (namespaceItem is SettingItem item)
+                else if (packagePatternItem is SettingItem item)
                 {
                     item.Update(otherChild);
                 }
             }
 
-            foreach (var newNamespaceItem in otherNamespaces)
+            foreach (var newPackagePatternItem in otherPatterns)
             {
-                var itemToAdd = newNamespaceItem.Value;
-                Namespaces.Add(itemToAdd);
+                var itemToAdd = newPackagePatternItem.Value;
+                Patterns.Add(itemToAdd);
 
                 if (Origin != null)
                 {
@@ -199,9 +199,9 @@ namespace NuGet.Configuration
 
         public override bool Equals(object other)
         {
-            // It is important that equality on checks that the namespace is for the same `key. The content is not important. 
-            // The equality here is used for updating namespaces.
-            if (other is PackageNamespacesSourceItem item)
+            // It is important that equality on checks that the package source mapping source item is for the same `key. The content is not important. 
+            // The equality here is used for updating patterns.
+            if (other is PackageSourceMappingSourceItem item)
             {
                 if (ReferenceEquals(this, item))
                 {

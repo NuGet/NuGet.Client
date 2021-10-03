@@ -213,6 +213,7 @@
               Grid.Column="1"
               Focusable="False"
               Margin="{TemplateBinding Padding}"
+              RecognizesAccessKey="True"
               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
@@ -661,6 +662,14 @@
           Value="{x:Null}" />
       </Trigger>
     </Style.Triggers>
+  </Style>
+
+  <Style
+    TargetType="{x:Type Hyperlink}"
+    x:Key="HyperlinkStyleNoUriDeprecation">
+    <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBlock}}, Path=Foreground}" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
+    <Setter Property="TextBlock.TextDecorations" Value="Underline" />
   </Style>
 
   <Style

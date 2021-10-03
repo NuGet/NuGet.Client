@@ -68,14 +68,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected NuGetPowerShellBaseCommand()
         {
-            _sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
-            ConfigSettings = ServiceLocator.GetComponentModelService<Configuration.ISettings>();
-            VsSolutionManager = ServiceLocator.GetComponentModelService<IVsSolutionManager>();
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
+            ConfigSettings = componentModel.GetService<ISettings>();
+            VsSolutionManager = componentModel.GetService<IVsSolutionManager>();
+            SourceControlManagerProvider = componentModel.GetService<ISourceControlManagerProvider>();
+            _commonOperations = componentModel.GetService<ICommonOperations>();
+            PackageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
+            _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
-            SourceControlManagerProvider = ServiceLocator.GetComponentModelService<ISourceControlManagerProvider>();
-            _commonOperations = ServiceLocator.GetComponentModelService<ICommonOperations>();
-            PackageRestoreManager = ServiceLocator.GetComponentModelService<IPackageRestoreManager>();
-            _deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
 
             var logger = new LoggerAdapter(this);
             PackageExtractionContext = new PackageExtractionContext(

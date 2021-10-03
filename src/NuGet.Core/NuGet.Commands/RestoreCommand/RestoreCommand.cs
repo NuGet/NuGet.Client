@@ -117,7 +117,7 @@ namespace NuGet.Commands
             {
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
-                bool isPackageSourceMappingEnabled = _request?.PackageNameSpaces.AreNamespacesEnabled ?? false;
+                bool isPackageSourceMappingEnabled = _request?.PackageSourceMapping.IsEnabled ?? false;
                 telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
 
                 _operationId = telemetry.OperationId;
@@ -1171,7 +1171,7 @@ namespace NuGet.Commands
         {
             var context = new RemoteWalkContext(
                 request.CacheContext,
-                request.PackageNameSpaces,
+                request.PackageSourceMapping,
                 logger);
 
             foreach (var provider in request.DependencyProviders.LocalProviders)

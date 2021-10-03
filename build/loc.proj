@@ -74,18 +74,6 @@
     <Move SourceFiles="@(_MoveLocalizedFiles->'%(Identity)')" DestinationFiles="@(_MoveLocalizedFiles->'%(DestinationDir)')"/>
   </Target>
 
-  <Target Name="MoveLocalizedEulasToArtifacts" AfterTargets="Localize">
-    <ItemGroup>
-      <!-- SupportedCultures is defined in MicroBuild.Plugins.Localization.targets which is installed as a plugin
-      in VSTS MicroBuild -->
-      <EulaFiles Include="$(NuGetBuildLocalizationRepository)eulas\%(SupportedCultures.Identity)\eula.rtf"
-          Condition="Exists('$(NuGetBuildLocalizationRepository)eulas\%(SupportedCultures.Identity)\eula.rtf')">
-          <DestinationDir>$(ArtifactsDirectory)eulas\%(SupportedCultures.FNCulture)\eula.rtf</DestinationDir>
-      </EulaFiles>
-    </ItemGroup>
-    <Copy SourceFiles="@(EulaFiles->'%(Identity)')" DestinationFiles="@(EulaFiles->'%(DestinationDir)')"/>
-  </Target>
-
   <!-- Prepares localization folder  -->
   <Target Name="CopyLcgFilesToArtifacts" AfterTargets="Localize">
     <ItemGroup>

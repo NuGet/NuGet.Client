@@ -1109,9 +1109,9 @@ namespace NuGet.PackageManagement
                     }
                 }
 
-                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
-                var gatherContext = new GatherContext(packageNamespacesConfiguration)
+                var gatherContext = new GatherContext(packageSourceMapping)
                 {
                     InstalledPackages = oldListOfInstalledPackages.ToList(),
                     PrimaryTargetIds = primaryTargetIds.ToList(),
@@ -1738,9 +1738,9 @@ namespace NuGet.PackageManagement
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
 
                     HashSet<SourcePackageDependencyInfo> availablePackageDependencyInfoWithSourceSet = null;
-                    PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(Settings);
+                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(Settings);
 
-                    var gatherContext = new GatherContext(packageNamespacesConfiguration)
+                    var gatherContext = new GatherContext(packageSourceMapping)
                     {
                         InstalledPackages = oldListOfInstalledPackages.ToList(),
                         PrimaryTargets = primaryPackages,

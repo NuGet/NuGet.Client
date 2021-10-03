@@ -5440,6 +5440,56 @@ namespace ClassLibrary
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageReadmeFile_BasicFunc_WithSymbol_Succeeds()
+        {
+            // Arrange
+            TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
+            ProjectFileBuilder projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\readme.md", 10)
+                .WithFile("test\\folder\\notes.txt", 10)
+                .WithFile("test\\folder\\nested\\content.txt", 10)
+                .WithFile("test\\folder\\nested\\sample.txt", 10)
+                .WithFile("test\\icon.jpg", 10)
+                .WithFile("test\\other\\files.txt", 10)
+                .WithFile("test\\utils\\sources.txt", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithProperty("IncludeSymbols", "true")
+                .WithProperty("SymbolPackageFormat", "snupkg")
+                .WithPackageReadmeFile("readme.md")
+                .WithItem(itemType: "None", itemPath: "readme.md", packagePath: string.Empty, pack: "true")
+                .WithItem(itemType: "None", itemPath: "other\\files.txt", packagePath: null, pack: "true")
+                .WithItem(itemType: "None", itemPath: "folder\\**", packagePath: "media", pack: "true")
+                .WithItem(itemType: "None", itemPath: "utils\\*", packagePath: "utils", pack: "true");
+
+            // Act
+            using (TestDirectory srcDir = msbuildFixture.Build(testDirBuilder))
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+
+                // Assert
+                // Validate embedded readme in package
+                ValidatePackReadme(projectBuilder);
+
+                // Validate that other content is also included
+                string nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    Assert.NotNull(nupkgReader.GetEntry("content/other/files.txt"));
+                    Assert.NotNull(nupkgReader.GetEntry("utils/sources.txt"));
+                    Assert.NotNull(nupkgReader.GetEntry("media/nested/sample.txt"));
+                }
+
+                string snupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.snupkg");
+                Assert.True(File.Exists(snupkgPath), "No snupkg was produced");
+            }
+        }
+
         private void ValidatePackReadme(ProjectFileBuilder projectBuilder)
         {
             Assert.True(File.Exists(projectBuilder.ProjectFilePath), "No project was produced");

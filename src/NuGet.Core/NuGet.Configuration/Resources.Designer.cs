@@ -178,20 +178,20 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace &apos;{0}&apos; must have at least one namespace..
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; must have at least one package pattern..
         /// </summary>
-        internal static string Error_ItemNeedsAtLeastOneNamespace {
+        internal static string Error_ItemNeedsAtLeastOnePackagePattern {
             get {
-                return ResourceManager.GetString("Error_ItemNeedsAtLeastOneNamespace", resourceCulture);
+                return ResourceManager.GetString("Error_ItemNeedsAtLeastOnePackagePattern", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source namespace &apos;{0}&apos; must have at least one namespace. Path: &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; must have at least one package pattern. Path: &apos;{1}&apos;.
         /// </summary>
-        internal static string Error_ItemNeedsAtLeastOneNamespaceWithPath {
+        internal static string Error_ItemNeedsAtLeastOnePackagePatternWithPath {
             get {
-                return ResourceManager.GetString("Error_ItemNeedsAtLeastOneNamespaceWithPath", resourceCulture);
+                return ResourceManager.GetString("Error_ItemNeedsAtLeastOnePackagePatternWithPath", resourceCulture);
             }
         }
         

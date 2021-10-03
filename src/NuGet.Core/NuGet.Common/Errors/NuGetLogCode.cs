@@ -718,6 +718,11 @@ namespace NuGet.Common
         NU5041 = 5041,
 
         /// <summary>
+        /// Error_ProjectJsonPack_Deprecated_And_Disabled
+        /// </summary>
+        NU5042 = 5042,
+
+        /// <summary>
         /// Invalid icon extension error
         /// </summary>
         NU5045 = 5045,

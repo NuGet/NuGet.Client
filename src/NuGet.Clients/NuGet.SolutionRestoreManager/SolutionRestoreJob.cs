@@ -177,9 +177,9 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
             var sources = _sourceRepositoryProvider.GetRepositories();
-            PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(_settings);
 
-            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore, packageNamespacesConfiguration))
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, PackageSourceTelemetry.TelemetryAction.Restore, packageSourceMapping))
             {
                 try
                 {
@@ -304,8 +304,8 @@ namespace NuGet.SolutionRestoreManager
                 .GroupBy(x => x.ProjectStyle)
                 .ToDictionary(x => x.Key, y => y.Count());
 
-            PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
-            bool isPackageSourceMappingEnabled = packageNamespacesConfiguration?.AreNamespacesEnabled ?? false;
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(_settings);
+            bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
@@ -706,9 +706,9 @@ namespace NuGet.SolutionRestoreManager
 
             using (var cacheContext = new SourceCacheContext())
             {
-                PackageNamespacesConfiguration packageNamespacesConfiguration = PackageNamespacesConfiguration.GetPackageNamespacesConfiguration(_settings);
+                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(_settings);
 
-                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageNamespacesConfiguration)
+                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory: null, directDownload: false, packageSourceMapping)
                 {
                     ParentId = _nuGetProjectContext.OperationId,
                     ClientPolicyContext = ClientPolicyContext.GetClientPolicy(_settings, logger)

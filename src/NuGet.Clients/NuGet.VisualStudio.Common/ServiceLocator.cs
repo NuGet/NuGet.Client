@@ -25,19 +25,7 @@ namespace NuGet.VisualStudio
             PackageServiceProvider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
-        public static IAsyncServiceProvider PackageServiceProvider { get; private set; }
-
-        public static TService GetInstanceSafe<TService>() where TService : class
-        {
-            try
-            {
-                return GetInstance<TService>();
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
+        private static IAsyncServiceProvider PackageServiceProvider;
 
         /// <inheritdoc cref="GetInstanceAsync{TService}"/>
         public static TService GetInstance<TService>() where TService : class
@@ -60,13 +48,6 @@ namespace NuGet.VisualStudio
             // Try to find the service as a component model, then try dte then lastly try global service
             // Per bug #2072, avoid calling GetGlobalService() from within the Initialize() method of NuGetPackage class.
             // Doing so is illegal and may make VS to stop responding. As a result of that, we defer calling GetGlobalService to the last option.
-
-            // Special case IServiceProvider
-            if (typeof(TService) == typeof(IServiceProvider))
-            {
-                var serviceProvider = await GetServiceProviderAsync();
-                return (TService)serviceProvider;
-            }
 
             var serviceFromDTE = await GetDTEServiceAsync<TService>();
             if (serviceFromDTE != null)
@@ -91,21 +72,21 @@ namespace NuGet.VisualStudio
 
         public static async Task<TInterface> GetGlobalServiceAsync<TService, TInterface>() where TInterface : class
         {
-            // VS Threading Rule #1
-            // Access to ServiceProvider and a lot of casts are performed in this method,
-            // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             if (PackageServiceProvider != null)
             {
-                var result = await PackageServiceProvider.GetServiceAsync(typeof(TService));
-                var service = result as TInterface;
+                var service = await PackageServiceProvider.GetServiceAsync<TService, TInterface>(throwOnFailure: false);
                 if (service != null)
                 {
                     return service;
                 }
             }
 
+            // VS Threading Rule #1
+            // Access to ServiceProvider and a lot of casts are performed in this method,
+            // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // This is a fallback, primarily hit in tests.
             return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
@@ -183,7 +164,12 @@ namespace NuGet.VisualStudio
             return service;
         }
 
-        private static async Task<IServiceProvider> GetServiceProviderAsync()
+        public static async Task<IComponentModel> GetComponentModelAsync()
+        {
+            return await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
+        }
+
+        public static async Task<IServiceProvider> GetServiceProviderAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();

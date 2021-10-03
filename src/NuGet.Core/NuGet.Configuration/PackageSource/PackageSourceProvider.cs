@@ -158,8 +158,8 @@ namespace NuGet.Configuration
 
             foreach (var packageSource in defaultPackageSources)
             {
-                var sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
-                var feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+                var sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.OrdinalIgnoreCase));
+                var feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.OrdinalIgnoreCase));
 
                 if (!sourceMatching && !feedNameMatching)
                 {
@@ -302,8 +302,8 @@ namespace NuGet.Configuration
 
                 foreach (var packageSource in _configurationDefaultSources)
                 {
-                    var isSourceMatch = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
-                    var isFeedNameMatch = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+                    var isSourceMatch = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.OrdinalIgnoreCase));
+                    var isFeedNameMatch = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.OrdinalIgnoreCase));
 
                     if (isSourceMatch || isFeedNameMatch)
                     {

@@ -727,24 +727,6 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package namespace matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;.
-        /// </summary>
-        internal static string PackageNamespaceMatchFound {
-            get {
-                return ResourceManager.GetString("PackageNamespaceMatchFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package namespace match not found for package ID &apos;{0}&apos;.
-        /// </summary>
-        internal static string PackageNamespaceNoMatchFound {
-            get {
-                return ResourceManager.GetString("PackageNamespaceNoMatchFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; is not found.
         /// </summary>
         internal static string PackageNotFound {
@@ -795,6 +777,24 @@ namespace NuGet.PackageManagement {
         internal static string PackagesCouldNotBeInstalled {
             get {
                 return ResourceManager.GetString("PackagesCouldNotBeInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source mapping matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;.
+        /// </summary>
+        internal static string PackageSourceMappingPatternMatchFound {
+            get {
+                return ResourceManager.GetString("PackageSourceMappingPatternMatchFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source mapping match not found for package ID &apos;{0}&apos;.
+        /// </summary>
+        internal static string PackageSourceMappingPatternNoMatchFound {
+            get {
+                return ResourceManager.GetString("PackageSourceMappingPatternNoMatchFound", resourceCulture);
             }
         }
         

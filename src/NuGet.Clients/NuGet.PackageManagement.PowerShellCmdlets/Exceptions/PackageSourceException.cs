@@ -5,6 +5,7 @@ using System;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
+    [Serializable]
     public class PackageSourceException : Exception
     {
         public PackageSourceException(string message)

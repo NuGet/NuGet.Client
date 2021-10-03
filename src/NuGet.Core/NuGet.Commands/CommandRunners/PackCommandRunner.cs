@@ -322,6 +322,7 @@ namespace NuGet.Commands
             ExcludeFiles(builder.Files);
         }
 
+        [Obsolete]
         public static bool ProcessProjectJsonFile(
             PackageBuilder builder,
             string basePath,
@@ -348,6 +349,7 @@ namespace NuGet.Commands
             return false;
         }
 
+        [Obsolete]
         private static void LoadProjectJsonFile(
             PackageBuilder builder,
             string path,

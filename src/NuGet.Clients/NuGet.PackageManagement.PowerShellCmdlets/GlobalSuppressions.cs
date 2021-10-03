@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// This file is used by Code Analysis to maintain SuppressMessage 
+// This file is used by Code Analysis to maintain SuppressMessage
 // attributes that are applied to this project.
-// Project-level suppressions either have no target or are given 
+// Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
 
 using System.Diagnostics.CodeAnalysis;
@@ -41,7 +41,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Build", "CA1031:Modify 'UpdateOrReinstallSinglePackageAsync' to catch a more specific allowed exception type, or rethrow the exception.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.PackageManagement.PowerShellCmdlets.UpdatePackageCommand.UpdateOrReinstallSinglePackageAsync~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Build", "CA1056:Change the type of property PowerShellPackage.LicenseUrl from string to System.Uri.", Justification = "<Pending>", Scope = "member", Target = "~P:NuGet.PackageManagement.PowerShellCmdlets.PowerShellPackage.LicenseUrl")]
 [assembly: SuppressMessage("Build", "CA1501:'InstallPackageCommand' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'PackageActionBaseCommand, NuGetPowerShellBaseCommand, PSCmdlet, Cmdlet, InternalCommand, Object'", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.PackageManagement.PowerShellCmdlets.InstallPackageCommand")]
-[assembly: SuppressMessage("Build", "CA2237:Add [Serializable] to PackageSourceException as this type implements ISerializable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.PackageManagement.PowerShellCmdlets.PackageSourceException")]
 [assembly: SuppressMessage("Build", "CA1501:'SyncPackageCommand' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'PackageActionBaseCommand, NuGetPowerShellBaseCommand, PSCmdlet, Cmdlet, InternalCommand, Object'", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.PackageManagement.PowerShellCmdlets.SyncPackageCommand")]
 [assembly: SuppressMessage("Build", "CA1501:'TabExpansionCommand' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'FindPackageCommand, NuGetPowerShellBaseCommand, PSCmdlet, Cmdlet, InternalCommand, Object'", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.PackageManagement.PowerShellCmdlets.TabExpansionCommand")]
 [assembly: SuppressMessage("Build", "CA1501:'UpdatePackageCommand' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'PackageActionBaseCommand, NuGetPowerShellBaseCommand, PSCmdlet, Cmdlet, InternalCommand, Object'", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.PackageManagement.PowerShellCmdlets.UpdatePackageCommand")]
