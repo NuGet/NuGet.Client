@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var uiShell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
+            foreach (var windowFrame in VsUtility.GetDocumentWindows((IVsUIShell)uiShell))
             {
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 packageManagerControl?.ApplyShowDeprecatedFrameworkSetting(show);
@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var uiShell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
+            foreach (var windowFrame in VsUtility.GetDocumentWindows((IVsUIShell)uiShell))
             {
                 var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
                 packageManagerControl?.ApplyShowPreviewSetting(show);

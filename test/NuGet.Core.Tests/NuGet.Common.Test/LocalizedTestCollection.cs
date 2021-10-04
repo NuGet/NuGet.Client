@@ -28,7 +28,7 @@ namespace NuGet.Common.Test
 
         public static void Reset()
         {
-            lock(LockObject)
+            lock (LockObject)
             {
                 CultureInfo.CurrentCulture = DefaultCurrentCulture;
                 CultureInfo.CurrentUICulture = DefaultCurrentUICulture;
