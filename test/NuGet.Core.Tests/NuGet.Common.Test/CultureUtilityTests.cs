@@ -8,19 +8,15 @@ using Xunit;
 
 namespace NuGet.Common.Test
 {
+    [Collection(LocalizedTestCollection.TestName)]
     public class CultureUtilityTests
     {
-        // Disabled due to flakiness on the CI. Fix tracked here:
-        // https://github.com/NuGet/Home/issues/3722
-        // [Fact]
+        [Fact]
         public void CultureUtility_DisablesLocalization()
         {
-            // Arrange
-            var originalCulture = CultureInfo.DefaultThreadCurrentCulture;
-            var originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
-
             try
             {
+                // Arrange
                 var german = new CultureInfo("de-DE");
 
                 CultureInfo.DefaultThreadCurrentCulture = german;
@@ -40,8 +36,7 @@ namespace NuGet.Common.Test
             }
             finally
             {
-                CultureInfo.DefaultThreadCurrentCulture = originalCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = originalUICulture;
+                LocalizedTestCollection.Reset();
             }
         }
 
