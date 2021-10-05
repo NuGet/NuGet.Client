@@ -7,13 +7,13 @@ using Xunit;
 namespace NuGet.Common.Test
 {
     [CollectionDefinition(TestName, DisableParallelization = true)]
-    public class LocalizedTestCollection
+    internal static class LocalizedTestCollection
     {
         public const string TestName = "LocalizedTests";
 
-        public static CultureInfo DefaultCurrentUICulture;
+        private static CultureInfo DefaultCurrentUICulture;
 
-        public static CultureInfo DefaultCurrentCulture;
+        private static CultureInfo DefaultCurrentCulture;
 
         private static readonly object LockObject = new();
 

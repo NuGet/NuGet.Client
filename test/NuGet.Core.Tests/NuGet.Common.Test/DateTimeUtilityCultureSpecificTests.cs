@@ -15,6 +15,7 @@ namespace NuGet.Common.Test
         {
             try
             {
+                // Prepare
                 CultureUtility.SetCulture(new CultureInfo("es-ES"));
 
                 // Act
