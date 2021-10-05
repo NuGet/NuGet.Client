@@ -781,7 +781,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Specifies the hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256. Values supported are SHA256, SHA384 and SHA512.</value>
   </data>
   <data name="TrustCommandAllowUntrustedRoot" xml:space="preserve">
-    <value>Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root.</value>
+    <value>Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root. This is not recommended.</value>
   </data>
   <data name="TrustCommandDescription" xml:space="preserve">
     <value>Manage the trusted signers.</value>
@@ -851,5 +851,58 @@ The search is a case-insensitive string comparison using the supplied value, whi
   </data>
   <data name="SignCommandNoCertificateException" xml:space="preserve">
     <value>No certificate was provided.</value>
+  </data>
+  <data name="TrustAuthorCommandDescription" xml:space="preserve">
+    <value>Adds a trusted signer with the given name, based on the author signature of the package.</value>
+  </data>
+  <data name="TrustListCommandDescription" xml:space="preserve">
+    <value>Lists all the trusted signers in the configuration.</value>
+  </data>
+  <data name="TrustRemoveCommandDescription" xml:space="preserve">
+    <value>Removes any trusted signers that match the given name.</value>
+  </data>
+  <data name="TrustRepositoryCommandDescription" xml:space="preserve">
+    <value>Adds a trusted signer with the given name, based on the repository signature or countersignature of a signed package.</value>
+  </data>
+  <data name="TrustSyncCommandDescription" xml:space="preserve">
+    <value>Deletes the current list of certificates and replaces them with an up-to-date list from the repository.</value>
+  </data>
+  <data name="TrustCertificateFingerprint" xml:space="preserve">
+    <value>The fingerprint of the certificate.</value>
+  </data>
+  <data name="TrustedCertificateSignerNameToAdd" xml:space="preserve">
+    <value>The name of the trusted signer to add. If a trusted signer with the given name already exists, the certificate item is added to that signer. Otherwise a trusted author is created with a certificate item from the given certificate information.</value>
+  </data>
+  <data name="TrustedSignerNameExists" xml:space="preserve">
+    <value>The name of the existing trusted signer to sync.</value>
+  </data>
+  <data name="TrustedSignerNameToAdd" xml:space="preserve">
+    <value>The name of the trusted signer to add. If name already exists in the configuration, the signature is appended.</value>
+  </data>
+  <data name="TrustedSignerNameToRemove" xml:space="preserve">
+    <value>The name of the existing trusted signer to remove.</value>
+  </data>
+  <data name="TrustLocalSignedNupkgPath" xml:space="preserve">
+    <value>The given package should be a local path to the signed .nupkg file.</value>
+  </data>
+  <data name="TrustSourceCommandDescription" xml:space="preserve">
+    <value>Adds a trusted signer based on a given package source.</value>
+  </data>
+  <data name="TrustSourceSignerName" xml:space="preserve">
+    <value>"The name of the trusted signer to add. If only &lt;NAME&gt; is provided without --&lt;source-url&gt;, the package source from your NuGet configuration files with the same name is added to the trusted list. If &lt;NAME&gt; already exists in the configuration, the package source is appended to it."</value>
+  </data>
+  <data name="TrustSourceUrl" xml:space="preserve">
+    <value>If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported.</value>
+  </data>
+  <data name="Error_TrustedRepoAlreadyExists" xml:space="preserve">
+    <value>A trusted repository with the service index '{0}' already exists.</value>
+    <comment>0 - trusted repository name</comment>
+  </data>
+  <data name="Error_TrustedSignerAlreadyExists" xml:space="preserve">
+    <value>A trusted signer '{0}' already exists.</value>
+    <comment>0 - trusted signer name</comment>
+  </data>
+  <data name="Error_TrustFingerPrintAlreadyExist" xml:space="preserve">
+    <value>The certificate finger you're trying to add is already in the certificate fingerprint list.</value>
   </data>
 </root>
