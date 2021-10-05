@@ -11,7 +11,7 @@ namespace NuGet.Common.Test
     public class DatetimeUtilityCultureSpecificTests
     {
         [Fact]
-        public void ToReadableTimeFormat_NumberFormat_LocaleSensitive_Suceeds()
+        public void ToReadableTimeFormat_NumberFormat_LocaleSensitive_Succeeds()
         {
             try
             {
