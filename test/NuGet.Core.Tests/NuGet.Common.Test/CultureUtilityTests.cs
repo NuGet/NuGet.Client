@@ -17,6 +17,7 @@ namespace NuGet.Common.Test
             try
             {
                 // Arrange
+                LocalizedTestCollection.EnsureInit();
                 var german = new CultureInfo("de-DE");
 
                 CultureInfo.DefaultThreadCurrentCulture = german;

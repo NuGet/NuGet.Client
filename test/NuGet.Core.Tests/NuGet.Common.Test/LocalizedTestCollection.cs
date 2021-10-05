@@ -11,9 +11,10 @@ namespace NuGet.Common.Test
     {
         public const string TestName = "LocalizedTests";
 
-        private static CultureInfo DefaultCurrentUICulture;
-
+        private static CultureInfo CurrentUICulture;
+        private static CultureInfo CurrentCulture;
         private static CultureInfo DefaultCurrentCulture;
+        private static CultureInfo DefaultCurrentUICulture;
 
         private static readonly object LockObject = new();
 
@@ -21,8 +22,18 @@ namespace NuGet.Common.Test
         {
             lock (LockObject)
             {
-                DefaultCurrentCulture = CultureInfo.CurrentCulture;
-                DefaultCurrentUICulture = CultureInfo.CurrentUICulture;
+                CurrentCulture = CultureInfo.CurrentCulture;
+                CurrentUICulture = CultureInfo.CurrentUICulture;
+                DefaultCurrentCulture = CultureInfo.DefaultThreadCurrentCulture;
+                DefaultCurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture;
+            }
+        }
+
+        public static void EnsureInit()
+        {
+            lock (LockObject)
+            {
+                // Here we make sure we captured initial culture info
             }
         }
 
@@ -30,8 +41,10 @@ namespace NuGet.Common.Test
         {
             lock (LockObject)
             {
-                CultureInfo.CurrentCulture = DefaultCurrentCulture;
-                CultureInfo.CurrentUICulture = DefaultCurrentUICulture;
+                CultureInfo.CurrentCulture = CurrentCulture;
+                CultureInfo.CurrentUICulture = CurrentUICulture;
+                CultureInfo.DefaultThreadCurrentCulture = DefaultCurrentCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = DefaultCurrentUICulture;
             }
         }
     }
