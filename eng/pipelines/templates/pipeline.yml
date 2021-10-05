@@ -220,7 +220,7 @@ stages:
   condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
   jobs:
   - job: Apex_Tests_On_Windows
-    timeoutInMinutes: 150
+    timeoutInMinutes: 180
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
