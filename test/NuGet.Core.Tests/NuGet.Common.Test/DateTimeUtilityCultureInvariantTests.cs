@@ -35,7 +35,7 @@ namespace NuGet.Common.Test
             {
                 // Act
                 CultureUtility.SetCulture(CultureInfo.InvariantCulture);
-                var actual = DatetimeUtility.ToReadableTimeFormat(time);
+                string actual = DatetimeUtility.ToReadableTimeFormat(time);
 
                 // Assert
                 Assert.Equal(expected, actual);

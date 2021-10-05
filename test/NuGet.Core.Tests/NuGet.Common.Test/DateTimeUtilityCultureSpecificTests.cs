@@ -19,7 +19,7 @@ namespace NuGet.Common.Test
                 CultureUtility.SetCulture(new CultureInfo("es-ES"));
 
                 // Act
-                var actual = DatetimeUtility.ToReadableTimeFormat(TimeSpan.FromSeconds(1.23d));
+                string actual = DatetimeUtility.ToReadableTimeFormat(TimeSpan.FromSeconds(1.23d));
 
                 // Assert
                 Assert.StartsWith("1,23", actual, StringComparison.InvariantCulture);
