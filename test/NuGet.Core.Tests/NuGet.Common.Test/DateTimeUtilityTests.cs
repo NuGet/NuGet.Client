@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Xunit;
 
 namespace NuGet.Common.Test
 {
-    [Collection(LocalizedTestCollection.TestName)]
-    public class DateTimeUtilityCultureInvariantTests
+    public class DateTimeUtilityTests
     {
         public static IEnumerable<object[]> GetData()
         {
@@ -30,20 +28,11 @@ namespace NuGet.Common.Test
         [MemberData(nameof(GetData))]
         public void ToReadableTimeFormat_CultureInvariant_Succeeds(string expected, TimeSpan time)
         {
-            // Arrange
-            try
-            {
-                // Act
-                CultureUtility.SetCulture(CultureInfo.InvariantCulture);
-                string actual = DatetimeUtility.ToReadableTimeFormat(time);
+            // Act
+            string actual = DatetimeUtility.ToReadableTimeFormat(time);
 
-                // Assert
-                Assert.Equal(expected, actual);
-            }
-            finally
-            {
-                LocalizedTestCollection.Reset();
-            }
+            // Assert
+            Assert.Equal(expected, actual);
         }
     }
 }
