@@ -1,4 +1,7 @@
 parameters:
+- name: isOfficialBuild
+  type: boolean
+  default: false
 - name: DartLabEnvironment
   displayName: DartLab Environment
   type: string
