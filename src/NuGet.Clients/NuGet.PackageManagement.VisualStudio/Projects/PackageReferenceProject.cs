@@ -29,17 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
-        private static readonly CacheItemPolicy TransitiveOriginsCacheItemPolicy = new()
-        {
-            SlidingExpiration = ObjectCache.NoSlidingExpiration,
-            AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
-        };
-        private protected readonly ObjectCache TransitiveOriginsCache = new MemoryCache("TransitiveOriginsCache", new NameValueCollection
-        {
-            { "cacheMemoryLimitMegabytes", "4" },
-            { "physicalMemoryLimitPercentage", "0" },
-            { "pollingInterval", "00:02:00" }
-        });
+        private protected readonly Dictionary<string, object> TransitiveOriginsCache = new();
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
@@ -115,7 +105,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="token">Cancellation token</param>
         /// <returns>An <see cref="RestoreGraphRead"/> object</returns>
-        /// <remarks>Projects need to be NuGet-restored before calling this function. Assets file readin happens in background</remarks>
+        /// <remarks>Projects need to be NuGet-restored before calling this function. Assets file reading happens in background</remarks>
         internal async Task<RestoreGraphRead> GetFullRestoreGraphAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -123,7 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
 
             string assetsFilePath = await GetAssetsFilePathAsync();
-            var fileInfo = new FileInfo(assetsFilePath);
+            var AssetsFileInfo = new FileInfo(assetsFilePath);
 
             PackageSpec lastPackageSpec = null;
             bool cacheHitTargets = _lastTargets != null;
@@ -131,9 +121,9 @@ namespace NuGet.PackageManagement.VisualStudio
             bool isCacheHit = false;
             IList<LockFileTarget> targetsList = null;
 
-            if (IsCacheUpToDate(cacheHitTargets, cacheHitPackageSpec, currentPackageSpec, lastPackageSpec, fileInfo))
+            if (IsCacheUpToDate(cacheHitTargets, cacheHitPackageSpec, currentPackageSpec, lastPackageSpec, AssetsFileInfo))
             {
-                if (fileInfo.Exists)
+                if (AssetsFileInfo.Exists)
                 {
                     await TaskScheduler.Default;
                     LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
@@ -141,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     targetsList = lockFile?.Targets;
                 }
 
-                _lastTimeAssetsModified = fileInfo.LastWriteTimeUtc;
+                _lastTimeAssetsModified = AssetsFileInfo.LastWriteTimeUtc;
                 _lastTargets = targetsList;
                 _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
             }
@@ -278,9 +268,10 @@ namespace NuGet.PackageManagement.VisualStudio
         internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
         {
             string key = GetTransitiveCacheKey(transitivePackage);
-            if (TransitiveOriginsCache.Contains(key))
+
+            if (TransitiveOriginsCache.ContainsKey(key))
             {
-                return (TransitiveEntry)TransitiveOriginsCache.Get(key);
+                return (TransitiveEntry)TransitiveOriginsCache[key];
             }
 
             return null;
@@ -289,16 +280,12 @@ namespace NuGet.PackageManagement.VisualStudio
         internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
         {
             string key = GetTransitiveCacheKey(transitivePackage);
-            TransitiveOriginsCache.Set(key, origins, TransitiveOriginsCacheItemPolicy);
+            TransitiveOriginsCache[key] = origins;
         }
 
         internal void ClearCachedTransitiveOrigin()
         {
-            var keys = TransitiveOriginsCache.Select(x => x.Key);
-            foreach (var k in keys)
-            {
-                TransitiveOriginsCache.Remove(k);
-            }
+            TransitiveOriginsCache.Clear();
         }
 
         internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);

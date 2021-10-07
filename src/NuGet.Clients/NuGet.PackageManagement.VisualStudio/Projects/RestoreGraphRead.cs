@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public IReadOnlyList<LockFileTarget> TargetsList { get; }
 
         /// <summary>
-        /// Indicates if the reading was retrieved from internal cache, otherwise, 
+        /// Indicates if the reading was retrieved from internal cache, otherwise, <c>false</c>
         /// </summary>
         public bool IsCacheHit { get; }
 

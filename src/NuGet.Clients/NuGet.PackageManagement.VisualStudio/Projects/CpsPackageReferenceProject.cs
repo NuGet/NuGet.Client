@@ -415,9 +415,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
         }
 
-        internal override bool IsCacheUpToDate(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo fileInfo)
+        internal override bool IsCacheUpToDate(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets)
         {
-            return (fileInfo.Exists && fileInfo.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(actual, last);
+            return (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(actual, last);
         }
 
         internal override void CleanCache()
