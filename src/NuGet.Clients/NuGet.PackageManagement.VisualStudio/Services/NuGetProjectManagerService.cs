@@ -26,6 +26,7 @@ using NuGet.Resolver;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
+using FrameworkRIDEntry = System.Tuple<NuGet.Frameworks.NuGetFramework, string>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -719,7 +720,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public async ValueTask<IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
+        public async ValueTask<IReadOnlyDictionary<FrameworkRIDEntry, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
         {
             if (transitivePackage == null)
             {
@@ -737,7 +738,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ct.ThrowIfCancellationRequested();
 
             var singleProjectId = new[] { projectId };
-            var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>();
+            var packageOrigins = new Dictionary<FrameworkRIDEntry, IReadOnlyList<IPackageReferenceContextInfo>>();
             IReadOnlyList<NuGetProject>? projectsList = await GetProjectsAsync(singleProjectId, ct);
             NuGetProject? project = projectsList.FirstOrDefault();
 

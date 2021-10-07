@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
@@ -19,6 +17,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using FrameworkRIDEntry = System.Tuple<NuGet.Frameworks.NuGetFramework, string>;
 using TransitiveEntry = System.Collections.Generic.IReadOnlyDictionary<System.Tuple<NuGet.Frameworks.NuGetFramework, string>, System.Collections.Generic.IReadOnlyList<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -29,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
-        private protected readonly Dictionary<string, object> TransitiveOriginsCache = new();
+        private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
@@ -144,22 +143,47 @@ namespace NuGet.PackageManagement.VisualStudio
             return new RestoreGraphRead(currentPackageSpec, targetsList?.ToArray(), isCacheHit);
         }
 
+
+        internal async ValueTask<TransitiveEntry> Test2(PackageIdentity transitivePackage, CancellationToken ct)
+        {
+            /* Pseudocode
+            1. Get project restore graph
+
+            2. If it is cached
+               2.1 Look for a transitive cached entry
+               2.2 If found, return that entry
+
+            Otherwise:
+
+            3. For each target framework graph (Framework, RID)-pair:
+              3.1 For each direct dependency d:
+                  3.1.1 Do DFS to mark d as a transitive origin over all transitive dependencies found
+
+                 
+            4. return cached result for specific transitive dependency
+            */
+
+            await Task.FromResult(1);
+            throw new NotImplementedException();
+        }
+
+
         internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
         {
             /** Pseudocode
             1. Get project restore graph
 
             2. If it is cached
-               2.1 Look for a transive cached entry
+               2.1 Look for a transitive cached entry
                2.2 If found, return that entry
 
             Otherwise:
 
-            3. For each target framework graph:
-              3.1 Foreach direct dependency d:
-                  3.1.1 do DFS to look for transitive dependency
+            3. For each target framework graph (Framework, RID)-pair:
+              3.1 For each direct dependency d:
+                  3.1.1 Do DFS to look for transitive dependency
 
-                  3.1.2 if found:
+                  3.1.2 If found:
                     Add to list, indexed by framework
 
             4. Cache the result list and return it
@@ -184,7 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Otherwise, find Transitive origin and update cache
-            var packageOrigins = new Dictionary<Tuple<NuGetFramework, string>, IReadOnlyList<PackageReference>>();
+            var packageOrigins = new Dictionary<FrameworkRIDEntry, IReadOnlyList<PackageReference>>();
 
             if (reading.TargetsList != null)
             {
@@ -200,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
                     {
-                        var found = FindTransitive(directPkg.PackageIdentity, transitivePackage, targetFxGraph, memory);
+                        var found = FindTransitiveOrigin(directPkg.PackageIdentity, transitivePackage, targetFxGraph, memory);
                         if (found)
                         {
                             list.Add(directPkg);
@@ -218,7 +242,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageOrigins;
         }
 
-        private bool FindTransitive(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory)
+        private bool FindTransitiveOrigin(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory)
         {
             if (current.Equals(transitivePackage))
             {
@@ -245,7 +269,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                     else if (!memory.ContainsKey(pkgChild))
                     {
-                        bool found = FindTransitive(pkgChild, transitivePackage, graph, memory);
+                        bool found = FindTransitiveOrigin(pkgChild, transitivePackage, graph, memory);
 
                         if (found)
                         {
@@ -271,7 +295,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (TransitiveOriginsCache.ContainsKey(key))
             {
-                return (TransitiveEntry)TransitiveOriginsCache[key];
+                return TransitiveOriginsCache[key];
             }
 
             return null;
