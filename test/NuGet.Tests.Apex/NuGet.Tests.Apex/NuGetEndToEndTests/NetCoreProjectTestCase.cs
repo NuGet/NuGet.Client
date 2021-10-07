@@ -64,22 +64,23 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using var simpleTestPathContext = new SimpleTestPathContext();
-            string solutionDirectory = simpleTestPathContext.SolutionRoot;
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
-            Directory.CreateDirectory(privateRepositoryPath);
-            var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
-            Directory.CreateDirectory(externalRepositoryPath);
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                string solutionDirectory = simpleTestPathContext.SolutionRoot;
+                var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
 
-            var packageName = "Contoso.a";
-            var packageVersion = "1.0.0";
+                var packageName = "Contoso.a";
+                var packageVersion = "1.0.0";
 
-            await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
-            await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
+                await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
+                await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
 
 
-            // Create nuget.config with Package source mapping filtering rules before project is created.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Create nuget.config with Package source mapping filtering rules before project is created.
+                CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
@@ -99,19 +100,21 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
 
-            VisualStudio.AssertNoErrors();
+                    // Act
+                    OpenNuGetPackageManagerWithDte();
+                    var nugetTestService = GetNuGetTestService();
+                    var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+                    uiwindow.InstallPackageFromUI(packageName, packageVersion);
 
-            // Act
-            OpenNuGetPackageManagerWithDte();
-            var nugetTestService = GetNuGetTestService();
-            var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
-            uiwindow.InstallPackageFromUI(packageName, packageVersion);
-
-            // Assert
-            CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, XunitLogger);
-            Assert.Contains($"Installed {packageName} {packageVersion} from {privateRepositoryPath}", GetPackageManagerOutputWindowPaneText());
+                    // Assert
+                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, XunitLogger);
+                    Assert.Contains($"Installed {packageName} {packageVersion} from {privateRepositoryPath}", GetPackageManagerOutputWindowPaneText());
+                }
+            }
         }
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk

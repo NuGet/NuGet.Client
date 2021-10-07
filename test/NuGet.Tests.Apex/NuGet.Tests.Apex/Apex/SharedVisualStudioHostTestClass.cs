@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
@@ -102,6 +103,12 @@ namespace NuGet.Tests.Apex
             _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
 
             XunitLogger.LogInformation($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+
+            List<string> errors = VisualStudio.GetErrorListErrors();
+            if (errors.Count > 0)
+            {
+                XunitLogger.LogError(string.Join(Environment.NewLine, errors));
+            }
 
             base.Dispose();
         }
