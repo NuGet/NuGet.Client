@@ -179,45 +179,15 @@ namespace NuGet.Test.Utility
             }
         }
 
-        // Add NetStandard.Library and NetCorePlatforms to the feed and save the file.
+        // Add nuget.org as package source when NetStandard.Library and NetCorePlatforms packages are needed and save the file.
         public void AddNetStandardFeeds()
         {
-            var reposRoot = GetRepositoryRootDirectory();
-            var netStandardLibraryPackageFeed = GetRepoPackageDirectoryPath(reposRoot, "netstandard.library");
-            var netCorePlatformsPackageFeed = GetRepoPackageDirectoryPath(reposRoot, "microsoft.netcore.platforms");
-
-            Assert.True(Directory.Exists(netStandardLibraryPackageFeed));
-            Assert.True(Directory.Exists(netCorePlatformsPackageFeed));
+            const string nuget = "https://api.nuget.org/v3/index.json";
 
             var section = GetOrAddSection(XML, "packageSources");
-            AddEntry(section, "NetStandardLibrary", netStandardLibraryPackageFeed);
-            AddEntry(section, "NetCorePlatforms", netCorePlatformsPackageFeed);
+            AddEntry(section, "nuget", nuget);
 
             Save();
         }
-
-        private static DirectoryInfo GetRepositoryRootDirectory()
-        {
-            DirectoryInfo currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
-            while (currentDir != null)
-            {
-                if (File.Exists(Path.Combine(currentDir.FullName, "NuGet.sln")))
-                {
-                    // We have found the repo root.
-                    return currentDir;
-                }
-
-                currentDir = currentDir.Parent;
-            }
-
-            throw new DirectoryNotFoundException($"Starting from {Directory.GetCurrentDirectory()} the directory containing 'NuGet.sln' could not be found.");
-        }
-
-        private static string GetRepoPackageDirectoryPath(DirectoryInfo reposRoot, string packageId)
-        {
-            var repoPackageDir = Path.Combine(reposRoot.FullName, "packages", packageId);
-            return repoPackageDir;
-        }
-
     }
 }

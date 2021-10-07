@@ -72,7 +72,9 @@ trap
 
 $NuGetRoot = Split-Path $PSScriptRoot -Parent
 
-$NuGetTestsPSM1 = Join-Path $NuGetRoot "test\EndToEnd\NuGet.Tests.psm1"
+$NuGetTestsPSM1 = Join-Path $NuGetRoot "NuGet.Tests.psm1"
+
+Write-Host "NuGetTestsPSM1 variable value is:" $NuGetTestsPSM1
 
 Write-Host 'If successful, this script needs to be run only once on your machine!'
 
