@@ -119,7 +119,7 @@ namespace NuGet.Tests.Apex
 
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
-            yield return new object[] { ProjectTemplate.NetCoreClassLib };
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
 
         private void OpenNuGetPackageManagerWithDte()
