@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
-        private IntervalTracker _pmuiGestureintervalTracker;
+        internal IntervalTracker _pmuiGestureintervalTracker;
 
         private PackageManagerControl()
         {
@@ -1112,7 +1112,7 @@ namespace NuGet.PackageManagement.UI
 
                 IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(Filter_SelectionChanged) + "-" + _topPanel.Filter);
 
-                var selectionChangedRefreshTaskIsDisposed = false;
+                var activityIsDisposed = false;
 
                 try
                 {
@@ -1133,7 +1133,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                        selectionChangedRefreshTaskIsDisposed = true;
+                        activityIsDisposed = true;
 
                         using (activity)
                         {
@@ -1147,7 +1147,7 @@ namespace NuGet.PackageManagement.UI
                 finally
                 {
                     // If JTF threw an exception, ensure the activity is stopped.
-                    if (!selectionChangedRefreshTaskIsDisposed)
+                    if (!activityIsDisposed)
                     {
                         activity.Dispose();
                     }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
@@ -26,21 +27,39 @@ namespace NuGet.PackageManagement.UI
         }
         public void Start()
         {
-            SetStatus(VsSearchTaskStatus.Started);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            IDisposable activity = _packageManagerControl._pmuiGestureintervalTracker.Start(nameof(NuGetPackageManagerControlSearchTask));
+            var activityIsDisposed = false;
+
+            try
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                SetStatus(VsSearchTaskStatus.Started);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // Set a new cancellation token source which will be used to cancel this task in case
-                // new loading task starts or manager ui is closed while loading packages.
-                var loadCts = new CancellationTokenSource();
-                var oldCts = Interlocked.Exchange(ref _packageManagerControl._loadCts, loadCts);
-                oldCts?.Cancel();
-                oldCts?.Dispose();
+                    activityIsDisposed = true;
+                    using (activity)
+                    {
+                        // Set a new cancellation token source which will be used to cancel this task in case
+                        // new loading task starts or manager ui is closed while loading packages.
+                        var loadCts = new CancellationTokenSource();
+                        var oldCts = Interlocked.Exchange(ref _packageManagerControl._loadCts, loadCts);
+                        oldCts?.Cancel();
+                        oldCts?.Dispose();
 
-                await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
-                SetStatus(VsSearchTaskStatus.Completed);
-            }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
+                        await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
+                        SetStatus(VsSearchTaskStatus.Completed);
+                    }
+                }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
+            }
+            finally
+            {
+                // If JTF threw an exception, ensure the activity is stopped.
+                if (!activityIsDisposed)
+                {
+                    activity.Dispose();
+                }
+            }
         }
 
         public uint Id { get; private set; }
