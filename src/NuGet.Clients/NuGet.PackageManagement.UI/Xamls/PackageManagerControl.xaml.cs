@@ -1110,27 +1110,48 @@ namespace NuGet.PackageManagement.UI
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
-                _packageList.ResetLoadingStatusIndicator();
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(Filter_SelectionChanged) + "-" + _topPanel.Filter);
 
-                // Collapse the Update controls when the current tab is not "Updates".
-                _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+                var selectionChangedRefreshTaskIsDisposed = false;
 
-                // Set a new cancellation token source which will be used to cancel this task in case
-                // new loading task starts or manager ui is closed while loading packages.
-                var loadCts = new CancellationTokenSource();
-                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
-                oldCts?.Cancel();
-                oldCts?.Dispose();
-
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                try
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    _packageList.ResetLoadingStatusIndicator();
 
-                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
-                    _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
-                }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
+                    // Collapse the Update controls when the current tab is not "Updates".
+                    _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+                    _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+
+                    // Set a new cancellation token source which will be used to cancel this task in case
+                    // new loading task starts or manager ui is closed while loading packages.
+                    var loadCts = new CancellationTokenSource();
+                    var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                    oldCts?.Cancel();
+                    oldCts?.Dispose();
+
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        selectionChangedRefreshTaskIsDisposed = true;
+
+                        using (activity)
+                        {
+                            await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                            EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
+                            _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+                        }
+
+                    }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
+                }
+                finally
+                {
+                    // If JTF threw an exception, ensure the activity is stopped.
+                    if (!selectionChangedRefreshTaskIsDisposed)
+                    {
+                        activity.Dispose();
+                    }
+                }
             }
         }
 
