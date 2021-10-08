@@ -63,6 +63,7 @@ namespace NuGet.PackageManagement.UI
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
+        private IntervalTracker _pmuiGestureintervalTracker;
 
         private PackageManagerControl()
         {
@@ -82,6 +83,8 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
+
+            _pmuiGestureintervalTracker = new IntervalTracker("PMUIGesture");
 
             Model = model;
             _uiLogger = uiLogger;
@@ -386,8 +389,15 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
-                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageManagerLoaded));
+            IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageManagerLoaded));
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                using (activity)
+                {
+                    await PackageManagerLoadedAsync();
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageManagerLoaded));
         }
 
         private async Task PackageManagerLoadedAsync()
@@ -995,13 +1005,19 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageList_SelectionChanged));
+
             var loadCts = new CancellationTokenSource();
             var oldCts = Interlocked.Exchange(ref _cancelSelectionChangedSource, loadCts);
             oldCts?.Cancel();
             oldCts?.Dispose();
 
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(async () => await UpdateDetailPaneAsync(loadCts.Token))
+                .RunAsync(async () =>
+                {
+                    await UpdateDetailPaneAsync(loadCts.Token);
+                    activity.Dispose();
+                })
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 
@@ -1093,6 +1109,7 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
+
                 _packageList.ResetLoadingStatusIndicator();
 
                 // Collapse the Update controls when the current tab is not "Updates".
