@@ -16,8 +16,6 @@ steps:
     targetType: 'inline'
     script: |
       try {
-        Get-Childitem -Path D:\ -recurse | Where-Object {$_.Name -clike "nuget.config"}
-
         $credentialScannerMatches = Join-Path $(Pipeline.Workspace)\_sdt\logs\CredentialScanner CredentialScanner-matches.xml
         $credScannerXml = [xml](Get-Content $credentialScannerMatches)
 
