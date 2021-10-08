@@ -27,39 +27,13 @@ steps:
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
 - task: CredScan@2
-  continueOnError: "false"
   inputs:
     toolMajorVersion: "V2"
 
 - task: SdtReport@1
   displayName: "Generate Analysis Report"
-  continueOnError: "false"
   inputs:
     CredScan: true
-    ToolLogsNotFoundAction: "Standard"
-
-- task: PublishSecurityAnalysisLogs@2
-  displayName: "Publish CodeAnalysis Logs"
-  continueOnError: "false"
-  inputs:
-    ArtifactName: "CodeAnalysisLogs"
-    ArtifactType: "Container"
-    AllTools: false
-    AntiMalware: false
-    APIScan: false
-    BinSkim: false
-    CodesignValidation: false
-    CredScan: true
-    FortifySCA: false
-    FxCop: false
-    ModernCop: false
-    MSRD: false
-    PoliCheck: false
-    RoslynAnalyzers: false
-    SDLNativeRules: false
-    Semmle: false
-    TSLint: false
-    WebScout: false
     ToolLogsNotFoundAction: "Standard"
 
 - task: DownloadPipelineArtifact@2
