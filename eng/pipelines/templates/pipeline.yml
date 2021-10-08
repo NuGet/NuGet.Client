@@ -63,14 +63,6 @@ stages:
   jobs:
   - job: Check_Code
     timeoutInMinutes: 15
-    variables:
-      # BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-      # FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      # VsTargetChannel: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
-      # VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
-      # SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-      # LocalizedLanguageCount: "13"
-      # BuildRTM: "false"
     pool:
       name: VSEngSS-MicroBuild2019-1ES
     steps:

@@ -1,19 +1,14 @@
 steps:
+- task: PowerShell@1
+  displayName: "Print Environment Variables"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
 - task: CredScan@2
   inputs:
     toolMajorVersion: "V2"
-
-- task: SdtReport@1
-  displayName: "Generate Analysis Report"
-  inputs:
-    CredScan: true
-    ToolLogsNotFoundAction: "Standard"
-
-- task: DownloadPipelineArtifact@2
-  displayName: "Download CredScan artifact"
-  inputs:
-    artifact: "CodeAnalysisLogs"
-    path: $(Pipeline.Workspace)\CodeAnalysisLogs
 
 - task: PowerShell@2
   displayName: "Analyze CredScan artifact"
@@ -21,8 +16,9 @@ steps:
     targetType: 'inline'
     script: |
       try {
-        $credentialScannerMatches = Join-Path $(Pipeline.Workspace)\CodeAnalysisLogs CredentialScanner 
-        $credentialScannerMatches = Join-Path $credentialScannerMatches CredentialScanner-matches.xml
+        Get-Childitem -Path D:\ -recurse | Where-Object {$_.Name -clike "nuget.config"}
+
+        $credentialScannerMatches = Join-Path $(Pipeline.Workspace)\_sdt\logs\CredentialScanner CredentialScanner-matches.xml
         $credScannerXml = [xml](Get-Content $credentialScannerMatches)
 
         if($credScannerXml.DEFECTS -eq $null)
