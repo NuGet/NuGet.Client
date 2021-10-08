@@ -64,12 +64,12 @@
             VerticalAlignment="Center">
             <TextBlock
               TextWrapping="Wrap"
-              VerticalAlignment="Center"
-              AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}">
+              VerticalAlignment="Center">
               <Hyperlink
                 ToolTip="{x:Static nuget:Resources.Deprecation_LinkTooltip}"
                 Command="{x:Static nuget:Commands.SearchPackageCommand}"
-                Style="{StaticResource HyperlinkStyleNoUri}">
+                Style="{StaticResource HyperlinkStyleNoUri}"
+                AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}">
                 <Hyperlink.CommandParameter>
                   <MultiBinding Converter="{StaticResource ParametersToHyperlinkTupleConverter}" Mode="OneWay" >
                     <Binding Path="PackageMetadata.DeprecationMetadata.AlternatePackage.PackageId" Mode="OneWay" />
