@@ -1224,7 +1224,11 @@ namespace NuGet.PackageManagement.UI
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(ClearSearch));
+                using (activity)
+                {
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                }
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ClearSearch));
         }
 
