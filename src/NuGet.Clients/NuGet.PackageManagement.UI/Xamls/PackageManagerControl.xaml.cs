@@ -326,9 +326,14 @@ namespace NuGet.PackageManagement.UI
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e))
-                    .PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnNuGetCacheUpdated));
+                    using (activity)
+                    {
+                        await SolutionManager_CacheUpdatedAsync(timeSpan, e);
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
             }
             else
             {
