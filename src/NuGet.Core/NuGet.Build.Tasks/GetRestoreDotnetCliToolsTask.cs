@@ -14,7 +14,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetRestoreDotnetCliToolsTask : Task
+    public class GetRestoreDotnetCliToolsTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.

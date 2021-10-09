@@ -12,7 +12,7 @@ namespace NuGet.Build.Tasks
     /// Determine the project's targetframework(s) based
     /// on the available properties.
     /// </summary>
-    public class GetProjectTargetFrameworksTask : Task
+    public class GetProjectTargetFrameworksTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.

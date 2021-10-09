@@ -6,7 +6,7 @@
     <IsDesktop>true</IsDesktop>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) ">
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('net6')) ">
     <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
     <IsCore>true</IsCore>
   </PropertyGroup>
@@ -64,6 +64,11 @@
   <ItemGroup Condition=" '$(PackProject)' == 'true' ">
     <None Include="$(MSBuildThisFileDirectory)..\icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
+
+    <!-- Don't use PublicApiAnalyzer on source-build .NET -->
+  <PropertyGroup Condition=" '$(DotNetBuildFromSource)' == 'true' ">
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+  </PropertyGroup>
 
   <!-- Projects we pack become public APIs that others can use -->
   <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">

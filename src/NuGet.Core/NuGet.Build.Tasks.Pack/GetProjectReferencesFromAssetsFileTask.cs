@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks.Pack
     /// This list is then later traversed to determine the version
     /// of the project reference during pack.
     /// </summary>
-    public class GetProjectReferencesFromAssetsFileTask : Task
+    public class GetProjectReferencesFromAssetsFileTask : Microsoft.Build.Utilities.Task
     {
         public string RestoreOutputAbsolutePath { get; set; }
 
