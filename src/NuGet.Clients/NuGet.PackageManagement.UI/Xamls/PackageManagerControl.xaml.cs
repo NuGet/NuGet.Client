@@ -284,13 +284,18 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    if (Model.IsSolution)
+                    IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectActionsExecuted));
+
+                    using (activity)
                     {
-                        await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ActionsExecuted, timeSpan);
-                    }
-                    else
-                    {
-                        await RefreshProjectAfterActionAsync(timeSpan, projectIds);
+                        if (Model.IsSolution)
+                        {
+                            await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ActionsExecuted, timeSpan);
+                        }
+                        else
+                        {
+                            await RefreshProjectAfterActionAsync(timeSpan, projectIds);
+                        }
                     }
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectActionsExecuted));
             }
