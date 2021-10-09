@@ -243,14 +243,32 @@ namespace NuGet.PackageManagement.UI
                     return;
                 }
 
-                // get the list of projects
-                IEnumerable<IProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
-                Model.Context.Projects = projects;
+                var activityIsDisposed = false;
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectChanged));
 
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                try
                 {
-                    await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
-                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
+                    // get the list of projects
+                    IEnumerable<IProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                    Model.Context.Projects = projects;
+
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        activityIsDisposed = true;
+                        using (activity)
+                        {
+                            await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
+                        }
+                    }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
+                }
+                finally
+                {
+                    // TODO: If JTF (or earlier) threw an exception, ensure the activity is stopped.
+                    if (!activityIsDisposed)
+                    {
+                        activity.Dispose();
+                    }
+                }
             }
             else
             {
