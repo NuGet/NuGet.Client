@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetCentralPackageVersionsTask : Task
+    public class GetCentralPackageVersionsTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.

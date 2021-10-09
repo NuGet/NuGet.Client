@@ -8,7 +8,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
-    public class IDEExecutionContext : ExecutionContext
+    public class IDEExecutionContext : NuGet.ProjectManagement.ExecutionContext
     {
         public ICommonOperations CommonOperations { get; }
 

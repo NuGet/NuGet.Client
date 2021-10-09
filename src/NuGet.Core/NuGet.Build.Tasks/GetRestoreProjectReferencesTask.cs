@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetRestoreProjectReferencesTask : Task
+    public class GetRestoreProjectReferencesTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.
