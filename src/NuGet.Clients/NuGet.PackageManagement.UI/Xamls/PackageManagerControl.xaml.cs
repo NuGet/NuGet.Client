@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.UI
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
 
-            _pmuiGestureintervalTracker = new IntervalTracker("PMUIGesture");
+            _pmuiGestureintervalTracker = new IntervalTracker("PMUIGesture", isPopulatingIntervalList: false);
 
             Model = model;
             _uiLogger = uiLogger;
