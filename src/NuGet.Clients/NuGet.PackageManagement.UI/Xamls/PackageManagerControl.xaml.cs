@@ -1529,8 +1529,14 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
-                .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(ExecuteRestartSearchCommand));
+                using (activity)
+                {
+                    await ExecuteRestartSearchCommandAsync();
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
         private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
