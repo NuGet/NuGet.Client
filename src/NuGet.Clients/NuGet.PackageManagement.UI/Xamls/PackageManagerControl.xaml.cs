@@ -1241,13 +1241,31 @@ namespace NuGet.PackageManagement.UI
             }
 
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
-            EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
+            var activityIsDisposed = false;
+            IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(CheckboxPrerelease_CheckChanged));
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            try
             {
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-            }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
+                RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
+
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    using (activity)
+                    {
+                        activityIsDisposed = true;
+                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
+            }
+            finally
+            {
+                // If JTF threw an exception, ensure the activity is stopped.
+                if (!activityIsDisposed)
+                {
+                    activity.Dispose();
+                }
+            }
         }
 
         internal class SearchQuery : IVsSearchQuery
