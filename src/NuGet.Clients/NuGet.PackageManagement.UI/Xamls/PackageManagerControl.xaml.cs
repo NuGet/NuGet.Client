@@ -254,9 +254,9 @@ namespace NuGet.PackageManagement.UI
 
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                     {
-                        activityIsDisposed = true;
                         using (activity)
                         {
+                            activityIsDisposed = true;
                             await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
                         }
                     }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
@@ -1123,11 +1123,30 @@ namespace NuGet.PackageManagement.UI
 
             if (SelectedSource != null)
             {
-                _topPanel.SourceToolTip.Visibility = Visibility.Visible;
-                _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(SourceRepoList_SelectionChanged));
+                var activityIsDisposed = false;
+                try
+                {
+                    _topPanel.SourceToolTip.Visibility = Visibility.Visible;
+                    _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SourceRepoList_SelectionChangedAsync(timeSpan))
-                    .PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        using (activity)
+                        {
+                            activityIsDisposed = true;
+                            await SourceRepoList_SelectionChangedAsync(timeSpan);
+                        }
+                    }).PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
+                }
+                finally
+                {
+                    // If JTF threw an exception, ensure the activity is stopped.
+                    if (!activityIsDisposed)
+                    {
+                        activity.Dispose();
+                    }
+                }
             }
         }
 
@@ -1145,7 +1164,6 @@ namespace NuGet.PackageManagement.UI
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
                 IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(Filter_SelectionChanged) + "-" + _topPanel.Filter);
-
                 var activityIsDisposed = false;
 
                 try
@@ -1167,10 +1185,9 @@ namespace NuGet.PackageManagement.UI
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                        activityIsDisposed = true;
-
                         using (activity)
                         {
+                            activityIsDisposed = true;
                             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
                             EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
                             _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
