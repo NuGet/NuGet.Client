@@ -367,7 +367,7 @@ namespace NuGet.Tests.Apex
                 {
                     return;
                 }
-                System.Threading.Thread.Sleep(250);
+                Thread.Sleep(250);
             }
 
             logger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
