@@ -530,8 +530,14 @@ namespace NuGet.PackageManagement.UI
             _dontStartNewSearch = true;
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
-                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageSourcesChanged));
+                using (activity)
+                {
+                    await PackageSourcesChangedAsync(e, timeSpan);
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
         }
 
         private async Task PackageSourcesChangedAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, TimeSpan timeSpan)
