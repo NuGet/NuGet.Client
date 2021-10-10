@@ -575,27 +575,29 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1);
 
             //Create nuget.config with Package namespace filtering rules.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
-    <clear />
-    <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
-    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+        <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package pattern=""Contoso.*"" />             
+            <package pattern=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
+    </packageSourceMapping>
 </configuration>");
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
             var nugetConsole = GetConsole(testContext.Project);
 
             // Act
@@ -637,24 +639,26 @@ namespace NuGet.Tests.Apex
             CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
-    <clear />
-    <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
-    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+        <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
-    <packageNamespaces>
+    <packageSourceMapping>
         <packageSource key=""externalRepository"">
-            <namespace id=""External.*"" />
-            <namespace id=""Others.*"" />
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <namespace id=""Contoso.*"" />             
-            <namespace id=""Test.*"" />
+            <package pattern=""Contoso.*"" />             
+            <package pattern=""Test.*"" />
         </packageSource>
-    </packageNamespaces>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
+    </packageSourceMapping>
 </configuration>");
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext);
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
             var solutionService = VisualStudio.Get<SolutionService>();
             var nugetConsole = GetConsole(testContext.Project);
 

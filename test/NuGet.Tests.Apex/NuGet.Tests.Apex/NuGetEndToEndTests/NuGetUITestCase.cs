@@ -37,7 +37,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.SwitchTabToBrowse();
@@ -61,7 +61,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
@@ -84,12 +84,12 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(nuProject);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
             VisualStudio.SelectProjectInSolutionExplorer(project.Name);
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
 
             VisualStudio.ClearOutputWindow();
             var uiwindow2 = nugetTestService.GetUIWindowfromProject(project);
@@ -113,7 +113,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             FileInfo packagesConfigFile = GetPackagesConfigFile(project);
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
@@ -145,7 +145,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
@@ -196,7 +196,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
@@ -244,12 +244,12 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(nuProject);
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
             VisualStudio.SelectProjectInSolutionExplorer(project.Name);
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
 
             VisualStudio.ClearOutputWindow();
             var uiwindow2 = nugetTestService.GetUIWindowfromProject(project);
@@ -303,7 +303,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
 
@@ -359,7 +359,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
@@ -409,7 +409,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("contoso.a", "1.0.0");
@@ -470,7 +470,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            OpenNuGetPackageManagerWithDte();
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
 
@@ -483,34 +483,6 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "contoso.a", "2.0.0", XunitLogger);
-        }
-
-        private void OpenNuGetPackageManagerWithDte()
-        {
-            VisualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
-            WaitForCommandAvailable("Project.ManageNuGetPackages", TimeSpan.FromMinutes(1));
-            VisualStudio.Dte.ExecuteCommand("Project.ManageNuGetPackages");
-        }
-
-        private void WaitForCommandAvailable(string commandName, TimeSpan timeout)
-        {
-            WaitForCommandAvailable(VisualStudio.Dte.Commands.Item(commandName), timeout);
-        }
-
-        private void WaitForCommandAvailable(Command cmd, TimeSpan timeout)
-        {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            while (stopWatch.Elapsed < timeout)
-            {
-                if (cmd.IsAvailable)
-                {
-                    return;
-                }
-                System.Threading.Thread.Sleep(250);
-            }
-
-            XunitLogger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
         }
 
         private static FileInfo GetPackagesConfigFile(ProjectTestExtension project)

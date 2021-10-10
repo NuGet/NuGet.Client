@@ -80,13 +80,11 @@ namespace NuGet.Tests.Apex
 
 
                 // Create nuget.config with Package source mapping filtering rules before project is created.
-                CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
-    <clear />
-    <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
-    <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+        <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
     </packageSources>
     <packageSourceMapping>
         <packageSource key=""externalRepository"">
@@ -97,6 +95,10 @@ namespace NuGet.Tests.Apex
             <package pattern=""contoso.*"" />
             <package pattern=""Test.*"" />
         </packageSource>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
     </packageSourceMapping>
 </configuration>");
 
@@ -105,7 +107,7 @@ namespace NuGet.Tests.Apex
                     VisualStudio.AssertNoErrors();
 
                     // Act
-                    OpenNuGetPackageManagerWithDte();
+                    CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
@@ -123,34 +125,6 @@ namespace NuGet.Tests.Apex
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
             yield return new object[] { ProjectTemplate.NetStandardClassLib };
-        }
-
-        private void OpenNuGetPackageManagerWithDte()
-        {
-            VisualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
-            WaitForCommandAvailable("Project.ManageNuGetPackages", TimeSpan.FromMinutes(1));
-            VisualStudio.Dte.ExecuteCommand("Project.ManageNuGetPackages");
-        }
-
-        private void WaitForCommandAvailable(string commandName, TimeSpan timeout)
-        {
-            WaitForCommandAvailable(VisualStudio.Dte.Commands.Item(commandName), timeout);
-        }
-
-        private void WaitForCommandAvailable(Command cmd, TimeSpan timeout)
-        {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            while (stopWatch.Elapsed < timeout)
-            {
-                if (cmd.IsAvailable)
-                {
-                    return;
-                }
-                System.Threading.Thread.Sleep(250);
-            }
-
-            XunitLogger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
         }
     }
 }
