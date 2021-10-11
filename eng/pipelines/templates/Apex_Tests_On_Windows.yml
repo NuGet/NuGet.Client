@@ -23,6 +23,9 @@ parameters:
     values:
       - delete
       - stop
+  - name: isOfficialBuild
+    type: boolean
+    default: false
 
 stages:
   - template: stages\visual-studio\single-runsettings.yml@DartLabTemplates
@@ -41,6 +44,7 @@ stages:
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
       testMachineDeploymentJobTimeoutInMinutes: 240
+      testRunContinueOnError: ${{ parameters.isOfficialBuild }}
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
