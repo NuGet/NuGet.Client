@@ -38,7 +38,7 @@ namespace NuGet.Resolver
             {
                 if (!context.AvailablePackages.Any(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, requiredId)))
                 {
-                    throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentCulture, Strings.MissingDependencyInfo, requiredId));
+                    throw new NuGetResolverInputException(string.Format(CultureInfo.CurrentCulture, Strings.MissingDependencyInfo, requiredId));
                 }
             }
 
@@ -193,14 +193,14 @@ namespace NuGet.Resolver
                     {
                         // the resolver is able to handle circular dependencies, however we should throw here to keep these from happening
                         throw new NuGetResolverConstraintException(
-                            String.Format(CultureInfo.CurrentCulture, Strings.CircularDependencyDetected,
-                            String.Join(" => ", circularReferences.Select(package => $"{package.Id} {package.Version.ToNormalizedString()}"))));
+                            string.Format(CultureInfo.CurrentCulture, Strings.CircularDependencyDetected,
+                            string.Join(" => ", circularReferences.Select(package => $"{package.Id} {package.Version.ToNormalizedString()}"))));
                     }
 
                     // solution found!
                     stopWatch.Stop();
                     context.Log.LogMinimal(
-                        string.Format(Strings.ResolverTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
+                        string.Format(Strings.ResolverTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed, CultureInfo.CurrentCulture)));
                     return sortedSolution.ToArray();
                 }
             }

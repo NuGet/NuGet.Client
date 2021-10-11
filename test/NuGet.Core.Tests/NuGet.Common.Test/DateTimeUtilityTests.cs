@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Xunit;
 
 namespace NuGet.Common.Test
@@ -29,10 +30,20 @@ namespace NuGet.Common.Test
         public void ToReadableTimeFormat_Localized_AssumesEnglishLocale_ContainsTimeNumber_Succeeds(string timeNumber, TimeSpan time)
         {
             // Act
-            string actual = DatetimeUtility.ToReadableTimeFormat(time);
+            string actual = DatetimeUtility.ToReadableTimeFormat(time, new CultureInfo("en-US"));
 
             // Assert
             Assert.Contains(timeNumber, actual);
+        }
+
+        [Fact]
+        public void ToReadableTimeFormat_Localized_AssumesSpainLocale_ContainsTimeNumber_Succeeds()
+        {
+            // Act
+            string actual = DatetimeUtility.ToReadableTimeFormat(TimeSpan.FromMinutes(3.6d), new CultureInfo("es-ES"));
+
+            // Assert
+            Assert.Equal("3,6 min", actual);
         }
     }
 }

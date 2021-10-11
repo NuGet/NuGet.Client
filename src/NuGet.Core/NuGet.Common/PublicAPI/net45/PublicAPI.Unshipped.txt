@@ -1,1 +1,2 @@
 NuGet.Common.NuGetLogCode.NU5042 = 5042 -> NuGet.Common.NuGetLogCode
+static NuGet.Common.DatetimeUtility.ToReadableTimeFormat(System.TimeSpan time, System.IFormatProvider format) -> string

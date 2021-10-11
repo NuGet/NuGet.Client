@@ -501,7 +501,6 @@ static NuGet.Common.CryptoHashUtility.GetHashAlgorithmName(string hashAlgorithm)
 static NuGet.Common.CryptoHashUtility.GetHashProvider(this NuGet.Common.HashAlgorithmName hashAlgorithmName) -> System.Security.Cryptography.HashAlgorithm
 static NuGet.Common.CryptoHashUtility.OidToHashAlgorithmName(string oid) -> NuGet.Common.HashAlgorithmName
 static NuGet.Common.CultureUtility.DisableLocalization() -> void
-static NuGet.Common.DatetimeUtility.ToReadableTimeFormat(System.TimeSpan time) -> string
 static NuGet.Common.DirectoryUtility.CreateSharedDirectory(string path) -> void
 static NuGet.Common.EnvironmentVariableWrapper.Instance.get -> NuGet.Common.IEnvironmentVariableReader
 static NuGet.Common.ExceptionLogger.Instance.get -> NuGet.Common.ExceptionLogger
