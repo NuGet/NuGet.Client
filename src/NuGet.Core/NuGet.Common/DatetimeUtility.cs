@@ -10,6 +10,12 @@ namespace NuGet.Common
     /// </summary>
     public static class DatetimeUtility
     {
+        /// <summary>
+        /// take timespan n return in appropriate unit like ms, or seconds, or minutes, or hours
+        /// </summary>
+        /// <param name="time">timespan</param>
+        /// <param name="format">Culture to format strings</param>
+        /// <returns>A human-readable timespan string</returns>
         public static string ToReadableTimeFormat(TimeSpan time, IFormatProvider format)
         {
             // initially define as hours
@@ -43,7 +49,5 @@ namespace NuGet.Common
 
             return string.Format(format, Strings.TimeUnits_Hour, result);
         }
-
-
     }
 }
