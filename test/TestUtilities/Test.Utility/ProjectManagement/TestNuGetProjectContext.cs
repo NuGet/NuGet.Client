@@ -63,7 +63,7 @@ namespace Test.Utility
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 
-        public ExecutionContext ExecutionContext
+        public NuGet.ProjectManagement.ExecutionContext ExecutionContext
         {
             get { return TestExecutionContext; }
         }
@@ -101,7 +101,7 @@ namespace Test.Utility
         }
     }
 
-    public class TestExecutionContext : ExecutionContext
+    public class TestExecutionContext : NuGet.ProjectManagement.ExecutionContext
     {
         public TestExecutionContext(PackageIdentity directInstall)
         {

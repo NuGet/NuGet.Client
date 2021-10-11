@@ -52,9 +52,8 @@ namespace NuGet.Tests.Apex
         public void Dispose()
         {
             _logger.LogInformation("Test complete, closing solution.");
-            SolutionService.Save();
-            SolutionService.Close();
 
+            SolutionService.SaveAndClose();
             _pathContext.Dispose();
         }
     }

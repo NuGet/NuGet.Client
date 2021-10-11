@@ -466,6 +466,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A trusted repository with the service index &apos;{0}&apos; already exists..
+        /// </summary>
+        internal static string Error_TrustedRepoAlreadyExists {
+            get {
+                return ResourceManager.GetString("Error_TrustedRepoAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A trusted signer &apos;{0}&apos; already exists..
+        /// </summary>
+        internal static string Error_TrustedSignerAlreadyExists {
+            get {
+                return ResourceManager.GetString("Error_TrustedSignerAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate finger you&apos;re trying to add is already in the certificate fingerprint list..
+        /// </summary>
+        internal static string Error_TrustFingerPrintAlreadyExist {
+            get {
+                return ResourceManager.GetString("Error_TrustFingerPrintAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The action &apos;{0}&apos; is not recognized..
         /// </summary>
         internal static string Error_UnknownAction {
@@ -1936,6 +1963,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Adds a trusted signer with the given name, based on the author signature of the package..
+        /// </summary>
+        internal static string TrustAuthorCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustAuthorCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The fingerprint of the certificate..
+        /// </summary>
+        internal static string TrustCertificateFingerprint {
+            get {
+                return ResourceManager.GetString("TrustCertificateFingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Command actions allow you to specify only a specific subset of signers whose signatures will be accepted, while rejecting all others..
         /// </summary>
         internal static string TrustCommandActionDescription {
@@ -1954,7 +1999,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root..
+        ///   Looks up a localized string similar to Specifies if the certificate for the trusted signer should be allowed to chain to an untrusted root. This is not recommended..
         /// </summary>
         internal static string TrustCommandAllowUntrustedRoot {
             get {
@@ -1977,6 +2022,114 @@ namespace NuGet.CommandLine.XPlat {
         internal static string TrustCommandOwners {
             get {
                 return ResourceManager.GetString("TrustCommandOwners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the trusted signer to add. If a trusted signer with the given name already exists, the certificate item is added to that signer. Otherwise a trusted author is created with a certificate item from the given certificate information..
+        /// </summary>
+        internal static string TrustedCertificateSignerNameToAdd {
+            get {
+                return ResourceManager.GetString("TrustedCertificateSignerNameToAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the existing trusted signer to sync..
+        /// </summary>
+        internal static string TrustedSignerNameExists {
+            get {
+                return ResourceManager.GetString("TrustedSignerNameExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the trusted signer to add. If name already exists in the configuration, the signature is appended..
+        /// </summary>
+        internal static string TrustedSignerNameToAdd {
+            get {
+                return ResourceManager.GetString("TrustedSignerNameToAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the existing trusted signer to remove..
+        /// </summary>
+        internal static string TrustedSignerNameToRemove {
+            get {
+                return ResourceManager.GetString("TrustedSignerNameToRemove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lists all the trusted signers in the configuration..
+        /// </summary>
+        internal static string TrustListCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustListCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given package should be a local path to the signed .nupkg file..
+        /// </summary>
+        internal static string TrustLocalSignedNupkgPath {
+            get {
+                return ResourceManager.GetString("TrustLocalSignedNupkgPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removes any trusted signers that match the given name..
+        /// </summary>
+        internal static string TrustRemoveCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustRemoveCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adds a trusted signer with the given name, based on the repository signature or countersignature of a signed package..
+        /// </summary>
+        internal static string TrustRepositoryCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustRepositoryCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adds a trusted signer based on a given package source..
+        /// </summary>
+        internal static string TrustSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;The name of the trusted signer to add. If only &lt;NAME&gt; is provided without --&lt;source-url&gt;, the package source from your NuGet configuration files with the same name is added to the trusted list. If &lt;NAME&gt; already exists in the configuration, the package source is appended to it.&quot;.
+        /// </summary>
+        internal static string TrustSourceSignerName {
+            get {
+                return ResourceManager.GetString("TrustSourceSignerName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a source-url is provided, it must be a v3 package source URL (like https://api.nuget.org/v3/index.json). Other package source types are not supported..
+        /// </summary>
+        internal static string TrustSourceUrl {
+            get {
+                return ResourceManager.GetString("TrustSourceUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deletes the current list of certificates and replaces them with an up-to-date list from the repository..
+        /// </summary>
+        internal static string TrustSyncCommandDescription {
+            get {
+                return ResourceManager.GetString("TrustSyncCommandDescription", resourceCulture);
             }
         }
         

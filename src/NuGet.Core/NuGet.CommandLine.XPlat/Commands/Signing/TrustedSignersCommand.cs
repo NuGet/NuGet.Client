@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
@@ -23,107 +22,305 @@ namespace NuGet.CommandLine.XPlat
         {
             app.Command("trust", trustedSignersCmd =>
             {
-                CommandArgument command = trustedSignersCmd.Argument(
-                    "<command>",
-                    Strings.TrustCommandActionDescription,
-                    multipleValues: true);
+                // sub-commands
+                trustedSignersCmd.Command("list", (listCommand) =>
+                {
+                    listCommand.Description = Strings.TrustListCommandDescription;
+                    CommandOption configFile = listCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
 
-                CommandOption algorithm = trustedSignersCmd.Option(
-                    "--algorithm",
-                    Strings.TrustCommandAlgorithm,
-                    CommandOptionType.SingleValue);
+                    listCommand.HelpOption(XPlatUtility.HelpOption);
 
-                CommandOption allowUntrustedRootOption = trustedSignersCmd.Option(
-                    "--allow-untrusted-root",
-                    Strings.TrustCommandAllowUntrustedRoot,
-                    CommandOptionType.NoValue);
+                    CommandOption verbosity = listCommand.VerbosityOption();
 
-                CommandOption owners = trustedSignersCmd.Option(
-                    "--owners",
-                    Strings.TrustCommandOwners,
-                    CommandOptionType.MultipleValue);
+                    listCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.List, algorithm: null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel);
+                    });
+                });
 
-                CommandOption verbosity = trustedSignersCmd.Option(
-                    "-v|--verbosity",
-                    Strings.Verbosity_Description,
-                    CommandOptionType.SingleValue);
+                trustedSignersCmd.Command("sync", (syncCommand) =>
+                {
+                    syncCommand.Description = Strings.TrustSyncCommandDescription;
+                    CommandOption configFile = syncCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
 
-                CommandOption configFile = trustedSignersCmd.Option(
+                    syncCommand.HelpOption(XPlatUtility.HelpOption);
+
+                    CommandOption verbosity = syncCommand.VerbosityOption(); ;
+
+                    CommandArgument name = syncCommand.Argument("<NAME>",
+                                               Strings.TrustedSignerNameExists);
+
+                    syncCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.Sync, algorithm: null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value);
+                    });
+                });
+
+                trustedSignersCmd.Command("remove", (syncCommand) =>
+                {
+                    syncCommand.Description = Strings.TrustRemoveCommandDescription;
+                    CommandOption configFile = syncCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+
+                    syncCommand.HelpOption(XPlatUtility.HelpOption);
+
+                    CommandOption verbosity = syncCommand.VerbosityOption();
+
+                    CommandArgument name = syncCommand.Argument("<NAME>",
+                                               Strings.TrustedSignerNameToRemove);
+
+                    syncCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.Remove, algorithm: null, allowUntrustedRootOption: false, owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value);
+                    });
+                });
+
+                trustedSignersCmd.Command("author", (authorCommand) =>
+                {
+                    authorCommand.Description = Strings.TrustAuthorCommandDescription;
+
+                    CommandOption allowUntrustedRootOption = authorCommand.Option(
+                                                "--allow-untrusted-root",
+                                                Strings.TrustCommandAllowUntrustedRoot,
+                                                CommandOptionType.NoValue);
+
+                    CommandOption configFile = authorCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+
+                    authorCommand.HelpOption(XPlatUtility.HelpOption);
+
+                    CommandOption verbosity = authorCommand.VerbosityOption();
+
+                    CommandArgument name = authorCommand.Argument("<NAME>",
+                                               Strings.TrustedSignerNameToAdd);
+                    CommandArgument package = authorCommand.Argument("<PACKAGE>",
+                                               Strings.TrustLocalSignedNupkgPath);
+
+                    authorCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.Author, algorithm: null, allowUntrustedRootOption.HasValue(), owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
+                    });
+                });
+
+                trustedSignersCmd.Command("repository", (repositoryCommand) =>
+                {
+                    repositoryCommand.Description = Strings.TrustRepositoryCommandDescription;
+
+                    CommandOption allowUntrustedRootOption = repositoryCommand.Option(
+                                                "--allow-untrusted-root",
+                                                Strings.TrustCommandAllowUntrustedRoot,
+                                                CommandOptionType.NoValue);
+
+                    CommandOption configFile = repositoryCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+
+                    repositoryCommand.HelpOption(XPlatUtility.HelpOption);
+
+                    CommandOption owners = repositoryCommand.Option(
+                        "--owners",
+                        Strings.TrustCommandOwners,
+                        CommandOptionType.SingleValue);
+
+                    CommandOption verbosity = repositoryCommand.VerbosityOption();
+
+                    CommandArgument name = repositoryCommand.Argument("<NAME>",
+                                               Strings.TrustedSignerNameToAdd);
+                    CommandArgument package = repositoryCommand.Argument("<PACKAGE>",
+                                               Strings.TrustLocalSignedNupkgPath);
+
+                    repositoryCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.Repository, algorithm: null, allowUntrustedRootOption.HasValue(), owners: owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: package.Value);
+                    });
+                });
+
+                trustedSignersCmd.Command("certificate", (certificateCommand) =>
+                {
+                    certificateCommand.Description = Strings.TrustRepositoryCommandDescription;
+
+                    CommandOption algorithm = certificateCommand.Option(
+                        "--algorithm",
+                        Strings.TrustCommandAlgorithm,
+                        CommandOptionType.SingleValue);
+
+                    CommandOption allowUntrustedRootOption = certificateCommand.Option(
+                                                "--allow-untrusted-root",
+                                                Strings.TrustCommandAllowUntrustedRoot,
+                                                CommandOptionType.NoValue);
+
+                    CommandOption configFile = certificateCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+
+                    certificateCommand.HelpOption(XPlatUtility.HelpOption);
+
+                    CommandOption verbosity = certificateCommand.VerbosityOption();
+
+                    CommandArgument name = certificateCommand.Argument("<NAME>",
+                                               Strings.TrustedCertificateSignerNameToAdd);
+                    CommandArgument fingerprint = certificateCommand.Argument("<FINGERPRINT>",
+                                               Strings.TrustCertificateFingerprint);
+
+                    certificateCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.Certificate, algorithm, allowUntrustedRootOption.HasValue(), owners: null, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: null, packagePath: null, fingerprint: fingerprint.Value);
+                    });
+                });
+
+                trustedSignersCmd.Command("source", (sourceCommand) =>
+                {
+                    sourceCommand.Description = Strings.TrustSourceCommandDescription;
+
+                    CommandOption configFile = sourceCommand.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+
+                    sourceCommand.HelpOption(XPlatUtility.HelpOption);
+
+                    CommandOption owners = sourceCommand.Option(
+                        "--owners",
+                        Strings.TrustCommandOwners,
+                        CommandOptionType.SingleValue);
+
+                    CommandOption sourceUrl = sourceCommand.Option(
+                        "--source-url",
+                        Strings.TrustSourceUrl,
+                        CommandOptionType.SingleValue);
+
+                    CommandOption verbosity = sourceCommand.VerbosityOption();
+
+                    CommandArgument name = sourceCommand.Argument("<NAME>",
+                        Strings.TrustSourceSignerName);
+
+                    sourceCommand.OnExecute(async () =>
+                    {
+                        return await ExecuteCommand(TrustCommand.Source, algorithm: null, allowUntrustedRootOption: false, owners, verbosity, configFile, getLogger, setLogLevel, name: name.Value, sourceUrl: sourceUrl.Value());
+                    });
+                });
+
+                // Main command
+                trustedSignersCmd.Description = Strings.TrustCommandDescription;
+                CommandOption mainConfigFile = trustedSignersCmd.Option(
                     "--configfile",
                     Strings.Option_ConfigFile,
                     CommandOptionType.SingleValue);
 
                 trustedSignersCmd.HelpOption(XPlatUtility.HelpOption);
-                trustedSignersCmd.Description = Strings.TrustCommandDescription;
+
+                CommandOption mainVerbosity = trustedSignersCmd.VerbosityOption();
 
                 trustedSignersCmd.OnExecute(async () =>
                 {
-                    TrustCommand action;
-
-                    if (!command.Values.Any() || string.IsNullOrEmpty(command.Values[0]))
-                    {
-                        action = TrustCommand.List;
-                    }
-                    else if (!Enum.TryParse(command.Values[0], ignoreCase: true, result: out action))
-                    {
-                        throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnknownAction, command.Values[0]));
-                    }
-
-                    string name = null;
-
-                    if (command.Values.Count > 1)
-                    {
-                        name = command.Values[1];
-                    }
-
-                    string packagePath = null;
-                    string sourceUrl = null;
-                    string fingerprint = null;
-                    if (command.Values.Count() > 2)
-                    {
-                        if (action == TrustCommand.Author || action == TrustCommand.Repository)
-                        {
-                            packagePath = command.Values[2];
-                        }
-                        else if (action == TrustCommand.Source)
-                        {
-                            sourceUrl = command.Values[2];
-                        }
-                        else if (action == TrustCommand.Certificate)
-                        {
-                            fingerprint = command.Values[2];
-                        }
-                    }
-
-                    ISettings settings = ProcessConfigFile(configFile.Value());
-
-                    var trustedSignersArgs = new TrustedSignersArgs()
-                    {
-                        Action = MapTrustEnumAction(action),
-                        PackagePath = packagePath,
-                        Name = name,
-                        ServiceIndex = sourceUrl,
-                        CertificateFingerprint = fingerprint,
-                        FingerprintAlgorithm = algorithm.Value(),
-                        AllowUntrustedRoot = allowUntrustedRootOption.HasValue(),
-                        Author = action == TrustCommand.Author,
-                        Repository = action == TrustCommand.Repository,
-                        Owners = CommandLineUtility.SplitAndJoinAcrossMultipleValues(owners.Values),
-                        Logger = getLogger()
-                    };
-
-                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                    var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
-#pragma warning restore CS0618 // Type or member is obsolete
-                    var trustedSignersProvider = new TrustedSignersProvider(settings);
-
-                    var runner = new TrustedSignersCommandRunner(trustedSignersProvider, sourceProvider);
-                    Task<int> trustedSignTask = runner.ExecuteCommandAsync(trustedSignersArgs);
-                    return await trustedSignTask;
+                    // If no command specified then default to List command.
+                    return await ExecuteCommand(TrustCommand.List, algorithm: null, allowUntrustedRootOption: false, owners: null, mainVerbosity, mainConfigFile, getLogger, setLogLevel);
                 });
             });
+        }
+
+        private static async Task<int> ExecuteCommand(TrustCommand action,
+                      CommandOption algorithm,
+                      bool allowUntrustedRootOption,
+                      CommandOption owners,
+                      CommandOption verbosity,
+                      CommandOption configFile,
+                      Func<ILogger> getLogger,
+                      Action<LogLevel> setLogLevel,
+                      string name = null,
+                      string sourceUrl = null,
+                      string packagePath = null,
+                      string fingerprint = null)
+        {
+            ILogger logger = getLogger();
+
+            try
+            {
+                ISettings settings = ProcessConfigFile(configFile.Value());
+
+                var trustedSignersArgs = new TrustedSignersArgs()
+                {
+                    Action = MapTrustEnumAction(action),
+                    PackagePath = packagePath,
+                    Name = name,
+                    ServiceIndex = sourceUrl,
+                    CertificateFingerprint = fingerprint,
+                    FingerprintAlgorithm = algorithm?.Value(),
+                    AllowUntrustedRoot = allowUntrustedRootOption,
+                    Author = action == TrustCommand.Author,
+                    Repository = action == TrustCommand.Repository,
+                    Owners = CommandLineUtility.SplitAndJoinAcrossMultipleValues(owners?.Values),
+                    Logger = logger
+                };
+
+                setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
+#pragma warning restore CS0618 // Type or member is obsolete
+                var trustedSignersProvider = new TrustedSignersProvider(settings);
+
+                var runner = new TrustedSignersCommandRunner(trustedSignersProvider, sourceProvider);
+                Task<int> trustedSignTask = runner.ExecuteCommandAsync(trustedSignersArgs);
+                return await trustedSignTask;
+            }
+            catch (InvalidOperationException e)
+            {
+                // nuget trust command handled exceptions.
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    var error_TrustedSignerAlreadyExistsMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedSignerAlreadyExists, name);
+
+                    if (e.Message == error_TrustedSignerAlreadyExistsMessage)
+                    {
+                        logger.LogError(error_TrustedSignerAlreadyExistsMessage);
+                        return 1;
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(sourceUrl))
+                {
+                    var error_TrustedRepoAlreadyExists = string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepoAlreadyExists, sourceUrl);
+
+                    if (e.Message == error_TrustedRepoAlreadyExists)
+                    {
+                        logger.LogError(error_TrustedRepoAlreadyExists);
+                        return 1;
+                    }
+                }
+
+                throw;
+            }
+            catch (ArgumentException e)
+            {
+                if (e.Data is System.Collections.IDictionary)
+                {
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustFingerPrintAlreadyExist));
+                    return 1;
+                }
+
+                throw;
+            }
+        }
+
+        private static CommandOption VerbosityOption(this CommandLineApplication command)
+        {
+            return command.Option(
+                "-v|--verbosity",
+                Strings.Verbosity_Description,
+                CommandOptionType.SingleValue);
         }
 
         private static TrustedSignersAction MapTrustEnumAction(TrustCommand trustCommand)

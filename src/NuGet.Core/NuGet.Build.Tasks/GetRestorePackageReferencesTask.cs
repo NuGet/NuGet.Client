@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetRestorePackageReferencesTask : Task
+    public class GetRestorePackageReferencesTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.

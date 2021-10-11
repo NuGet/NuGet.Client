@@ -15,7 +15,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Generate dg file output.
     /// </summary>
-    public class WriteRestoreGraphTask : Task
+    public class WriteRestoreGraphTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// DG file entries

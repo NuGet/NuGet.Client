@@ -13,6 +13,25 @@ while [[ -h $source ]]; do
   [[ $source != /* ]] && source="$scriptroot/$source"
 done
 
+
+while [[ $# > 0 ]]; do
+    lowerI="$(echo $1 | awk '{print tolower($0)}')"
+    case $lowerI in
+        --configuration|-c)
+            configuration=$2
+            shift
+            ;;
+        -*)
+            # just eat this so we don't try to pass it along to MSBuild
+            export DOTNET_CORESDK_NOPRETTYPRINT=1
+            ;;
+        *)
+            args="$args $1"
+            ;;
+    esac
+    shift
+done
+
 function ReadGlobalVersion {
   local key=$1
   local global_json_file="$scriptroot/global.json"
@@ -40,8 +59,25 @@ function GetNuGetPackageCachePath {
   fi
 }
 
-export DOTNET=${DOTNET:-dotnet}
+if [[ "$DOTNET" == "" && "$DOTNET_PATH" != "" ]]; then
+  export DOTNET="$DOTNET_PATH/dotnet"
+else
+  ReadGlobalVersion dotnet
+  export SDK_VERSION=$_ReadGlobalVersion
+
+  mkdir -p "$scriptroot/../../cli"
+  curl -o "$scriptroot/../../cli/dotnet-install.sh" -L https://dot.net/v1/dotnet-install.sh
+
+  if (( $? )); then
+    echo "Could not download 'dotnet-install.sh' script. Please check your network and try again!"
+    exit 1
+  fi
+  chmod +x "$scriptroot/../../cli/dotnet-install.sh"
+
+  "$scriptroot/../../cli/dotnet-install.sh" -v $SDK_VERSION -i "$scriptroot/../../cli"
+  export DOTNET=${DOTNET:-$scriptroot/../../cli/dotnet}
+fi
 
 ReadGlobalVersion Microsoft.DotNet.Arcade.Sdk
 export ARCADE_VERSION=$_ReadGlobalVersion
-"$DOTNET" msbuild "$scriptroot/source-build.proj" /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog"
+"$DOTNET" msbuild "$scriptroot/source-build.proj" /p:Configuration=$configuration /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog" $args

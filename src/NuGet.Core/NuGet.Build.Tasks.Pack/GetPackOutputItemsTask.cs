@@ -13,7 +13,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks.Pack
 {
-    public class GetPackOutputItemsTask : Task
+    public class GetPackOutputItemsTask : Microsoft.Build.Utilities.Task
     {
         [Required]
         public string PackageId { get; set; }
