@@ -11,11 +11,10 @@ namespace NuGet.VisualStudio
 {
     public static class MessageHelper
     {
-        [SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
         public static void ShowWarningMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetInstance<IServiceProvider>(),
+                ServiceLocator.GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_WARNING,
@@ -23,11 +22,10 @@ namespace NuGet.VisualStudio
                 OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
 
-        [SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
         public static void ShowInfoMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetInstance<IServiceProvider>(),
+                ServiceLocator.GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_INFO,
@@ -43,7 +41,7 @@ namespace NuGet.VisualStudio
         public static void ShowErrorMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetInstance<IServiceProvider>(),
+                ServiceLocator.GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_CRITICAL,
@@ -54,7 +52,7 @@ namespace NuGet.VisualStudio
         public static bool? ShowQueryMessage(string message, string title, bool showCancelButton)
         {
             int result = VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetInstance<IServiceProvider>(),
+                ServiceLocator.GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_QUERY,

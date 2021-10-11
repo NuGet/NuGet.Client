@@ -169,6 +169,11 @@ namespace NuGet.VisualStudio
             return await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
         }
 
+        public static IServiceProvider GetServiceProvider()
+        {
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetServiceProviderAsync);
+        }
+
         public static async Task<IServiceProvider> GetServiceProviderAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
