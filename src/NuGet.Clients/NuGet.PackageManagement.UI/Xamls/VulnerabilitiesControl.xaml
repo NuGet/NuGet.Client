@@ -45,8 +45,7 @@
       </StackPanel>
       <TextBlock
         Margin="0,8,0,0"
-        TextWrapping="WrapWithOverflow"
-        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_VulnerabilitiesDescriptionName}">
+        TextWrapping="WrapWithOverflow">
         <TextBlock.Text>
           <MultiBinding Converter="{StaticResource StringFormatConverter}">
             <Binding Source="{x:Static nuget:Resources.Label_VulnerabilitiesDescription}" />
