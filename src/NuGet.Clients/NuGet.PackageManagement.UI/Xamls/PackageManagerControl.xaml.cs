@@ -243,32 +243,17 @@ namespace NuGet.PackageManagement.UI
                     return;
                 }
 
-                var activityIsDisposed = false;
-                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectChanged));
+                // get the list of projects
+                IEnumerable<IProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                Model.Context.Projects = projects;
 
-                try
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    // get the list of projects
-                    IEnumerable<IProjectContextInfo> projects = solutionModel.Projects.Select(p => p.NuGetProject);
-                    Model.Context.Projects = projects;
-
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectChanged)))
                     {
-                        using (activity)
-                        {
-                            activityIsDisposed = true;
-                            await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
-                        }
-                    }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
-                }
-                finally
-                {
-                    // TODO: If JTF (or earlier) threw an exception, ensure the activity is stopped.
-                    if (!activityIsDisposed)
-                    {
-                        activity.Dispose();
+                        await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
                     }
-                }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
             }
             else
             {
@@ -284,9 +269,7 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectActionsExecuted));
-
-                    using (activity)
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectActionsExecuted)))
                     {
                         if (Model.IsSolution)
                         {
@@ -328,8 +311,7 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnNuGetCacheUpdated));
-                    using (activity)
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnNuGetCacheUpdated)))
                     {
                         await SolutionManager_CacheUpdatedAsync(timeSpan, e);
                     }
@@ -417,11 +399,9 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
-            IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageManagerLoaded));
-
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                using (activity)
+                using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageManagerLoaded)))
                 {
                     await PackageManagerLoadedAsync();
                 }
@@ -532,8 +512,7 @@ namespace NuGet.PackageManagement.UI
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageSourcesChanged));
-                using (activity)
+                using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageSourcesChanged)))
                 {
                     await PackageSourcesChangedAsync(e, timeSpan);
                 }
@@ -1039,20 +1018,18 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageList_SelectionChanged));
-
             var loadCts = new CancellationTokenSource();
             var oldCts = Interlocked.Exchange(ref _cancelSelectionChangedSource, loadCts);
             oldCts?.Cancel();
             oldCts?.Dispose();
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageList_SelectionChanged)))
                 {
                     await UpdateDetailPaneAsync(loadCts.Token);
-                    activity.Dispose();
-                })
-                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 
         /// <summary>
@@ -1123,30 +1100,16 @@ namespace NuGet.PackageManagement.UI
 
             if (SelectedSource != null)
             {
-                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(SourceRepoList_SelectionChanged));
-                var activityIsDisposed = false;
-                try
-                {
-                    _topPanel.SourceToolTip.Visibility = Visibility.Visible;
-                    _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
+                _topPanel.SourceToolTip.Visibility = Visibility.Visible;
+                _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                    {
-                        using (activity)
-                        {
-                            activityIsDisposed = true;
-                            await SourceRepoList_SelectionChangedAsync(timeSpan);
-                        }
-                    }).PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
-                }
-                finally
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    // If JTF threw an exception, ensure the activity is stopped.
-                    if (!activityIsDisposed)
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(SourceRepoList_SelectionChanged)))
                     {
-                        activity.Dispose();
+                        await SourceRepoList_SelectionChangedAsync(timeSpan);
                     }
-                }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
             }
         }
 
@@ -1163,46 +1126,31 @@ namespace NuGet.PackageManagement.UI
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
-                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(Filter_SelectionChanged) + "-" + _topPanel.Filter);
-                var activityIsDisposed = false;
+                _packageList.ResetLoadingStatusIndicator();
 
-                try
+                // Collapse the Update controls when the current tab is not "Updates".
+                _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+                _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                var loadCts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                oldCts?.Cancel();
+                oldCts?.Dispose();
+
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    _packageList.ResetLoadingStatusIndicator();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    // Collapse the Update controls when the current tab is not "Updates".
-                    _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                    _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
-
-                    // Set a new cancellation token source which will be used to cancel this task in case
-                    // new loading task starts or manager ui is closed while loading packages.
-                    var loadCts = new CancellationTokenSource();
-                    var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
-                    oldCts?.Cancel();
-                    oldCts?.Dispose();
-
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(Filter_SelectionChanged) + "-" + _topPanel.Filter))
                     {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        using (activity)
-                        {
-                            activityIsDisposed = true;
-                            await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                            EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
-                            _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
-                        }
-
-                    }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
-                }
-                finally
-                {
-                    // If JTF threw an exception, ensure the activity is stopped.
-                    if (!activityIsDisposed)
-                    {
-                        activity.Dispose();
+                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                        EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
+                        _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
                     }
-                }
+
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
         }
 
@@ -1241,31 +1189,17 @@ namespace NuGet.PackageManagement.UI
             }
 
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            var activityIsDisposed = false;
-            IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(CheckboxPrerelease_CheckChanged));
 
-            try
-            {
-                RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
+            RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
+            EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
 
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                {
-                    using (activity)
-                    {
-                        activityIsDisposed = true;
-                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                    }
-                }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
-            }
-            finally
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                // If JTF threw an exception, ensure the activity is stopped.
-                if (!activityIsDisposed)
+                using (_pmuiGestureintervalTracker.Start(nameof(CheckboxPrerelease_CheckChanged)))
                 {
-                    activity.Dispose();
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                 }
-            }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
         }
 
         internal class SearchQuery : IVsSearchQuery

@@ -27,39 +27,24 @@ namespace NuGet.PackageManagement.UI
         }
         public void Start()
         {
-            IDisposable activity = _packageManagerControl._pmuiGestureintervalTracker.Start(nameof(NuGetPackageManagerControlSearchTask));
-            var activityIsDisposed = false;
-
-            try
+            SetStatus(VsSearchTaskStatus.Started);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                SetStatus(VsSearchTaskStatus.Started);
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    activityIsDisposed = true;
-                    using (activity)
-                    {
-                        // Set a new cancellation token source which will be used to cancel this task in case
-                        // new loading task starts or manager ui is closed while loading packages.
-                        var loadCts = new CancellationTokenSource();
-                        var oldCts = Interlocked.Exchange(ref _packageManagerControl._loadCts, loadCts);
-                        oldCts?.Cancel();
-                        oldCts?.Dispose();
-
-                        await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
-                        SetStatus(VsSearchTaskStatus.Completed);
-                    }
-                }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
-            }
-            finally
-            {
-                // If JTF threw an exception, ensure the activity is stopped.
-                if (!activityIsDisposed)
+                using (IDisposable activity = _packageManagerControl._pmuiGestureintervalTracker.Start(nameof(NuGetPackageManagerControlSearchTask)))
                 {
-                    activity.Dispose();
+                    // Set a new cancellation token source which will be used to cancel this task in case
+                    // new loading task starts or manager ui is closed while loading packages.
+                    var loadCts = new CancellationTokenSource();
+                    var oldCts = Interlocked.Exchange(ref _packageManagerControl._loadCts, loadCts);
+                    oldCts?.Cancel();
+                    oldCts?.Dispose();
+
+                    await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
+                    SetStatus(VsSearchTaskStatus.Completed);
                 }
-            }
+            }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
         }
 
         public uint Id { get; private set; }
