@@ -63,7 +63,8 @@
           FontWeight="Bold" />
         <ItemsControl
           ItemsSource="{Binding PackageVulnerabilities}"
-          Grid.IsSharedSizeScope="True">
+          Grid.IsSharedSizeScope="True"
+          IsTabStop="False">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Grid>
