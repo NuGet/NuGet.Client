@@ -17,8 +17,8 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using FrameworkRIDEntry = System.Tuple<NuGet.Frameworks.NuGetFramework, string>;
-using TransitiveEntry = System.Collections.Generic.IReadOnlyDictionary<System.Tuple<NuGet.Frameworks.NuGetFramework, string>, System.Collections.Generic.IReadOnlyList<NuGet.Packaging.PackageReference>>;
+using FrameworkRIDKey = System.Tuple<NuGet.Frameworks.NuGetFramework, string>;
+using TransitiveEntry = System.Collections.Generic.IDictionary<System.Tuple<NuGet.Frameworks.NuGetFramework, string>, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -144,7 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
 
-        internal async ValueTask<TransitiveEntry> Test2(PackageIdentity transitivePackage, CancellationToken ct)
+        internal async ValueTask<TransitiveEntry> Test2Async(PackageIdentity transitivePackage, CancellationToken ct)
         {
             /* Pseudocode
             1. Get project restore graph
@@ -163,12 +163,88 @@ namespace NuGet.PackageManagement.VisualStudio
             4. return cached result for specific transitive dependency
             */
 
-            await Task.FromResult(1);
-            throw new NotImplementedException();
+            ct.ThrowIfCancellationRequested();
+
+            RestoreGraphRead reading = await GetFullRestoreGraphAsync(ct);
+            if (reading.IsCacheHit)
+            {
+                // Assets file has not changed, look at transtive origin cache
+                var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
+                if (cacheEntry != null)
+                {
+                    return cacheEntry;
+                }
+            }
+            else
+            {
+                // Assets file changed, recompute transitive origins
+                CleanCache();
+            }
+
+            // Otherwise, find all Transitive origin and update cache
+            var memory = new Dictionary<PackageIdentity, bool?>();
+
+            if (reading.TargetsList != null)
+            {
+                var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
+
+                // 3. For each target framework graph (Framework, RID)-pair:
+                foreach (var targetFxGraph in reading.TargetsList)
+                {
+                    var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+
+                    foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
+                    {
+                        MarkTransitiveOrigin(directPkg, directPkg.PackageIdentity, targetFxGraph, memory, key);
+                    }
+                }
+            }
+
+            return GetCachedTransitiveOrigin(transitivePackage);
+        }
+
+        internal void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRIDKey fxRidEntry)
+        {
+
+            LockFileTargetLibrary node = graph
+                .Libraries
+                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version) && x.Type == "package")
+                .FirstOrDefault();
+
+            if (node != default)
+            {
+                memory[current] = true; // visited
+
+                // Update cache
+                TransitiveEntry cachedEntry = GetCachedTransitiveOrigin(current);
+                if (cachedEntry == null)
+                {
+                    cachedEntry = new Dictionary<FrameworkRIDKey, IList<PackageReference>>
+                    {
+                        [fxRidEntry] = new List<PackageReference>()
+                    };
+                }
+                if (!cachedEntry[fxRidEntry].Contains(top))
+                {
+                    cachedEntry[fxRidEntry].Add(top);
+                }
+                SetCachedTransitiveOrigin(current, cachedEntry);
+
+
+                foreach (PackageDependency dep in node.Dependencies)
+                {
+                    var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
+
+                    if (!memory.ContainsKey(pkgChild))
+                    {
+                        MarkTransitiveOrigin(top, pkgChild, graph, memory, fxRidEntry);
+                    }
+                }
+            }
         }
 
 
-        internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
+        internal async ValueTask<TransitiveEntry> Test1Async(PackageIdentity transitivePackage, CancellationToken ct)
         {
             /** Pseudocode
             1. Get project restore graph
@@ -208,7 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Otherwise, find Transitive origin and update cache
-            var packageOrigins = new Dictionary<FrameworkRIDEntry, IReadOnlyList<PackageReference>>();
+            var packageOrigins = new Dictionary<FrameworkRIDKey, IList<PackageReference>>();
 
             if (reading.TargetsList != null)
             {
@@ -240,6 +316,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SetCachedTransitiveOrigin(transitivePackage, packageOrigins);
             return packageOrigins;
+        }
+
+        internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
+        {
+            return await Test2Async(transitivePackage, ct);
         }
 
         private bool FindTransitiveOrigin(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory)
@@ -286,7 +367,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal string GetTransitiveCacheKey(PackageIdentity transitivePackage)
         {
-            return _projectUniqueName + "/" + transitivePackage.ToString();
+            return _projectUniqueName + "/" + transitivePackage.Id.ToLowerInvariant() + "." + transitivePackage.Version.ToNormalizedString();
         }
 
         internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
