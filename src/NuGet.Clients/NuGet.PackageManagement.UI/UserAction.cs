@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.UI
 
         public static UserAction CreateUnInstallAction(string packageId)
         {
-            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null);
+            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, versionRange: null);
         }
     }
 }

@@ -79,6 +79,58 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public DisplayVersion(
+            VersionRange range,
+            NuGetVersion version,
+            string additionalInfo,
+            bool isValidVersion = true,
+            bool isCurrentInstalled = false,
+            bool autoReferenced = false,
+            bool isDeprecated = false,
+            string versionFormat = "N")
+        {
+            if (versionFormat == null)
+            {
+                // default to normalized version
+                versionFormat = "N";
+            }
+
+            Range = range;
+            AdditionalInfo = additionalInfo;
+
+            IsValidVersion = isValidVersion;
+
+            Version = version;
+            IsCurrentInstalled = isCurrentInstalled;
+            AutoReferenced = autoReferenced;
+            IsDeprecated = isDeprecated;
+
+            // Display a single version if the range is locked
+            if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
+            {
+                var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
+
+                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
+                    formattedVersionString :
+                    AdditionalInfo + " " + formattedVersionString;
+            }
+            else
+            {
+                // Display the range, use the original value for floating ranges
+                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
+                    Range.OriginalString :
+                    AdditionalInfo + " " + Range.OriginalString;
+            }
+
+            if (IsDeprecated)
+            {
+                _toString += string.Format(
+                    CultureInfo.CurrentCulture,
+                    "    ({0})",
+                    Resources.Label_Deprecated);
+            }
+        }
+
         public bool IsCurrentInstalled { get; set; }
 
         public NuGetVersion Version { get; }

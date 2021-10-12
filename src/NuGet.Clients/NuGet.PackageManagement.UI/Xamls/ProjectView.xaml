@@ -103,7 +103,6 @@
       IsEditable="True"
       StaysOpenOnEdit="True"
       IsTextSearchEnabled="False"
-      KeyUp="VersionsKeyUp"
       GotFocus="OpenComboBox"
       Text="{Binding UserInput}"
       SelectedValue="{Binding Path=SelectedVersion}">

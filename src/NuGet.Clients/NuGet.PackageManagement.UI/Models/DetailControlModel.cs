@@ -576,7 +576,7 @@ namespace NuGet.PackageManagement.UI
                             PackageMetadata = detailedPackageMetadata;
                         }
 
-                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask())
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion, loadCts.Token).AsTask())
                                                                .PostOnFailure(nameof(DetailControlModel));
                     }
 
@@ -586,12 +586,16 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, NuGetVersion nugetVersion, CancellationToken cancellationToken)
+        private async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, DisplayVersion displayVersion, CancellationToken cancellationToken)
         {
+            // If the display version is a range we need to get the best option from the available list
+            NuGetVersion bestVersionForRange = displayVersion.Range.FindBestMatch(_allPackageVersions.Select(version => version.version));
+
             // Load the detailed metadata that we already have and check to see if this matches what is selected, we cannot use the _metadataDict here unfortunately as it won't be populated yet
             (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
                 await packageItemViewModel.GetDetailedPackageSearchMetadataAsync();
-            if (packageSearchMetadata != null && packageSearchMetadata.Identity.Version.Equals(nugetVersion))
+            if (packageSearchMetadata != null && (packageSearchMetadata.Identity.Version.Equals(displayVersion.Version) ||
+                bestVersionForRange.Equals(packageSearchMetadata.Identity.Version)))
             {
                 if (_searchResultPackage != packageItemViewModel)
                 {
@@ -608,7 +612,7 @@ namespace NuGet.PackageManagement.UI
                 // We don't have the data readily available, we need to query the server
                 using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
                 {
-                    var packageIdentity = new PackageIdentity(packageItemViewModel.Id, nugetVersion);
+                    var packageIdentity = new PackageIdentity(packageItemViewModel.Id, bestVersionForRange ?? displayVersion.Version);
                     (PackageSearchMetadataContextInfo searchMetadata, PackageDeprecationMetadataContextInfo deprecationData) =
                         await searchService.GetPackageMetadataAsync(packageIdentity, packageItemViewModel.Sources, includePrerelease: true, cancellationToken);
 
@@ -660,6 +664,8 @@ namespace NuGet.PackageManagement.UI
         // Calculate the version to select among _versions and select it
         protected void SelectVersion()
         {
+            var b = !_versions.Contains(SelectedVersion);
+
             if (_versions.Count == 0)
             {
                 SelectedVersion = null;
@@ -679,9 +685,9 @@ namespace NuGet.PackageManagement.UI
                 // Otherwise, select the first version in the version list.
                 var possibleVersions = _versions.Where(v => v != null);
                 SelectedVersion =
-                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
+                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.AllowedVersions.ToString()))
                     ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
-                UserInput = SelectedVersion.Range.OriginalString;
+                UserInput = SelectedVersion.ToString();
             }
         }
 

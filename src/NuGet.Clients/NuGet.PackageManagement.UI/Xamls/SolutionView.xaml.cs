@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
@@ -15,7 +14,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
-using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
@@ -108,76 +106,8 @@ namespace NuGet.PackageManagement.UI
             UninstallButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
-        private void VersionsKeyUp(object sender, KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case Key.Enter:
-                    _versions.IsDropDownOpen = false;
-                    break;
-                default:
-                    var model = (DetailControlModel)DataContext;
-                    string userInput = _versions.Text;
-                    model.UserInput = userInput;
-
-                    bool isInputValid = VersionRange.TryParse(userInput, true, out VersionRange versionRange);
-                    if (!isInputValid)
-                    {
-                        break;
-                    }
-
-                    var textBox1 = _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
-
-                    CollectionView itemsViewOriginal = CollectionViewSource.GetDefaultView(_versions.ItemsSource) as CollectionView;
-                    itemsViewOriginal.Filter = ((obj) =>
-                    {
-                        //No text input, so show all versions.
-                        if (string.IsNullOrEmpty(_versions.Text))
-                        {
-                            return true;
-                        }
-
-                        if (obj != null && (obj.ToString()).StartsWith(Regex.Replace(_versions.Text, @"[\*]", ""), StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    });
-
-                    if (string.IsNullOrEmpty(userInput))
-                    {
-                        itemsViewOriginal.Refresh();
-                        model.UserInput = userInput;
-                    }
-
-                    textBox1.SelectionStart = userInput.Length;
-                    break;
-            }
-        }
-
-        private void OpenComboBox(object sender, RoutedEventArgs e)
-        {
-            CollectionView itemsViewOriginal = CollectionViewSource.GetDefaultView(_versions.ItemsSource) as CollectionView;
-            itemsViewOriginal.Refresh();
-            _versions.IsDropDownOpen = true;
-        }
-
         private void InstallButton_Clicked(object sender, RoutedEventArgs e)
         {
-            var model = (PackageSolutionDetailControlModel)DataContext;
-
-            if (model.SelectedVersion == null || model.SelectedVersion.Range.OriginalString != _versions.Text)
-            {
-                bool IsValid = VersionRange.TryParse(_versions.Text, out VersionRange versionRange);
-                if (IsValid)
-                {
-                    model.SelectedVersion = new DisplayVersion(versionRange, additionalInfo: null);
-                }
-            }
-
             InstallButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 

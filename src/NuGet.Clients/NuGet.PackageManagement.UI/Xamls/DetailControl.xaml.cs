@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -110,9 +111,11 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null && model.SelectedVersion != null)
             {
+                var bestVersionForRange = model.SelectedVersion.Range.FindBestMatch(model.Versions.Where(v => v != null).Select(version => version.Version));
+
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version,
+                    bestVersionForRange,
                     model.SelectedVersion.Range);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);

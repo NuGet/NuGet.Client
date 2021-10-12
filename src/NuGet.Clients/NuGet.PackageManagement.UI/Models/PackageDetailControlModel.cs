@@ -144,14 +144,13 @@ namespace NuGet.PackageManagement.UI
             {
                 if (project.ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) && installedDependency != null)
                 {
-                    _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, true), additionalInfo: null));
+                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, true);
+                    NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
+                    _versions.Add(new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null));
                 }
-                else
+                else if (installedDependency != null)
                 {
-                    if (installedDependency != null)
-                    {
-                        _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, false), additionalInfo: null));
-                    }
+                    _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, false), additionalInfo: null));
                 }
             }
 
@@ -188,7 +187,10 @@ namespace NuGet.PackageManagement.UI
                     autoReferenced = true;
                 }
 
-                _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                if (!installed)
+                {
+                    _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                }
             }
 
             // Disable controls if this is an auto referenced package.
@@ -199,6 +201,7 @@ namespace NuGet.PackageManagement.UI
 
             SelectVersion();
 
+            OnPropertyChanged(nameof(SelectedVersion));
             OnPropertyChanged(nameof(Versions));
 
             return Task.CompletedTask;
