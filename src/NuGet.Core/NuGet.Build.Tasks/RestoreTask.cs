@@ -82,7 +82,15 @@ namespace NuGet.Build.Tasks
                 Debugger.Launch();
             }
 #endif
-            var log = new MSBuildLogger(Log);
+            Common.ILogger log = new MSBuildLogger(Log);
+
+            if (!Console.IsOutputRedirected)
+            {
+                Console.WriteLine("Output is not redirected!!!");
+#pragma warning disable CA2000
+                log = new ConsoleProgressLogger(log);
+#pragma warning restore CA2000
+            }
 
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");

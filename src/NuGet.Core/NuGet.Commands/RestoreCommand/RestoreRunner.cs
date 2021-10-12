@@ -64,6 +64,11 @@ namespace NuGet.Commands
                 log.LogVerbose(Strings.Log_RunningNonParallelRestore);
             }
 
+            foreach (var request in restoreRequests)
+            {
+                NuGetEtlSource.Instance.Write("ProjectRestoreStart");
+            }
+
             // Get requests
             var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
             var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
@@ -302,6 +307,7 @@ namespace NuGet.Commands
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
         {
             var doneTask = await Task.WhenAny(restoreTasks);
+            NuGetEtlSource.Instance.Write("ProjectRestoreStop");
             restoreTasks.Remove(doneTask);
             return await doneTask;
         }
