@@ -84,13 +84,7 @@ namespace NuGet.Build.Tasks
 #endif
             Common.ILogger log = new MSBuildLogger(Log);
 
-            if (!Console.IsOutputRedirected)
-            {
-                Console.WriteLine("Output is not redirected!!!");
-#pragma warning disable CA2000
-                log = new ConsoleProgressLogger(log);
-#pragma warning restore CA2000
-            }
+            using var progressLogger = new ConsoleProgressLogger(Log);
 
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");

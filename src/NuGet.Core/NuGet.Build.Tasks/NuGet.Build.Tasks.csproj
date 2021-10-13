@@ -42,11 +42,12 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.Build.Framework" />
+    <!--<Reference Include="Microsoft.Build.Utilities.v4.0" />-->
+    <!--<Reference Include="Microsoft.Build.Framework" />-->
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
+  <!--<ItemGroup Condition=" '$(IsCore)' == 'true' ">-->
+  <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />

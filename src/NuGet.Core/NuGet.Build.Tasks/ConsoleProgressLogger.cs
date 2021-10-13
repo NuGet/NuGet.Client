@@ -3,58 +3,28 @@
 
 using System;
 using System.Diagnostics.Tracing;
-using System.Threading.Tasks;
-using NuGet.Common;
+using Microsoft.Build.Utilities;
 
 namespace NuGet.Build.Tasks
 {
-    internal class ConsoleProgressLogger : LoggerBase, IDisposable
+    internal class ConsoleProgressLogger : IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly TaskLoggingHelper _logger;
         private EtlListener _listener;
         private bool _disposedValue;
-        private string _progressMessage;
-        private object _lock = new object();
 
-        public ConsoleProgressLogger(ILogger inner)
+        public ConsoleProgressLogger(TaskLoggingHelper logger)
         {
-            _logger = inner ?? throw new ArgumentNullException(nameof(inner));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _listener = new EtlListener();
             _listener.MessageUpdated += MessageUpdated;
-        }
-
-        public override void Log(ILogMessage message)
-        {
-            if (_disposedValue)
-            {
-                return;
-            }
-
-            lock (_lock)
-            {
-                // Set cursor to start of line, let MSBuild log its message to console, then write the progress message on the new line.
-                Console.SetCursorPosition(0, Console.CursorTop);
-                _logger.Log(message);
-                Console.Write(_progressMessage);
-            }
-        }
-
-        public override Task LogAsync(ILogMessage message)
-        {
-            Log(message);
-            return Task.CompletedTask;
         }
 
         private void MessageUpdated(object sender, string message)
         {
             if (_disposedValue) return;
 
-            _progressMessage = message;
-            lock (_lock)
-            {
-                Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write(_progressMessage);
-            }
+            _logger.LogProgress(message);
         }
 
         private class EtlListener : EventListener
