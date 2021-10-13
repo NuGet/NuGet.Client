@@ -15,7 +15,6 @@ namespace NuGet.Tests.Apex
         private readonly Lazy<IVerifier> _lazyVerifier;
         private readonly Lazy<NuGetApexTestService> _nuGetPackageManagerTestService;
 
-
         public ApexBaseTestClass()
         {
             _lazyVerifier = new Lazy<IVerifier>(() => GetApexService<ITestLoggerFactoryService>().GetOrCreate("Testcase"));
