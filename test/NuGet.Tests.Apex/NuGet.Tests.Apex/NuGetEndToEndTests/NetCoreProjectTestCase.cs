@@ -51,7 +51,8 @@ namespace NuGet.Tests.Apex
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 VisualStudio.AssertNoErrors();
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0");
+                //CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0");
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "randomString", "1.0.0");
             }
         }
 
