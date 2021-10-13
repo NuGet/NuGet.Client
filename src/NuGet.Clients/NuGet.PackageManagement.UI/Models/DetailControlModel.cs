@@ -415,27 +415,17 @@ namespace NuGet.PackageManagement.UI
             private set
             {
                 _packageVulnerabilities = value;
-                PackageVulnerabilityMaxSeverity = value?.Max(v => v.Severity) ?? -1;
 
                 OnPropertyChanged(nameof(PackageVulnerabilities));
+                OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                 OnPropertyChanged(nameof(IsPackageVulnerable));
                 OnPropertyChanged(nameof(PackageVulnerabilityCount));
             }
         }
 
-        private int _packageVulnerabilityMaxSeverity = -1;
         public int PackageVulnerabilityMaxSeverity
         {
-            get => _packageVulnerabilityMaxSeverity;
-            private set
-            {
-                if (_packageVulnerabilityMaxSeverity != value)
-                {
-                    _packageVulnerabilityMaxSeverity = value;
-
-                    OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
-                }
-            }
+            get => PackageVulnerabilities?.FirstOrDefault()?.Severity ?? -1;
         }
 
         public bool IsPackageVulnerable
@@ -509,8 +499,7 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationReasons = newDeprecationReasons;
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
-                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities = _packageMetadata?.Vulnerabilities;
-                    PackageVulnerabilities = vulnerabilities?.ToList();
+                    PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
 
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
