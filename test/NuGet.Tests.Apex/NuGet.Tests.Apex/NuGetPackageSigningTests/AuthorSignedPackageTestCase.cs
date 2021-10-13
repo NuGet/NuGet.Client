@@ -48,8 +48,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
 
-                //CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version);
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "randomString", signedPackage.Version);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version);
             }
         }
 
