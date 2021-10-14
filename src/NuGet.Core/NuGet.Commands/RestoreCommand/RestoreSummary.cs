@@ -55,7 +55,7 @@ namespace NuGet.Commands
             ConfigFiles = configFiles.AsList().AsReadOnly();
             FeedsUsed = sourceRepositories
                 .Select(source => source.PackageSource.Source)
-                .ToList()
+                .AsList()
                 .AsReadOnly();
             InstallCount = result.GetAllInstalled().Count;
             Errors = errors.ToArray();
@@ -188,10 +188,9 @@ namespace NuGet.Commands
         {
             var logs = restoreSummary
                         .Errors
-                        .Where(m => m.Level == LogLevel.Error)
-                        .ToList();
+                        .Where(m => m.Level == LogLevel.Error);
 
-            if (logs.Count > 0)
+            if (logs.Any())
             {
                 logger.LogInformation(string.Empty);
                 logger.LogError(logHeading);

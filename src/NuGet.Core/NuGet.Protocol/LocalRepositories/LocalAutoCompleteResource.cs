@@ -80,8 +80,7 @@ namespace NuGet.Protocol
 
                 return packages.Select(p => p.Identity.Id)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Take(30)
-                    .ToList();
+                    .Take(30);
             },
             token);
         }
@@ -108,8 +107,7 @@ namespace NuGet.Protocol
                 return packages.Where(p => p.Identity.Version.ToString()
                     .StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase)
                     || p.Identity.Version.ToFullString().StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase))
-                    .Select(p => p.Identity.Version)
-                    .ToList();
+                    .Select(p => p.Identity.Version);
             },
             token);
         }

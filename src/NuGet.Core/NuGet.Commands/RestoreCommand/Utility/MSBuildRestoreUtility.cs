@@ -450,12 +450,10 @@ namespace NuGet.Commands
                     restoreType == ProjectStyle.DotnetToolReference)
                 {
                     var packageTargetFallback = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
-                        .Select(NuGetFramework.Parse)
-                        .ToList();
+                        .Select(NuGetFramework.Parse);
 
                     var assetTargetFallback = MSBuildStringUtility.Split(item.GetProperty(AssetTargetFallbackUtility.AssetTargetFallback))
-                        .Select(NuGetFramework.Parse)
-                        .ToList();
+                        .Select(NuGetFramework.Parse);
 
                     // Throw if an invalid combination was used.
                     AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, filePath);
@@ -497,13 +495,11 @@ namespace NuGet.Commands
         {
             var runtimes = MSBuildStringUtility.Split(specItem.GetProperty("RuntimeIdentifiers"))
                 .Distinct(StringComparer.Ordinal)
-                .Select(rid => new RuntimeDescription(rid))
-                .ToList();
+                .Select(rid => new RuntimeDescription(rid));
 
             var supports = MSBuildStringUtility.Split(specItem.GetProperty("RuntimeSupports"))
                 .Distinct(StringComparer.Ordinal)
-                .Select(s => new CompatibilityProfile(s))
-                .ToList();
+                .Select(s => new CompatibilityProfile(s));
 
             return new RuntimeGraph(runtimes, supports);
         }
@@ -528,7 +524,7 @@ namespace NuGet.Commands
             {
                 // If no frameworks were given, apply to all
                 var addToFrameworks = frameworkPair.Item1.Count == 0
-                    ? aliasGroups.Keys.ToList()
+                    ? aliasGroups.Keys.AsList()
                     : frameworkPair.Item1;
 
                 foreach (var framework in addToFrameworks)
@@ -559,7 +555,7 @@ namespace NuGet.Commands
 
         private static Tuple<List<string>, ProjectRestoreReference> GetProjectRestoreReference(IMSBuildItem item)
         {
-            var frameworks = GetFrameworks(item).ToList();
+            var frameworks = GetFrameworks(item).AsList();
 
             var reference = new ProjectRestoreReference()
             {
@@ -949,7 +945,7 @@ namespace NuGet.Commands
         private static Dictionary<string, Dictionary<string, CentralPackageVersion>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
             IList<TargetFrameworkInformation> specFrameworks)
         {
-            IEnumerable<IMSBuildItem> centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(MSBuildItemIdentityComparer.Default).ToList();
+            IEnumerable<IMSBuildItem> centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(MSBuildItemIdentityComparer.Default);
             var result = new Dictionary<string, Dictionary<string, CentralPackageVersion>>();
 
             foreach (IMSBuildItem cv in centralVersions)

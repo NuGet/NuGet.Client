@@ -344,7 +344,7 @@ namespace NuGet.Versioning
                 }
 
                 // Remove the last label and add in the fixed label if one exists.
-                var fixedLabels = version.ReleaseLabels.Take(version.ReleaseLabels.Count() - 1).ToList();
+                var fixedLabels = version.ReleaseLabels.Take(version.ReleaseLabels.Count() - 1).AsList();
 
                 if (!string.IsNullOrEmpty(fixedReleaseLabel))
                 {

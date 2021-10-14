@@ -42,8 +42,7 @@ namespace NuGet.Protocol
                 return _localResource.FindPackagesById(packageId, log, token)
                     .Where(p => includePrerelease || !p.Identity.Version.IsPrerelease)
                     .Select(GetPackageMetadata)
-                    .Select(p => metadataCache.GetObject(p))
-                    .ToList();
+                    .Select(p => metadataCache.GetObject(p));
             },
             token);
         }

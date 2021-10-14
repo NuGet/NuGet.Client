@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Core.Types
 
             Identity = identity;
             Listed = listed;
-            DependencyGroups = dependencyGroups.ToList();
+            DependencyGroups = dependencyGroups;
             ContentUri = contentUri;
         }
 

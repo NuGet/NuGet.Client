@@ -18,6 +18,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -360,7 +361,7 @@ namespace NuGet.Commands
                         logsEnumerable = logsEnumerable.Concat(_request.AdditionalMessages);
                     }
                     var logs = logsEnumerable
-                        .ToList();
+                        .AsList();
 
                     _success &= !logs.Any(l => l.Level == LogLevel.Error);
 
@@ -592,7 +593,7 @@ namespace NuGet.Commands
                             var libraries = target.Dependencies
                                 .Where(dep => dep.Type != PackageDependencyType.Project)
                                 .Select(dep => new LibraryIdentity(dep.Id, dep.ResolvedVersion, LibraryType.Package))
-                                .ToList();
+                                .AsList();
 
                             // add lock file libraries into RemoteWalkContext so that it can be used during restore graph generation
                             contextForProject.LockFileLibraries.Add(new LockFileCacheKey(target.TargetFramework, target.RuntimeIdentifier), libraries);
@@ -1109,7 +1110,7 @@ namespace NuGet.Commands
                             _request.Project.Name,
                             proj.PackageSpecProjectName,
                             StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                        .AsList();
 
                 if (rootProjectMatches.Count > 1)
                 {

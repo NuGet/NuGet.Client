@@ -8,6 +8,7 @@ using System.Linq;
 using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -38,7 +39,7 @@ namespace NuGet.Commands
             FlattenDependencyTypesUnified(targetGraph, result);
 
             // Override flags for direct dependencies
-            var directDependencies = spec.Dependencies.ToList();
+            var directDependencies = spec.Dependencies.AsList();
 
             // Add dependencies defined under the framework node
             var specFramework = spec.GetTargetFramework(targetGraph.Framework);

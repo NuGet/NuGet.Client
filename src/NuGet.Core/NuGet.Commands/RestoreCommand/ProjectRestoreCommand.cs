@@ -19,6 +19,7 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -324,7 +325,7 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             var packagesToInstall = graphs
-                .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library))).ToList();
+                .SelectMany(g => g.Install.Where(match => uniquePackages.Add(match.Library))).AsList();
 
             packagesToInstall.AddRange(
                 downloadDependencyInformations.
