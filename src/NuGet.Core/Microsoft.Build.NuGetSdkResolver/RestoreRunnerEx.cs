@@ -52,20 +52,20 @@ namespace NuGet.Commands
                 var projectFullPath = Path.Combine(projectDirectory, $"{projectName}.proj");
 
                 // Iterate through TargetFrameworks to generate Lists required for packageSpec
-                var tfi = new List<TargetFrameworkInformation>();
-                var otf = new List<string>();
+                var frameworks = new List<TargetFrameworkInformation>(TargetFrameworks.Count);
+                var originalTargetFrameworks = new List<string>(TargetFrameworks.Count);
                 foreach (var tf in TargetFrameworks)
                 {
-                    tfi.Add(new TargetFrameworkInformation
+                    frameworks.Add(new TargetFrameworkInformation
                     {
                         FrameworkName = tf
                     });
 
-                    otf.Add(tf.ToString());
+                    originalTargetFrameworks.Add(tf.ToString());
                 }
 
                 // The package spec details what packages to restore
-                var packageSpec = new PackageSpec(tfi)
+                var packageSpec = new PackageSpec(frameworks)
                 {
                     Dependencies = new List<LibraryDependency>
                     {
@@ -91,7 +91,7 @@ namespace NuGet.Commands
                         ProjectStyle = ProjectStyle.PackageReference,
                         ProjectUniqueName = projectFullPath,
                         OutputPath = projectDirectory,
-                        OriginalTargetFrameworks = otf,
+                        OriginalTargetFrameworks = originalTargetFrameworks,
                         ConfigFilePaths = settings.GetConfigFilePaths(),
                         PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings),
                         Sources = SettingsUtility.GetEnabledSources(settings).AsList(),
