@@ -1489,17 +1489,17 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_DependencyResolution(string dependencyType, string requestedVersion, string expectedVersion)
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var source = TestDirectory.Create())
+            using (var testDirectory = TestDirectory.Create())
             using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
-                Util.CreateTestPackage("depPackage", "1.1.0", source);
-                Util.CreateTestPackage("depPackage", "1.1.1", source);
-                Util.CreateTestPackage("depPackage", "1.2.0", source);
-                Util.CreateTestPackage("depPackage", "2.0.0", source);
+                Util.CreateTestPackage("depPackage", "1.1.0", testDirectory);
+                Util.CreateTestPackage("depPackage", "1.1.1", testDirectory);
+                Util.CreateTestPackage("depPackage", "1.2.0", testDirectory);
+                Util.CreateTestPackage("depPackage", "2.0.0", testDirectory);
 
                 var packageFileName = PackageCreater.CreatePackage(
-                    "testPackage", "1.1.0", source,
+                    "testPackage", "1.1.0", testDirectory,
                     (builder) =>
                     {
                         if (requestedVersion == null)
@@ -1533,17 +1533,17 @@ namespace NuGet.CommandLine.Test
                 {
                     cmd = string.Format(
                         CultureInfo.InvariantCulture,
-                        "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, source);
+                        "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, testDirectory);
                 }
                 else
                 {
                     cmd = string.Format(
                         CultureInfo.InvariantCulture,
-                        "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, source, dependencyType);
+                        "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, testDirectory, dependencyType);
                 }
                 var r = CommandRunner.Run(
                     nugetexe,
-                    source,
+                    testDirectory,
                     cmd,
                     waitForExit: true);
 
