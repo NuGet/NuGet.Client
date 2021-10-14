@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <!-- A workaround the fact that a README.md is set in this directory. -->
+    <ParentDirectory>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</ParentDirectory>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(ParentDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <SkipShared>true</SkipShared>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Description>A utility for validating that relevant NuGet documentation has been published.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
