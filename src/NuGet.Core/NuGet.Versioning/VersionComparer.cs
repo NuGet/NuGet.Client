@@ -17,10 +17,6 @@ namespace NuGet.Versioning
         /// <summary>
         /// Creates a VersionComparer using the default mode.
         /// </summary>
-        public VersionComparer()
-        {
-            _mode = VersionComparison.Default;
-        }
 
         /// <summary>
         /// Creates a VersionComparer that respects the given comparison mode.
