@@ -67,6 +67,17 @@ stages:
     steps:
     - template: Initialize_Build.yml
 
+- stage: Scan_Code
+  displayName: Pre-Checks before start build
+  dependsOn: Initialize
+  jobs:
+  - job: Scan_Code
+    timeoutInMinutes: 15
+    pool:
+      name: VSEngSS-MicroBuild2019-1ES
+    steps:
+    - template: Scan_Code.yml
+
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
   dependsOn: Initialize
