@@ -82,7 +82,7 @@ namespace NuGet.Commands
 
             // Read the contentFiles section of the nuspec
             // Read the entries so that the bottom entry has priority
-            var nuspecContentFiles = nuspec.GetContentFiles();
+            var nuspecContentFiles = nuspec.GetContentFiles().ToList();
 
             // Initialize mappings
             var entryMappings = new Dictionary<string, List<ContentFilesEntry>>(StringComparer.OrdinalIgnoreCase);

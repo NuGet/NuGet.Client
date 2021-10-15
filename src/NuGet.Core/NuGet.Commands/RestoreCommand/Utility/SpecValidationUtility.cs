@@ -276,9 +276,9 @@ namespace NuGet.Commands
 
         private static void ValidateToolSpec(PackageSpec spec, IEnumerable<string> files)
         {
-            IEnumerable<LibraryDependency> packageDependencies = GetAllDependencies(spec);
+            var packageDependencies = GetAllDependencies(spec).ToList();
 
-            if (packageDependencies.Count() != 1
+            if (packageDependencies.Count != 1
                 || packageDependencies.All(e => e.LibraryRange.TypeConstraint != LibraryDependencyTarget.Package)
                 || spec.TargetFrameworks.Count != 1)
             {

@@ -41,7 +41,7 @@ namespace NuGet.Resolver
             var requiredPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             requiredPackageIds.UnionWith(newPackageIdSet);
             requiredPackageIds.UnionWith(installedPackageIds);
-            var requiredPackages = solution.Where(package => requiredPackageIds.Contains(package.Id));
+            var requiredPackages = solution.Where(package => requiredPackageIds.Contains(package.Id)).ToList();
 
             // all new packages that are not already installed, and that aren't the primary target
             var newDependencyPackageIds = new HashSet<string>(allPackageIds.Except(requiredPackageIds), StringComparer.OrdinalIgnoreCase);
@@ -307,7 +307,7 @@ namespace NuGet.Resolver
                 level++;
 
                 // find the next level of dependencies
-                var dependencyIds = walkedPackages.SelectMany(package => package.Dependencies.Select(dependency => dependency.Id));
+                var dependencyIds = walkedPackages.SelectMany(package => package.Dependencies.Select(dependency => dependency.Id)).ToList(); 
 
                 var dependencyPackages = packages.Where(package => dependencyIds.Contains(package.Id, StringComparer.OrdinalIgnoreCase));
 

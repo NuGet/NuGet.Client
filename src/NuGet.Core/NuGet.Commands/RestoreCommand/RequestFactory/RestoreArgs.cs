@@ -180,7 +180,7 @@ namespace NuGet.Commands
                 CachingSourceProvider = new CachingSourceProvider(packageSourceProvider);
             }
 
-            return sourceObjects.Select(entry => CachingSourceProvider.CreateRepository(entry.Value)).AsList();
+            return sourceObjects.Select(entry => CachingSourceProvider.CreateRepository(entry.Value)).ToList();
         }
 
         public void ApplyStandardProperties(RestoreRequest request)

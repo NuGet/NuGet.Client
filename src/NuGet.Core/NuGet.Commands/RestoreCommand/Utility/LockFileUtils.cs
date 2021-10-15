@@ -332,7 +332,7 @@ namespace NuGet.Commands
         private static void AddContentFiles(RestoreTargetGraph targetGraph, LockFileTargetLibrary lockFileLib, NuGetFramework framework, ContentItemCollection contentItems, NuspecReader nuspec, MaccatalystFallback maccatalystFallback)
         {
             // content v2 items
-            IEnumerable<ContentItemGroup> contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles);
+            var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles).ToList();
 
             if (contentFileGroups.Any())
             {
@@ -440,9 +440,9 @@ namespace NuGet.Commands
         {
             if (lockFileLib.CompileTimeAssemblies.Count > 0 || lockFileLib.RuntimeAssemblies.Count > 0)
             {
-                var groups = nuspec.GetReferenceGroups();
+                var groups = nuspec.GetReferenceGroups().ToList();
 
-                if (groups.Any())
+                if (groups.Count > 0)
                 {
                     var referenceSet = groups.GetNearest(framework);
                     if (referenceSet != null)
@@ -451,8 +451,8 @@ namespace NuGet.Commands
 
                         // Remove anything that starts with "lib/" and is NOT specified in the reference filter.
                         // runtimes/* is unaffected (it doesn't start with lib/)
-                        lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).AsList();
-                        lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).AsList();
+                        lockFileLib.RuntimeAssemblies = lockFileLib.RuntimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
+                        lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
                     }
                 }
             }
@@ -517,7 +517,7 @@ namespace NuGet.Commands
                 lockFileLib.Dependencies = dependencies
                     .Where(ld => ld.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.PackageProjectExternal))
                     .Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange))
-                    .AsList();
+                    .ToList();
             }
         }
 
@@ -589,7 +589,7 @@ namespace NuGet.Commands
                              && d.SuppressParent != LibraryIncludeFlags.All
                              && d.ReferenceType == LibraryDependencyReferenceType.Direct)
                     .Select(d => GetDependencyVersionRange(d))
-                    .AsList()
+                    .ToList()
             };
 
             if (rootProjectStyle == ProjectStyle.PackageReference)
@@ -994,7 +994,7 @@ namespace NuGet.Commands
             string assetType,
             MaccatalystFallback maccatalystFallback)
         {
-            var groups = contentItems.FindItemGroups(patternSet).AsList();
+            var groups = contentItems.FindItemGroups(patternSet).ToList();
 
             var groupsForFramework = GetContentGroupsForFramework(
                 framework,

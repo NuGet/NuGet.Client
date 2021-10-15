@@ -107,7 +107,8 @@ namespace NuGet.Protocol
                 return packages.Where(p => p.Identity.Version.ToString()
                     .StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase)
                     || p.Identity.Version.ToFullString().StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase))
-                    .Select(p => p.Identity.Version);
+                    .Select(p => p.Identity.Version)
+                    .ToList();
             },
             token);
         }

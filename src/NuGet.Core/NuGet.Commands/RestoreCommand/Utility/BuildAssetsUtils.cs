@@ -15,7 +15,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
-using NuGet.Shared;
 using NuGet.Versioning;
 using XmlUtility = NuGet.Shared.XmlUtility;
 
@@ -700,7 +699,7 @@ namespace NuGet.Commands
                         RootName = original.RootName,
                         Position = original.Position,
                         Items = original.Items,
-                        Conditions = original.Conditions.Concat(new[] { condition }).AsList()
+                        Conditions = original.Conditions.Concat(new[] { condition }).ToList()
                     };
                 }
             }

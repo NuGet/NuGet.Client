@@ -116,9 +116,11 @@ namespace NuGet.CommandLine.XPlat
                 {
                     sources.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
                 }
+
                 originalPackageSpec.RestoreMetadata.Sources =
                                     sources.Where(ns => !string.IsNullOrEmpty(ns))
-                                    .Select(ns => new PackageSource(ns)) as List<PackageSource>;
+                                    .Select(ns => new PackageSource(ns))
+                                    .ToList();
             }
 
             PackageDependency packageDependency = default;

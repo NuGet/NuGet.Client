@@ -450,7 +450,8 @@ namespace NuGet.Commands
                     restoreType == ProjectStyle.DotnetToolReference)
                 {
                     var packageTargetFallback = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
-                        .Select(NuGetFramework.Parse);
+                        .Select(NuGetFramework.Parse)
+                        .ToList;
 
                     var assetTargetFallback = MSBuildStringUtility.Split(item.GetProperty(AssetTargetFallbackUtility.AssetTargetFallback))
                         .Select(NuGetFramework.Parse);
@@ -524,7 +525,7 @@ namespace NuGet.Commands
             {
                 // If no frameworks were given, apply to all
                 var addToFrameworks = frameworkPair.Item1.Count == 0
-                    ? aliasGroups.Keys.AsList()
+                    ? aliasGroups.Keys.ToList()
                     : frameworkPair.Item1;
 
                 foreach (var framework in addToFrameworks)
@@ -555,7 +556,7 @@ namespace NuGet.Commands
 
         private static Tuple<List<string>, ProjectRestoreReference> GetProjectRestoreReference(IMSBuildItem item)
         {
-            var frameworks = GetFrameworks(item).AsList();
+            var frameworks = GetFrameworks(item).ToList();
 
             var reference = new ProjectRestoreReference()
             {
