@@ -21,7 +21,7 @@ namespace NuGet.Test.Utility
 
                 if (string.IsNullOrEmpty(skip))
                 {
-                    if (CIOnly.Yes == CIOnly && !XunitAttributeUtility.IsCI)
+                    if (CIOnly && !XunitAttributeUtility.IsCI)
                     {
                         skip = "This test only runs on the CI. To run it locally set the env var CI=true";
                     }
@@ -59,7 +59,7 @@ namespace NuGet.Test.Utility
 
         public bool SkipMono { get; set; }
 
-        public CIOnly CIOnly { get; set; }
+        public bool CIOnly { get; set; }
 
         /// <summary>
         /// Provide property values to use this attribute.
@@ -71,18 +71,8 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Run only on the given platforms
         /// </summary>
-        public PlatformFactAttribute(CIOnly ciOnly, params string[] platforms)
-        {
-            CIOnly = ciOnly;
-            Platforms = platforms.ToList();
-        }
-
-        /// <summary>
-        /// Run only on the given platforms
-        /// </summary>
         public PlatformFactAttribute(params string[] platforms)
         {
-            CIOnly = CIOnly.No;
             Platforms = platforms.ToList();
         }
 

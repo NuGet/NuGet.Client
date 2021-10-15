@@ -2093,7 +2093,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(CIOnly.Yes, Platform.Windows)]
+        [PlatformFact(Platform.Windows, CIOnly = true)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_Error()
         {
             // Arrange
