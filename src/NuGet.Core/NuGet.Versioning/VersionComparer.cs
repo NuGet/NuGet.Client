@@ -14,6 +14,7 @@ namespace NuGet.Versioning
     {
         private readonly VersionComparison _mode;
 
+
         /// <summary>
         /// Creates a VersionComparer using the default mode.
         /// </summary>
