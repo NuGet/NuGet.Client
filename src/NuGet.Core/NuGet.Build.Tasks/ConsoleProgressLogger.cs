@@ -3,7 +3,10 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Threading;
 using Microsoft.Build.Utilities;
+using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.Build.Tasks
 {
@@ -31,8 +34,52 @@ namespace NuGet.Build.Tasks
         {
             private uint _projectsToRestore;
             private uint _projectsComplete;
+            private uint[] _download;
+            private uint _downloadSpeed;
+            private int _downloadIndex;
+            private int _downloadNow;
+            private CancellationTokenSource _cancellationTokenSource;
+            private Task _downloadUpdater;
+
+            public EtlListener()
+            {
+                _download = new uint[2 * 5];
+                _cancellationTokenSource = new CancellationTokenSource();
+                _downloadUpdater = UpdateDownloadSpeed(_cancellationTokenSource.Token);
+            }
+
+            private async Task UpdateDownloadSpeed(CancellationToken cancellationToken)
+            {
+                try
+                {
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(0.5), cancellationToken).ConfigureAwait(false);
+
+                        var downloaded = Interlocked.Exchange(ref _downloadNow, 0);
+
+                        _downloadSpeed = _downloadSpeed - _download[_downloadIndex] + (uint)downloaded;
+                        _download[_downloadIndex] = (uint)downloaded;
+                        _downloadNow = 0;
+                        _downloadIndex = (_downloadIndex + 1) % _download.Length;
+
+                        UpdateMessage();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }
 
             public event EventHandler<string> MessageUpdated;
+
+            public override void Dispose()
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+
+                base.Dispose();
+            }
 
             protected override void OnEventSourceCreated(EventSource eventSource)
             {
@@ -45,11 +92,6 @@ namespace NuGet.Build.Tasks
 
             protected override void OnEventWritten(EventWrittenEventArgs eventData)
             {
-#if NET5_0_OR_GREATER
-                //string json = System.Text.Json.JsonSerializer.Serialize(eventData);
-                //Console.WriteLine(json);
-#endif
-
                 if (eventData.EventName == "ProjectRestoreStart")
                 {
                     _projectsToRestore++;
@@ -60,6 +102,11 @@ namespace NuGet.Build.Tasks
                     _projectsComplete++;
                     UpdateMessage();
                 }
+                else if (eventData.EventName == "HttpDownload")
+                {
+                    var bytes = (uint)eventData.Payload[0];
+                    Interlocked.Add(ref _downloadNow, (int)bytes);
+                }
                 else
                 {
                     Console.WriteLine($"{eventData.EventSource.Name} {eventData.EventName}");
@@ -68,7 +115,8 @@ namespace NuGet.Build.Tasks
 
             private void UpdateMessage()
             {
-                string message = $"Projects restored {_projectsComplete}/{_projectsToRestore}";
+                var bps = _downloadSpeed / 5;
+                string message = $"Projects restored {_projectsComplete}/{_projectsToRestore}. HTTP downloaded speed = {bps}";
                 MessageUpdated?.Invoke(this, message);
             }
         }

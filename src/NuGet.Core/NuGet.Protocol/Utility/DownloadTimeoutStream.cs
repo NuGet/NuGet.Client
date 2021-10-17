@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.Protocol
 {
@@ -42,6 +43,7 @@ namespace NuGet.Protocol
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            NuGetEtlSource.Instance.Write("HttpDownload", new { Bytes = (uint)count });
             return _networkStream.Read(buffer, offset, count);
         }
 
@@ -76,7 +78,12 @@ namespace NuGet.Protocol
             try
             {
                 var result = await TimeoutUtility.StartWithTimeout(
-                    getTask: timeoutToken => _networkStream.ReadAsync(buffer, offset, count, timeoutToken),
+                    getTask: async timeoutToken =>
+                    {
+                        var bytesRead = await _networkStream.ReadAsync(buffer, offset, count, timeoutToken);
+                        NuGetEtlSource.Instance.Write("HttpDownload", new { Bytes = (uint)bytesRead });
+                        return bytesRead;
+                    },
                     timeout: _timeout,
                     timeoutMessage: null,
                     token: cancellationToken).ConfigureAwait(false);
