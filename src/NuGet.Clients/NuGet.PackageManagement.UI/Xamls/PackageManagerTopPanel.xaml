@@ -6,6 +6,7 @@
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="800">
   <UserControl.Resources>
@@ -13,6 +14,12 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
+
+      <CollectionViewSource x:Key="cvsPackageSources">
+        <CollectionViewSource.SortDescriptions>
+          <scm:SortDescription PropertyName="SourceName" Direction="Ascending" />
+        </CollectionViewSource.SortDescriptions>
+      </CollectionViewSource>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -251,7 +258,8 @@
           MinHeight="22"
           AutomationProperties.Name="{x:Static nuget:Resources.Label_Repository}"
           SelectionChanged="_sourceRepoList_SelectionChanged"
-          HorizontalAlignment="Right">
+          HorizontalAlignment="Right"
+          ItemsSource="{Binding Source={StaticResource cvsPackageSources}}">
           <ComboBox.ItemTemplate>
             <DataTemplate>
               <TextBlock

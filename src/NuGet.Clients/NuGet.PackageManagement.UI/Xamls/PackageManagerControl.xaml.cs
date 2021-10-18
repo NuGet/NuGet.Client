@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.UI
             _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
-            await InitSourceRepoListAsync(settings, CancellationToken.None);
+            await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
 
@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.UI
             set => _topPanel.SourceRepoList.SelectedItem = value;
         }
 
-        internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
+        internal IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.PackageSources;
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
@@ -506,7 +506,7 @@ namespace NuGet.PackageManagement.UI
                 // We access UI components in these calls
                 PackageSourceMoniker prevSelectedItem = SelectedSource;
 
-                await PopulateSourceRepoListAsync(list, optionalSelectSourceName: null, cancellationToken: CancellationToken.None);
+                await PopulatePackageSourcesAsync(list, optionalSelectSourceName: null, cancellationToken: CancellationToken.None);
 
                 // force a new search explicitly only if active source has changed
                 if (prevSelectedItem == SelectedSource)
@@ -719,7 +719,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task InitSourceRepoListAsync(UserSettings settings, CancellationToken cancellationToken)
+        private async Task InitPackageSourcesAsync(UserSettings settings, CancellationToken cancellationToken)
         {
             // get active source name.
             string activeSourceName;
@@ -735,19 +735,19 @@ namespace NuGet.PackageManagement.UI
                 activeSourceName = await Model.Context.SourceService.GetActivePackageSourceNameAsync(cancellationToken);
             }
 
-            await PopulateSourceRepoListAsync(activeSourceName, cancellationToken);
+            await PopulatePackageSourcesAsync(activeSourceName, cancellationToken);
         }
 
-        private ValueTask PopulateSourceRepoListAsync(IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers, string optionalSelectSourceName, CancellationToken cancellationToken)
+        private ValueTask PopulatePackageSourcesAsync(IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers, string optionalSelectSourceName, CancellationToken cancellationToken)
         {
             // init source repo list
-            _topPanel.SourceRepoList.Items.Clear();
+            _topPanel.PackageSources.Clear();
 
             var selectedSourceName = optionalSelectSourceName ?? SelectedSource?.SourceName;
 
             foreach (PackageSourceMoniker packageSourceMoniker in packageSourceMonikers)
             {
-                _topPanel.SourceRepoList.Items.Add(packageSourceMoniker);
+                _topPanel.PackageSources.Add(packageSourceMoniker);
             }
 
             if (selectedSourceName != null)
@@ -768,13 +768,13 @@ namespace NuGet.PackageManagement.UI
             return new ValueTask();
         }
 
-        private async ValueTask PopulateSourceRepoListAsync(string optionalSelectSourceName, CancellationToken cancellationToken)
+        private async ValueTask PopulatePackageSourcesAsync(string optionalSelectSourceName, CancellationToken cancellationToken)
         {
             IReadOnlyCollection<PackageSourceMoniker> packageSourceMonikers = await PackageSourceMoniker.PopulateListAsync(
                 _serviceBroker,
                 cancellationToken);
 
-            await PopulateSourceRepoListAsync(packageSourceMonikers, optionalSelectSourceName, cancellationToken);
+            await PopulatePackageSourcesAsync(packageSourceMonikers, optionalSelectSourceName, cancellationToken);
         }
 
         private async ValueTask SearchPackagesAndRefreshUpdateCountAsync(bool useCacheForUpdates)

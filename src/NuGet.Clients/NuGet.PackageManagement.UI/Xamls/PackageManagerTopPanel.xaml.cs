@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Media;
-using Microsoft;
-using Microsoft.VisualStudio.PlatformUI;
+using NuGet.PackageManagement.VisualStudio;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
@@ -33,9 +32,16 @@ namespace NuGet.PackageManagement.UI
         public Border CountConsolidateContainer { get; private set; }
         public TextBlock CountConsolidate { get; private set; }
 
+        public ObservableCollection<PackageSourceMoniker> PackageSources { get; private set; }
+
         public PackageManagerTopPanel()
         {
             InitializeComponent();
+            PackageSources = new ObservableCollection<PackageSourceMoniker>();
+
+            var cvs = Resources["cvsPackageSources"] as CollectionViewSource;
+            cvs.Culture = CultureInfo.DefaultThreadCurrentUICulture;
+            cvs.Source = PackageSources;
         }
 
         public void CreateAndAddConsolidateTab()
