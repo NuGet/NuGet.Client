@@ -245,8 +245,7 @@ namespace NuGet.Tests.Apex
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
 
-                    // Assert
-                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    // Assert                    
                     CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, XunitLogger);
                 }
             }
