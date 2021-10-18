@@ -1950,7 +1950,6 @@ EndGlobal";
             var packageX100 = new SimpleTestPackageContext(packageX, version);
             var packageY100 = new SimpleTestPackageContext(packageY, version);
 
-
             projectA.AddPackageToAllFrameworks(packageX100);
             projectA.AddPackageToAllFrameworks(packageY100);
 
