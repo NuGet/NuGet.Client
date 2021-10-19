@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }
             };
 
-            return CreateLegacyPackageReferenceProject(testDirectory, projectId, range, threadingService);
+            return CreateLegacyPackageReferenceProject(testDirectory, projectId, threadingService, onedep);
         }
 
         internal static IVsProjectAdapter CreateProjectAdapter(string fullPath)
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return projectNames;
         }
 
-        internal static PackageSpec GetPackageSpec(string projectName, string testDirectory, string version)
+        internal static PackageSpec GetPackageSpec(string projectName, string packageSpecFullPath, string version)
         {
             string referenceSpec = $@"
                 {{
@@ -142,34 +142,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         }}
                     }}
                 }}";
-            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
-        }
-
-        internal static PackageSpec GetPackageSpec2(string projectName, string testDirectory, string version)
-        {
-            string referenceSpec = $@"
-                {{
-                    ""frameworks"":
-                    {{
-                        ""net5.0"":
-                        {{
-                            ""dependencies"":
-                            {{
-                                ""packageA"":
-                                {{
-                                    ""version"": ""{version}"",
-                                    ""target"": ""Package""
-                                }},
-                            ""packageA"":
-                                {{
-                                    ""version"": ""{version}"",
-                                    ""target"": ""Package""
-                                }},
-                            }}
-                        }}
-                    }}
-                }}";
-            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
+            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, packageSpecFullPath).WithTestRestoreMetadata();
         }
     }
 }

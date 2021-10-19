@@ -275,6 +275,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         [fxRidEntry] = new List<PackageReference>()
                     };
+
+                }
+                if (!cachedEntry.ContainsKey(fxRidEntry))
+                {
+                    cachedEntry[fxRidEntry] = new List<PackageReference>();
                 }
                 if (!cachedEntry[fxRidEntry].Contains(top))
                 {
