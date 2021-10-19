@@ -100,5 +100,11 @@ namespace NuGet.Protocol
                 .Replace("__", "_");
 #endif
         }
+#if NET5_0
+        public static string TestAPI(string value)
+        {
+            return value;
+        }
+#endif
     }
 }
