@@ -37,6 +37,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
 
+        private protected WeakReference<IList<LockFileTarget>> _lastTargetsList;
+
         protected PackageReferenceProject(
             string projectName,
             string projectUniqueName,
@@ -189,26 +191,33 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
             PackageSpec cachedPackageSpec = null;
             bool cacheHitPackageSpec = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
-            bool cacheMissAssets = (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitPackageSpec;
+
+            IList<LockFileTarget> cachedTargetsList = null;
+            bool cacheHitTargets = _lastTargetsList != null && _lastTargetsList.TryGetTarget(out cachedTargetsList);
+
+            bool cacheMissAssets = (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified);
             bool isCacheHit = false;
-            IList<LockFileTarget> targetsList = null;
+
+            IList<LockFileTarget> currentTargetsList = null;
 
             if (cacheMissAssets || IsPackageSpecDifferent(currentPackageSpec, cachedPackageSpec))
             {
                 if (assets.Exists)
                 {
-                    targetsList = await GetTargetsListAsync(assetsFilePath, token);
+                    currentTargetsList = await GetTargetsListAsync(assetsFilePath, token);
                 }
 
                 _lastTimeAssetsModified = assets.LastWriteTimeUtc;
                 _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
+                _lastTargetsList = new WeakReference<IList<LockFileTarget>>(currentTargetsList);
             }
-            else if (cacheHitPackageSpec && cachedPackageSpec != null)
+            else if (cacheHitPackageSpec && cacheHitTargets && cachedPackageSpec != null && cachedTargetsList != null)
             {
                 isCacheHit = true;
+                currentTargetsList = cachedTargetsList;
             }
 
-            return new RestoreGraphRead(currentPackageSpec, targetsList, isCacheHit);
+            return new RestoreGraphRead(currentPackageSpec, currentTargetsList, isCacheHit);
         }
 
         /// <summary>
@@ -312,7 +321,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="transitivePackage">Identity of transitive package</param>
         /// <returns>A <see cref="TransitiveEntry"/> object, or <c>null</c> if not found</returns>
-        /// <seealso cref="ClearCachedTransitiveOrigin"/>
+        /// <seealso cref="ClearCachedTransitiveOrigins"/>
         /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
         internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
         {
@@ -331,7 +340,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="transitivePackage">Identity of transitive package</param>
         /// <param name="origins">Packages identified as package origins</param>
-        /// <seealso cref="ClearCachedTransitiveOrigin"/>
+        /// <seealso cref="ClearCachedTransitiveOrigins"/>
         /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
         internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
         {
@@ -344,7 +353,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
         /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
-        internal void ClearCachedTransitiveOrigin()
+        internal void ClearCachedTransitiveOrigins()
         {
             TransitiveOriginsCache.Clear();
         }

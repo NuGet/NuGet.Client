@@ -500,7 +500,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc/>
         internal override void CleanCache()
         {
-            ClearCachedTransitiveOrigin();
+            ClearCachedTransitiveOrigins();
             _installedPackages.Clear();
             _transitivePackages.Clear();
         }

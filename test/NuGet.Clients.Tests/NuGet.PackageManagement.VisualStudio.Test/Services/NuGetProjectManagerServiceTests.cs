@@ -599,7 +599,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Act
                 var packages = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
+                    new PackageIdentity("packageB", new NuGetVersion(1, 0, 0)),
                     projectId,
                     CancellationToken.None);
 
