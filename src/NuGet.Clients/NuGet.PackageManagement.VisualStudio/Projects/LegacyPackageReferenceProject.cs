@@ -492,9 +492,9 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        internal override bool IsCacheMissPackageSpec(PackageSpec actual, PackageSpec cached)
+        internal override bool IsPackageSpecDifferent(PackageSpec actual, PackageSpec cached)
         {
-            return true; // PackageSpec is always created in LegacyPackageReference implementation
+            return false; // PackageSpec is always created in LegacyPackageReference implementation
         }
 
         /// <inheritdoc/>

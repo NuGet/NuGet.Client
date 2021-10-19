@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
             bool isCacheHit = false;
             IList<LockFileTarget> targetsList = null;
 
-            if (cacheMissAssets || IsCacheMissPackageSpec(currentPackageSpec, cachedPackageSpec))
+            if (cacheMissAssets || IsPackageSpecDifferent(currentPackageSpec, cachedPackageSpec))
             {
                 if (assets.Exists)
                 {
@@ -363,7 +363,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="actual">A <see cref="PackageSpec"/> read from disk</param>
         /// <param name="cached">Cached <see cref="PackageSpec"/></param>
         /// <returns><c>true</c> if current <see cref="PackageSpec"/> differs from cached objects</returns>
-        internal abstract bool IsCacheMissPackageSpec(PackageSpec actual, PackageSpec cached);
+        internal abstract bool IsPackageSpecDifferent(PackageSpec actual, PackageSpec cached);
 
         /// <summary>
         /// Clears Cached Transitive package prigins, Installed packages and Transitive packages

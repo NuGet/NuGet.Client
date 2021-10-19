@@ -419,7 +419,7 @@ namespace NuGet.PackageManagement.VisualStudio
         #endregion
 
         /// <inheritdoc/>
-        internal override bool IsCacheMissPackageSpec(PackageSpec actual, PackageSpec cached)
+        internal override bool IsPackageSpecDifferent(PackageSpec actual, PackageSpec cached)
         {
             return !ReferenceEquals(actual, cached);
         }
