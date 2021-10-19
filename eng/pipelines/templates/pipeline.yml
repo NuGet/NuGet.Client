@@ -67,16 +67,19 @@ stages:
     steps:
     - template: Initialize_Build.yml
 
-- stage: Scan_Code
-  displayName: Pre-Checks before start build
-  dependsOn: Initialize
+- stage: StaticSourceAnalysis
+  displayName: Static Source Analysis
+  dependsOn: []
   jobs:
-  - job: Scan_Code
+  - job: RunStaticSourceAnalysis
+    displayName: Run Static Source Analysis
     timeoutInMinutes: 15
     pool:
       name: VSEngSS-MicroBuild2019-1ES
     steps:
-    - template: Scan_Code.yml
+    - template: Static_Source_Analysis.yml
+      parameters:
+        isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
