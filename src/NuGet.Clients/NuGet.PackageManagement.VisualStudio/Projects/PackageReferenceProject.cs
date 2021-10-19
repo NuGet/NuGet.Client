@@ -35,7 +35,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectFullPath;
 
         private protected DateTime _lastTimeAssetsModified;
-        private protected IList<LockFileTarget> _lastTargets;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
 
         protected PackageReferenceProject(
@@ -100,6 +99,17 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
+        /// Get All Installed packages that transitively install a given transitive package in this project
+        /// </summary>
+        /// <param name="transitivePackage">Identity of given transtive package</param>
+        /// <param name="ct">Cancellation Token</param>
+        /// <returns></returns>
+        internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
+        {
+            return await MarkAllAndGetTransitiveDependencyAsync(transitivePackage, ct);
+        }
+
+        /// <summary>
         /// Returns <see cref="PackageSpec"/> and all targets (dependency graph) found in assets file (project.assets.json)
         /// </summary>
         /// <param name="token">Cancellation token</param>
@@ -109,42 +119,74 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             token.ThrowIfCancellationRequested();
 
-            PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
-
             string assetsFilePath = await GetAssetsFilePathAsync();
-            var AssetsFileInfo = new FileInfo(assetsFilePath);
+            var assets = new FileInfo(assetsFilePath);
 
-            PackageSpec lastPackageSpec = null;
-            bool cacheHitTargets = _lastTargets != null;
-            bool cacheHitPackageSpec = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out lastPackageSpec);
+            PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
+            PackageSpec cachedPackageSpec = null;
+            bool cacheHitPackageSpec = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
+            bool cacheMissAssets = (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitPackageSpec;
             bool isCacheHit = false;
             IList<LockFileTarget> targetsList = null;
 
-            if (IsCacheUpToDate(cacheHitTargets, cacheHitPackageSpec, currentPackageSpec, lastPackageSpec, AssetsFileInfo))
+            if (cacheMissAssets || IsCacheMissPackageSpec(currentPackageSpec, cachedPackageSpec))
             {
-                if (AssetsFileInfo.Exists)
+                if (assets.Exists)
                 {
-                    await TaskScheduler.Default;
-                    LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
-
-                    targetsList = lockFile?.Targets;
+                    targetsList = await GetTargetsListAsync(assetsFilePath, token);
                 }
 
-                _lastTimeAssetsModified = AssetsFileInfo.LastWriteTimeUtc;
-                _lastTargets = targetsList;
+                _lastTimeAssetsModified = assets.LastWriteTimeUtc;
                 _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
             }
-            else if (cacheHitTargets && cacheHitPackageSpec && lastPackageSpec != null && _lastTargets != null)
+            else if (cacheHitPackageSpec && cachedPackageSpec != null)
             {
-                targetsList = _lastTargets;
                 isCacheHit = true;
             }
 
-            return new RestoreGraphRead(currentPackageSpec, targetsList?.ToArray(), isCacheHit);
+            return new RestoreGraphRead(currentPackageSpec, targetsList, isCacheHit);
         }
 
+        /// <summary>
+        /// Obtains targets section from project assets file (project.assets.json)
+        /// </summary>
+        /// <param name="ct">Cancellation token for async operation</param>
+        /// <returns>A lis of dependencies, indexed by framework/RID</returns>
+        /// <remarks>Assets file reading occurs in a background thread</remarks>
+        /// <seealso cref="GetAssetsFilePathAsync"/>
+        private async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
 
-        internal async ValueTask<TransitiveEntry> Test2Async(PackageIdentity transitivePackage, CancellationToken ct)
+            string assetsFilePath = await GetAssetsFilePathAsync();
+            return await GetTargetsListAsync(assetsFilePath, ct);
+        }
+
+        /// <summary>
+        /// Obtains targets section from project assets file (project.assets.json)
+        /// </summary>
+        /// <param name="assetsFilePath">File path to project.assets.json</param>
+        /// <param name="ct">Cancellation token for async operation</param>
+        /// <returns>A lis of dependencies, indexed by framework/RID</returns>
+        /// <remarks>Assets file reading occurs in a background thread</remarks>
+        private async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(string assetsFilePath, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            await TaskScheduler.Default;
+            LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+
+            return lockFile?.Targets;
+        }
+
+        /// <summary>
+        /// Finds all project packages that indirectly installs a given transitive dependency.
+        /// </summary>
+        /// <param name="transitivePackage">Transitive pacakage identity to look for</param>
+        /// <param name="ct">Cancellation token for async operations</param>
+        /// <returns>A list all direct dependencies that installs the given transitive package, or <c>null</c> if none found</returns>
+        /// <remarks>Runs a Depth First Seach on all direct dependencies exhaustively</remarks>
+        internal async ValueTask<TransitiveEntry> MarkAllAndGetTransitiveDependencyAsync(PackageIdentity transitivePackage, CancellationToken ct)
         {
             /* Pseudocode
             1. Get project restore graph
@@ -184,31 +226,41 @@ namespace NuGet.PackageManagement.VisualStudio
             // Otherwise, find all Transitive origin and update cache
             var memory = new Dictionary<PackageIdentity, bool?>();
 
+            IList<LockFileTarget> targetsList;
             if (reading.TargetsList != null)
             {
-                var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
+                targetsList = reading.TargetsList;
+            }
+            else
+            {
+                targetsList = await GetTargetsListAsync(ct);
+            }
 
-                // 3. For each target framework graph (Framework, RID)-pair:
-                foreach (var targetFxGraph in reading.TargetsList)
+
+            var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
+
+            // 3. For each target framework graph (Framework, RID)-pair:
+            foreach (var targetFxGraph in targetsList)
+            {
+                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+
+                foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
                 {
-                    var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-
-                    foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
-                    {
-                        MarkTransitiveOrigin(directPkg, directPkg.PackageIdentity, targetFxGraph, memory, key);
-                    }
+                    memory.Clear();
+                    MarkTransitiveOrigin(directPkg, directPkg.PackageIdentity, targetFxGraph, memory, key);
                 }
             }
 
             return GetCachedTransitiveOrigin(transitivePackage);
         }
 
-        internal void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRIDKey fxRidEntry)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "<Pending>")]
+        private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRIDKey fxRidEntry)
         {
 
             LockFileTargetLibrary node = graph
                 .Libraries
-                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version) && x.Type == "package")
+                .Where(x => x.Name.ToLowerInvariant() == current.Id.ToLowerInvariant() && x.Version.Equals(current.Version) && x.Type == "package")
                 .FirstOrDefault();
 
             if (node != default)
@@ -243,8 +295,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-
-        internal async ValueTask<TransitiveEntry> Test1Async(PackageIdentity transitivePackage, CancellationToken ct)
+        /// <summary>
+        /// Finds all project packages that indirectly installs a given transitive dependency.
+        /// </summary>
+        /// <param name="transitivePackage">Transitive pacakage identity to look for</param>
+        /// <param name="ct">Cancellation token for async operations</param>
+        /// <returns>A list all direct dependencies that installs the given transitive package, or <c>null</c> if none found</returns>
+        /// <remarks>Runs a Depth First Seach on all direct dependencies and stops when the transitive package is found</remarks>
+        internal async ValueTask<TransitiveEntry> GetOneTransitiveDependencyAsync(PackageIdentity transitivePackage, CancellationToken ct)
         {
             /** Pseudocode
             1. Get project restore graph
@@ -286,41 +344,43 @@ namespace NuGet.PackageManagement.VisualStudio
             // Otherwise, find Transitive origin and update cache
             var packageOrigins = new Dictionary<FrameworkRIDKey, IList<PackageReference>>();
 
+            IList<LockFileTarget> targetsList;
             if (reading.TargetsList != null)
             {
-                var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
+                targetsList = reading.TargetsList;
+            }
+            else
+            {
+                targetsList = await GetTargetsListAsync(ct);
+            }
 
-                var memory = new Dictionary<PackageIdentity, bool?>();
+            var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
 
-                foreach (var targetFxGraph in reading.TargetsList)
+            var memory = new Dictionary<PackageIdentity, bool?>();
+
+            foreach (var targetFxGraph in targetsList)
+            {
+                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+                var list = new List<PackageReference>();
+                memory.Clear();
+
+                foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
                 {
-                    var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-                    var list = new List<PackageReference>();
-                    memory.Clear();
-
-                    foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
+                    bool found = FindTransitiveOrigin(directPkg.PackageIdentity, transitivePackage, targetFxGraph, memory);
+                    if (found)
                     {
-                        var found = FindTransitiveOrigin(directPkg.PackageIdentity, transitivePackage, targetFxGraph, memory);
-                        if (found)
-                        {
-                            list.Add(directPkg);
-                        }
+                        list.Add(directPkg);
                     }
+                }
 
-                    if (list.Any())
-                    {
-                        packageOrigins[key] = list;
-                    }
+                if (list.Any())
+                {
+                    packageOrigins[key] = list;
                 }
             }
 
             SetCachedTransitiveOrigin(transitivePackage, packageOrigins);
             return packageOrigins;
-        }
-
-        internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
-        {
-            return await Test2Async(transitivePackage, ct);
         }
 
         private bool FindTransitiveOrigin(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory)
@@ -365,11 +425,25 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
+        /// <summary>
+        /// Generates a cache key for Transitive Originas cache
+        /// </summary>
+        /// <param name="transitivePackage"></param>
+        /// <returns>A string with given key</returns>
+        /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
+        /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
         internal string GetTransitiveCacheKey(PackageIdentity transitivePackage)
         {
             return _projectUniqueName + "/" + transitivePackage.Id.ToLowerInvariant() + "." + transitivePackage.Version.ToNormalizedString();
         }
 
+        /// <summary>
+        /// Obtains cached entry for a given transitive package
+        /// </summary>
+        /// <param name="transitivePackage">Identity of transitive package</param>
+        /// <returns>A <see cref="TransitiveEntry"/> object, or <c>null</c> if not found</returns>
+        /// <seealso cref="ClearCachedTransitiveOrigin"/>
+        /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
         internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
         {
             string key = GetTransitiveCacheKey(transitivePackage);
@@ -382,21 +456,48 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        /// <summary>
+        /// Replaces cached entry for a given transitive package with a <see cref="TransitiveEntry"/>
+        /// </summary>
+        /// <param name="transitivePackage">Identity of transitive package</param>
+        /// <param name="origins">Packages identified as package origins</param>
+        /// <seealso cref="ClearCachedTransitiveOrigin"/>
+        /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
         internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
         {
             string key = GetTransitiveCacheKey(transitivePackage);
             TransitiveOriginsCache[key] = origins;
         }
 
+        /// <summary>
+        /// Clears Transitive Origins cache
+        /// </summary>
+        /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
+        /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
         internal void ClearCachedTransitiveOrigin()
         {
             TransitiveOriginsCache.Clear();
         }
 
+        /// <summary>
+        /// Obtains <see cref="PackageSpec"/> object from assets file from disk
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <remarks>Each project implementation has its own way for gathering assets file</remarks>
+        /// <returns>A <see cref="PackageSpec"/> filled from assets file on disk</returns>
         internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
 
-        internal abstract bool IsCacheUpToDate(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets);
+        /// <summary>
+        /// Decides wether cached <see cref="PackageSpec"/> differs from assets file on disk
+        /// </summary>
+        /// <param name="actual">A <see cref="PackageSpec"/> read from disk</param>
+        /// <param name="cached">Cached <see cref="PackageSpec"/></param>
+        /// <returns><c>true</c> if current <see cref="PackageSpec"/> differs from cached objects</returns>
+        internal abstract bool IsCacheMissPackageSpec(PackageSpec actual, PackageSpec cached);
 
+        /// <summary>
+        /// Clears Cached Transitive package prigins, Installed packages and Transitive packages
+        /// </summary>
         internal abstract void CleanCache();
     }
 }

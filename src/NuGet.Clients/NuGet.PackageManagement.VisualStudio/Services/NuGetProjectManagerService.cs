@@ -720,6 +720,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        /// <inheritdoc/>
         public async ValueTask<IReadOnlyDictionary<FrameworkRIDEntry, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
         {
             if (transitivePackage == null)

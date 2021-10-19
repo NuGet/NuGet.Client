@@ -113,6 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        /// <inheritdoc/>
         internal override async ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
@@ -415,18 +416,20 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
         }
 
-        internal override bool IsCacheUpToDate(bool cacheHitTargets, bool cacheHitPackageSpec, PackageSpec actual, PackageSpec last, FileInfo assets)
+        #endregion
+
+        /// <inheritdoc/>
+        internal override bool IsCacheMissPackageSpec(PackageSpec actual, PackageSpec cached)
         {
-            return (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified) || !cacheHitTargets || !cacheHitPackageSpec || !ReferenceEquals(actual, last);
+            return !ReferenceEquals(actual, cached);
         }
 
+        /// <inheritdoc/>
         internal override void CleanCache()
         {
             ClearCachedTransitiveOrigin();
             _installedPackages.Clear();
             _transitivePackages.Clear();
         }
-
-        #endregion
     }
 }

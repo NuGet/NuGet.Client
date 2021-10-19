@@ -705,6 +705,147 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        private async Task GetTransitivePackageOriginAsync_WithCpsPackageReferenceProject_MultipleCalls_SucceedsAsync()
+        {
+            string projectName = Guid.NewGuid().ToString();
+            string projectId = projectName;
+            var projectSystemCache = new ProjectSystemCache();
+            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                Initialize();
+
+                // Prepare: Create project
+                string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
+
+                var prProject = CreateCpsPackageReferenceProject(projectName, projectFullPath,
+                    projectSystemCache);
+
+                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+                string referenceSpec = $@"
+                {{
+                    ""frameworks"":
+                    {{
+                        ""net5.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                                ""packageA"":
+                                {{
+                                    ""version"": ""2.0.0"",
+                                    ""target"": ""Package""
+                                }},
+                                ""packageX"":
+                                {{
+                                    ""version"": ""3.0.0"",
+                                    ""target"": ""Package""
+                                }}
+                            }}
+                        }}
+                    }}
+                }}";
+                PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, projectFullPath).WithTestRestoreMetadata();
+
+                // Restore info
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                projectSystemCache.AddProject(projectNames, projectAdapter, prProject).Should().BeTrue();
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var pajFilepath = Path.Combine(testDirectory, "project.assets.json");
+                var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = pajFilepath
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageD", "0.1.1");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageC", "0.0.1");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0",
+                    new PackageDependency[]
+                    {
+                        new PackageDependency("packageC", VersionRange.Parse("0.0.1")),
+                        new PackageDependency("packageD", VersionRange.Parse("0.1.1")),
+                    });
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "2.0.0",
+                    new PackageDependency[]
+                    {
+                        new PackageDependency("packageB", VersionRange.Parse("1.0.0"))
+                    });
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageX", "3.0.0",
+                    new PackageDependency[]
+                    {
+                        new PackageDependency("packageD", VersionRange.Parse("0.1.1"))
+                    });
+
+                _solutionManager.NuGetProjects.Add(prProject);
+
+                // Prepare: Create telemetry
+                var telemetrySession = new Mock<ITelemetrySession>();
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+
+                telemetrySession
+                    .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+                TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+                // Prepare: Force a nuget Restore
+                var command = new RestoreCommand(request);
+                // Force writing project.assets.json
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                Assert.True(result.Success);
+                Assert.True(File.Exists(pajFilepath));
+
+                // Act I
+                var topPackages = await _projectManager.GetTransitivePackageOriginAsync(
+                    new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
+                    projectId,
+                    CancellationToken.None);
+
+                // Verify I
+                Assert.NotNull(topPackages);
+                Assert.NotEmpty(topPackages);
+                Assert.Equal(1, topPackages.Count); // only one framework/RID pair
+                var fwRidEntry = topPackages.First();
+                Assert.Equal(1, fwRidEntry.Value.Count); // only one top dependency
+                var dep = fwRidEntry.Value.First();
+                Assert.Equal("packageA", dep.Identity.Id);
+                Assert.Equal(new NuGetVersion("2.0.0"), dep.Identity.Version);
+
+                // Act II
+                var topPackages2 = await _projectManager.GetTransitivePackageOriginAsync(
+                    new PackageIdentity("packageD", new NuGetVersion(0, 1, 1)),
+                    projectId,
+                    CancellationToken.None);
+
+                // Verify II
+                Assert.NotNull(topPackages2);
+                Assert.Equal(1, topPackages2.Count); // only one framework/RID pair
+                Assert.Equal(2, topPackages2.First().Value.Count); // two top packages
+                Assert.Collection(topPackages2.First().Value,
+                    x => AssertElement(x, "packageA", "2.0.0"),
+                    x => AssertElement(x, "packageX", "3.0.0"));
+            }
+        }
+
+        private void AssertElement(IPackageReferenceContextInfo pkg, string id, string version)
+        {
+            Assert.Equal(id, pkg.Identity.Id);
+            Assert.Equal(NuGetVersion.Parse(version), pkg.Identity.Version);
+        }
+
         private static void AddPackageDependency(ProjectSystemCache projectSystemCache, ProjectNames projectNames, PackageSpec packageSpec, SimpleTestPackageContext package)
         {
             var dependency = new LibraryDependency()

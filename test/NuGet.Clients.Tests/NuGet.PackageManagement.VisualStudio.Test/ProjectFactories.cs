@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectId: projectName);
         }
 
-        internal static LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string projectId, string range, IVsProjectThreadingService threadingService)
+        internal static LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string projectId, IVsProjectThreadingService threadingService, LibraryDependency[] pkgDependencies)
         {
             var framework = NuGetFramework.Parse("netstandard13");
             var projectAdapter = CreateProjectAdapter(testDirectory);
@@ -44,13 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectServices = new TestProjectSystemServices();
             projectServices.SetupInstalledPackages(
                 framework,
-                new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange(
-                        "packageA",
-                        VersionRange.Parse(range),
-                        LibraryDependencyTarget.Package)
-                });
+                pkgDependencies);
 
             var testProject = new LegacyPackageReferenceProject(
                 projectAdapter,
@@ -58,6 +52,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectServices,
                 threadingService);
             return testProject;
+        }
+
+        internal static LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string projectId, string range, IVsProjectThreadingService threadingService)
+        {
+            var onedep = new[]
+            {
+                new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange(
+                        "packageA",
+                        VersionRange.Parse(range),
+                        LibraryDependencyTarget.Package)
+                }
+            };
+
+            return CreateLegacyPackageReferenceProject(testDirectory, projectId, range, threadingService);
         }
 
         internal static IVsProjectAdapter CreateProjectAdapter(string fullPath)
@@ -124,6 +134,33 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             ""dependencies"":
                             {{
                                 ""packageA"":
+                                {{
+                                    ""version"": ""{version}"",
+                                    ""target"": ""Package""
+                                }},
+                            }}
+                        }}
+                    }}
+                }}";
+            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
+        }
+
+        internal static PackageSpec GetPackageSpec2(string projectName, string testDirectory, string version)
+        {
+            string referenceSpec = $@"
+                {{
+                    ""frameworks"":
+                    {{
+                        ""net5.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                                ""packageA"":
+                                {{
+                                    ""version"": ""{version}"",
+                                    ""target"": ""Package""
+                                }},
+                            ""packageA"":
                                 {{
                                     ""version"": ""{version}"",
                                     ""target"": ""Package""
