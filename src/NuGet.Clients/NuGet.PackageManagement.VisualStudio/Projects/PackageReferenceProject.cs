@@ -103,10 +103,74 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="transitivePackage">Identity of given transtive package</param>
         /// <param name="ct">Cancellation Token</param>
-        /// <returns></returns>
+        /// <returns>A dictionary, indexed by Framework/Runtime-ID with all top (installed)
+        /// packages that depends on given transitive package, or <c>null</c> if none found</returns>
+        /// <remarks>Computes all transitive origings for each Framework/Runtime-ID combiation. Runtime-ID can be <c>null</c>.
+        /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
         internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
         {
-            return await MarkAllAndGetTransitiveDependencyAsync(transitivePackage, ct);
+            /* Pseudocode
+            1. Get project restore graph
+
+            2. If it is cached
+               2.1 Look for a transitive cached entry
+               2.2 If found, return that entry
+
+            Otherwise:
+
+            3. For each target framework graph (Framework, RID)-pair:
+              3.1 For each direct dependency d:
+                  3.1.1 Do DFS to mark d as a transitive origin over all transitive dependencies found
+
+            4. return cached result for specific transitive dependency
+            */
+
+            ct.ThrowIfCancellationRequested();
+
+            RestoreGraphRead reading = await GetFullRestoreGraphAsync(ct);
+            if (reading.IsCacheHit)
+            {
+                // Assets file has not changed, look at transtive origin cache
+                var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
+                if (cacheEntry != null)
+                {
+                    return cacheEntry;
+                }
+            }
+            else
+            {
+                // Assets file changed, recompute transitive origins
+                CleanCache();
+            }
+
+            // Otherwise, find all Transitive origin and update cache
+            var memory = new Dictionary<PackageIdentity, bool?>();
+
+            IList<LockFileTarget> targetsList;
+            if (reading.TargetsList != null)
+            {
+                targetsList = reading.TargetsList;
+            }
+            else
+            {
+                targetsList = await GetTargetsListAsync(ct);
+            }
+
+            var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
+
+            // 3. For each target framework graph (Framework, RID)-pair:
+            foreach (var targetFxGraph in targetsList)
+            {
+                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+
+                foreach (var directPkg in pkgs.InstalledPackages) // 3.1 For each direct dependency d:
+                {
+                    memory.Clear();
+                    MarkTransitiveOrigin(directPkg, directPkg.PackageIdentity, targetFxGraph, memory, key);
+                }
+            }
+
+            return GetCachedTransitiveOrigin(transitivePackage);
         }
 
         /// <summary>
@@ -179,88 +243,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return lockFile?.Targets;
         }
 
-        /// <summary>
-        /// Finds all project packages that indirectly installs a given transitive dependency.
-        /// </summary>
-        /// <param name="transitivePackage">Transitive pacakage identity to look for</param>
-        /// <param name="ct">Cancellation token for async operations</param>
-        /// <returns>A list all direct dependencies that installs the given transitive package, or <c>null</c> if none found</returns>
-        /// <remarks>Runs a Depth First Seach on all direct dependencies exhaustively</remarks>
-        internal async ValueTask<TransitiveEntry> MarkAllAndGetTransitiveDependencyAsync(PackageIdentity transitivePackage, CancellationToken ct)
-        {
-            /* Pseudocode
-            1. Get project restore graph
-
-            2. If it is cached
-               2.1 Look for a transitive cached entry
-               2.2 If found, return that entry
-
-            Otherwise:
-
-            3. For each target framework graph (Framework, RID)-pair:
-              3.1 For each direct dependency d:
-                  3.1.1 Do DFS to mark d as a transitive origin over all transitive dependencies found
-
-                 
-            4. return cached result for specific transitive dependency
-            */
-
-            ct.ThrowIfCancellationRequested();
-
-            RestoreGraphRead reading = await GetFullRestoreGraphAsync(ct);
-            if (reading.IsCacheHit)
-            {
-                // Assets file has not changed, look at transtive origin cache
-                var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
-                if (cacheEntry != null)
-                {
-                    return cacheEntry;
-                }
-            }
-            else
-            {
-                // Assets file changed, recompute transitive origins
-                CleanCache();
-            }
-
-            // Otherwise, find all Transitive origin and update cache
-            var memory = new Dictionary<PackageIdentity, bool?>();
-
-            IList<LockFileTarget> targetsList;
-            if (reading.TargetsList != null)
-            {
-                targetsList = reading.TargetsList;
-            }
-            else
-            {
-                targetsList = await GetTargetsListAsync(ct);
-            }
-
-
-            var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
-
-            // 3. For each target framework graph (Framework, RID)-pair:
-            foreach (var targetFxGraph in targetsList)
-            {
-                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-
-                foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
-                {
-                    memory.Clear();
-                    MarkTransitiveOrigin(directPkg, directPkg.PackageIdentity, targetFxGraph, memory, key);
-                }
-            }
-
-            return GetCachedTransitiveOrigin(transitivePackage);
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "<Pending>")]
         private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRIDKey fxRidEntry)
         {
-
             LockFileTargetLibrary node = graph
                 .Libraries
-                .Where(x => x.Name.ToLowerInvariant() == current.Id.ToLowerInvariant() && x.Version.Equals(current.Version) && x.Type == "package")
+                .Where(x => x.Name.ToLowerInvariant() == current.Id.ToLowerInvariant()
+                        && x.Version.Equals(current.Version) && x.Type == "package")
                 .FirstOrDefault();
 
             if (node != default)
@@ -298,136 +286,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Finds all project packages that indirectly installs a given transitive dependency.
-        /// </summary>
-        /// <param name="transitivePackage">Transitive pacakage identity to look for</param>
-        /// <param name="ct">Cancellation token for async operations</param>
-        /// <returns>A list all direct dependencies that installs the given transitive package, or <c>null</c> if none found</returns>
-        /// <remarks>Runs a Depth First Seach on all direct dependencies and stops when the transitive package is found</remarks>
-        internal async ValueTask<TransitiveEntry> GetOneTransitiveDependencyAsync(PackageIdentity transitivePackage, CancellationToken ct)
-        {
-            /** Pseudocode
-            1. Get project restore graph
-
-            2. If it is cached
-               2.1 Look for a transitive cached entry
-               2.2 If found, return that entry
-
-            Otherwise:
-
-            3. For each target framework graph (Framework, RID)-pair:
-              3.1 For each direct dependency d:
-                  3.1.1 Do DFS to look for transitive dependency
-
-                  3.1.2 If found:
-                    Add to list, indexed by framework
-
-            4. Cache the result list and return it
-            */
-
-            ct.ThrowIfCancellationRequested();
-
-            RestoreGraphRead reading = await GetFullRestoreGraphAsync(ct);
-            if (reading.IsCacheHit)
-            {
-                // Assets file has not changed, look at transtive origin cache
-                var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
-                if (cacheEntry != null)
-                {
-                    return cacheEntry;
-                }
-            }
-            else
-            {
-                // Assets file changed, recompute transitive origins
-                CleanCache();
-            }
-
-            // Otherwise, find Transitive origin and update cache
-            var packageOrigins = new Dictionary<FrameworkRIDKey, IList<PackageReference>>();
-
-            IList<LockFileTarget> targetsList;
-            if (reading.TargetsList != null)
-            {
-                targetsList = reading.TargetsList;
-            }
-            else
-            {
-                targetsList = await GetTargetsListAsync(ct);
-            }
-
-            var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
-
-            var memory = new Dictionary<PackageIdentity, bool?>();
-
-            foreach (var targetFxGraph in targetsList)
-            {
-                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-                var list = new List<PackageReference>();
-                memory.Clear();
-
-                foreach (var directPkg in pkgs.InstalledPackages) // InstalledPackages are direct dependencies
-                {
-                    bool found = FindTransitiveOrigin(directPkg.PackageIdentity, transitivePackage, targetFxGraph, memory);
-                    if (found)
-                    {
-                        list.Add(directPkg);
-                    }
-                }
-
-                if (list.Any())
-                {
-                    packageOrigins[key] = list;
-                }
-            }
-
-            SetCachedTransitiveOrigin(transitivePackage, packageOrigins);
-            return packageOrigins;
-        }
-
-        private bool FindTransitiveOrigin(PackageIdentity current, PackageIdentity transitivePackage, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory)
-        {
-            if (current.Equals(transitivePackage))
-            {
-                memory[current] = true; // found
-                return true;
-            }
-
-            LockFileTargetLibrary node = graph
-                .Libraries
-                .Where(x => x.Name == current.Id && x.Version.Equals(current.Version) && x.Type == "package")
-                .FirstOrDefault();
-
-            if (node != default)
-            {
-                memory[current] = null; // visited
-                foreach (PackageDependency dep in node.Dependencies)
-                {
-                    var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
-
-                    if (memory.ContainsKey(pkgChild) && memory[pkgChild].HasValue && memory[pkgChild] == true)
-                    {
-                        memory[pkgChild] = true; // prunning, found
-                        return true;
-                    }
-                    else if (!memory.ContainsKey(pkgChild))
-                    {
-                        bool found = FindTransitiveOrigin(pkgChild, transitivePackage, graph, memory);
-
-                        if (found)
-                        {
-                            memory[pkgChild] = true; // prunning, found
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            memory[current] = false; // not found
-            return false;
         }
 
         /// <summary>
