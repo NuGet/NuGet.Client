@@ -243,6 +243,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return lockFile?.Targets;
         }
 
+        /// <summary>
+        /// Runs Depth First Search recursively to mark current and dependend nodes with top dependency
+        /// </summary>
+        /// <param name="top">Top, Direct dependency</param>
+        /// <param name="current">Current package/node to visit</param>
+        /// <param name="graph">Package dependency graph, from assets file</param>
+        /// <param name="memory">Dictionary to remember visited nodes</param>
+        /// <param name="fxRidEntry">Framework/Runtime-ID associated with current <paramref name="graph"/></param>
         private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRIDKey fxRidEntry)
         {
             LockFileTargetLibrary node = graph
@@ -274,7 +282,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     cachedEntry[fxRidEntry].Add(top);
                 }
                 SetCachedTransitiveOrigin(current, cachedEntry);
-
 
                 foreach (PackageDependency dep in node.Dependencies)
                 {
