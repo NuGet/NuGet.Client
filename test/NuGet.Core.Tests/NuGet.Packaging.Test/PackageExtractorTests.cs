@@ -1207,7 +1207,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task ExtractPackageAsync_PreservesZipEntryTimeAsync()
         {
             // Arrange
@@ -2093,7 +2093,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, CIOnly = true)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_Error()
         {
             // Arrange
