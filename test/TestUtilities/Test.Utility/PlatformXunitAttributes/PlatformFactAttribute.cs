@@ -21,6 +21,14 @@ namespace NuGet.Test.Utility
 
                 if (string.IsNullOrEmpty(skip))
                 {
+                    if (CIOnly && !XunitAttributeUtility.IsCI)
+                    {
+                        skip = "This test only runs on the CI. To run it locally set the env var CI=true";
+                    }
+                }
+
+                if (string.IsNullOrEmpty(skip))
+                {
                     skip = XunitAttributeUtility.GetPlatformSkipMessageOrNull(GetAllPlatforms());
                 }
 
@@ -50,6 +58,8 @@ namespace NuGet.Test.Utility
         public bool OnlyOnMono { get; set; }
 
         public bool SkipMono { get; set; }
+
+        public bool CIOnly { get; set; }
 
         /// <summary>
         /// Provide property values to use this attribute.
