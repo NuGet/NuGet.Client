@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
