@@ -130,30 +130,16 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
         internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
         {
-            /* Pseudocode
-            1. Get project restore graph
-
-            2. If it is cached
-               2.1 Look for a transitive cached entry
-               2.2 If found, return that entry
-
-            Otherwise:
-
-            3. For each target framework graph (Framework, RID)-pair:
-              3.1 For each direct dependency d:
-                  3.1.1 Do DFS to mark d as a transitive origin over all transitive dependencies found
-
-            4. return cached result for specific transitive dependency
-            */
-
             ct.ThrowIfCancellationRequested();
 
+            // 1. Get project restore graph
             RestoreGraphRead reading = await GetCachedPackageSpecAsync(ct);
-            if (reading.IsCacheHit)
+            if (reading.IsCacheHit) // 2. If it is cached
             {
                 // Assets file has not changed, look at transtive origin cache
                 if (!IsTransitiveComputationNeeded)
                 {
+                    // 2.1 Look for a transitive cached entry and return that entry
                     var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
                     if (cacheEntry != null)
                     {
@@ -180,12 +166,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 foreach (var directPkg in pkgs.InstalledPackages) // 3.1 For each direct dependency d:
                 {
                     memory.Clear();
+                    // 3.1.1 Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
                     MarkTransitiveOrigin(directPkg, directPkg.PackageIdentity, targetFxGraph, memory, key);
                 }
             }
 
             IsTransitiveComputationNeeded = false;
 
+            // 4. return cached result for specific transitive dependency
             return GetCachedTransitiveOrigin(transitivePackage);
         }
 
@@ -228,7 +216,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Obtains targets section from project assets file (project.assets.json)
         /// </summary>
         /// <param name="ct">Cancellation token for async operation</param>
-        /// <returns>A lis of dependencies, indexed by framework/RID</returns>
+        /// <returns>A list of dependencies, indexed by framework/RID</returns>
         /// <remarks>Assets file reading occurs in a background thread</remarks>
         /// <seealso cref="GetAssetsFilePathAsync"/>
         protected async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(CancellationToken ct)

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -756,7 +757,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            return packageOrigins;
+            return packageOrigins.ToImmutableDictionary();
         }
     }
 }

@@ -1131,6 +1131,46 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        
+        [Fact]
+        private async Task GetTransitivePackageOriginAsync_InvalidInput_DoesNotThrowAsync()
+        {
+            Initialize();
+
+            // nulls
+            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+            {
+                _ = await _projectManager.GetTransitivePackageOriginAsync(
+                    transitivePackage: null,
+                    projectId: "abc",
+                    ct: CancellationToken.None);
+            });
+
+            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+            {
+                _ = await _projectManager.GetTransitivePackageOriginAsync(
+                    transitivePackage: new PackageIdentity("abc", NuGetVersion.Parse("1.2.3")),
+                    projectId: null,
+                    ct: CancellationToken.None);
+            });
+
+            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+            {
+                _ = await _projectManager.GetTransitivePackageOriginAsync(
+                    transitivePackage: new PackageIdentity("abc", NuGetVersion.Parse("1.2.3")),
+                    projectId: null,
+                    ct: CancellationToken.None);
+            });
+
+            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+            {
+                _ = await _projectManager.GetTransitivePackageOriginAsync(
+                   transitivePackage: null,
+                   projectId: null,
+                   ct: CancellationToken.None);
+            });
+        }
+
         [Fact]
         private async Task GetTransitivePackageOriginAsync_WithCpsPackageReferenceProject_Multitargeting_MultipleRuntimeIDs_MultipleCalls_SucceedsAsync()
         {
