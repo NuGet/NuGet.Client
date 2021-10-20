@@ -37,7 +37,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
 
-        private protected WeakReference<IList<LockFileTarget>> _lastTargetsList;
+        protected bool IsTransitiveComputationNeeded { get; set; } = true;
+        protected bool IsInstalledAndTransitiveComputationNeeded { get; set; } = true;
 
         protected PackageReferenceProject(
             string projectName,
@@ -71,7 +72,25 @@ namespace NuGet.PackageManagement.VisualStudio
             return dgSpec;
         }
 
-        public abstract Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token);
+        /// <summary>
+        /// Gets the both the installed (top level) and transitive package references for this project.
+        /// Returns the package reference as two separate lists (installed and transitive).
+        /// </summary>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>A <see cref="ProjectPackages"/> with two lists: Installed and transitive packages</returns>
+        public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
+        {
+            return await GetInstalledAndTransitivePackagesAsync(existingTargets: null, token);
+        }
+
+        /// <summary>
+        /// Gets the both the installed (top level) and transitive package references for this project.
+        /// Returns the package reference as two separate lists (installed and transitive).
+        /// </summary>
+        /// <param name="existingTargets">Existing Targets list</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>A <see cref="ProjectPackages"/> with two lists: Installed and transitive packages</returns>
+        public abstract Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(IList<LockFileTarget> existingTargets, CancellationToken token);
 
         private protected IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
         {
@@ -129,36 +148,29 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ct.ThrowIfCancellationRequested();
 
-            RestoreGraphRead reading = await GetFullRestoreGraphAsync(ct);
+            RestoreGraphRead reading = await GetCachedPackageSpecAsync(ct);
             if (reading.IsCacheHit)
             {
                 // Assets file has not changed, look at transtive origin cache
-                var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
-                if (cacheEntry != null)
+                if (!IsTransitiveComputationNeeded)
                 {
-                    return cacheEntry;
+                    var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
+                    if (cacheEntry != null)
+                    {
+                        return cacheEntry;
+                    }
                 }
             }
-            else
-            {
-                // Assets file changed, recompute transitive origins
-                CleanCache();
-            }
+
+            // Assets file changed, recompute transitive origins
+            ClearCachedTransitiveOrigins();
 
             // Otherwise, find all Transitive origin and update cache
             var memory = new Dictionary<PackageIdentity, bool?>();
 
-            IList<LockFileTarget> targetsList;
-            if (reading.TargetsList != null)
-            {
-                targetsList = reading.TargetsList;
-            }
-            else
-            {
-                targetsList = await GetTargetsListAsync(ct);
-            }
+            IList<LockFileTarget> targetsList = await GetTargetsListAsync(ct);
 
-            var pkgs = await GetInstalledAndTransitivePackagesAsync(ct);
+            ProjectPackages pkgs = await GetInstalledAndTransitivePackagesAsync(targetsList, ct);
 
             // 3. For each target framework graph (Framework, RID)-pair:
             foreach (var targetFxGraph in targetsList)
@@ -172,16 +184,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
+            IsTransitiveComputationNeeded = false;
+
             return GetCachedTransitiveOrigin(transitivePackage);
         }
 
         /// <summary>
-        /// Returns <see cref="PackageSpec"/> and all targets (dependency graph) found in assets file (project.assets.json)
+        /// Returns <see cref="PackageSpec"/> found in assets file (project.assets.json)
         /// </summary>
         /// <param name="token">Cancellation token</param>
         /// <returns>An <see cref="RestoreGraphRead"/> object</returns>
-        /// <remarks>Projects need to be NuGet-restored before calling this function. Assets file reading happens in background</remarks>
-        internal async Task<RestoreGraphRead> GetFullRestoreGraphAsync(CancellationToken token)
+        /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
+        internal async Task<RestoreGraphRead> GetCachedPackageSpecAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -192,32 +206,22 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSpec cachedPackageSpec = null;
             bool cacheHitPackageSpec = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
 
-            IList<LockFileTarget> cachedTargetsList = null;
-            bool cacheHitTargets = _lastTargetsList != null && _lastTargetsList.TryGetTarget(out cachedTargetsList);
-
             bool cacheMissAssets = (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified);
             bool isCacheHit = false;
 
-            IList<LockFileTarget> currentTargetsList = null;
-
             if (cacheMissAssets || IsPackageSpecDifferent(currentPackageSpec, cachedPackageSpec))
             {
-                if (assets.Exists)
-                {
-                    currentTargetsList = await GetTargetsListAsync(assetsFilePath, token);
-                }
-
                 _lastTimeAssetsModified = assets.LastWriteTimeUtc;
                 _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
-                _lastTargetsList = new WeakReference<IList<LockFileTarget>>(currentTargetsList);
+                IsInstalledAndTransitiveComputationNeeded = true;
+                IsTransitiveComputationNeeded = true;
             }
-            else if (cacheHitPackageSpec && cacheHitTargets && cachedPackageSpec != null && cachedTargetsList != null)
+            else if (cacheHitPackageSpec && cachedPackageSpec != null)
             {
                 isCacheHit = true;
-                currentTargetsList = cachedTargetsList;
             }
 
-            return new RestoreGraphRead(currentPackageSpec, currentTargetsList, isCacheHit);
+            return new RestoreGraphRead(currentPackageSpec, isCacheHit);
         }
 
         /// <summary>
@@ -227,26 +231,13 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>A lis of dependencies, indexed by framework/RID</returns>
         /// <remarks>Assets file reading occurs in a background thread</remarks>
         /// <seealso cref="GetAssetsFilePathAsync"/>
-        private async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(CancellationToken ct)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            string assetsFilePath = await GetAssetsFilePathAsync();
-            return await GetTargetsListAsync(assetsFilePath, ct);
-        }
-
-        /// <summary>
-        /// Obtains targets section from project assets file (project.assets.json)
-        /// </summary>
-        /// <param name="assetsFilePath">File path to project.assets.json</param>
-        /// <param name="ct">Cancellation token for async operation</param>
-        /// <returns>A lis of dependencies, indexed by framework/RID</returns>
-        /// <remarks>Assets file reading occurs in a background thread</remarks>
-        private async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(string assetsFilePath, CancellationToken ct)
+        protected async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
             await TaskScheduler.Default;
+
+            string assetsFilePath = await GetAssetsFilePathAsync();
             LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
 
             return lockFile?.Targets;

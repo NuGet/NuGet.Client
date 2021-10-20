@@ -206,33 +206,33 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Gets the installed (top level) package references for this project. 
         /// </summary>
-        public async override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(token);
             return packages.InstalledPackages;
         }
 
-        /// <summary>
-        /// Gets the both the installed (top level) and transitive package references for this project.
-        /// Returns the package reference as two separate lists (installed and transitive).
-        /// </summary>
-        public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
+        /// <inheritdoc/>
+        public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(IList<LockFileTarget> existingTargets, CancellationToken token)
         {
-            RestoreGraphRead reading = await GetFullRestoreGraphAsync(token);
+            RestoreGraphRead reading = await GetCachedPackageSpecAsync(token);
 
             if (reading.PackageSpec != null)
             {
-                var frameworkSorter = new NuGetFrameworkSorter();
+                IList<LockFileTarget> targetsList = null;
 
-                if (!reading.IsCacheHit)
+                if (IsInstalledAndTransitiveComputationNeeded)
                 {
                     // clear the transitive packages cache, since we don't know when a dependency has been removed
                     CleanCache();
+                    targetsList = existingTargets ?? await GetTargetsListAsync(token);
                 }
+
+                var frameworkSorter = new NuGetFrameworkSorter();
 
                 List<PackageReference> installedPackages = reading.PackageSpec
                    .TargetFrameworks
-                   .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, reading.TargetsList?.ToList()))
+                   .SelectMany(f => GetPackageReferencesForFramework(f.Dependencies, f.FrameworkName, _installedPackages, targetsList?.ToList()))
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();
@@ -240,15 +240,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 // get the transitive packages, excluding any already contained in the installed packages
                 List<PackageReference> transitivePackages = reading.PackageSpec
                    .TargetFrameworks
-                   .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, reading.TargetsList?.ToList()))
+                   .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, targetsList?.ToList()))
                    .GroupBy(p => p.PackageIdentity)
                    .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                    .ToList();
+
+                IsInstalledAndTransitiveComputationNeeded = false;
 
                 return new ProjectPackages(installedPackages, transitivePackages);
             }
             else
             {
+                IsInstalledAndTransitiveComputationNeeded = false;
+
                 return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
             }
         }
@@ -428,7 +432,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc/>
         internal override void CleanCache()
         {
-            ClearCachedTransitiveOrigins();
             _installedPackages.Clear();
             _transitivePackages.Clear();
         }

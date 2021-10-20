@@ -960,6 +960,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     CancellationToken.None);
 
                 Assert.Empty(topPackages3);
+
+                // Act IV: Call to another APIs
+                IReadOnlyCollection<IPackageReferenceContextInfo> installed = await _projectManager.GetInstalledPackagesAsync(new [] { projectId }, CancellationToken.None);
+
+                IInstalledAndTransitivePackages installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
+
+                // Verify IV
+                Assert.Equal(2, installed.Count);
+                Assert.Equal(2, installedAndTransitive.InstalledPackages.Count);
+                Assert.Equal(3, installedAndTransitive.TransitivePackages.Count);
             }
         }
 

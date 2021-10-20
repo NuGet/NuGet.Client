@@ -17,19 +17,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public PackageSpec PackageSpec { get; }
 
         /// <summary>
-        /// <c>targets</c> section from assets file. One entry for each target framework in project.
-        /// Can be <c>null</c> if assets file is not found
-        /// </summary>
-        public IList<LockFileTarget> TargetsList { get; }
-
-        /// <summary>
         /// Indicates if the reading was retrieved from internal cache, otherwise, <c>false</c>
         /// </summary>
         public bool IsCacheHit { get; }
 
-        public RestoreGraphRead(PackageSpec packageSpec, IList<LockFileTarget> targetsList, bool isCacheHit)
+        public RestoreGraphRead(PackageSpec packageSpec, bool isCacheHit)
         {
-            TargetsList = targetsList;
             IsCacheHit = isCacheHit;
             PackageSpec = packageSpec;
         }
