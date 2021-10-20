@@ -49,13 +49,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Justification = "We can't dispose it if we want to return it.")]
         private static Tuple<RunspaceDispatcher, NuGetPSHost> CreateRunspace(IConsole console, string hostName)
         {
-            DTE dte = ServiceLocator.GetInstance<DTE>();
+            DTE2 dte = ServiceLocator.GetGlobalService<DTE, DTE2>();
 
             InitialSessionState initialSessionState = InitialSessionState.CreateDefault();
             initialSessionState.Variables.Add(
                 new SessionStateVariableEntry(
                     "DTE",
-                    (DTE2)dte,
+                    dte,
                     "Visual Studio DTE automation object",
                     ScopedItemOptions.AllScope | ScopedItemOptions.Constant)
                 );
