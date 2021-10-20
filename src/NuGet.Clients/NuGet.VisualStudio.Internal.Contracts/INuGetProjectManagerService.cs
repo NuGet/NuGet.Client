@@ -75,7 +75,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         /// <returns>A Dictionary of user-installed packages that depends on the transitive package, indexed by framework/runtime combination</returns>
         /// <exception cref="OperationCanceledException">If cancellation token is signaled to cancel</exception>
         /// <remarks>Only works for PackageReference-based projects. Otherwise, it will return an empty dictionary</remarks>
-        ValueTask<IReadOnlyDictionary<Tuple<NuGetFramework, string>, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(
+        ValueTask<IReadOnlyDictionary<FrameworkRuntimePair, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(
             PackageIdentity transitivePackage,
             string projectId,
             CancellationToken cancellationToken);

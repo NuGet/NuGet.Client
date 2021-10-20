@@ -962,7 +962,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Empty(topPackages3);
 
                 // Act IV: Call to another APIs
-                IReadOnlyCollection<IPackageReferenceContextInfo> installed = await _projectManager.GetInstalledPackagesAsync(new [] { projectId }, CancellationToken.None);
+                IReadOnlyCollection<IPackageReferenceContextInfo> installed = await _projectManager.GetInstalledPackagesAsync(new[] { projectId }, CancellationToken.None);
 
                 IInstalledAndTransitivePackages installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
 
@@ -1113,8 +1113,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.NotNull(topPackages2);
                 Assert.Equal(2, topPackages2.Count); // multitargeting: 2 keys
                 string nullKey = null;
-                var keyNetFx = Tuple.Create(NuGetFramework.Parse("net472"), nullKey);
-                var keyNetCore = Tuple.Create(NuGetFramework.Parse("net5.0"), nullKey);
+                var keyNetFx = new FrameworkRuntimePair(NuGetFramework.Parse("net472"), nullKey);
+                var keyNetCore = new FrameworkRuntimePair(NuGetFramework.Parse("net5.0"), nullKey);
                 Assert.Collection(topPackages2[keyNetCore],
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));
@@ -1131,7 +1131,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        
+
         [Fact]
         private async Task GetTransitivePackageOriginAsync_InvalidInput_DoesNotThrowAsync()
         {
@@ -1317,8 +1317,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.NotNull(topPackages2);
                 Assert.Equal(8, topPackages2.Count); // multitargeting: 2 keys * 3 RIDs + 2 fw/null-RID pair = 8 elements
                 string nullKey = null;
-                var keyNetFx = Tuple.Create(NuGetFramework.Parse("net472"), nullKey);
-                var keyNetCore = Tuple.Create(NuGetFramework.Parse("net5.0"), nullKey);
+                var keyNetFx = new FrameworkRuntimePair(NuGetFramework.Parse("net472"), nullKey);
+                var keyNetCore = new FrameworkRuntimePair(NuGetFramework.Parse("net5.0"), nullKey);
                 Assert.Collection(topPackages2[keyNetCore],
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));

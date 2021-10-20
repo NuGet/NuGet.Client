@@ -17,8 +17,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using FrameworkRIDKey = System.Tuple<NuGet.Frameworks.NuGetFramework, string>;
-using TransitiveEntry = System.Collections.Generic.IDictionary<System.Tuple<NuGet.Frameworks.NuGetFramework, string>, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
+using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -161,7 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // 3. For each target framework graph (Framework, RID)-pair:
             foreach (var targetFxGraph in targetsList)
             {
-                var key = Tuple.Create(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+                var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
 
                 foreach (var directPkg in pkgs.InstalledPackages) // 3.1 For each direct dependency d:
                 {
@@ -239,7 +238,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="graph">Package dependency graph, from assets file</param>
         /// <param name="memory">Dictionary to remember visited nodes</param>
         /// <param name="fxRidEntry">Framework/Runtime-ID associated with current <paramref name="graph"/></param>
-        private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRIDKey fxRidEntry)
+        private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRuntimePair fxRidEntry)
         {
             LockFileTargetLibrary node = graph
                 .Libraries
@@ -255,7 +254,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 TransitiveEntry cachedEntry = GetCachedTransitiveOrigin(current);
                 if (cachedEntry == null)
                 {
-                    cachedEntry = new Dictionary<FrameworkRIDKey, IList<PackageReference>>
+                    cachedEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
                     {
                         [fxRidEntry] = new List<PackageReference>()
                     };
