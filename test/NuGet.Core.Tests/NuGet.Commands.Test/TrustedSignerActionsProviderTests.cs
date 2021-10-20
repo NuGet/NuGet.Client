@@ -332,7 +332,8 @@ namespace NuGet.Commands.Test
             ex.Message.Should().Be(Strings.Error_PackageNotSigned);
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_TargetRepository_NonRepositorySignedPackage_ThrowsAsync()
         {
             // Arrange
@@ -364,7 +365,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_NameAlreadyExists_ThrowsAsync()
         {
             // Arrange
@@ -403,7 +405,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_ServiceIndexAlreadyExists_ThrowsAsync()
         {
             // Arrange
@@ -443,7 +446,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_WithUnknownPrimarySignature_ThrowsAsync()
         {
             // Arrange
@@ -491,7 +495,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_RepositorySignedPackage_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -536,7 +541,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_RepositorySignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -582,7 +588,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_RepositorySignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -628,7 +635,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -675,7 +683,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -723,7 +732,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -771,7 +781,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_AuthorSignedPackage_AddsAuthorCorrectlyAsync()
         {
             // Arrange
@@ -813,7 +824,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task AddTrustedSignerAsync_AuthorSignedPackage_WithAllowUntrustedRoot_AddsAuthorCorrectlyAsync()
         {
             // Arrange

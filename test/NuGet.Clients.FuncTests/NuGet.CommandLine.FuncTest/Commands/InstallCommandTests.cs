@@ -39,11 +39,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public InstallCommandTests(SignCommandTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+            // https://github.com/NuGet/Home/issues/11321
+            if (!RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+            }
             _nugetExePath = _testFixture.NuGetExePath;
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task Install_AuthorSignedPackage_SucceedsAsync()
         {
             // Arrange
@@ -76,7 +81,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task Install_RepoSignedPackage_SucceedsAsync()
         {
             // Arrange
@@ -109,7 +115,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task Install_UntrustedCertSignedPackage_WarnsAsync()
         {
             // Arrange
@@ -143,7 +150,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task Install_TamperedPackage_FailsAsync()
         {
             // Arrange
@@ -178,7 +186,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task Install_TamperedAndRevokedCertificateSignaturePackage_FailsAsync()
         {
             // Arrange

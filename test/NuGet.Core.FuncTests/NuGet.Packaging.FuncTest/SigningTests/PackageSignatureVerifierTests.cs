@@ -643,8 +643,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task VerifySignaturesAsync_WithSignedAndCountersignedPackage_SucceedsAsync()
             {
                 // Arrange
@@ -683,7 +683,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task VerifySignaturesAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_SucceedsAsync()
             {
                 // Arrange
