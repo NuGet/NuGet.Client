@@ -122,11 +122,27 @@ namespace NuGet.PackageManagement.UI
 
             using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(PackageSolutionDetailControlModel) + "." + nameof(UpdateInstalledVersionsAsync), VsEtwKeywords.Ide, VsEtwLevel.Performance))
             {
-                foreach (var project in _projects)
+                IReadOnlyCollection<IProjectContextInfo> nugetProjects = _projects.Select(p => p.NuGetProject).ToList();
+                IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectIdsToInstalledPackages =
+                    await nugetProjects.GetInstalledPackagesAsync(ServiceBroker, cancellationToken);
+
+                foreach (KeyValuePair<string, IReadOnlyCollection<IPackageReferenceContextInfo>> item in projectIdsToInstalledPackages)
                 {
+                    string packageId = Id;
+                    string projectId = item.Key;
+                    IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = item.Value;
+                    PackageInstallationInfo project = _projects.FirstOrDefault(installationInfo => StringComparer.OrdinalIgnoreCase.Equals(installationInfo.NuGetProject.ProjectId, projectId));
+
+                    if (project == null)
+                    {
+                        continue;
+                    }
+
                     try
                     {
-                        IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
+                        IPackageReferenceContextInfo installedVersion = packageReferences.FirstOrDefault(
+                            packageReference => StringComparer.OrdinalIgnoreCase.Equals(packageReference.Identity.Id, packageId));
+
                         if (installedVersion != null)
                         {
                             project.InstalledVersion = installedVersion.Identity.Version;
@@ -154,51 +170,33 @@ namespace NuGet.PackageManagement.UI
                         // should be ignored since we already show a error bar on manager ui to show this exact error.
                         ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                     }
-                }
 
-                VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(_projects) + nameof(GetInstalledPackageAsync) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                    VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(_projects) + nameof(IProjectContextInfo) + ".GetInstalledPackagesAsync" + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
 
-                InstalledVersionsCount = hash.Count;
+                    InstalledVersionsCount = hash.Count;
 
-                if (hash.Count == 0)
-                {
-                    InstalledVersions = Resources.Text_NotInstalled;
-                }
-                else if (hash.Count == 1)
-                {
-                    var displayVersion = new DisplayVersion(
-                        hash.First(),
-                        string.Empty);
-                    InstalledVersions = displayVersion.ToString();
-                }
-                else
-                {
-                    InstalledVersions = Resources.Text_MultipleVersionsInstalled;
-                }
+                    if (hash.Count == 0)
+                    {
+                        InstalledVersions = Resources.Text_NotInstalled;
+                    }
+                    else if (hash.Count == 1)
+                    {
+                        var displayVersion = new DisplayVersion(
+                            hash.First(),
+                            string.Empty);
+                        InstalledVersions = displayVersion.ToString();
+                    }
+                    else
+                    {
+                        InstalledVersions = Resources.Text_MultipleVersionsInstalled;
+                    }
 
-                UpdateCanInstallAndCanUninstall();
-                VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(UpdateCanInstallAndCanUninstall) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
-                AutoSelectProjects();
-                VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(AutoSelectProjects) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                    UpdateCanInstallAndCanUninstall();
+                    VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(UpdateCanInstallAndCanUninstall) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                    AutoSelectProjects();
+                    VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(AutoSelectProjects) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                }
             }
-        }
-
-        /// <summary>
-        /// This method is called from several methods that are called from properties and LINQ queries
-        /// It is likely not called more than once in an action.
-        /// </summary>
-        private async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(
-            IProjectContextInfo project,
-            string packageId,
-            CancellationToken cancellationToken)
-        {
-            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                ServiceBroker,
-                cancellationToken);
-            IPackageReferenceContextInfo installedPackage = installedPackages
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
-                .FirstOrDefault();
-            return installedPackage;
         }
 
         protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)

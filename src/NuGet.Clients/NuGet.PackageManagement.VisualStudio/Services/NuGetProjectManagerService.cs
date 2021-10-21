@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -99,7 +100,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return await ProjectContextInfo.CreateAsync(project, cancellationToken);
         }
 
-        public async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(
+        /// <inheritdoc />
+        public async ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>> GetInstalledPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
         {
@@ -107,19 +109,25 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+            List<string> distinctProjectIds = projectIds.Distinct().ToList();
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(distinctProjectIds, cancellationToken);
 
-            List<Task<IEnumerable<PackageReference>>> tasks = projects
-                .Select(project => project.GetInstalledPackagesAsync(cancellationToken))
-                .ToList();
-            IEnumerable<PackageReference>[] results = await Task.WhenAll(tasks);
+            Dictionary<NuGetProject, Task<IEnumerable<PackageReference>>> projectsToPackageReferences = projects.ToDictionary(
+                project => project,
+                project => project.GetInstalledPackagesAsync(cancellationToken));
 
-            var installedPackages = new List<PackageReferenceContextInfo>();
+            await Task.WhenAll(
+                projectsToPackageReferences.Select(async pair => await pair.Value));
+
+            var projectIdsToPackageReferences = new Dictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>();
             GetInstalledPackagesAsyncTelemetryEvent? telemetryEvent = null;
 
-            for (var i = 0; i < results.Length; ++i)
+            foreach (KeyValuePair<NuGetProject, Task<IEnumerable<PackageReference>>> pair in projectsToPackageReferences)
             {
-                IEnumerable<PackageReference> packageReferences = results[i];
+                var installedPackages = new List<IPackageReferenceContextInfo>();
+                NuGetProject project = pair.Key;
+                string projectId = project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                IEnumerable<PackageReference> packageReferences = pair.Value.Result;
                 int totalCount = 0;
                 int nullCount = 0;
 
@@ -139,13 +147,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     installedPackages.Add(installedPackage);
                 }
 
+                if (installedPackages.Count > 0)
+                {
+                    projectIdsToPackageReferences.Add(projectId, installedPackages);
+                }
+
                 if (nullCount > 0)
                 {
                     telemetryEvent ??= new GetInstalledPackagesAsyncTelemetryEvent();
 
-                    NuGetProject project = projects[i];
-
-                    string projectId = project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                     NuGetProjectType projectType = VSTelemetryServiceUtility.GetProjectType(project);
 
                     telemetryEvent.AddProject(projectType, projectId, nullCount, totalCount);
@@ -157,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
             }
 
-            return installedPackages;
+            return projectIdsToPackageReferences;
         }
 
         public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
@@ -194,6 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
             PackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+
             return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 

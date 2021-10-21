@@ -14,7 +14,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public interface INuGetProjectManagerService : IDisposable
     {
-        ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(
+        /// <summary>
+        /// Returns a dictionary of distinct <see cref="NuGetProjectMetadataKeys.ProjectId"/> to installed PackageReferences.
+        /// </summary>
+        /// <param name="projectIds"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Dictionary of distinct <see cref="NuGetProjectMetadataKeys.ProjectId"/> to installed PackageReferences.
+        /// Projects without PackageReference will have no entry.</returns>
+        ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>> GetInstalledPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
         ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(

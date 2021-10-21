@@ -291,14 +291,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, new VisualStudioActivityLogger());
         }
 
-        private async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetAllInstalledPackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
-        {
-            IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = projectContextInfos
-                .Select(project => project.GetInstalledPackagesAsync(_serviceBroker, cancellationToken).AsTask());
-            IReadOnlyCollection<IPackageReferenceContextInfo>[] packageReferences = await Task.WhenAll(tasks);
-            return packageReferences.SelectMany(e => e).ToList();
-        }
-
         private async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
         {
             IEnumerable<Task<IInstalledAndTransitivePackages>> tasks = projectContextInfos

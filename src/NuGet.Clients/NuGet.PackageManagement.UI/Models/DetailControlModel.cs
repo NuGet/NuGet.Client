@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -29,7 +30,7 @@ namespace NuGet.PackageManagement.UI
         private CancellationTokenSource _selectedVersionCancellationTokenSource = new CancellationTokenSource();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected IEnumerable<IProjectContextInfo> _nugetProjects;
+        protected ReadOnlyCollection<IProjectContextInfo> _nugetProjects;
 
         // all versions of the _searchResultPackage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
@@ -50,7 +51,7 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects)
         {
-            _nugetProjects = projects;
+            _nugetProjects = projects.ToList().AsReadOnly();
             ServiceBroker = serviceBroker;
             _options = new Options();
 
@@ -133,21 +134,23 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
 
-            var getVersionsTask = searchResultPackage.GetVersionsAsync();
+            Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync();
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
             // Filter out projects that are not managed by NuGet.
-            var projects = _nugetProjects.Where(project => project.ProjectKind != NuGetProjectKind.ProjectK).ToArray();
+            IProjectContextInfo[] projects = _nugetProjects.Where(project =>
+                project.ProjectKind == NuGetProjectKind.PackagesConfig || project.ProjectKind == NuGetProjectKind.PackageReference).ToArray();
 
-            foreach (var project in projects)
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
+                await projects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+
+            foreach (IProjectContextInfo project in projects)
             {
                 if (project.ProjectKind == NuGetProjectKind.PackagesConfig)
                 {
                     // cache allowed version range for each nuget project for current selected package
-                    IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                        ServiceBroker,
-                        CancellationToken.None);
+                    IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = projectsToInstalledPackages[project.ProjectId];
                     IPackageReferenceContextInfo packageReference = installedPackages
                         .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, searchResultPackage.Id));
 
@@ -170,9 +173,11 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (project.ProjectKind == NuGetProjectKind.PackageReference)
                 {
-                    IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = await project.GetInstalledPackagesAsync(
-                        ServiceBroker,
-                        CancellationToken.None);
+                    if (!projectsToInstalledPackages.TryGetValue(project.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences)
+                        || packageReferences is null)
+                    {
+                        continue;
+                    }
 
                     // Find the lowest auto referenced version of this package.
                     IPackageReferenceContextInfo autoReferenced = packageReferences
@@ -292,23 +297,18 @@ namespace NuGet.PackageManagement.UI
                     {
                         using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(DetailControlModel) + "." + nameof(InstalledPackages), VsEtwKeywords.Ide, VsEtwLevel.Performance))
                         {
-                            var installedPackages = new List<IPackageReferenceContextInfo>();
-                            foreach (var project in _nugetProjects)
-                            {
-                                IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
-                                    ServiceBroker,
-                                    CancellationToken.None);
+                            var projects = _nugetProjects.ToList();
+                            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
+                            await projects.GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
 
-                                installedPackages.AddRange(projectInstalledPackages);
-                            }
-                            return installedPackages.Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
+                            return projectsToInstalledPackages.SelectMany(pair => pair.Value).Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
                         }
                     });
             }
         }
 
         /// <summary>
-        /// Get all installed packages across all projects (distinct)
+        /// Get all installed packages across all projects (distinct).
         /// </summary>
         public virtual IEnumerable<PackageDependency> InstalledPackageDependencies
         {
@@ -317,9 +317,12 @@ namespace NuGet.PackageManagement.UI
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var installedPackages = new HashSet<PackageDependency>();
+                    IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages =
+                        await _nugetProjects.ToList().AsReadOnly().GetInstalledPackagesAsync(ServiceBroker, CancellationToken.None);
+
                     foreach (var project in _nugetProjects)
                     {
-                        var dependencies = await GetDependencies(project);
+                        IReadOnlyList<PackageDependency> dependencies = GetDependencies(project, projectsToInstalledPackages);
 
                         installedPackages.UnionWith(dependencies);
                     }
@@ -328,17 +331,27 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<IReadOnlyList<PackageDependency>> GetDependencies(IProjectContextInfo project)
+        /// <summary>
+        /// Reads any dependencies for <paramref name="project"/> found in <paramref name="projectsToInstalledPackages"/> and applies
+        /// the <see cref="VersionRange"/> according to the project's allowed range. Defaults to an empty list.
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="projectsToInstalledPackages"></param>
+        /// <returns>Found package dependencies. If the project is not found, or has no installed packages, returns an empty list.</returns>
+        private IReadOnlyList<PackageDependency> GetDependencies(IProjectContextInfo project,
+            IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> projectsToInstalledPackages)
         {
             var results = new List<PackageDependency>();
 
             using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(DetailControlModel) + "." + nameof(GetDependencies), VsEtwKeywords.Ide, VsEtwLevel.Performance, project.ProjectId))
             {
-                IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
-                ServiceBroker,
-                CancellationToken.None);
+                if (!projectsToInstalledPackages.TryGetValue(project.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences)
+                    || packageReferences is null)
+                {
+                    return results;
+                }
 
-                foreach (IPackageReferenceContextInfo package in projectInstalledPackages)
+                foreach (IPackageReferenceContextInfo package in packageReferences)
                 {
                     VersionRange range;
 
@@ -360,8 +373,8 @@ namespace NuGet.PackageManagement.UI
 
                     results.Add(dependency);
                 }
-
             }
+
             return results;
         }
 

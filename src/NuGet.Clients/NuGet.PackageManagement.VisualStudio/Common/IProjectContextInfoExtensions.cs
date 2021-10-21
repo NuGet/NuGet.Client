@@ -3,7 +3,11 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
@@ -48,7 +52,47 @@ namespace NuGet.PackageManagement.VisualStudio
 
             using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))
             {
-                return await projectManager.GetInstalledPackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
+                IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>> dictionary =
+                    await projectManager.GetInstalledPackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
+
+                if (dictionary.TryGetValue(projectContextInfo.ProjectId, out IReadOnlyCollection<IPackageReferenceContextInfo> packages))
+                {
+                    return packages;
+                }
+
+                return Array.Empty<IPackageReferenceContextInfo>();
+            }
+        }
+
+        /// <summary>
+        /// Gets installed packages for each project, and returns a dictionary mapping <see cref="IProjectContextInfo.ProjectId"/> to installed
+        /// <see cref="IPackageReferenceContextInfo"/>.
+        /// </summary>
+        /// <param name="projectContextInfos">Projects with a <see cref="IProjectContextInfo.ProjectId"/> to be searched.</param>
+        /// <param name="serviceBroker"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Dictionary of <see cref="IProjectContextInfo.ProjectId"/> to installed <see cref="IPackageReferenceContextInfo"/>;
+        /// otherwise, an empty dictionary.</returns>
+        public static async ValueTask<IReadOnlyDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>> GetInstalledPackagesAsync(
+            this IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
+            IServiceBroker serviceBroker,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(projectContextInfos);
+            Assumes.NotNull(serviceBroker);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            List<string> projectIds = projectContextInfos.Select(pci => pci.ProjectId).ToList();
+
+            if (projectIds.Count == 0)
+            {
+                return ImmutableDictionary<string, IReadOnlyCollection<IPackageReferenceContextInfo>>.Empty;
+            }
+
+            using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))
+            {
+                return await projectManager.GetInstalledPackagesAsync(projectIds, cancellationToken);
             }
         }
 
