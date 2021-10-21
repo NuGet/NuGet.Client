@@ -30,7 +30,8 @@ namespace NuGet.Packaging.FuncTest
             _fixture = fixture;
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task RemoveSignatureAsync_RemovesPackageSignatureAsync()
         {
             using (var test = await Test.CreateAsync(_fixture))
@@ -43,7 +44,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task RemoveSignatureAsync_WithCancelledToken_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_fixture))
@@ -53,7 +55,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task RemoveSignatureAsync_WithUnsignedPackage_ThrowsAsync()
         {
             using (var test = await Test.CreateUnsignedAsync())

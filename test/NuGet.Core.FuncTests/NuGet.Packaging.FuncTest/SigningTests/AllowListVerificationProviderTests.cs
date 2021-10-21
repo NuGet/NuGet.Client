@@ -31,6 +31,7 @@ namespace NuGet.Packaging.FuncTest
         public AllowListVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            // https://github.com/NuGet/Home/issues/11321
             if (!RuntimeEnvironmentHelper.IsMacOSX)
             {
                 _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
