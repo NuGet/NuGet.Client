@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft;
+using Microsoft.Internal.VisualStudio.Diagnostics;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -995,14 +996,25 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var loadCts = new CancellationTokenSource();
-            var oldCts = Interlocked.Exchange(ref _cancelSelectionChangedSource, loadCts);
-            oldCts?.Cancel();
-            oldCts?.Dispose();
+            using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(PackageList_SelectionChanged), VsEtwKeywords.Ide, VsEtwLevel.Performance))
+            {
+                VsEtwLogging.WriteEvent(activity.Name + "/BeginSync", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(async () => await UpdateDetailPaneAsync(loadCts.Token))
-                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
+                var loadCts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _cancelSelectionChangedSource, loadCts);
+                oldCts?.Cancel();
+                oldCts?.Dispose();
+
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    VsEtwLogging.WriteEvent(activity.Name + "/BeginAsync", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+
+                    await UpdateDetailPaneAsync(loadCts.Token);
+                    VsEtwLogging.WriteEvent(activity.Name + "/EndAsync", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
+
+                VsEtwLogging.WriteEvent(activity.Name + "/EndSync", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+            }
         }
 
         /// <summary>
