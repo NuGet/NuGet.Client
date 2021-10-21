@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
+using Microsoft.Internal.VisualStudio.Diagnostics;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
@@ -632,25 +633,31 @@ namespace NuGet.PackageManagement.UI
         private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
-            try
+            using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(ReloadPackageVersionsAsync), VsEtwKeywords.Ide, VsEtwLevel.Performance))
             {
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
+                try
+                {
+                    IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
+                    VsEtwLogging.WriteEvent(activity.Name + "/GetVersionsAsyncCompleted", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
 
-                // filter package versions based on allowed versions in packages.config
-                packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
-                NuGetVersion result = packageVersions
-                    .Select(p => p.Version)
-                    .MaxOrDefault();
+                    // filter package versions based on allowed versions in packages.config
+                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
+                    NuGetVersion result = packageVersions
+                        .Select(p => p.Version)
+                        .MaxOrDefault();
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+                    VsEtwLogging.WriteEvent(activity.Name + "/PackageVersionsCompleted", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                LatestVersion = result;
-                Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                // UI requested cancellation
+                    LatestVersion = result;
+                    Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
+                    VsEtwLogging.WriteEvent(activity.Name + "/GetPackageStatusCompleted", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // UI requested cancellation
+                }
             }
         }
 
@@ -659,16 +666,20 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                var identity = new PackageIdentity(Id, Version);
-                (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
-                    await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+                using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(ReloadPackageMetadataAsync), VsEtwKeywords.Ide, VsEtwLevel.Performance))
+                {
+                    var identity = new PackageIdentity(Id, Version);
+                    (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
+                        await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+                    VsEtwLogging.WriteEvent(activity.Name + "/GetPackageMetadataAsyncCompleted", VsEtwKeywords.Ide, VsEtwLevel.Performance, new { EventData = identity.ToString() }, activity);
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                DeprecationMetadata = deprecationMetadata;
-                IsPackageDeprecated = deprecationMetadata != null;
-                VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+                    DeprecationMetadata = deprecationMetadata;
+                    IsPackageDeprecated = deprecationMetadata != null;
+                    VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
