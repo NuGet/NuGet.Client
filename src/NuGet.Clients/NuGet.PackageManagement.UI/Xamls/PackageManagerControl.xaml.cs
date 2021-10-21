@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Experimentation;
@@ -837,8 +838,6 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            ItemFilter filterToRender = _topPanel.Filter;
-
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
 
             if (useCachedPackageMetadata)
@@ -862,10 +861,6 @@ namespace NuGet.PackageManagement.UI
                     searchText: searchText,
                     includePrerelease: IncludePrerelease,
                     useRecommender: useRecommender);
-
-                // Set a new cancellation token source which will be used to cancel this task in case
-                // new loading task starts or manager ui is closed while loading packages.
-                _loadCts = new CancellationTokenSource();
 
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
@@ -1135,6 +1130,15 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async ValueTask RefreshAsync()
         {
+            //WithPriority(Dispatcher, DispatcherPriority.Background)
+            await NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _packageList.LoadingIndicator_Begin();
+                _packageList.ClearPackageList();
+                return Task.CompletedTask;
+            });
+
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
