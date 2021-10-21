@@ -32,10 +32,15 @@ namespace NuGet.Packaging.FuncTest
         public TimestampProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedTestCert = _testFixture.TrustedTestCertificate;
+            // https://github.com/NuGet/Home/issues/11321
+            if (!RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                _trustedTestCert = _testFixture.TrustedTestCertificate;
+            }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WithValidInput_ReturnsTimestampAsync()
         {
             var logger = new TestLogger();
@@ -68,7 +73,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_AssertCompleteChain_SuccessAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -127,7 +133,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenRequestNull_ThrowsAsync()
         {
             var logger = new TestLogger();
@@ -165,7 +172,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenLoggerNull_ThrowsAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -196,7 +204,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenCancelled_ThrowsAsync()
         {
             var logger = new TestLogger();
@@ -227,7 +236,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenRevocationInformationUnavailable_SuccessAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -257,7 +267,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenTimestampSigningCertificateRevoked_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -281,7 +292,8 @@ namespace NuGet.Packaging.FuncTest
                 });
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WithFailureReponse_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -303,7 +315,8 @@ namespace NuGet.Packaging.FuncTest
                 });
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenSigningCertificateNotReturned_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -323,7 +336,8 @@ namespace NuGet.Packaging.FuncTest
                 });
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenSignatureHashAlgorithmIsSha1_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -345,7 +359,8 @@ namespace NuGet.Packaging.FuncTest
                 });
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_WhenCertificateSignatureAlgorithmIsSha1_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -370,7 +385,8 @@ namespace NuGet.Packaging.FuncTest
                 });
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampAsync_TimestampGeneralizedTimeOutsideCertificateValidityPeriod_FailAsync()
         {
             // Arrange
@@ -400,7 +416,8 @@ namespace NuGet.Packaging.FuncTest
                 });
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task TimestampSignatureAsync_TimestampingPrimarySignature_SuccedsAsync()
         {
             var logger = new TestLogger();
@@ -448,7 +465,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task TimestampSignatureAsync_TimestampingCountersignature_SucceedsAsync()
         {
             var logger = new TestLogger();

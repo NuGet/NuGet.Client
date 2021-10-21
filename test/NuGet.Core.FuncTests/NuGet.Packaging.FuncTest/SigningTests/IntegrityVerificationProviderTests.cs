@@ -37,7 +37,11 @@ namespace NuGet.Packaging.FuncTest
         public IntegrityVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedTestCert = _testFixture.TrustedTestCertificate;
+            // https://github.com/NuGet/Home/issues/11321
+            if (!RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                _trustedTestCert = _testFixture.TrustedTestCertificate;
+            }
             _trustProviders = new List<ISignatureVerificationProvider>()
             {
                 new IntegrityVerificationProvider()
@@ -59,7 +63,8 @@ namespace NuGet.Packaging.FuncTest
             return SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command")]
         [InlineData("vs")]
         public async Task Signer_VerifyOnSignedPackageAsync(string policyString)
@@ -85,7 +90,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command")]
         [InlineData("vs")]
         public async Task Signer_VerifyOnTamperedPackage_FileDeletedAsync(string policyString)
@@ -119,7 +125,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command")]
         [InlineData("vs")]
         public async Task Signer_VerifyOnTamperedPackage_FileAddedAsync(string policyString)
@@ -164,7 +171,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command")]
         [InlineData("vs")]
         public async Task Signer_VerifyOnTamperedPackage_FileAppendedAsync(string policyString)
@@ -208,7 +216,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command")]
         [InlineData("vs")]
         public async Task Signer_VerifyOnTamperedPackage_FileTruncatedAsync(string policyString)
@@ -249,7 +258,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command")]
         [InlineData("vs")]
         public async Task Signer_VerifyOnTamperedPackage_FileMetadataModifiedAsync(string policyString)
@@ -293,7 +303,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command", false)]
         [InlineData("vs", true)]
         public async Task Signer_VerifyOnTamperedPackage_SignatureRemovedAsync(string policyString, bool expectedValidity)
@@ -337,7 +348,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData("command", false)]
         [InlineData("vs", true)]
         public async Task Signer_VerifyOnTamperedPackage_SignatureTamperedAsync(string policyString, bool expectedValidity)
