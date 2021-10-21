@@ -244,7 +244,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData(true)]
         [InlineData(false)]
         public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsItSuccesfullyToConfigAsync(bool allowUntrustedRoot)
@@ -292,7 +293,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData(true)]
         [InlineData(false)]
         public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsMultipleFilesThrows(bool allowUntrustedRoot)
@@ -334,7 +336,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
@@ -394,7 +397,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData(true, null)]
         [InlineData(true, "one;two;three")]
         [InlineData(false, null)]
