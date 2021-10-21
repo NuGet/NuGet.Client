@@ -1843,7 +1843,8 @@ namespace NuGet.Packaging.Test
         }
 
 #if IS_SIGNING_SUPPORTED
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetContentHash_IsSameForUnsignedAndSignedPackageAsync()
         {
             // this test will create an unsigned package, copy it, then sign it. then compare the contentHash
