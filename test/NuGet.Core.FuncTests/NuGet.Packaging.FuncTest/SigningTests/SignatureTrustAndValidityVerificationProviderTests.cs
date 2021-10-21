@@ -1815,8 +1815,8 @@ namespace NuGet.Packaging.FuncTest
             // Case10: primary signature (untrusted + expired) falls back to countersignature (trusted + non-expired).
             // And the timestamp on countersignature could fullfill the role of a trust anchor for primary signature.
             // The verification result is the severe one of fallback status(valid) and the countersignature status(valid), so it's valid.
-                    // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithUntrustedExpiredPrimarySignatureAndGoodCountersignatureWithTimestamp_FallbackAndReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
