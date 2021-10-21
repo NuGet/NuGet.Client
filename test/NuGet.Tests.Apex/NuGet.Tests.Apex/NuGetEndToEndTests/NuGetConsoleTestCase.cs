@@ -552,6 +552,136 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetPackageReferenceTemplates))]
+        public async Task InstallPackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            string solutionDirectory = simpleTestPathContext.SolutionRoot;
+            var packageName = "Contoso.A";
+            var packageVersion1 = "1.0.0";
+
+            var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion1);
+
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1);
+
+            //Create nuget.config with Package namespace filtering rules.
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""externalRepository"">
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Contoso.*"" />             
+            <package pattern=""Test.*"" />
+        </packageSource>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
+            var nugetConsole = GetConsole(testContext.Project);
+
+            // Act
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+
+            // Assert
+            var expectedMessage = $"Installed {packageName} {packageVersion1} from {privateRepositoryPath}";
+            Assert.True(nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetPackageReferenceTemplates))]
+        public async Task UpdatePackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            string solutionDirectory = simpleTestPathContext.SolutionRoot;
+            var packageName = "Contoso.A";
+            var packageVersion1 = "1.0.0";
+            var packageVersion2 = "2.0.0";
+
+            var opensourceRepositoryPath = Path.Combine(solutionDirectory, "OpensourceRepository");
+            Directory.CreateDirectory(opensourceRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion1);
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(opensourceRepositoryPath, packageName, packageVersion2);
+
+            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            Directory.CreateDirectory(privateRepositoryPath);
+
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1);
+            await CommonUtility.CreateNetFrameworkPackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2);
+
+            //Create nuget.config with Package namespace filtering rules.
+            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""ExternalRepository"" value=""{opensourceRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""externalRepository"">
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""Contoso.*"" />             
+            <package pattern=""Test.*"" />
+        </packageSource>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
+            var solutionService = VisualStudio.Get<SolutionService>();
+            var nugetConsole = GetConsole(testContext.Project);
+
+            //Pre-conditions
+            nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
+            testContext.SolutionService.Build();
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();
+            nugetConsole.Clear();
+
+            // Act
+            nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
+
+            // Assert
+            var expectedMessage = $"Installed {packageName} {packageVersion2} from {privateRepositoryPath}";
+            nugetConsole.IsMessageFoundInPMC(expectedMessage).Should().BeTrue(because: nugetConsole.GetText());
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();
+
+            nugetConsole.Clear();
+            solutionService.Save();
+        }
+
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
@@ -561,7 +691,7 @@ namespace NuGet.Tests.Apex
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates(string flag, string expectedVersion)
         {
-            yield return new object[] { ProjectTemplate.NetStandardClassLib , flag , expectedVersion};
+            yield return new object[] { ProjectTemplate.NetStandardClassLib, flag, expectedVersion };
         }
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates()

@@ -8,9 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using EnvDTE;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -21,6 +21,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using Thread = System.Threading.Thread;
 
 namespace NuGet.Tests.Apex
 {
@@ -341,6 +342,34 @@ namespace NuGet.Tests.Apex
 
             Directory.CreateDirectory(parentPath);
             return parentPath;
+        }
+
+        internal static void OpenNuGetPackageManagerWithDte(VisualStudioHost visualStudio, ILogger logger)
+        {
+            visualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
+            WaitForCommandAvailable(visualStudio, "Project.ManageNuGetPackages", TimeSpan.FromMinutes(1), logger);
+            visualStudio.Dte.ExecuteCommand("Project.ManageNuGetPackages");
+        }
+
+        private static void WaitForCommandAvailable(VisualStudioHost visualStudio, string commandName, TimeSpan timeout, ILogger logger)
+        {
+            WaitForCommandAvailable(visualStudio.Dte.Commands.Item(commandName), timeout, logger);
+        }
+
+        private static void WaitForCommandAvailable(Command cmd, TimeSpan timeout, ILogger logger)
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (stopWatch.Elapsed < timeout)
+            {
+                if (cmd.IsAvailable)
+                {
+                    return;
+                }
+                Thread.Sleep(250);
+            }
+
+            logger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
         }
 
         private static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion, bool expected)

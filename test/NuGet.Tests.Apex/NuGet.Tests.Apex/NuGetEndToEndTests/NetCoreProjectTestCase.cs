@@ -1,6 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
+using NuGet.Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -48,6 +54,200 @@ namespace NuGet.Tests.Apex
 
                 VisualStudio.AssertNoErrors();
                 CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0", XunitLogger);
+            }
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetNetCoreTemplates))]
+        public async Task WithSourceMappingEnabled_InstallPackageFromPMUIFromExpectedSource_Succeeds(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                string solutionDirectory = simpleTestPathContext.SolutionRoot;
+                var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
+
+                var packageName = "Contoso.a";
+                var packageVersion = "1.0.0";
+
+                await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
+                await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
+
+
+                // Create nuget.config with Package source mapping filtering rules before project is created.
+                CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""externalRepository"">
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""contoso.*"" />
+            <package pattern=""Test.*"" />
+        </packageSource>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+
+                    // Act
+                    CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+                    var nugetTestService = GetNuGetTestService();
+                    var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+                    uiwindow.InstallPackageFromUI(packageName, packageVersion);
+
+                    // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, XunitLogger);
+                    Assert.Contains($"Installed {packageName} {packageVersion} from {privateRepositoryPath}", GetPackageManagerOutputWindowPaneText());
+                }
+            }
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetNetCoreTemplates))]
+        public async Task WithSourceMappingEnabled_InstallAndUpdatePackageFromPMUIFromExpectedSource_Succeeds(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                string solutionDirectory = simpleTestPathContext.SolutionRoot;
+                var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
+
+                var packageName = "Contoso.a";
+                var packageVersion1 = "1.0.0";
+                var packageVersion2 = "2.0.0";
+
+                await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion1);
+                await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion1);
+
+                await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion2);
+                await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion2);
+
+                // Create nuget.config with Package source mapping filtering rules before project is created.
+                CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""externalRepository"">
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""contoso.*"" />
+            <package pattern=""Test.*"" />
+        </packageSource>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+
+                    // Arrange
+                    CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+                    var nugetTestService = GetNuGetTestService();
+                    var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+                    uiwindow.InstallPackageFromUI(packageName, packageVersion1);
+                    testContext.SolutionService.SaveAll();
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    VisualStudio.ClearWindows();
+
+                    // Act
+                    uiwindow.UpdatePackageFromUI(packageName, packageVersion2);                    
+
+                    // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion2, XunitLogger);
+                    Assert.Contains($"Installed {packageName} {packageVersion2} from {privateRepositoryPath}", GetPackageManagerOutputWindowPaneText());
+                }
+            }
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetNetCoreTemplates))]
+        public async Task WithSourceMappingEnabled_InstallPackageFromPMUIAndNoSourcesFound_Fails(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                string solutionDirectory = simpleTestPathContext.SolutionRoot;
+                var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
+
+                var packageName = "Contoso.a";
+                var packageVersion = "1.0.0";
+
+                await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
+
+                // Create nuget.config with Package source mapping filtering rules before project is created.
+                CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+        <add key=""PrivateRepository"" value=""{privateRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""externalRepository"">
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
+        </packageSource>
+        <packageSource key=""PrivateRepository"">
+            <package pattern=""contoso.*"" />
+            <package pattern=""Test.*"" />
+        </packageSource>
+        <packageSource key=""nuget"">
+            <package pattern=""Microsoft.*"" />
+            <package pattern=""NetStandard*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+
+                    // Act
+                    CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+                    var nugetTestService = GetNuGetTestService();
+                    var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+                    uiwindow.InstallPackageFromUI(packageName, packageVersion);
+
+                    // Assert                    
+                    CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, XunitLogger);
+                }
             }
         }
 
