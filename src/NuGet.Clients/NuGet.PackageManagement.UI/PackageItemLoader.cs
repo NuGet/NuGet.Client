@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.Internal.VisualStudio.Diagnostics;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -226,24 +227,30 @@ namespace NuGet.PackageManagement.UI
 
         public async Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
-            // cache installed packages here for future use
-            _installedPackages = await _context.GetInstalledPackagesAsync();
-
-            // fetch package references from all the projects and cache locally
-            // for solution view, we'll always show the highest available version
-            // but for project view, get the allowed version range and pass it to package item view model to choose the latest version based on that
-            if (_packageReferences == null && !_context.IsSolution)
+            using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(PackageItemLoader) + "." + nameof(UpdateStateAndReportAsync), VsEtwKeywords.Ide, VsEtwLevel.Performance))
             {
-                IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = _context.Projects
-                    .Select(project => project.GetInstalledPackagesAsync(
-                        _context.ServiceBroker,
-                        cancellationToken).AsTask());
-                _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
-            }
+                // cache installed packages here for future use
+                _installedPackages = await _context.GetInstalledPackagesAsync();
 
-            var state = new PackageFeedSearchState(searchResult);
-            _state = state;
-            progress?.Report(state);
+                VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(PackageLoadContext.GetInstalledPackagesAsync) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+
+                // fetch package references from all the projects and cache locally
+                // for solution view, we'll always show the highest available version
+                // but for project view, get the allowed version range and pass it to package item view model to choose the latest version based on that
+                if (_packageReferences == null && !_context.IsSolution)
+                {
+                    IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = _context.Projects
+                        .Select(project => project.GetInstalledPackagesAsync(
+                            _context.ServiceBroker,
+                            cancellationToken).AsTask());
+                    _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
+                    VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(_packageReferences) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                }
+
+                var state = new PackageFeedSearchState(searchResult);
+                _state = state;
+                progress?.Report(state);
+            }
         }
 
         public void Reset()

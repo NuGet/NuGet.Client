@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.Internal.VisualStudio.Diagnostics;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
@@ -119,60 +120,67 @@ namespace NuGet.PackageManagement.UI
         {
             var hash = new HashSet<NuGetVersion>();
 
-            foreach (var project in _projects)
+            using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(PackageSolutionDetailControlModel) + "." + nameof(UpdateInstalledVersionsAsync), VsEtwKeywords.Ide, VsEtwLevel.Performance))
             {
-                try
+                foreach (var project in _projects)
                 {
-                    IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
-                    if (installedVersion != null)
+                    try
                     {
-                        project.InstalledVersion = installedVersion.Identity.Version;
-                        hash.Add(installedVersion.Identity.Version);
-                        project.AutoReferenced = installedVersion.IsAutoReferenced;
-
-                        if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
+                        IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
+                        if (installedVersion != null)
                         {
-                            project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                            project.InstalledVersion = installedVersion.Identity.Version;
+                            hash.Add(installedVersion.Identity.Version);
+                            project.AutoReferenced = installedVersion.IsAutoReferenced;
+
+                            if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
+                            {
+                                project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                            }
+                        }
+                        else
+                        {
+                            project.RequestedVersion = null;
+                            project.InstalledVersion = null;
+                            project.AutoReferenced = false;
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        project.RequestedVersion = null;
                         project.InstalledVersion = null;
-                        project.AutoReferenced = false;
+
+                        // we don't expect it to throw any exception here. But in some edge case when opening manager ui at solution is the
+                        // first NuGet operation, and packages.config file is not valid for any of the project, then it will throw here which
+                        // should be ignored since we already show a error bar on manager ui to show this exact error.
+                        ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                     }
                 }
-                catch (Exception ex)
+
+                VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(_projects) + nameof(GetInstalledPackageAsync) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+
+                InstalledVersionsCount = hash.Count;
+
+                if (hash.Count == 0)
                 {
-                    project.InstalledVersion = null;
-
-                    // we don't expect it to throw any exception here. But in some edge case when opening manager ui at solution is the
-                    // first NuGet operation, and packages.config file is not valid for any of the project, then it will throw here which
-                    // should be ignored since we already show a error bar on manager ui to show this exact error.
-                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+                    InstalledVersions = Resources.Text_NotInstalled;
                 }
-            }
+                else if (hash.Count == 1)
+                {
+                    var displayVersion = new DisplayVersion(
+                        hash.First(),
+                        string.Empty);
+                    InstalledVersions = displayVersion.ToString();
+                }
+                else
+                {
+                    InstalledVersions = Resources.Text_MultipleVersionsInstalled;
+                }
 
-            InstalledVersionsCount = hash.Count;
-
-            if (hash.Count == 0)
-            {
-                InstalledVersions = Resources.Text_NotInstalled;
+                UpdateCanInstallAndCanUninstall();
+                VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(UpdateCanInstallAndCanUninstall) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
+                AutoSelectProjects();
+                VsEtwLogging.WriteEvent(activity.Name + "/" + nameof(AutoSelectProjects) + "Completed", VsEtwKeywords.Ide, VsEtwLevel.Performance, activity);
             }
-            else if (hash.Count == 1)
-            {
-                var displayVersion = new DisplayVersion(
-                    hash.First(),
-                    string.Empty);
-                InstalledVersions = displayVersion.ToString();
-            }
-            else
-            {
-                InstalledVersions = Resources.Text_MultipleVersionsInstalled;
-            }
-
-            UpdateCanInstallAndCanUninstall();
-            AutoSelectProjects();
         }
 
         /// <summary>

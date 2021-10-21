@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Microsoft.Internal.VisualStudio.Diagnostics;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -289,16 +290,19 @@ namespace NuGet.PackageManagement.UI
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
-                        var installedPackages = new List<IPackageReferenceContextInfo>();
-                        foreach (var project in _nugetProjects)
+                        using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(DetailControlModel) + "." + nameof(InstalledPackages), VsEtwKeywords.Ide, VsEtwLevel.Performance))
                         {
-                            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
-                                ServiceBroker,
-                                CancellationToken.None);
+                            var installedPackages = new List<IPackageReferenceContextInfo>();
+                            foreach (var project in _nugetProjects)
+                            {
+                                IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
+                                    ServiceBroker,
+                                    CancellationToken.None);
 
-                            installedPackages.AddRange(projectInstalledPackages);
+                                installedPackages.AddRange(projectInstalledPackages);
+                            }
+                            return installedPackages.Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
                         }
-                        return installedPackages.Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
                     });
             }
         }
@@ -328,33 +332,36 @@ namespace NuGet.PackageManagement.UI
         {
             var results = new List<PackageDependency>();
 
-            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
+            using (var activity = VsEtwLogging.CreateActivity("vs/nuget/" + nameof(DetailControlModel) + "." + nameof(GetDependencies), VsEtwKeywords.Ide, VsEtwLevel.Performance, project.ProjectId))
+            {
+                IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
                 ServiceBroker,
                 CancellationToken.None);
 
-            foreach (IPackageReferenceContextInfo package in projectInstalledPackages)
-            {
-                VersionRange range;
-
-                if (project.ProjectKind == NuGetProjectKind.PackageReference && package.AllowedVersions != null)
+                foreach (IPackageReferenceContextInfo package in projectInstalledPackages)
                 {
-                    // The actual range is passed as the allowed version range for build integrated projects.
-                    range = package.AllowedVersions;
-                }
-                else
-                {
-                    range = new VersionRange(
-                        minVersion: package.Identity.Version,
-                        includeMinVersion: true,
-                        maxVersion: package.Identity.Version,
-                        includeMaxVersion: true);
+                    VersionRange range;
+
+                    if (project.ProjectKind == NuGetProjectKind.PackageReference && package.AllowedVersions != null)
+                    {
+                        // The actual range is passed as the allowed version range for build integrated projects.
+                        range = package.AllowedVersions;
+                    }
+                    else
+                    {
+                        range = new VersionRange(
+                            minVersion: package.Identity.Version,
+                            includeMinVersion: true,
+                            maxVersion: package.Identity.Version,
+                            includeMaxVersion: true);
+                    }
+
+                    var dependency = new PackageDependency(package.Identity.Id, range);
+
+                    results.Add(dependency);
                 }
 
-                var dependency = new PackageDependency(package.Identity.Id, range);
-
-                results.Add(dependency);
             }
-
             return results;
         }
 
