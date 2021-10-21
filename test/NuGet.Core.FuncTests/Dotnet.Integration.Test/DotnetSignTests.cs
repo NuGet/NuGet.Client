@@ -86,7 +86,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task DotnetSign_SignPackageWithInvalidEku_FailsAsync()
         {
             // Arrange
@@ -112,7 +113,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task DotnetSign_SignPackageWithExpiredCertificate_FailsAsync()
         {
             // Arrange
@@ -138,7 +140,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task DotnetSign_SignPackageWithNotYetValidCertificate_FailsAsync()
         {
             // Arrange
@@ -217,7 +220,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task DotnetSign_SignPackageWithUnknownRevocationCertChain_SucceedsAsync()
         {
             // Arrange
@@ -465,7 +469,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task DotnetSign_SignPackageWithUntrustedSelfIssuedCertificateInCertificateStore_SuccessAsync()
         {
             // Arrange
@@ -492,7 +497,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task DotnetSign_SignPackageWithUnsuportedTimestampHashAlgorithm_FailsAsync()
         {
             // Arrange
