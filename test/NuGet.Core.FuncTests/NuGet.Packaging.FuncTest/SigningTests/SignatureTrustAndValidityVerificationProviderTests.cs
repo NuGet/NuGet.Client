@@ -36,10 +36,15 @@ namespace NuGet.Packaging.FuncTest
         public SignatureTrustAndValidityVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedTestCert = _testFixture.TrustedTestCertificate;
+            // https://github.com/NuGet/Home/issues/11321
+            if (!RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                _trustedTestCert = _testFixture.TrustedTestCertificate;
+            }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_WithInvalidSignature_ThrowsAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -74,7 +79,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_FailsAsync()
         {
             // Arrange
@@ -129,7 +135,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_PrimarySignatureWithUntrustedRoot_EmptyAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -164,7 +171,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_RepositoryCountersignatureWithUntrustedRoot_EmptyAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -201,7 +209,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_PrimarySignatureWithUntrustedRoot_NotInAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -237,7 +246,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_RepositoryCountersignatureWithUntrustedRoot_NotInAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -275,7 +285,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_PrimarySignatureWithUntrustedRoot_InAllowedUntrustedRootList_AllowUntrustedFalse_SucceedsAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -313,7 +324,8 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_RepositoryCountersignatureWithUntrustedRoot_InAllowedUntrustedRootList_AllowUntrustedFalse_SucceedsAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -511,7 +523,8 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Information, NuGetLogCode.Undefined);
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_WithTrustedButExpiredPrimaryAndTimestampCertificates_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WarnsAsync()
         {
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
@@ -533,7 +546,8 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTrustResultAsync_WithNoIgnoringTimestamp_TimestampWithGeneralizedTimeOutsideCertificateValidity_FailAsync()
         {
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
@@ -578,7 +592,8 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithRepositorySignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -606,7 +621,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithValidSignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -636,7 +652,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
@@ -667,7 +684,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
@@ -788,7 +806,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -846,7 +865,8 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -874,7 +894,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithValidSignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -904,7 +925,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
@@ -936,7 +958,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
@@ -1057,7 +1080,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1096,7 +1120,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithAlwaysVerifyCountersignatureBehavior_ReturnsDisallowedAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1135,7 +1160,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithExpiredSignature_ReturnsValidAsync()
             {
                 using (X509Certificate2 certificate = await GetExpiringCertificateAsync(_fixture))
@@ -1175,7 +1201,8 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1203,7 +1230,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithValidCountersignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1235,7 +1263,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithValidCountersignatureAndUntrustedPrimarySignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1267,7 +1296,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidCountersignatureButNoTimestamp_ReturnsStatusAsync(
@@ -1302,7 +1332,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithUntrustedCountersignature_ReturnsStatusAsync(
@@ -1430,7 +1461,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithTamperedRepositoryCountersignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1471,7 +1503,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithExpiredPrimaryCertificateAndExpiredRepositoryCertificateAndValidTimestamps_ReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
@@ -1497,7 +1530,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11321
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task GetTrustResultAsync_WithExpiredRepositoryCertificateAndNoTimestamp_ReturnsValidAsync()
             {
                 TimestampService timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();

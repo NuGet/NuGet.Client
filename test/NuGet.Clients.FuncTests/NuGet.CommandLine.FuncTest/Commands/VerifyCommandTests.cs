@@ -158,7 +158,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task VerifyCommand_VerifyOnPackageSignedWithValidCertificateChainSucceedsAsync()
         {
             // Arrange
@@ -198,7 +199,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task VerifyCommand_VerifyOnPackageSignedWithAllowedCertificateSucceedsAsync()
         {
             // Arrange
@@ -240,7 +242,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task VerifyCommand_VerifyOnPackageSignedWithoutAllowedCertificateFailsAsync()
         {
             // Arrange

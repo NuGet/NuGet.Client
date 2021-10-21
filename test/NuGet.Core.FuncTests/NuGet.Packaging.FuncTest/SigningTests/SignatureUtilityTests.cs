@@ -29,7 +29,8 @@ namespace NuGet.Packaging.FuncTest.SigningTests
         }
 
 #if IS_DESKTOP
-        [Fact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
         {
             ISigningTestServer testServer = await _fixture.GetSigningTestServerAsync();
@@ -69,7 +70,8 @@ namespace NuGet.Packaging.FuncTest.SigningTests
             }
         }
 
-        [Theory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData(SigningCertificateUsage.V1)]
         public async Task GetTimestampCertificateChain_WithShortEssCertIdCertificateHash_Throws(
             SigningCertificateUsage signingCertificateUsage)
@@ -112,7 +114,8 @@ namespace NuGet.Packaging.FuncTest.SigningTests
             }
         }
 
-        [Theory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData(SigningCertificateUsage.V1)]
         public async Task GetTimestampCertificateChain_WithMismatchedEssCertIdCertificateHash_ReturnsChain(
             SigningCertificateUsage signingCertificateUsage)
@@ -168,7 +171,8 @@ namespace NuGet.Packaging.FuncTest.SigningTests
         }
 #endif
 
-        [Theory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [InlineData(SigningCertificateUsage.V1)]
         [InlineData(SigningCertificateUsage.V2)]
         [InlineData(SigningCertificateUsage.V1 | SigningCertificateUsage.V2)]

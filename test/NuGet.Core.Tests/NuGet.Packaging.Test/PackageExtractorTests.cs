@@ -2048,7 +2048,8 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Linux)]
         public async Task ExtractPackageAsync_RequireMode_EmptyRepoAllowList_SuccessAsync()
         {
             using (var dir = TestDirectory.Create())
@@ -2152,7 +2153,8 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Linux)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_SuccessAsync()
         {
             using (var dir = TestDirectory.Create())
@@ -2194,7 +2196,8 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_Error()
         {
             // Arrange
@@ -2257,7 +2260,8 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
         [MemberData(nameof(KnownClientPolicyModesList))]
         public async Task ExtractPackageAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromRepositoryAllowList_SuccessAsync(SignatureValidationMode clientPolicyMode)
         {
@@ -2300,7 +2304,8 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformTheory(Platform.Linux, Platform.Darwin)]
+        // https://github.com/NuGet/Home/issues/11321
+        [PlatformTheory(Platform.Linux)]
         [MemberData(nameof(KnownClientPoliciesList))]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertNotFromRepositoryAllowList_SuccessAsync(ClientPolicyContext clientPolicy)
         {
