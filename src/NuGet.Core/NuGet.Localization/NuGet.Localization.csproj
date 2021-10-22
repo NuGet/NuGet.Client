@@ -32,7 +32,7 @@
     ============================================================
   -->
 
-  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="'$(BuildRTM)' == 'false' AND Exists($(LocalizationRootDirectory)) " BeforeTargets="GenerateNuspec">
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="Exists($(LocalizationRootDirectory)) " BeforeTargets="GenerateNuspec">
     <MakeDir
             Directories="$(LocalizationOutputDirectory)"/>
     <ItemGroup>
