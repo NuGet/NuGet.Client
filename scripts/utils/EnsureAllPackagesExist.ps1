@@ -24,6 +24,7 @@ Param (
 "NuGet.DependencyResolver.Core",
 "NuGet.Frameworks",
 "NuGet.LibraryModel",
+"NuGet.Localization",
 "NuGet.PackageManagement",
 "NuGet.Packaging.Core",
 "NuGet.Packaging.Extraction",
