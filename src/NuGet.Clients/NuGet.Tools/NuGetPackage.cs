@@ -38,7 +38,6 @@ using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBrok
 using Resx = NuGet.PackageManagement.UI.Resources;
 using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
 using Task = System.Threading.Tasks.Task;
-using TelemetryActivity = NuGet.Common.TelemetryActivity;
 using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
@@ -194,12 +193,16 @@ namespace NuGetVSExtension
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
 
             VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
+
+            var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+            Assumes.Present(componentModel);
+            componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
         }
 
         /// <summary>
-        /// Initialize all MEF imports for this package and also add required event handlers.
+        /// Initialize solution experiences for this package and also add required event handlers.
         /// </summary>
-        private async Task InitializeMEFAsync()
+        private async Task InitializeSolutionExperiencesAsync()
         {
             await _semaphore.ExecuteAsync(async () =>
             {
@@ -210,7 +213,6 @@ namespace NuGetVSExtension
 
                 var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
                 Assumes.Present(componentModel);
-                componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -240,12 +242,12 @@ namespace NuGetVSExtension
                 IVsTrackProjectRetargeting vsTrackProjectRetargeting = await this.GetServiceAsync<SVsTrackProjectRetargeting, IVsTrackProjectRetargeting>();
                 IVsMonitorSelection vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection, IVsMonitorSelection>(throwOnFailure: false);
                 ProjectRetargetingHandler = new ProjectRetargetingHandler(
-                        _dte,
-                        SolutionManager.Value,
-                        this,
-                        componentModel,
-                        vsTrackProjectRetargeting,
-                        vsMonitorSelection);
+                    _dte,
+                    SolutionManager.Value,
+                    this,
+                    componentModel,
+                    vsTrackProjectRetargeting,
+                    vsMonitorSelection);
 
                 IVsSolution2 vsSolution2 = await this.GetServiceAsync<SVsSolution, IVsSolution2>();
                 ProjectUpgradeHandler = new ProjectUpgradeHandler(
@@ -359,15 +361,15 @@ namespace NuGetVSExtension
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (ShouldMEFBeInitialized())
+            if (ShouldInitializeSolutionExperiences())
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeMEFAsync);
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeSolutionExperiencesAsync);
             }
 
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            var window = FindToolWindow(typeof(PowerConsoleToolWindow), 0, true);
+            ToolWindowPane window = FindToolWindow(typeof(PowerConsoleToolWindow), id: 0, create: true);
             if ((null == window)
                 || (null == window.Frame))
             {
@@ -607,14 +609,14 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (ShouldMEFBeInitialized())
+            if (ShouldInitializeSolutionExperiences())
             {
-                await InitializeMEFAsync();
+                await InitializeSolutionExperiencesAsync();
             }
 
-            var project = VsMonitorSelection.GetActiveProject();
+            Project project = VsMonitorSelection.GetActiveProject();
 
-            if (!await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(null, project))
+            if (!await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject: null, project))
             {
                 MessageHelper.ShowWarningMessage(Resources.ProjectMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
                 return;
@@ -650,13 +652,13 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (ShouldMEFBeInitialized())
+            if (ShouldInitializeSolutionExperiences())
             {
-                await InitializeMEFAsync();
+                await InitializeSolutionExperiencesAsync();
             }
 
             // *** temp code
-            var project = VsMonitorSelection.GetActiveProject();
+            Project project = VsMonitorSelection.GetActiveProject();
 
             if (project != null
                 &&
@@ -664,7 +666,7 @@ namespace NuGetVSExtension
                 &&
                 await EnvDTEProjectUtility.IsSupportedAsync(project))
             {
-                var windowFrame = await FindExistingWindowFrameAsync(project);
+                IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project).ConfigureAwait(true);
                 if (windowFrame == null)
                 {
                     windowFrame = await CreateNewWindowFrameAsync(project);
@@ -953,9 +955,9 @@ namespace NuGetVSExtension
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (ShouldMEFBeInitialized())
+                if (ShouldInitializeSolutionExperiences())
                 {
-                    await InitializeMEFAsync();
+                    await InitializeSolutionExperiencesAsync();
                 }
 
                 var windowFrame = await FindExistingSolutionWindowFrameAsync();
@@ -1024,9 +1026,9 @@ namespace NuGetVSExtension
         private void BeforeQueryStatusForPowerConsole(object sender, EventArgs args)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (ShouldMEFBeInitialized())
+            if (ShouldInitializeSolutionExperiences())
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeMEFAsync);
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeSolutionExperiencesAsync);
             }
 
             var isConsoleBusy = false;
@@ -1043,9 +1045,9 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                if (ShouldMEFBeInitialized())
+                if (ShouldInitializeSolutionExperiences())
                 {
-                    await InitializeMEFAsync();
+                    await InitializeSolutionExperiencesAsync();
                 }
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1068,9 +1070,9 @@ namespace NuGetVSExtension
             // Check whether to show context menu item on packages.config
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                if (ShouldMEFBeInitialized())
+                if (ShouldInitializeSolutionExperiences())
                 {
-                    await InitializeMEFAsync();
+                    await InitializeSolutionExperiencesAsync();
                 }
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1127,9 +1129,9 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                if (ShouldMEFBeInitialized())
+                if (ShouldInitializeSolutionExperiences())
                 {
-                    await InitializeMEFAsync();
+                    await InitializeSolutionExperiencesAsync();
                 }
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1163,9 +1165,9 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                if (ShouldMEFBeInitialized())
+                if (ShouldInitializeSolutionExperiences())
                 {
-                    await InitializeMEFAsync();
+                    await InitializeSolutionExperiencesAsync();
                 }
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1240,7 +1242,7 @@ namespace NuGetVSExtension
                    && await EnvDTEProjectUtility.IsSupportedAsync(project);
         }
 
-        private bool ShouldMEFBeInitialized()
+        private bool ShouldInitializeSolutionExperiences()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -1285,9 +1287,9 @@ namespace NuGetVSExtension
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (ShouldMEFBeInitialized())
+            if (ShouldInitializeSolutionExperiences())
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeMEFAsync);
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeSolutionExperiencesAsync);
             }
 
             return SolutionUserOptions.Value.LoadUserOptions(pPersistence, grfLoadOpts);
