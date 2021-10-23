@@ -223,7 +223,7 @@ namespace NuGet.PackageManagement
                             }
                         }
 
-                        string message = string.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
+                        string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
                         throw new InvalidOperationException(message);
                     }
                 }
