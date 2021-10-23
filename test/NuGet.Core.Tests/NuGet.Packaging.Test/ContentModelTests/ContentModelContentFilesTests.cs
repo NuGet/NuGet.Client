@@ -84,8 +84,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> contentFileGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            var contentFileGroups = collection.FindItemGroups(conventions.Patterns.ContentFiles);
 
             // Assert
             Assert.Equal(6, contentFileGroups.Count());
@@ -126,8 +125,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> contentFileGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            var contentFileGroups = collection.FindItemGroups(conventions.Patterns.ContentFiles);
 
             // Assert
             Assert.Equal(2, contentFileGroups.Count());
@@ -162,8 +160,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> contentFileGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            var contentFileGroups = collection.FindItemGroups(conventions.Patterns.ContentFiles);
 
             // Assert
             Assert.Equal(0, contentFileGroups.Count());
@@ -187,8 +184,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> contentFileGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            var contentFileGroups = collection.FindItemGroups(conventions.Patterns.ContentFiles);
 
             // Assert
             Assert.Equal(1, contentFileGroups.Count());
@@ -222,8 +218,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> contentFileGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            var contentFileGroups = collection.FindItemGroups(conventions.Patterns.ContentFiles);
 
             // Assert
             Assert.Equal(0, contentFileGroups.Count());

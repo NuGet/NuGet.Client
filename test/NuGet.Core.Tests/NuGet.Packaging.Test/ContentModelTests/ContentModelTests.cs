@@ -27,9 +27,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> itemGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
-            var groups = itemGroups
+            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
@@ -53,9 +51,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> itemGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.CompileRefAssemblies, itemGroups);
-            var groups = itemGroups
+            var groups = collection.FindItemGroups(conventions.Patterns.CompileRefAssemblies)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
@@ -79,9 +75,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> itemGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
-            var groups = itemGroups
+            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
@@ -105,9 +99,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> itemGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ResourceAssemblies, itemGroups);
-            var groups = itemGroups
+            var groups = collection.FindItemGroups(conventions.Patterns.ResourceAssemblies)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
@@ -131,9 +123,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> itemGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, itemGroups);
-            var groups = itemGroups
+            var groups = collection.FindItemGroups(conventions.Patterns.MSBuildFiles)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
@@ -157,9 +147,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> itemGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, itemGroups);
-            var groups = itemGroups
+            var groups = collection.FindItemGroups(conventions.Patterns.ContentFiles)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
@@ -183,9 +171,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            List<ContentItemGroup> itemGroups = new();
-            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, itemGroups);
-            var groups = itemGroups
+            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 

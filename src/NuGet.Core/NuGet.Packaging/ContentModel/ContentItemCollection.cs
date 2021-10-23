@@ -86,8 +86,12 @@ namespace NuGet.ContentModel
                             group.Properties.Add(property.Key, property.Value);
                         }
 
-                        FindItemsImplementation(definition, grouping.Select(match => match.Item2), group.Items);
-                        contentItemGroupList.Add(group);
+                        foreach (var item in FindItemsImplementation(definition, grouping.Select(match => match.Item2)))
+                        {
+                            group.Items.Add(item);
+                        }
+
+                        yield return group;
                     }
                 }
             }
@@ -257,7 +261,7 @@ namespace NuGet.ContentModel
                     var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
-                        itemsList.Add(contentItem);
+                        yield return contentItem;
                         break;
                     }
                 }
