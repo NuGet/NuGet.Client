@@ -30,7 +30,7 @@ namespace NuGet.Common.Test
         public void ToReadableTimeFormat_Localized_AssumesEnglishLocale_ContainsTimeNumber_Succeeds(string timeNumber, TimeSpan time)
         {
             // Act
-            string actual = DatetimeUtility.ToReadableTimeFormat(time, new CultureInfo("en-US"));
+            string actual = DatetimeUtility.ToReadableTimeFormat(time);
 
             // Assert
             Assert.Contains(timeNumber, actual);
