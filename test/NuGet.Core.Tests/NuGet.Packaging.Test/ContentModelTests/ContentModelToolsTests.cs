@@ -28,7 +28,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
+            List<ContentItemGroup> itemGroups = new();
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, itemGroups);
+            var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
 
@@ -51,7 +53,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
+            List<ContentItemGroup> itemGroups = new();
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, itemGroups);
+            var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
 
@@ -75,8 +79,8 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
-                .ToList();
+            List<ContentItemGroup> groups = new();
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
@@ -100,8 +104,8 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
-                .ToList();
+            List<ContentItemGroup> groups = new();
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
@@ -170,8 +174,8 @@ namespace NuGet.Client.Test
             Assert.Equal(rid, group.Properties["rid"]);
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.ToolsAssemblies)
-                .ToList();
+            List<ContentItemGroup> groups = new();
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
