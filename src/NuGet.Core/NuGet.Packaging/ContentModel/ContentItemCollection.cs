@@ -44,7 +44,56 @@ namespace NuGet.ContentModel
             }
         }
 
-        public void FindItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList)
+        [Obsolete("This method causes excessive memory usage with yield return.")]
+        public IEnumerable<ContentItem> FindItems(PatternSet definition)
+        {
+            return FindItemsImplementation(definition, _assets);
+        }
+
+        [Obsolete("This method causes excessive memory allocation with yield return. Use ContentItemCollection.PopulateItemGroups instead.")]
+        public IEnumerable<ContentItemGroup> FindItemGroups(PatternSet definition)
+        {
+            if (_assets.Count > 0)
+            {
+                var groupPatterns = definition.GroupExpressions;
+
+                List<Tuple<ContentItem, Asset>> groupAssets = null;
+                foreach (var asset in _assets)
+                {
+                    foreach (var groupPattern in groupPatterns)
+                    {
+                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                        if (item != null)
+                        {
+                            if (groupAssets == null)
+                            {
+                                groupAssets = new List<Tuple<ContentItem, Asset>>(1);
+                            }
+
+                            groupAssets.Add(Tuple.Create(item, asset));
+                        }
+                    }
+                }
+
+                if (groupAssets?.Count > 0)
+                {
+                    foreach (var grouping in groupAssets.GroupBy(key => key.Item1, GroupComparer.DefaultComparer))
+                    {
+                        var group = new ContentItemGroup();
+
+                        foreach (var property in grouping.Key.Properties)
+                        {
+                            group.Properties.Add(property.Key, property.Value);
+                        }
+
+                        FindItemsImplementation(definition, grouping.Select(match => match.Item2), group.Items);
+                        contentItemGroupList.Add(group);
+                    }
+                }
+            }
+        }
+
+        public void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList)
         {
             if (_assets.Count > 0)
             {
@@ -102,7 +151,7 @@ namespace NuGet.ContentModel
             foreach (var definition in definitions)
             {
                 itemGroups.Clear();
-                FindItemGroups(definition, itemGroups);
+                PopulateItemGroups(definition, itemGroups);
                 foreach (var criteriaEntry in criteria.Entries)
                 {
                     ContentItemGroup bestGroup = null;
@@ -192,6 +241,27 @@ namespace NuGet.ContentModel
                 }
             }
             return null;
+        }
+
+        [Obsolete("This method causes excessive memory allocation with yield return. Use ContentItemCollection.FindItemsImplementation override instead.")]
+        private IEnumerable<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
+        {
+            var pathPatterns = definition.PathExpressions;
+
+            foreach (var asset in assets)
+            {
+                var path = asset.Path;
+
+                foreach (var pathPattern in pathPatterns)
+                {
+                    var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
+                    if (contentItem != null)
+                    {
+                        itemsList.Add(contentItem);
+                        break;
+                    }
+                }
+            }
         }
 
         private void FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets, IList<ContentItem> itemsList)

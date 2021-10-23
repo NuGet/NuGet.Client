@@ -85,7 +85,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> contentFileGroups = new();
-            collection.FindItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
 
             // Assert
             Assert.Equal(6, contentFileGroups.Count());
@@ -127,7 +127,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> contentFileGroups = new();
-            collection.FindItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
 
             // Assert
             Assert.Equal(2, contentFileGroups.Count());
@@ -163,7 +163,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> contentFileGroups = new();
-            collection.FindItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
 
             // Assert
             Assert.Equal(0, contentFileGroups.Count());
@@ -188,7 +188,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> contentFileGroups = new();
-            collection.FindItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
 
             // Assert
             Assert.Equal(1, contentFileGroups.Count());
@@ -223,7 +223,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> contentFileGroups = new();
-            collection.FindItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
+            collection.PopulateItemGroups(conventions.Patterns.ContentFiles, contentFileGroups);
 
             // Assert
             Assert.Equal(0, contentFileGroups.Count());

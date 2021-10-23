@@ -120,7 +120,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> groups = new();
-            collection.FindItemGroups(conventions.Patterns.MSBuildFiles, groups);
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, groups);
 
             // Assert
             Assert.Equal(1, groups.Count());
@@ -147,7 +147,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> itemGroups = new();
-            collection.FindItemGroups(conventions.Patterns.MSBuildFiles, itemGroups);
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, itemGroups);
             var groups = itemGroups
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
@@ -187,7 +187,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> itemGroups = new();
-            collection.FindItemGroups(conventions.Patterns.MSBuildFiles, itemGroups);
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, itemGroups);
             var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
@@ -212,7 +212,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> groups = new();
-            collection.FindItemGroups(conventions.Patterns.MSBuildFiles, groups);
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, groups);
             var framework = groups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .Single();

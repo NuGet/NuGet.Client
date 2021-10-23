@@ -327,7 +327,7 @@ namespace NuGet.Commands
         {
             // content v2 items
             List<ContentItemGroup> contentFileGroups = new();
-            contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles, contentFileGroups);
+            contentItems.PopulateItemGroups(targetGraph.Conventions.Patterns.ContentFiles, contentFileGroups);
 
             if (contentFileGroups.Count > 0)
             {
@@ -989,7 +989,7 @@ namespace NuGet.Commands
             MaccatalystFallback maccatalystFallback)
         {
             List<ContentItemGroup> groups = new List<ContentItemGroup>();
-            contentItems.FindItemGroups(patternSet, groups);
+            contentItems.PopulateItemGroups(patternSet, groups);
 
             var groupsForFramework = GetContentGroupsForFramework(
                 framework,

@@ -271,7 +271,7 @@ namespace NuGet.Commands
             foreach (var pattern in patterns)
             {
                 itemGroups.Clear();
-                contentItems.FindItemGroups(pattern, itemGroups);
+                contentItems.PopulateItemGroups(pattern, itemGroups);
                 foreach (var group in itemGroups)
                 {
                     // lib/net45/subfolder/a.dll will be returned as a group with zero items since sub
@@ -362,7 +362,7 @@ namespace NuGet.Commands
             List<ContentItemGroup> itemGroups = new List<ContentItemGroup>();
             if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
             {
-                contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies, itemGroups);
+                contentItems.PopulateItemGroups(graph.Conventions.Patterns.ToolsAssemblies, itemGroups);
                 foreach (var group in itemGroups)
                 {
                     group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);

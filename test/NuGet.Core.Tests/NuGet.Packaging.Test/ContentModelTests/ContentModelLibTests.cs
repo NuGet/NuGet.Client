@@ -77,9 +77,8 @@ namespace NuGet.Client.Test
                 "lib/uap10.0/a.dll",
             });
 
-            // Act
             List<ContentItemGroup> itemGroups = new();
-            collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
+            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
             var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
@@ -104,7 +103,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> groups = new();
-            collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies, groups);
+            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
@@ -128,7 +127,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> itemGroups = new();
-            collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
+            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
             var groups = itemGroups
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();

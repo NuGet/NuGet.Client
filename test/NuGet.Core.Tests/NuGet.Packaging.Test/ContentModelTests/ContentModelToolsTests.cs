@@ -29,7 +29,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> itemGroups = new();
-            collection.FindItemGroups(conventions.Patterns.ToolsAssemblies, itemGroups);
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, itemGroups);
             var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
@@ -54,7 +54,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> itemGroups = new();
-            collection.FindItemGroups(conventions.Patterns.ToolsAssemblies, itemGroups);
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, itemGroups);
             var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
@@ -80,7 +80,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> groups = new();
-            collection.FindItemGroups(conventions.Patterns.ToolsAssemblies, groups);
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
@@ -105,7 +105,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> groups = new();
-            collection.FindItemGroups(conventions.Patterns.ToolsAssemblies, groups);
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
@@ -175,7 +175,7 @@ namespace NuGet.Client.Test
 
             // Act
             List<ContentItemGroup> groups = new();
-            collection.FindItemGroups(conventions.Patterns.ToolsAssemblies, groups);
+            collection.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);

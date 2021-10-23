@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Core
     {
         internal static void GetContentForPattern(ContentItemCollection collection, PatternSet pattern, IList<ContentItemGroup> itemGroups)
         {
-            collection.FindItemGroups(pattern, itemGroups);
+            collection.PopulateItemGroups(pattern, itemGroups);
         }
 
         internal static IEnumerable<NuGetFramework> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
