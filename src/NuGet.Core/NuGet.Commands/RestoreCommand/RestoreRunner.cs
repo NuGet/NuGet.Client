@@ -274,7 +274,7 @@ namespace NuGet.Commands
                             Strings.Log_RestoreCompleteDotnetTool :
                             Strings.Log_RestoreComplete,
                         summaryRequest.InputPath,
-                        DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime, CultureInfo.CurrentCulture)));
+                        DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
             else
             {
@@ -284,7 +284,7 @@ namespace NuGet.Commands
                     Strings.Log_RestoreFailedDotnetTool :
                     Strings.Log_RestoreFailed,
                     summaryRequest.InputPath,
-                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime, CultureInfo.CurrentCulture)));
+                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
             // Remote the summary messages from the assets file.
             var messages = restoreResult.Result.LogMessages

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace NuGet.Common
 {
@@ -14,9 +15,8 @@ namespace NuGet.Common
         /// take timespan n return in appropriate unit like ms, or seconds, or minutes, or hours
         /// </summary>
         /// <param name="time">timespan</param>
-        /// <param name="format">Culture to format strings</param>
         /// <returns>A human-readable timespan string</returns>
-        public static string ToReadableTimeFormat(TimeSpan time, IFormatProvider format)
+        public static string ToReadableTimeFormat(TimeSpan time)
         {
             // initially define as hours
             double result = time.TotalHours;
@@ -34,20 +34,20 @@ namespace NuGet.Common
                     result = Math.Round(result, 1);
                 }
 
-                return string.Format(format, Strings.TimeUnits_Millisecond, result);
+                return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Millisecond, result);
             }
             else if (time.TotalMinutes < 1)
             {
                 result = time.TotalSeconds;
-                return string.Format(format, Strings.TimeUnits_Second, result);
+                return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Second, result);
             }
             else if (time.TotalHours < 1)
             {
                 result = time.TotalMinutes;
-                return string.Format(format, Strings.TimeUnits_Minute, result);
+                return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Minute, result);
             }
 
-            return string.Format(format, Strings.TimeUnits_Hour, result);
+            return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Hour, result);
         }
     }
 }

@@ -200,7 +200,7 @@ namespace NuGet.Resolver
                     // solution found!
                     stopWatch.Stop();
                     context.Log.LogMinimal(
-                        string.Format(Strings.ResolverTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed, CultureInfo.CurrentCulture)));
+                        string.Format(Strings.ResolverTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
                     return sortedSolution.ToArray();
                 }
             }
