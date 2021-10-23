@@ -2692,7 +2692,7 @@ namespace NuGet.PackageManagement
             stopWatch.Stop();
             nuGetProjectContext.Log(
                 MessageLevel.Info, Strings.NugetActionsTotalTime,
-                DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed, CultureInfo.CurrentCulture));
+                DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed));
 
             // emit resolve actions telemetry event
             var actionTelemetryEvent = new ActionTelemetryStepEvent(

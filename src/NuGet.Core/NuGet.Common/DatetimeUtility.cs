@@ -18,6 +18,11 @@ namespace NuGet.Common
         /// <returns>A human-readable timespan string</returns>
         public static string ToReadableTimeFormat(TimeSpan time)
         {
+            return ToReadableTimeFormat(time, CultureInfo.CurrentCulture);
+        }
+
+        internal static string ToReadableTimeFormat(TimeSpan time, IFormatProvider format)
+        {
             // initially define as hours
             double result = time.TotalHours;
 
@@ -34,20 +39,20 @@ namespace NuGet.Common
                     result = Math.Round(result, 1);
                 }
 
-                return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Millisecond, result);
+                return string.Format(format, Strings.TimeUnits_Millisecond, result);
             }
             else if (time.TotalMinutes < 1)
             {
                 result = time.TotalSeconds;
-                return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Second, result);
+                return string.Format(format, Strings.TimeUnits_Second, result);
             }
             else if (time.TotalHours < 1)
             {
                 result = time.TotalMinutes;
-                return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Minute, result);
+                return string.Format(format, Strings.TimeUnits_Minute, result);
             }
 
-            return string.Format(CultureInfo.CurrentCulture, Strings.TimeUnits_Hour, result);
+            return string.Format(format, Strings.TimeUnits_Hour, result);
         }
     }
 }

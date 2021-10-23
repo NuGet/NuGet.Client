@@ -223,7 +223,7 @@ namespace NuGet.PackageManagement
                             }
                         }
 
-                        string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
+                        string message = string.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
                         throw new InvalidOperationException(message);
                     }
                 }
@@ -231,12 +231,12 @@ namespace NuGet.PackageManagement
             // calculate total time taken to gather all packages as well as with each source
             stopWatch.Stop();
             _context.Log.LogMinimal(
-                string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed, CultureInfo.CurrentCulture)));
+                string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
             _context.Log.LogDebug("Summary of time taken to gather dependencies per source :");
             foreach (var key in _timeTaken.Keys)
             {
                 _context.Log.LogDebug(
-                    string.Format("{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key], CultureInfo.CurrentCulture)));
+                    string.Format("{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key])));
             }
             return combinedResults;
         }
