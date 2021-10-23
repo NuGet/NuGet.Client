@@ -203,7 +203,7 @@
     <PropertyGroup>
       <!-- Build from source can't use ILMerge. -->
       <ILMergeSubpath Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">ilmerge\</ILMergeSubpath>
-      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">Desktop/</PackagePathDir>
+      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">Desktop/</PackagePathDir>
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
