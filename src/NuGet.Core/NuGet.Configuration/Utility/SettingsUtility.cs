@@ -289,7 +289,7 @@ namespace NuGet.Configuration
                 paths[i] = Path.GetFullPath(paths[i]);
             }
 
-            return paths;
+            return paths.AsReadOnly();
         }
 
         /// <summary>
