@@ -48,14 +48,13 @@ namespace NuGet.PackageManagement.VisualStudio
             // DTE calls need to be done from the main thread
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var results = new List<ProjectRestoreReference>();
-
-            var itemsFactory = ServiceLocator.GetInstance<IVsEnumHierarchyItemsFactory>();
+            var itemsFactory = await ServiceLocator.GetInstanceAsync<IVsEnumHierarchyItemsFactory>();
 
             // Verify ReferenceOutputAssembly
             var excludedProjects = GetExcludedReferences(itemsFactory, logger);
             var hasMissingReferences = false;
 
+            var results = new List<ProjectRestoreReference>();
             // find all references in the project
             foreach (var childReference in GetVSProjectReferences())
             {
