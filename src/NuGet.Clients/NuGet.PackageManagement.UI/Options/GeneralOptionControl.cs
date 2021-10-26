@@ -4,18 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio.Telemetry;
-using System.Globalization;
 
 namespace NuGet.Options
 {
