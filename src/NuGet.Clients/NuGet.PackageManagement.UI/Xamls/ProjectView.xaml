@@ -98,8 +98,13 @@
       Grid.Column="2"
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
+      IsEditable="True"
+      IsTextSearchEnabled="False"
+      IsReadOnly="False"
+      StaysOpenOnEdit="True"
       ItemsSource="{Binding Path=Versions}"
-      SelectedItem="{Binding Path=SelectedVersion}">
+      Text="{Binding UserInput, Mode=OneWayToSource}"
+      SelectedValue="{Binding Path=SelectedVersion}">
       <ComboBox.ItemContainerStyle>
             <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
@@ -148,7 +153,7 @@
       AutomationProperties.AutomationId="Project_Button_Update"
       Click="InstallButton_Clicked"
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-      IsEnabled="{Binding IsSelectedVersionInstalled, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
+      IsEnabled="{Binding IsAvailableForInstall, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       Content="{x:Static local:Resources.Button_Update}" />
   </Grid>
 </UserControl>

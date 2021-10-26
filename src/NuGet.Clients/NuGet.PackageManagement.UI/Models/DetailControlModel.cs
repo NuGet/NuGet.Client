@@ -536,6 +536,20 @@ namespace NuGet.PackageManagement.UI
 
         public virtual void OnSelectedVersionChanged() { }
 
+        private string _userInput;
+        public string UserInput
+        {
+            get
+            {
+                return _userInput;
+            }
+            set
+            {
+                _userInput = value;
+                OnPropertyChanged(nameof(UserInput));
+            }
+        }
+
         private DisplayVersion _selectedVersion;
 
         public DisplayVersion SelectedVersion
@@ -637,8 +651,11 @@ namespace NuGet.PackageManagement.UI
                 // Otherwise, select the first version in the version list.
                 var possibleVersions = _versions.Where(v => v != null);
                 SelectedVersion =
-                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
+                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.AllowedVersions.ToString()))
                     ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+                UserInput = _searchResultPackage.AllowedVersions.OriginalString;
+
+                OnPropertyChanged(nameof(UserInput));
             }
         }
 
