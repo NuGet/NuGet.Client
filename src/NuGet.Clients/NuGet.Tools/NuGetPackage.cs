@@ -666,7 +666,7 @@ namespace NuGetVSExtension
                 &&
                 await EnvDTEProjectUtility.IsSupportedAsync(project))
             {
-                IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project).ConfigureAwait(true);
+                IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
                 if (windowFrame == null)
                 {
                     windowFrame = await CreateNewWindowFrameAsync(project);
