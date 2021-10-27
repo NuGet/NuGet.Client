@@ -4,14 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.Options
 {
@@ -149,37 +153,50 @@ namespace NuGet.Options
 
         private void OnLocalsCommandButtonOnClick(object sender, EventArgs e)
         {
-            UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
-            var arguments = new List<string> { "all" };
-            var settings = ServiceLocator.GetComponentModelService<ISettings>();
-            var logError = new LocalsArgs.Log(LogError);
-            var logInformation = new LocalsArgs.Log(LogInformation);
-            var localsArgs = new LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
-            _outputConsoleLogger.Start();
-            try
+            ThreadHelper.ThrowIfNotOnUIThread();
+            UpdateLocalsCommandStatusText(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandWorking), visibility: true);
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                _localsCommandRunner.ExecuteCommand(localsArgs);
-                UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
-            }
-            catch (Exception ex)
-            {
-                UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
-                LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
-                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
-            }
-            finally
-            {
-                _outputConsoleLogger.End();
-            }
+                try
+                {
+                    _outputConsoleLogger.Start();
+                    await TaskScheduler.Default;
+                    var arguments = new List<string> { "all" };
+                    var settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
+                    var logError = new LocalsArgs.Log(LogError);
+                    var logInformation = new LocalsArgs.Log(LogInformation);
+                    var localsArgs = new LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
+                    _localsCommandRunner.ExecuteCommand(localsArgs);
+                    await UpdateLocalsCommandStatusTextAsync(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
+                }
+                catch (Exception ex)
+                {
+                    await UpdateLocalsCommandStatusTextAsync(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
+                    LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
+                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+                }
+                finally
+                {
+                    _outputConsoleLogger.End();
+                }
+            }).PostOnFailure(nameof(GeneralOptionControl), nameof(OnLocalsCommandButtonOnClick));
         }
 
         private void UpdateLocalsCommandStatusText(string statusText, bool visibility)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             localsCommandStatusText.AccessibleName = statusText;
             localsCommandStatusText.Visible = visibility;
             localsCommandStatusText.Text = statusText;
             localsCommandStatusText.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             localsCommandStatusText.Refresh();
+        }
+
+        private async Task UpdateLocalsCommandStatusTextAsync(string statusText, bool visibility)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            UpdateLocalsCommandStatusText(statusText, visibility);
         }
 
         private void LogError(string message)
