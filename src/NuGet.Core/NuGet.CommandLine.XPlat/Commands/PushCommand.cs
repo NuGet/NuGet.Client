@@ -54,12 +54,12 @@ namespace NuGet.CommandLine.XPlat
                 var disableBuffering = push.Option(
                     "-d|--disable-buffering",
                     Strings.DisableBuffering_Description,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 var noSymbols = push.Option(
                     "-n|--no-symbols",
                     Strings.NoSymbols_Description,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 var arguments = push.Argument(
                     "[root]",
