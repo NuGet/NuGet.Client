@@ -49,15 +49,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         }
 
-        public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync_old(
+        public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
             Common.ILogger logger, CancellationToken _)
         {
             // DTE calls need to be done from the main thread
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var results = new List<ProjectRestoreReference>();
-            IList<string> excludedProjects = await GetExcludedProjectsAsync(logger);
             var hasMissingReferences = false;
+            var hasProjectsWithUnresolvedMetadata = false;
 
             // find all references in the project
             foreach (var childReference in GetVSProjectReferences())
@@ -84,17 +84,30 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         var childProjectPath = reference3.SourceProject.GetFullProjectPath();
 
+
                         // Skip projects which have ReferenceOutputAssembly=false
-                        if (!string.IsNullOrEmpty(childProjectPath)
-                            && !excludedProjects.Contains(childProjectPath, StringComparer.OrdinalIgnoreCase))
+                        var reference6 = childReference as Reference6;
+                        var addProject = true;
+
+                        if (reference6 != null)
                         {
-                            var restoreReference = new ProjectRestoreReference()
+                            reference6.GetMetadata(_referenceMetadata, out Array metadataElements, out Array metadataValues);
+                            var referenceOutputAssembly = GetReferenceMetadataValue(metadataElements, metadataValues);
+                            addProject = string.IsNullOrEmpty(referenceOutputAssembly) ||
+                                !string.Equals(bool.FalseString, referenceOutputAssembly, StringComparison.OrdinalIgnoreCase);
+                        }
+                        else
+                        {
+                            hasProjectsWithUnresolvedMetadata = true;
+                        }
+
+                        if (addProject)
+                        {
+                            results.Add(new ProjectRestoreReference()
                             {
                                 ProjectPath = childProjectPath,
                                 ProjectUniqueName = childProjectPath
-                            };
-
-                            results.Add(restoreReference);
+                            });
                         }
                     }
                     else
@@ -127,99 +140,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 logger.LogVerbose(message);
             }
 
+            if (hasProjectsWithUnresolvedMetadata)
+            {
+                IList<string> excludedProjects = await GetExcludedProjectsAsync(logger);
+                if (excludedProjects.Count > 0)
+                {
+                    results = results.Where(e => excludedProjects.Contains(e.ProjectPath, StringComparer.OrdinalIgnoreCase)).ToList();
+                }
+            }
+
             return results;
-        }
-
-        public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
-           Common.ILogger logger, CancellationToken __)
-        {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var references = new List<ProjectRestoreReference>();
-            var hasMissingReferences = false;
-            var projectReferences = GetVSProjectReferences().ToList();
-            foreach (Reference childReference in projectReferences)
-            {
-                try
-                {
-                    if (IsProjectReference(childReference, logger))
-                    {
-                        var reference6 = childReference as Reference6;
-                        var reference3 = childReference as Reference3;
-
-                        if (!((reference3 != null && reference6 != null) ||
-                            (reference3 == null && reference6 == null)))
-                        {
-                            logger.LogWarning("reference3 and reference6 are not one and the same.");
-                        }
-                        // LegacyMSbuild -> Something Else works
-                        // ServiceFabric -> Somethinf else doesn't work.
-                        // Proposal anytime something can't cast, just use the old one.
-                        // How does `Resolved` work from the commandline? What happens on the commandline?
-                        // Verify that this is a valid and resolved project reference
-                        if (!IsReferenceResolved(reference3, logger))
-                        {
-                            hasMissingReferences = true;
-                            // TODO NK - helper
-                            var childProjectPath = childReference.SourceProject.GetFullProjectPath();
-                            continue;
-                        }
-
-                        if (await EnvDTEProjectUtility.HasUnsupportedProjectCapabilityAsync(reference3.SourceProject))
-                        {
-                            // Skip this shared project
-                            // TODO NK - helper
-                            var childProjectPath = childReference.SourceProject.GetFullProjectPath();
-                            continue;
-                        }
-
-                        Array metadataElements;
-                        Array metadataValues;
-                        reference6.GetMetadata(_referenceMetadata, out metadataElements, out metadataValues);
-
-                        // This works, but unfortunately it's not clear whether that is a CPS one.
-                        var referenceOutputAssembly = GetReferenceMetadataValue(metadataElements, metadataValues);
-                        var result = string.IsNullOrEmpty(referenceOutputAssembly) ||
-                            !string.Equals(bool.FalseString, referenceOutputAssembly, StringComparison.OrdinalIgnoreCase);
-
-                        if (result)
-                        {
-                            var childProjectPath = reference6.SourceProject.GetFullProjectPath();
-
-                            references.Add(new ProjectRestoreReference()
-                            {
-                                ProjectPath = childProjectPath,
-                                ProjectUniqueName = childProjectPath
-                            });
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Exceptions are expected in some scenarios for native projects,
-                    // ignore them and show a warning
-                    hasMissingReferences = true;
-
-                    logger.LogDebug(ex.ToString());
-
-                    Debug.Fail("Unable to find project dependencies: " + ex.ToString());
-                }
-            }
-
-            if (hasMissingReferences)
-            {
-                // Log a generic message once per project if any items could not be resolved.
-                // In most cases this can be ignored, but in the rare case where the unresolved
-                // item is actually a project the restore result will be incomplete.
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.UnresolvedItemDuringProjectClosureWalk,
-                    _vsProjectAdapter.UniqueName);
-
-                logger.LogVerbose(message);
-            }
-
-            return references;
 
             static string GetReferenceMetadataValue(Array metadataElements, Array metadataValues)
             {
