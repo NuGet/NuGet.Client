@@ -155,17 +155,21 @@ namespace NuGet.PackageManagement.VisualStudio
                         // LegacyMSbuild -> Something Else works
                         // ServiceFabric -> Somethinf else doesn't work.
                         // Proposal anytime something can't cast, just use the old one.
-
+                        // How does `Resolved` work from the commandline? What happens on the commandline?
                         // Verify that this is a valid and resolved project reference
                         if (!IsReferenceResolved(reference3, logger))
                         {
                             hasMissingReferences = true;
+                            // TODO NK - helper
+                            var childProjectPath = childReference.SourceProject.GetFullProjectPath();
                             continue;
                         }
 
                         if (await EnvDTEProjectUtility.HasUnsupportedProjectCapabilityAsync(reference3.SourceProject))
                         {
                             // Skip this shared project
+                            // TODO NK - helper
+                            var childProjectPath = childReference.SourceProject.GetFullProjectPath();
                             continue;
                         }
 
