@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var references = new List<ProjectRestoreReference>();
-            foreach (Reference6 r in AsVSProject4.References.Cast<Reference6>()) // this is not considering things.
+            foreach (Reference6 r in AsVSProject4.References.Cast<Reference6>())
             {
                 if (r.SourceProject != null && await EnvDTEProjectUtility.IsSupportedAsync(r.SourceProject))
                 {
