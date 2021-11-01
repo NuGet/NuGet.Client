@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal partial class LoadingStatusBar : UserControl
     {
-        public LoadingStatusViewModel ViewModel => DataContext as LoadingStatusViewModel;
+        public StatusBarViewModel ViewModel => DataContext as StatusBarViewModel;
 
         #region ItemsLoaded
 
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Reset(string loadingMessage, bool isMultiSource)
         {
-            DataContext = new LoadingStatusViewModel
+            DataContext = new StatusBarViewModel
             {
                 LoadingMessage = loadingMessage,
                 IsMultiSource = isMultiSource
@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.UI
 
         public void SetError()
         {
-            DataContext = new LoadingStatusViewModel
+            DataContext = new StatusBarViewModel
             {
                 PackageSearchStatus = PackageSearchStatus.ErrorOccurred
             };
@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.UI
 
         public void SetCancelled()
         {
-            DataContext = new LoadingStatusViewModel
+            DataContext = new StatusBarViewModel
             {
                 PackageSearchStatus = PackageSearchStatus.Cancelled
             };

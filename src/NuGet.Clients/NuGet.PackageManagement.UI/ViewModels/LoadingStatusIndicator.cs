@@ -1,18 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.ComponentModel;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class LoadingStatusIndicator : INotifyPropertyChanged
+    public class LoadingStatusIndicator : ViewModelBase
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
         private LoadingStatus _status = LoadingStatus.Unknown;
         private string _errorMessage;
         private string _loadingMessage;
+
+        public bool HasStatusToDisplay
+        {
+            get
+            {
+                return Status == LoadingStatus.NoItemsFound || Status == LoadingStatus.Loading;
+            }
+        }
 
         public LoadingStatus Status
         {
@@ -22,11 +27,8 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                if (_status != value)
-                {
-                    _status = value;
-                    OnPropertyChanged(nameof(Status));
-                }
+                SetAndRaisePropertyChanged(ref _status, value);
+                RaisePropertyChanged(nameof(HasStatusToDisplay));
             }
         }
 
@@ -38,11 +40,7 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                if (_loadingMessage != value)
-                {
-                    _loadingMessage = value;
-                    OnPropertyChanged(nameof(LoadingMessage));
-                }
+                SetAndRaisePropertyChanged(ref _loadingMessage, value);
             }
         }
 
@@ -54,20 +52,7 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                if (_errorMessage != value)
-                {
-                    _errorMessage = value;
-                    OnPropertyChanged(nameof(ErrorMessage));
-                }
-            }
-        }
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
-                PropertyChanged(this, e);
+                SetAndRaisePropertyChanged(ref _errorMessage, value);
             }
         }
 

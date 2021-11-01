@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -28,7 +27,7 @@ namespace NuGet.PackageManagement.UI
 {
     // This is the model class behind the package items in the infinite scroll list.
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
-    public sealed class PackageItemViewModel : INotifyPropertyChanged, ISelectableItem, IDisposable
+    public sealed class PackageItemViewModel : ViewModelBase, ISelectableItem, IDisposable
     {
         internal const int DecodePixelWidth = 32;
 
@@ -48,8 +47,6 @@ namespace NuGet.PackageManagement.UI
         private static readonly ErrorFloodGate ErrorFloodGate = new ErrorFloodGate();
 
         private IReconnectingNuGetSearchService _searchService;
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
 
@@ -99,8 +96,8 @@ namespace NuGet.PackageManagement.UI
                 if (!VersionEquals(_installedVersion, value))
                 {
                     _installedVersion = value;
-                    OnPropertyChanged(nameof(InstalledVersion));
-                    OnPropertyChanged(nameof(IsLatestInstalled));
+                    RaisePropertyChanged(nameof(InstalledVersion));
+                    RaisePropertyChanged(nameof(IsLatestInstalled));
 
                     // update tool tip
                     if (_installedVersion != null)
@@ -135,9 +132,9 @@ namespace NuGet.PackageManagement.UI
                 if (!VersionEquals(_latestVersion, value))
                 {
                     _latestVersion = value;
-                    OnPropertyChanged(nameof(IsNotInstalled));
-                    OnPropertyChanged(nameof(IsUpdateAvailable));
-                    OnPropertyChanged(nameof(LatestVersion));
+                    RaisePropertyChanged(nameof(IsNotInstalled));
+                    RaisePropertyChanged(nameof(IsUpdateAvailable));
+                    RaisePropertyChanged(nameof(LatestVersion));
 
                     // update tool tip
                     if (_latestVersion != null)
@@ -169,7 +166,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _autoReferenced = value;
-                OnPropertyChanged(nameof(AutoReferenced));
+                RaisePropertyChanged(nameof(AutoReferenced));
             }
         }
 
@@ -184,7 +181,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _installedVersionToolTip = value;
-                OnPropertyChanged(nameof(InstalledVersionToolTip));
+                RaisePropertyChanged(nameof(InstalledVersionToolTip));
             }
         }
 
@@ -199,7 +196,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _latestVersionToolTip = value;
-                OnPropertyChanged(nameof(LatestVersionToolTip));
+                RaisePropertyChanged(nameof(LatestVersionToolTip));
             }
         }
 
@@ -213,7 +210,7 @@ namespace NuGet.PackageManagement.UI
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    OnPropertyChanged(nameof(IsSelected));
+                    RaisePropertyChanged(nameof(IsSelected));
                 }
             }
         }
@@ -244,7 +241,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _downloadCount = value;
-                OnPropertyChanged(nameof(DownloadCount));
+                RaisePropertyChanged(nameof(DownloadCount));
             }
         }
 
@@ -265,11 +262,11 @@ namespace NuGet.PackageManagement.UI
 
                 if (refresh)
                 {
-                    OnPropertyChanged(nameof(Status));
-                    OnPropertyChanged(nameof(IsLatestInstalled));
-                    OnPropertyChanged(nameof(IsUpdateAvailable));
-                    OnPropertyChanged(nameof(IsUninstallable));
-                    OnPropertyChanged(nameof(IsNotInstalled));
+                    RaisePropertyChanged(nameof(Status));
+                    RaisePropertyChanged(nameof(IsLatestInstalled));
+                    RaisePropertyChanged(nameof(IsUpdateAvailable));
+                    RaisePropertyChanged(nameof(IsUninstallable));
+                    RaisePropertyChanged(nameof(IsNotInstalled));
                 }
             }
         }
@@ -323,7 +320,7 @@ namespace NuGet.PackageManagement.UI
                 if (_recommended != value)
                 {
                     _recommended = value;
-                    OnPropertyChanged(nameof(Recommended));
+                    RaisePropertyChanged(nameof(Recommended));
                 }
             }
         }
@@ -335,7 +332,53 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _recommenderVersion = value;
-                OnPropertyChanged(nameof(RecommenderVersion));
+                RaisePropertyChanged(nameof(RecommenderVersion));
+            }
+        }
+
+        private bool _providersLoaderStarted;
+
+        private AlternativePackageManagerProviders _providers;
+        public AlternativePackageManagerProviders Providers
+        {
+            get
+            {
+                if (!_providersLoaderStarted && ProvidersLoader != null)
+                {
+                    _providersLoaderStarted = true;
+                    NuGetUIThreadHelper.JoinableTaskFactory
+                        .RunAsync(ReloadProvidersAsync)
+                        .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadProvidersAsync));
+                }
+
+                return _providers;
+            }
+
+            private set
+            {
+                _providers = value;
+                RaisePropertyChanged(nameof(Providers));
+            }
+        }
+
+
+        private Lazy<Task<AlternativePackageManagerProviders>> _providersLoader;
+        internal Lazy<Task<AlternativePackageManagerProviders>> ProvidersLoader
+        {
+            get
+            {
+                return _providersLoader;
+            }
+
+            set
+            {
+                if (_providersLoader != value)
+                {
+                    _providersLoaderStarted = false;
+                }
+
+                _providersLoader = value;
+                RaisePropertyChanged(nameof(Providers));
             }
         }
 
@@ -348,7 +391,7 @@ namespace NuGet.PackageManagement.UI
                 if (_prefixReserved != value)
                 {
                     _prefixReserved = value;
-                    OnPropertyChanged(nameof(PrefixReserved));
+                    RaisePropertyChanged(nameof(PrefixReserved));
                 }
             }
         }
@@ -362,8 +405,8 @@ namespace NuGet.PackageManagement.UI
                 if (_isPackageDeprecated != value)
                 {
                     _isPackageDeprecated = value;
-                    OnPropertyChanged(nameof(IsPackageDeprecated));
-                    OnPropertyChanged(nameof(IsPackageWithWarnings));
+                    RaisePropertyChanged(nameof(IsPackageWithWarnings));
+                    RaisePropertyChanged(nameof(IsPackageDeprecated));
                 }
             }
         }
@@ -401,7 +444,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _iconUrl = value;
-                OnPropertyChanged(nameof(IconUrl));
+                RaisePropertyChanged(nameof(IconUrl));
             }
         }
 
@@ -415,7 +458,7 @@ namespace NuGet.PackageManagement.UI
                 if (_bitmapStatus != value)
                 {
                     _bitmapStatus = value;
-                    OnPropertyChanged(nameof(BitmapStatus));
+                    RaisePropertyChanged(nameof(BitmapStatus));
                 }
             }
         }
@@ -450,7 +493,7 @@ namespace NuGet.PackageManagement.UI
                 if (_iconBitmap != value)
                 {
                     _iconBitmap = value;
-                    OnPropertyChanged(nameof(IconBitmap));
+                    RaisePropertyChanged(nameof(IconBitmap));
                 }
             }
         }
@@ -704,7 +747,7 @@ namespace NuGet.PackageManagement.UI
                 .RunAsync(ReloadPackageMetadataAsync)
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
 
-            OnPropertyChanged(nameof(Status));
+            RaisePropertyChanged(nameof(Status));
         }
 
         private static PackageStatus GetPackageStatus(

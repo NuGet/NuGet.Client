@@ -84,7 +84,7 @@
     <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
-    <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
+    <Compile Include="ViewModels\StatusBarViewModel.cs" />
     <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
     <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
@@ -144,6 +144,9 @@
     <Compile Include="Utility\ProjectUtility.cs" />
     <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
+    <Compile Include="ViewModels\PackageListViewModel.cs" />
+    <Compile Include="ViewModels\PackageManagerViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
@@ -201,7 +204,8 @@
     <Compile Include="Models\FilterItem.cs" />
     <Compile Include="IItemLoader.cs" />
     <Compile Include="InfiniteScrollListItemStyleSelector.cs" />
-    <Compile Include="LoadingStatusIndicator.cs" />
+    <Compile Include="ViewModels\LoadingStatusIndicator.cs" />
+    <Compile Include="Models\AlternativePackageManagerProviders.cs" />
     <Compile Include="ViewModels\PackageItemViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Converters\NotNullToBooleanConverter.cs" />

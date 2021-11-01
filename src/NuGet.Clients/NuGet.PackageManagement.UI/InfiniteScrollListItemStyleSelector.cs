@@ -9,14 +9,12 @@ namespace NuGet.PackageManagement.UI
     public class InfiniteScrollListItemStyleSelector : StyleSelector
     {
         private Style PackageItemStyle { get; set; }
-        private Style LoadingStatusIndicatorStyle { get; set; }
 
         private void Init(ItemsControl infiniteScrollList)
         {
-            if (PackageItemStyle == null && LoadingStatusIndicatorStyle == null)
+            if (PackageItemStyle == null)
             {
                 PackageItemStyle = (Style)infiniteScrollList.FindResource("packageItemStyle");
-                LoadingStatusIndicatorStyle = (Style)infiniteScrollList.FindResource("loadingStatusIndicatorStyle");
 
                 if (PackageItemStyle.Setters.Count == 0)
                 {
@@ -29,11 +27,6 @@ namespace NuGet.PackageManagement.UI
         public override Style SelectStyle(object item, DependencyObject container)
         {
             Init(ItemsControl.ItemsControlFromItemContainer(container));
-
-            if (item is LoadingStatusIndicator)
-            {
-                return LoadingStatusIndicatorStyle;
-            }
 
             return PackageItemStyle;
         }

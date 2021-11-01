@@ -45,6 +45,7 @@
   </UserControl.InputBindings>
 
   <ScrollViewer
+    DataContext="{Binding ViewModel}"
     VerticalScrollBarVisibility="Disabled"
     HorizontalScrollBarVisibility="Auto">
     <DockPanel
@@ -109,6 +110,7 @@
             <nuget:InfiniteScrollList
               Grid.Row="0"
               x:Name="_packageList"
+              DataContext="{Binding PackageListViewModel}"
               AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackagesList}"
               SelectionChanged="PackageList_SelectionChanged"
               UpdateButtonClicked="PackageList_UpdateButtonClicked"
