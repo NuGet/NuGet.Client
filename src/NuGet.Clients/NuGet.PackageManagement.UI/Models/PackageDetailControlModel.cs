@@ -95,12 +95,12 @@ namespace NuGet.PackageManagement.UI
             _solutionManager.ProjectUpdated -= ProjectChanged;
         }
 
-        protected override Task CreateVersionsAsync(CancellationToken cancellationToken)
+        protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
             // The value will be null if the server does not return any versions.
             if (_allPackageVersions == null || _allPackageVersions.Count == 0)
             {
-                return Task.CompletedTask;
+                return;// Task.CompletedTask;
             }
 
             _versions = new List<DisplayVersion>();
@@ -175,7 +175,7 @@ namespace NuGet.PackageManagement.UI
 
                 _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
             }
-
+            await Task.Delay(5000);
             // Disable controls if this is an auto referenced package.
             SetAutoReferencedCheck(InstalledVersion);
 
@@ -186,7 +186,7 @@ namespace NuGet.PackageManagement.UI
 
             OnPropertyChanged(nameof(Versions));
 
-            return Task.CompletedTask;
+            //return Task.CompletedTask;
         }
 
         private NuGetVersion _installedVersion;
