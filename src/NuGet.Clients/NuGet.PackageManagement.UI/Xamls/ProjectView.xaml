@@ -98,13 +98,13 @@
       Grid.Column="2"
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
-      IsEditable="True"
-      IsTextSearchEnabled="False"
-      IsReadOnly="False"
-      StaysOpenOnEdit="True"
-      ItemsSource="{Binding Path=Versions}"
-      Text="{Binding UserInput, Mode=OneWayToSource}"
-      SelectedValue="{Binding Path=SelectedVersion}">
+      IsEditable="{Binding IsProjectPackageReference, Converter={StaticResource InverseNullToVisibilityConverter}}"
+      IsTextSearchEnabled="{Binding IsProjectPackageReference, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
+      IsReadOnly="{Binding IsProjectPackageReference, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
+      StaysOpenOnEdit="{Binding IsProjectPackageReference, Converter={StaticResource InverseNullToVisibilityConverter}}"
+      ItemsSource="{Binding Path=MyView}"
+      Text="{Binding UserInput}"
+      SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
       <ComboBox.ItemContainerStyle>
             <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -78,6 +78,7 @@
     <Compile Include="IPackageItemLoader.cs" />
     <Compile Include="Models\FreeText.cs" />
     <Compile Include="Models\IconBitmapStatus.cs" />
+    <Compile Include="Models\ItemsChangeObservableCollectionBase.cs" />
     <Compile Include="Models\IText.cs" />
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />

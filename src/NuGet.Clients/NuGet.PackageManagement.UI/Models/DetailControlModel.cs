@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
@@ -58,6 +61,8 @@ namespace NuGet.PackageManagement.UI
 
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
+
+            MyView = new CollectionViewSource() { Source = Versions }.View;
         }
 
         /// <summary>
@@ -66,6 +71,8 @@ namespace NuGet.PackageManagement.UI
         public virtual void CleanUp()
         {
         }
+
+        public ICollectionView MyView { get; set; }
 
         public void Dispose()
         {
@@ -526,10 +533,10 @@ namespace NuGet.PackageManagement.UI
         protected abstract Task CreateVersionsAsync(CancellationToken cancellationToken);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected List<DisplayVersion> _versions;
+        protected ItemsChangeObservableCollection<DisplayVersion> _versions;
 
         // The list of versions that can be installed
-        public List<DisplayVersion> Versions
+        public ItemsChangeObservableCollection<DisplayVersion> Versions
         {
             get { return _versions; }
         }
@@ -545,8 +552,18 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                _userInput = value;
-                OnPropertyChanged(nameof(UserInput));
+                if (_userInput != value)
+                {
+                    _userInput = value;
+
+                    if (Versions != null)
+                    {
+                        Versions.Refresh();
+                    }
+
+                    OnPropertyChanged(nameof(UserInput));
+                    OnPropertyChanged(nameof(MyView));
+                }
             }
         }
 
@@ -647,16 +664,35 @@ namespace NuGet.PackageManagement.UI
                 (_versions.Any(v => v != null && !v.IsValidVersion) &&
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
-                // Select the installed version by default.
-                // Otherwise, select the first version in the version list.
-                var possibleVersions = _versions.Where(v => v != null);
-                SelectedVersion =
-                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.AllowedVersions.ToString()))
-                    ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
-                UserInput = _searchResultPackage.AllowedVersions.OriginalString;
-
-                OnPropertyChanged(nameof(UserInput));
+                // The project level is the only one that has a editable combobox and we only can only see one project
+                if (_nugetProjects.Count() == 1)
+                {
+                    // Select the installed version by default.
+                    // Otherwise, select the first version in the version list.
+                    var possibleVersions = _versions.Where(v => v != null);
+                    SelectedVersion =
+                        possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.AllowedVersions.OriginalString))
+                        ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+                    UserInput = _searchResultPackage.AllowedVersions.OriginalString;
+                }
+                else
+                {
+                    var possibleVersions = _versions.Where(v => v != null);
+                    SelectedVersion =
+                        possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
+                        ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+                }
             }
+        }
+
+        public void ClearVersions()
+        {
+            if (_versions != null)
+            {
+                _versions.Clear();
+            }
+
+            OnPropertyChanged(nameof(Versions));
         }
 
         /// <summary>

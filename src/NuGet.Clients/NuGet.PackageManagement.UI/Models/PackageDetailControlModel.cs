@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
+using System.Windows.Data;
 using Microsoft.ServiceHub.Framework;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -106,7 +108,7 @@ namespace NuGet.PackageManagement.UI
                 return Task.CompletedTask;
             }
 
-            _versions = new List<DisplayVersion>();
+            _versions = new ItemsChangeObservableCollection<DisplayVersion>();
             var installedDependency = InstalledPackageDependencies.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id) && p.VersionRange != null && p.VersionRange.HasLowerBound)
                 .OrderByDescending(p => p.VersionRange.MinVersion)
@@ -205,11 +207,50 @@ namespace NuGet.PackageManagement.UI
             // Add disabled versions
             AddBlockedVersions(blockedVersions);
 
+            // Update the view and add the filter
+            MyView = new CollectionViewSource() { Source = Versions }.View;
+            MyView.Filter += VersionsFilter;
+
             SelectVersion();
 
             OnPropertyChanged(nameof(Versions));
+            OnPropertyChanged(nameof(MyView));
 
             return Task.CompletedTask;
+        }
+
+        private bool VersionsFilter(object o)
+        {
+            var version = o as DisplayVersion;
+            // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
+            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(InstalledVersionRange.OriginalString, StringComparison.OrdinalIgnoreCase)) return true;
+
+            // Handle of *, that this will show all versions other than the installed version, the suggested version and the null separator
+            if (UserInput.Equals("*", StringComparison.OrdinalIgnoreCase))
+            {
+                if (version == null || version.Version.Equals(Versions[0].Version) || version.Version.Equals(Versions[1].Version)) return false;
+                return true;
+            }
+
+            // If the user typed a version range, show only the versions that are in the range
+            if ((UserInput.StartsWith("(", StringComparison.OrdinalIgnoreCase) || UserInput.StartsWith("[", StringComparison.OrdinalIgnoreCase)) &&
+               VersionRange.TryParse(UserInput, out VersionRange userRange))
+            {
+                if (o != null && NuGetVersion.TryParse(o.ToString(), out NuGetVersion userVersion))
+                {
+                    if (userRange.Satisfies(userVersion))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            // Check if the version starts with the user input
+            if (o != null && (o.ToString()).StartsWith(Regex.Replace(UserInput, @"[\*]", ""), StringComparison.OrdinalIgnoreCase)) return true;
+
+            return false;
         }
 
         private NuGetVersion _installedVersion;
@@ -260,6 +301,14 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return SelectedVersion == null || IsSelectedVersionInstalled;
+            }
+        }
+
+        public bool IsProjectPackageReference
+        {
+            get
+            {
+                return _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
             }
         }
 
