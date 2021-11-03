@@ -642,13 +642,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// Clears <see cref="Versions" /> and raises <see cref="OnPropertyChanged(string)"/>, if populated. Otherwise, does nothing.
+        /// </summary>
         public void ClearVersions()
         {
+            // Versions will have not yet been instantiated on the very first package selection.
             if (_versions != null)
             {
                 _versions.Clear();
+                OnPropertyChanged(nameof(Versions));
             }
-            OnPropertyChanged(nameof(Versions));
         }
 
         public abstract bool IsSolution { get; }

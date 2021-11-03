@@ -247,7 +247,7 @@ namespace NuGet.PackageManagement.UI
             ProjectVersionConstraint[] selectedProjects = (await GetConstraintsForSelectedProjectsAsync(cancellationToken)).ToArray();
 
             bool autoReferenced = selectedProjects.Length > 0 && selectedProjects.All(e => e.IsAutoReferenced);
-            await Task.Delay(5000);
+
             // Disable controls if this is an auto referenced package.
             SetAutoReferencedCheck(autoReferenced);
 

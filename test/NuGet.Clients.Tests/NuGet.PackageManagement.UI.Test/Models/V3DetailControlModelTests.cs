@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -235,10 +236,16 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
             var wasVersionsListCleared = false;
 
-            var vm = new Mock<PackageItemListViewModel>();
-            vm.Object.InstalledVersion = installedVersion;
-            vm.Object.Version = installedVersion;
-            vm.Object.Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions));
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+            var vm = new PackageItemViewModel(searchService.Object);
+
+            vm.Id = "a";
+            vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
+            vm.InstalledVersion = installedVersion;
+            vm.Version = installedVersion;
 
             // Test Setup already selected a package.
             int previousVersionListCount = _testInstance.Versions.Count;
@@ -264,9 +271,9 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             //Select a different VM which should clear the Versions list from the previous selection.
             await _testInstance.SetCurrentPackageAsync(
-                vm.Object,
+                vm,
                 ItemFilter.All,
-                () => vm.Object);
+                () => vm);
 
             // Assert
 
@@ -443,10 +450,16 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
             var wasVersionsListCleared = false;
 
-            var vm = new Mock<PackageItemListViewModel>();
-            vm.Object.InstalledVersion = installedVersion;
-            vm.Object.Version = installedVersion;
-            vm.Object.Versions = new Lazy<Task<IReadOnlyCollection<VersionInfoContextInfo>>>(() => Task.FromResult<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions));
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+            var vm = new PackageItemViewModel(searchService.Object);
+
+            vm.Id = "a";
+            vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
+            vm.InstalledVersion = installedVersion;
+            vm.Version = installedVersion;
 
             // Test Setup already selected a package.
             int previousVersionListCount = _testInstance.Versions.Count;
@@ -472,9 +485,9 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             //Select a different VM which should clear the Versions list from the previous selection.
             await _testInstance.SetCurrentPackageAsync(
-                vm.Object,
+                vm,
                 ItemFilter.All,
-                () => vm.Object);
+                () => vm);
 
             // Assert
 
