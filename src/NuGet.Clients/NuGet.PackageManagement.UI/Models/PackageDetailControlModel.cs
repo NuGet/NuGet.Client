@@ -291,7 +291,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return SelectedVersion != null
                     && InstalledVersion != null
-                    && SelectedVersion?.Range.OriginalString == InstalledVersionRange.OriginalString
+                    && SelectedVersion?.Range?.OriginalString == InstalledVersionRange?.OriginalString
                     && SelectedVersion.Version == InstalledVersion;
             }
         }
