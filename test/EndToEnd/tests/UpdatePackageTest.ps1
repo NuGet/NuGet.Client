@@ -632,6 +632,7 @@ function Test-UpdateAllPackagesInSolution {
 }
 
 function Test-UpdatePackageOnAnFSharpProjectWithMultiplePackages {
+    [SkipTest('https://github.com/NuGet/Home/issues/11358')]
     param(
         $context
     )
