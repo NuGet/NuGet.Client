@@ -90,7 +90,6 @@ namespace NuGetVSExtension
         private readonly ReentrantSemaphore _semaphore = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private DTE _dte;
-        private DTEEvents _dteEvents;
         private OleMenuCommand _managePackageDialogCommand;
         private OleMenuCommand _managePackageForSolutionDialogCommand;
         private OleMenuCommandService _mcs;
@@ -222,9 +221,6 @@ namespace NuGetVSExtension
 
                 _dte = (DTE)await GetServiceAsync(typeof(SDTE));
                 Assumes.Present(_dte);
-
-                _dteEvents = _dte.Events.DTEEvents;
-                _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
                 if (SolutionManager.Value.NuGetProjectContext == null)
                 {
@@ -1269,12 +1265,6 @@ namespace NuGetVSExtension
         }
 
         #endregion IVsPackageExtensionProvider implementation
-
-        private void OnBeginShutDown()
-        {
-            _dteEvents.OnBeginShutdown -= OnBeginShutDown;
-            _dteEvents = null;
-        }
 
         private void RegisterEmitVSInstancePowerShellTelemetry()
         {
