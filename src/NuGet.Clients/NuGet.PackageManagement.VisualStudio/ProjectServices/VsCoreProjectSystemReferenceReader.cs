@@ -44,9 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
 
-            _referenceMetadata = Array.CreateInstance(typeof(string), 1);
-            _referenceMetadata.SetValue("ReferenceOutputAssembly", 0);
-
+            _referenceMetadata = new string[] { "ReferenceOutputAssembly" };
         }
 
         public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
