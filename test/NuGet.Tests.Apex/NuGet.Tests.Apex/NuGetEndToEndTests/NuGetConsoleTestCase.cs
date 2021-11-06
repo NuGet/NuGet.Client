@@ -587,7 +587,7 @@ namespace NuGet.Tests.Apex
             <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package pattern=""Contoso.*"" />             
+            <package pattern=""Contoso.*"" />
             <package pattern=""Test.*"" />
         </packageSource>
         <packageSource key=""nuget"">
@@ -610,7 +610,7 @@ namespace NuGet.Tests.Apex
             Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
         }
 
-        [NuGetWpfTheory]
+        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/11308")]
         [MemberData(nameof(GetPackageReferenceTemplates))]
         public async Task UpdatePackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
@@ -648,7 +648,7 @@ namespace NuGet.Tests.Apex
             <package pattern=""Others.*"" />
         </packageSource>
         <packageSource key=""PrivateRepository"">
-            <package pattern=""Contoso.*"" />             
+            <package pattern=""Contoso.*"" />
             <package pattern=""Test.*"" />
         </packageSource>
         <packageSource key=""nuget"">
