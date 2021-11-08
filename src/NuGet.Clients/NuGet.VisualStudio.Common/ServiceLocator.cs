@@ -94,8 +94,7 @@ namespace NuGet.VisualStudio
         {
             if (PackageServiceProvider != null)
             {
-                var result = await PackageServiceProvider.GetServiceAsync(typeof(TService));
-                var service = result as TInterface;
+                TInterface service = await PackageServiceProvider.GetFreeThreadedServiceAsync<TService, TInterface>();
 
                 if (service != null)
                 {

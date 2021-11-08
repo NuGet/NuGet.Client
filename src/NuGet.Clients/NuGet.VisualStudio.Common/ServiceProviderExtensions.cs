@@ -25,5 +25,13 @@ namespace NuGet.VisualStudio
         {
             return site.GetServiceAsync<SComponentModel, IComponentModel>();
         }
+
+        public static async Task<TInterface> GetFreeThreadedServiceAsync<TService, TInterface>(this IAsyncServiceProvider site) where TInterface : class
+        {
+#pragma warning disable RS0030 // Do not used banned APIs
+            return (TInterface)await site.GetServiceAsync(typeof(TService));
+#pragma warning restore RS0030 // Do not used banned APIs
+        }
     }
 }
+

@@ -623,7 +623,7 @@ namespace NuGet.Options
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
             const int BIF_BROWSEINCLUDEURLS = 0x00000080; // Allow URLs to be displayed or entered.
 
-            var uiShell = (IVsUIShell2)(await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)));
+            var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell2>();
             Assumes.Present(uiShell);
             var rgch = new char[MaxDirectoryLength + 1];
 
