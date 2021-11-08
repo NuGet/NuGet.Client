@@ -82,12 +82,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         var childProjectPath = reference3.SourceProject.GetFullProjectPath();
 
-
                         // Skip projects which have ReferenceOutputAssembly=false
-                        var reference6 = childReference as Reference6;
                         var addProject = true;
 
-                        if (reference6 != null)
+                        if (childReference is Reference6 reference6)
                         {
                             reference6.GetMetadata(_referenceMetadata, out Array metadataElements, out Array metadataValues);
                             var referenceOutputAssembly = GetReferenceMetadataValue(metadataElements, metadataValues);
