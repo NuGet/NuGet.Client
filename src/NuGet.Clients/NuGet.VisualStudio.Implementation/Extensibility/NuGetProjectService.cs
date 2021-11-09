@@ -34,8 +34,22 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
+        [System.Diagnostics.Tracing.EventData]
+        private struct GetInstalledPackagesAsyncEventData
+        {
+            [System.Diagnostics.Tracing.EventField]
+            public Guid Project { get; set; }
+        }
+
         public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(Guid projectId, CancellationToken cancellationToken)
         {
+            const string etwEventName = nameof(INuGetProjectService) + "/" + nameof(GetInstalledPackagesAsync);
+            var eventData = new GetInstalledPackagesAsyncEventData()
+            {
+                Project = projectId
+            };
+            NuGetExtensibilityEtw.EventSource.Write(etwEventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
+
             try
             {
                 // Just in case we're on the UI thread, switch to background thread. Very low cost (does not schedule new task) if already on background thread.
@@ -73,6 +87,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 extraProperties["projectId"] = projectId.ToString();
                 await _telemetryProvider.PostFaultAsync(exception, typeof(NuGetProjectService).FullName, extraProperties: extraProperties);
                 throw;
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(etwEventName, NuGetExtensibilityEtw.StopEventOptions, eventData);
             }
         }
 
