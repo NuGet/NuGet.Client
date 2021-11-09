@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using NuGet.Versioning;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsSemanticVersionComparer))]
     public class VsSemanticVersionComparer : IVsSemanticVersionComparer

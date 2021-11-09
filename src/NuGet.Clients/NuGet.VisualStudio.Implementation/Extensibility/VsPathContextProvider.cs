@@ -27,7 +27,7 @@ using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     // Implementation of IVsPathContextProvider as a MEF-exported component.
     [Export(typeof(IVsPathContextProvider))]
@@ -217,7 +217,7 @@ namespace NuGet.VisualStudio
 
             foreach (Project solutionProject in supportedProjects)
             {
-                string solutionProjectPath = solutionProject.GetFullProjectPath();
+                var solutionProjectPath = solutionProject.GetFullProjectPath();
 
                 if (!string.IsNullOrEmpty(solutionProjectPath) &&
                     PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))

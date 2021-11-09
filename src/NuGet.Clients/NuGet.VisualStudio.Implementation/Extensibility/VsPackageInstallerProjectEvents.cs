@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using NuGet.PackageManagement;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     /// <summary>
     /// Contains batch events to be raised when performing multiple packages install/ uninstall in a project with packages.config

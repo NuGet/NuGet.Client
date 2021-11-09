@@ -26,7 +26,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Obsolete]
     [Export(typeof(IVsPackageInstallerServices))]
@@ -74,7 +74,7 @@ namespace NuGet.VisualStudio
 
                             NuGetPackageManager nuGetPackageManager = CreateNuGetPackageManager();
 
-                            foreach (var project in (await _solutionManager.GetNuGetProjectsAsync()))
+                            foreach (var project in await _solutionManager.GetNuGetProjectsAsync())
                             {
                                 FallbackPackagePathResolver pathResolver = null;
                                 var buildIntegratedProject = project as BuildIntegratedNuGetProject;

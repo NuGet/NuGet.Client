@@ -9,7 +9,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsGlobalPackagesInitScriptExecutor))]
     public class VsGlobalPackagesInitScriptExecutor : IVsGlobalPackagesInitScriptExecutor

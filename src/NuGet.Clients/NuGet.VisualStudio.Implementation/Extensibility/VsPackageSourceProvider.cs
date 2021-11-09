@@ -8,7 +8,7 @@ using System.IO;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageSourceProvider))]
     public class VsPackageSourceProvider : IVsPackageSourceProvider
@@ -69,7 +69,7 @@ namespace NuGet.VisualStudio
 
         private static bool IsOfficial(Configuration.PackageSource source)
         {
-            bool official = source.IsOfficial;
+            var official = source.IsOfficial;
 
             // override the official flag if the domain is nuget.org
             if (source.Source.StartsWith("http://www.nuget.org/", StringComparison.OrdinalIgnoreCase)

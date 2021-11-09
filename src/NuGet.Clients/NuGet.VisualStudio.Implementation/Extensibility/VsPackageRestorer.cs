@@ -11,7 +11,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageRestorer))]
     public class VsPackageRestorer : IVsPackageRestorer
@@ -41,7 +41,7 @@ namespace NuGet.VisualStudio
         {
             try
             {
-                var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
+                var packageRestoreConsent = new PackageRestoreConsent(_settings);
                 return packageRestoreConsent.IsGranted;
             }
             catch (Exception exception)

@@ -8,7 +8,7 @@ using System.Linq;
 using NuGet.Configuration;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     // Implementation of IVsPathContext without support of reference resolving.
     // Used when project is not managed by NuGet or given project doesn't have any packages installed.

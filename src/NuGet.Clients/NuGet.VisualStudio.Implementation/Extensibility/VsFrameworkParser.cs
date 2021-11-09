@@ -9,7 +9,7 @@ using NuGet.Frameworks;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
 #pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IVsFrameworkParser))]
@@ -105,10 +105,10 @@ namespace NuGet.VisualStudio
 
             try
             {
-                NuGetFramework framework = NuGetFramework.Parse(input);
+                var framework = NuGetFramework.Parse(input);
 
-                string targetFrameworkMoniker = framework.DotNetFrameworkName;
-                string targetPlatformMoniker = framework.DotNetPlatformName;
+                var targetFrameworkMoniker = framework.DotNetFrameworkName;
+                var targetPlatformMoniker = framework.DotNetPlatformName;
                 string targetPlatforMinVersion = null;
 
                 nuGetFramework = new VsNuGetFramework(targetFrameworkMoniker, targetPlatformMoniker, targetPlatforMinVersion);

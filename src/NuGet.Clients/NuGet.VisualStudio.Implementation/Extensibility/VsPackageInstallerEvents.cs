@@ -4,7 +4,7 @@
 using System.ComponentModel.Composition;
 using NuGet.ProjectManagement;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageInstallerEvents))]
     [Export(typeof(VsPackageInstallerEvents))]

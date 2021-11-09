@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     // Full functional implementation of IVsPathContext providing support for
     // reference resolving via reference lookup trie structure.

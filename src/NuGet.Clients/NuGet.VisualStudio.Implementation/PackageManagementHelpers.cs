@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.VisualStudio.Implementation.Extensibility;
 
 namespace NuGet.VisualStudio
 {

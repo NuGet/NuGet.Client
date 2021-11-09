@@ -17,7 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageUninstaller))]
     public class VsPackageUninstaller : IVsPackageUninstaller
@@ -63,7 +63,7 @@ namespace NuGet.VisualStudio
             {
                 PumpingJTF.Run(async delegate
                     {
-                        NuGetPackageManager packageManager =
+                        var packageManager =
                            new NuGetPackageManager(
                                _sourceRepositoryProvider,
                                _settings,

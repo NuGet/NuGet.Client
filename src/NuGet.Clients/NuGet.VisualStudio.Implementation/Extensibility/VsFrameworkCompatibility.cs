@@ -11,7 +11,7 @@ using NuGet.Frameworks;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsFrameworkCompatibility))]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -113,7 +113,7 @@ namespace NuGet.VisualStudio
                         throw new ArgumentException(message: VsResourcesFormat.PropertyCannotBeNull(nameof(FrameworkName)), paramName: nameof(frameworks));
                     }
 
-                    NuGetFramework nugetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
+                    var nugetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
                     yield return nugetFramework;
                 }
             }

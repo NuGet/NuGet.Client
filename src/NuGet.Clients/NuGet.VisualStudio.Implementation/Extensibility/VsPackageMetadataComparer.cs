@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     internal class VsPackageMetadataComparer : IEqualityComparer<IVsPackageMetadata>
     {
