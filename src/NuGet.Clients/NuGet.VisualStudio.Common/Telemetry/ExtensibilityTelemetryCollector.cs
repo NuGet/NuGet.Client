@@ -13,12 +13,14 @@ namespace NuGet.VisualStudio.Telemetry
     {
         private ExtensibilityEventListener _eventListener;
         private INuGetProjectServiceCounters INuGetProjectService { get; }
+        private IVsFrameworkCompatibilityCounters IVsFrameworkCompatibility { get; }
 
         public ExtensibilityTelemetryCollector()
         {
             _eventListener = new ExtensibilityEventListener(this);
 
             INuGetProjectService = new INuGetProjectServiceCounters();
+            IVsFrameworkCompatibility = new IVsFrameworkCompatibilityCounters();
         }
 
         public void Dispose()
@@ -33,7 +35,13 @@ namespace NuGet.VisualStudio.Telemetry
         {
             TelemetryEvent data = new("extensibility");
 
+            // INuGetProjectService
             data[nameof(INuGetProjectService) + "." + nameof(INuGetProjectService.GetInstalledPackagesAsync)] = INuGetProjectService.GetInstalledPackagesAsync;
+
+            // IVsFrameworkCompatibility
+            data[nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetNetStandardFrameworks)] = IVsFrameworkCompatibility.GetNetStandardFrameworks;
+            data[nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetFrameworksSupportingNetStandard)] = IVsFrameworkCompatibility.GetFrameworksSupportingNetStandard;
+            data[nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetNearest)] = IVsFrameworkCompatibility.GetNearest;
 
             return data;
         }
@@ -41,6 +49,13 @@ namespace NuGet.VisualStudio.Telemetry
         private class INuGetProjectServiceCounters
         {
             public int GetInstalledPackagesAsync;
+        }
+
+        private class IVsFrameworkCompatibilityCounters
+        {
+            public int GetNetStandardFrameworks;
+            public int GetFrameworksSupportingNetStandard;
+            public int GetNearest;
         }
 
         private class ExtensibilityEventListener : EventListener
@@ -67,9 +82,22 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     switch (eventData.EventName)
                     {
+                        // INuGetProjectService
                         case "INuGetProjectService/GetInstalledPackagesAsync":
                             Interlocked.Increment(ref _collector.INuGetProjectService.GetInstalledPackagesAsync);
                             break;
+
+                        // IVsFrameworkCompatibility
+                        case "IVsFrameworkCompatibility/GetNetStandardFrameworks":
+                            Interlocked.Increment(ref _collector.IVsFrameworkCompatibility.GetNetStandardFrameworks);
+                            break;
+                        case "IVsFrameworkCompatibility/GetFrameworksSupportingNetStandard":
+                            Interlocked.Increment(ref _collector.IVsFrameworkCompatibility.GetFrameworksSupportingNetStandard);
+                            break;
+                        case "IVsFrameworkCompatibility/GetNearest":
+                            Interlocked.Increment(ref _collector.IVsFrameworkCompatibility.GetNearest);
+                            break;
+
 
                         default:
                             Debug.Assert(false, "VS Extensibility API without counter");
