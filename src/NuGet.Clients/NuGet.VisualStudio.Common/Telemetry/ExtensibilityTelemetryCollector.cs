@@ -14,6 +14,7 @@ namespace NuGet.VisualStudio.Telemetry
         private ExtensibilityEventListener _eventListener;
         private INuGetProjectServiceCounters INuGetProjectService { get; }
         private IVsFrameworkCompatibilityCounters IVsFrameworkCompatibility { get; }
+        private IVsFrameworkCompatibility2Counters IVsFrameworkCompatibility2 { get; }
 
         public ExtensibilityTelemetryCollector()
         {
@@ -21,6 +22,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             INuGetProjectService = new INuGetProjectServiceCounters();
             IVsFrameworkCompatibility = new IVsFrameworkCompatibilityCounters();
+            IVsFrameworkCompatibility2 = new IVsFrameworkCompatibility2Counters();
         }
 
         public void Dispose()
@@ -43,6 +45,9 @@ namespace NuGet.VisualStudio.Telemetry
             data[nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetFrameworksSupportingNetStandard)] = IVsFrameworkCompatibility.GetFrameworksSupportingNetStandard;
             data[nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetNearest)] = IVsFrameworkCompatibility.GetNearest;
 
+            // IVsFrameworkCompatibility2
+            data[nameof(IVsFrameworkCompatibility2) + "." + nameof(IVsFrameworkCompatibility2.GetNearest)] = IVsFrameworkCompatibility2.GetNearest;
+
             return data;
         }
 
@@ -55,6 +60,11 @@ namespace NuGet.VisualStudio.Telemetry
         {
             public int GetNetStandardFrameworks;
             public int GetFrameworksSupportingNetStandard;
+            public int GetNearest;
+        }
+
+        private class IVsFrameworkCompatibility2Counters
+        {
             public int GetNearest;
         }
 
@@ -96,6 +106,11 @@ namespace NuGet.VisualStudio.Telemetry
                             break;
                         case "IVsFrameworkCompatibility.GetNearest":
                             Interlocked.Increment(ref _collector.IVsFrameworkCompatibility.GetNearest);
+                            break;
+
+                        // IVsFrameworkCompatibility2
+                        case "IVsFrameworkCompatibility2.GetNearest":
+                            Interlocked.Increment(ref _collector.IVsFrameworkCompatibility2.GetNearest);
                             break;
 
 
