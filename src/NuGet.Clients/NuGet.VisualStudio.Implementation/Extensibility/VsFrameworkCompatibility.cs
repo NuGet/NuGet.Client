@@ -199,10 +199,35 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> frameworks)
         {
-            return GetNearest(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
+            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + "`2";
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
+            try
+            {
+                return GetNearestImpl(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
+        {
+            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + "`3";
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
+            try
+            {
+                return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
+        }
+
+        public IVsNuGetFramework GetNearestImpl(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
         {
             if (targetFramework == null)
             {

@@ -15,6 +15,7 @@ namespace NuGet.VisualStudio.Telemetry
         private INuGetProjectServiceCounters INuGetProjectService { get; }
         private IVsFrameworkCompatibilityCounters IVsFrameworkCompatibility { get; }
         private IVsFrameworkCompatibility2Counters IVsFrameworkCompatibility2 { get; }
+        private IVsFrameworkCompatibility3Counters IVsFrameworkCompatibility3 { get; }
 
         public ExtensibilityTelemetryCollector()
         {
@@ -23,6 +24,7 @@ namespace NuGet.VisualStudio.Telemetry
             INuGetProjectService = new INuGetProjectServiceCounters();
             IVsFrameworkCompatibility = new IVsFrameworkCompatibilityCounters();
             IVsFrameworkCompatibility2 = new IVsFrameworkCompatibility2Counters();
+            IVsFrameworkCompatibility3 = new IVsFrameworkCompatibility3Counters();
         }
 
         public void Dispose()
@@ -48,6 +50,10 @@ namespace NuGet.VisualStudio.Telemetry
             // IVsFrameworkCompatibility2
             data[nameof(IVsFrameworkCompatibility2) + "." + nameof(IVsFrameworkCompatibility2.GetNearest)] = IVsFrameworkCompatibility2.GetNearest;
 
+            // IVsFrameworkCompatibility2
+            data[nameof(IVsFrameworkCompatibility3) + ".GetNearest`2"] = IVsFrameworkCompatibility3.GetNearest2;
+            data[nameof(IVsFrameworkCompatibility3) + ".GetNearest`3"] = IVsFrameworkCompatibility3.GetNearest3;
+
             return data;
         }
 
@@ -66,6 +72,12 @@ namespace NuGet.VisualStudio.Telemetry
         private class IVsFrameworkCompatibility2Counters
         {
             public int GetNearest;
+        }
+
+        private class IVsFrameworkCompatibility3Counters
+        {
+            public int GetNearest2;
+            public int GetNearest3;
         }
 
         private class ExtensibilityEventListener : EventListener
@@ -113,6 +125,13 @@ namespace NuGet.VisualStudio.Telemetry
                             Interlocked.Increment(ref _collector.IVsFrameworkCompatibility2.GetNearest);
                             break;
 
+                        // IVsFrameworkCompatibility3
+                        case "IVsFrameworkCompatibility3.GetNearest`2":
+                            Interlocked.Increment(ref _collector.IVsFrameworkCompatibility3.GetNearest2);
+                            break;
+                        case "IVsFrameworkCompatibility3.GetNearest`3":
+                            Interlocked.Increment(ref _collector.IVsFrameworkCompatibility3.GetNearest3);
+                            break;
 
                         default:
                             Debug.Assert(false, "VS Extensibility API without counter");
