@@ -83,18 +83,18 @@ namespace NuGet.VisualStudio.Telemetry
                     switch (eventData.EventName)
                     {
                         // INuGetProjectService
-                        case "INuGetProjectService/GetInstalledPackagesAsync":
+                        case "INuGetProjectService.GetInstalledPackagesAsync":
                             Interlocked.Increment(ref _collector.INuGetProjectService.GetInstalledPackagesAsync);
                             break;
 
                         // IVsFrameworkCompatibility
-                        case "IVsFrameworkCompatibility/GetNetStandardFrameworks":
+                        case "IVsFrameworkCompatibility.GetNetStandardFrameworks":
                             Interlocked.Increment(ref _collector.IVsFrameworkCompatibility.GetNetStandardFrameworks);
                             break;
-                        case "IVsFrameworkCompatibility/GetFrameworksSupportingNetStandard":
+                        case "IVsFrameworkCompatibility.GetFrameworksSupportingNetStandard":
                             Interlocked.Increment(ref _collector.IVsFrameworkCompatibility.GetFrameworksSupportingNetStandard);
                             break;
-                        case "IVsFrameworkCompatibility/GetNearest":
+                        case "IVsFrameworkCompatibility.GetNearest":
                             Interlocked.Increment(ref _collector.IVsFrameworkCompatibility.GetNearest);
                             break;
 

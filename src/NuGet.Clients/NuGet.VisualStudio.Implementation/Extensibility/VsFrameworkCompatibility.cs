@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IEnumerable<FrameworkName> GetNetStandardFrameworks()
         {
-            const string eventName = nameof(IVsFrameworkCompatibility) + "/" + nameof(GetNetStandardFrameworks);
+            const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetNetStandardFrameworks);
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
             try
@@ -58,7 +58,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName)
         {
-            const string eventName = nameof(IVsFrameworkCompatibility) + "/" + nameof(GetFrameworksSupportingNetStandard);
+            const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetFrameworksSupportingNetStandard);
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
                 new
                 {
@@ -105,7 +105,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks)
         {
-            const string eventName = nameof(IVsFrameworkCompatibility) + "/" + nameof(GetNearest);
+            const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetNearest);
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
                 new
                 {

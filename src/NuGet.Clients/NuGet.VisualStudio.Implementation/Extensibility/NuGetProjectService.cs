@@ -43,7 +43,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(Guid projectId, CancellationToken cancellationToken)
         {
-            const string etwEventName = nameof(INuGetProjectService) + "/" + nameof(GetInstalledPackagesAsync);
+            const string etwEventName = nameof(INuGetProjectService) + "." + nameof(GetInstalledPackagesAsync);
             var eventData = new GetInstalledPackagesAsyncEventData()
             {
                 Project = projectId
