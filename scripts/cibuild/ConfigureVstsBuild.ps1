@@ -135,7 +135,7 @@ else
     Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15"
     $newBuildCounter = $env:BUILD_BUILDNUMBER
     $VsTargetBranch = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
-    $NuGetSdkVsVersion = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:NuGetSdkVsSemanticVersion
+    $NuGetSdkVsVersion = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetNuGetSdkVsSemanticVersion
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
