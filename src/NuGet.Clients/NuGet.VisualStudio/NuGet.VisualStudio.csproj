@@ -10,7 +10,7 @@
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
     <!-- VS Extensibility APIs should use package version corresponding to VS version it targets, to reduce confusion. Also keep assembly version stable to minimize binding redirect issues. -->
-    <Version>$(NuGetSdkVsSemanticVersion)$(PreReleaseInformationVersion)</Version>
+    <PackageVersion>$(NuGetSdkVsSemanticVersion)$(PreReleaseInformationVersion)</PackageVersion>
     <AssemblyVersion>$(NuGetSdkVsSemanticVersion).0</AssemblyVersion>
   </PropertyGroup>
 
