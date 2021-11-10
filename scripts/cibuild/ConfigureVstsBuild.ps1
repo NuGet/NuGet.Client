@@ -135,6 +135,7 @@ else
     Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15"
     $newBuildCounter = $env:BUILD_BUILDNUMBER
     $VsTargetBranch = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
+    $NuGetSdkVsVersion = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:NuGetSdkVsSemanticVersion
     Write-Host $VsTargetBranch
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -143,6 +144,7 @@ else
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
         VsTargetBranch = $VsTargetBranch.Trim()
+        NuGetSdkVsVersion = $NuGetSdkVsVersion.Trim()
     }
 
     # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.
