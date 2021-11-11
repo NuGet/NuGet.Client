@@ -249,7 +249,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return excludedReferences;
         }
 
-        private bool IsProjectReference(Reference reference, Common.ILogger logger)
+        private bool IsProjectReference(Reference3 reference, Common.ILogger logger)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
