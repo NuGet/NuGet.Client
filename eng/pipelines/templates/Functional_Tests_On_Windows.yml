@@ -7,6 +7,11 @@ steps:
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
 - task: PowerShell@1
+  displayName: "Disable strong name verification"
+  inputs:
+    scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\DisableStrongNameVerification.ps1"
+
+- task: PowerShell@1
   displayName: "Download Config Files"
   enabled: "false"
   inputs:
