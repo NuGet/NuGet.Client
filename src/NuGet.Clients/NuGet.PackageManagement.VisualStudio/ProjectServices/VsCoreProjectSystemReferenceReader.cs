@@ -87,8 +87,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         if (childReference is Reference6 reference6)
                         {
-                            reference6.GetMetadata(_referenceMetadata, out Array metadataElements, out Array metadataValues);
-                            var referenceOutputAssembly = GetReferenceMetadataValue(metadataElements, metadataValues);
+                            reference6.GetMetadata(_referenceMetadata, out Array _, out Array metadataValues);
+                            var referenceOutputAssembly = GetReferenceMetadataValue(metadataValues);
                             addProject = string.IsNullOrEmpty(referenceOutputAssembly) ||
                                 !string.Equals(bool.FalseString, referenceOutputAssembly, StringComparison.OrdinalIgnoreCase);
                         }
@@ -147,9 +147,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return results;
 
-            static string GetReferenceMetadataValue(Array metadataElements, Array metadataValues)
+            static string GetReferenceMetadataValue(Array metadataValues)
             {
-                if (metadataElements == null || metadataValues == null || metadataValues.Length == 0)
+                if (metadataValues == null || metadataValues.Length == 0)
                 {
                     return string.Empty; // no metadata for package
                 }
