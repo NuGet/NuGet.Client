@@ -109,9 +109,9 @@ namespace NuGet.Packaging
             }
         }
 
-        private string GenerateLicenseServiceLink(string license)
+        private static string GenerateLicenseServiceLink(string license)
         {
-            return new Uri(string.Format(LicenseServiceLinkTemplate, License)).AbsoluteUri;
+            return new Uri(string.Format(LicenseServiceLinkTemplate, license)).AbsoluteUri;
         }
     }
 

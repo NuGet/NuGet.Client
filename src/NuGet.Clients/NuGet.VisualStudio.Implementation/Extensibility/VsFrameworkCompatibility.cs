@@ -98,7 +98,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(frameworks));
             }
 
-            IEnumerable<NuGetFramework> ParseAllFrameworks(IEnumerable<FrameworkName> frameworks, string argumentName)
+            IEnumerable<NuGetFramework> ParseAllFrameworks(IEnumerable<FrameworkName> frameworks)
             {
                 foreach (FrameworkName frameworkName in frameworks)
                 {
@@ -113,8 +113,8 @@ namespace NuGet.VisualStudio
             }
 
             var nuGetTargetFramework = NuGetFramework.ParseFrameworkName(targetFramework.ToString(), DefaultFrameworkNameProvider.Instance);
-            var nuGetFallbackTargetFrameworks = ParseAllFrameworks(fallbackTargetFrameworks, nameof(fallbackTargetFrameworks)).ToList();
-            var nuGetFrameworks = ParseAllFrameworks(frameworks, nameof(frameworks)).ToList();
+            var nuGetFallbackTargetFrameworks = ParseAllFrameworks(fallbackTargetFrameworks).ToList();
+            var nuGetFrameworks = ParseAllFrameworks(frameworks).ToList();
 
             try
             {

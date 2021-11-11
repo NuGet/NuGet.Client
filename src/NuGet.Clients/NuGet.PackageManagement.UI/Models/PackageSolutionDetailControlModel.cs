@@ -464,7 +464,7 @@ namespace NuGet.PackageManagement.UI
             return allowedVersionsRange.Any() ? VersionRange.CommonSubSet(allowedVersionsRange) : VersionRange.All;
         }
 
-        internal async Task SelectAllProjectsAsync(bool select, CancellationToken cancellationToken)
+        internal async Task SelectAllProjectsAsync(bool select)
         {
             if (_updatingSelectCheckBoxState)
             {
