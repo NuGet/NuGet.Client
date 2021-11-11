@@ -102,13 +102,13 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         private void Initialize()
         {
-            _vsMonitorSelection = new AsyncLazy<vsShellInterop.IVsMonitorSelection>(
+            _vsMonitorSelection = new AsyncLazy<IVsMonitorSelection>(
                 async () =>
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // get the UI context cookie for the debugging mode
-                    var vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.IVsMonitorSelection)) as vsShellInterop.IVsMonitorSelection;
+                    var vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<IVsMonitorSelection, IVsMonitorSelection>();
                     Assumes.Present(vsMonitorSelection);
 
                     // get the solution not building and not debugging cookie
@@ -157,7 +157,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             _initialized = true;
 
-            var componentModel = await _asyncServiceProvider.GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+            var componentModel = await _asyncServiceProvider.GetComponentModelAsync();
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
             var experimentationService = NuGetExperimentationService.Value;
@@ -165,7 +165,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             Brushes.LoadVsBrushes(experimentationService);
 
-            _dte = (DTE)await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SDTE));
+            _dte = await _asyncServiceProvider.GetServiceAsync<SDTE, DTE>();
             Assumes.Present(_dte);
 
             _dteEvents = _dte.Events.DTEEvents;
@@ -212,7 +212,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Find existing hierarchy and item id of the document window if it's already registered.
-            var rdt = await _asyncServiceProvider.GetServiceAsync(typeof(IVsRunningDocumentTable)) as IVsRunningDocumentTable;
+            var rdt = await _asyncServiceProvider.GetServiceAsync<IVsRunningDocumentTable, IVsRunningDocumentTable>();
             Assumes.Present(rdt);
             IVsHierarchy hier;
             uint itemId;
@@ -260,7 +260,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             IVsWindowFrame windowFrame = null;
 
-            var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+            var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>();
             Assumes.Present(uiShell);
 
             uint toolWindowId;
@@ -336,7 +336,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+            var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>();
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object property;
