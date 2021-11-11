@@ -667,9 +667,9 @@ namespace NuGet.SolutionRestoreManager
 
         private static Dictionary<string, object> GetRestoreTrackingData(ImplicitRestoreReason restoreReason, int requestCount, bool isBulkRestoreCoordinationEnabled, int projectRestoreInfoSourcesCount, DateTime? bulkRestoreCoordinationCheckStartTime, int projectsReadyCheckCount, List<TimeSpan> projectReadyTimings)
         {
-            var bulkRestoreCoordinationTotalTime = bulkRestoreCoordinationCheckStartTime == default ?
-                "0" :
-                (DateTime.UtcNow - bulkRestoreCoordinationCheckStartTime.Value).TotalSeconds.ToString();
+            double bulkRestoreCoordinationTotalTime = bulkRestoreCoordinationCheckStartTime == default ?
+                0.0 :
+                (DateTime.UtcNow - bulkRestoreCoordinationCheckStartTime.Value).TotalSeconds;
 
             return new()
             {
@@ -692,9 +692,9 @@ namespace NuGet.SolutionRestoreManager
             // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
             var isSolutionLoadRestore = _isFirstRestore &&
                 request.RestoreSource == RestoreOperationSource.Implicit;
-            string timeSinceLastRestoreCompletedTime = _isFirstRestore ?
-                "0" :
-                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds.ToString();
+            double timeSinceLastRestoreCompletedTime = _isFirstRestore ?
+                0.0 :
+                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds;
             string lastRestoreOperationSourcee = _isFirstRestore ?
                 "None" :
                 _lastRestoreOperationSource.ToString();
