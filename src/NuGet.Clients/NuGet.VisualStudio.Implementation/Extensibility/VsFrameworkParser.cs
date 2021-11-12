@@ -31,68 +31,94 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public FrameworkName ParseFrameworkName(string shortOrFullName)
         {
-            if (shortOrFullName == null)
-            {
-                throw new ArgumentNullException(nameof(shortOrFullName));
-            }
-
+            const string eventName = nameof(IVsFrameworkParser) + "." + nameof(ParseFrameworkName);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+                new
+                {
+                    Framework = shortOrFullName
+                });
             try
             {
-                var nuGetFramework = NuGetFramework.Parse(shortOrFullName);
-                return new FrameworkName(nuGetFramework.DotNetFrameworkName);
+                if (shortOrFullName == null)
+                {
+                    throw new ArgumentNullException(nameof(shortOrFullName));
+                }
+
+                try
+                {
+                    var nuGetFramework = NuGetFramework.Parse(shortOrFullName);
+                    return new FrameworkName(nuGetFramework.DotNetFrameworkName);
+                }
+                catch (ArgumentException)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    _telemetryProvider.PostFault(exception, typeof(VsFrameworkParser).FullName);
+                    throw;
+                }
             }
-            catch (ArgumentException)
+            finally
             {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                _telemetryProvider.PostFault(exception, typeof(VsFrameworkParser).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 
         public string GetShortFrameworkName(FrameworkName frameworkName)
         {
-            if (frameworkName == null)
-            {
-                throw new ArgumentNullException(nameof(frameworkName));
-            }
-
+            const string eventName = nameof(IVsFrameworkParser) + "." + nameof(GetShortFrameworkName);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+                new
+                {
+                    Framework = frameworkName.FullName
+                });
             try
             {
-                var nuGetFramework = NuGetFramework.ParseFrameworkName(
-                    frameworkName.ToString(),
-                    DefaultFrameworkNameProvider.Instance);
+                if (frameworkName == null)
+                {
+                    throw new ArgumentNullException(nameof(frameworkName));
+                }
 
                 try
                 {
-                    return nuGetFramework.GetShortFolderName();
+                    var nuGetFramework = NuGetFramework.ParseFrameworkName(
+                        frameworkName.ToString(),
+                        DefaultFrameworkNameProvider.Instance);
+
+                    try
+                    {
+                        return nuGetFramework.GetShortFolderName();
+                    }
+                    catch (FrameworkException e)
+                    {
+                        // Wrap this exception for two reasons:
+                        //
+                        // 1) FrameworkException is not a .NET Framework type and therefore is not
+                        //    recognized by other components in Visual Studio.
+                        //
+                        // 2) Changing our NuGet code to throw ArgumentException is not appropriate in
+                        //    this case because the failure does not occur in a method that has arguments!
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            VsResources.CouldNotGetShortFrameworkName,
+                            frameworkName);
+                        throw new ArgumentException(message, e);
+                    }
                 }
-                catch (FrameworkException e)
+                catch (ArgumentException)
                 {
-                    // Wrap this exception for two reasons:
-                    //
-                    // 1) FrameworkException is not a .NET Framework type and therefore is not
-                    //    recognized by other components in Visual Studio.
-                    //
-                    // 2) Changing our NuGet code to throw ArgumentException is not appropriate in
-                    //    this case because the failure does not occur in a method that has arguments!
-                    var message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        VsResources.CouldNotGetShortFrameworkName,
-                        frameworkName);
-                    throw new ArgumentException(message, e);
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    _telemetryProvider.PostFault(exception, typeof(VsFrameworkParser).FullName);
+                    throw;
                 }
             }
-            catch (ArgumentException)
+            finally
             {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                _telemetryProvider.PostFault(exception, typeof(VsFrameworkParser).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 
