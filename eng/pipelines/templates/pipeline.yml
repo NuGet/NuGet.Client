@@ -145,7 +145,7 @@ stages:
       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
     pool:
-      vmImage: windows-latest
+      pool: VSEngSS-MicroBuild2019-1ES
     strategy:
       matrix:
         IsDesktop:
