@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 IList<string> excludedProjects = await GetExcludedProjectsAsync(logger);
                 if (excludedProjects.Count > 0)
                 {
-                    results = results.Where(e => excludedProjects.Contains(e.ProjectPath, StringComparer.OrdinalIgnoreCase)).ToList();
+                    results = results.Where(e => !excludedProjects.Contains(e.ProjectPath, StringComparer.OrdinalIgnoreCase)).ToList();
                 }
             }
 
