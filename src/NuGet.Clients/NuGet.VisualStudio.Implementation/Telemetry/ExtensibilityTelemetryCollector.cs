@@ -45,6 +45,9 @@ namespace NuGet.VisualStudio.Telemetry
                 // IVsFrameworkParser
                 [nameof(IVsFrameworkParser) + "." + nameof(IVsFrameworkParser.ParseFrameworkName)] = new Count(),
                 [nameof(IVsFrameworkParser) + "." + nameof(IVsFrameworkParser.GetShortFrameworkName)] = new Count(),
+
+                // IVsFrameworkParser2
+                [nameof(IVsFrameworkParser2) + "." + nameof(IVsFrameworkParser2)] = new Count()
             };
         }
 

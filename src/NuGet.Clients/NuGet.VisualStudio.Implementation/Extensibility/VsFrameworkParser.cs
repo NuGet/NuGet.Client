@@ -124,26 +124,40 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool TryParse(string input, out IVsNuGetFramework nuGetFramework)
         {
-            if (input == null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
+            const string eventName = nameof(IVsFrameworkParser2) + "." + nameof(TryParse);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+                new
+                {
+                    Framework = input
+                });
 
             try
             {
-                var framework = NuGetFramework.Parse(input);
+                if (input == null)
+                {
+                    throw new ArgumentNullException(nameof(input));
+                }
 
-                var targetFrameworkMoniker = framework.DotNetFrameworkName;
-                var targetPlatformMoniker = framework.DotNetPlatformName;
-                string targetPlatforMinVersion = null;
+                try
+                {
+                    var framework = NuGetFramework.Parse(input);
 
-                nuGetFramework = new VsNuGetFramework(targetFrameworkMoniker, targetPlatformMoniker, targetPlatforMinVersion);
-                return framework.IsSpecificFramework;
+                    var targetFrameworkMoniker = framework.DotNetFrameworkName;
+                    var targetPlatformMoniker = framework.DotNetPlatformName;
+                    string targetPlatforMinVersion = null;
+
+                    nuGetFramework = new VsNuGetFramework(targetFrameworkMoniker, targetPlatformMoniker, targetPlatforMinVersion);
+                    return framework.IsSpecificFramework;
+                }
+                catch (Exception exception)
+                {
+                    _telemetryProvider.PostFault(exception, typeof(VsFrameworkParser).FullName);
+                    throw;
+                }
             }
-            catch (Exception exception)
+            finally
             {
-                _telemetryProvider.PostFault(exception, typeof(VsFrameworkParser).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
     }
