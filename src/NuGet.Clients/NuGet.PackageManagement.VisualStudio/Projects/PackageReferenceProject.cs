@@ -91,14 +91,22 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>A <see cref="ProjectPackages"/> with two lists: Installed and transitive packages</returns>
         public abstract Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(IList<LockFileTarget> existingTargets, CancellationToken token);
 
-        private protected IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
+        private protected IEnumerable<PackageReference> GetPackageReferences(
+            IEnumerable<LibraryDependency> libraries,
+            NuGetFramework targetFramework,
+            Dictionary<string, ProjectInstalledPackage> installedPackages,
+            IList<LockFileTarget> targets)
         {
             return libraries
                 .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
                 .Select(library => new BuildIntegratedPackageReference(library, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(library, targetFramework, targets, installedPackages)));
         }
 
-        private protected IReadOnlyList<PackageReference> GetTransitivePackageReferences(NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages, IList<LockFileTarget> targets)
+        private protected IReadOnlyList<PackageReference> GetTransitivePackageReferences(
+            NuGetFramework targetFramework,
+            Dictionary<string, ProjectInstalledPackage> installedPackages,
+            Dictionary<string, ProjectInstalledPackage> transitivePackages,
+            IList<LockFileTarget> targets)
         {
             // If the assets files has not been updated, return the cached transitive packages
             if (targets == null)
@@ -139,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!IsTransitiveComputationNeeded)
                 {
                     // 2.1 Look for a transitive cached entry and return that entry
-                    var cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
+                    TransitiveEntry cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
                     if (cacheEntry != null)
                     {
                         return cacheEntry;
@@ -158,7 +166,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectPackages pkgs = await GetInstalledAndTransitivePackagesAsync(targetsList, ct);
 
             // 3. For each target framework graph (Framework, RID)-pair:
-            foreach (var targetFxGraph in targetsList)
+            foreach (LockFileTarget targetFxGraph in targetsList)
             {
                 var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
 
@@ -242,8 +250,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             LockFileTargetLibrary node = graph
                 .Libraries
-                .Where(x => x.Name.ToLowerInvariant() == current.Id.ToLowerInvariant()
-                        && x.Version.Equals(current.Version) && x.Type == "package")
+                .Where(lib => string.Equals(lib.Name, current.Id, StringComparison.OrdinalIgnoreCase)
+                        && lib.Version.Equals(current.Version) && lib.Type == "package")
                 .FirstOrDefault();
 
             if (node != default)
@@ -340,8 +348,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk
         /// </summary>
         /// <param name="ct">Cancellation token</param>
-        /// <remarks>Each project implementation has its own way for gathering assets file</remarks>
         /// <returns>A <see cref="PackageSpec"/> filled from assets file on disk</returns>
+        /// <remarks>Each project implementation is responsible of gathering <see cref="PackageSpec"/> info</remarks>
         internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
 
         /// <summary>

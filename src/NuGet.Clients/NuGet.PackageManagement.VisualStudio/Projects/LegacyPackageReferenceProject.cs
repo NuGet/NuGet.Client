@@ -183,8 +183,14 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(IList<LockFileTarget> existingTargets, CancellationToken token)
         {
             RestoreGraphRead reading = await GetCachedPackageSpecAsync(token);
-            IList<LockFileTarget> targetsList = null;
+            if (reading.PackageSpec == null)
+            {
+                IsInstalledAndTransitiveComputationNeeded = false;
 
+                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
+            }
+
+            IList<LockFileTarget> targetsList = null;
             if (IsInstalledAndTransitiveComputationNeeded)
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
@@ -197,7 +203,11 @@ namespace NuGet.PackageManagement.VisualStudio
             // get the installed packages
             List<PackageReference> installedPackages = reading.PackageSpec
                .TargetFrameworks
-               .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName, _installedPackages, targetsList))
+               .SelectMany(f => GetPackageReferences(
+                   f.Dependencies,
+                   f.FrameworkName,
+                   _installedPackages,
+                   targetsList))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                .ToList();
@@ -488,11 +498,11 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        internal override async ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+        internal override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
-            return await GetPackageSpecAsync(NullSettings.Instance);
+            return new ValueTask<PackageSpec>(GetPackageSpecAsync(NullSettings.Instance));
         }
 
         /// <inheritdoc/>
