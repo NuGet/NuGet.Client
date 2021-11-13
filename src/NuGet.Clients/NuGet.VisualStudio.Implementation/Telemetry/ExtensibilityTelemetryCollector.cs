@@ -19,9 +19,14 @@ namespace NuGet.VisualStudio.Telemetry
         // chosen to keep IReadOnlyDictionary for two reasons:
         // * To be more transparent to customers, and other Microsoft employees, exactly what telemetry is being
         //     collected. Every property/measure that will get reported is clearly defined here and easy to determine.
-        // * ConcurrentDictionary can be quite slow to add new keys. ETW events are supposed to be fast, so they can
-        //     be used liberally. EventSource synchronously blocks on every subscribed EventListener's OnEventWritten
-        //     callback. Hence, I want to ensure that raising ETW events is always as fast as possible.
+        // * ConcurrentDictionary can be quite slow to add new keys, and possibly slower to get values for existing keys.
+        //     ETW events are supposed to be fast, so they can be used liberally. EventSource synchronously blocks on
+        //     every subscribed EventListener's OnEventWritten callback. Hence, I want to ensure that raising ETW
+        //     events is always as fast as possible.
+        // * An alternative is to have a message queue, and when EventListener.OnEventWritten is called, post the
+        //     event to the queue, and then process the messages asynchronously. Writing to the queue would need to be
+        //     thread-safe, so I'm not confident that there would be any performance benefit, and it would be much
+        //     more complex than this.
 
         private IReadOnlyDictionary<string, Count> _counts;
         private ExtensibilityEventListener _eventListener;
