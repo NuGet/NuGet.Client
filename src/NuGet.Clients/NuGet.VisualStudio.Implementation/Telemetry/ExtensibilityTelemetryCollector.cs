@@ -71,6 +71,10 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageReferenceRemoved)] = new Count(),
                 [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageUninstalled)] = new Count(),
                 [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageUninstalling)] = new Count(),
+
+                // IVsPackageInstallerProjectEvents
+                [nameof(IVsPackageInstallerProjectEvents) + "." + nameof(IVsPackageInstallerProjectEvents.BatchStart)] = new Count(),
+                [nameof(IVsPackageInstallerProjectEvents) + "." + nameof(IVsPackageInstallerProjectEvents.BatchEnd)] = new Count(),
             };
         }
 
