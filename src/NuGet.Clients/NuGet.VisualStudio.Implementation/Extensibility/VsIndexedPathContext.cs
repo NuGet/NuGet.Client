@@ -39,6 +39,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
+            const string eventName = nameof(IVsPathContext) + "." + nameof(TryResolvePackageAsset);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
             try
             {
                 packageDirectoryPath = _referenceLookupIndex[packageAssetPath];
@@ -53,6 +56,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 _telemetryProvider.PostFault(exception, typeof(VsIndexedPathContext).FullName);
                 throw;
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
     }

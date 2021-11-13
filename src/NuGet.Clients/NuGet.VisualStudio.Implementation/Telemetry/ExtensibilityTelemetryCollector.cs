@@ -95,6 +95,9 @@ namespace NuGet.VisualStudio.Telemetry
 
                 // IVsPackageUninstaller
                 [nameof(IVsPackageUninstaller) + "." + nameof(IVsPackageUninstaller.UninstallPackage)] = new Count(),
+
+                // IVsPathContext
+                [nameof(IVsPathContext) + "." + nameof(IVsPathContext.TryResolvePackageAsset)] = new Count(),
             };
         }
 

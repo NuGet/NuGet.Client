@@ -72,9 +72,19 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
-            // unable to resolve the reference file path without the index
-            packageDirectoryPath = null;
-            return false;
+            const string eventName = nameof(IVsPathContext) + "." + nameof(IVsPathContext.TryResolvePackageAsset);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
+            try
+            {
+                // unable to resolve the reference file path without the index
+                packageDirectoryPath = null;
+                return false;
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
     }
 }
