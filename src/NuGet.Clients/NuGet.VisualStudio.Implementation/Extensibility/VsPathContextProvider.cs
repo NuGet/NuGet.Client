@@ -181,6 +181,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool TryCreateSolutionContext(out IVsPathContext2 outputPathContext)
         {
+            const string eventName = nameof(IVsPathContextProvider2) + "." + nameof(TryCreateSolutionContext) + ".1";
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
             try
             {
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager.Value, _settings.Value);
@@ -194,27 +197,41 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
                 throw;
             }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         public bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 outputPathContext)
         {
-            if (solutionDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(solutionDirectory));
-            }
+            const string eventName = nameof(IVsPathContextProvider2) + "." + nameof(TryCreateSolutionContext) + ".2";
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
             try
             {
-                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
+                if (solutionDirectory == null)
+                {
+                    throw new ArgumentNullException(nameof(solutionDirectory));
+                }
 
-                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), _telemetryProvider, packagesFolderPath);
+                try
+                {
+                    var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
 
-                return outputPathContext != null;
+                    outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), _telemetryProvider, packagesFolderPath);
+
+                    return outputPathContext != null;
+                }
+                catch (Exception exception)
+                {
+                    _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                    throw;
+                }
             }
-            catch (Exception exception)
+            finally
             {
-                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 
@@ -386,6 +403,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool TryCreateNoSolutionContext(out IVsPathContext vsPathContext)
         {
+            const string eventName = nameof(IVsPathContextProvider2) + "." + nameof(TryCreateNoSolutionContext);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
             try
             {
                 // invoke async operation from within synchronous method
@@ -397,6 +417,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
                 throw;
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 

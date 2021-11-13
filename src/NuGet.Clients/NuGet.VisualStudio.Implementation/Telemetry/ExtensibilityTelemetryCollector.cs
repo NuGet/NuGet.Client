@@ -101,6 +101,11 @@ namespace NuGet.VisualStudio.Telemetry
 
                 // IVsPathContextProvider
                 [nameof(IVsPathContextProvider) + "." + nameof(IVsPathContextProvider.TryCreateContext)] = new Count(),
+
+                // IVsPathContextProvider2
+                [nameof(IVsPathContextProvider2) + "." + nameof(IVsPathContextProvider2.TryCreateSolutionContext) + ".1"] = new Count(),
+                [nameof(IVsPathContextProvider2) + "." + nameof(IVsPathContextProvider2.TryCreateSolutionContext) + ".2"] = new Count(),
+                [nameof(IVsPathContextProvider2) + "." + nameof(IVsPathContextProvider2.TryCreateNoSolutionContext)] = new Count(),
             };
         }
 
