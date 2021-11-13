@@ -109,6 +109,9 @@ namespace NuGet.VisualStudio.Telemetry
 
                 // IVsProjectJsonToPackageReferenceMigrator
                 [nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(IVsProjectJsonToPackageReferenceMigrator.MigrateProjectJsonToPackageReferenceAsync)] = new Count(),
+
+                // IVsSemanticVersionComparer
+                [nameof(IVsSemanticVersionComparer) + "." + nameof(IVsSemanticVersionComparer.Compare)] = new Count(),
             };
         }
 

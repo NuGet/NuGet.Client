@@ -12,20 +12,30 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     {
         public int Compare(string versionA, string versionB)
         {
-            if (versionA == null)
+            const string eventName = nameof(IVsSemanticVersionComparer) + "." + nameof(Compare);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
+            try
             {
-                throw new ArgumentNullException(nameof(versionA));
-            }
+                if (versionA == null)
+                {
+                    throw new ArgumentNullException(nameof(versionA));
+                }
 
-            if (versionB == null)
+                if (versionB == null)
+                {
+                    throw new ArgumentNullException(nameof(versionB));
+                }
+
+                var parsedVersionA = NuGetVersion.Parse(versionA);
+                var parsedVersionB = NuGetVersion.Parse(versionB);
+
+                return parsedVersionA.CompareTo(parsedVersionB);
+            }
+            finally
             {
-                throw new ArgumentNullException(nameof(versionB));
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
-
-            var parsedVersionA = NuGetVersion.Parse(versionA);
-            var parsedVersionB = NuGetVersion.Parse(versionB);
-
-            return parsedVersionA.CompareTo(parsedVersionB);
         }
     }
 }
