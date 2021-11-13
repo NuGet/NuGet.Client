@@ -64,6 +64,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             bool includePrerelease,
             bool ignoreDependencies)
         {
+            const string eventName = nameof(IVsPackageInstaller2) + "." + nameof(InstallLatestPackage);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
             try
             {
                 PumpingJTF.Run(() => InstallPackageAsync(
@@ -78,6 +80,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 _telemetryProvider.PostFault(exception, typeof(VsPackageInstaller).FullName);
                 throw;
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 
