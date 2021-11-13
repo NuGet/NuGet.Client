@@ -24,5 +24,27 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 Level = EventLevel.Informational,
                 ActivityOptions = EventActivityOptions.Detachable
             };
+
+        public static EventSourceOptions AddEventOptions { get; } =
+            new EventSourceOptions()
+            {
+                Opcode = CustomOpcodes.Add,
+                Level = EventLevel.Informational,
+                ActivityOptions = EventActivityOptions.Detachable
+            };
+
+        public static EventSourceOptions RemoveEventOptions { get; } =
+            new EventSourceOptions()
+            {
+                Opcode = CustomOpcodes.Remove,
+                Level = EventLevel.Informational,
+                ActivityOptions = EventActivityOptions.Detachable
+            };
+
+        public static class CustomOpcodes
+        {
+            public static EventOpcode Add = (EventOpcode)11;
+            public static EventOpcode Remove = (EventOpcode)12;
+        }
     }
 }

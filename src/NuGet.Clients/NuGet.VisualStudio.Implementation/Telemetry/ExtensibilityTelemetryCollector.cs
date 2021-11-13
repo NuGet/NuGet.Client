@@ -8,6 +8,7 @@ using System.Threading;
 using Microsoft.Diagnostics.Tracing;
 using NuGet.Common;
 using NuGet.VisualStudio.Contracts;
+using NuGet.VisualStudio.Implementation.Extensibility;
 
 namespace NuGet.VisualStudio.Telemetry
 {
@@ -62,6 +63,14 @@ namespace NuGet.VisualStudio.Telemetry
 
                 // IVsPackageInstaller2
                 [nameof(IVsPackageInstaller2) + "." + nameof(IVsPackageInstaller2.InstallLatestPackage)] = new Count(),
+
+                // IVsPackageInstallerEvents
+                [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageInstalled)] = new Count(),
+                [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageInstalling)] = new Count(),
+                [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageReferenceAdded)] = new Count(),
+                [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageReferenceRemoved)] = new Count(),
+                [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageUninstalled)] = new Count(),
+                [nameof(IVsPackageInstallerEvents) + "." + nameof(IVsPackageInstallerEvents.PackageUninstalling)] = new Count(),
             };
         }
 
@@ -105,7 +114,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             protected override void OnEventWritten(EventWrittenEventArgs eventData)
             {
-                if (eventData.Opcode == EventOpcode.Start)
+                if (eventData.Opcode == EventOpcode.Start || eventData.Opcode == NuGetExtensibilityEtw.CustomOpcodes.Add)
                 {
                     if (_collector._counts.TryGetValue(eventData.EventName, out Count count))
                     {
