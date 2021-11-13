@@ -98,6 +98,9 @@ namespace NuGet.VisualStudio.Telemetry
 
                 // IVsPathContext
                 [nameof(IVsPathContext) + "." + nameof(IVsPathContext.TryResolvePackageAsset)] = new Count(),
+
+                // IVsPathContextProvider
+                [nameof(IVsPathContextProvider) + "." + nameof(IVsPathContextProvider.TryCreateContext)] = new Count(),
             };
         }
 

@@ -138,34 +138,44 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool TryCreateContext(string projectUniqueName, out IVsPathContext outputPathContext)
         {
-            if (projectUniqueName == null)
-            {
-                throw new ArgumentNullException(nameof(projectUniqueName));
-            }
+            const string eventName = nameof(IVsPathContextProvider) + "." + nameof(TryCreateContext);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
             try
             {
-                // invoke async operation from within synchronous method
-                outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                    async () =>
-                    {
-                        var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
+                if (projectUniqueName == null)
+                {
+                    throw new ArgumentNullException(nameof(projectUniqueName));
+                }
+
+                try
+                {
+                    // invoke async operation from within synchronous method
+                    outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                        async () =>
+                        {
+                            var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
 
                         // It's possible the project isn't a NuGet-compatible project at all.
                         if (nuGetProject == null)
-                        {
-                            return null;
-                        }
+                            {
+                                return null;
+                            }
 
-                        return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
-                    });
+                            return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
+                        });
 
-                return outputPathContext != null;
+                    return outputPathContext != null;
+                }
+                catch (Exception exception)
+                {
+                    _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                    throw;
+                }
             }
-            catch (Exception exception)
+            finally
             {
-                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 
