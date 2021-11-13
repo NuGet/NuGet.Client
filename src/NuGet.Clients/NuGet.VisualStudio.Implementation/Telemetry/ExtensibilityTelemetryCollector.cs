@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio.Telemetry
     internal sealed class ExtensibilityTelemetryCollector : IDisposable
     {
         // While we could use ConcurrentDictionary to avoid needing to pre-create all the keys and counters, I've
-        // chosen to keep IReadOnlyDictionary for two reasons:
+        // chosen to keep IReadOnlyDictionary for a few reasons:
         // * To be more transparent to customers, and other Microsoft employees, exactly what telemetry is being
         //     collected. Every property/measure that will get reported is clearly defined here and easy to determine.
         // * ConcurrentDictionary can be quite slow to add new keys, and possibly slower to get values for existing keys.

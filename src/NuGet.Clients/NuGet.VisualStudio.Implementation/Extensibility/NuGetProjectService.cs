@@ -91,7 +91,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             }
             finally
             {
-                NuGetExtensibilityEtw.EventSource.Write(etwEventName, NuGetExtensibilityEtw.StopEventOptions, eventData);
+                NuGetExtensibilityEtw.EventSource.Write(etwEventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 
