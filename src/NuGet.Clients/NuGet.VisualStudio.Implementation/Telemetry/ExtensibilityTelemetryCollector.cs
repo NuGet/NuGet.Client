@@ -92,6 +92,9 @@ namespace NuGet.VisualStudio.Telemetry
                 // IVsPackageSourceProvider
                 [nameof(IVsPackageSourceProvider) + "." + nameof(IVsPackageSourceProvider.GetSources)] = new Count(),
                 [nameof(IVsPackageSourceProvider) + "." + nameof(IVsPackageSourceProvider.SourcesChanged)] = new Count(),
+
+                // IVsPackageUninstaller
+                [nameof(IVsPackageUninstaller) + "." + nameof(IVsPackageUninstaller.UninstallPackage)] = new Count(),
             };
         }
 

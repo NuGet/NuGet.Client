@@ -49,6 +49,15 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
         {
+            const string eventName = nameof(IVsPackageUninstaller) + "." + nameof(UninstallPackage);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+                new
+                {
+                    // Can't add project information, since it's a COM object that this method might be called on a background thread
+                    PackageId = packageId,
+                    RemoveDependencies = removeDependencies
+                });
+
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
