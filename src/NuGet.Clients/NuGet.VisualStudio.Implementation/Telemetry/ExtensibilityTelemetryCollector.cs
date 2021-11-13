@@ -106,6 +106,9 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsPathContextProvider2) + "." + nameof(IVsPathContextProvider2.TryCreateSolutionContext) + ".1"] = new Count(),
                 [nameof(IVsPathContextProvider2) + "." + nameof(IVsPathContextProvider2.TryCreateSolutionContext) + ".2"] = new Count(),
                 [nameof(IVsPathContextProvider2) + "." + nameof(IVsPathContextProvider2.TryCreateNoSolutionContext)] = new Count(),
+
+                // IVsProjectJsonToPackageReferenceMigrator
+                [nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(IVsProjectJsonToPackageReferenceMigrator.MigrateProjectJsonToPackageReferenceAsync)] = new Count(),
             };
         }
 

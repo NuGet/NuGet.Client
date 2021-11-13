@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Implementation.Resources;
 
@@ -34,17 +33,27 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
         {
-            if (string.IsNullOrEmpty(projectUniqueName))
-            {
-                throw new ArgumentNullException(nameof(projectUniqueName));
-            }
+            const string eventName = nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(MigrateProjectJsonToPackageReferenceAsync);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
-            if (!File.Exists(projectUniqueName))
+            try
             {
-                throw new FileNotFoundException(string.Format(VsResources.Error_FileNotExists, projectUniqueName));
-            }
+                if (string.IsNullOrEmpty(projectUniqueName))
+                {
+                    throw new ArgumentNullException(nameof(projectUniqueName));
+                }
 
-            return MigrateProjectToPackageRefAsync(projectUniqueName);
+                if (!File.Exists(projectUniqueName))
+                {
+                    throw new FileNotFoundException(string.Format(VsResources.Error_FileNotExists, projectUniqueName));
+                }
+
+                return MigrateProjectToPackageRefAsync(projectUniqueName);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         private async Task<object> MigrateProjectToPackageRefAsync(string projectUniqueName)
