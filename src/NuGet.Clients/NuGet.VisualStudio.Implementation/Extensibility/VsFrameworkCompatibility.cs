@@ -200,7 +200,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> frameworks)
         {
-            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + "`2";
+            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + ".2";
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
             try
@@ -215,7 +215,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
         {
-            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + "`3";
+            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + ".3";
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
             try

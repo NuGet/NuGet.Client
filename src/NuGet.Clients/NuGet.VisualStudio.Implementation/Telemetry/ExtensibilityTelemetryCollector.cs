@@ -15,13 +15,15 @@ namespace NuGet.VisualStudio.Telemetry
 {
     internal sealed class ExtensibilityTelemetryCollector : IDisposable
     {
-        IReadOnlyDictionary<string, Count> _counts;
+        // While we could use ConcurrentDictionary to avoid needing to pre-create all the keys and counters, I've
+        // chosen to keep IReadOnlyDictionary for two reasons:
+        // * To be more transparent to customers, and other Microsoft employees, exactly what telemetry is being
+        //     collected. Every property/measure that will get reported is clearly defined here and easy to determine.
+        // * ConcurrentDictionary can be quite slow to add new keys. ETW events are supposed to be fast, so they can
+        //     be used liberally. EventSource synchronously blocks on every subscribed EventListener's OnEventWritten
+        //     callback. Hence, I want to ensure that raising ETW events is always as fast as possible.
 
-        private class Count
-        {
-            public int Value;
-        }
-
+        private IReadOnlyDictionary<string, Count> _counts;
         private ExtensibilityEventListener _eventListener;
 
         public ExtensibilityTelemetryCollector()
@@ -41,8 +43,8 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsFrameworkCompatibility2) + "." + nameof(IVsFrameworkCompatibility2.GetNearest)] = new Count(),
 
                 // IVsFrameworkCompatibility2
-                [nameof(IVsFrameworkCompatibility3) + ".GetNearest`2"] = new Count(),
-                [nameof(IVsFrameworkCompatibility3) + ".GetNearest`3"] = new Count(),
+                [nameof(IVsFrameworkCompatibility3) + "." + nameof(IVsFrameworkCompatibility3.GetNearest) + ".2"] = new Count(),
+                [nameof(IVsFrameworkCompatibility3) + "." + nameof(IVsFrameworkCompatibility3.GetNearest) + ".3"] = new Count(),
 
                 // IVsFrameworkParser
                 [nameof(IVsFrameworkParser) + "." + nameof(IVsFrameworkParser.ParseFrameworkName)] = new Count(),
@@ -130,6 +132,21 @@ namespace NuGet.VisualStudio.Telemetry
             };
         }
 
+        public TelemetryEvent ToTelemetryEvent()
+        {
+            TelemetryEvent data = new("extensibility");
+
+            foreach ((string api, Count count) in _counts)
+            {
+                if (count.Value > 0)
+                {
+                    data[api] = count.Value;
+                }
+            }
+
+            return data;
+        }
+
         public void Dispose()
         {
             _eventListener?.Dispose();
@@ -138,16 +155,9 @@ namespace NuGet.VisualStudio.Telemetry
             GC.SuppressFinalize(this);
         }
 
-        public TelemetryEvent ToTelemetryEvent()
+        private class Count
         {
-            TelemetryEvent data = new("extensibility");
-
-            foreach ((string api, Count count) in _counts)
-            {
-                data[api] = count.Value;
-            }
-
-            return data;
+            public int Value;
         }
 
         private class ExtensibilityEventListener : EventListener
