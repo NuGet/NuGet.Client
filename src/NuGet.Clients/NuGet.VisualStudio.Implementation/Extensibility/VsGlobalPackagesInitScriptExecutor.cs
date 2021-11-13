@@ -26,28 +26,43 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public async Task<bool> ExecuteInitScriptAsync(string packageId, string packageVersion)
         {
-            if (string.IsNullOrEmpty(packageId))
-            {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId));
-            }
-
-            if (string.IsNullOrEmpty(packageVersion))
-            {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersion));
-            }
-
-            // Exceptions from parsing package id or version should not be logged as faults
-            var version = new NuGetVersion(packageVersion);
-            var packageIdentity = new PackageIdentity(packageId, version);
+            const string eventName = nameof(IVsGlobalPackagesInitScriptExecutor) + "." + nameof(ExecuteInitScriptAsync);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+                new
+                {
+                    PackageId = packageId,
+                    PackageVersion = packageVersion
+                });
 
             try
             {
-                return await _scriptExecutor.ExecuteInitScriptAsync(packageIdentity);
+                if (string.IsNullOrEmpty(packageId))
+                {
+                    throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId));
+                }
+
+                if (string.IsNullOrEmpty(packageVersion))
+                {
+                    throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersion));
+                }
+
+                // Exceptions from parsing package id or version should not be logged as faults
+                var version = new NuGetVersion(packageVersion);
+                var packageIdentity = new PackageIdentity(packageId, version);
+
+                try
+                {
+                    return await _scriptExecutor.ExecuteInitScriptAsync(packageIdentity);
+                }
+                catch (Exception exception)
+                {
+                    await _telemetryProvider.PostFaultAsync(exception, typeof(VsGlobalPackagesInitScriptExecutor).FullName);
+                    throw;
+                }
             }
-            catch (Exception exception)
+            finally
             {
-                await _telemetryProvider.PostFaultAsync(exception, typeof(VsGlobalPackagesInitScriptExecutor).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
     }
