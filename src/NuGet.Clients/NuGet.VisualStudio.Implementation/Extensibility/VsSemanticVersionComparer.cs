@@ -20,6 +20,11 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             // set up correctly.
         }
 
+        public VsSemanticVersionComparer()
+        {
+
+        }
+
         public int Compare(string versionA, string versionB)
         {
             const string eventName = nameof(IVsSemanticVersionComparer) + "." + nameof(Compare);
