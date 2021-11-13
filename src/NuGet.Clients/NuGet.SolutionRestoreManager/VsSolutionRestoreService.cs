@@ -46,6 +46,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly ILogger _logger;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> _vsSolution2;
         private readonly ConcurrentQueue<(IVsProjectRestoreInfoSource, CancellationToken, TaskCompletionSource<bool>)> _projectRestoreInfoSources = new();
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
@@ -54,14 +55,16 @@ namespace NuGet.SolutionRestoreManager
             [Import(nameof(VisualStudioActivityLogger))]
             ILogger logger,
             [Import(typeof(SAsyncServiceProvider))]
-            IAsyncServiceProvider serviceProvider
+            IAsyncServiceProvider serviceProvider,
+            INuGetTelemetryProvider telemetryProvider
             )
             : this(
                   projectSystemCache,
                   restoreWorker,
                   logger,
                   new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() =>
-                  serviceProvider.GetServiceAsync<SVsSolution, IVsSolution2>(), NuGetUIThreadHelper.JoinableTaskFactory)
+                  serviceProvider.GetServiceAsync<SVsSolution, IVsSolution2>(), NuGetUIThreadHelper.JoinableTaskFactory),
+                  telemetryProvider
                   )
         {
         }
@@ -70,12 +73,14 @@ namespace NuGet.SolutionRestoreManager
             IProjectSystemCache projectSystemCache,
             ISolutionRestoreWorker restoreWorker,
             ILogger logger,
-            Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> vsSolution2)
+            Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> vsSolution2,
+            INuGetTelemetryProvider telemetryProvider)
         {
             _projectSystemCache = projectSystemCache ?? throw new ArgumentNullException(nameof(projectSystemCache));
             _restoreWorker = restoreWorker ?? throw new ArgumentNullException(nameof(restoreWorker));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _vsSolution2 = vsSolution2 ?? throw new ArgumentNullException(nameof(vsSolution2));
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
         Task<bool> IVsSolutionRestoreService.CurrentRestoreOperation
@@ -269,7 +274,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                await TelemetryUtility.PostFaultAsync(e, nameof(VsSolutionRestoreService));
+                await _telemetryProvider.PostFaultAsync(e, nameof(VsSolutionRestoreService));
                 return false;
             }
         }

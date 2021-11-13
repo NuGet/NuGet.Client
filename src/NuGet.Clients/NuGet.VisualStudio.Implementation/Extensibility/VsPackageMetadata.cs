@@ -4,12 +4,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging.Core;
+using NuGet.VisualStudio.Etw;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     internal class VsPackageMetadata : IVsPackageMetadata
     {
         private readonly PackageIdentity _package;
+        private readonly string _title;
+        private readonly IEnumerable<string> _authors;
+        private readonly string _description;
+        private readonly string _installPath;
 
         public VsPackageMetadata(PackageIdentity package, string installPath)
             :
@@ -20,33 +25,80 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public VsPackageMetadata(PackageIdentity package, string title, IEnumerable<string> authors, string description, string installPath)
         {
             _package = package;
-            InstallPath = installPath ?? string.Empty;
-            Title = title ?? package.Id;
-            Authors = authors ?? Enumerable.Empty<string>();
-            Description = description ?? string.Empty;
+            _installPath = installPath ?? string.Empty;
+            _title = title ?? package.Id;
+            _authors = authors ?? Enumerable.Empty<string>();
+            _description = description ?? string.Empty;
         }
 
         public string Id
         {
-            get { return _package.Id; }
+            get
+            {
+                const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Id);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _package.Id;
+            }
         }
 
         public SemanticVersion Version
         {
-            get { return new SemanticVersion(_package.Version.ToNormalizedString()); }
+            get
+            {
+                const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Version);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return new SemanticVersion(_package.Version.ToNormalizedString());
+            }
         }
 
         public string VersionString
         {
-            get { return _package.Version.ToString(); }
+            get
+            {
+                const string eventName = nameof(IVsPackageMetadata) + "." + nameof(VersionString);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _package.Version.ToString();
+            }
         }
 
-        public string Title { get; }
+        public string Title
+        {
+            get
+            {
+                const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Id);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _title;
+            }
+        }
 
-        public IEnumerable<string> Authors { get; }
+        public IEnumerable<string> Authors
+        {
+            get
+            {
+                const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Id);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _authors;
+            }
+        }
 
-        public string Description { get; }
+        public string Description
+        {
+            get
+            {
+                const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Id);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _description;
+            }
+        }
 
-        public string InstallPath { get; }
+        public string InstallPath
+        {
+            get
+            {
+                const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Id);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _installPath;
+            }
+        }
     }
 }

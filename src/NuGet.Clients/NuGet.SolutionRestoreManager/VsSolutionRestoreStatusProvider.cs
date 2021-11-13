@@ -12,6 +12,7 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.Shared;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Etw;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -21,14 +22,17 @@ namespace NuGet.SolutionRestoreManager
     {
         private readonly Lazy<ISolutionRestoreWorker> _restoreWorker;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
         public VsSolutionRestoreStatusProvider(
             Lazy<ISolutionRestoreWorker> restoreWorker,
-            Lazy<IVsSolutionManager> solutionManager)
+            Lazy<IVsSolutionManager> solutionManager,
+            INuGetTelemetryProvider telemetryProvider)
         {
             _restoreWorker = restoreWorker;
             _solutionManager = solutionManager;
+            _telemetryProvider = telemetryProvider;
         }
 
         /// <summary>
@@ -69,6 +73,11 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 return complete;
+            }
+            catch (Exception ex)
+            {
+                await _telemetryProvider.PostFaultAsync(ex, nameof(VsSolutionRestoreStatusProvider));
+                throw;
             }
             finally
             {

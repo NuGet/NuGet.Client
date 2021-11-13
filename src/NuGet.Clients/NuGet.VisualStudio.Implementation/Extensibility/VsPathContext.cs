@@ -15,11 +15,38 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     // Used when project is not managed by NuGet or given project doesn't have any packages installed.
     internal class VsPathContext : IVsPathContext2
     {
-        public string UserPackageFolder { get; }
+        private readonly string _userPackageFolder;
+        public string UserPackageFolder
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext) + "." + nameof(UserPackageFolder);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _userPackageFolder;
+            }
+        }
 
-        public IEnumerable FallbackPackageFolders { get; }
+        private readonly IEnumerable _fallbackPackageFolders;
+        public IEnumerable FallbackPackageFolders
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext) + "." + nameof(FallbackPackageFolders);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _fallbackPackageFolders;
+            }
+        }
 
-        public string SolutionPackageFolder { get; }
+        private readonly string _solutionPackageFolder;
+        public string SolutionPackageFolder
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext2) + "." + nameof(SolutionPackageFolder);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _solutionPackageFolder;
+            }
+        }
 
         private INuGetTelemetryProvider _telemetryProvider;
 
@@ -34,9 +61,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             try
             {
-                UserPackageFolder = pathContext.UserPackageFolder;
-                FallbackPackageFolders = pathContext.FallbackPackageFolders;
-                SolutionPackageFolder = solutionPackageFolder;
+                _userPackageFolder = pathContext.UserPackageFolder;
+                _fallbackPackageFolders = pathContext.FallbackPackageFolders;
+                _solutionPackageFolder = solutionPackageFolder;
             }
             catch (Exception exception)
             {
@@ -61,8 +88,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             try
             {
-                UserPackageFolder = userPackageFolder;
-                FallbackPackageFolders = fallbackPackageFolders.ToList();
+                _userPackageFolder = userPackageFolder;
+                _fallbackPackageFolders = fallbackPackageFolders.ToList();
             }
             catch (Exception exception)
             {

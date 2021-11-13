@@ -16,10 +16,28 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     {
         private readonly PathLookupTrie<string> _referenceLookupIndex;
         private readonly INuGetTelemetryProvider _telemetryProvider;
+        private readonly string _userPackageFolder;
+        private readonly IEnumerable _fallbackPackageFolders;
 
-        public string UserPackageFolder { get; }
+        public string UserPackageFolder
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext) + "." + nameof(UserPackageFolder);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _userPackageFolder;
+            }
+        }
 
-        public IEnumerable FallbackPackageFolders { get; }
+        public IEnumerable FallbackPackageFolders
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext) + "." + nameof(FallbackPackageFolders);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _fallbackPackageFolders;
+            }
+        }
 
         public VsIndexedPathContext(
             string userPackageFolder,
@@ -32,8 +50,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 throw new ArgumentNullException(nameof(index));
             }
 
-            UserPackageFolder = userPackageFolder ?? throw new ArgumentNullException(nameof(userPackageFolder));
-            FallbackPackageFolders = fallbackPackageFolders?.ToList() ?? throw new ArgumentNullException(nameof(fallbackPackageFolders));
+            _userPackageFolder = userPackageFolder ?? throw new ArgumentNullException(nameof(userPackageFolder));
+            _fallbackPackageFolders = fallbackPackageFolders?.ToList() ?? throw new ArgumentNullException(nameof(fallbackPackageFolders));
             _referenceLookupIndex = index ?? throw new ArgumentNullException(nameof(index));
             _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }

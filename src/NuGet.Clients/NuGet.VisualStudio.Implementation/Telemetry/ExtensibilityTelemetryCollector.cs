@@ -93,6 +93,21 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.IsPackageInstalledEx)] = new Count(),
 #pragma warning restore CS0618 // Type or member is obsolete
 
+                // IVsPackageMetadata
+                [nameof(IVsPackageMetadata) + "." + nameof(IVsPackageMetadata.Authors)] = new Count(),
+                [nameof(IVsPackageMetadata) + "." + nameof(IVsPackageMetadata.Description)] = new Count(),
+                [nameof(IVsPackageMetadata) + "." + nameof(IVsPackageMetadata.Id)] = new Count(),
+                [nameof(IVsPackageMetadata) + "." + nameof(IVsPackageMetadata.InstallPath)] = new Count(),
+                [nameof(IVsPackageMetadata) + "." + nameof(IVsPackageMetadata.Title)] = new Count(),
+#pragma warning disable CS0618 // Type or member is obsolete
+                [nameof(IVsPackageMetadata) + "." + nameof(IVsPackageMetadata.Version)] = new Count(),
+#pragma warning restore CS0618 // Type or member is obsolete
+                [nameof(IVsPackageMetadata) + "." + nameof(IVsPackageMetadata.VersionString)] = new Count(),
+
+                // IVsPackageProjectMetadata
+                [nameof(IVsPackageProjectMetadata) + "." + nameof(IVsPackageProjectMetadata.BatchId)] = new Count(),
+                [nameof(IVsPackageProjectMetadata) + "." + nameof(IVsPackageProjectMetadata.ProjectName)] = new Count(),
+
                 // IVsPackageRestorer
                 [nameof(IVsPackageRestorer) + "." + nameof(IVsPackageRestorer.IsUserConsentGranted)] = new Count(),
                 [nameof(IVsPackageRestorer) + "." + nameof(IVsPackageRestorer.RestorePackages)] = new Count(),
@@ -105,7 +120,12 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsPackageUninstaller) + "." + nameof(IVsPackageUninstaller.UninstallPackage)] = new Count(),
 
                 // IVsPathContext
+                [nameof(IVsPathContext) + "." + nameof(IVsPathContext.UserPackageFolder)] = new Count(),
+                [nameof(IVsPathContext) + "." + nameof(IVsPathContext.FallbackPackageFolders)] = new Count(),
                 [nameof(IVsPathContext) + "." + nameof(IVsPathContext.TryResolvePackageAsset)] = new Count(),
+
+                // IVsPathContext2
+                [nameof(IVsPathContext2) + "." + nameof(IVsPathContext2.SolutionPackageFolder)] = new Count(),
 
                 // IVsPathContextProvider
                 [nameof(IVsPathContextProvider) + "." + nameof(IVsPathContextProvider.TryCreateContext)] = new Count(),

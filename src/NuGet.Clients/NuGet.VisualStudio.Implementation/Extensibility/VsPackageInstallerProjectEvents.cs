@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio.Etw;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
@@ -14,6 +15,14 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     [Export(typeof(IVsPackageInstallerProjectEvents))]
     public class VsPackageInstallerProjectEvents : IVsPackageInstallerProjectEvents
     {
+        [ImportingConstructor]
+        public VsPackageInstallerProjectEvents(INuGetTelemetryProvider telemetryProvider)
+        {
+            // MEF components do not participate in Visual Studio's Package extensibility,
+            // hence importing INuGetTelemetryProvider ensures that the ETW collector is
+            // set up correctly.
+        }
+
         public event VsPackageProjectEventHandler _batchStart;
         const string BatchStartEventName = nameof(IVsPackageInstallerProjectEvents) + "." + nameof(BatchStart);
         public event VsPackageProjectEventHandler BatchStart

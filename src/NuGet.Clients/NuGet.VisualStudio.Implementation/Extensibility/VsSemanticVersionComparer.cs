@@ -5,12 +5,21 @@ using System;
 using System.ComponentModel.Composition;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Etw;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsSemanticVersionComparer))]
     public class VsSemanticVersionComparer : IVsSemanticVersionComparer
     {
+        [ImportingConstructor]
+        public VsSemanticVersionComparer(INuGetTelemetryProvider telemetryProvider)
+        {
+            // MEF components do not participate in Visual Studio's Package extensibility,
+            // hence importing INuGetTelemetryProvider ensures that the ETW collector is
+            // set up correctly.
+        }
+
         public int Compare(string versionA, string versionB)
         {
             const string eventName = nameof(IVsSemanticVersionComparer) + "." + nameof(Compare);

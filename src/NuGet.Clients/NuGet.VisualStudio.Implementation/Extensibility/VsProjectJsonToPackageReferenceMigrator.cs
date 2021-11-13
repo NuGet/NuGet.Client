@@ -11,6 +11,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
@@ -19,20 +20,24 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     {
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGetProjectFactory> _projectFactory;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
         public VsProjectJsonToPackageReferenceMigrator(
             Lazy<IVsSolutionManager> solutionManager,
-            Lazy<NuGetProjectFactory> projectFactory)
+            Lazy<NuGetProjectFactory> projectFactory,
+            INuGetTelemetryProvider telemetryProvider)
         {
             Assumes.Present(solutionManager);
             Assumes.Present(projectFactory);
+            Assumes.Present(telemetryProvider);
 
             _solutionManager = solutionManager;
             _projectFactory = projectFactory;
+            _telemetryProvider = telemetryProvider;
         }
 
-        public Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
+        public async Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
         {
             const string eventName = nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(MigrateProjectJsonToPackageReferenceAsync);
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
@@ -49,7 +54,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                     throw new FileNotFoundException(string.Format(VsResources.Error_FileNotExists, projectUniqueName));
                 }
 
-                return MigrateProjectToPackageRefAsync(projectUniqueName);
+                return await MigrateProjectToPackageRefAsync(projectUniqueName);
+            }
+            catch (Exception ex)
+            {
+                await _telemetryProvider.PostFaultAsync(ex, nameof(VsProjectJsonToPackageReferenceMigrator));
+                throw;
             }
             finally
             {
