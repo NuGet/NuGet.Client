@@ -84,6 +84,11 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.IsPackageInstalled) + ".3"] = new Count(),
                 [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.IsPackageInstalledEx)] = new Count(),
 #pragma warning restore CS0618 // Type or member is obsolete
+
+                // IVsPackageRestorer
+                [nameof(IVsPackageRestorer) + "." + nameof(IVsPackageRestorer.IsUserConsentGranted)] = new Count(),
+                [nameof(IVsPackageRestorer) + "." + nameof(IVsPackageRestorer.RestorePackages)] = new Count(),
+
             };
         }
 

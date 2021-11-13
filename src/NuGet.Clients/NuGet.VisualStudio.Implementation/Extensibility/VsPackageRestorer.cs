@@ -39,6 +39,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool IsUserConsentGranted()
         {
+            const string eventName = nameof(IVsPackageRestorer) + "." + nameof(IsUserConsentGranted);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
             try
             {
                 var packageRestoreConsent = new PackageRestoreConsent(_settings);
@@ -49,10 +52,17 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 _telemetryProvider.PostFault(exception, typeof(IVsPackageRestorer).FullName);
                 throw;
             }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         public void RestorePackages(Project project)
         {
+            const string eventName = nameof(IVsPackageRestorer) + "." + nameof(RestorePackages);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+
             try
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
@@ -72,6 +82,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             catch (Exception exception)
             {
                 _telemetryProvider.PostFault(exception, typeof(VsPackageRestorer).FullName);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
     }
