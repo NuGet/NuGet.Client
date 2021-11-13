@@ -11,6 +11,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Shared;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Etw;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -35,34 +36,44 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public async Task<bool> IsRestoreCompleteAsync(CancellationToken token)
         {
-            var complete = true;
+            const string eventName = nameof(IVsSolutionRestoreStatusProvider) + "." + nameof(IVsSolutionManager);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
-            // Check if the solution is open, if there are no projects then consider it restored.
-            if (await _solutionManager.Value.IsSolutionOpenAsync())
+            try
             {
-                var graphContext = new DependencyGraphCacheContext();
-                var projects = (await _solutionManager.Value.GetNuGetProjectsAsync()).AsList();
+                var complete = true;
 
-                // It could be that the project added to the solution has not yet been updated.
-                if (projects == null || projects.Count == 0)
+                // Check if the solution is open, if there are no projects then consider it restored.
+                if (await _solutionManager.Value.IsSolutionOpenAsync())
                 {
-                    return false;
+                    var graphContext = new DependencyGraphCacheContext();
+                    var projects = (await _solutionManager.Value.GetNuGetProjectsAsync()).AsList();
+
+                    // It could be that the project added to the solution has not yet been updated.
+                    if (projects == null || projects.Count == 0)
+                    {
+                        return false;
+                    }
+
+                    // Empty solutions with no projects are considered restored.
+                    foreach (var project in projects)
+                    {
+                        token.ThrowIfCancellationRequested();
+
+                        // Check if the project has a spec to see if nomination is complete.
+                        complete &= await HasSpecAsync(project, graphContext);
+                    }
+
+                    // Check if the restore worker is currently active.
+                    complete &= !_restoreWorker.Value.IsRunning;
                 }
 
-                // Empty solutions with no projects are considered restored.
-                foreach (var project in projects)
-                {
-                    token.ThrowIfCancellationRequested();
-
-                    // Check if the project has a spec to see if nomination is complete.
-                    complete &= await HasSpecAsync(project, graphContext);
-                }
-
-                // Check if the restore worker is currently active.
-                complete &= !_restoreWorker.Value.IsRunning;
+                return complete;
             }
-
-            return complete;
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         /// <summary>

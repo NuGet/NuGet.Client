@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using Microsoft.Diagnostics.Tracing;
 using NuGet.Common;
+using NuGet.SolutionRestoreManager;
 using NuGet.VisualStudio.Contracts;
 using NuGet.VisualStudio.Etw;
 
@@ -112,6 +113,20 @@ namespace NuGet.VisualStudio.Telemetry
 
                 // IVsSemanticVersionComparer
                 [nameof(IVsSemanticVersionComparer) + "." + nameof(IVsSemanticVersionComparer.Compare)] = new Count(),
+
+                // IVsSolutionRestoreService
+                [nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService.CurrentRestoreOperation)] = new Count(),
+                [nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService.NominateProjectAsync)] = new Count(),
+
+                // IVsSolutionRestoreService2
+                [nameof(IVsSolutionRestoreService2) + "." + nameof(IVsSolutionRestoreService2.NominateProjectAsync)] = new Count(),
+
+                // IVsSolutionRestoreService3
+                [nameof(IVsSolutionRestoreService3) + "." + nameof(IVsSolutionRestoreService3.CurrentRestoreOperation)] = new Count(),
+                [nameof(IVsSolutionRestoreService3) + "." + nameof(IVsSolutionRestoreService3.NominateProjectAsync)] = new Count(),
+
+                // IVsSolutionRestoreService4
+                [nameof(IVsSolutionRestoreService4) + "." + nameof(IVsSolutionRestoreService4.RegisterRestoreInfoSourceAsync)] = new Count(),
             };
         }
 
@@ -155,7 +170,8 @@ namespace NuGet.VisualStudio.Telemetry
 
             protected override void OnEventWritten(EventWrittenEventArgs eventData)
             {
-                if (eventData.Opcode == EventOpcode.Start || eventData.Opcode == NuGetExtensibilityEtw.CustomOpcodes.Add)
+                var opcode = eventData.Opcode;
+                if (opcode == EventOpcode.Start || opcode == NuGetExtensibilityEtw.CustomOpcodes.Add || opcode == EventOpcode.Info)
                 {
                     if (_collector._counts.TryGetValue(eventData.EventName, out Count count))
                     {

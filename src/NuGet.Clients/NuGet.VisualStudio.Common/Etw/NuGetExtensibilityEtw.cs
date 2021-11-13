@@ -41,6 +41,14 @@ namespace NuGet.VisualStudio.Etw
                 ActivityOptions = EventActivityOptions.Detachable
             };
 
+        public static EventSourceOptions InfoEventOptions { get; } =
+            new EventSourceOptions()
+            {
+                Opcode = EventOpcode.Info,
+                Level = EventLevel.Informational,
+                ActivityOptions = EventActivityOptions.None
+            };
+
         public static class CustomOpcodes
         {
             public static readonly EventOpcode Add = (EventOpcode)11;

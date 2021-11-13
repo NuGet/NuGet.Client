@@ -22,6 +22,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
@@ -77,39 +78,105 @@ namespace NuGet.SolutionRestoreManager
             _vsSolution2 = vsSolution2 ?? throw new ArgumentNullException(nameof(vsSolution2));
         }
 
-        public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
+        Task<bool> IVsSolutionRestoreService.CurrentRestoreOperation
+        {
+            get
+            {
+                const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService.CurrentRestoreOperation);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _restoreWorker.CurrentRestoreOperation;
+            }
+        }
+
+        Task<bool> IVsSolutionRestoreService3.CurrentRestoreOperation
+        {
+            get
+            {
+                const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService3.CurrentRestoreOperation);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                return _restoreWorker.CurrentRestoreOperation;
+            }
+        }
 
         public async Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
         {
-            Assumes.NotNullOrEmpty(projectUniqueName);
-
-            ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
-            var dgSpec = new DependencyGraphSpec();
-            var packageSpec = new PackageSpec()
+            const string eventName = nameof(IVsSolutionRestoreService2) + "." + nameof(NominateProjectAsync);
+            var eventData = new NominateProjectAsyncEventData()
             {
-                Name = projectUniqueName
+                ProjectUniqueName = projectUniqueName
             };
-            dgSpec.AddProject(packageSpec);
-            dgSpec.AddRestore(packageSpec.Name);
-            _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, new List<IAssetsLogMessage>());
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
 
-            await PopulateRestoreInfoSourcesAsync();
-            // returned task completes when scheduled restore operation completes.
-            var restoreTask = _restoreWorker.ScheduleRestoreAsync(
-                SolutionRestoreRequest.OnUpdate(),
-                token);
+            try
+            {
+                Assumes.NotNullOrEmpty(projectUniqueName);
 
-            return await restoreTask;
+                ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
+                var dgSpec = new DependencyGraphSpec();
+                var packageSpec = new PackageSpec()
+                {
+                    Name = projectUniqueName
+                };
+                dgSpec.AddProject(packageSpec);
+                dgSpec.AddRestore(packageSpec.Name);
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, new List<IAssetsLogMessage>());
+
+                await PopulateRestoreInfoSourcesAsync();
+                // returned task completes when scheduled restore operation completes.
+                var restoreTask = _restoreWorker.ScheduleRestoreAsync(
+                    SolutionRestoreRequest.OnUpdate(),
+                    token);
+
+                return await restoreTask;
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, eventData);
+            }
+        }
+
+        [Microsoft.Diagnostics.Tracing.EventData]
+        private struct NominateProjectAsyncEventData
+        {
+            [Microsoft.Diagnostics.Tracing.EventField]
+            public string ProjectUniqueName { get; set; }
         }
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
-            return NominateProjectAsync(projectUniqueName, projectRestoreInfo, null, token);
+            const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(NominateProjectAsync);
+            var eventData = new NominateProjectAsyncEventData()
+            {
+                ProjectUniqueName = projectUniqueName
+            };
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
+            try
+            {
+                return NominateProjectAsync(projectUniqueName, projectRestoreInfo, null, token);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions, eventData);
+            }
         }
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo2 projectRestoreInfo, CancellationToken token)
         {
-            return NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
+            const string eventName = nameof(IVsSolutionRestoreService3) + "." + nameof(NominateProjectAsync);
+            var eventData = new NominateProjectAsyncEventData()
+            {
+                ProjectUniqueName = projectUniqueName
+            };
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
+
+            try
+            {
+                return NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         /// <summary>
@@ -330,21 +397,31 @@ namespace NuGet.SolutionRestoreManager
 
         public async Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken token)
         {
-            if (restoreInfoSource == null)
-            {
-                throw new ArgumentNullException(nameof(restoreInfoSource));
-            }
+            const string eventName = nameof(IVsSolutionRestoreService4) + "." + nameof(RegisterRestoreInfoSourceAsync);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
-            if (string.IsNullOrEmpty(restoreInfoSource.Name))
+            try
             {
-                throw new ArgumentNullException(Resources.Argument_Cannot_Be_Null_Or_Empty, $"{nameof(restoreInfoSource)}.{nameof(restoreInfoSource.Name)}");
-            }
-            token.ThrowIfCancellationRequested();
+                if (restoreInfoSource == null)
+                {
+                    throw new ArgumentNullException(nameof(restoreInfoSource));
+                }
 
-            // This is called early in the project loading process, so as such the project info may not be available yet. The data will be processed before the restore itself is started.
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-            _projectRestoreInfoSources.Enqueue((restoreInfoSource, token, taskCompletionSource));
-            await taskCompletionSource.Task;
+                if (string.IsNullOrEmpty(restoreInfoSource.Name))
+                {
+                    throw new ArgumentNullException(Resources.Argument_Cannot_Be_Null_Or_Empty, $"{nameof(restoreInfoSource)}.{nameof(restoreInfoSource.Name)}");
+                }
+                token.ThrowIfCancellationRequested();
+
+                // This is called early in the project loading process, so as such the project info may not be available yet. The data will be processed before the restore itself is started.
+                var taskCompletionSource = new TaskCompletionSource<bool>();
+                _projectRestoreInfoSources.Enqueue((restoreInfoSource, token, taskCompletionSource));
+                await taskCompletionSource.Task;
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         private async Task<ProjectNames> GetProjectNamesAsync(string projectUniqueName, CancellationToken token)
