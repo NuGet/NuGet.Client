@@ -32,10 +32,18 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled)
         {
-            var sources = new List<KeyValuePair<string, string>>();
+            const string eventName = nameof(IVsPackageSourceProvider) + "." + nameof(GetSources);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+                new
+                {
+                    IncludeUnOfficial = includeUnOfficial,
+                    IncludeDisabled = includeDisabled
+                });
 
             try
             {
+                var sources = new List<KeyValuePair<string, string>>();
+
                 foreach (var source in _packageSourceProvider.LoadPackageSources())
                 {
                     if ((IsOfficial(source) || includeUnOfficial)
@@ -46,24 +54,48 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                         sources.Add(pair);
                     }
                 }
+
+                return sources;
             }
             catch (Exception ex) when (!IsExpected(ex))
             {
                 _telemetryProvider.PostFault(ex, typeof(VsPackageSourceProvider).FullName);
                 throw new InvalidOperationException(ex.Message, ex);
             }
-
-            return sources;
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
-        public event EventHandler SourcesChanged;
+        private event EventHandler _sourcesChanged;
+        const string SourcesChangedEventName = nameof(IVsPackageSourceProvider) + "." + nameof(SourcesChanged);
+        public event EventHandler SourcesChanged
+        {
+            add
+            {
+                NuGetExtensibilityEtw.EventSource.Write(SourcesChangedEventName, NuGetExtensibilityEtw.AddEventOptions);
+                _sourcesChanged += value;
+            }
+            remove
+            {
+                NuGetExtensibilityEtw.EventSource.Write(SourcesChangedEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                _sourcesChanged -= value;
+            }
+        }
 
         private void PackageSourcesChanged(object sender, EventArgs e)
         {
-            if (SourcesChanged != null)
+            if (_sourcesChanged != null)
             {
                 // No information is given in the event args, callers must re-request GetSources
-                SourcesChanged(this, new EventArgs());
+                var eventArgs = new EventArgs();
+                var delegates = _sourcesChanged.GetInvocationList();
+                for (int i = 0; i < delegates.Length; i++)
+                {
+                    var handler = (EventHandler)delegates[i];
+                    handler(this, eventArgs);
+                }
             }
         }
 

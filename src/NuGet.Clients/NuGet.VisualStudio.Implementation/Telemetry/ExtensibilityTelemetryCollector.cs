@@ -89,6 +89,9 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsPackageRestorer) + "." + nameof(IVsPackageRestorer.IsUserConsentGranted)] = new Count(),
                 [nameof(IVsPackageRestorer) + "." + nameof(IVsPackageRestorer.RestorePackages)] = new Count(),
 
+                // IVsPackageSourceProvider
+                [nameof(IVsPackageSourceProvider) + "." + nameof(IVsPackageSourceProvider.GetSources)] = new Count(),
+                [nameof(IVsPackageSourceProvider) + "." + nameof(IVsPackageSourceProvider.SourcesChanged)] = new Count(),
             };
         }
 
