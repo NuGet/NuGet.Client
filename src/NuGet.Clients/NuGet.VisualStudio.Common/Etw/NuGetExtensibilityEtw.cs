@@ -3,9 +3,9 @@
 
 using Microsoft.Diagnostics.Tracing;
 
-namespace NuGet.VisualStudio.Implementation.Extensibility
+namespace NuGet.VisualStudio.Etw
 {
-    internal static class NuGetExtensibilityEtw
+    public static class NuGetExtensibilityEtw
     {
         public static EventSource EventSource { get; } = new EventSource("NuGet-VS-Extensibility");
 
@@ -43,8 +43,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public static class CustomOpcodes
         {
-            public static EventOpcode Add = (EventOpcode)11;
-            public static EventOpcode Remove = (EventOpcode)12;
+            public static readonly EventOpcode Add = (EventOpcode)11;
+            public static readonly EventOpcode Remove = (EventOpcode)12;
         }
     }
 }

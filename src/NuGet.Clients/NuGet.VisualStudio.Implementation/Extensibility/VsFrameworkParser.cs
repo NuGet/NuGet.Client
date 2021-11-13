@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.Versioning;
 using NuGet.Frameworks;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 

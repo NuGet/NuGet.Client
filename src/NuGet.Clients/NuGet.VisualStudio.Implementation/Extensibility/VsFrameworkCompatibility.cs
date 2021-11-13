@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using NuGet.Commands;
 using NuGet.Frameworks;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 

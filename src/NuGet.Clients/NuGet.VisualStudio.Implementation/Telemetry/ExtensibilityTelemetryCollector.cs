@@ -8,7 +8,7 @@ using System.Threading;
 using Microsoft.Diagnostics.Tracing;
 using NuGet.Common;
 using NuGet.VisualStudio.Contracts;
-using NuGet.VisualStudio.Implementation.Extensibility;
+using NuGet.VisualStudio.Etw;
 
 namespace NuGet.VisualStudio.Telemetry
 {

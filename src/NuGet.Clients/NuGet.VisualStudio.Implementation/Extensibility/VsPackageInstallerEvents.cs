@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Etw;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
