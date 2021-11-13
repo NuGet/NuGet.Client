@@ -58,6 +58,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages()
         {
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(GetInstalledPackages);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
             try
             {
                 var packages = new HashSet<IVsPackageMetadata>(new VsPackageMetadataComparer());
@@ -124,6 +126,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 _telemetryProvider.PostFault(exception, typeof(VsPackageInstallerServices).FullName);
                 throw;
             }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         private async Task<FallbackPackagePathResolver> GetPackagesPathResolverAsync(BuildIntegratedNuGetProject project)
@@ -176,90 +182,100 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages(Project project)
         {
-            if (project == null)
-            {
-                throw new ArgumentNullException(nameof(project));
-            }
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(GetInstalledPackages) + ".1";
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
             try
             {
-                return _threadingService.JoinableTaskFactory.Run(async delegate
-                    {
-                        var packages = new List<IVsPackageMetadata>();
+                if (project == null)
+                {
+                    throw new ArgumentNullException(nameof(project));
+                }
 
-                        if (_solutionManager != null
-                            && !string.IsNullOrEmpty(await _solutionManager.GetSolutionDirectoryAsync()))
+                try
+                {
+                    return _threadingService.JoinableTaskFactory.Run(async delegate
                         {
-                            //switch to background thread
-                            await TaskScheduler.Default;
+                            var packages = new List<IVsPackageMetadata>();
 
-                            NuGetPackageManager nuGetPackageManager = CreateNuGetPackageManager();
-
-                            var projectContext = new VSAPIProjectContext
+                            if (_solutionManager != null
+                                && !string.IsNullOrEmpty(await _solutionManager.GetSolutionDirectoryAsync()))
                             {
-                                PackageExtractionContext = new PackageExtractionContext(
-                                    PackageSaveMode.Defaultv2,
-                                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                                    ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                                    NullLogger.Instance)
-                            };
+                                //switch to background thread
+                                await TaskScheduler.Default;
 
-                            var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
-                                                project,
-                                                projectContext);
+                                NuGetPackageManager nuGetPackageManager = CreateNuGetPackageManager();
 
-                            if (nuGetProject != null)
-                            {
-                                FallbackPackagePathResolver pathResolver = null;
-                                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-                                if (buildIntegratedProject != null)
+                                var projectContext = new VSAPIProjectContext
                                 {
-                                    pathResolver = await GetPackagesPathResolverAsync(buildIntegratedProject);
-                                }
+                                    PackageExtractionContext = new PackageExtractionContext(
+                                        PackageSaveMode.Defaultv2,
+                                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                                        ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                                        NullLogger.Instance)
+                                };
 
-                                var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
+                                var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
+                                                    project,
+                                                    projectContext);
 
-                                foreach (var package in installedPackages)
+                                if (nuGetProject != null)
                                 {
-                                    if (!package.PackageIdentity.HasVersion)
-                                    {
-                                        // Currently we are not supporting floating versions 
-                                        // because of that we will skip this package so that it doesn't throw ArgumentNullException
-                                        continue;
-                                    }
-
-                                    string installPath;
+                                    FallbackPackagePathResolver pathResolver = null;
+                                    var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
                                     if (buildIntegratedProject != null)
                                     {
-                                        installPath = pathResolver.GetPackageDirectory(package.PackageIdentity.Id, package.PackageIdentity.Version);
+                                        pathResolver = await GetPackagesPathResolverAsync(buildIntegratedProject);
                                     }
-                                    else
+
+                                    var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                                    foreach (var package in installedPackages)
                                     {
-                                        // Get the install path for package
-                                        installPath = nuGetPackageManager.PackagesFolderNuGetProject.GetInstalledPath(
-                                                                    package.PackageIdentity);
-
-                                        if (!string.IsNullOrEmpty(installPath))
+                                        if (!package.PackageIdentity.HasVersion)
                                         {
-                                            // normalize the path and take the dir if the nupkg path was given
-                                            var dir = new DirectoryInfo(installPath);
-                                            installPath = dir.FullName;
+                                            // Currently we are not supporting floating versions 
+                                            // because of that we will skip this package so that it doesn't throw ArgumentNullException
+                                            continue;
                                         }
-                                    }
 
-                                    var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
-                                    packages.Add(metadata);
+                                        string installPath;
+                                        if (buildIntegratedProject != null)
+                                        {
+                                            installPath = pathResolver.GetPackageDirectory(package.PackageIdentity.Id, package.PackageIdentity.Version);
+                                        }
+                                        else
+                                        {
+                                            // Get the install path for package
+                                            installPath = nuGetPackageManager.PackagesFolderNuGetProject.GetInstalledPath(
+                                                                            package.PackageIdentity);
+
+                                            if (!string.IsNullOrEmpty(installPath))
+                                            {
+                                                // normalize the path and take the dir if the nupkg path was given
+                                                var dir = new DirectoryInfo(installPath);
+                                                installPath = dir.FullName;
+                                            }
+                                        }
+
+                                        var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
+                                        packages.Add(metadata);
+                                    }
                                 }
                             }
-                        }
 
-                        return packages;
-                    });
+                            return packages;
+                        });
+                }
+                catch (Exception exception)
+                {
+                    _telemetryProvider.PostFault(exception, typeof(VsPackageInstallerServices).FullName);
+                    throw;
+                }
             }
-            catch (Exception exception)
+            finally
             {
-                _telemetryProvider.PostFault(exception, typeof(VsPackageInstallerServices).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 
@@ -275,34 +291,61 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public bool IsPackageInstalled(Project project, string packageId)
         {
-            return IsPackageInstalled(project, packageId, nugetVersion: null);
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(IsPackageInstalled) + ".2";
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            try
+            {
+                return IsPackageInstalled(project, packageId, nugetVersion: null);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         public bool IsPackageInstalledEx(Project project, string packageId, string versionString)
         {
-            NuGetVersion version;
-            if (versionString == null)
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(IsPackageInstalledEx);
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            try
             {
-                version = null;
-            }
-            else if (!NuGetVersion.TryParse(versionString, out version))
-            {
-                throw new ArgumentException(VsResources.InvalidNuGetVersionString, nameof(versionString));
-            }
+                NuGetVersion version;
+                if (versionString == null)
+                {
+                    version = null;
+                }
+                else if (!NuGetVersion.TryParse(versionString, out version))
+                {
+                    throw new ArgumentException(VsResources.InvalidNuGetVersionString, nameof(versionString));
+                }
 
-            return IsPackageInstalled(project, packageId, version);
+                return IsPackageInstalled(project, packageId, version);
+            }
+            finally
+            {
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+            }
         }
 
         public bool IsPackageInstalled(Project project, string packageId, SemanticVersion version)
         {
-            NuGetVersion nugetVersion;
-            if (NuGetVersion.TryParse(version.ToString(), out nugetVersion))
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(IsPackageInstalled) + ".3";
+            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            try
             {
-                return IsPackageInstalled(project, packageId, nugetVersion);
+                NuGetVersion nugetVersion;
+                if (NuGetVersion.TryParse(version.ToString(), out nugetVersion))
+                {
+                    return IsPackageInstalled(project, packageId, nugetVersion);
+                }
+                else
+                {
+                    throw new ArgumentException(VsResources.InvalidNuGetVersionString, nameof(version));
+                }
             }
-            else
+            finally
             {
-                throw new ArgumentException(VsResources.InvalidNuGetVersionString, nameof(version));
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 

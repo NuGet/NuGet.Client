@@ -75,6 +75,15 @@ namespace NuGet.VisualStudio.Telemetry
                 // IVsPackageInstallerProjectEvents
                 [nameof(IVsPackageInstallerProjectEvents) + "." + nameof(IVsPackageInstallerProjectEvents.BatchStart)] = new Count(),
                 [nameof(IVsPackageInstallerProjectEvents) + "." + nameof(IVsPackageInstallerProjectEvents.BatchEnd)] = new Count(),
+
+                // IVsPackageInstallerServices
+#pragma warning disable CS0618 // Type or member is obsolete
+                [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.GetInstalledPackages)] = new Count(),
+                [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.GetInstalledPackages) + ".1"] = new Count(),
+                [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.IsPackageInstalled) + ".2"] = new Count(),
+                [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.IsPackageInstalled) + ".3"] = new Count(),
+                [nameof(IVsPackageInstallerServices) + "." + nameof(IVsPackageInstallerServices.IsPackageInstalledEx)] = new Count(),
+#pragma warning restore CS0618 // Type or member is obsolete
             };
         }
 
