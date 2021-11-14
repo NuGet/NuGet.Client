@@ -95,7 +95,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 new
                 {
                     PackageId = packageId,
-                    Version = version.ToString()
+                    Version = version?.ToString()
                 });
             try
             {

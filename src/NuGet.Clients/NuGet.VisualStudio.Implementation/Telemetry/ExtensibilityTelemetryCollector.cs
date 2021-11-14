@@ -214,7 +214,10 @@ namespace NuGet.VisualStudio.Telemetry
                     }
                     else
                     {
-                        Debug.Assert(false, "VS Extensibility API without counter");
+                        if (eventData.EventName != "EventSourceMessage")
+                        {
+                            Debug.Assert(false, "VS Extensibility API without counter");
+                        }
                     }
                 }
             }

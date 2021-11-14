@@ -136,7 +136,7 @@ namespace NuGet.SolutionRestoreManager
             }
             finally
             {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, eventData);
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 

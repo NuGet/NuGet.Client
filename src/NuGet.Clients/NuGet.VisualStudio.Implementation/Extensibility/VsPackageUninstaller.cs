@@ -59,48 +59,55 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                     RemoveDependencies = removeDependencies
                 });
 
-            if (project == null)
-            {
-                throw new ArgumentNullException(nameof(project));
-            }
-
-            if (string.IsNullOrEmpty(packageId))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
-            }
-
             try
             {
-                PumpingJTF.Run(async delegate
-                    {
-                        var packageManager =
-                           new NuGetPackageManager(
-                               _sourceRepositoryProvider,
-                               _settings,
-                               _solutionManager,
-                               _deleteOnRestartManager);
+                if (project == null)
+                {
+                    throw new ArgumentNullException(nameof(project));
+                }
 
-                        var uninstallContext = new UninstallationContext(removeDependencies, forceRemove: false);
-                        var projectContext = new VSAPIProjectContext
+                if (string.IsNullOrEmpty(packageId))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
+                }
+
+                try
+                {
+                    PumpingJTF.Run(async delegate
                         {
-                            PackageExtractionContext = new PackageExtractionContext(
-                                PackageSaveMode.Defaultv2,
-                                PackageExtractionBehavior.XmlDocFileSaveMode,
-                                ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                                NullLogger.Instance)
-                        };
+                            var packageManager =
+                               new NuGetPackageManager(
+                                   _sourceRepositoryProvider,
+                                   _settings,
+                                   _solutionManager,
+                                   _deleteOnRestartManager);
 
-                        // find the project
-                        NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
+                            var uninstallContext = new UninstallationContext(removeDependencies, forceRemove: false);
+                            var projectContext = new VSAPIProjectContext
+                            {
+                                PackageExtractionContext = new PackageExtractionContext(
+                                    PackageSaveMode.Defaultv2,
+                                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                                    ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                                    NullLogger.Instance)
+                            };
 
-                        // uninstall the package
-                        await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);
-                    });
+                            // find the project
+                            NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
+
+                            // uninstall the package
+                            await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);
+                        });
+                }
+                catch (Exception exception)
+                {
+                    _telemetryProvider.PostFault(exception, typeof(VsPackageUninstaller).FullName);
+                    throw;
+                }
             }
-            catch (Exception exception)
+            finally
             {
-                _telemetryProvider.PostFault(exception, typeof(VsPackageUninstaller).FullName);
-                throw;
+                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
     }
