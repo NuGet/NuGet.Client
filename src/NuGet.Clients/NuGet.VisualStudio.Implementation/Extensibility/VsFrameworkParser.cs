@@ -72,7 +72,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
                 new
                 {
-                    Framework = frameworkName.FullName
+                    Framework = frameworkName?.FullName
                 });
             try
             {

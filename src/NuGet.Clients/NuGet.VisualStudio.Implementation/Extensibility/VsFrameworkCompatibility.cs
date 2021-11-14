@@ -110,8 +110,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
                 new
                 {
-                    Target = targetFramework.FullName,
-                    Frameworks = string.Join("|", frameworks.Select(f => f.FullName))
+                    Target = targetFramework?.FullName,
+                    Frameworks = frameworks != null ? string.Join("|", frameworks.Select(f => f.FullName)) : null
                 });
 
             try
