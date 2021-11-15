@@ -28,6 +28,12 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <returns>A <see cref="Dictionary{String,String}"/> of MSBuild SDK versions from a global.json if found, otherwise <code>null</code>.</returns>
         public static Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context)
         {
+            if (string.IsNullOrWhiteSpace(context?.ProjectFilePath))
+            {
+                // If the ProjectFilePath is not set, an in-memory project is being evaluated and there's no way to know which directory to start looking for a global.json
+                return null;
+            }
+
             var projectDirectory = Directory.GetParent(context.ProjectFilePath);
 
             if (projectDirectory == null

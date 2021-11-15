@@ -74,6 +74,14 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         [Fact]
+        public void NullProjectPath()
+        {
+            var context = new MockSdkResolverContext(projectPath: null);
+
+            GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
+        }
+
+        [Fact]
         public void SdkVersionsAreSuccessfullyLoaded()
         {
             var expectedVersions = new Dictionary<string, string>
