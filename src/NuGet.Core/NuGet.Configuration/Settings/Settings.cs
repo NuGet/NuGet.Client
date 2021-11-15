@@ -550,6 +550,11 @@ namespace NuGet.Configuration
 
                 if (!File.Exists(defaultSettingsFilePath))
                 {
+                    if (!Directory.Exists(userSettingsDir))
+                    {
+                        Directory.CreateDirectory(userSettingsDir);
+                    }
+
                     File.WriteAllText(defaultSettingsFilePath, NuGetConstants.DefaultConfigContent);
                     var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
                     File.Create(trackFilePath).Dispose();
