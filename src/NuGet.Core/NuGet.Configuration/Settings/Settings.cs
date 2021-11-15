@@ -548,7 +548,17 @@ namespace NuGet.Configuration
                 // If the default user config NuGet.Config does not exist, we need to create it.
                 var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
 
+                if (!File.Exists(defaultSettingsFilePath))
+                {
+                    File.WriteAllText(defaultSettingsFilePath, NuGetConstants.DefaultConfigContent);
+                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
+                    File.Create(trackFilePath).Dispose();
+                }
+
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
+
+                // Handle when some other product created nuget.config using an old version of NuGet.Core.dll or NuGet.Configuration.dll that did not
+                // automatically add nuget.org as a package source.
                 if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
                     var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
