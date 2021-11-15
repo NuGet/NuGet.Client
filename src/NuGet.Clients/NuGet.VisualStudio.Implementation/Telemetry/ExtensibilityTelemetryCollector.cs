@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.Diagnostics.Tracing;
+using System.Diagnostics.Tracing;
 using NuGet.Common;
 using NuGet.SolutionRestoreManager;
 using NuGet.VisualStudio.Contracts;
@@ -188,6 +188,7 @@ namespace NuGet.VisualStudio.Telemetry
         private class ExtensibilityEventListener : EventListener
         {
             private ExtensibilityTelemetryCollector _collector;
+            private Guid _expectedEtwSourceGuid;
 
             public ExtensibilityEventListener(ExtensibilityTelemetryCollector collector)
             {
@@ -198,13 +199,20 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 if (eventSource.Name == "NuGet-VS-Extensibility")
                 {
+                    _expectedEtwSourceGuid = eventSource.Guid;
                     EnableEvents(eventSource, EventLevel.LogAlways);
                 }
-                Debug.WriteLine(nameof(ExtensibilityEventListener) + " found " + eventSource.Name);
             }
 
             protected override void OnEventWritten(EventWrittenEventArgs eventData)
             {
+                if (eventData.EventSource.Guid != _expectedEtwSourceGuid)
+                {
+                    // My understanding of https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.tracing.eventlistener.oneventwritten?view=netframework-4.7.2
+                    // is that this should not be possible, yet when PrefView is collecting a trace, we get here.
+                    return;
+                }
+
                 var opcode = eventData.Opcode;
                 if (opcode == EventOpcode.Start || opcode == NuGetExtensibilityEtw.CustomOpcodes.Add || opcode == EventOpcode.Info)
                 {
@@ -217,6 +225,10 @@ namespace NuGet.VisualStudio.Telemetry
                         if (eventData.EventName != "EventSourceMessage")
                         {
                             Debug.Assert(false, "VS Extensibility API without counter");
+                        }
+                        else
+                        {
+                            Debug.Assert(false, eventData.Message);
                         }
                     }
                 }

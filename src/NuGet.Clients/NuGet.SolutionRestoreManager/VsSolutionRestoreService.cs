@@ -140,10 +140,10 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        [Microsoft.Diagnostics.Tracing.EventData]
+        [System.Diagnostics.Tracing.EventData]
         private struct NominateProjectAsyncEventData
         {
-            [Microsoft.Diagnostics.Tracing.EventField]
+            [System.Diagnostics.Tracing.EventField]
             public string ProjectUniqueName { get; set; }
         }
 

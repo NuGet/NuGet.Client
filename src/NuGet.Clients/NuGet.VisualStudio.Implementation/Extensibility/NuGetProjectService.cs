@@ -35,10 +35,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
-        [Microsoft.Diagnostics.Tracing.EventData]
+        [System.Diagnostics.Tracing.EventData]
         private struct GetInstalledPackagesAsyncEventData
         {
-            [Microsoft.Diagnostics.Tracing.EventField]
+            [System.Diagnostics.Tracing.EventField]
             public Guid Project { get; set; }
         }
 
