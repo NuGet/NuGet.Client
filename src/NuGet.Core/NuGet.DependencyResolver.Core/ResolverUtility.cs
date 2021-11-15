@@ -424,24 +424,10 @@ namespace NuGet.DependencyResolver
             CancellationToken token)
         {
             var tasks = new List<Task<RemoteMatch>>();
+
             foreach (var provider in providers)
             {
-                async Task<RemoteMatch> taskWrapper()
-                {
-                    var library = await provider.FindLibraryAsync(libraryRange, framework, cacheContext, logger, token);
-                    if (library != null)
-                    {
-                        return new RemoteMatch
-                        {
-                            Provider = provider,
-                            Library = library
-                        };
-                    }
-
-                    return null;
-                }
-
-                tasks.Add(taskWrapper());
+                tasks.Add(taskWrapper(provider, libraryRange, framework, cacheContext, logger, token));
             }
 
             RemoteMatch bestMatch = null;
@@ -469,6 +455,22 @@ namespace NuGet.DependencyResolver
                 {
                     bestMatch = match;
                 }
+            }
+
+            static async Task<RemoteMatch> taskWrapper(IRemoteDependencyProvider provider, LibraryRange libraryRange,
+                NuGetFramework framework, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
+            {
+                var library = await provider.FindLibraryAsync(libraryRange, framework, cacheContext, logger, token);
+                if (library != null)
+                {
+                    return new RemoteMatch
+                    {
+                        Provider = provider,
+                        Library = library
+                    };
+                }
+
+                return null;
             }
 
             return bestMatch;
