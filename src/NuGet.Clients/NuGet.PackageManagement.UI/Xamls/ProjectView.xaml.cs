@@ -139,10 +139,10 @@ namespace NuGet.PackageManagement.UI
                 switch (e.Key)
                 {
                     case Key.Enter:
-                        bool isValidNuGetVersionRange = _versions.SelectedIndex >= 0 ? VersionRange.TryParse(_versions.Items[_versions.SelectedIndex].ToString(), out VersionRange requestedVersionRange) : false;
+                        bool isAVersion = _versions.Items.CurrentItem != null;
                         bool isUserInputValidNuGetVersionRange = _versions.SelectedIndex >= 0 ? VersionRange.TryParse(comboboxText, out userRequestedVersionRange) : false;
 
-                        if (_versions.SelectedIndex >= 0 && isValidNuGetVersionRange)
+                        if (_versions.SelectedIndex >= 0 && isAVersion)
                         {
                             if (userRequestedVersionRange != null && (userRequestedVersionRange.IsFloating || userTypedAVersionRange))
                             {
@@ -156,13 +156,13 @@ namespace NuGet.PackageManagement.UI
                                 else
                                 {
                                     packageDetailControlModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
-                                    _versions.Text = _versions.SelectedValue.ToString();
+                                    _versions.Text = packageDetailControlModel.SelectedVersion.ToString();
                                 }
                             }
                             else
                             {
                                 packageDetailControlModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
-                                _versions.Text = _versions.SelectedValue.ToString();
+                                _versions.Text = packageDetailControlModel.SelectedVersion.ToString();
                             }
 
                             textBox.SelectionStart = 0;

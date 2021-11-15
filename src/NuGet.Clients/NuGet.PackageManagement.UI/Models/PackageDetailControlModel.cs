@@ -208,13 +208,20 @@ namespace NuGet.PackageManagement.UI
             AddBlockedVersions(blockedVersions);
 
             // Update the view and add the filter
-            MyView = new CollectionViewSource() { Source = Versions }.View;
-            MyView.Filter += VersionsFilter;
+            VersionsView = new CollectionViewSource() { Source = Versions }.View;
+            VersionsView.Filter += VersionsFilter;
 
             SelectVersion();
 
             OnPropertyChanged(nameof(Versions));
-            OnPropertyChanged(nameof(MyView));
+            OnPropertyChanged(nameof(VersionsView));
+
+            // If the selected version is not the first one on the list, the line above will change it to the first one
+            if (_nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) && SelectedVersion != FirstDisplayedVersion)
+            {
+                SelectedVersion = FirstDisplayedVersion;
+                UserInput = SelectedVersion?.ToString();
+            }
 
             return Task.CompletedTask;
         }
@@ -223,7 +230,7 @@ namespace NuGet.PackageManagement.UI
         {
             var version = o as DisplayVersion;
             // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
-            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(InstalledVersionRange.OriginalString, StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase)) return true;
 
             // Handle of *, that this will show all versions other than the installed version, the suggested version and the null separator
             if (UserInput.Equals("*", StringComparison.OrdinalIgnoreCase))

@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement.UI
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
 
-            MyView = new CollectionViewSource() { Source = Versions }.View;
+            VersionsView = new CollectionViewSource() { Source = Versions }.View;
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public ICollectionView MyView { get; set; }
+        public ICollectionView VersionsView { get; set; }
 
         public void Dispose()
         {
@@ -562,7 +562,7 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     OnPropertyChanged(nameof(UserInput));
-                    OnPropertyChanged(nameof(MyView));
+                    OnPropertyChanged(nameof(VersionsView));
                 }
             }
         }
@@ -671,9 +671,15 @@ namespace NuGet.PackageManagement.UI
                     // Otherwise, select the first version in the version list.
                     var possibleVersions = _versions.Where(v => v != null);
                     SelectedVersion =
-                        possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.AllowedVersions.OriginalString))
+                        possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage?.AllowedVersions?.OriginalString))
                         ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
-                    UserInput = _searchResultPackage.AllowedVersions.OriginalString;
+
+                    if (FirstDisplayedVersion == null)
+                    {
+                        FirstDisplayedVersion = SelectedVersion;
+                    }
+
+                    UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
                 }
                 else
                 {
@@ -685,12 +691,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        // Because filtering affects the versions list, we want to display every version when its opened first time
+        public DisplayVersion FirstDisplayedVersion { get; set; }
+
         public void ClearVersions()
         {
             if (_versions != null)
             {
                 _versions.Clear();
             }
+
+            FirstDisplayedVersion = null;
 
             OnPropertyChanged(nameof(Versions));
         }
