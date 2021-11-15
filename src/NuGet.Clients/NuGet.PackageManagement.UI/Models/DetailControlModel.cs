@@ -665,7 +665,7 @@ namespace NuGet.PackageManagement.UI
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
                 // The project level is the only one that has a editable combobox and we only can only see one project
-                if (_nugetProjects.Count() == 1)
+                if (_nugetProjects.Count() == 1 && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
                     // Select the installed version by default.
                     // Otherwise, select the first version in the version list.
@@ -679,6 +679,7 @@ namespace NuGet.PackageManagement.UI
                         FirstDisplayedVersion = SelectedVersion;
                     }
 
+                    // Set the text of the combobox
                     UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
                 }
                 else
@@ -691,21 +692,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // Because filtering affects the versions list, we want to display every version when its opened first time
-        public DisplayVersion FirstDisplayedVersion { get; set; }
-
-        public void ClearVersions()
-        {
-            if (_versions != null)
-            {
-                _versions.Clear();
-            }
-
-            FirstDisplayedVersion = null;
-
-            OnPropertyChanged(nameof(Versions));
-        }
-
         /// <summary>
         /// Clears <see cref="Versions" /> and raises <see cref="OnPropertyChanged(string)"/>, if populated. Otherwise, does nothing.
         /// </summary>
@@ -715,9 +701,12 @@ namespace NuGet.PackageManagement.UI
             if (_versions != null)
             {
                 _versions.Clear();
+                FirstDisplayedVersion = null;
                 OnPropertyChanged(nameof(Versions));
             }
         }
+        // Because filtering affects the versions list, we want to display every version when its opened first time
+        public DisplayVersion FirstDisplayedVersion { get; set; }
 
         public abstract bool IsSolution { get; }
 

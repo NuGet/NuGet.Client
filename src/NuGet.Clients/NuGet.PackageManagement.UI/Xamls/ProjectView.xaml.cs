@@ -40,6 +40,51 @@ namespace NuGet.PackageManagement.UI
             _versions.ItemContainerStyle = style;
         }
 
+        private TextBox _textBox;
+
+        private TextBox TextBox
+        {
+            get
+            {
+                if (_textBox == null) return _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
+                return _textBox;
+            }
+            set
+            {
+                _textBox = value;
+            }
+        }
+
+        private PackageDetailControlModel _packageModel;
+
+        private PackageDetailControlModel PackageModel
+        {
+            get
+            {
+                if (_packageModel == null) return (PackageDetailControlModel)DataContext;
+                return _packageModel;
+            }
+            set
+            {
+                _packageModel = value;
+            }
+        }
+
+        private DetailControlModel _detailModel;
+
+        private DetailControlModel DetailModel
+        {
+            get
+            {
+                if (_detailModel == null) return (DetailControlModel)DataContext;
+                return _detailModel;
+            }
+            set
+            {
+                _detailModel = value;
+            }
+        }
+
         private string _previousFilter;
         private string PreviousText
         {
@@ -56,10 +101,8 @@ namespace NuGet.PackageManagement.UI
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            PackageDetailControlModel model = (PackageDetailControlModel)DataContext;
-            if (model.IsProjectPackageReference)
+            if (PackageModel.IsProjectPackageReference)
             {
-                TextBox textBox = _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
                 var comboboxText = _versions.Text;
 
                 switch (e.Key)
@@ -85,8 +128,9 @@ namespace NuGet.PackageManagement.UI
                                 _versions.SelectedIndex++;
                             }
 
+                            // Changing the SelectedIndex will change the text
                             _versions.Text = comboboxText;
-                            textBox.SelectionStart = comboboxText.Length;
+                            TextBox.SelectionStart = comboboxText.Length;
 
                             e.Handled = true;
                         }
@@ -104,8 +148,9 @@ namespace NuGet.PackageManagement.UI
                                 _versions.SelectedIndex--;
                             }
 
+                            // Changing the SelectedIndex will change the text
                             _versions.Text = comboboxText;
-                            textBox.SelectionStart = comboboxText.Length;
+                            TextBox.SelectionStart = comboboxText.Length;
 
                             e.Handled = true;
                         }
@@ -124,49 +169,41 @@ namespace NuGet.PackageManagement.UI
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            PackageDetailControlModel packageDetailControlModel = (PackageDetailControlModel)DataContext;
-            if (packageDetailControlModel.IsProjectPackageReference)
+            if (PackageModel.IsProjectPackageReference)
             {
-                TextBox textBox = _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
                 string comboboxText = _versions.Text;
-
-                DetailControlModel model = (DetailControlModel)DataContext;
-                VersionRange userRequestedVersionRange = null;
-
-                IEnumerable<NuGetVersion> versions = model.Versions.Where(v => v != null).Select(v => v.Version);
+                IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
                 bool userTypedAVersionRange = comboboxText.StartsWith("(", StringComparison.OrdinalIgnoreCase) || comboboxText.StartsWith("[", StringComparison.OrdinalIgnoreCase);
 
                 switch (e.Key)
                 {
                     case Key.Enter:
+                        VersionRange userRequestedVersionRange = null;
                         bool isAVersion = _versions.Items.CurrentItem != null;
                         bool isUserInputValidNuGetVersionRange = _versions.SelectedIndex >= 0 ? VersionRange.TryParse(comboboxText, out userRequestedVersionRange) : false;
 
                         if (_versions.SelectedIndex >= 0 && isAVersion)
                         {
+                            // Check if the user typed a custom version
                             if (userRequestedVersionRange != null && (userRequestedVersionRange.IsFloating || userTypedAVersionRange))
                             {
+                                // Search for the best version
                                 NuGetVersion rangeBestVersion = userRequestedVersionRange.FindBestMatch(versions);
                                 bool isBestOption = rangeBestVersion.ToString() == _versions.Items[_versions.SelectedIndex].ToString();
                                 if (isBestOption)
                                 {
-                                    packageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null);
+                                    PackageModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null);
                                     _versions.Text = comboboxText;
-                                }
-                                else
-                                {
-                                    packageDetailControlModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
-                                    _versions.Text = packageDetailControlModel.SelectedVersion.ToString();
                                 }
                             }
                             else
                             {
-                                packageDetailControlModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
-                                _versions.Text = packageDetailControlModel.SelectedVersion.ToString();
+                                PackageModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
+                                _versions.Text = PackageModel.SelectedVersion.ToString();
                             }
 
-                            textBox.SelectionStart = 0;
-                            textBox.SelectionLength = int.MaxValue;
+                            TextBox.SelectionStart = 0;
+                            TextBox.SelectionLength = int.MaxValue;
                             _versions.IsDropDownOpen = false;
                         }
 
@@ -179,13 +216,13 @@ namespace NuGet.PackageManagement.UI
                     default:
                         if (PreviousText != comboboxText)
                         {
-
                             PreviousText = comboboxText;
-                            var selectionStart = textBox.SelectionStart;
+                            var selectionStart = TextBox.SelectionStart;
 
                             NuGetVersion matchVersion = null;
                             VersionRange userRange = null;
 
+                            // Get the best version from the range if the user typed a custom version
                             bool userTypedAValidVersionRange = VersionRange.TryParse(comboboxText, out userRange);
                             if (userTypedAValidVersionRange && (userTypedAVersionRange || (userRange != null && userRange.IsFloating)))
                             {
@@ -197,7 +234,7 @@ namespace NuGet.PackageManagement.UI
                                 (_versions.Text != _versions.Items[_versions.SelectedIndex].ToString() || matchVersion?.ToString() != _versions.Items[_versions.SelectedIndex].ToString()))
                             {
                                 _versions.SelectedIndex = -1;
-                                packageDetailControlModel.SelectedVersion = null;
+                                PackageModel.SelectedVersion = null;
                             }
 
                             // Automatically select the item when the input or custom range text matches it
@@ -209,13 +246,8 @@ namespace NuGet.PackageManagement.UI
                                 }
                             }
 
-                            if (_versions.SelectedIndex == -1)
-                            {
-                                packageDetailControlModel.SelectedVersion = null;
-                            }
-
                             _versions.Text = comboboxText;
-                            textBox.SelectionStart = selectionStart;
+                            TextBox.SelectionStart = selectionStart;
 
                             break;
                         }
