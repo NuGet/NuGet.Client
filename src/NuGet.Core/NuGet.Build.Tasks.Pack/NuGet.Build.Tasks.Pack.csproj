@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -85,16 +85,29 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="ILMergeNuGetPack" DependsOnTargets="GetILMergePlatformArg" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' != 'true' ">
+  <Target Name="DetermineILMergeNuGetPackInputsOutputs">
     <PropertyGroup>
-      <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
+      <PathToBuiltNuGetPack>$(OutputPath)NuGet.Build.Tasks.Pack.dll</PathToBuiltNuGetPack>
+      <PathToMergedNuGetPack>$(OutputPath)ilmerge\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
     </PropertyGroup>
-    <MakeDir Directories="$(ILMergeResultDir)" />
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)*.dll" Exclude="$(OutputPath)*Pack.dll" />
     </ItemGroup>
+    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPack)" Importance="High" />
+  </Target>
+
+  <Target Name="ILMergeNuGetPack"
+          DependsOnTargets="GetILMergePlatformArg;DetermineILMergeNuGetPackInputsOutputs"
+          Inputs="$(PathToBuiltNuGetPack);@(BuildArtifacts)"
+          Outputs="$(PathToMergedNuGetPack)"
+          Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' != 'true' ">
     <PropertyGroup>
-      <PathToMergedNuGetPack>$(ILMergeResultDir)\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
+      <ILMergeResultDir>$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetPack)))</ILMergeResultDir>
+    </PropertyGroup>
+    
+    <MakeDir Directories="$(ILMergeResultDir)" />
+
+    <PropertyGroup>
       <IlmergeCommand>$(ILMergeExePath) ^
         /out:$(PathToMergedNuGetPack) ^
         $(ILMergePlatformArg) ^
@@ -106,22 +119,35 @@
         /delaysign ^
         /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) ^
-        $(OutputPath)NuGet.Build.Tasks.Pack.dll ^
+        $(PathToBuiltNuGetPack) ^
         @(BuildArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  <Target Name="ILMergeNuGetPackResources" DependsOnTargets="GetILMergePlatformArg" Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
+  <Target Name="DetermineILMergeNuGetPackResourcesInputsOutputs">
     <PropertyGroup>
-      <ILMergeResultDir>$(OutputPath)ilmerge\$(CurrentCulture)</ILMergeResultDir>
+      <PathToBuiltNuGetPackResource>$(OutputPath)$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll</PathToBuiltNuGetPackResource>
+      <PathToMergedNuGetPackResource>$(OutputPath)ilmerge\$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll</PathToMergedNuGetPackResource>
     </PropertyGroup>
-    <MakeDir Directories="$(ILMergeResultDir)" />
     <ItemGroup>
       <ResourceArtifacts Include="$(OutputPath)$(CurrentCulture)NuGet*.resources.dll" Exclude="$(OutputPath)$(CurrentCulture)*Pack.resources.dll" />
     </ItemGroup>
+    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPackResource)" Importance="High" />
+  </Target>
+
+  <Target Name="ILMergeNuGetPackResources"
+          DependsOnTargets="GetILMergePlatformArg;DetermineILMergeNuGetPackResourcesInputsOutputs"
+          Inputs="$(PathToBuiltNuGetPackResource);@(ResourceArtifacts)"
+          Outputs="$(PathToMergedNuGetPackResource)"
+          Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
     <PropertyGroup>
-      <PathToMergedNuGetPackResource>$(ILMergeResultDir)NuGet.Build.Tasks.Pack.resources.dll</PathToMergedNuGetPackResource>
+      <ILMergeResultDir>$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetPackResource)))</ILMergeResultDir>
+    </PropertyGroup>
+    
+    <MakeDir Directories="$(ILMergeResultDir)" />
+    
+    <PropertyGroup>
       <IlmergeCommand>$(ILMergeExePath) ^
         /out:$(PathToMergedNuGetPackResource) ^
         $(ILMergePlatformArg) ^
@@ -134,7 +160,7 @@
         /delaysign ^
         /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) ^
-        $(OutputPath)$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll ^
+        $(PathToBuiltNuGetPackResource) ^
         @(ResourceArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
