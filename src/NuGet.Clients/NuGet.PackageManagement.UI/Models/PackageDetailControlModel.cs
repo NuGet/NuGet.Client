@@ -206,6 +206,7 @@ namespace NuGet.PackageManagement.UI
         {
             base.OnSelectedVersionChanged();
             OnPropertyChanged(nameof(IsSelectedVersionInstalled));
+            OnPropertyChanged(nameof(IsAvailableForInstall));
         }
 
         public bool IsSelectedVersionInstalled
@@ -215,6 +216,14 @@ namespace NuGet.PackageManagement.UI
                 return SelectedVersion != null
                     && InstalledVersion != null
                     && SelectedVersion.Version == InstalledVersion;
+            }
+        }
+
+        public bool IsAvailableForInstall
+        {
+            get
+            {
+                return SelectedVersion == null || IsSelectedVersionInstalled;
             }
         }
 

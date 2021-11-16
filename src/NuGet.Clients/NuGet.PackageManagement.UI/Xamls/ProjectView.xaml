@@ -148,7 +148,7 @@
       AutomationProperties.AutomationId="Project_Button_Update"
       Click="InstallButton_Clicked"
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-      IsEnabled="{Binding IsSelectedVersionInstalled, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
+      IsEnabled="{Binding IsAvailableForInstall, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       Content="{x:Static local:Resources.Button_Update}" />
   </Grid>
 </UserControl>
