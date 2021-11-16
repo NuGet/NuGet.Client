@@ -40,7 +40,7 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public async Task<bool> IsRestoreCompleteAsync(CancellationToken token)
         {
-            const string eventName = nameof(IVsSolutionRestoreStatusProvider) + "." + nameof(IVsSolutionManager);
+            const string eventName = nameof(IVsSolutionRestoreStatusProvider) + "." + nameof(IsRestoreCompleteAsync);
             NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
 
             try

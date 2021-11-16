@@ -64,6 +64,7 @@ namespace NuGet.VisualStudio.Telemetry
                 // IVsPackageInstaller
                 [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackage) + ".1"] = new Count(),
                 [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackage) + ".2"] = new Count(),
+                [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackage) + ".3"] = new Count(),
                 [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackagesFromRegistryRepository) + ".1"] = new Count(),
                 [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackagesFromRegistryRepository) + ".2"] = new Count(),
                 [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackagesFromVSExtensionRepository) + ".1"] = new Count(),

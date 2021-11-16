@@ -38,7 +38,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         }
 
         public event VsPackageEventHandler _packageUninstalling;
-        const string PackageUninstallingEventName = nameof(IVsPackageInstallerEvents) + "." + nameof(PackageInstalled);
+        const string PackageUninstallingEventName = nameof(IVsPackageInstallerEvents) + "." + nameof(PackageUninstalling);
         public event VsPackageEventHandler PackageUninstalling
         {
             add
@@ -54,7 +54,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         }
 
         public event VsPackageEventHandler _packageInstalling;
-        const string PackageInstallingEventName = nameof(IVsPackageInstallerEvents) + "." + nameof(PackageInstalled);
+        const string PackageInstallingEventName = nameof(IVsPackageInstallerEvents) + "." + nameof(PackageInstalling);
         public event VsPackageEventHandler PackageInstalling
         {
             add
