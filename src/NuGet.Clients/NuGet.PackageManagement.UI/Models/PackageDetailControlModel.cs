@@ -217,7 +217,9 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(VersionsView));
 
             // If the selected version is not the first one on the list, the line above will change it to the first one
-            if (_nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) && SelectedVersion != FirstDisplayedVersion)
+            if (_nugetProjects.Any() && 
+                _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) &&
+                SelectedVersion != FirstDisplayedVersion)
             {
                 SelectedVersion = FirstDisplayedVersion;
                 UserInput = SelectedVersion?.ToString();

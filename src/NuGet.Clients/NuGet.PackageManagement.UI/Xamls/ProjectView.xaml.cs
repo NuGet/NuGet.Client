@@ -195,6 +195,11 @@ namespace NuGet.PackageManagement.UI
                                     PackageModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null);
                                     _versions.Text = comboboxText;
                                 }
+                                else
+                                {
+                                    PackageModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
+                                    _versions.Text = PackageModel.SelectedVersion.ToString();
+                                }
                             }
                             else
                             {
