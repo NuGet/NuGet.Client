@@ -372,6 +372,7 @@ NuGet.Commands.LocalsCommandRunner.ExecuteCommand(NuGet.Commands.LocalsArgs loca
 NuGet.Commands.LocalsCommandRunner.LocalsCommandRunner() -> void
 NuGet.Commands.LockFileBuilder
 NuGet.Commands.LockFileBuilder.CreateLockFile(NuGet.ProjectModel.LockFile previousLockFile, NuGet.ProjectModel.PackageSpec project, System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> targetGraphs, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> localRepositories, NuGet.DependencyResolver.RemoteWalkContext context) -> NuGet.ProjectModel.LockFile
+NuGet.Commands.LockFileBuilder.CreateLockFile(NuGet.ProjectModel.LockFile previousLockFile, NuGet.ProjectModel.PackageSpec project, System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> targetGraphs, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> localRepositories, NuGet.DependencyResolver.RemoteWalkContext context, NuGet.Commands.LockFileBuilderCache lockFileBuilderCache) -> NuGet.ProjectModel.LockFile
 NuGet.Commands.LockFileBuilder.LockFileBuilder(int lockFileVersion, NuGet.Common.ILogger logger, System.Collections.Generic.Dictionary<NuGet.Commands.RestoreTargetGraph, System.Collections.Generic.Dictionary<string, NuGet.LibraryModel.LibraryIncludeFlags>> includeFlagGraphs) -> void
 NuGet.Commands.LockFileBuilderCache
 NuGet.Commands.LockFileBuilderCache.GetContentItems(NuGet.ProjectModel.LockFileLibrary library, NuGet.Repositories.LocalPackageInfo package) -> NuGet.ContentModel.ContentItemCollection
@@ -703,6 +704,7 @@ NuGet.Commands.RestoreRequest.MaxDegreeOfConcurrency.get -> int
 NuGet.Commands.RestoreRequest.MaxDegreeOfConcurrency.set -> void
 NuGet.Commands.RestoreRequest.PackageSaveMode.get -> NuGet.Packaging.PackageSaveMode
 NuGet.Commands.RestoreRequest.PackageSaveMode.set -> void
+NuGet.Commands.RestoreRequest.PackageSourceMapping.get -> NuGet.Configuration.PackageSourceMapping
 NuGet.Commands.RestoreRequest.PackagesDirectory.get -> string
 NuGet.Commands.RestoreRequest.ParentId.get -> System.Guid
 NuGet.Commands.RestoreRequest.ParentId.set -> void
@@ -715,6 +717,7 @@ NuGet.Commands.RestoreRequest.RestoreForceEvaluate.set -> void
 NuGet.Commands.RestoreRequest.RestoreOutputPath.get -> string
 NuGet.Commands.RestoreRequest.RestoreOutputPath.set -> void
 NuGet.Commands.RestoreRequest.RestoreRequest(NuGet.ProjectModel.PackageSpec project, NuGet.Commands.RestoreCommandProviders dependencyProviders, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Packaging.Signing.ClientPolicyContext clientPolicyContext, NuGet.Common.ILogger log) -> void
+NuGet.Commands.RestoreRequest.RestoreRequest(NuGet.ProjectModel.PackageSpec project, NuGet.Commands.RestoreCommandProviders dependencyProviders, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Packaging.Signing.ClientPolicyContext clientPolicyContext, NuGet.Configuration.PackageSourceMapping packageSourceMapping, NuGet.Common.ILogger log, NuGet.Commands.LockFileBuilderCache lockFileBuilderCache) -> void
 NuGet.Commands.RestoreRequest.ValidateRuntimeAssets.get -> bool
 NuGet.Commands.RestoreRequest.ValidateRuntimeAssets.set -> void
 NuGet.Commands.RestoreRequest.XmlDocFileSaveMode.get -> NuGet.Packaging.XmlDocFileSaveMode
@@ -793,6 +796,8 @@ NuGet.Commands.SignArgs.Overwrite.get -> bool
 NuGet.Commands.SignArgs.Overwrite.set -> void
 NuGet.Commands.SignArgs.PackagePath.get -> string
 NuGet.Commands.SignArgs.PackagePath.set -> void
+NuGet.Commands.SignArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Commands.SignArgs.PackagePaths.set -> void
 NuGet.Commands.SignArgs.PasswordProvider.get -> NuGet.Commands.SignCommand.IPasswordProvider
 NuGet.Commands.SignArgs.PasswordProvider.set -> void
 NuGet.Commands.SignArgs.SignArgs() -> void
@@ -1082,6 +1087,7 @@ static NuGet.Commands.LockFileUtils.ToDirectorySeparator(string path) -> string
 static NuGet.Commands.MSBuildProjectFactory.GetTargetPathForSourceFile(string sourcePath, string projectDirectory) -> string
 static NuGet.Commands.MSBuildProjectFactory.ProjectCreator(NuGet.Commands.PackArgs packArgs, string path) -> NuGet.Commands.IProjectFactory
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion) -> NuGet.Frameworks.NuGetFramework
+static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFramework(string projectFilePath, string targetFrameworkMoniker, string targetPlatformMoniker, string targetPlatformMinVersion, string clrSupport) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFrameworkReplacement(NuGet.Frameworks.NuGetFramework framework) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(string projectFilePath, string targetFrameworks, string targetFramework, string targetFrameworkMoniker, string targetPlatformIdentifier, string targetPlatformVersion, string targetPlatformMinVersion) -> System.Collections.Generic.IEnumerable<string>
 static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(string projectFilePath, string targetFrameworks, string targetFramework, string targetFrameworkMoniker, string targetPlatformIdentifier, string targetPlatformVersion, string targetPlatformMinVersion, bool isXnaWindowsPhoneProject, bool isManagementPackProject) -> System.Collections.Generic.IEnumerable<string>

@@ -1429,6 +1429,7 @@ override NuGet.Packaging.NupkgMetadataFile.Equals(object obj) -> bool
 override NuGet.Packaging.NupkgMetadataFile.GetHashCode() -> int
 override NuGet.Packaging.PackageArchiveReader.CanVerifySignedPackages(NuGet.Packaging.Signing.SignedPackageVerifierSettings verifierSettings) -> bool
 override NuGet.Packaging.PackageArchiveReader.CopyFiles(string destination, System.Collections.Generic.IEnumerable<string> packageFiles, NuGet.Packaging.Core.ExtractPackageFileDelegate extractFile, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Collections.Generic.IEnumerable<string>
+override NuGet.Packaging.PackageArchiveReader.CopyNupkgAsync(string nupkgFilePath, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
 override NuGet.Packaging.PackageArchiveReader.Dispose(bool disposing) -> void
 override NuGet.Packaging.PackageArchiveReader.GetArchiveHashAsync(NuGet.Common.HashAlgorithmName hashAlgorithmName, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<byte[]>
 override NuGet.Packaging.PackageArchiveReader.GetContentHash(System.Threading.CancellationToken token, System.Func<string> GetUnsignedPackageHash = null) -> string
@@ -1534,6 +1535,7 @@ static NuGet.Packaging.FrameworkNameUtility.ParseFrameworkNameFromFilePath(strin
 static NuGet.Packaging.FrameworkNameUtility.ParseNuGetFrameworkFolderName(string path, bool strictParsing, out string effectivePath) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Packaging.FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(string filePath, out string effectivePath) -> NuGet.Frameworks.NuGetFramework
 static NuGet.Packaging.FrameworksExtensions.GetFrameworkString(this NuGet.Frameworks.NuGetFramework self) -> string
+static NuGet.Packaging.Licenses.NuGetLicenseData.LicenseListVersion.get -> string
 static NuGet.Packaging.Licenses.NuGetLicenseExpression.Parse(string expression) -> NuGet.Packaging.Licenses.NuGetLicenseExpression
 static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.HasOnlyStandardIdentifiers(this NuGet.Packaging.Licenses.NuGetLicenseExpression expression) -> bool
 static NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions.IsUnlicensed(this NuGet.Packaging.Licenses.NuGetLicense license) -> bool

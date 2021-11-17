@@ -47,11 +47,13 @@ NuGet.PackageManagement.GatherContext.AllSources.set -> void
 NuGet.PackageManagement.GatherContext.AllowDowngrades.get -> bool
 NuGet.PackageManagement.GatherContext.AllowDowngrades.set -> void
 NuGet.PackageManagement.GatherContext.GatherContext() -> void
+NuGet.PackageManagement.GatherContext.GatherContext(NuGet.Configuration.PackageSourceMapping _packageSourceMappingConfiguration) -> void
 NuGet.PackageManagement.GatherContext.InstalledPackages.get -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageIdentity>
 NuGet.PackageManagement.GatherContext.InstalledPackages.set -> void
 NuGet.PackageManagement.GatherContext.IsUpdateAll.get -> bool
 NuGet.PackageManagement.GatherContext.IsUpdateAll.set -> void
 NuGet.PackageManagement.GatherContext.Log.get -> NuGet.Common.ILogger
+NuGet.PackageManagement.GatherContext.PackageSourceMapping.get -> NuGet.Configuration.PackageSourceMapping
 NuGet.PackageManagement.GatherContext.PackagesFolderSource.get -> NuGet.Protocol.Core.Types.SourceRepository
 NuGet.PackageManagement.GatherContext.PackagesFolderSource.set -> void
 NuGet.PackageManagement.GatherContext.PrimarySources.get -> System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository>
@@ -655,7 +657,9 @@ const NuGet.ProjectManagement.NuGetProjectMetadataKeys.ProjectId = "ProjectId" -
 const NuGet.ProjectManagement.NuGetProjectMetadataKeys.SupportedFrameworks = "SupportedFrameworks" -> string
 const NuGet.ProjectManagement.NuGetProjectMetadataKeys.TargetFramework = "TargetFramework" -> string
 const NuGet.ProjectManagement.NuGetProjectMetadataKeys.UniqueName = "UniqueName" -> string
+const NuGet.ProjectManagement.ProjectBuildProperties.AssemblyName = "AssemblyName" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.AssetTargetFallback = "AssetTargetFallback" -> string
+const NuGet.ProjectManagement.ProjectBuildProperties.CLRSupport = "CLRSupport" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.Clear = "Clear" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.DotnetCliToolTargetFramework = "DotnetCliToolTargetFramework" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.ExcludeAssets = "ExcludeAssets" -> string

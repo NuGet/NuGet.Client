@@ -139,6 +139,8 @@ NuGet.Protocol.Core.Types.PackageDownloadContext.DirectDownload.get -> bool
 NuGet.Protocol.Core.Types.PackageDownloadContext.DirectDownloadDirectory.get -> string
 NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext) -> void
 NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload) -> void
+NuGet.Protocol.Core.Types.PackageDownloadContext.PackageDownloadContext(NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, string directDownloadDirectory, bool directDownload, NuGet.Configuration.PackageSourceMapping packageSourceMappingConfiguration) -> void
+NuGet.Protocol.Core.Types.PackageDownloadContext.PackageSourceMapping.get -> NuGet.Configuration.PackageSourceMapping
 NuGet.Protocol.Core.Types.PackageDownloadContext.ParentId.get -> System.Guid
 NuGet.Protocol.Core.Types.PackageDownloadContext.ParentId.set -> void
 NuGet.Protocol.Core.Types.PackageDownloadContext.SourceCacheContext.get -> NuGet.Protocol.Core.Types.SourceCacheContext

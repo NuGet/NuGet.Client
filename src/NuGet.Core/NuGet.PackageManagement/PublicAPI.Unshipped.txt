@@ -1,4 +1,0 @@
-NuGet.PackageManagement.GatherContext.GatherContext(NuGet.Configuration.PackageSourceMapping _packageSourceMappingConfiguration) -> void
-NuGet.PackageManagement.GatherContext.PackageSourceMapping.get -> NuGet.Configuration.PackageSourceMapping
-const NuGet.ProjectManagement.ProjectBuildProperties.AssemblyName = "AssemblyName" -> string
-const NuGet.ProjectManagement.ProjectBuildProperties.CLRSupport = "CLRSupport" -> string
