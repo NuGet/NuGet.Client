@@ -206,7 +206,7 @@ namespace NuGet.PackageManagement.UI
         {
             base.OnSelectedVersionChanged();
             OnPropertyChanged(nameof(IsSelectedVersionInstalled));
-            OnPropertyChanged(nameof(IsAvailableForInstall));
+            OnPropertyChanged(nameof(IsNotAvailableForInstall));
         }
 
         public bool IsSelectedVersionInstalled
@@ -219,7 +219,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsAvailableForInstall
+        public bool IsNotAvailableForInstall
         {
             get
             {
