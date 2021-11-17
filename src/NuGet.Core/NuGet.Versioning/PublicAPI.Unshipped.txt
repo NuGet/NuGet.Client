@@ -1,1 +1,0 @@
-static readonly NuGet.Versioning.VersionComparer.VersionReleaseMetadata -> NuGet.Versioning.IVersionComparer

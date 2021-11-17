@@ -377,6 +377,8 @@ static NuGet.Build.Tasks.Strings.Error_PackageDownload_OnlyExactVersionsAreAllow
 static NuGet.Build.Tasks.Strings.Error_PackagesConfigParseError.get -> string
 static NuGet.Build.Tasks.Strings.ImportsFallbackWarning.get -> string
 static NuGet.Build.Tasks.Strings.InstallCommandNothingToInstall.get -> string
+static NuGet.Build.Tasks.Strings.Log_NoProjectsForRestore.get -> string
+static NuGet.Build.Tasks.Strings.Log_ProjectsInSolutionNotKnowntoMSBuild.get -> string
 static NuGet.Build.Tasks.Strings.NoCompatibleTargetFramework.get -> string
 static NuGet.Build.Tasks.Strings.NoProjectsProvidedToTask.get -> string
 static NuGet.Build.Tasks.Strings.NoProjectsToRestore.get -> string

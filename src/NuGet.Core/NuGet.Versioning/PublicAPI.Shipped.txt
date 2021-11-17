@@ -165,6 +165,7 @@ static NuGet.Versioning.VersionRangeComparer.VersionRelease.get -> NuGet.Version
 static readonly NuGet.Versioning.VersionComparer.Default -> NuGet.Versioning.IVersionComparer
 static readonly NuGet.Versioning.VersionComparer.Version -> NuGet.Versioning.IVersionComparer
 static readonly NuGet.Versioning.VersionComparer.VersionRelease -> NuGet.Versioning.IVersionComparer
+static readonly NuGet.Versioning.VersionComparer.VersionReleaseMetadata -> NuGet.Versioning.IVersionComparer
 static readonly NuGet.Versioning.VersionFormatter.Instance -> NuGet.Versioning.VersionFormatter
 static readonly NuGet.Versioning.VersionRange.All -> NuGet.Versioning.VersionRange
 static readonly NuGet.Versioning.VersionRange.AllFloating -> NuGet.Versioning.VersionRange

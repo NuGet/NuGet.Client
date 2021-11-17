@@ -684,6 +684,20 @@ static NuGet.ProjectModel.PackagesLockFileUtilities.IsNuGetLockFileEnabled(NuGet
 static NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash.Default.get -> NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash
 static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> noWarn) -> NuGet.ProjectModel.WarningProperties
 static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn) -> NuGet.ProjectModel.WarningProperties
+static readonly NuGet.ProjectModel.BuildAction.AndroidAsset -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.AndroidResource -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.ApplicationDefinition -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.BundleResource -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.CodeAnalysisDictionary -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.Compile -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.Content -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.DesignData -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.DesignDataWithDesignTimeCreatableTypes -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.EmbeddedResource -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.None -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.Page -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.Resource -> NuGet.ProjectModel.BuildAction
+static readonly NuGet.ProjectModel.BuildAction.SplashScreen -> NuGet.ProjectModel.BuildAction
 static readonly NuGet.ProjectModel.JsonPackageSpecReader.Files -> string
 static readonly NuGet.ProjectModel.JsonPackageSpecReader.HideWarningsAndErrors -> string
 static readonly NuGet.ProjectModel.JsonPackageSpecReader.PackOptions -> string
