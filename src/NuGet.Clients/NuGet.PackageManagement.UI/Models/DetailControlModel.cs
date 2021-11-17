@@ -61,8 +61,6 @@ namespace NuGet.PackageManagement.UI
 
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
-
-            VersionsView = new CollectionViewSource() { Source = Versions }.View;
         }
 
         /// <summary>
@@ -562,7 +560,6 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     OnPropertyChanged(nameof(UserInput));
-                    OnPropertyChanged(nameof(VersionsView));
                 }
             }
         }
@@ -664,7 +661,7 @@ namespace NuGet.PackageManagement.UI
                 (_versions.Any(v => v != null && !v.IsValidVersion) &&
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
-                // The project level is the only one that has a editable combobox and we only can only see one project
+                // The project level is the only one that has an editable combobox and we can only see one project.
                 if (_nugetProjects.Count() == 1 && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
                     // Select the installed version by default.
@@ -705,7 +702,8 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged(nameof(Versions));
             }
         }
-        // Because filtering affects the versions list, we want to display every version when its opened first time
+
+        // Because filtering affects the versions list, we want to display every version when it's opened the first time.
         public DisplayVersion FirstDisplayedVersion { get; set; }
 
         public abstract bool IsSolution { get; }

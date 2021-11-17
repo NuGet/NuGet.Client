@@ -29,6 +29,8 @@ namespace NuGet.PackageManagement.UI
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
+
+            VersionsView = new CollectionViewSource() { Source = Versions }.View;
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -214,11 +216,11 @@ namespace NuGet.PackageManagement.UI
             SelectVersion();
 
             OnPropertyChanged(nameof(Versions));
-            OnPropertyChanged(nameof(VersionsView));
+            OnPropertyChanged(nameof(VersionsView)); // This can change the selected version if a version is added after SelectedVersion is set
 
-            // If the selected version is not the first one on the list, the line above will change it to the first one
-            if (_nugetProjects.Any() && 
-                _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) &&
+            // If the selected version changed, reset it to the correct one
+            if (_nugetProjects.Any() &&
+                IsProjectPackageReference &&
                 SelectedVersion != FirstDisplayedVersion)
             {
                 SelectedVersion = FirstDisplayedVersion;
@@ -291,7 +293,7 @@ namespace NuGet.PackageManagement.UI
         {
             base.OnSelectedVersionChanged();
             OnPropertyChanged(nameof(IsSelectedVersionInstalled));
-            OnPropertyChanged(nameof(IsAvailableForInstall));
+            OnPropertyChanged(nameof(IsNotAvailableForInstall));
         }
 
         public bool IsSelectedVersionInstalled
@@ -305,7 +307,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsAvailableForInstall
+        public bool IsNotAvailableForInstall
         {
             get
             {

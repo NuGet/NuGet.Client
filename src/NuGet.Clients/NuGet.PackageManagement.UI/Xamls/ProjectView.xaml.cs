@@ -55,18 +55,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private PackageDetailControlModel _packageModel;
+        private PackageDetailControlModel _packageDetailControlModel;
 
-        private PackageDetailControlModel PackageModel
+        private PackageDetailControlModel PackageDetailControlModel
         {
             get
             {
-                if (_packageModel == null) return (PackageDetailControlModel)DataContext;
-                return _packageModel;
+                if (_packageDetailControlModel == null) return (PackageDetailControlModel)DataContext;
+                return _packageDetailControlModel;
             }
             set
             {
-                _packageModel = value;
+                _packageDetailControlModel = value;
             }
         }
 
@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 if (_previousFilter != null) return _previousFilter;
-                return "";
+                return string.Empty;
             }
             set
             {
@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.UI
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            if (PackageModel.IsProjectPackageReference)
+            if (PackageDetailControlModel.IsProjectPackageReference)
             {
                 var comboboxText = _versions.Text;
 
@@ -155,8 +155,6 @@ namespace NuGet.PackageManagement.UI
                             e.Handled = true;
                         }
                         break;
-                    case Key.Back:
-                        break;
                     default:
                         break;
                 }
@@ -169,7 +167,7 @@ namespace NuGet.PackageManagement.UI
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (PackageModel.IsProjectPackageReference)
+            if (PackageDetailControlModel.IsProjectPackageReference)
             {
                 string comboboxText = _versions.Text;
                 IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
@@ -192,19 +190,19 @@ namespace NuGet.PackageManagement.UI
                                 bool isBestOption = rangeBestVersion.ToString() == _versions.Items[_versions.SelectedIndex].ToString();
                                 if (isBestOption)
                                 {
-                                    PackageModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null);
+                                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null);
                                     _versions.Text = comboboxText;
                                 }
                                 else
                                 {
-                                    PackageModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
-                                    _versions.Text = PackageModel.SelectedVersion.ToString();
+                                    PackageDetailControlModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
+                                    _versions.Text = PackageDetailControlModel.SelectedVersion.ToString();
                                 }
                             }
                             else
                             {
-                                PackageModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
-                                _versions.Text = PackageModel.SelectedVersion.ToString();
+                                PackageDetailControlModel.SelectedVersion = _versions.Items[_versions.SelectedIndex] as DisplayVersion;
+                                _versions.Text = PackageDetailControlModel.SelectedVersion.ToString();
                             }
 
                             TextBox.SelectionStart = 0;
@@ -239,7 +237,7 @@ namespace NuGet.PackageManagement.UI
                                 (_versions.Text != _versions.Items[_versions.SelectedIndex].ToString() || matchVersion?.ToString() != _versions.Items[_versions.SelectedIndex].ToString()))
                             {
                                 _versions.SelectedIndex = -1;
-                                PackageModel.SelectedVersion = null;
+                                PackageDetailControlModel.SelectedVersion = null;
                             }
 
                             // Automatically select the item when the input or custom range text matches it

@@ -282,11 +282,11 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Theory]
-        [InlineData(NuGetProjectKind.PackageReference, ProjectModel.ProjectStyle.PackageReference, "*", "2.10.0")]
-        [InlineData(NuGetProjectKind.PackageReference, ProjectModel.ProjectStyle.PackageReference, "1.*", "2.10.0")]
-        [InlineData(NuGetProjectKind.PackageReference, ProjectModel.ProjectStyle.PackageReference, "(0.1,3.4)", "2.10.0")]
-        [InlineData(NuGetProjectKind.PackageReference, ProjectModel.ProjectStyle.PackageReference, "2.10.0", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsPackageReference_And_CustomVersion(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        [InlineData(NuGetProjectKind.PackageReference, "*", "2.10.0")]
+        [InlineData(NuGetProjectKind.PackageReference, "1.*", "2.10.0")]
+        [InlineData(NuGetProjectKind.PackageReference, "(0.1,3.4)", "2.10.0")]
+        [InlineData(NuGetProjectKind.PackageReference, "2.10.0", "2.10.0")]
+        public async void IsSelectedVersionCorrect_WhenPackageStyleIsPackageReference_And_CustomVersion(NuGetProjectKind projectKind, string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -320,7 +320,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind).Returns(projectKind);
-            project.SetupGet(p => p.ProjectStyle).Returns(projectStyle);
+            project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
 
             var model = new PackageDetailControlModel(
@@ -328,7 +328,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object });
 
-            // Arrange Package
+            // Arrange
             var testVersions = new List<VersionInfoContextInfo>() {
                 new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
                 new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
@@ -337,6 +337,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
+
+            VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
+            NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
+            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
 
             // Act
             var vm = new PackageItemViewModel(searchService.Object)
@@ -356,9 +360,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
             var displayVerion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+            // Assert
 
             Assert.Equal(model.SelectedVersion.ToString(), allowedVersions);
-            Assert.Equal(model.Versions.FirstOrDefault(), displayVerion);
+            Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
         }
 
         public Task<object> GetServiceAsync(Type serviceType)
