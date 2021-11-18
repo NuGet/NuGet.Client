@@ -92,18 +92,20 @@
       VerticalAlignment="Center"
       Text="{x:Static local:Resources.Label_Version}" />
 
+    <Label Name="SubscriptionsLabel" Content="{x:Static local:Resources.Label_Version}" Visibility="Collapsed"/>
     <ComboBox
       x:Name="_versions"
       Grid.Row="2"
       Grid.Column="2"
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
+      AutomationProperties.LabeledBy="{Binding ElementName=SubscriptionsLabel}"
       IsEditable="{Binding IsProjectPackageReference, Converter={StaticResource InverseNullToVisibilityConverter}}"
       IsTextSearchEnabled="{Binding IsProjectPackageReference, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       IsReadOnly="{Binding IsProjectPackageReference, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       StaysOpenOnEdit="{Binding IsProjectPackageReference, Converter={StaticResource InverseNullToVisibilityConverter}}"
       ItemsSource="{Binding Path=VersionsView}"
-      Text="{Binding UserInput}"
+      Text="{Binding Path=UserInput, Mode=OneWay}"
       SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
       <ComboBox.ItemContainerStyle>
             <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
@@ -153,7 +155,7 @@
       AutomationProperties.AutomationId="Project_Button_Update"
       Click="InstallButton_Clicked"
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
-      IsEnabled="{Binding IsNotAvailableForInstall, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
+      IsEnabled="{Binding IsInstallButtonEnabled}"
       Content="{x:Static local:Resources.Button_Update}" />
   </Grid>
 </UserControl>

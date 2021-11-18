@@ -103,8 +103,6 @@ namespace NuGet.PackageManagement.UI
         {
             if (PackageDetailControlModel.IsProjectPackageReference)
             {
-                var comboboxText = _versions.Text;
-
                 switch (e.Key)
                 {
                     case Key.Tab:
@@ -127,10 +125,7 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex++;
                             }
-
-                            // Changing the SelectedIndex will change the text
-                            _versions.Text = comboboxText;
-                            TextBox.SelectionStart = comboboxText.Length;
+                            PreviousText = _versions.Text;
 
                             e.Handled = true;
                         }
@@ -147,10 +142,7 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex--;
                             }
-
-                            // Changing the SelectedIndex will change the text
-                            _versions.Text = comboboxText;
-                            TextBox.SelectionStart = comboboxText.Length;
+                            PreviousText = _versions.Text;
 
                             e.Handled = true;
                         }
@@ -249,7 +241,7 @@ namespace NuGet.PackageManagement.UI
                                 }
                             }
 
-                            _versions.Text = comboboxText;
+                            PackageDetailControlModel.UserInput = comboboxText;
                             TextBox.SelectionStart = selectionStart;
 
                             break;
