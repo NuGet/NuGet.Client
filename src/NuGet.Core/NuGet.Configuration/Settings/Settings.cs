@@ -344,7 +344,7 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Loads Specific NuGet.Config file. The method only loads specific config file 
+        /// Loads Specific NuGet.Config file. The method only loads specific config file
         /// which is file <paramref name="configFileName"/>from <paramref name="root"/>.
         /// </summary>
         public static ISettings LoadSpecificSettings(string root, string configFileName)
@@ -556,7 +556,7 @@ namespace NuGet.Configuration
                     }
 
                     File.WriteAllText(defaultSettingsFilePath, NuGetConstants.DefaultConfigContent);
-                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
+                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.V3TrackFile);
                     File.Create(trackFilePath).Dispose();
                 }
 
@@ -566,7 +566,7 @@ namespace NuGet.Configuration
                 // automatically add nuget.org as a package source.
                 if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
-                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
+                    var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.V3TrackFile);
 
                     if (!File.Exists(trackFilePath))
                     {
