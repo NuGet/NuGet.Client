@@ -93,45 +93,11 @@ namespace NuGet.Test.Utility
             var path = PathIO.Combine(parentPath, Guid.NewGuid().ToString().Split('-')[0]);
             Directory.CreateDirectory(path);
 
-            // Need to clear package source mapping instruction from main repo.
-            CreateFile(parentPath, "nuget.config",
-$@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSourceMapping>
-    <clear />
-  </packageSourceMapping>
-</configuration>");
-
             return new TestDirectory(path, parentPath);
         }
 
         public static implicit operator string(TestDirectory directory) => directory.Path;
 
         public override string ToString() => Path;
-
-        /// <summary>
-        /// Creates a file with the specified content.
-        /// </summary>
-        /// <param name="directory">The directory of the created file.</param>
-        /// <param name="fileName">The name of the created file.</param>
-        /// <param name="fileContent">The content of the created file.</param>
-        public static void CreateFile(string directory, string fileName, string fileContent)
-        {
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            var fileFullName = PathIO.Combine(directory, fileName);
-            CreateFile(fileFullName, fileContent);
-        }
-
-        public static void CreateFile(string fileFullName, string fileContent)
-        {
-            using (var writer = new StreamWriter(fileFullName))
-            {
-                writer.Write(fileContent);
-            }
-        }
     }
 }
