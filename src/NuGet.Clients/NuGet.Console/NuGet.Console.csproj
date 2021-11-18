@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -35,7 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleInitializer.cs" />
-    <Compile Include="DebugConsoleMessageEventArgs.cs" />
     <Compile Include="DisplayNameAttribute.cs" />
     <Compile Include="HostNameAttribute.cs" />
     <Compile Include="ICommandExpansion.cs" />
@@ -43,7 +42,6 @@
     <Compile Include="ICommandTokenizer.cs" />
     <Compile Include="ICommandTokenizerProvider.cs" />
     <Compile Include="IConsoleInitializer.cs" />
-    <Compile Include="IDebugConsoleController.cs" />
     <Compile Include="IHostMetadata.cs" />
     <Compile Include="IHostProvider.cs" />
     <Compile Include="IPathExpansion.cs" />

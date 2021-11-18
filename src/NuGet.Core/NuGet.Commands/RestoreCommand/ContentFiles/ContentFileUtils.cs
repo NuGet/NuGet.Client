@@ -25,7 +25,6 @@ namespace NuGet.Commands
         /// Get all content groups that have the nearest TxM
         /// </summary>
         internal static List<ContentItemGroup> GetContentGroupsForFramework(
-            LockFileTargetLibrary lockFileLib,
             NuGetFramework framework,
             IEnumerable<ContentItemGroup> contentGroups,
             MaccatalystFallback maccatalystFallback)

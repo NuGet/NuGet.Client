@@ -232,22 +232,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        /// <summary>
-        /// Normalize package Id input against server metadata for project K, which is case-sensitive.
-        /// </summary>
-        /// <param name="project"></param>
-        protected void NormalizePackageId(NuGetProject project)
-        {
-            var metadata = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetPackagesFromRemoteSourceAsync(Id, includePrerelease: true));
-            if (!metadata.Any())
-            {
-                return;
-            }
-
-            // note that we're assuming that package id is the same for all versions.
-            Id = metadata.First().Identity.Id;
-        }
-
         protected virtual void WarnIfParametersAreNotSupported()
         {
             if (Source != null && Project is BuildIntegratedNuGetProject)

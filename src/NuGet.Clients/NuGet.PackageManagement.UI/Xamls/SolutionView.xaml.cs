@@ -232,7 +232,7 @@ namespace NuGet.PackageManagement.UI
         private async Task CheckBoxSelectProjectsAsync(bool select)
         {
             var model = DataContext as PackageSolutionDetailControlModel;
-            await model.SelectAllProjectsAsync(select, CancellationToken.None);
+            await model.SelectAllProjectsAsync(select);
         }
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
