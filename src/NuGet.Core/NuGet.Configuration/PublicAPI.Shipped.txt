@@ -119,6 +119,9 @@ NuGet.Configuration.NullSettings.SettingsChanged -> System.EventHandler
 NuGet.Configuration.OwnersItem
 NuGet.Configuration.OwnersItem.Content.get -> System.Collections.Generic.IList<string>
 NuGet.Configuration.OwnersItem.OwnersItem(string owners) -> void
+NuGet.Configuration.PackagePatternItem
+NuGet.Configuration.PackagePatternItem.PackagePatternItem(string pattern) -> void
+NuGet.Configuration.PackagePatternItem.Pattern.get -> string
 NuGet.Configuration.PackageSource
 NuGet.Configuration.PackageSource.AsSourceItem() -> NuGet.Configuration.SourceItem
 NuGet.Configuration.PackageSource.ClientCertificates.get -> System.Collections.Generic.IReadOnlyList<System.Security.Cryptography.X509Certificates.X509Certificate>
@@ -164,6 +167,13 @@ NuGet.Configuration.PackageSourceCredential.ToICredentials() -> System.Net.ICred
 NuGet.Configuration.PackageSourceCredential.Username.get -> string
 NuGet.Configuration.PackageSourceCredential.ValidAuthenticationTypes.get -> System.Collections.Generic.IEnumerable<string>
 NuGet.Configuration.PackageSourceCredential.ValidAuthenticationTypesText.get -> string
+NuGet.Configuration.PackageSourceMapping
+NuGet.Configuration.PackageSourceMapping.GetConfiguredPackageSources(string packageId) -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Configuration.PackageSourceMapping.IsEnabled.get -> bool
+NuGet.Configuration.PackageSourceMappingSourceItem
+NuGet.Configuration.PackageSourceMappingSourceItem.PackageSourceMappingSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.PackagePatternItem> packagePatternItems) -> void
+NuGet.Configuration.PackageSourceMappingSourceItem.Patterns.get -> System.Collections.Generic.IList<NuGet.Configuration.PackagePatternItem>
+NuGet.Configuration.PackageSourceMappingSourceItem.SetKey(string value) -> void
 NuGet.Configuration.PackageSourceProvider
 NuGet.Configuration.PackageSourceProvider.ActivePackageSourceName.get -> string
 NuGet.Configuration.PackageSourceProvider.AddPackageSource(NuGet.Configuration.PackageSource source) -> void
@@ -226,9 +236,12 @@ NuGet.Configuration.SettingElementType.Config = 4 -> NuGet.Configuration.Setting
 NuGet.Configuration.SettingElementType.Configuration = 1 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.FileCert = 15 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.Owners = 13 -> NuGet.Configuration.SettingElementType
+NuGet.Configuration.SettingElementType.Package = 19 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageManagement = 5 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageRestore = 6 -> NuGet.Configuration.SettingElementType
+NuGet.Configuration.SettingElementType.PackageSource = 18 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSourceCredentials = 7 -> NuGet.Configuration.SettingElementType
+NuGet.Configuration.SettingElementType.PackageSourceMapping = 17 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.PackageSources = 8 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.Repository = 14 -> NuGet.Configuration.SettingElementType
 NuGet.Configuration.SettingElementType.StoreCert = 16 -> NuGet.Configuration.SettingElementType
@@ -337,11 +350,21 @@ override NuGet.Configuration.OwnersItem.Clone() -> NuGet.Configuration.SettingBa
 override NuGet.Configuration.OwnersItem.ElementName.get -> string
 override NuGet.Configuration.OwnersItem.Equals(object other) -> bool
 override NuGet.Configuration.OwnersItem.GetHashCode() -> int
+override NuGet.Configuration.PackagePatternItem.Clone() -> NuGet.Configuration.SettingBase
+override NuGet.Configuration.PackagePatternItem.ElementName.get -> string
+override NuGet.Configuration.PackagePatternItem.Equals(object other) -> bool
+override NuGet.Configuration.PackagePatternItem.GetHashCode() -> int
 override NuGet.Configuration.PackageSource.Equals(object obj) -> bool
 override NuGet.Configuration.PackageSource.GetHashCode() -> int
 override NuGet.Configuration.PackageSource.ToString() -> string
 override NuGet.Configuration.PackageSourceCredential.Equals(object other) -> bool
 override NuGet.Configuration.PackageSourceCredential.GetHashCode() -> int
+override NuGet.Configuration.PackageSourceMappingSourceItem.CanHaveChildren.get -> bool
+override NuGet.Configuration.PackageSourceMappingSourceItem.Clone() -> NuGet.Configuration.SettingBase
+override NuGet.Configuration.PackageSourceMappingSourceItem.ElementName.get -> string
+override NuGet.Configuration.PackageSourceMappingSourceItem.Equals(object other) -> bool
+override NuGet.Configuration.PackageSourceMappingSourceItem.GetHashCode() -> int
+override NuGet.Configuration.PackageSourceMappingSourceItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
 override NuGet.Configuration.RepositoryItem.Clone() -> NuGet.Configuration.SettingBase
 override NuGet.Configuration.RepositoryItem.ElementName.get -> string
 override NuGet.Configuration.RepositoryItem.Equals(object other) -> bool
@@ -376,6 +399,7 @@ static NuGet.Configuration.NuGetPathContext.Create(NuGet.Configuration.ISettings
 static NuGet.Configuration.NuGetPathContext.Create(string settingsRoot) -> NuGet.Configuration.NuGetPathContext
 static NuGet.Configuration.NullSettings.Instance.get -> NuGet.Configuration.NullSettings
 static NuGet.Configuration.PackageSourceCredential.FromUserInput(string source, string username, string password, bool storePasswordInClearText, string validAuthenticationTypesText) -> NuGet.Configuration.PackageSourceCredential
+static NuGet.Configuration.PackageSourceMapping.GetPackageSourceMapping(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageSourceMapping
 static NuGet.Configuration.PackageSourceProvider.LoadPackageSources(NuGet.Configuration.ISettings settings) -> System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource>
 static NuGet.Configuration.ProxyCache.Instance.get -> NuGet.Configuration.ProxyCache
 static NuGet.Configuration.Settings.ApplyEnvironmentTransform(string value) -> string
@@ -445,14 +469,17 @@ static readonly NuGet.Configuration.ConfigurationConstants.MaxHttpRequestsPerSou
 static readonly NuGet.Configuration.ConfigurationConstants.NameAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.NoProxy -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Owners -> string
+static readonly NuGet.Configuration.ConfigurationConstants.Package -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageManagementSection -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageRestore -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageSourceAttribute -> string
+static readonly NuGet.Configuration.ConfigurationConstants.PackageSourceMapping -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PackageSources -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PasswordAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PasswordKey -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PasswordToken -> string
 static readonly NuGet.Configuration.ConfigurationConstants.PathAttribute -> string
+static readonly NuGet.Configuration.ConfigurationConstants.PatternAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.ProtocolVersionAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Repository -> string
 static readonly NuGet.Configuration.ConfigurationConstants.RepositoryPath -> string
@@ -495,6 +522,7 @@ static readonly NuGet.Configuration.SettingsUtility.DefaultGlobalPackagesFolderP
 virtual NuGet.Configuration.AddItem.GetValueAsPath() -> string
 virtual NuGet.Configuration.AddItem.Value.get -> string
 virtual NuGet.Configuration.AddItem.Value.set -> void
+virtual NuGet.Configuration.PackageSourceMappingSourceItem.Key.get -> string
 virtual NuGet.Configuration.SettingElement.AllowedAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
 virtual NuGet.Configuration.SettingElement.AllowedValues.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyCollection<string>>
 virtual NuGet.Configuration.SettingElement.DisallowedValues.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyCollection<string>>

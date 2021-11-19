@@ -43,6 +43,12 @@ NuGet.Frameworks.DefaultPortableFrameworkMappings.CompatibilityMappings.get -> S
 NuGet.Frameworks.DefaultPortableFrameworkMappings.DefaultPortableFrameworkMappings() -> void
 NuGet.Frameworks.DefaultPortableFrameworkMappings.ProfileFrameworks.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<int, NuGet.Frameworks.NuGetFramework[]>>
 NuGet.Frameworks.DefaultPortableFrameworkMappings.ProfileOptionalFrameworks.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<int, NuGet.Frameworks.NuGetFramework[]>>
+NuGet.Frameworks.DualCompatibilityFramework
+NuGet.Frameworks.DualCompatibilityFramework.AsFallbackFramework() -> NuGet.Frameworks.FallbackFramework
+NuGet.Frameworks.DualCompatibilityFramework.DualCompatibilityFramework(NuGet.Frameworks.NuGetFramework framework, NuGet.Frameworks.NuGetFramework secondaryFramework) -> void
+NuGet.Frameworks.DualCompatibilityFramework.Equals(NuGet.Frameworks.DualCompatibilityFramework other) -> bool
+NuGet.Frameworks.DualCompatibilityFramework.RootFramework.get -> NuGet.Frameworks.NuGetFramework
+NuGet.Frameworks.DualCompatibilityFramework.SecondaryFramework.get -> NuGet.Frameworks.NuGetFramework
 NuGet.Frameworks.FallbackFramework
 NuGet.Frameworks.FallbackFramework.Equals(NuGet.Frameworks.FallbackFramework other) -> bool
 NuGet.Frameworks.FallbackFramework.Fallback.get -> System.Collections.Generic.IReadOnlyList<NuGet.Frameworks.NuGetFramework>
@@ -256,6 +262,8 @@ const NuGet.Frameworks.FrameworkConstants.SpecialIdentifiers.Any = "Any" -> stri
 const NuGet.Frameworks.FrameworkConstants.SpecialIdentifiers.Unsupported = "Unsupported" -> string
 override NuGet.Frameworks.AssetTargetFallbackFramework.Equals(object obj) -> bool
 override NuGet.Frameworks.AssetTargetFallbackFramework.GetHashCode() -> int
+override NuGet.Frameworks.DualCompatibilityFramework.Equals(object obj) -> bool
+override NuGet.Frameworks.DualCompatibilityFramework.GetHashCode() -> int
 override NuGet.Frameworks.FallbackFramework.Equals(object obj) -> bool
 override NuGet.Frameworks.FallbackFramework.GetHashCode() -> int
 override NuGet.Frameworks.FrameworkRange.Equals(object obj) -> bool
@@ -314,6 +322,7 @@ static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.DotNet53 ->
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.DotNet54 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.DotNet55 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.DotNet56 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Native -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net11 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net2 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net35 -> NuGet.Frameworks.NuGetFramework
@@ -326,7 +335,11 @@ static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net46 -> Nu
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net461 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net462 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net463 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net47 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net471 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net472 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net50 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net60 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetCore45 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetCore451 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetCore50 -> NuGet.Frameworks.NuGetFramework
@@ -368,6 +381,7 @@ static readonly NuGet.Frameworks.FrameworkConstants.EmptyVersion -> System.Versi
 static readonly NuGet.Frameworks.FrameworkConstants.MaxVersion -> System.Version
 static readonly NuGet.Frameworks.FrameworkConstants.Version10 -> System.Version
 static readonly NuGet.Frameworks.FrameworkConstants.Version5 -> System.Version
+static readonly NuGet.Frameworks.FrameworkConstants.Version6 -> System.Version
 static readonly NuGet.Frameworks.NuGetFramework.AgnosticFramework -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.NuGetFramework.AnyFramework -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.NuGetFramework.Comparer -> System.Collections.Generic.IEqualityComparer<NuGet.Frameworks.NuGetFramework>

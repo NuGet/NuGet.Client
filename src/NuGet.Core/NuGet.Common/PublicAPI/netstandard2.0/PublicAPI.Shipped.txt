@@ -202,6 +202,7 @@ NuGet.Common.NuGetLogCode.NU1605 = 1605 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1608 = 1608 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1701 = 1701 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1702 = 1702 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1703 = 1703 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1801 = 1801 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3000 = 3000 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3001 = 3001 -> NuGet.Common.NuGetLogCode
