@@ -44,7 +44,20 @@ namespace NuGet.Protocol
         public Uri IconUrl { get; private set; }
 
         [JsonIgnore]
-        public PackageIdentity Identity => new PackageIdentity(PackageId, Version);
+        private PackageIdentity _packageIdentity = null;
+
+        [JsonIgnore]
+        public PackageIdentity Identity
+        {
+            get
+            {
+                if (_packageIdentity == null)
+                {
+                    _packageIdentity = new PackageIdentity(PackageId, Version);
+                }
+                return _packageIdentity;
+            }
+        }
 
         [JsonProperty(PropertyName = JsonProperties.LicenseUrl)]
         [JsonConverter(typeof(SafeUriConverter))]
