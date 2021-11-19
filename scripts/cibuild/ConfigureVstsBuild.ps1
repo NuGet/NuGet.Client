@@ -181,6 +181,7 @@ else
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
         VsTargetBranch = $VsTargetBranch.Trim()
+        NuGetSdkVsVersion = $NuGetSdkVsVersion.Trim()
     }
 
     # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.

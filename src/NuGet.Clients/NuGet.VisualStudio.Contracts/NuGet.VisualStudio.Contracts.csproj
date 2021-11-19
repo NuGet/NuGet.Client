@@ -13,6 +13,9 @@
     <IncludeNuGetSharedFiles>true</IncludeNuGetSharedFiles>
     <RootNamespace>NuGet.VisualStudio.Contracts</RootNamespace>
     <Description>RPC contracts for NuGet's Visual Studio Service Broker extensibility APIs.</Description>
+    <!-- VS Extensibility APIs should use package version corresponding to VS version it targets, to reduce confusion. Also keep assembly version stable to minimize binding redirect issues. -->
+    <PackageVersion>$(NuGetSdkVsSemanticVersion)$(PreReleaseInformationVersion)</PackageVersion>
+    <AssemblyVersion>$(NuGetSdkVsSemanticVersion).0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
