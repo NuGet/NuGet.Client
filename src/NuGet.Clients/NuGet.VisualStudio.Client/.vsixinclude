@@ -13,6 +13,9 @@ NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.Implementation.dll
 NuGet.VisualStudio.Internal.Contracts.dll
 NuGet.VisualStudio.OnlineEnvironment.Client.dll
+Microsoft.VisualStudio.TextTemplating.dll
+Microsoft.VisualStudio.TextTemplating.Interfaces.dll
+Microsoft.VisualStudio.TextTemplating.VSHost.dll
 
 # MS delay signed assemblies
 Microsoft.Build.NuGetSdkResolver.dll
