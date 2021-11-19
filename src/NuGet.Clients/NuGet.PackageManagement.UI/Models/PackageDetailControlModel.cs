@@ -211,7 +211,11 @@ namespace NuGet.PackageManagement.UI
 
             // Update the view and add the filter
             VersionsView = new CollectionViewSource() { Source = Versions }.View;
-            VersionsView.Filter += VersionsFilter;
+
+            if (IsProjectPackageReference)
+            {
+                VersionsView.Filter += VersionsFilter;
+            }
 
             SelectVersion();
 
@@ -230,18 +234,30 @@ namespace NuGet.PackageManagement.UI
             return Task.CompletedTask;
         }
 
+        private bool IsBeforeNullSeparator { get; set; }
+
         private bool VersionsFilter(object o)
         {
             var version = o as DisplayVersion;
             // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
-            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                if (IsBeforeNullSeparator) IsBeforeNullSeparator = false;
+                return true;
+            }
 
             // Handle of *, that this will show all versions other than the installed version, the suggested version and the null separator
             if (UserInput.Equals("*", StringComparison.OrdinalIgnoreCase))
             {
-                if (version == null || version.Version.Equals(Versions[0].Version) || version.Version.Equals(Versions[1].Version)) return false;
+                if (version == null) IsBeforeNullSeparator = true;
+
+                if (!IsBeforeNullSeparator || version == null)
+                {
+                    return false;
+                }
                 return true;
             }
+            else if (IsBeforeNullSeparator) IsBeforeNullSeparator = false;
 
             // If the user typed a version range, show only the versions that are in the range
             if ((UserInput.StartsWith("(", StringComparison.OrdinalIgnoreCase) || UserInput.StartsWith("[", StringComparison.OrdinalIgnoreCase)) &&
@@ -319,7 +335,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
+                return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
             }
         }
 

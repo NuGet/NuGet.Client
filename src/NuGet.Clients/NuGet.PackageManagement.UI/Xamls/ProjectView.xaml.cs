@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                if (_textBox == null) return _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
+                if (_textBox == null) _textBox = _versions.Template.FindName("PART_EditableTextBox", _versions) as TextBox;
                 return _textBox;
             }
             set
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                if (_packageDetailControlModel == null) return (PackageDetailControlModel)DataContext;
+                if (_packageDetailControlModel == null) _packageDetailControlModel = (PackageDetailControlModel)DataContext;
                 return _packageDetailControlModel;
             }
             set
@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                if (_detailModel == null) return (DetailControlModel)DataContext;
+                if (_detailModel == null) _detailModel = (DetailControlModel)DataContext;
                 return _detailModel;
             }
             set
@@ -241,7 +241,8 @@ namespace NuGet.PackageManagement.UI
                                 }
                             }
 
-                            PackageDetailControlModel.UserInput = comboboxText;
+                            PackageDetailControlModel.UserInput = comboboxText; // Update the variable so the filter refreshes
+                            _versions.Text = comboboxText;
                             TextBox.SelectionStart = selectionStart;
 
                             break;
