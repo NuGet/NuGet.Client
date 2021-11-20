@@ -419,7 +419,7 @@
 
     <Exec Command="$(DesktopTestCommand)"
           ContinueOnError="true"
-          EnvironmentVariables="VisualStudio.InstallationUnderTest.Path=$(VSINSTALLDIR)"
+          EnvironmentVariables="VisualStudio.InstallationUnderTest.Path=$(VSINSTALLDIR);MSBUILD_EXE_PATH=$(MSBuildBinPath)\MSBuild.exe"
           Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' ">
       <Output TaskParameter="ExitCode" PropertyName="DesktopTestErrorCode"/>
     </Exec>
