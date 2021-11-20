@@ -121,7 +121,7 @@ namespace NuGet.Test
             // Arrange
             var mappingsA = new Mock<IFrameworkMappings>();
             var mappingsB = new Mock<IFrameworkMappings>();
-            mappingsA.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { Windows });
+            mappingsA.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { FrameworkConstants.FrameworkIdentifiers.Windows });
             mappingsB.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { NetCore });
 
             var provider = new FrameworkNameProvider(new[] { mappingsA.Object, mappingsB.Object }, null);
