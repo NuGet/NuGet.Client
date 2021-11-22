@@ -77,6 +77,15 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return NuGetAbstraction.TryParseNuGetVersion(version, out parsedVersion);
             }
 
+            parsedVersion = null;
+
+            // Don't try to find versions defined in global.json if the project full path isn't set because an in-memory project is being evaluated and there's no
+            // way to be sure where to look
+            if (string.IsNullOrWhiteSpace(context?.ProjectFilePath))
+            {
+                return false;
+            }
+
             Dictionary<string, string> msbuildSdkVersions;
 
             // Get the SDK versions from a previous state, otherwise find and load global.json to get them
@@ -99,8 +108,6 @@ namespace Microsoft.Build.NuGetSdkResolver
             {
                 return NuGetAbstraction.TryParseNuGetVersion(globalJsonVersion, out parsedVersion);
             }
-
-            parsedVersion = null;
 
             return false;
         }

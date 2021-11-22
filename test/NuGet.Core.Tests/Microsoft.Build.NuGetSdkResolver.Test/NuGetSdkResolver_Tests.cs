@@ -99,6 +99,28 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 context: context);
         }
 
+        [Fact]
+        public void TryGetNuGetVersionNullProjectPath()
+        {
+            var context = new MockSdkResolverContext(projectPath: null);
+
+            VerifyTryGetNuGetVersionForSdk(
+                version: null,
+                expectedVersion: null,
+                context: context);
+        }
+
+        [Fact]
+        public void TryGetNuGetVersionNullProjectPathWithVersion()
+        {
+            var context = new MockSdkResolverContext(projectPath: null);
+
+            VerifyTryGetNuGetVersionForSdk(
+                version: "1.0.0",
+                expectedVersion: NuGetVersion.Parse("1.0.0"),
+                context: context);
+        }
+
         private void VerifyTryGetNuGetVersionForSdk(string version, NuGetVersion expectedVersion, SdkResolverContextBase context = null)
         {
             var result = NuGetSdkResolver.TryGetNuGetVersionForSdk("foo", version, context, out var parsedVersion);
