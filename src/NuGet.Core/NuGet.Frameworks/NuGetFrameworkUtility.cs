@@ -7,12 +7,7 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    static class NuGetFrameworkUtility
+    public static class NuGetFrameworkUtility
     {
         /// <summary>
         /// Find the most compatible group based on target framework

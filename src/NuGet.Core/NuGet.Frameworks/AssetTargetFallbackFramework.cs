@@ -18,12 +18,7 @@ namespace NuGet.Frameworks
     /// AssetTargetFallbackFramework only fallback when zero assets are selected. These do not 
     /// auto fallback during GetNearest as FallbackFramework would.
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class AssetTargetFallbackFramework : NuGetFramework, IEquatable<AssetTargetFallbackFramework>
+    public class AssetTargetFallbackFramework : NuGetFramework, IEquatable<AssetTargetFallbackFramework>
     {
         private readonly FallbackList _fallback;
         private int? _hashCode;

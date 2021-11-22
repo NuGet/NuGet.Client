@@ -10,12 +10,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A case insensitive compare of the framework, version, and profile
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class NuGetFrameworkFullComparer : IEqualityComparer<NuGetFramework>
+    public class NuGetFrameworkFullComparer : IEqualityComparer<NuGetFramework>
     {
         public bool Equals(NuGetFramework x, NuGetFramework y)
         {

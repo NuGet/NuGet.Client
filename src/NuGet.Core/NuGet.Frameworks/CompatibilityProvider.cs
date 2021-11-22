@@ -8,12 +8,7 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class CompatibilityProvider : IFrameworkCompatibilityProvider
+    public class CompatibilityProvider : IFrameworkCompatibilityProvider
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;

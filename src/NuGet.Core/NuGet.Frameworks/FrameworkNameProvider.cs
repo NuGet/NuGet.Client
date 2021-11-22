@@ -8,12 +8,7 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class FrameworkNameProvider : IFrameworkNameProvider
+    public class FrameworkNameProvider : IFrameworkNameProvider
     {
         private static readonly HashSet<NuGetFramework> EmptyFrameworkSet = new HashSet<NuGetFramework>();
 

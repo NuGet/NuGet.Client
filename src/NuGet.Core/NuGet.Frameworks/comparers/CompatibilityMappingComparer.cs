@@ -6,12 +6,7 @@ using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class CompatibilityMappingComparer : IEqualityComparer<OneWayCompatibilityMappingEntry>
+    public class CompatibilityMappingComparer : IEqualityComparer<OneWayCompatibilityMappingEntry>
     {
         public bool Equals(OneWayCompatibilityMappingEntry x, OneWayCompatibilityMappingEntry y)
         {

@@ -3,12 +3,7 @@
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    sealed class DefaultCompatibilityProvider : CompatibilityProvider
+    public sealed class DefaultCompatibilityProvider : CompatibilityProvider
     {
         public DefaultCompatibilityProvider()
             : base(DefaultFrameworkNameProvider.Instance)

@@ -12,12 +12,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// Reduces a list of frameworks into the smallest set of frameworks required.
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class FrameworkReducer
+    public class FrameworkReducer
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly IFrameworkCompatibilityProvider _compat;
