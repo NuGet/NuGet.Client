@@ -13,7 +13,7 @@ namespace NuGet.CommandLine
         {
             try
             {
-                using (var key = registryKey?.OpenSubKey(name))
+                using (var key = registryKey?.OpenSubKey(registryKeyPath))
                 {
                     var result = key?.GetValue(name);
 
