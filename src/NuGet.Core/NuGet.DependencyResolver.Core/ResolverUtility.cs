@@ -427,7 +427,7 @@ namespace NuGet.DependencyResolver
 
             foreach (var provider in providers)
             {
-                tasks.Add(taskWrapper(provider, libraryRange, framework, cacheContext, logger, token));
+                tasks.Add(FindLibraryFromProviderAsync(provider, libraryRange, framework, cacheContext, logger, token));
             }
 
             RemoteMatch bestMatch = null;
@@ -457,7 +457,7 @@ namespace NuGet.DependencyResolver
                 }
             }
 
-            static async Task<RemoteMatch> taskWrapper(IRemoteDependencyProvider provider, LibraryRange libraryRange,
+            static async Task<RemoteMatch> FindLibraryFromProviderAsync(IRemoteDependencyProvider provider, LibraryRange libraryRange,
                 NuGetFramework framework, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
             {
                 var library = await provider.FindLibraryAsync(libraryRange, framework, cacheContext, logger, token);
