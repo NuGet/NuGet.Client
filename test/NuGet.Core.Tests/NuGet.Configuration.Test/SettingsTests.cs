@@ -2043,7 +2043,7 @@ namespace NuGet.Configuration.Test
             string expected = SettingsTestUtils.RemoveWhitespace(NuGetConstants.DefaultConfigContent);
             actual.Should().Be(expected);
 
-            // and that the tracking file exists, so that nuget.org won't be re-added if the customer removes it.
+            // Check that the tracking file exists, so that nuget.org won't be re-added if the customer removes it.
             Assert.True(File.Exists(Path.Combine(mockUserProfileDirectory, NuGetConstants.V3TrackFile)));
         }
 
@@ -2076,7 +2076,7 @@ namespace NuGet.Configuration.Test
             string expected = SettingsTestUtils.RemoveWhitespace(NuGetConstants.DefaultConfigContent);
             actual.Should().Be(expected);
 
-            // and that the tracking file exists, so that nuget.org won't be re-added if the customer removes it.
+            // Check that the tracking file exists, so that nuget.org won't be re-added if the customer removes it.
             Assert.True(File.Exists(Path.Combine(mockUserProfileDirectory, NuGetConstants.V3TrackFile)));
         }
 
