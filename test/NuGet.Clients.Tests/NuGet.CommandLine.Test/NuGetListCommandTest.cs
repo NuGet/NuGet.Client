@@ -921,26 +921,26 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_InvalidInput_V3_NotFound(string invalidInput)
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
             // Act
             using (var pathContext = new SimpleTestPathContext())
             {
                 var args = "list test -Source " + invalidInput;
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    pathContext.SolutionRoot,
-                    args,
+                CommandRunnerResult result = CommandRunner.Run(
+                    process: nugetexe,
+                    workingDirectory: pathContext.SolutionRoot,
+                    arguments: args,
                     waitForExit: true);
 
                 // Assert
-                Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+                Assert.False(
+                    result.Success,
+                    "The run did not fail as desired. Simply got this output:" + result.Output);
 
                 Assert.True(
-                    result.Item3.Contains("400 (Bad Request)"),
-                    "Expected error message not found in " + result.Item3
+                    result.Errors.Contains("Response status code does not indicate success"),
+                    "Expected error message not found in " + result.Errors
                     );
             }
         }
