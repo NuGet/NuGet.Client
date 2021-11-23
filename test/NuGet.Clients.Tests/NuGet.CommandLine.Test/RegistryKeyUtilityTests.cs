@@ -21,24 +21,29 @@ namespace NuGet.CommandLine.Test
         [WindowsNTFact]
         public void GetValueFromRegistryKey_UnknownKey_ReturnsNull()
         {
+            // Prepare
             var guidString = new Guid().ToString();
             var registryKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default);
 
+            // Act
             var value = RegistryKeyUtility.GetValueFromRegistryKey(guidString, "key_local_machine\\test\\folder", registryKey, _logger);
 
+            // Assert
             Assert.Null(value);
-            Assert.Empty(_logger.ErrorMessages);
+            Assert.Empty(_logger.Messages);
         }
 
         [WindowsNTFact]
         public void GetValueFromRegistryKey_GetSampleKey_ReturnsNotNull()
         {
+            // Act
             var value = RegistryKeyUtility.GetValueFromRegistryKey("ProductName", @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", Registry.LocalMachine, _logger);
 
+            // Assert
             Assert.NotNull(value);
             var productName = value as string;
             Assert.StartsWith("Windows", productName);
-            Assert.Empty(_logger.ErrorMessages);
+            Assert.Empty(_logger.Messages);
         }
     }
 }

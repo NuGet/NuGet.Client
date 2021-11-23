@@ -176,7 +176,10 @@ namespace NuGet.CommandLine
             catch (PathTooLongException e)
             {
                 LogException(e, console);
-                LogHelperMessageForPathTooLongException(console);
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    LogHelperMessageForPathTooLongException(console);
+                }
                 return 1;
             }
             catch (Exception exception)
