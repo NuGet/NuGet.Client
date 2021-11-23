@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.Test
             var registryKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default);
 
             // Act
-            var value = RegistryKeyUtility.GetValueFromRegistryKey(guidString, "key_local_machine\\test\\folder", registryKey, _logger);
+            var value = RegistryKeyUtility.GetValueFromRegistryKey(guidString, @"key_local_machine\test\folder", registryKey, _logger);
 
             // Assert
             Assert.Null(value);
@@ -37,12 +37,12 @@ namespace NuGet.CommandLine.Test
         public void GetValueFromRegistryKey_GetSampleKey_ReturnsNotNull()
         {
             // Act
-            var value = RegistryKeyUtility.GetValueFromRegistryKey("ProductName", @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", Registry.LocalMachine, _logger);
+            object value = RegistryKeyUtility.GetValueFromRegistryKey("ProductName", @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", Registry.LocalMachine, _logger);
 
             // Assert
             Assert.NotNull(value);
-            var productName = value as string;
-            Assert.StartsWith("Windows", productName);
+            Assert.IsType<string>(value);
+            Assert.StartsWith("Windows", (string)value);
             Assert.Empty(_logger.Messages);
         }
     }
