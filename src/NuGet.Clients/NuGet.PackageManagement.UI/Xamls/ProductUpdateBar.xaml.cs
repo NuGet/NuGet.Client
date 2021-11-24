@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ShowUpdateBar(e.CurrentVersion, e.NewVersion);
+                ShowUpdateBar();
             });
         }
 
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.UI
             _productUpdateService.DeclineUpdate(true);
         }
 
-        public void ShowUpdateBar(Version currentVersion, Version newVersion)
+        public void ShowUpdateBar()
         {
             if (IsVisible)
             {

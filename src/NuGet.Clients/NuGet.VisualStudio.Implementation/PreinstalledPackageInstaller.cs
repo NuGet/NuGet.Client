@@ -169,7 +169,6 @@ namespace NuGet.VisualStudio
         /// execution to continue.
         /// </param>
         internal async Task PerformPackageInstallAsync(
-            IVsPackageInstaller packageInstaller,
             EnvDTE.Project project,
             PreinstalledPackageConfiguration configuration,
             bool preferPackageReferenceFormat,
@@ -416,12 +415,12 @@ namespace NuGet.VisualStudio
             {
                 var packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
 
-                CopyNativeBinaries(projectSystem, repositoryPath,
+                CopyNativeBinaries(projectSystem,
                     Path.Combine(repositoryPath, packagePath));
             }
         }
 
-        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string repositoryPath, string packagePath)
+        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string packagePath)
         {
             const string nativeBinariesFolder = "NativeBinaries";
             const string binFolder = "bin";

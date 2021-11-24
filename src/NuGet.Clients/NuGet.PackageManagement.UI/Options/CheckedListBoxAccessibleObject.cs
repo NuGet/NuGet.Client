@@ -19,7 +19,7 @@ namespace NuGet.Options
             }
         }
 
-        internal void SelectChild(AccessibleSelection flags, int index)
+        internal void SelectChild(int index)
         {
             if (index >= 0 && index < CheckedListBox.Items.Count)
             {

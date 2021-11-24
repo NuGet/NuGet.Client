@@ -41,6 +41,8 @@ namespace NuGet.CommandLine
         /// <see cref="IEnumerable{PackageReference}" />.</returns>
         public Task<IEnumerable<PackageReference>> GetFolderPackagesAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var packages = Enumerable.Empty<LocalPackageInfo>();
 
             if (Directory.Exists(Root))

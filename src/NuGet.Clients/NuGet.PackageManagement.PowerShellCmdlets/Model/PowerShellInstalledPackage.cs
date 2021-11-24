@@ -26,8 +26,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         internal static List<PowerShellInstalledPackage> GetPowerShellPackageView(
             Dictionary<NuGetProject, IEnumerable<PackageReference>> dictionary,
-            ISolutionManager SolutionManager,
-            Configuration.ISettings settings)
+            ISettings settings)
         {
             var views = new List<PowerShellInstalledPackage>();
 

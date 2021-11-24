@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToArray();
         }
 
-        private static async Task<PackageDeprecationMetadata> MergeDeprecationMetadataAsync(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)
+        private static async Task<PackageDeprecationMetadata> MergeDeprecationMetadataAsync(IEnumerable<IPackageSearchMetadata> packages)
         {
             var deprecationMetadatas = await Task.WhenAll(packages.Select(m => m.GetDeprecationMetadataAsync()));
             return deprecationMetadatas.FirstOrDefault(d => d != null);
@@ -235,7 +235,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(m => m != null);
 
             return (await MergeVersionsAsync(identity, metadatas),
-                await MergeDeprecationMetadataAsync(identity, metadatas),
+                await MergeDeprecationMetadataAsync(metadatas),
                 MergeVulnerabilityMetadata(metadatas));
         }
 
