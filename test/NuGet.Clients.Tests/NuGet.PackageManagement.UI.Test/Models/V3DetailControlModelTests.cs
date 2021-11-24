@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,6 +51,28 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 InstalledVersion = testVersion,
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("nuget.psm.test") },
             };
+        }
+
+        /// <summary>
+        /// Due to embedding the types we need to compare based on IsEquivalentTo
+        /// </summary>
+        protected class TypeEquivalenceComparer : IEqualityComparer<Type>
+        {
+            public static readonly TypeEquivalenceComparer Instance = new TypeEquivalenceComparer();
+
+            private TypeEquivalenceComparer()
+            {
+            }
+
+            public bool Equals(Type x, Type y)
+            {
+                return x.IsEquivalentTo(y);
+            }
+
+            public int GetHashCode(Type obj)
+            {
+                return obj.GUID.GetHashCode();
+            }
         }
     }
 
@@ -100,8 +124,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<INuGetSearchService>(mockSearchService.Object));
 #pragma warning restore ISB001 // Dispose of proxies
-
-            ServiceLocator.InitializePackageServiceProvider(this);
 
             _testInstance = new PackageDetailControlModel(
                 mockServiceBroker.Object,
@@ -198,6 +220,65 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(expectedVersions, actualVersions);
         }
 
+        [Fact]
+        public async Task SetCurrentPackageAsync_ClearVersions_Always()
+        {
+            // Arrange
+            var installedVersion = NuGetVersion.Parse("1.0.0");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.1")),
+            };
+
+            var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
+            var wasVersionsListCleared = false;
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+            var vm = new PackageItemViewModel(searchService.Object);
+
+            vm.Id = "a";
+            vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
+            vm.InstalledVersion = installedVersion;
+            vm.Version = installedVersion;
+
+            // Test Setup already selected a package.
+            int previousVersionListCount = _testInstance.Versions.Count;
+
+            mockPropertyChangedEventHandler.Setup(x => x.PropertyChanged(
+                It.IsAny<object>(),
+                It.IsAny<PropertyChangedEventArgs>()
+            ))
+            .Callback<object, PropertyChangedEventArgs>((d, p) =>
+            {
+                DetailControlModel detail = d as DetailControlModel;
+                if (detail != null
+                    && detail.Versions.Count == 0
+                    && p.PropertyName == nameof(DetailControlModel.Versions))
+                {
+                    wasVersionsListCleared = true;
+                }
+            });
+
+            _testInstance.PropertyChanged += mockPropertyChangedEventHandler.Object.PropertyChanged;
+
+            // Act
+
+            //Select a different VM which should clear the Versions list from the previous selection.
+            await _testInstance.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.All,
+                () => vm);
+
+            // Assert
+
+            Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
+            Assert.True(wasVersionsListCleared, "Versions list was not cleared.");
+        }
+
 
         public Task<object> GetServiceAsync(Type serviceType)
         {
@@ -215,37 +296,45 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public interface IBrokeredServiceContainerMock : SVsBrokeredServiceContainer, IBrokeredServiceContainer
         {
         }
-
-        /// <summary>
-        /// Due to embedding the types we need to compare based on IsEquivalentTo
-        /// </summary>
-        private class TypeEquivalenceComparer : IEqualityComparer<Type>
-        {
-            public static readonly TypeEquivalenceComparer Instance = new TypeEquivalenceComparer();
-
-            private TypeEquivalenceComparer()
-            {
-            }
-
-            public bool Equals(Type x, Type y)
-            {
-                return x.IsEquivalentTo(y);
-            }
-
-            public int GetHashCode(Type obj)
-            {
-                return obj.GUID.GetHashCode();
-            }
-        }
     }
 
-    public class V3PackageSolutionDetailControlModelTests : V3DetailControlModelTestBase
+    public class V3PackageSolutionDetailControlModelTests : V3DetailControlModelTestBase, IAsyncServiceProvider
     {
         private PackageSolutionDetailControlModel _testInstance;
-
+        private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>(TypeEquivalenceComparer.Instance);
         public V3PackageSolutionDetailControlModelTests(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
             : base(sp, testData)
         {
+            var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
+            {
+                PackageSearchMetadataContextInfo.Create(_testData.TestData)
+            };
+
+            var mockSearchService = new Mock<INuGetSearchService>();
+            mockSearchService.Setup(x =>
+                x.GetPackageMetadataListAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>>(packageSearchMetadata));
+
+            mockSearchService.Setup(x =>
+                x.GetDeprecationMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(null);
+
+            mockSearchService.Setup(x => x.GetPackageMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>((packageSearchMetadata[0], null)));
+
             var solMgr = new Mock<INuGetSolutionManagerService>();
             var serviceBroker = new Mock<IServiceBroker>();
             var projectManagerService = new Mock<INuGetProjectManagerService>();
@@ -254,6 +343,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
 #pragma warning disable ISB001 // Dispose of proxies
             serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(projectManagerService.Object);
+            serviceBroker.Setup(
+                x => x.GetProxyAsync<INuGetSearchService>(
+                    NuGetServices.SearchService,
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<INuGetSearchService>(mockSearchService.Object));
 #pragma warning restore ISB001 // Dispose of proxies
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
@@ -263,7 +358,22 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     projects: new List<IProjectContextInfo>(),
                     serviceBroker: serviceBroker.Object,
                     CancellationToken.None);
+
+                await _testInstance.SetCurrentPackageAsync(
+                    _testViewModel,
+                    ItemFilter.All,
+                    () => null);
             });
+        }
+
+        public Task<object> GetServiceAsync(Type serviceType)
+        {
+            if (_services.TryGetValue(serviceType, out Task<object> task))
+            {
+                return task;
+            }
+
+            return Task.FromResult<object>(null);
         }
 
         [Fact]
@@ -321,5 +431,69 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             Assert.Equal(expectedVersions, actualVersions);
         }
+
+        [Fact]
+        public async Task SetCurrentPackageAsync_ClearVersions_Always()
+        {
+            // Arrange
+            var installedVersion = NuGetVersion.Parse("1.0.0");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.1")),
+            };
+
+            var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
+            var wasVersionsListCleared = false;
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+            var vm = new PackageItemViewModel(searchService.Object);
+
+            vm.Id = "a";
+            vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
+            vm.InstalledVersion = installedVersion;
+            vm.Version = installedVersion;
+
+            // Test Setup already selected a package.
+            int previousVersionListCount = _testInstance.Versions.Count;
+
+            mockPropertyChangedEventHandler.Setup(x => x.PropertyChanged(
+                It.IsAny<object>(),
+                It.IsAny<PropertyChangedEventArgs>()
+            ))
+            .Callback<object, PropertyChangedEventArgs>((d, p) =>
+            {
+                DetailControlModel detail = d as DetailControlModel;
+                if (detail != null
+                    && detail.Versions.Count == 0
+                    && p.PropertyName == nameof(DetailControlModel.Versions))
+                {
+                    wasVersionsListCleared = true;
+                }
+            });
+
+            _testInstance.PropertyChanged += mockPropertyChangedEventHandler.Object.PropertyChanged;
+
+            // Act
+
+            //Select a different VM which should clear the Versions list from the previous selection.
+            await _testInstance.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.All,
+                () => vm);
+
+            // Assert
+
+            Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
+            Assert.True(wasVersionsListCleared, "Versions list was not cleared.");
+        }
+    }
+
+    public interface IPropertyChangedEventHandler
+    {
+        void PropertyChanged(object sender, PropertyChangedEventArgs e);
     }
 }

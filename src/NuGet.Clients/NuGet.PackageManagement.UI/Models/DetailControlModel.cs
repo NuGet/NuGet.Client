@@ -121,6 +121,7 @@ namespace NuGet.PackageManagement.UI
             Func<PackageItemViewModel> getPackageItemViewModel)
         {
             // Clear old data
+            ClearVersions();
             PackageMetadata = null;
             _metadataDict.Clear();
 
@@ -638,6 +639,19 @@ namespace NuGet.PackageManagement.UI
                 SelectedVersion =
                     possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
                     ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+            }
+        }
+
+        /// <summary>
+        /// Clears <see cref="Versions" /> and raises <see cref="OnPropertyChanged(string)"/>, if populated. Otherwise, does nothing.
+        /// </summary>
+        public void ClearVersions()
+        {
+            // Versions will have not yet been instantiated on the very first package selection.
+            if (_versions != null)
+            {
+                _versions.Clear();
+                OnPropertyChanged(nameof(Versions));
             }
         }
 
