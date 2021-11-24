@@ -125,8 +125,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .Returns(new ValueTask<INuGetSearchService>(mockSearchService.Object));
 #pragma warning restore ISB001 // Dispose of proxies
 
-            ServiceLocator.InitializePackageServiceProvider(this);
-
             _testInstance = new PackageDetailControlModel(
                 mockServiceBroker.Object,
                 solutionManager: solMgr.Object,
@@ -352,8 +350,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<INuGetSearchService>(mockSearchService.Object));
 #pragma warning restore ISB001 // Dispose of proxies
-
-            ServiceLocator.InitializePackageServiceProvider(this);
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
