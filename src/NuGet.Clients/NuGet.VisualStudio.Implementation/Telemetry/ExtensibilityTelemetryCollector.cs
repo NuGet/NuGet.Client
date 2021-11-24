@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Diagnostics.Tracing;
+using System.Threading;
 using NuGet.Common;
 using NuGet.SolutionRestoreManager;
 using NuGet.VisualStudio.Contracts;
