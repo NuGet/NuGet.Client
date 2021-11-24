@@ -27,8 +27,7 @@ namespace NuGet.Packaging.FuncTest
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public void Verify_WithValidInput_DoesNotThrow()
         {
             using (var certificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.PublicCert.RawData))
@@ -38,8 +37,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignAsync_AddsPackageAuthorSignatureAsync()
         {
             using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
@@ -55,8 +53,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignAsync_AddsPackageRepositorySignatureAsync()
         {
             using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
@@ -72,8 +69,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignAsync_WhenRepositoryCountersigningPrimarySignature_SucceedsAsync()
         {
             using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
@@ -102,8 +98,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignAsync_WithExpiredCertificate_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificateExpired.Source.Cert))
@@ -121,8 +116,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignAsync_WithNotYetValidCertificate_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificateNotYetValid.Source.Cert))
@@ -140,8 +134,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignAsync_WhenRepositoryCountersigningRepositorySignedPackage_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
@@ -171,8 +164,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignAsync_WhenRepositoryCountersigningRepositoryCountersignedPackage_ThrowsAsync()
         {
             using (var test = await Test.CreateAsync(_testFixture.TrustedTestCertificate.Source.Cert))
