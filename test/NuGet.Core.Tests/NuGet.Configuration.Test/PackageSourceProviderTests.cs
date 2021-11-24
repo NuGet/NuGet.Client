@@ -1814,7 +1814,7 @@ namespace NuGet.Configuration.Test
                 List<PackageSource> sources = LoadPackageSources(useStaticMethod, settings);
 
                 // Assert
-                Assert.Equal(0, sources.Count);
+                Assert.Equal(1, sources.Count);
             }
         }
 

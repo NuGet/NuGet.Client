@@ -2021,63 +2021,95 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void LoadSettings_EmptyUserWideConfigFile_DoNotAddNuGetOrg()
+        public void LoadSettings_UserSettingsFolderDoesNotExist_DefaultNuGetConfigAndTrackingFilesCreated()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>";
+            // Arrange
+            using TestDirectory mockSolutionDirectory = TestDirectory.Create();
+            // Settings.LoadSettings' useTestingGlobalPath will use a subdirectory, instead of machine configuration, to allow for testing.
+            string mockUserProfileDirectory = Path.Combine(mockSolutionDirectory, "TestingGlobalPath");
 
-                var nugetConfigPath = "NuGet.Config";
-                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "TestingGlobalPath"), config);
+            // Act
+            ISettings settings = Settings.LoadSettings(
+                root: mockSolutionDirectory,
+                configFileName: null,
+                machineWideSettings: null,
+                loadUserWideSettings: true,
+                useTestingGlobalPath: true);
 
-                // Act
-                var settings = Settings.LoadSettings(
-                    root: mockBaseDirectory,
-                    configFileName: null,
-                    machineWideSettings: null,
-                    loadUserWideSettings: true,
-                    useTestingGlobalPath: true);
+            // Assert
 
-                // Assert
-                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
-                var expected = SettingsTestUtils.RemoveWhitespace(config);
+            // Check that the config file has the expected contents
+            string actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockUserProfileDirectory, "NuGet.Config")));
+            string expected = SettingsTestUtils.RemoveWhitespace(NuGetConstants.DefaultConfigContent);
+            actual.Should().Be(expected);
 
-                actual.Should().Be(expected);
-            }
+            // Check that the tracking file exists, so that nuget.org won't be re-added if the customer removes it.
+            Assert.True(File.Exists(Path.Combine(mockUserProfileDirectory, NuGetConstants.V3TrackFile)));
         }
 
         [Fact]
-        public void LoadSettings_NonExistingUserWideConfigFile_CreateUserWideConfigFileWithNuGetOrg()
+        public void LoadSettings_UserNuGetConfigIsEmptyWithoutTrackingFile_NuGetOrgSourceAddedAndTrackingFileCreated()
         {
-            using (var mockBaseDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                var nugetConfigPath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config");
-                File.Exists(nugetConfigPath).Should().BeFalse();
+            // Arrange
+            using TestDirectory mockSolutionDirectory = TestDirectory.Create();
+            // Settings.LoadSettings' useTestingGlobalPath will use a subdirectory, instead of machine configuration, to allow for testing.
+            string mockUserProfileDirectory = Path.Combine(mockSolutionDirectory, "TestingGlobalPath");
 
-                // Act
-                var settings = Settings.LoadSettings(
-                    root: mockBaseDirectory,
-                    configFileName: null,
-                    machineWideSettings: null,
-                    loadUserWideSettings: true,
-                    useTestingGlobalPath: true);
-
-                // Assert
-                File.Exists(nugetConfigPath).Should().BeTrue();
-                var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath));
-                var expected = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            string emptyConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageSources>
-        <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
-    </packageSources>
-</configuration>");
+</configuration>";
 
-                actual.Should().Be(expected);
-            }
+            string nugetConfigPath = "NuGet.Config";
+            SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockUserProfileDirectory, emptyConfig);
+
+            // Act
+            ISettings settings = Settings.LoadSettings(
+                root: mockSolutionDirectory,
+                configFileName: null,
+                machineWideSettings: null,
+                loadUserWideSettings: true,
+                useTestingGlobalPath: true);
+
+            // Assert
+            // Check that the config file has the expected contents
+            string actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockUserProfileDirectory, "NuGet.Config")));
+            string expected = SettingsTestUtils.RemoveWhitespace(NuGetConstants.DefaultConfigContent);
+            actual.Should().Be(expected);
+
+            // Check that the tracking file exists, so that nuget.org won't be re-added if the customer removes it.
+            Assert.True(File.Exists(Path.Combine(mockUserProfileDirectory, NuGetConstants.V3TrackFile)));
+        }
+
+        [Fact]
+        public void LoadSettings_UserNuGetConfigIsEmptyAndTrackingFileExists_ConfigFileNotModified()
+        {
+            // Arrange
+            using TestDirectory mockSolutionDirectory = TestDirectory.Create();
+            // Settings.LoadSettings' useTestingGlobalPath will use a subdirectory, instead of machine configuration, to allow for testing.
+            string mockUserProfileDirectory = Path.Combine(mockSolutionDirectory, "TestingGlobalPath");
+
+            string emptyConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+            string nugetConfigPath = "NuGet.Config";
+            SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockUserProfileDirectory, emptyConfig);
+
+            File.WriteAllText(Path.Combine(mockUserProfileDirectory, NuGetConstants.V3TrackFile), string.Empty);
+
+            // Act
+            ISettings settings = Settings.LoadSettings(
+                root: mockSolutionDirectory,
+                configFileName: null,
+                machineWideSettings: null,
+                loadUserWideSettings: true,
+                useTestingGlobalPath: true);
+
+            // Assert
+            // Check that the config file has the expected contents
+            string actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockUserProfileDirectory, "NuGet.Config")));
+            string expected = SettingsTestUtils.RemoveWhitespace(emptyConfig);
+            actual.Should().Be(expected);
         }
 
         [Theory]
