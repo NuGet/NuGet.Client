@@ -98,11 +98,6 @@ namespace NuGet.ContentModel
             }
         }
 
-        /// <summary>
-        /// Populates the supplied list with item groups 
-        /// </summary>
-        /// <param name="definition"></param>
-        /// <param name="contentItemGroupList"></param>
         public void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList)
         {
             if (_assets.Count > 0)
