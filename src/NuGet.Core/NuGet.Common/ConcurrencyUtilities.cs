@@ -21,6 +21,13 @@ namespace NuGet.Common
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
         private static readonly KeyedLock PerFileLock = new KeyedLock();
 
+        // FileOptions.DeleteOnClose causes concurrency issues on Mac OS X and Linux.
+        // These are fixed in .NET 7 (https://github.com/dotnet/runtime/pull/55327).
+        // To continue working in parallel with older versions of .NET,
+        // we cannot use DeleteOnClose by default until .NET 6 goes EOL (Nov 2024).
+        private static bool UseDeleteOnClose = RuntimeEnvironmentHelper.IsWindows ||
+                                               Environment.GetEnvironmentVariable("NUGET_ConcurrencyUtils_DeleteOnClose") == '1'; // opt-in.
+
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
             CancellationToken token)
@@ -199,18 +206,6 @@ namespace NuGet.Common
 
         private static FileStream AcquireFileStream(string lockPath)
         {
-            FileOptions options;
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                // This file is deleted when the stream is closed.
-                options = FileOptions.DeleteOnClose;
-            }
-            else
-            {
-                // FileOptions.DeleteOnClose causes concurrency issues on Mac OS X and Linux.
-                options = FileOptions.None;
-            }
-
             // Sync operations have shown much better performance than FileOptions.Asynchronous
             return new FileStream(
                 lockPath,
@@ -218,7 +213,7 @@ namespace NuGet.Common
                 FileAccess.ReadWrite,
                 FileShare.None,
                 bufferSize: 32,
-                options: options);
+                options: UseDeleteOnClose ? FileOptions.DeleteOnClose : FileOptions.None);
         }
 
         private static string _basePath;
