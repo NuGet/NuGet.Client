@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Packaging;
 
 namespace NuGet.ContentModel
 {
@@ -97,6 +98,11 @@ namespace NuGet.ContentModel
             }
         }
 
+        /// <summary>
+        /// Populates the supplied list with item groups 
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <param name="contentItemGroupList"></param>
         public void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList)
         {
             if (_assets.Count > 0)
@@ -121,6 +127,7 @@ namespace NuGet.ContentModel
                     }
                 }
 
+                IList<ContentItem> groupItems = new List<ContentItem>();
                 if (groupAssets?.Count > 0)
                 {
                     foreach (var grouping in groupAssets.GroupBy(key => key.Item1, GroupComparer.DefaultComparer))
@@ -132,7 +139,8 @@ namespace NuGet.ContentModel
                             group.Properties.Add(property.Key, property.Value);
                         }
 
-                        FindItemsImplementation(definition, grouping.Select(match => match.Item2), group.Items);
+                        groupItems = FindItemsImplementation(definition, grouping.Select(match => match.Item2));
+                        group.Items.AddRange(groupItems);
                         contentItemGroupList.Add(group);
                     }
                 }
@@ -247,30 +255,10 @@ namespace NuGet.ContentModel
             return null;
         }
 
-        [Obsolete("This method causes excessive memory allocation with yield return. Use ContentItemCollection.FindItemsImplementation override instead.")]
-        private IEnumerable<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
+        private IList<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
         {
             var pathPatterns = definition.PathExpressions;
-
-            foreach (var asset in assets)
-            {
-                var path = asset.Path;
-
-                foreach (var pathPattern in pathPatterns)
-                {
-                    var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
-                    if (contentItem != null)
-                    {
-                        yield return contentItem;
-                        break;
-                    }
-                }
-            }
-        }
-
-        private void FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets, IList<ContentItem> itemsList)
-        {
-            var pathPatterns = definition.PathExpressions;
+            IList<ContentItem> itemsList = new List<ContentItem>();
 
             foreach (var asset in assets)
             {
@@ -286,6 +274,8 @@ namespace NuGet.ContentModel
                     }
                 }
             }
+
+            return itemsList;
         }
 
         /// <summary>
