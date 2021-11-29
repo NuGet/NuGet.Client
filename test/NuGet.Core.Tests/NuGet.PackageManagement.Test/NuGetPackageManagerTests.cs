@@ -6959,8 +6959,8 @@ namespace NuGet.Test
                         packageIdentity: null,
                         primarySources,
                         nugetProjectContext,
-                        CancellationToken.None,
-                        versionRange: null);
+                        versionRange: null,
+                        CancellationToken.None);
                 });
 
                 // Assert

@@ -58,8 +58,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool includePrelease,
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
-            CancellationToken cancellationToken,
-            VersionRange versionRange);
+            VersionRange versionRange,
+            CancellationToken cancellationToken);
 
         ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
             IReadOnlyCollection<string> projectIds,

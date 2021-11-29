@@ -1546,7 +1546,7 @@ namespace NuGet.PackageManagement
             IReadOnlyCollection<SourceRepository> activeSources,
             CancellationToken token)
         {
-            return await PreviewProjectsInstallPackageAsync(nuGetProjects, packageIdentity, resolutionContext, nuGetProjectContext, activeSources, token, versionRange: null);
+            return await PreviewProjectsInstallPackageAsync(nuGetProjects, packageIdentity, resolutionContext, nuGetProjectContext, activeSources, versionRange: null, token);
         }
 
         // Preview and return ResolvedActions for many NuGetProjects.
@@ -1556,8 +1556,8 @@ namespace NuGet.PackageManagement
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
             IReadOnlyCollection<SourceRepository> activeSources,
-            CancellationToken token,
-            VersionRange versionRange)
+            VersionRange versionRange,
+            CancellationToken token)
         {
             if (nuGetProjects == null)
             {
@@ -1623,8 +1623,8 @@ namespace NuGet.PackageManagement
                 packageIdentity,
                 activeSources,
                 nuGetProjectContext,
-                token,
-                versionRange);
+                versionRange,
+                token);
                 results.AddRange(resolvedActions);
             }
 
@@ -1644,18 +1644,27 @@ namespace NuGet.PackageManagement
             return results;
         }
 
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
-            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
+            NuGetProject nuGetProject,
+            PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
-            return await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext, primarySources, secondarySources, token, null);
+            return await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext, primarySources, secondarySources, versionRange: null, token);
         }
 
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
-            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
-            CancellationToken token, VersionRange versionRange)
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
+            NuGetProject nuGetProject,
+            PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
+            VersionRange versionRange,
+            CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -2163,9 +2172,8 @@ namespace NuGet.PackageManagement
                 packageIdentity: null, // since we have nuGetProjectActions no need packageIdentity
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
-                token,
-                versionRange: null
-                );
+                versionRange: null,
+                token);
 
             return resolvedActions.Select(r => r.Action as BuildIntegratedProjectAction);
         }
@@ -2770,8 +2778,8 @@ namespace NuGet.PackageManagement
                 packageIdentity: null, // since we have nuGetProjectActions no need packageIdentity
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
-                token,
-                versionRange: null
+                versionRange: null,
+                token
                 );
 
             return resolvedAction.FirstOrDefault(r => r.Project == buildIntegratedProject)?.Action as BuildIntegratedProjectAction;
@@ -2787,8 +2795,8 @@ namespace NuGet.PackageManagement
             PackageIdentity packageIdentity,
             IReadOnlyCollection<SourceRepository> primarySources,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token,
-            VersionRange versionRange)
+            VersionRange versionRange,
+            CancellationToken token)
         {
             if (nugetProjectActionsLookup == null)
             {
@@ -2933,7 +2941,8 @@ namespace NuGet.PackageManagement
                     {
                         if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                         {
-                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity, action.VersionRange, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                            var packageDependency = new PackageDependency(action.PackageIdentity.Id, action.VersionRange ?? new VersionRange(action.PackageIdentity.Version));
+                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
                         }
                         else
                         {
@@ -3067,7 +3076,7 @@ namespace NuGet.PackageManagement
                     sources.ToList(),
                     nuGetProjectActionsList,
                     installationContext,
-                    nuGetProjectActions.First().VersionRange);
+                    versionRange);
 
                 result.Add(new ResolvedAction(buildIntegratedProject, nugetProjectAction));
             }

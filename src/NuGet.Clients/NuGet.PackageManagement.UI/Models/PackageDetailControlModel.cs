@@ -140,17 +140,20 @@ namespace NuGet.PackageManagement.UI
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
-            foreach (IProjectContextInfo project in _nugetProjects)
+            if (_nugetProjects.Any() && installedDependency != null && installedDependency.VersionRange != null)
             {
-                if (project.ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) && installedDependency != null)
+                if (_nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
-                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, true);
+                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
                     NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
-                    _versions.Add(new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null));
+                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: string.Empty);
+                    _versions.Add(displayVersion);
                 }
-                else if (installedDependency != null)
+                else
                 {
-                    _versions.Add(new DisplayVersion(VersionRange.Parse(installedDependency?.VersionRange?.OriginalString, false), additionalInfo: null));
+                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, false);
+                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, additionalInfo: string.Empty);
+                    _versions.Add(displayVersion);
                 }
             }
 
@@ -170,7 +173,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // add a separator
-            if (_versions.Count > 0)
+            if (_versions.Count > 1)
             {
                 _versions.Add(null);
             }
@@ -201,7 +204,6 @@ namespace NuGet.PackageManagement.UI
 
             SelectVersion();
 
-            OnPropertyChanged(nameof(SelectedVersion));
             OnPropertyChanged(nameof(Versions));
 
             return Task.CompletedTask;

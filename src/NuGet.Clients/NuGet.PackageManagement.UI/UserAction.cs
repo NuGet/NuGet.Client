@@ -22,16 +22,8 @@ namespace NuGet.PackageManagement.UI
         }
 
         private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, VersionRange versionRange)
+            : this(action, packageId, packageVersion)
         {
-            Action = action;
-
-            if (string.IsNullOrEmpty(packageId))
-            {
-                throw new ArgumentNullException(nameof(packageId));
-            }
-
-            PackageId = packageId;
-            Version = packageVersion;
             VersionRange = versionRange;
         }
 
@@ -55,7 +47,7 @@ namespace NuGet.PackageManagement.UI
 
         public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, VersionRange versionRange)
         {
-            if (packageVersion == null)
+            if (packageVersion == null && versionRange == null)
             {
                 throw new ArgumentNullException(nameof(packageVersion));
             }

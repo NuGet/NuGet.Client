@@ -53,44 +53,8 @@ namespace NuGet.PackageManagement
             IReadOnlyList<SourceRepository> sources,
             IReadOnlyList<NuGetProjectAction> originalActions,
             BuildIntegratedInstallationContext installationContext)
-            : base(packageIdentity, nuGetProjectActionType, project, null)
+            : this(project, packageIdentity, nuGetProjectActionType, originalLockFile, restoreResultPair, sources, originalActions, installationContext, versionRange: null)
         {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            if (originalLockFile == null)
-            {
-                throw new ArgumentNullException(nameof(originalLockFile));
-            }
-
-            if (restoreResultPair == null)
-            {
-                throw new ArgumentNullException(nameof(restoreResultPair));
-            }
-
-            if (sources == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
-
-            if (originalActions == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
-
-            if (installationContext == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
-
-            OriginalLockFile = originalLockFile;
-            RestoreResult = restoreResultPair.Result;
-            RestoreResultPair = restoreResultPair;
-            Sources = sources;
-            OriginalActions = originalActions;
-            InstallationContext = installationContext;
         }
 
         public BuildIntegratedProjectAction(NuGetProject project,
@@ -102,7 +66,7 @@ namespace NuGet.PackageManagement
             IReadOnlyList<NuGetProjectAction> originalActions,
             BuildIntegratedInstallationContext installationContext,
             VersionRange versionRange)
-            : base(packageIdentity, nuGetProjectActionType, project, null, versionRange)
+            : base(packageIdentity, nuGetProjectActionType, project, sourceRepository: null, versionRange)
         {
             if (packageIdentity == null)
             {
