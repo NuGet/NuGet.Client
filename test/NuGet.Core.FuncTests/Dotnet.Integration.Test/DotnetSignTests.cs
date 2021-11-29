@@ -34,8 +34,7 @@ namespace Dotnet.Integration.Test
             _signFixture = signFixture;
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithTrustedCertificate_SucceedsAsync()
         {
             // Arrange
@@ -60,8 +59,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithTrustedCertificateWithRelativePath_SucceedsAsync()
         {
             // Arrange
@@ -86,8 +84,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithInvalidEku_FailsAsync()
         {
             // Arrange
@@ -113,8 +110,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithExpiredCertificate_FailsAsync()
         {
             // Arrange
@@ -140,8 +136,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithNotYetValidCertificate_FailsAsync()
         {
             // Arrange
@@ -167,8 +162,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithTimestamping_SucceedsAsync()
         {
             // Arrange
@@ -220,8 +214,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithUnknownRevocationCertChain_SucceedsAsync()
         {
             // Arrange
@@ -248,8 +241,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithOutputDirectory_SucceedsAsync()
         {
             // Arrange
@@ -280,8 +272,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_ResignPackageWithoutOverwrite_FailsAsync()
         {
             // Arrange
@@ -313,8 +304,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_ResignPackageWithOverwrite_SuccessAsync()
         {
             // Arrange
@@ -346,8 +336,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithOverwrite_SuccessAsync()
         {
             // Arrange
@@ -372,8 +361,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithPfxFile_SuccessAsync()
         {
             // Arrange
@@ -404,8 +392,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithPfxFileOfRelativePath_SuccessAsync()
         {
             // Arrange
@@ -437,8 +424,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithPfxFileWithoutPasswordAndWithNonInteractive_FailsAsync()
         {
             // Arrange
@@ -469,8 +455,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithUntrustedSelfIssuedCertificateInCertificateStore_SuccessAsync()
         {
             // Arrange
@@ -497,8 +482,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task DotnetSign_SignPackageWithUnsuportedTimestampHashAlgorithm_FailsAsync()
         {
             // Arrange

@@ -41,16 +41,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public RestoreCommandSignPackagesTests(SignCommandTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            // https://github.com/NuGet/Home/issues/11321
-            if (!RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
-            }
+            _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
             _nugetExePath = _testFixture.NuGetExePath;
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Restore_TamperedPackageInPackagesConfig_FailsWithErrorAsync()
         {
             // Arrange
@@ -101,8 +96,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Restore_TamperedPackage_FailsAsync()
         {
             // Arrange
@@ -156,8 +150,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Restore_PackageWithCompressedSignature_WarnsAsync()
         {
             // Arrange
@@ -224,8 +217,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Restore_PackageWithCompressedSignature_WarnAsError_FailsAndDoesNotExpandAsync()
         {
             // Arrange
@@ -303,8 +295,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+
+        [CIOnlyFact]
         public async Task Restore_PackageWithCompressedSignature_RequireMode_FailsAndDoesNotExpandAsync()
         {
             // Arrange
@@ -382,8 +374,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public void GetCertificateChain_WithUntrustedRoot_Throws()
         {
             using (var chainHolder = new X509ChainHolder())

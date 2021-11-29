@@ -33,17 +33,12 @@ namespace NuGet.Packaging.FuncTest
         public PrimarySignatureTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            // https://github.com/NuGet/Home/issues/11321
-            if (!RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                _trustedTestCert = _testFixture.TrustedTestCertificate;
-                _trustProviders = _testFixture.TrustProviders;
-            }
+            _trustedTestCert = _testFixture.TrustedTestCertificate;
+            _trustProviders = _testFixture.TrustProviders;
             _signingSpecifications = _testFixture.SigningSpecifications;
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Signature_HasTimestampAsync()
         {
             // Arrange
@@ -72,8 +67,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Signature_HasNoTimestampAsync()
         {
             // Arrange
@@ -97,8 +91,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Load_WithPrimarySignatureWithNoCertificates_ThrowsAsync()
         {
             var packageContext = new SimpleTestPackageContext();
@@ -146,8 +139,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Load_WithReissuedSigningCertificate_ThrowsAsync()
         {
             var certificates = _testFixture.TrustedTestCertificateWithReissuedCertificate;

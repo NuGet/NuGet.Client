@@ -201,8 +201,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task SignCommand_SignPackageWithValidCertChainAsync()
         {
             // Arrange

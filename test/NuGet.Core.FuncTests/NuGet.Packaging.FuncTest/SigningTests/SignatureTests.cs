@@ -37,8 +37,7 @@ namespace NuGet.Packaging.FuncTest
             _untrustedTestCertificate = _testFixture.UntrustedTestCertificate;
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Verify_WithUntrustedSelfSignedCertificateAndNotAllowUntrusted_FailsAsync()
         {
             var settings = new SignatureVerifySettings(
@@ -64,8 +63,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrusted_SucceedsAndWarnsAsync()
         {
             var settings = new SignatureVerifySettings(
@@ -90,8 +88,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task Verify_WithUntrustedSelfSignedCertificateAndAllowUntrustedAndNotReportUntrustedRoot_SucceedsAsync()
         {
             var settings = new SignatureVerifySettings(
@@ -116,8 +113,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task GetSigningCertificateFingerprint_WithUnsupportedHashAlgorithm_Throws()
         {
             using (var test = await VerifyTest.CreateAsync(settings: null, certificate: _untrustedTestCertificate.Cert))
@@ -127,8 +123,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyFact]
         public async Task GetSigningCertificateFingerprint_SuccessfullyHashesMultipleAlgorithms()
         {
             using (var test = await VerifyTest.CreateAsync(settings: null, certificate: _untrustedTestCertificate.Cert))
@@ -147,8 +142,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task Timestamps_WithTwoAttributesAndOneValueEach_ReturnsTwoTimestamps()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -180,8 +174,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [Fact]
         public async Task Timestamps_WithOneAttributeAndTwoValues_ReturnsTwoTimestamps()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();

@@ -29,11 +29,7 @@ namespace NuGet.Packaging.FuncTest
         public ClientPolicyTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            // https://github.com/NuGet/Home/issues/11321
-            if (!RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
-            }
+            _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
         }
 
         public void Dispose()
@@ -41,8 +37,7 @@ namespace NuGet.Packaging.FuncTest
             _trustedRepoTestCert.Dispose();
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyTheory]
         [InlineData(SigningTestType.Author, "accept", true, 0)]
         [InlineData(SigningTestType.Author, "require", false, 1)]
         [InlineData(SigningTestType.RepositoryPrimary, "accept", true, 0)]
@@ -97,8 +92,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyTheory]
         [InlineData(SigningTestType.Author, "accept", true, 0, 1)]
         [InlineData(SigningTestType.Author, "require", false, 1, 0)]
         [InlineData(SigningTestType.RepositoryPrimary, "accept", true, 0, 1)]
@@ -159,8 +153,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyTheory]
         [InlineData(SigningTestType.Author, SignaturePlacement.PrimarySignature, "accept")]
         [InlineData(SigningTestType.Author, SignaturePlacement.PrimarySignature, "require")]
         [InlineData(SigningTestType.RepositoryPrimary, SignaturePlacement.PrimarySignature, "accept")]
@@ -231,8 +224,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyTheory]
         [InlineData(SigningTestType.RepositoryPrimary, "accept")]
         [InlineData(SigningTestType.RepositoryPrimary, "require")]
         [InlineData(SigningTestType.RepositoryCountersigned, "accept")]
@@ -292,8 +284,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyTheory]
         [InlineData(SigningTestType.RepositoryPrimary, "accept", true, 0, 1)]
         [InlineData(SigningTestType.RepositoryPrimary, "require", false, 1, 0)]
         [InlineData(SigningTestType.RepositoryCountersigned, "accept", true, 0, 1)]
@@ -353,8 +344,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/11321
-        [PlatformTheory(Platform.Windows, Platform.Linux, CIOnly = true)]
+        [CIOnlyTheory]
         [InlineData(SigningTestType.RepositoryPrimary, "accept", true, 0, 1)]
         [InlineData(SigningTestType.RepositoryPrimary, "require", false, 1, 0)]
         [InlineData(SigningTestType.RepositoryCountersigned, "accept", true, 0, 1)]
