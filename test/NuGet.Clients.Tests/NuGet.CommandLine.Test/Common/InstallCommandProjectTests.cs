@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Test
                     cts.Cancel();
                     await cmd.GetFolderPackagesAsync(cts.Token);
                 });
-            }   
+            }
         }
     }
 }
