@@ -6,12 +6,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    interface IFrameworkNameProvider
+    public interface IFrameworkNameProvider
     {
         /// <summary>
         /// Returns the official framework identifier for an alias or short name.

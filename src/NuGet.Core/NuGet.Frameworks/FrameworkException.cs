@@ -6,12 +6,7 @@ using System;
 namespace NuGet.Frameworks
 {
     [Serializable]
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class FrameworkException : Exception
+    public class FrameworkException : Exception
     {
         public FrameworkException(string message)
             : base(message)

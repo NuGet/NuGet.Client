@@ -9,12 +9,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// Contains the standard portable framework mappings
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
+    public class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
     {
 
         private static readonly Lazy<KeyValuePair<int, NuGetFramework[]>[]> ProfileFrameworksLazy = new Lazy<KeyValuePair<int, NuGetFramework[]>[]>(() =>

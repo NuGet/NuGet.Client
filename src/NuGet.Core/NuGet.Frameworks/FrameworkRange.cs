@@ -9,12 +9,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// An inclusive range of frameworks
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class FrameworkRange : IEquatable<FrameworkRange>
+    public class FrameworkRange : IEquatable<FrameworkRange>
     {
         private readonly NuGetFramework _minFramework;
         private readonly NuGetFramework _maxFramework;

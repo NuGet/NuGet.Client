@@ -8,12 +8,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A keyvalue pair specific to a framework identifier
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class FrameworkSpecificMapping
+    public class FrameworkSpecificMapping
     {
         private readonly string _frameworkIdentifier;
         private readonly KeyValuePair<string, string> _mapping;

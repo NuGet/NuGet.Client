@@ -9,12 +9,7 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    partial class NuGetFramework
+    public partial class NuGetFramework
     {
         /// <summary>
         /// An unknown or invalid framework

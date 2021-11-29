@@ -5,12 +5,7 @@ using System;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    sealed class DefaultFrameworkNameProvider : FrameworkNameProvider
+    public sealed class DefaultFrameworkNameProvider : FrameworkNameProvider
     {
         public DefaultFrameworkNameProvider()
             : base(new IFrameworkMappings[] { DefaultFrameworkMappings.Instance },
