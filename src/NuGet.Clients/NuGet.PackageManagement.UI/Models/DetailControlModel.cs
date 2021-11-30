@@ -814,6 +814,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private string _previousSelectedVersion;
+        public string PreviousSelectedVersion
+        {
+            get
+            {
+                if (_previousSelectedVersion != null) return _previousSelectedVersion;
+                return string.Empty;
+            }
+            set
+            {
+                _previousSelectedVersion = value;
+            }
+        }
+
         protected void SetAutoReferencedCheck(NuGetVersion installedVersion)
         {
             var autoReferenced = installedVersion != null

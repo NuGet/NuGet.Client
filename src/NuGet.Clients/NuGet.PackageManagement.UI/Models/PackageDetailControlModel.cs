@@ -50,6 +50,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return;
             }
+            PreviousSelectedVersion = null;
             InstalledVersion = searchResultPackage.InstalledVersion;
             InstalledVersionRange = searchResultPackage.AllowedVersions;
             SelectedVersion.IsCurrentInstalled = InstalledVersion == SelectedVersion.Version && InstalledVersionRange == SelectedVersion.Range;

@@ -37,6 +37,7 @@ namespace NuGet.PackageManagement.UI
             dataTrigger.Setters.Add(new Setter(IsEnabledProperty, false));
 
             var style = new Style(typeof(ComboBoxItem), _versions.ItemContainerStyle);
+
             style.Triggers.Add(dataTrigger);
             _versions.ItemContainerStyle = style;
         }
@@ -115,6 +116,7 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex++;
                             }
+                            PackageDetailControlModel.PreviousSelectedVersion = _versions.Text;
 
                             e.Handled = true;
                         }
@@ -131,6 +133,7 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex--;
                             }
+                            PackageDetailControlModel.PreviousSelectedVersion = _versions.Text;
 
                             e.Handled = true;
                         }
@@ -198,14 +201,19 @@ namespace NuGet.PackageManagement.UI
                         e.Handled = true;
                         break;
                     default:
-                        PreviousText = comboboxText;
-                        var selectionStart = TextBox.SelectionStart;
+                        if (PackageDetailControlModel.PreviousSelectedVersion != comboboxText)
+                        {
+                            PackageDetailControlModel.PreviousSelectedVersion = comboboxText;
+                            var selectionStart = TextBox.SelectionStart;
 
-                        PackageDetailControlModel.UserInput = comboboxText; // Update the variable so the filter refreshes
-                        SetComboboxCurrentVersion(comboboxText, userTypedAVersionRange, versions);
+                            PackageDetailControlModel.UserInput = comboboxText; // Update the variable so the filter refreshes
+                            SetComboboxCurrentVersion(comboboxText, userTypedAVersionRange, versions);
 
-                        _versions.Text = comboboxText;
-                        TextBox.SelectionStart = selectionStart;
+                            _versions.Text = comboboxText;
+                            TextBox.SelectionStart = selectionStart;
+
+                            break;
+                        }
 
                         base.OnKeyUp(e);
                         break;
