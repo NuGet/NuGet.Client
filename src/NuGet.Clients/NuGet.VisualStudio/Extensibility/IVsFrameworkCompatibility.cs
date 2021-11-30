@@ -33,6 +33,7 @@ namespace NuGet.VisualStudio
         /// <para>This API is <a href="https://github.com/microsoft/vs-threading/blob/main/doc/cookbook_vs.md#how-do-i-effectively-verify-that-my-code-is-fully-free-threaded">free-threaded.</a></para>
         /// </remarks>
         /// <param name="frameworkName">The .NETStandard version to get supporting frameworks for.</param>
+        [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkCompatibility3 instead.")]
         IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName);
 
         /// <summary>
@@ -46,6 +47,7 @@ namespace NuGet.VisualStudio
         /// <param name="frameworks">The list of frameworks to choose from.</param>
         /// <exception cref="ArgumentException">If any of the arguments are <c>null</c>.</exception>
         /// <returns>The nearest framework.</returns>
+        [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkCompatibility3 instead.")]
         FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks);
     }
 }

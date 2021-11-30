@@ -36,6 +36,7 @@ namespace NuGet.VisualStudio
         /// A boolean indicating whether or not to ignore the package's dependencies
         /// during installation.
         /// </param>
+        [Obsolete("System.Version does not support SemVer pre-release versions. Use the overload with string version instead.")]
         void InstallPackage(string source, Project project, string packageId, Version version, bool ignoreDependencies);
 
         /// <summary>

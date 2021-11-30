@@ -25,6 +25,7 @@ namespace NuGet.VisualStudio
         /// <exception cref="ArgumentNullException">If the provided string is null.</exception>
         /// <exception cref="ArgumentException">If the provided string cannot be parsed.</exception>
         /// <returns>The parsed framework.</returns>
+        [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkParser2 instead.")]
         FrameworkName ParseFrameworkName(string shortOrFullName);
 
         /// <summary>
@@ -42,6 +43,7 @@ namespace NuGet.VisualStudio
         /// If the provided framework name cannot be converted to a short name.
         /// </exception>
         /// <returns>The short framework name. </returns>
+        [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkParser2 instead.")]
         string GetShortFrameworkName(FrameworkName frameworkName);
     }
 }
