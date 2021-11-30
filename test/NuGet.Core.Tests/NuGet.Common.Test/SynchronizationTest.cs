@@ -20,6 +20,15 @@ namespace NuGet.Common.Test
 
         private readonly int DefaultTimeOut = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
 
+        public SynchronizationTests()
+        {
+            // Starting with .NET 7, we can delete lock files also on non-Windows platforms.
+            if (Environment.Version.Major >= 7)
+            {
+                Environment.SetEnvironmentVariable("NUGET_ConcurrencyUtils_DeleteOnClose", "1");
+            }
+        }
+
         [Fact]
         public async Task ConcurrencyUtilities_WaitAcquiresLock()
         {
