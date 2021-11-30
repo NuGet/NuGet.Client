@@ -13,6 +13,7 @@ namespace NuGet.VisualStudio
     /// </summary>
     [ComImport]
     [Guid("61C038E9-0308-482B-8602-279E42A3BB1E")]
+    [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkCompatibility3 instead.")]
     public interface IVsFrameworkCompatibility2 : IVsFrameworkCompatibility
     {
         /// <summary>
