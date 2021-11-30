@@ -159,8 +159,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, false);
-                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, additionalInfo: null);
+                    DisplayVersion displayVersion = new DisplayVersion(installedDependency.VersionRange, additionalInfo: null);
                     _versions.Add(displayVersion);
                 }
             }
