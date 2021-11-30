@@ -338,10 +338,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
-            VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
-            NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
-
             // Act
             var vm = new PackageItemViewModel(searchService.Object)
             {
@@ -357,10 +353,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 ItemFilter.All,
                 () => vm);
 
+            // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            var displayVerion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
-            // Assert
+            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
 
             Assert.Equal(model.SelectedVersion.ToString(), allowedVersions);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);

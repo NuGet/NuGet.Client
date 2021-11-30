@@ -251,13 +251,12 @@ namespace NuGet.PackageManagement.UI
             {
                 if (version == null) IsBeforeNullSeparator = true;
 
-                if (!IsBeforeNullSeparator || version == null)
-                {
-                    return false;
-                }
-                return true;
+                return IsBeforeNullSeparator && version != null;
             }
-            else if (IsBeforeNullSeparator) IsBeforeNullSeparator = false;
+            else if (IsBeforeNullSeparator)
+            {
+                IsBeforeNullSeparator = false;
+            }
 
             // If the user typed a version range, show only the versions that are in the range
             if ((UserInput.StartsWith("(", StringComparison.OrdinalIgnoreCase) || UserInput.StartsWith("[", StringComparison.OrdinalIgnoreCase)) &&
