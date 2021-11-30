@@ -153,13 +153,13 @@ namespace NuGet.PackageManagement.UI
                 {
                     VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
                     NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
-                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: string.Empty);
+                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
                     _versions.Add(displayVersion);
                 }
                 else
                 {
                     VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, false);
-                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, additionalInfo: string.Empty);
+                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, additionalInfo: null);
                     _versions.Add(displayVersion);
                 }
             }
@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (!installed)
                 {
-                    _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                    _versions.Add(new DisplayVersion(version.version, additionalInfo: null, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
                 }
             }
 

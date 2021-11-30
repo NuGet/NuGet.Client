@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.UI
             var style = new Style(typeof(ComboBoxItem), _versions.ItemContainerStyle);
             style.Triggers.Add(dataTrigger);
             _versions.ItemContainerStyle = style;
+            DataObject.AddPastingHandler(_versions, OnPaste);
         }
 
         private TextBox _textBox;
@@ -99,6 +100,45 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void OnPaste(object sender, DataObjectPastingEventArgs e)
+        {
+            var isText = e.SourceDataObject.GetDataPresent(DataFormats.UnicodeText, true);
+            if (!isText) return;
+
+            var pasteText = e.SourceDataObject.GetData(DataFormats.UnicodeText) as string;
+            string comboboxText = _versions.Text;
+            var selectionStart = TextBox.SelectionStart;
+            var selectionLength = TextBox.SelectionLength;
+            var textToBeDeleted = comboboxText.Substring(selectionStart, selectionLength);
+
+            if (textToBeDeleted.Length > 0)
+            {
+                comboboxText = comboboxText.Replace(textToBeDeleted, pasteText);
+            }
+            else
+            {
+                if (comboboxText.Length > 0)
+                {
+                    comboboxText = comboboxText.Insert(selectionStart, pasteText);
+                }
+                else
+                {
+                    comboboxText = pasteText;
+                }
+            }
+
+            IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
+            bool userTypedAVersionRange = comboboxText.StartsWith("(", StringComparison.OrdinalIgnoreCase) || comboboxText.StartsWith("[", StringComparison.OrdinalIgnoreCase);
+            PreviousText = comboboxText;
+
+            SetComboboxCurrentVersion(comboboxText, userTypedAVersionRange, versions);
+
+            PackageDetailControlModel.UserInput = comboboxText; // Update the variable so the filter refreshes
+            _versions.Text = comboboxText;
+            TextBox.SelectionStart = selectionStart + pasteText.Length;
+            e.CancelCommand();
+        }
+
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             if (PackageDetailControlModel.IsProjectPackageReference)
@@ -112,6 +152,9 @@ namespace NuGet.PackageManagement.UI
                     case Key.Escape:
                         _versions.IsDropDownOpen = false;
                         _versions.SelectedIndex = -1;
+                        break;
+                    case Key.Space:
+                        e.Handled = true;
                         break;
                     case Key.Down:
                         if (_versions.SelectedIndex < _versions.Items.Count - 1)
@@ -162,8 +205,8 @@ namespace NuGet.PackageManagement.UI
             if (PackageDetailControlModel.IsProjectPackageReference)
             {
                 string comboboxText = _versions.Text;
-                IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
                 bool userTypedAVersionRange = comboboxText.StartsWith("(", StringComparison.OrdinalIgnoreCase) || comboboxText.StartsWith("[", StringComparison.OrdinalIgnoreCase);
+                IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
 
                 switch (e.Key)
                 {
@@ -206,6 +249,7 @@ namespace NuGet.PackageManagement.UI
                         break;
                     case Key.Down:
                     case Key.Up:
+                    case Key.Space:
                         e.Handled = true;
                         break;
                     default:
@@ -214,32 +258,7 @@ namespace NuGet.PackageManagement.UI
                             PreviousText = comboboxText;
                             var selectionStart = TextBox.SelectionStart;
 
-                            NuGetVersion matchVersion = null;
-                            VersionRange userRange = null;
-
-                            // Get the best version from the range if the user typed a custom version
-                            bool userTypedAValidVersionRange = VersionRange.TryParse(comboboxText, out userRange);
-                            if (userTypedAValidVersionRange && (userTypedAVersionRange || (userRange != null && userRange.IsFloating)))
-                            {
-                                matchVersion = userRange.FindBestMatch(versions);
-                            }
-
-                            // If the selected version is not the correct one, deselect a version so Install/Update button is disabled.
-                            if (_versions.SelectedIndex != -1 &&
-                                (_versions.Text != _versions.Items[_versions.SelectedIndex].ToString() || matchVersion?.ToString() != _versions.Items[_versions.SelectedIndex].ToString()))
-                            {
-                                _versions.SelectedIndex = -1;
-                                PackageDetailControlModel.SelectedVersion = null;
-                            }
-
-                            // Automatically select the item when the input or custom range text matches it
-                            for (int i = 0; i < _versions.Items.Count; i++)
-                            {
-                                if (_versions.Items[i] != null && (comboboxText == _versions.Items[i].ToString() || _versions.Items[i].ToString() == matchVersion?.ToString()))
-                                {
-                                    _versions.SelectedIndex = i;
-                                }
-                            }
+                            SetComboboxCurrentVersion(comboboxText, userTypedAVersionRange, versions);
 
                             PackageDetailControlModel.UserInput = comboboxText; // Update the variable so the filter refreshes
                             _versions.Text = comboboxText;
@@ -258,6 +277,36 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void SetComboboxCurrentVersion(string comboboxText, bool userTypedAVersionRange, IEnumerable<NuGetVersion> versions)
+        {
+            NuGetVersion matchVersion = null;
+            VersionRange userRange = null;
+
+            // Get the best version from the range if the user typed a custom version
+            bool userTypedAValidVersionRange = VersionRange.TryParse(comboboxText, out userRange);
+            if (userTypedAValidVersionRange && (userTypedAVersionRange || (userRange != null && userRange.IsFloating)))
+            {
+                matchVersion = userRange.FindBestMatch(versions);
+            }
+
+            // If the selected version is not the correct one, deselect a version so Install/Update button is disabled.
+            if (_versions.SelectedIndex != -1 &&
+                (_versions.Text != _versions.Items[_versions.SelectedIndex].ToString() || matchVersion?.ToString() != _versions.Items[_versions.SelectedIndex].ToString()))
+            {
+                _versions.SelectedIndex = -1;
+                PackageDetailControlModel.SelectedVersion = null;
+            }
+
+            // Automatically select the item when the input or custom range text matches it
+            for (int i = 0; i < _versions.Items.Count; i++)
+            {
+                if (_versions.Items[i] != null && (comboboxText == _versions.Items[i].ToString() || _versions.Items[i].ToString() == matchVersion?.ToString()))
+                {
+                    _versions.SelectedIndex = i;
+                }
+            }
+        }
+
         private void UninstallButton_Clicked(object sender, RoutedEventArgs e)
         {
             if (UninstallButtonClicked != null)
@@ -270,6 +319,16 @@ namespace NuGet.PackageManagement.UI
         {
             if (InstallButtonClicked != null)
             {
+                // If the user didnt used the enter key, the version range can be different
+                VersionRange userRequestedVersionRange = null;
+                var isUserInputValidNuGetVersionRange = VersionRange.TryParse(_versions.Text, out userRequestedVersionRange);
+
+                if (isUserInputValidNuGetVersionRange && PackageDetailControlModel.SelectedVersion.Range != userRequestedVersionRange)
+                {
+                    IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
+                    NuGetVersion rangeBestVersion = userRequestedVersionRange.FindBestMatch(versions);
+                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null);
+                }
                 InstallButtonClicked(this, EventArgs.Empty);
             }
         }
