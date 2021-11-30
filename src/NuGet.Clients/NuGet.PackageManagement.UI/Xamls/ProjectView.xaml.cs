@@ -86,20 +86,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _previousFilter;
-        private string PreviousText
-        {
-            get
-            {
-                if (_previousFilter != null) return _previousFilter;
-                return string.Empty;
-            }
-            set
-            {
-                _previousFilter = value;
-            }
-        }
-
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             if (PackageDetailControlModel.IsProjectPackageReference)
@@ -129,7 +115,6 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex++;
                             }
-                            PreviousText = _versions.Text;
 
                             e.Handled = true;
                         }
@@ -146,7 +131,6 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex--;
                             }
-                            PreviousText = _versions.Text;
 
                             e.Handled = true;
                         }
