@@ -23,6 +23,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
@@ -394,9 +395,22 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<string> projectIds,
             PackageIdentity packageIdentity,
             VersionConstraints versionConstraints,
-            bool includePrelease,
+            bool includePrerelease,
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
+            CancellationToken cancellationToken)
+        {
+            return await GetInstallActionsAsync(projectIds, packageIdentity, versionConstraints, includePrerelease, dependencyBehavior, packageSourceNames, versionRange: null, cancellationToken);
+        }
+
+        public async ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
+            IReadOnlyCollection<string> projectIds,
+            PackageIdentity packageIdentity,
+            VersionConstraints versionConstraints,
+            bool includePrerelease,
+            DependencyBehavior dependencyBehavior,
+            IReadOnlyList<string> packageSourceNames,
+            VersionRange? versionRange,
             CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectIds);
@@ -423,7 +437,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var resolutionContext = new ResolutionContext(
                     dependencyBehavior,
-                    includePrelease,
+                    includePrerelease,
                     includeUnlisted: false,
                     versionConstraints,
                     new GatherCache(),
@@ -436,6 +450,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     resolutionContext,
                     projectContext,
                     sourceRepositories,
+                    versionRange,
                     cancellationToken);
 
                 var projectActions = new List<ProjectAction>();

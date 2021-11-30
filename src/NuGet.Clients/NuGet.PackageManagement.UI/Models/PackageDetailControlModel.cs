@@ -140,6 +140,23 @@ namespace NuGet.PackageManagement.UI
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
+            if (_nugetProjects.Any() && installedDependency != null && installedDependency.VersionRange != null)
+            {
+                if (_nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
+                {
+                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
+                    NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
+                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: string.Empty);
+                    _versions.Add(displayVersion);
+                }
+                else
+                {
+                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, false);
+                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, additionalInfo: string.Empty);
+                    _versions.Add(displayVersion);
+                }
+            }
+
             // Add latest prerelease if neeeded
             if (latestPrerelease.version != null
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
@@ -156,7 +173,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // add a separator
-            if (_versions.Count > 0)
+            if (_versions.Count > 1)
             {
                 _versions.Add(null);
             }
@@ -173,7 +190,10 @@ namespace NuGet.PackageManagement.UI
                     autoReferenced = true;
                 }
 
-                _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                if (!installed)
+                {
+                    _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                }
             }
 
             // Disable controls if this is an auto referenced package.
