@@ -200,7 +200,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (!installed)
                 {
-                    _versions.Add(new DisplayVersion(version.version, additionalInfo: null, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                    _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
                 }
             }
 
