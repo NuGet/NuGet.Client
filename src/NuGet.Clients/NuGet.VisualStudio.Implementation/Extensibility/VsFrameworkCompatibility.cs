@@ -14,9 +14,15 @@ using NuGet.VisualStudio.Telemetry;
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsFrameworkCompatibility))]
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IVsFrameworkCompatibility2))]
+#pragma warning restore CS0618 // Type or member is obsolete
     [Export(typeof(IVsFrameworkCompatibility3))]
-    public class VsFrameworkCompatibility : IVsFrameworkCompatibility2, IVsFrameworkCompatibility3
+    public class VsFrameworkCompatibility :
+#pragma warning disable CS0618 // Type or member is obsolete
+        IVsFrameworkCompatibility2,
+#pragma warning restore CS0618 // Type or member is obsolete
+        IVsFrameworkCompatibility3
     {
         private INuGetTelemetryProvider _telemetryProvider;
 

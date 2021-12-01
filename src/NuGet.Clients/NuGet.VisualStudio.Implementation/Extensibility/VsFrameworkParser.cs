@@ -11,9 +11,15 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IVsFrameworkParser))]
+#pragma warning restore CS0618 // Type or member is obsolete
     [Export(typeof(IVsFrameworkParser2))]
-    public class VsFrameworkParser : IVsFrameworkParser, IVsFrameworkParser2
+    public class VsFrameworkParser :
+#pragma warning disable CS0618 // Type or member is obsolete
+        IVsFrameworkParser,
+#pragma warning restore CS0618 // Type or member is obsolete
+        IVsFrameworkParser2
     {
         private INuGetTelemetryProvider _telemetryProvider;
 

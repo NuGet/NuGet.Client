@@ -13,6 +13,7 @@ namespace NuGet.VisualStudio
     /// </summary>
     [ComImport]
     [Guid("E6335CF1-70FE-416A-BA4B-4E92D90934A1")]
+    [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkParser2 instead.")]
     public interface IVsFrameworkParser
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace NuGet.VisualStudio
         /// <exception cref="ArgumentNullException">If the provided string is null.</exception>
         /// <exception cref="ArgumentException">If the provided string cannot be parsed.</exception>
         /// <returns>The parsed framework.</returns>
+        [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkParser2 instead.")]
         FrameworkName ParseFrameworkName(string shortOrFullName);
 
         /// <summary>
@@ -42,6 +44,7 @@ namespace NuGet.VisualStudio
         /// If the provided framework name cannot be converted to a short name.
         /// </exception>
         /// <returns>The short framework name. </returns>
+        [Obsolete("This API does not support .NET 5 and higher target frameworks with platforms. Use IVsFrameworkParser2 instead.")]
         string GetShortFrameworkName(FrameworkName frameworkName);
     }
 }
