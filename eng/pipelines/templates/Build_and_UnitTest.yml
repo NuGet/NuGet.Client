@@ -35,7 +35,7 @@ steps:
     esrpSigning: "true"
   displayName: "Install Signing Plugin"
 
-- task: MicroBuildSwixPlugin@1
+- task: ms-vseng.MicroBuildTasks.32f78468-e895-4f47-962c-58a699361df8.MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
 
 - task: MicroBuildOptProfPlugin@6
