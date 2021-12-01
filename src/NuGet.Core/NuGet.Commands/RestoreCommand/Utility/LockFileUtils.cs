@@ -338,7 +338,6 @@ namespace NuGet.Commands
                     maccatalystFallback);
 
                 lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
-                    framework,
                     nuspec,
                     contentFileGroupsForFramework);
             }

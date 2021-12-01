@@ -72,7 +72,6 @@ namespace NuGet.Commands
         /// Apply build actions from the nuspec to items from the contentFiles folder.
         /// </summary>
         internal static List<LockFileContentFile> GetContentFileGroup(
-            NuGetFramework framework,
             NuspecReader nuspec,
             List<ContentItemGroup> contentFileGroups)
         {

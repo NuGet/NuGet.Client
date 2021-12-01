@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,6 +18,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 
@@ -177,6 +179,51 @@ namespace NuGet.Commands.Test
                 Assert.Equal(1, logger.Messages.Count(x => x.Contains(identity.ToString())));
             }
         }
+
+        [Fact]
+        public async Task CopyPackagesToOriginalCaseAsync_EmitsTelemetryWithParentIdAsync()
+        {
+            // set up telemetry service
+            var telemetrySession = new Mock<ITelemetrySession>();
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+
+            // Arrange
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var packagesDirectory = Path.Combine(workingDirectory, "packages");
+                var sourceDirectory = Path.Combine(workingDirectory, "source");
+
+                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
+                var packagePath = await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    sourceDirectory,
+                    identity.Id,
+                    identity.Version.ToString());
+
+                var logger = new TestLogger();
+                var graphA = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
+                var graphB = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
+
+                var request = GetRestoreRequest(packagesDirectory, logger);
+                var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
+
+                var target = new OriginalCaseGlobalPackageFolder(request);
+
+                // Act
+                await target.CopyPackagesToOriginalCaseAsync(
+                    new[] { graphA, graphB },
+                    CancellationToken.None);
+            }
+
+            // Assert
+            telemetryEvents.Any(x => x.Name == "PackageExtractionInformation");
+        }
+
+
 
         [Fact]
         public void ConvertLockFileToOriginalCase_ConvertsPackagesPathsInLockFile()

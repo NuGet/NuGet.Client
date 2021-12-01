@@ -181,7 +181,7 @@ namespace NuGet.Commands.Test
             var cacheContext = new Mock<SourceCacheContext>();
             var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
 
-            var infos = await UnresolvedMessages.GetSourceInfosForIdAsync("a", VersionRange.Parse("1.0.0"), remoteLibraryProviders, cacheContext.Object, NullLogger.Instance, CancellationToken.None);
+            List<KeyValuePair<PackageSource, SortedSet<NuGetVersion>>> infos = await UnresolvedMessages.GetSourceInfosForIdAsync(id: "a", remoteLibraryProviders: remoteLibraryProviders, sourceCacheContext: cacheContext.Object, logger: NullLogger.Instance, token: CancellationToken.None);
 
             infos.Count.Should().Be(2);
             infos[0].Value.Should().BeEquivalentTo(versions1);

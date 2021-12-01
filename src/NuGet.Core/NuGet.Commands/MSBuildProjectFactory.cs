@@ -78,7 +78,7 @@ namespace NuGet.Commands
             Files.Clear();
             builder.Files.Clear();
 
-            AddOutputFiles(builder);
+            AddOutputFiles();
 
             // Add content files if there are any. They could come from a project or nuspec file
             AddContentFiles(builder);
@@ -114,7 +114,7 @@ namespace NuGet.Commands
             return builder;
         }
 
-        private void AddOutputFiles(PackageBuilder builder)
+        private void AddOutputFiles()
         {
             if (PackTargetArgs.IncludeBuildOutput)
             {

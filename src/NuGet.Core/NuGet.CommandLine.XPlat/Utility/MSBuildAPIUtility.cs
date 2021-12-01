@@ -163,7 +163,7 @@ namespace NuGet.CommandLine.XPlat
             if (!existingPackageReferences.Any())
             {
                 // Add packageReference only if it does not exist.
-                var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
+                var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
                 AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
             }
             else
@@ -186,11 +186,10 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Get an itemGroup that will contains a package reference tag and meets the condition.
         /// </summary>
-        /// <param name="project">Project from which item group has to be obtained</param>
         /// <param name="itemGroups">List of all item groups in the project</param>
         /// <param name="itemType">An item type tag that must be in the item group. It if PackageReference in this case.</param>
         /// <returns>An ItemGroup, which could be null.</returns>
-        private static ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups,
+        private static ProjectItemGroupElement GetItemGroup(IEnumerable<ProjectItemGroupElement> itemGroups,
             string itemType)
         {
             var itemGroup = itemGroups?
