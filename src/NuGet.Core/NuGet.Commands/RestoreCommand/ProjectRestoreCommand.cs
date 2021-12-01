@@ -254,6 +254,8 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var name = FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
             var graphs = new List<GraphNode<RemoteResolveResult>>
             {

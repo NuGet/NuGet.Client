@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
@@ -192,6 +193,8 @@ namespace NuGet.Commands.Test
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
+            var parentIdGuid = Guid.NewGuid();
+
             // Arrange
             using (var workingDirectory = TestDirectory.Create())
             {
@@ -211,7 +214,7 @@ namespace NuGet.Commands.Test
                 var request = GetRestoreRequest(packagesDirectory, logger);
                 var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
 
-                var target = new OriginalCaseGlobalPackageFolder(request);
+                var target = new OriginalCaseGlobalPackageFolder(request, parentIdGuid);
 
                 // Act
                 await target.CopyPackagesToOriginalCaseAsync(
@@ -220,10 +223,11 @@ namespace NuGet.Commands.Test
             }
 
             // Assert
-            telemetryEvents.Any(x => x.Name == "PackageExtractionInformation");
+            Assert.True(telemetryEvents.Any(x => x.Name == "PackageExtractionInformation"));
+            var evt = telemetryEvents.Where(x => x.Name == "PackageExtractionInformation").First();
+            Assert.NotNull(evt["ParentId"]);
+            Assert.Equal(evt["ParentId"], parentIdGuid.ToString());
         }
-
-
 
         [Fact]
         public void ConvertLockFileToOriginalCase_ConvertsPackagesPathsInLockFile()
