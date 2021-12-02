@@ -672,7 +672,7 @@ namespace NuGet.PackageManagement.UI
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
                 // The project level is the only one that has an editable combobox and we can only see one project.
-                if (!IsSolution && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
+                if (!IsSolution && _nugetProjects.Count() == 1 && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
                     // Select the installed version by default.
                     // Otherwise, select the first version in the version list.
