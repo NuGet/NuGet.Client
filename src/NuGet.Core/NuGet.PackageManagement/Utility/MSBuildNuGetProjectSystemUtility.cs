@@ -103,6 +103,8 @@ namespace NuGet.ProjectManagement
             Func<Task<Stream>> streamTaskFactory,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (projectSystem.FileExistsInProject(path))
             {
                 // file exists in project, ask user if he wants to overwrite or ignore

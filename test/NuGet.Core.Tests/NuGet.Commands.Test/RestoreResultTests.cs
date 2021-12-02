@@ -19,6 +19,41 @@ namespace NuGet.Commands.Test
     public class RestoreResultTests
     {
         [Fact]
+        public async Task RestoreResult_CommitAsync_WithCancellationToken_ThrowsAsync()
+        {
+            // Arrange
+            using (var td = TestDirectory.Create())
+            {
+                var path = Path.Combine(td, "project.lock.json");
+                var logger = new TestLogger();
+                var result = new RestoreResult(
+                    success: true,
+                    restoreGraphs: null,
+                    compatibilityCheckResults: null,
+                    lockFile: new LockFile(),
+                    previousLockFile: null, // different lock file
+                    lockFilePath: path,
+                    msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                    cacheFile: null,
+                    cacheFilePath: null,
+                    packagesLockFilePath: null,
+                    packagesLockFile: null,
+                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpec: null,
+                    projectStyle: ProjectStyle.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
+
+                // Act and Assert
+                await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                {
+                    var cts = new CancellationTokenSource();
+                    cts.Cancel();
+                    await result.CommitAsync(logger, cts.Token);
+                });
+            }
+        }
+
+        [Fact]
         public async Task RestoreResult_WritesCommitToInformation()
         {
             // Arrange
