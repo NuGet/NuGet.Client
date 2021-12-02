@@ -287,7 +287,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersion = value;
                 OnPropertyChanged(nameof(InstalledVersion));
-                OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             }
         }
 
@@ -299,14 +298,12 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersionRange = value;
                 OnPropertyChanged(nameof(InstalledVersionRange));
-                OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             }
         }
 
         public override void OnSelectedVersionChanged()
         {
             base.OnSelectedVersionChanged();
-            OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
         }
 
