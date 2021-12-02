@@ -29,8 +29,6 @@ namespace NuGet.PackageManagement.UI
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
-
-            VersionsView = new CollectionViewSource() { Source = Versions }.View;
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -70,14 +68,21 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateInstalledVersion()
         {
-            var installed = InstalledPackageDependencies.Where(p =>
+            IOrderedEnumerable<PackageDependency> installed = InstalledPackageDependencies.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).OrderByDescending(p => p.VersionRange?.MinVersion, VersionComparer.Default);
 
-            var dependency = installed.FirstOrDefault(package => package.VersionRange != null && package.VersionRange.HasLowerBound);
+            PackageDependency dependency = installed.FirstOrDefault(package => package.VersionRange != null && package.VersionRange.HasLowerBound);
 
             if (dependency != null)
             {
-                InstalledVersion = dependency.VersionRange.MinVersion;
+                if (dependency.Id == _searchResultPackage.Id && _searchResultPackage.InstalledVersion != null)
+                {
+                    InstalledVersion = _searchResultPackage.InstalledVersion;
+                }
+                else
+                {
+                    InstalledVersion = dependency.VersionRange.MinVersion;
+                }
                 InstalledVersionRange = dependency.VersionRange;
             }
             else
@@ -179,11 +184,15 @@ namespace NuGet.PackageManagement.UI
                 _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
 
+            // Only the current installed version is displayed, we update the separator so its not removed from the list when filtering.
+            IsBeforeNullSeparator = _versions.Count == 1;
+
             // add a separator
-            if (_versions.Count > 1)
+            if (_versions.Count > 0)
             {
                 _versions.Add(null);
             }
+
 
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
@@ -220,16 +229,7 @@ namespace NuGet.PackageManagement.UI
             SelectVersion();
 
             OnPropertyChanged(nameof(Versions));
-            OnPropertyChanged(nameof(VersionsView)); // This can change the selected version if a version is added after SelectedVersion is set
-
-            // If the selected version changed, reset it to the correct one
-            if (_nugetProjects.Any() &&
-                IsProjectPackageReference &&
-                SelectedVersion != FirstDisplayedVersion)
-            {
-                SelectedVersion = FirstDisplayedVersion;
-                UserInput = SelectedVersion?.ToString();
-            }
+            OnPropertyChanged(nameof(VersionsView));
 
             return Task.CompletedTask;
         }
@@ -238,11 +238,10 @@ namespace NuGet.PackageManagement.UI
 
         private bool VersionsFilter(object o)
         {
-            var version = o as DisplayVersion;
+            DisplayVersion version = o as DisplayVersion;
             // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
             if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                if (IsBeforeNullSeparator) IsBeforeNullSeparator = false;
                 return true;
             }
 
@@ -308,7 +307,7 @@ namespace NuGet.PackageManagement.UI
         {
             base.OnSelectedVersionChanged();
             OnPropertyChanged(nameof(IsSelectedVersionInstalled));
-            OnPropertyChanged(nameof(IsInstallButtonEnabled));
+            OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
         }
 
         public bool IsSelectedVersionInstalled
@@ -322,7 +321,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsInstallButtonEnabled
+        public bool IsInstallorUpdateButtonEnabled
         {
             get
             {
