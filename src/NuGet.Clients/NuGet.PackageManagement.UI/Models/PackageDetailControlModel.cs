@@ -174,14 +174,16 @@ namespace NuGet.PackageManagement.UI
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
                 !latestPrerelease.version.Equals(installedVersion))
             {
-                _versions.Add(new DisplayVersion(latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
+                VersionRange latestPrereleaseVersionRange = VersionRange.Parse(latestPrerelease.version.ToString(), false);
+                _versions.Add(new DisplayVersion(latestPrereleaseVersionRange, latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
             }
 
             // Add latest stable if needed
             if (latestStableVersion.version != null &&
                 !latestStableVersion.version.Equals(installedVersion))
             {
-                _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
+                VersionRange latestStableVersionRange = VersionRange.Parse(latestStableVersion.version.ToString(), false);
+                _versions.Add(new DisplayVersion(latestStableVersionRange, latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
 
             // Only the current installed version is displayed, we update the separator so its not removed from the list when filtering.
@@ -208,7 +210,8 @@ namespace NuGet.PackageManagement.UI
 
                 if (!installed)
                 {
-                    _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                    VersionRange versionRange = VersionRange.Parse(version.version.ToString(), false);
+                    _versions.Add(new DisplayVersion(versionRange, version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
                 }
             }
 
