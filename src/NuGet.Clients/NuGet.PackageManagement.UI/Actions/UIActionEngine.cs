@@ -809,7 +809,6 @@ namespace NuGet.PackageManagement.UI
                     includePrelease,
                     uiService.DependencyBehavior,
                     packageSourceNames,
-                    userAction.VersionRange,
                     token);
 
                 results.AddRange(actions);

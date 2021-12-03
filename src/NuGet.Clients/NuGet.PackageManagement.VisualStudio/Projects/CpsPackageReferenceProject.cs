@@ -317,7 +317,9 @@ namespace NuGet.PackageManagement.VisualStudio
             BuildIntegratedInstallationContext installationContext,
             CancellationToken token)
         {
-            var formattedRange = range.OriginalString ?? range.MinVersion.ToNormalizedString();
+            // Right now, the UI only handles installation of specific versions, which is just the minimum version of
+            // the provided version range.
+            var formattedRange = range.MinVersion.ToNormalizedString();
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, $"{packageId} {formattedRange}");
 
