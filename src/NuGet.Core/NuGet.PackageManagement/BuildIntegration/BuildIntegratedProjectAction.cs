@@ -9,7 +9,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -53,20 +52,7 @@ namespace NuGet.PackageManagement
             IReadOnlyList<SourceRepository> sources,
             IReadOnlyList<NuGetProjectAction> originalActions,
             BuildIntegratedInstallationContext installationContext)
-            : this(project, packageIdentity, nuGetProjectActionType, originalLockFile, restoreResultPair, sources, originalActions, installationContext, versionRange: null)
-        {
-        }
-
-        public BuildIntegratedProjectAction(NuGetProject project,
-            PackageIdentity packageIdentity,
-            NuGetProjectActionType nuGetProjectActionType,
-            LockFile originalLockFile,
-            RestoreResultPair restoreResultPair,
-            IReadOnlyList<SourceRepository> sources,
-            IReadOnlyList<NuGetProjectAction> originalActions,
-            BuildIntegratedInstallationContext installationContext,
-            VersionRange versionRange)
-            : base(packageIdentity, nuGetProjectActionType, project, sourceRepository: null, versionRange)
+            : base(packageIdentity, nuGetProjectActionType, project)
         {
             if (packageIdentity == null)
             {

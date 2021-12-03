@@ -21,19 +21,11 @@ namespace NuGet.PackageManagement.UI
             Version = packageVersion;
         }
 
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, VersionRange versionRange)
-            : this(action, packageId, packageVersion)
-        {
-            VersionRange = versionRange;
-        }
-
         public NuGetProjectActionType Action { get; private set; }
 
         public string PackageId { get; }
 
         public NuGetVersion Version { get; }
-
-        public VersionRange VersionRange { get; }
 
         public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion)
         {
@@ -45,19 +37,9 @@ namespace NuGet.PackageManagement.UI
             return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion);
         }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, VersionRange versionRange)
-        {
-            if (packageVersion == null && versionRange == null)
-            {
-                throw new ArgumentNullException(nameof(packageVersion));
-            }
-
-            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, versionRange);
-        }
-
         public static UserAction CreateUnInstallAction(string packageId)
         {
-            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, versionRange: null);
+            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null);
         }
     }
 }
