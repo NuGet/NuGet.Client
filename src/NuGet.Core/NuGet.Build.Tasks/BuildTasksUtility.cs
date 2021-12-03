@@ -617,7 +617,7 @@ namespace NuGet.Build.Tasks
         }
 
 
-        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
+        private static IEnumerable<PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
         {
             if (File.Exists(projectConfigFilePath))
             {

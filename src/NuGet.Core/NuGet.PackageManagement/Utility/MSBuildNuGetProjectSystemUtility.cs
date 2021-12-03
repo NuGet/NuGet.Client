@@ -384,6 +384,8 @@ namespace NuGet.ProjectManagement
             IMSBuildProjectSystem projectSystem,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Only delete the file if it exists and the checksum is the same
             if (projectSystem.FileExistsInProject(path))
             {

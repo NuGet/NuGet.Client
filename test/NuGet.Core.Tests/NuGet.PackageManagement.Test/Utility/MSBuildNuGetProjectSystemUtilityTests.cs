@@ -25,5 +25,18 @@ namespace NuGet.PackageManagement.Test
                     new CancellationToken(canceled: true));
             });
         }
+
+        [Fact]
+        public async Task DeleteFileSafeAsync_WithCancellationToken_ThrowsAsync()
+        {
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            {
+                await MSBuildNuGetProjectSystemUtility.DeleteFileSafeAsync(
+                    path: "",
+                    streamFactory: async () => await Task.FromResult(It.IsAny<Stream>()),
+                    It.IsAny<IMSBuildProjectSystem>(),
+                    new CancellationToken(canceled: true));
+            });
+        }
     }
 }
