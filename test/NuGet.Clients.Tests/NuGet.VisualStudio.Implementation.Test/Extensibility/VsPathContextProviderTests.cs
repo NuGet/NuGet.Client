@@ -452,6 +452,26 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.Contains(projectUniqueName, exception.Message);
         }
 
+        [Fact]
+        public async Task CreatePathContextAsync_CancellationToken_ThrowsAsync()
+        {
+            // Prepare
+            var target = new VsPathContextProvider(
+                Mock.Of<ISettings>(),
+                Mock.Of<IVsSolutionManager>(),
+                Mock.Of<ILogger>(),
+                getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile),
+                _telemetryProvider.Object);
+            var project = new TestPackageReferenceProject(Guid.NewGuid().ToString()); // non-packages.config project
+            var cts = new CancellationTokenSource();
+
+            cts.Cancel();
+            var task = target.CreatePathContextAsync(project, cts.Token);
+
+            // Act and Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await task);
+        }
+
         private class TestPackageReferenceProject : BuildIntegratedNuGetProject
         {
             private readonly string _projectName;

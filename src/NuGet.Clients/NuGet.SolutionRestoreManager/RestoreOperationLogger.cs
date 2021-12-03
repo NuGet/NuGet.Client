@@ -468,7 +468,7 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private class WaitDialogProgress : RestoreOperationProgressUI
+        internal class WaitDialogProgress : RestoreOperationProgressUI
         {
             private readonly ThreadedWaitDialogHelper.Session _session;
             private readonly JoinableTaskFactory _taskFactory;
@@ -487,7 +487,9 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
-                await jtf.SwitchToMainThreadAsync();
+                token.ThrowIfCancellationRequested();
+
+                await jtf.SwitchToMainThreadAsync(token);
 
                 var waitDialogFactory = await asyncServiceProvider.GetServiceAsync<
                     SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
@@ -531,7 +533,7 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private class StatusBarProgress : RestoreOperationProgressUI
+        internal class StatusBarProgress : RestoreOperationProgressUI
         {
             private static object Icon = (short)Constants.SBAI_General;
             private readonly JoinableTaskFactory _taskFactory;
@@ -551,7 +553,9 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory jtf,
                 CancellationToken token)
             {
-                await jtf.SwitchToMainThreadAsync();
+                token.ThrowIfCancellationRequested();
+
+                await jtf.SwitchToMainThreadAsync(token);
 
                 var statusBar = await asyncServiceProvider.GetServiceAsync<SVsStatusbar, IVsStatusbar>();
 
