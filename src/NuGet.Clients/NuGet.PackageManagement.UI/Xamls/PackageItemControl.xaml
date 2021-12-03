@@ -359,8 +359,6 @@
                       Grid.Column="2"
                       Command="{x:Static nuget:Commands.InstallPackageCommand}"
                       CommandParameter="{Binding}"
-                      ToolTip="{Binding InstalledVersionToolTip}"
-                      AutomationProperties.Name="{Binding InstalledVersionToolTip}"
                       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
           <Button.Style>
             <Style TargetType="Button" BasedOn="{StaticResource buttonStyle}">
@@ -388,6 +386,20 @@
               </Style.Triggers>
             </Style>
           </Button.Style>
+          <Button.ToolTip>
+            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+              <Binding Source="{x:Static nuget:Resources.ToolTip_InstallButton}" />
+              <Binding Path="Id" />
+              <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
+            </MultiBinding>
+          </Button.ToolTip>
+          <AutomationProperties.Name>
+            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+              <Binding Source="{x:Static nuget:Resources.ToolTip_InstallButton}" />
+              <Binding Path="Id" />
+              <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
+            </MultiBinding>
+          </AutomationProperties.Name>
           <imaging:CrispImage Cursor="Hand" Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}" />
         </Button>
 
