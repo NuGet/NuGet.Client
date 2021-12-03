@@ -16,7 +16,8 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task TryAddFileAsync_WithCancellationToken_SucceedsAsync()
         {
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => {
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            {
                 await MSBuildNuGetProjectSystemUtility.TryAddFileAsync(
                     It.IsAny<IMSBuildProjectSystem>(),
                     path: "",
