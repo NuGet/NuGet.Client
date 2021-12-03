@@ -19,7 +19,6 @@ using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 
@@ -184,14 +183,12 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task CopyPackagesToOriginalCaseAsync_EmitsTelemetryWithParentIdAsync()
         {
-            // set up telemetry service
-            var telemetrySession = new Mock<ITelemetrySession>();
+            // Set up telemetry service
             var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
-            telemetrySession
-                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+            var telSvc = new Mock<INuGetTelemetryService>();
+            telSvc.Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
-            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
-            TelemetryActivity.NuGetTelemetryService = telemetryService;
+            TelemetryActivity.NuGetTelemetryService = telSvc.Object;
 
             var parentIdGuid = Guid.NewGuid();
 
@@ -223,7 +220,7 @@ namespace NuGet.Commands.Test
             }
 
             // Assert
-            Assert.True(telemetryEvents.Any(x => x.Name == "PackageExtractionInformation"));
+            Assert.Equal(1, telemetryEvents.Where(x => x.Name == "PackageExtractionInformation").Count());
             var evt = telemetryEvents.Where(x => x.Name == "PackageExtractionInformation").First();
             Assert.NotNull(evt["ParentId"]);
             Assert.Equal(evt["ParentId"], parentIdGuid.ToString());

@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
     <ProjectReference Include="..\NuGet.Configuration.Test\NuGet.Configuration.Test.csproj" />
   </ItemGroup>
 
