@@ -326,7 +326,8 @@ namespace NuGet.Commands
         private static void AddContentFiles(RestoreTargetGraph targetGraph, LockFileTargetLibrary lockFileLib, NuGetFramework framework, ContentItemCollection contentItems, NuspecReader nuspec, MaccatalystFallback maccatalystFallback)
         {
             // content v2 items
-            var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles).ToList();
+            List<ContentItemGroup> contentFileGroups = new();
+            contentItems.PopulateItemGroups(targetGraph.Conventions.Patterns.ContentFiles, contentFileGroups);
 
             if (contentFileGroups.Count > 0)
             {
@@ -987,7 +988,8 @@ namespace NuGet.Commands
             string assetType,
             MaccatalystFallback maccatalystFallback)
         {
-            var groups = contentItems.FindItemGroups(patternSet).ToList();
+            List<ContentItemGroup> groups = new List<ContentItemGroup>();
+            contentItems.PopulateItemGroups(patternSet, groups);
 
             var groupsForFramework = GetContentGroupsForFramework(
                 framework,

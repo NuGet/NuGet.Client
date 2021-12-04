@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Packaging;
 
 namespace NuGet.ContentModel
 {
@@ -44,11 +45,13 @@ namespace NuGet.ContentModel
             }
         }
 
+        [Obsolete("This method causes excessive memory usage with yield return.")]
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
         {
             return FindItemsImplementation(definition, _assets);
         }
 
+        [Obsolete("This method causes excessive memory allocation with yield return. Use ContentItemCollection.PopulateItemGroups instead.")]
         public IEnumerable<ContentItemGroup> FindItemGroups(PatternSet definition)
         {
             if (_assets.Count > 0)
@@ -95,6 +98,55 @@ namespace NuGet.ContentModel
             }
         }
 
+        /// <summary>
+        /// Populate the provided list with ContentItemGroups based on a provided pattern set.
+        /// </summary>
+        /// <param name="definition">The pattern set to match</param>
+        /// <param name="contentItemGroupList">The list that will be mutated and populated with the item groups</param>
+        public void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList)
+        {
+            if (_assets.Count > 0)
+            {
+                var groupPatterns = definition.GroupExpressions;
+
+                List<Tuple<ContentItem, Asset>> groupAssets = null;
+                foreach (var asset in _assets)
+                {
+                    foreach (var groupPattern in groupPatterns)
+                    {
+                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                        if (item != null)
+                        {
+                            if (groupAssets == null)
+                            {
+                                groupAssets = new List<Tuple<ContentItem, Asset>>(1);
+                            }
+
+                            groupAssets.Add(Tuple.Create(item, asset));
+                        }
+                    }
+                }
+
+                IList<ContentItem> groupItems = new List<ContentItem>();
+                if (groupAssets?.Count > 0)
+                {
+                    foreach (var grouping in groupAssets.GroupBy(key => key.Item1, GroupComparer.DefaultComparer))
+                    {
+                        var group = new ContentItemGroup();
+
+                        foreach (var property in grouping.Key.Properties)
+                        {
+                            group.Properties.Add(property.Key, property.Value);
+                        }
+
+                        groupItems = FindItemsImplementation(definition, grouping.Select(match => match.Item2));
+                        group.Items.AddRange(groupItems);
+                        contentItemGroupList.Add(group);
+                    }
+                }
+            }
+        }
+
         public bool HasItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
             return FindBestItemGroup(criteria, definitions) != null;
@@ -102,9 +154,16 @@ namespace NuGet.ContentModel
 
         public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
+            if (definitions.Length == 0)
+            {
+                return null;
+            }
+
+            List<ContentItemGroup> itemGroups = new List<ContentItemGroup>();
             foreach (var definition in definitions)
             {
-                var itemGroups = FindItemGroups(definition).ToList();
+                itemGroups.Clear();
+                PopulateItemGroups(definition, itemGroups);
                 foreach (var criteriaEntry in criteria.Entries)
                 {
                     ContentItemGroup bestGroup = null;
@@ -196,9 +255,10 @@ namespace NuGet.ContentModel
             return null;
         }
 
-        private IEnumerable<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
+        private IList<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
         {
             var pathPatterns = definition.PathExpressions;
+            IList<ContentItem> itemsList = new List<ContentItem>();
 
             foreach (var asset in assets)
             {
@@ -209,11 +269,13 @@ namespace NuGet.ContentModel
                     var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
-                        yield return contentItem;
+                        itemsList.Add(contentItem);
                         break;
                     }
                 }
             }
+
+            return itemsList;
         }
 
         /// <summary>

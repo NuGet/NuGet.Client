@@ -13,9 +13,9 @@ namespace NuGet.Packaging.Core
 {
     internal static class ContentExtractor
     {
-        internal static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
+        internal static void GetContentForPattern(ContentItemCollection collection, PatternSet pattern, IList<ContentItemGroup> itemGroups)
         {
-            return collection.FindItemGroups(pattern);
+            collection.PopulateItemGroups(pattern, itemGroups);
         }
 
         internal static IEnumerable<NuGetFramework> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
