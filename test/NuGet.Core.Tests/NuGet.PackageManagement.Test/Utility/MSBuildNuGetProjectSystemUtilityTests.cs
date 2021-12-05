@@ -19,10 +19,10 @@ namespace NuGet.PackageManagement.Test
             await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             {
                 await MSBuildNuGetProjectSystemUtility.TryAddFileAsync(
-                    It.IsAny<IMSBuildProjectSystem>(),
-                    path: "",
+                    projectSystem: It.IsAny<IMSBuildProjectSystem>(),
+                    path: string.Empty,
                     streamTaskFactory: async () => await Task.FromResult(It.IsAny<Stream>()),
-                    new CancellationToken(canceled: true));
+                    cancellationToken: new CancellationToken(canceled: true));
             });
         }
 
@@ -32,10 +32,10 @@ namespace NuGet.PackageManagement.Test
             await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             {
                 await MSBuildNuGetProjectSystemUtility.DeleteFileSafeAsync(
-                    path: "",
+                    path: string.Empty,
                     streamFactory: async () => await Task.FromResult(It.IsAny<Stream>()),
-                    It.IsAny<IMSBuildProjectSystem>(),
-                    new CancellationToken(canceled: true));
+                    projectSystem: It.IsAny<IMSBuildProjectSystem>(),
+                    cancellationToken: new CancellationToken(canceled: true));
             });
         }
     }

@@ -220,8 +220,9 @@ namespace NuGet.Commands.Test
             }
 
             // Assert
-            Assert.Equal(1, telemetryEvents.Where(x => x.Name == "PackageExtractionInformation").Count());
-            var evt = telemetryEvents.Where(x => x.Name == "PackageExtractionInformation").First();
+            var eventSingleCollection = telemetryEvents.Where(x => x.Name == "PackageExtractionInformation");
+            Assert.Single(eventSingleCollection);
+            var evt = eventSingleCollection.Single();
             Assert.NotNull(evt["ParentId"]);
             Assert.Equal(evt["ParentId"], parentIdGuid.ToString());
         }
