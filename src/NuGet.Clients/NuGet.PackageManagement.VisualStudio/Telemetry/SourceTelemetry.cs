@@ -65,6 +65,7 @@ namespace NuGet.PackageManagement.Telemetry
             var nugetOrg = HttpStyle.NotPresent;
             var vsOfflinePackages = false;
             var dotnetCuratedFeed = false;
+            bool? isHttps = null;
 
             if (packageSources != null)
             {
@@ -75,6 +76,15 @@ namespace NuGet.PackageManagement.Telemetry
                     {
                         if (source.IsHttp)
                         {
+                            if (!isHttps.HasValue)
+                            {
+                                isHttps = source.IsHttps;
+                            }
+                            else
+                            {
+                                isHttps = isHttps.Value && source.IsHttps;
+                            }
+
                             if (TelemetryUtility.IsHttpV3(source))
                             {
                                 // Http V3 feed
@@ -128,15 +138,23 @@ namespace NuGet.PackageManagement.Telemetry
                 nugetOrg.ToString(),
                 vsOfflinePackages,
                 dotnetCuratedFeed,
-                protocolDiagnosticTotals);
+                protocolDiagnosticTotals,
+                isHttps: isHttps ?? false);
         }
 
-        // NumLocalFeeds(c:\ or \\ or file:///)
-        // NumHTTPv2Feeds
-        // NumHTTPv3Feeds
-        // NuGetOrg: [NotPresent | YesV2 | YesV3]
-        // VsOfflinePackages: [true | false]
-        // DotnetCuratedFeed: [true | false]
+        /// <summary>
+        /// NumLocalFeeds(c:\ or \\ or file:///)
+        /// NumHTTPv2Feeds
+        /// NumHTTPv3Feeds
+        /// NuGetOrg: [NotPresent | YesV2 | YesV3]
+        /// VsOfflinePackages: [true | false]
+        /// DotnetCuratedFeed: [true | false]
+        /// ParentId
+        /// protocol.requests
+        /// protocol.bytes
+        /// protocol.duration
+        /// IsHttps [true | false]
+        /// </summary>
         private class SourceSummaryTelemetryEvent : TelemetryEvent
         {
             public SourceSummaryTelemetryEvent(
@@ -148,7 +166,8 @@ namespace NuGet.PackageManagement.Telemetry
                 string nugetOrg,
                 bool vsOfflinePackages,
                 bool dotnetCuratedFeed,
-                PackageSourceTelemetry.Totals protocolDiagnosticTotals)
+                PackageSourceTelemetry.Totals protocolDiagnosticTotals,
+                bool isHttps)
                 : base(eventName)
             {
                 this["NumLocalFeeds"] = local;
@@ -161,6 +180,7 @@ namespace NuGet.PackageManagement.Telemetry
                 this["protocol.requests"] = protocolDiagnosticTotals.Requests;
                 this["protocol.bytes"] = protocolDiagnosticTotals.Bytes;
                 this["protocol.duration"] = protocolDiagnosticTotals.Duration.TotalMilliseconds;
+                this["IsHttps"] = isHttps;
             }
         }
     }

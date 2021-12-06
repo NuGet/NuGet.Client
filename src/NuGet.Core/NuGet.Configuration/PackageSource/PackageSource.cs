@@ -18,7 +18,9 @@ namespace NuGet.Configuration
         public const int DefaultProtocolVersion = 2;
 
         private readonly int _hashCode;
+
         private bool? _isHttp;
+        private bool? _isHttps;
         private bool? _isLocal;
 
         public string Name { get; private set; }
@@ -60,6 +62,9 @@ namespace NuGet.Configuration
         /// </summary>
         public int ProtocolVersion { get; set; } = DefaultProtocolVersion;
 
+        /// <summary>
+        /// Whether the source is using the HTTP protocol, including HTTPS.
+        /// </summary>
         public bool IsHttp
         {
             get
@@ -71,6 +76,22 @@ namespace NuGet.Configuration
                 }
 
                 return _isHttp.Value;
+            }
+        }
+
+        /// <summary>
+        /// Whether the source is using the HTTPS protocol.
+        /// </summary>
+        public bool IsHttps
+        {
+            get
+            {
+                if (!_isHttps.HasValue)
+                {
+                    _isHttps = Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+                }
+
+                return _isHttps.Value;
             }
         }
 
