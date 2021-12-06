@@ -5,7 +5,7 @@
         <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
         <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
         <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
-        <VSFrameworkVersion>17.0.0-previews-1-31321-016</VSFrameworkVersion>
+        <VSFrameworkVersion>17.1.0-preview-2-31918-073</VSFrameworkVersion>
         <VSServicesVersion>16.153.0</VSServicesVersion>
         <CryptographyPackagesVersion>5.0.0</CryptographyPackagesVersion>
         <NuGetCoreV2Version>2.14.0-rtm-832</NuGetCoreV2Version>
@@ -98,7 +98,7 @@
         <PackageReference Update="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.5.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.0.0-previews-1-31318-023" />
+        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.1.0-preview-2-31918-026" />
         <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="17.0.4-alpha" />
         <PackageReference Update="Moq" Version="4.16.1" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
