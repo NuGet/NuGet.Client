@@ -478,7 +478,7 @@ namespace NuGet.Build.Tasks
 
                 firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
 
-                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true, log));
+                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true));
             }
 
             if (string.IsNullOrEmpty(repositoryPath))
@@ -617,7 +617,7 @@ namespace NuGet.Build.Tasks
         }
 
 
-        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds, Common.ILogger log)
+        private static IEnumerable<PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
         {
             if (File.Exists(projectConfigFilePath))
             {

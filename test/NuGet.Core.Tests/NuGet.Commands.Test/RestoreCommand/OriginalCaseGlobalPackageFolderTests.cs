@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -176,6 +178,53 @@ namespace NuGet.Commands.Test
                 Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)));
                 Assert.Equal(1, logger.Messages.Count(x => x.Contains(identity.ToString())));
             }
+        }
+
+        [Fact]
+        public async Task CopyPackagesToOriginalCaseAsync_EmitsTelemetryWithParentIdAsync()
+        {
+            // Set up telemetry service
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            var telSvc = new Mock<INuGetTelemetryService>();
+            telSvc.Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+            TelemetryActivity.NuGetTelemetryService = telSvc.Object;
+
+            var parentIdGuid = Guid.NewGuid();
+
+            // Arrange
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var packagesDirectory = Path.Combine(workingDirectory, "packages");
+                var sourceDirectory = Path.Combine(workingDirectory, "source");
+
+                var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
+                var packagePath = await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    sourceDirectory,
+                    identity.Id,
+                    identity.Version.ToString());
+
+                var logger = new TestLogger();
+                var graphA = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
+                var graphB = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
+
+                var request = GetRestoreRequest(packagesDirectory, logger);
+                var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
+
+                var target = new OriginalCaseGlobalPackageFolder(request, parentIdGuid);
+
+                // Act
+                await target.CopyPackagesToOriginalCaseAsync(
+                    new[] { graphA, graphB },
+                    CancellationToken.None);
+            }
+
+            // Assert
+            var eventSingleCollection = telemetryEvents.Where(x => x.Name == "PackageExtractionInformation");
+            Assert.Single(eventSingleCollection);
+            var evt = eventSingleCollection.Single();
+            Assert.NotNull(evt["ParentId"]);
+            Assert.Equal(evt["ParentId"], parentIdGuid.ToString());
         }
 
         [Fact]

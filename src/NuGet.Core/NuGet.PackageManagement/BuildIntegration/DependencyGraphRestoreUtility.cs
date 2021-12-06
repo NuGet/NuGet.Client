@@ -147,13 +147,9 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             Guid parentId,
-            ILogger log,
             CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-
-            // Restoring packages
-            var logger = context.Logger;
 
             // Add the new spec to the dg file and fill in the rest.
             var dgFile = await GetSolutionRestoreSpec(solutionManager, context);
@@ -268,7 +264,6 @@ namespace NuGet.PackageManagement
                 cacheContextModifier,
                 sources,
                 parentId,
-                log,
                 token);
 
             // Throw before writing if this has been canceled
