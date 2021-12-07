@@ -111,11 +111,6 @@ namespace NuGet.Test
         [InlineData("net7.0-ios", "net6.0,net5.0-ios,netstandard2.1", "net6.0")]
         [InlineData("net7.0-ios", "net6.0,net6.0-ios,netstandard2.1", "net6.0-ios")]
         // Some net6.0 platforms have "special" fallbacks to xamarin over net5.0
-        [InlineData("net6.0-ios", "xamarin.ios,xamarin.mac,net5.0", "xamarin.ios")]
-        [InlineData("net6.0-maccatalyst", "xamarin.ios,xamarin.mac,net5.0", "xamarin.ios")]
-        [InlineData("net6.0-macos", "xamarin.mac,xamarin.ios,net5.0", "xamarin.mac")]
-        [InlineData("net6.0-tvos", "xamarin.tvos,xamarin.ios,net5.0", "xamarin.tvos")]
-        [InlineData("net6.0-ios", "xamarin.mac,xamarin.ios,net5.0", "xamarin.ios")]
         [InlineData("net6.0-ios", "xamarin.mac,net5.0", "net5.0")]
         [InlineData("net6.0-android", "xamarin.mac,net7.0,net5.0,monoandroid12.0", "monoandroid12.0")]
         [InlineData("net6.0-tizen", "xamarin.mac,net7.0,net5.0,tizen9.0,netcoreapp3.1", "tizen9.0")]
@@ -123,6 +118,12 @@ namespace NuGet.Test
         [InlineData("net6.0-maccatalyst", "xamarin.mac", null)]
         [InlineData("net6.0-mac", "xamarin.mac", null)] // the correct platform is "macos"
         [InlineData("net6.0-whatever", "xamarin.whatever", null)]
+        // Special net6.0 platform fallbacks do not apply to xamarin.* frameworks
+        [InlineData("net6.0-ios", "xamarin.ios,xamarin.mac,net5.0", "net5.0")]
+        [InlineData("net6.0-maccatalyst", "xamarin.ios,xamarin.mac,net5.0", "net5.0")]
+        [InlineData("net6.0-macos", "xamarin.mac,xamarin.ios,net5.0", "net5.0")]
+        [InlineData("net6.0-tvos", "xamarin.tvos,xamarin.ios,net5.0", "net5.0")]
+        [InlineData("net6.0-ios", "xamarin.mac,xamarin.ios,net5.0", "net5.0")]
         [InlineData("net7.0-ios", "xamarin.mac,net5.0,net6.0", "net6.0")]
         [InlineData("net7.0-ios", "net6.0,xamarin.ios,xamarin.mac,net5.0", "net6.0")]
         [InlineData("net7.0-ios", "net7.0-macos,xamarin.mac,xamarin.ios,net6.0,net6.0-ios,net6.0-macos,net5.0", "net6.0-ios")]
