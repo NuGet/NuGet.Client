@@ -97,8 +97,7 @@ namespace NuGet.Frameworks
                     reduced = reduced.Where(f =>
                     {
                         if (isNet6Era && framework.HasPlatform && (
-                            f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)
-                            || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
+                            f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
                             || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase)
                             ))
                         {
@@ -190,8 +189,7 @@ namespace NuGet.Frameworks
                     }
                     else if (isNet6Era && reduced.Any(f =>
                     {
-                        return f.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)
-                        || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
+                        return f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
                         || f.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase);
                     }))
                     {
@@ -200,8 +198,7 @@ namespace NuGet.Frameworks
                         reduced = reduced.GroupBy(f => f.Framework).OrderByDescending(f => f.Key).First(f =>
                         {
                             NuGetFramework first = f.First();
-                            return first.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase)
-                                || first.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
+                            return first.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase)
                                 || first.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase);
                         });
                     }

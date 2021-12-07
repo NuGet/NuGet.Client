@@ -183,16 +183,7 @@ namespace NuGet.Frameworks
             bool isNet6Era = target.IsNet5Era && target.Version.Major >= 6;
             if (isNet6Era && target.HasPlatform && !NuGetFramework.FrameworkNameComparer.Equals(target, candidate))
             {
-                if (candidate.Framework.StartsWith("xamarin.", StringComparison.OrdinalIgnoreCase))
-                {
-                    var comp = StringComparison.OrdinalIgnoreCase;
-                    string fw = candidate.Framework;
-                    result = result &&
-                    ((fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinMac, comp) && target.Platform.Equals("macos", comp))
-                        || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinIOs, comp) && (target.Platform.Equals("ios", comp) || target.Platform.Equals("maccatalyst", comp)))
-                        || (fw.Equals(FrameworkConstants.FrameworkIdentifiers.XamarinTVOS, comp) && target.Platform.Equals("tvos", comp)));
-                }
-                else if (candidate.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase))
+                if (candidate.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase))
                 {
                     result = result && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, "android");
                 }
