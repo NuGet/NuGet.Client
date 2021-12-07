@@ -1,1 +1,1 @@
-NuGet.Common.TelemetryActivity.StartIndependentInterval(string propertyName) -> System.IDisposable
+NuGet.Common.NuGetLogCode.NU5042 = 5042 -> NuGet.Common.NuGetLogCode
