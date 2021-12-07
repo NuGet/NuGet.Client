@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.Telemetry
             var nugetOrg = HttpStyle.NotPresent;
             var vsOfflinePackages = false;
             var dotnetCuratedFeed = false;
-            bool? isHttps = null;
+            var numHttpsFeeds = 0;
 
             if (packageSources != null)
             {
@@ -76,13 +76,9 @@ namespace NuGet.PackageManagement.Telemetry
                     {
                         if (source.IsHttp)
                         {
-                            if (!isHttps.HasValue)
+                            if (source.IsHttps)
                             {
-                                isHttps = source.IsHttps;
-                            }
-                            else
-                            {
-                                isHttps = isHttps.Value && source.IsHttps;
+                                numHttpsFeeds++;
                             }
 
                             if (TelemetryUtility.IsHttpV3(source))
@@ -139,7 +135,7 @@ namespace NuGet.PackageManagement.Telemetry
                 vsOfflinePackages,
                 dotnetCuratedFeed,
                 protocolDiagnosticTotals,
-                isHttps: isHttps ?? false);
+                numHttpsFeeds);
         }
 
         /// <summary>
@@ -153,7 +149,7 @@ namespace NuGet.PackageManagement.Telemetry
         /// protocol.requests
         /// protocol.bytes
         /// protocol.duration
-        /// IsHttps [true | false]
+        /// NumHttpsFeeds
         /// </summary>
         private class SourceSummaryTelemetryEvent : TelemetryEvent
         {
@@ -167,7 +163,7 @@ namespace NuGet.PackageManagement.Telemetry
                 bool vsOfflinePackages,
                 bool dotnetCuratedFeed,
                 PackageSourceTelemetry.Totals protocolDiagnosticTotals,
-                bool isHttps)
+                int numHttpsFeeds)
                 : base(eventName)
             {
                 this["NumLocalFeeds"] = local;
@@ -180,7 +176,7 @@ namespace NuGet.PackageManagement.Telemetry
                 this["protocol.requests"] = protocolDiagnosticTotals.Requests;
                 this["protocol.bytes"] = protocolDiagnosticTotals.Bytes;
                 this["protocol.duration"] = protocolDiagnosticTotals.Duration.TotalMilliseconds;
-                this["IsHttps"] = isHttps;
+                this["NumHTTPSFeeds"] = numHttpsFeeds;
             }
         }
     }
