@@ -10001,64 +10001,6 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("lib/xamarin.ios/x.dll")]
-        [InlineData("ref/xamarin.ios/x.dll")]
-        [InlineData("runtimes/win7-x64/lib/xamarin.ios/x.dll")]
-        [InlineData("runtimes/win7-x64/nativeassets/xamarin.ios/x.dll")]
-        [InlineData("build/xamarin.ios/x.targets")]
-        [InlineData("contentFiles/csharp/xamarin.ios/x.dll")]
-        [InlineData("embed/xamarin.ios/x.dll")]
-        [InlineData("buildTransitive/xamarin.ios/x.targets")]
-        public async Task RestoreNetCore_MacCatalystUsingXamarinIOS_WarnsAsync(string file)
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                };
-
-                packageX.AddFile(file);
-
-                var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    "net6.0-maccatalyst14.5"
-                    );
-
-                var projectB = SimpleTestProjectContext.CreateNETCore(
-                    "b",
-                    pathContext.SolutionRoot,
-                    "Xamarin.IOs"
-                    );
-
-                projectA.AddPackageToAllFrameworks(packageX);
-                projectA.AddProjectToAllFrameworks(projectB);
-                solution.Projects.Add(projectA);
-                solution.Projects.Add(projectB);
-                solution.Create(pathContext.SolutionRoot);
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                // Act
-                var r = Util.RestoreSolution(pathContext);
-
-                // Assert
-                r.Success.Should().BeTrue();
-                r.AllOutput.Should().Contain("WARNING: NU1703: 'x 1.0.0' was resolved as a dependency of 'a', but the dependency is using 'Xamarin.iOS' while 'a' is using 'net6.0-maccatalyst14.5' as its TargetFramework");
-                r.AllOutput.Should().Contain("WARNING: NU1703: 'b' was resolved as a dependency of 'a', but the dependency is using 'Xamarin.iOS' while 'a' is using 'net6.0-maccatalyst14.5' as its TargetFramework");
-            }
-        }
-
         [PlatformFact(Platform.Windows)]
         public async Task RestoreNetCore_WithCustomAliases_WritesConditionWithCorrectAlias()
         {
