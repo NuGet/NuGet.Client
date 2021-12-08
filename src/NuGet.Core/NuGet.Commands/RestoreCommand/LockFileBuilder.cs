@@ -217,7 +217,6 @@ namespace NuGet.Commands
                             rootProjectStyle);
 
                         target.Libraries.Add(projectLib);
-                        continue;
                     }
                     else if (library.Type == LibraryType.Package)
                     {
