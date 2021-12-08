@@ -105,7 +105,7 @@ namespace NuGet.Commands
                         {
                             AddAssets(aliases, library, package, targetGraph, dependencyType, lockFileLib,
                                 framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
-                            // Check if compatile assets were found.
+                            // Check if compatible assets were found.
                             // If no compatible assets were found and this is the last check
                             // continue on with what was given, this will fail in the normal
                             // compat verification.

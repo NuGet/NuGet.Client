@@ -163,7 +163,7 @@ namespace NuGet.Commands
                 else
                 {
                     // apply each entry
-                    // entries may not have all the attributes, if a value is null 
+                    // entries may not have all the attributes, if a value is null
                     // ignore it and continue using the previous value.
                     foreach (var filesEntry in entryMappings[file])
                     {
