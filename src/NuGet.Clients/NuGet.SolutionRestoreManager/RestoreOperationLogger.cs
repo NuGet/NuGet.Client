@@ -604,6 +604,8 @@ namespace NuGet.SolutionRestoreManager
 
                 _statusBar.SetText(progressMessage);
 
+                NuGetFileLogger.DefaultInstance.Write(progressMessage);
+
                 if (totalSteps != 0)
                 {
                     _statusBar.Progress(ref _cookie, 1, "", currentStep, totalSteps);
