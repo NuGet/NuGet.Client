@@ -47,7 +47,11 @@ namespace NuGet.DependencyResolver
             var currentCacheContext = context.CacheContext;
 
             IList<IRemoteDependencyProvider> remoteDependencyProviders = context.FilterDependencyProvidersForLibrary(libraryRange);
-            LogIfPackageSourceMappingIsEnabled(libraryRange.Name, context, remoteDependencyProviders);
+
+            if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
+            {
+                LogIfPackageSourceMappingIsEnabled(libraryRange.Name, context, remoteDependencyProviders);
+            }
 
             // Try up to two times to get the package. The second
             // retry will refresh the cache if a package is listed 
