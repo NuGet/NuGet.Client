@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Threading;
 using NuGet.Common;
 
@@ -40,17 +41,27 @@ namespace NuGet.Test.Server
         /// </summary>
         /// <param name="basePath">The base path for all request URL's.
         /// Can be either null (default) for "/" or any "/"-prefixed string (e.g.:  /{GUID}).</param>
-        /// <param name="basePort">The base port for all request URL's.</param>
-        public PortReserverOfMockServer(string basePath = null, int basePort = 50231)
+        /// <param name="basePort">The base port for all request URL's. Defaults to system chosen available port,
+        /// at or below `65535`.</param>
+        public PortReserverOfMockServer(string basePath = null, int? basePort = null)
         {
             if (!string.IsNullOrEmpty(basePath) && (!basePath.StartsWith("/") || basePath.EndsWith("/")))
             {
                 throw new ArgumentException($"If provided, argument \"{nameof(basePath)}\" must start with and must not end with a slash (/)");
             }
 
-            if (basePort <= 0)
+            if (basePort is null)
             {
-                throw new InvalidOperationException();
+                // Port 0 means find an available port on the system.
+                var tcpListener = new TcpListener(IPAddress.Loopback, 0);
+                tcpListener.Start();
+                basePort = ((IPEndPoint)tcpListener.LocalEndpoint).Port;
+                tcpListener.Stop();
+            }
+
+            if (!basePort.HasValue || basePort <= 0)
+            {
+                throw new InvalidOperationException("Unable to find a port");
             }
 
             // Grab a cross appdomain/cross process/cross thread lock, to ensure only one port is reserved at a time.
@@ -58,7 +69,7 @@ namespace NuGet.Test.Server
             {
                 try
                 {
-                    int port = basePort - 1;
+                    int port = basePort.Value - 1;
 
                     while (true)
                     {
