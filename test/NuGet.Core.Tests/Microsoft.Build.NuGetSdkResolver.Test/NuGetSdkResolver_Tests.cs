@@ -61,6 +61,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             {
                 var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
                 var package = new SimpleTestPackageContext(sdkReference.Name, sdkReference.Version);
+                package.AddFile("Sdk/Sdk.props", "<Project />");
+                package.AddFile("Sdk/Sdk.targets", "<Project />");
                 SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, package).Wait();
                 var sdkResolverContext = new MockSdkResolverContext(pathContext.WorkingDirectory);
                 var sdkResultFactory = new MockSdkResultFactory();
