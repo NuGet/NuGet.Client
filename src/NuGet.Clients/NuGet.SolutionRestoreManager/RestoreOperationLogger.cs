@@ -219,7 +219,12 @@ namespace NuGet.SolutionRestoreManager
             // they are missing the context of the parent text above it
             return RestoreOperationProgressUI.Current != null
                 && GetMSBuildLevel(logMessage.Level) == MSBuildVerbosityLevel.Minimal
-                && logMessage.Message.Length == logMessage.Message.TrimStart().Length;
+                && !IsStringIndented(logMessage);
+
+            static bool IsStringIndented(ILogMessage logMessage)
+            {
+                return logMessage.Message.Length > 0 && char.IsWhiteSpace(logMessage.Message[0]);
+            }
         }
 
         /// <summary>
