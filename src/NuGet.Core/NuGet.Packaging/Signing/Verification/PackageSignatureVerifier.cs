@@ -49,7 +49,7 @@ namespace NuGet.Packaging.Signing
                         {
                             // Verify that the signature is trusted
                             var sigTrustResults = await Task.WhenAll(_verificationProviders.Select(e => e.GetTrustResultAsync(package, signature, settings, token)));
-                            valid = IsValid(sigTrustResults, settings);
+                            valid = IsValid(sigTrustResults);
                             trustResults.AddRange(sigTrustResults);
                         }
                         else
@@ -106,7 +106,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// True if a provider trusts the package signature.
         /// </summary>
-        private static bool IsValid(IEnumerable<PackageVerificationResult> verificationResults, SignedPackageVerifierSettings settings)
+        private static bool IsValid(IEnumerable<PackageVerificationResult> verificationResults)
         {
             return verificationResults.Any() &&
                 verificationResults.All(e => e.Trust == SignatureVerificationStatus.Valid);

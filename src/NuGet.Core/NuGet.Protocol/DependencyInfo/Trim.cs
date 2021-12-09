@@ -37,7 +37,7 @@ namespace NuGet.Protocol
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //  Pass1
 
-        private static void Pass1(PackageInfo packageInfo, string id, KeyValuePair<string, VersionRange> allowedVersion)
+        private static void Pass1(PackageInfo packageInfo, KeyValuePair<string, VersionRange> allowedVersion)
         {
             foreach (var dependencyInfo in packageInfo.Dependencies)
             {
@@ -59,14 +59,14 @@ namespace NuGet.Protocol
 
             foreach (var child in registrationInfo.Packages)
             {
-                Pass1(child, registrationInfo.Id, allowedVersion);
+                Pass1(child, allowedVersion);
             }
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //  Pass2
 
-        private static void Pass2(PackageInfo packageInfo, string id, ref bool updated)
+        private static void Pass2(PackageInfo packageInfo, ref bool updated)
         {
             foreach (var dependencyInfo in packageInfo.Dependencies)
             {
@@ -94,7 +94,7 @@ namespace NuGet.Protocol
 
             foreach (var child in registrationInfo.Packages)
             {
-                Pass2(child, registrationInfo.Id, ref updated);
+                Pass2(child, ref updated);
             }
         }
 
