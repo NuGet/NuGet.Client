@@ -71,8 +71,7 @@ namespace NuGet.Configuration
             {
                 if (!_isHttp.HasValue)
                 {
-                    _isHttp = Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                              Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+                    _isHttp = IsHttps || Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase);
                 }
 
                 return _isHttp.Value;
@@ -89,6 +88,10 @@ namespace NuGet.Configuration
                 if (!_isHttps.HasValue)
                 {
                     _isHttps = Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+                    if (_isHttps == true)
+                    {
+                        _isHttp = true;
+                    }
                 }
 
                 return _isHttps.Value;
