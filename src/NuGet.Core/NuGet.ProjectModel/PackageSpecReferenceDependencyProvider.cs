@@ -149,13 +149,13 @@ namespace NuGet.ProjectModel
             if (packageSpec != null)
             {
                 // Additional library properties
-                AddLibraryProperties(library, packageSpec, targetFramework, msbuildPath);
+                AddLibraryProperties(library, packageSpec, targetFramework);
             }
 
             return library;
         }
 
-        private static void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework, string msbuildPath)
+        private static void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework)
         {
             var projectStyle = packageSpec.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
