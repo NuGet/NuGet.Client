@@ -152,7 +152,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             // Assert
             Assert.Equal(0, testLogger.Errors);
             testLogger.DebugMessages.TryPeek(out string message);
-            if(libraryDependencyTarget == LibraryDependencyTarget.Package)
+            if (libraryDependencyTarget == LibraryDependencyTarget.Package)
             {
                 Assert.Equal($"Package source mapping matches found for package ID '{packageX}' are: '{source}'.", message);
                 Assert.Equal(version, result.Key.Version.ToString());

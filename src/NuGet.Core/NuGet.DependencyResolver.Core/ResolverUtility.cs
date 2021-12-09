@@ -241,7 +241,10 @@ namespace NuGet.DependencyResolver
         private static async Task<Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchAsync(LibraryRange libraryRange, RemoteWalkContext remoteWalkContext, CancellationToken cancellationToken)
         {
             IList<IRemoteDependencyProvider> remoteDependencyProviders = remoteWalkContext.FilterDependencyProvidersForLibrary(libraryRange);
-            LogIfPackageSourceMappingIsEnabled(libraryRange.Name, remoteWalkContext, remoteDependencyProviders);
+            if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
+            {
+                LogIfPackageSourceMappingIsEnabled(libraryRange.Name, remoteWalkContext, remoteDependencyProviders);
+            }
 
             var match = await FindPackageLibraryMatchAsync(libraryRange, NuGetFramework.AnyFramework, remoteDependencyProviders, remoteWalkContext.LocalLibraryProviders, remoteWalkContext.CacheContext, remoteWalkContext.Logger, cancellationToken);
             if (match == null)
