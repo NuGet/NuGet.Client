@@ -438,7 +438,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public void LocalAndHttpSources_WithHTTPSv3Feeds_FeedCountsAreCorrect()
+        public void LocalAndHttpSources_WithHTTPSv2Feeds_FeedCountsAreCorrect()
         {
             var sources = new List<PackageSource>()
             {
