@@ -30,8 +30,8 @@ namespace NuGet.SolutionRestoreManager.Test
         private const string ProtocolRequests = "protocol.requests";
         private const string ProtocolBytes = "protocol.bytes";
         private const string ProtocolDuration = "protocol.duration";
-        private const string NumV2HTTPSFeeds = "NumV2HTTPSFeeds";
-        private const string NumV3HTTPSFeeds = "NumV3HTTPSFeeds";
+        private const string NumHTTPSv2Feeds = "NumHTTPSv2Feeds";
+        private const string NumHTTPSv3Feeds = "NumHTTPSv3Feeds";
 
         private static readonly Guid Parent = Guid.Parse("33411664-388A-4C48-A607-A2C554171FCE");
         private static readonly PackageSourceTelemetry.Totals ProtocolDiagnosticTotals = new PackageSourceTelemetry.Totals(1, 2, TimeSpan.FromMilliseconds(3));
@@ -65,8 +65,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -93,8 +93,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(1);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(1);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(1);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -122,8 +122,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(2);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(true);
@@ -146,8 +146,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(1);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(1);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(1);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(YesV2);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -170,8 +170,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(1);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(1);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(1);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(YesV2);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -194,8 +194,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(1);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(1);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(1);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(YesV3);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -218,8 +218,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(1);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(1);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(1);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(YesV3);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -243,8 +243,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(1);
             summaryInts[NumHTTPv3Feeds].Should().Be(1);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(1);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(1);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(1);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(1);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(YesV3AndV2);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -268,8 +268,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(1);
             summaryInts[NumHTTPv3Feeds].Should().Be(1);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(1);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(1);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(1);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(1);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(YesV3AndV2);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -294,8 +294,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(1);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -319,8 +319,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(1);
             summaryInts[NumHTTPv3Feeds].Should().Be(1);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(1);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(1);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(1);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(1);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -345,8 +345,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(3);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -370,8 +370,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(2);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -394,8 +394,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(0);
             summaryInts[NumHTTPv3Feeds].Should().Be(1);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -418,8 +418,8 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryInts[NumLocalFeeds].Should().Be(0);
             summaryInts[NumHTTPv2Feeds].Should().Be(1);
             summaryInts[NumHTTPv3Feeds].Should().Be(0);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(0);
+            summaryInts[NumHTTPSv2Feeds].Should().Be(0);
+            summaryInts[NumHTTPSv3Feeds].Should().Be(0);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
@@ -437,16 +437,17 @@ namespace NuGet.SolutionRestoreManager.Test
             telemetry[ProtocolDuration].Should().Be(3.0);
         }
 
-
         [Fact]
-        public void LocalAndHttpSources_WithAllHttps_IsHttpsIsTrue()
+        public void LocalAndHttpSources_WithHTTPSv3Feeds_FeedCountsAreCorrect()
         {
             var sources = new List<PackageSource>()
             {
                 new PackageSource(@"\\share\packages"),
-                new PackageSource("https://nugettest.org/v3/index.JSON"),
-                new PackageSource("https://tempuri.local/index.json"),
-                new PackageSource("https://nuget.org/v3/index.JSON")
+                new PackageSource("http://nugettest.org/v3/index.JSON"),
+                new PackageSource("http://www.nuget.org/api/v2/curated-feeds/microsoftdotnet"), //v2
+                new PackageSource("http://tempuri.local/index.json"),
+                new PackageSource("http://nuget.org/v3/index.JSON"),
+                new PackageSource("https://www.NuGet.org/api/v2/") //v2 and HTTPS
             };
 
             var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
@@ -454,16 +455,26 @@ namespace NuGet.SolutionRestoreManager.Test
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
 
-            summaryInts[NumLocalFeeds].Should().Be(1);
-            summaryInts[NumHTTPv2Feeds].Should().Be(0);
-            summaryInts[NumHTTPv3Feeds].Should().Be(3);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(3);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
+
+            int? numLocalFeeds = summaryInts[NumLocalFeeds];
+            int? numHTTPv2Feeds = summaryInts[NumHTTPv2Feeds];
+            int? numHTTPv3Feeds = summaryInts[NumHTTPv3Feeds];
+            int? numHTTPSv2Feeds = summaryInts[NumHTTPSv2Feeds];
+            int? numHTTPSv3Feeds = summaryInts[NumHTTPSv3Feeds];
+
+            numLocalFeeds.Should().Be(1);
+            numHTTPv2Feeds.Should().Be(2);
+            numHTTPv3Feeds.Should().Be(3);
+            numHTTPSv2Feeds.Should().Be(1);
+            numHTTPSv3Feeds.Should().Be(0);
+
+            int? totalFeeds = numLocalFeeds + numHTTPv2Feeds + numHTTPv3Feeds;
+            totalFeeds.Should().Be(sources.Count);
         }
 
         [Fact]
-        public void LocalAndHttpSources_WithAnyNonHttps_IsHttpsIsFalse()
+        public void LocalAndHttpSources_WithHTTPSv3Feeds_FeedCountsAreCorrect()
         {
             var sources = new List<PackageSource>()
             {
@@ -473,17 +484,26 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://nuget.org/v3/index.JSON")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
-            var summaryStrings = GetValuesAsStrings(summary);
-            var summaryInts = GetValuesAsInts(summary);
-            var summaryBools = GetValuesAsBools(summary);
+            TelemetryEvent summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
+            Dictionary<string, string> summaryStrings = GetValuesAsStrings(summary);
+            Dictionary<string, int?> summaryInts = GetValuesAsInts(summary);
 
-            summaryInts[NumLocalFeeds].Should().Be(1);
-            summaryInts[NumHTTPv2Feeds].Should().Be(0);
-            summaryInts[NumHTTPv3Feeds].Should().Be(3);
-            summaryInts[NumV2HTTPSFeeds].Should().Be(0);
-            summaryInts[NumV3HTTPSFeeds].Should().Be(2);
             summaryStrings[ParentId].Should().Be(Parent.ToString());
+
+            int? numLocalFeeds = summaryInts[NumLocalFeeds];
+            int? numHTTPv2Feeds = summaryInts[NumHTTPv2Feeds];
+            int? numHTTPv3Feeds = summaryInts[NumHTTPv3Feeds];
+            int? numHTTPSv2Feeds = summaryInts[NumHTTPSv2Feeds];
+            int? numHTTPSv3Feeds = summaryInts[NumHTTPSv3Feeds];
+
+            numLocalFeeds.Should().Be(1);
+            numHTTPv2Feeds.Should().Be(0);
+            numHTTPv3Feeds.Should().Be(3);
+            numHTTPSv2Feeds.Should().Be(0);
+            numHTTPSv3Feeds.Should().Be(2);
+
+            int? totalFeeds = numLocalFeeds + numHTTPv2Feeds + numHTTPv3Feeds;
+            totalFeeds.Should().Be(sources.Count);
         }
 
         private static Dictionary<string, string> GetValuesAsStrings(TelemetryEvent item)
