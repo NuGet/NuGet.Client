@@ -53,7 +53,7 @@ namespace NuGet.Test.Server
             if (basePort is null)
             {
                 // Port 0 means find an available port on the system.
-                var tcpListener = new TcpListener(IPAddress.Loopback, 0);
+                var tcpListener = new TcpListener(IPAddress.Loopback, port: 0);
                 tcpListener.Start();
                 basePort = ((IPEndPoint)tcpListener.LocalEndpoint).Port;
                 tcpListener.Stop();
