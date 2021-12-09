@@ -95,10 +95,13 @@ namespace NuGet.SolutionRestoreManager
 
             lock (_streamWriterLock)
             {
+                string message = logMessage;
                 if (ShouldFormatWithTime)
                 {
-                    _streamWriter.Value.WriteLine(FormatWithTime(logMessage));
+                    message = FormatWithTime(logMessage);
                 }
+                _streamWriter.Value.WriteLine(message);
+
             }
         }
 
