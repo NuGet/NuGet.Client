@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Shared;
 using Newtonsoft.Json;
 
 namespace Microsoft.Build.NuGetSdkResolver
@@ -34,16 +32,14 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return null;
             }
 
-            var projectDirectory = Directory.GetParent(context.ProjectFilePath);
+            DirectoryInfo projectDirectory = Directory.GetParent(context.ProjectFilePath);
 
-            if (projectDirectory == null
-                || !projectDirectory.Exists
-                || !TryGetPathOfFileAbove(GlobalJsonFileName, projectDirectory.FullName, out var globalJsonPath))
+            if (!TryGetPathOfFileAbove(GlobalJsonFileName, projectDirectory, out FileInfo globalJsonPath))
             {
                 return null;
             }
 
-            var contents = File.ReadAllText(globalJsonPath);
+            string contents = File.ReadAllText(globalJsonPath.FullName);
 
             // Look ahead in the contents to see if there is an msbuild-sdks section.  Deserializing the file requires us to load
             // Newtonsoft.Json which is 500 KB while a global.json is usually ~100 bytes of text.
@@ -81,70 +77,42 @@ namespace Microsoft.Build.NuGetSdkResolver
         }
 
         /// <summary>
-        /// Searches for a file based on the specified starting directory.
+        /// Searches for a file in the specified starting directory and any of the parent directories.
         /// </summary>
-        /// <param name="file">The file to search for.</param>
-        /// <param name="startingDirectory">An optional directory to start the search in.  The default location is the directory
-        /// of the file containing the property function.</param>
-        /// <returns>The full path of the file if it is found, otherwise an empty string.</returns>
-        private static string GetPathOfFileAbove(string file, string startingDirectory)
+        /// <param name="file">The name of the file to search for.</param>
+        /// <param name="startingDirectory">The <see cref="DirectoryInfo" /> to look in first and then search the parent directories of.</param>
+        /// <param name="fullPath">Receives a <see cref="FileInfo" /> of the file if one is found, otherwise <c>null</c>.</param>
+        /// <returns><c>true</c> if the specified file was found in the directory or one of its parents, otherwise <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool TryGetPathOfFileAbove(string file, DirectoryInfo startingDirectory, out FileInfo fullPath)
         {
-            // Search for a directory that contains that file
-            var directoryName = GetDirectoryNameOfFileAbove(startingDirectory, file);
+            fullPath = null;
 
-            return string.IsNullOrEmpty(directoryName) ? string.Empty : NormalizePath(Path.Combine(directoryName, file));
-        }
+            if (string.IsNullOrWhiteSpace(file) || startingDirectory == null || !startingDirectory.Exists)
+            {
+                return false;
+            }
 
-        private static bool TryGetPathOfFileAbove(string file, string startingDirectory, out string fullPath)
-        {
-            fullPath = GetPathOfFileAbove(file, startingDirectory);
+            DirectoryInfo currentDirectory = startingDirectory;
 
-            return fullPath != string.Empty;
-        }
-
-        /// <summary>
-        /// Locate a file in either the directory specified or a location in the
-        /// directory structure above that directory.
-        /// </summary>
-        private static string GetDirectoryNameOfFileAbove(string startingDirectory, string fileName)
-        {
-            // Canonicalize our starting location
-            var lookInDirectory = Path.GetFullPath(startingDirectory);
+            FileInfo candidatePath;
 
             do
             {
-                // Construct the path that we will use to test against
-                var possibleFileDirectory = Path.Combine(lookInDirectory, fileName);
+                candidatePath = new FileInfo(Path.Combine(currentDirectory.FullName, file));
 
-                // If we successfully locate the file in the directory that we're
-                // looking in, simply return that location. Otherwise we'll
-                // keep moving up the tree.
-                if (File.Exists(possibleFileDirectory))
+                if (candidatePath.Exists)
                 {
-                    // We've found the file, return the directory we found it in
-                    return lookInDirectory;
+                    fullPath = candidatePath;
+
+                    return true;
                 }
-                else
-                {
-                    // GetDirectoryName will return null when we reach the root
-                    // terminating our search
-                    lookInDirectory = Path.GetDirectoryName(lookInDirectory);
-                }
+
+                currentDirectory = currentDirectory.Parent;
             }
-            while (lookInDirectory != null);
+            while (currentDirectory != null);
 
-            // When we didn't find the location, then return an empty string
-            return string.Empty;
-        }
-
-        private static string NormalizePath(string path)
-        {
-            return FixFilePath(Path.GetFullPath(path));
-
-        }
-        private static string FixFilePath(string path)
-        {
-            return string.IsNullOrEmpty(path) || Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/');
+            return false;
         }
     }
 }

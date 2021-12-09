@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using NuGet.Common;
@@ -16,167 +14,91 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
     /// </summary>
     public class NuGetSdkLoggerTests
     {
-        [Fact]
-        public void LogDebugMapsToMessage()
-        {
-            const string expectedMessage = "F4E2857F8B6F4ADC8D9B727DDBEE769B";
-
-            VerifyLog(sdkLogger => sdkLogger.LogDebug(expectedMessage), expectedMessage, MessageImportance.Low, isWarning: false, isError: false);
-        }
-
-        [Fact]
-        public void LogErrorMapsToError()
-        {
-            const string expectedMessage = "FC168C5B9E9C4FC199974BE664F5D723";
-
-            VerifyLog(sdkLogger => sdkLogger.LogError(expectedMessage), expectedMessage, expectedMessageImportance: null, isWarning: false, isError: true);
-        }
-
-        [Fact]
-        public void LogInformationMapsToMessage()
-        {
-            const string expectedMessage = "67170559A4EC47FE88FCC3E8B68E3522";
-
-            VerifyLog(sdkLogger => sdkLogger.LogInformation(expectedMessage), expectedMessage, MessageImportance.Normal, isWarning: false, isError: false);
-        }
-
-        [Fact]
-        public void LogInformationSummaryMapsToMessage()
-        {
-            const string expectedMessage = "EA9F5D816A0342E38A4A87DB955ABC33";
-
-            VerifyLog(sdkLogger => sdkLogger.LogInformationSummary(expectedMessage), expectedMessage, MessageImportance.Normal, isWarning: false, isError: false);
-        }
-
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkLogger.Log(LogLevel, string)" /> tranlates to MSBuild logged messages with the correct type (message, error, warning) and message importance.
+        /// </summary>
+        /// <param name="logLevel">THe <see cref="LogLevel" /> of a message.</param>
+        /// <param name="message">The message to be logged</param>
+        /// <param name="expectedMessageImportance">The expected <see cref="MessageImportance" /> of the message.</param>
         [Theory]
-        [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
-        [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Error, null, false, true)]
-        [InlineData(LogLevel.Warning, null, true, false)]
-        [InlineData((LogLevel)999, null, false, false)]
-        public void LogLevelMapsToMessageWarningOrError(LogLevel logLevel, MessageImportance? expectedMessageImportance = null, bool isWarning = false, bool isError = false)
-        {
-            const string expectedMessage = "BE0F702B91714CED9AAE850CE1798430";
-
-            VerifyLog(sdkLogger => sdkLogger.Log(logLevel, expectedMessage), expectedMessage, expectedMessageImportance, isWarning, isError);
-        }
-
-        [Theory]
-        [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
-        [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Error, null, false, true)]
-        [InlineData(LogLevel.Warning, null, true, false)]
-        [InlineData((LogLevel)999, null, false, false)]
-        public void LogLevelMapsToMessageWarningOrErrorAsync(LogLevel logLevel, MessageImportance? expectedMessageImportance = null, bool isWarning = false, bool isError = false)
-        {
-            const string expectedMessage = "BE0F702B91714CED9AAE850CE1798430";
-
-            VerifyLog(async sdkLogger => await sdkLogger.LogAsync(logLevel, expectedMessage).ConfigureAwait(false), expectedMessage, expectedMessageImportance, isWarning, isError);
-        }
-
-        [Theory]
-        [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
-        [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Error, null, false, true)]
-        [InlineData(LogLevel.Warning, null, true, false)]
-        [InlineData((LogLevel)999, null, false, false)]
-        public void LogMessageMapsToMessageWarningOrError(LogLevel logLevel, MessageImportance? expectedMessageImportance = null, bool isWarning = false, bool isError = false)
-        {
-            const string expectedMessage = "B8F887DBCA4A4748824E9ED3CAC484A0";
-
-            ILogMessage logMessage = new LogMessage(logLevel, expectedMessage);
-
-            VerifyLog(sdkLogger => sdkLogger.Log(logMessage), expectedMessage, expectedMessageImportance, isWarning, isError);
-        }
-
-        [Theory]
-        [InlineData(LogLevel.Debug, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Information, MessageImportance.Normal, false, false)]
-        [InlineData(LogLevel.Minimal, MessageImportance.High, false, false)]
-        [InlineData(LogLevel.Verbose, MessageImportance.Low, false, false)]
-        [InlineData(LogLevel.Error, null, false, true)]
-        [InlineData(LogLevel.Warning, null, true, false)]
-        [InlineData((LogLevel)999, null, false, false)]
-        public void LogMessageMapsToMessageWarningOrErrorAsync(LogLevel logLevel, MessageImportance? expectedMessageImportance = null, bool isWarning = false, bool isError = false)
-        {
-            const string expectedMessage = "5022EC7B7A694D41BFF1A6ED973297A4";
-
-            ILogMessage logMessage = new LogMessage(logLevel, expectedMessage);
-
-            VerifyLog(async sdkLogger => await sdkLogger.LogAsync(logMessage).ConfigureAwait(false), expectedMessage, expectedMessageImportance, isWarning, isError);
-        }
-
-        [Fact]
-        public void LogMinimalSummaryMapsToMessage()
-        {
-            const string expectedMessage = "D6412F6087CE41C4803AD940E26E221B";
-
-            VerifyLog(sdkLogger => sdkLogger.LogMinimal(expectedMessage), expectedMessage, MessageImportance.High, isWarning: false, isError: false);
-        }
-
-        [Fact]
-        public void LogVerboseMapsToMessage()
-        {
-            const string expectedMessage = "815F49653DB74CD6BD2B66201BB3BCA8";
-
-            VerifyLog(sdkLogger => sdkLogger.LogVerbose(expectedMessage), expectedMessage, MessageImportance.Low, isWarning: false, isError: false);
-        }
-
-        [Fact]
-        public void LogWarningMapsToWarning()
-        {
-            const string expectedMessage = "787607F4D1B141F898CCB432B5CB8CDE";
-
-            VerifyLog(sdkLogger => sdkLogger.LogWarning(expectedMessage), expectedMessage, expectedMessageImportance: null, isWarning: true, isError: false);
-        }
-
-        private void VerifyLog(Action<NuGetSdkLogger> action, string expectedMessage, MessageImportance? expectedMessageImportance, bool isWarning, bool isError)
+        [InlineData(LogLevel.Verbose, nameof(LogLevel.Verbose), MessageImportance.Low)]
+        [InlineData(LogLevel.Debug, nameof(LogLevel.Debug), MessageImportance.Low)]
+        [InlineData(LogLevel.Information, nameof(LogLevel.Information), MessageImportance.Normal)]
+        [InlineData(LogLevel.Minimal, nameof(LogLevel.Verbose), MessageImportance.High)]
+        [InlineData(LogLevel.Error, nameof(LogLevel.Error), null)]
+        [InlineData(LogLevel.Warning, nameof(LogLevel.Warning), null)]
+        public void Log_UsesCorrectMessageImportance_WhenLogLevelIsSpecified(LogLevel logLevel, string message, MessageImportance? expectedMessageImportance)
         {
             var mockLogger = new MockSdkLogger();
 
-            var errors = new List<string>();
-            var warnings = new List<string>();
+            var logger = new NuGetSdkLogger(mockLogger);
 
-            var sdkLogger = new NuGetSdkLogger(mockLogger, warnings, errors);
+            logger.Log(logLevel, message);
 
-            action(sdkLogger);
-
-            if (expectedMessageImportance.HasValue)
+            switch (logLevel)
             {
-                var item = mockLogger.LoggedMessages.FirstOrDefault();
+                case LogLevel.Warning:
+                    logger.Errors.Should().BeEmpty();
+                    logger.Warnings.Should().BeEquivalentTo(new[] { message });
+                    break;
 
-                item.Should().NotBeNull();
-                item.Key.Should().Be(expectedMessage);
-                item.Value.Should().Be(expectedMessageImportance.Value);
+                case LogLevel.Error:
+                    logger.Errors.Should().BeEquivalentTo(new[] { message });
+                    logger.Warnings.Should().BeEmpty();
+                    break;
+
+                case LogLevel.Debug:
+                case LogLevel.Verbose:
+                case LogLevel.Information:
+                case LogLevel.Minimal:
+                    logger.Errors.Should().BeEmpty();
+                    logger.Warnings.Should().BeEmpty();
+                    mockLogger.LoggedMessages.Should().BeEquivalentTo(new[] { (message, expectedMessageImportance) });
+                    break;
             }
-            else
-            {
-                mockLogger.LoggedMessages.Should().BeEmpty();
-            }
+        }
 
-            if (isWarning)
-            {
-                warnings.Should().ContainSingle(expectedMessage);
-            }
-            else
-            {
-                warnings.Should().BeEmpty();
-            }
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkLogger.LogAsync(LogLevel, string)" /> tranlates to MSBuild logged messages with the correct type (message, error, warning) and message importance.
+        /// </summary>
+        /// <param name="logLevel">THe <see cref="LogLevel" /> of a message.</param>
+        /// <param name="message">The message to be logged</param>
+        /// <param name="expectedMessageImportance">The expected <see cref="MessageImportance" /> of the message.</param>
+        [Theory]
+        [InlineData(LogLevel.Verbose, nameof(LogLevel.Verbose), MessageImportance.Low)]
+        [InlineData(LogLevel.Debug, nameof(LogLevel.Debug), MessageImportance.Low)]
+        [InlineData(LogLevel.Information, nameof(LogLevel.Information), MessageImportance.Normal)]
+        [InlineData(LogLevel.Minimal, nameof(LogLevel.Verbose), MessageImportance.High)]
+        [InlineData(LogLevel.Error, nameof(LogLevel.Error), null)]
+        [InlineData(LogLevel.Warning, nameof(LogLevel.Warning), null)]
+        public async Task LogAsync_UsesCorrectMessageImportance_WhenLogLevelIsSpecified(LogLevel logLevel, string message, MessageImportance? expectedMessageImportance)
+        {
+            var mockLogger = new MockSdkLogger();
 
-            if (isError)
+            var sdkLogger = new NuGetSdkLogger(mockLogger);
+
+            await sdkLogger.LogAsync(logLevel, message);
+
+            switch (logLevel)
             {
-                errors.Should().ContainSingle();
-                errors.First().Should().Be(expectedMessage);
-            }
-            else
-            {
-                errors.Should().BeEmpty();
+                case LogLevel.Warning:
+                    sdkLogger.Errors.Should().BeEmpty();
+                    sdkLogger.Warnings.Should().BeEquivalentTo(new[] { message });
+                    break;
+
+                case LogLevel.Error:
+                    sdkLogger.Errors.Should().BeEquivalentTo(new[] { message });
+                    sdkLogger.Warnings.Should().BeEmpty();
+                    break;
+
+                case LogLevel.Debug:
+                case LogLevel.Verbose:
+                case LogLevel.Information:
+                case LogLevel.Minimal:
+                    sdkLogger.Errors.Should().BeEmpty();
+                    sdkLogger.Warnings.Should().BeEmpty();
+                    mockLogger.LoggedMessages.Should().BeEquivalentTo(new[] { (message, expectedMessageImportance) });
+                    break;
             }
         }
     }

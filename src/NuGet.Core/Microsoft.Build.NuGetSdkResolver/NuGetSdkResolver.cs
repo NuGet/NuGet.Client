@@ -27,8 +27,7 @@ namespace Microsoft.Build.NuGetSdkResolver
     /// </summary>
     public sealed class NuGetSdkResolver : SdkResolver
     {
-        private static readonly Lazy<bool> DisableNuGetSdkResolver = new Lazy<bool>(() =>
-            Environment.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1");
+        private static readonly Lazy<bool> DisableNuGetSdkResolver = new Lazy<bool>(() => Environment.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1");
 
         /// <inheritdoc />
         public override string Name => nameof(NuGetSdkResolver);
@@ -89,7 +88,6 @@ namespace Microsoft.Build.NuGetSdkResolver
             Dictionary<string, string> msbuildSdkVersions;
 
             // Get the SDK versions from a previous state, otherwise find and load global.json to get them
-
             if (context.State is Dictionary<string, string> dictionary)
             {
                 msbuildSdkVersions = dictionary;
@@ -123,24 +121,21 @@ namespace Microsoft.Build.NuGetSdkResolver
                 // Cast the NuGet version since the caller does not want to consume NuGet classes directly
                 var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
-                // Stores errors and warnings for the result
-                ICollection<string> errors = new List<string>();
-                ICollection<string> warnings = new List<string>();
-
                 // Load NuGet settings and a path resolver
-                var settings = Settings.LoadDefaultSettings(context.ProjectFilePath);
+                ISettings settings = Settings.LoadDefaultSettings(context.ProjectFilePath);
 
                 var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
                 var libraryIdentity = new LibraryIdentity(sdk.Name, parsedSdkVersion, LibraryType.Package);
+
+                var logger = new NuGetSdkLogger(context.Logger);
 
                 // Attempt to find a package if its already installed
                 if (!TryGetMSBuildSdkPackageInfo(fallbackPackagePathResolver, libraryIdentity, out var installedPath, out var installedVersion))
                 {
                     try
                     {
-                        var nugetSDKLogger = new NuGetSdkLogger(context.Logger, warnings, errors);
-                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(nugetSDKLogger, nonInteractive: context.IsNonInteractive());
+                        DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, nonInteractive: !context.Interactive);
 
                         // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                         // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
@@ -148,7 +143,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                         var restoreTask = Task.Run(() => RestoreRunnerEx.RunWithoutCommit(
                             libraryIdentity,
                             settings,
-                            nugetSDKLogger));
+                            logger));
 
                         var results = restoreTask.Result;
 
@@ -169,19 +164,19 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                                 // This should never happen because we were told the package was successfully installed.
                                 // If we can't find it, we probably did something wrong with the NuGet API
-                                errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotFindInstalledPackage, sdk));
+                                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotFindInstalledPackage, sdk));
                             }
                             else
                             {
                                 // This should never happen because we were told the restore succeeded.
                                 // If we can't find the package from GetAllInstalled(), we probably did something wrong with the NuGet API
-                                errors.Add(string.Format(CultureInfo.CurrentCulture, Strings.PackageWasNotInstalled, sdk, sdk.Name));
+                                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.PackageWasNotInstalled, sdk, sdk.Name));
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        errors.Add(e.ToString());
+                        logger.LogError(e.ToString());
                     }
                     finally
                     {
@@ -190,12 +185,12 @@ namespace Microsoft.Build.NuGetSdkResolver
                     }
                 }
 
-                if (errors.Count == 0)
+                if (logger.Errors.Count == 0)
                 {
-                    return factory.IndicateSuccess(path: installedPath, version: installedVersion, warnings: warnings);
+                    return factory.IndicateSuccess(path: installedPath, version: installedVersion, warnings: logger.Warnings);
                 }
 
-                return factory.IndicateFailure(errors, warnings);
+                return factory.IndicateFailure(logger.Errors, logger.Warnings);
             }
 
             /// <summary>
