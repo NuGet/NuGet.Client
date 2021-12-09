@@ -26,8 +26,7 @@ namespace NuGet.Commands
         /// </summary>
         internal static List<ContentItemGroup> GetContentGroupsForFramework(
             NuGetFramework framework,
-            IEnumerable<ContentItemGroup> contentGroups,
-            MaccatalystFallback maccatalystFallback)
+            IEnumerable<ContentItemGroup> contentGroups)
         {
             var groups = new List<ContentItemGroup>();
 
@@ -60,7 +59,6 @@ namespace NuGet.Commands
                 // If a compatible group exists within the code language add it to the results
                 if (nearestGroup != null)
                 {
-                    MaccatalystFallback.CheckFallback(maccatalystFallback, nearestGroup.Properties);
                     groups.Add(nearestGroup);
                 }
             }

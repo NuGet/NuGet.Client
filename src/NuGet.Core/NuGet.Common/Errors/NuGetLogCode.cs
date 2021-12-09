@@ -287,7 +287,7 @@ namespace NuGet.Common
         NU1702 = 1702,
 
         /// <summary>
-        /// MacCatalyst platform fell back to xamarin.ios
+        /// MacCatalyst platform fell back to xamarin.ios - Added in 6.0, removed in 6.1.
         /// </summary>
         NU1703 = 1703,
 
