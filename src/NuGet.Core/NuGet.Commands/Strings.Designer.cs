@@ -2681,11 +2681,11 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project dependency {0} does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results..
+        ///   Looks up a localized string similar to Project dependency {0} does not contain a version specified. Include a version in the dependency version to ensure consistent restore results..
         /// </summary>
-        internal static string Warning_ProjectDependencyMissingLowerBound {
+        internal static string Warning_ProjectDependencyMissingVersion {
             get {
-                return ResourceManager.GetString("Warning_ProjectDependencyMissingLowerBound", resourceCulture);
+                return ResourceManager.GetString("Warning_ProjectDependencyMissingVersion", resourceCulture);
             }
         }
         

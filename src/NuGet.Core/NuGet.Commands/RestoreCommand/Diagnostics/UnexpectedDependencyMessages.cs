@@ -33,7 +33,7 @@ namespace NuGet.Commands
 
             // 1. Detect project dependency authoring issues in the current project.
             //    The user can fix these themselves.
-            var projectMissingLowerBounds = GetProjectDependenciesMissingLowerBounds(project);
+            var projectMissingLowerBounds = GetProjectDependenciesMissingVersion(project);
             ignoreIds.UnionWith(projectMissingLowerBounds.Select(e => e.LibraryId));
             await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(projectMissingLowerBounds));
 
@@ -172,14 +172,14 @@ namespace NuGet.Commands
         /// <summary>
         /// Warn for project dependencies that do not include a lower bound on the version range.
         /// </summary>
-        public static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingLowerBounds(PackageSpec project)
+        public static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingVersion(PackageSpec project)
         {
             return project.GetAllPackageDependencies()
                    .Where(e => HasMissingLowerBound(e.LibraryRange.VersionRange))
                    .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
                    .Select(e => RestoreLogMessage.CreateWarning(
                        code: NuGetLogCode.NU1604,
-                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingLowerBound,
+                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingVersion,
                                               DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange)),
                        libraryId: e.Name,
                        targetGraphs: GetDependencyTargetGraphs(project, e)));
