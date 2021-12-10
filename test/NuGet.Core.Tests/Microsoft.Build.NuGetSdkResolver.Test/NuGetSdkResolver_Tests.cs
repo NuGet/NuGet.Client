@@ -4,91 +4,175 @@
 using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
+using Microsoft.Build.Framework;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-using SdkResolverContextBase = Microsoft.Build.Framework.SdkResolverContext;
 
 namespace Microsoft.Build.NuGetSdkResolver.Test
 {
+    /// <summary>
+    /// Represents tests for the <see cref="NuGetSdkResolver" /> class.
+    /// </summary>
     public class NuGetSdkResolverTests
     {
+        private const string PackageA = nameof(PackageA);
+
+        private const string PackageB = nameof(PackageB);
+
+        private const string ProjectName = "Test.csproj";
+
+        private const string VersionOnePointZero = "1.0.0";
+
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.Resolve(SdkReference, SdkResolverContext, SdkResultFactory)" /> returns a failed <see cref="SdkResult" /> and logs an error when a package is not found on the configured feeds.
+        /// </summary>
+        /// <returns></returns>
         [Fact]
-        public void TryGetNuGetVersionForSdkGetsVersionFromGlobalJson()
+        public void Resolve_WhenPackageDoesNotExists_ReturnsFailedSdkResultAndLogsError()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
+                var sdkResolverContext = new MockSdkResolverContext(pathContext.WorkingDirectory);
+                var sdkResultFactory = new MockSdkResultFactory();
+                var sdkResolver = new NuGetSdkResolver();
+
+                MockSdkResult result = sdkResolver.Resolve(sdkReference, sdkResolverContext, sdkResultFactory) as MockSdkResult;
+
+                result.Should().NotBeNull();
+                result.Success.Should().BeFalse();
+                result.Path.Should().BeNull();
+                result.Version.Should().BeNull();
+                result.Errors.Should().BeEquivalentTo(new[] { $"Unable to find package {sdkReference.Name}. No packages exist with this id in source(s): source" });
+                result.Warnings.Should().BeEmpty();
+            }
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.Resolve(SdkReference, SdkResolverContext, SdkResultFactory)" /> returns a valid <see cref="SdkResult" /> when a package is found on the feed.
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public void Resolve_WhenPackageExists_ReturnsSucceededSdkResult()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
+                var package = new SimpleTestPackageContext(sdkReference.Name, sdkReference.Version);
+                package.AddFile("Sdk/Sdk.props", "<Project />");
+                package.AddFile("Sdk/Sdk.targets", "<Project />");
+                SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, package).Wait();
+                var sdkResolverContext = new MockSdkResolverContext(pathContext.WorkingDirectory);
+                var sdkResultFactory = new MockSdkResultFactory();
+                var sdkResolver = new NuGetSdkResolver();
+
+                MockSdkResult result = sdkResolver.Resolve(sdkReference, sdkResolverContext, sdkResultFactory) as MockSdkResult;
+
+                result.Should().NotBeNull();
+                result.Success.Should().BeTrue();
+                result.Path.Should().Be(Path.Combine(pathContext.UserPackagesFolder, sdkReference.Name.ToLowerInvariant(), sdkReference.Version, "Sdk"));
+                result.Version.Should().Be(sdkReference.Version);
+                result.Errors.Should().BeEmpty();
+                result.Warnings.Should().BeEmpty();
+            }
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContext, out object)" /> uses a global.json for versions if it exists.
+        /// </summary>
+        [Fact]
+        public void TryGetNuGetVersionForSdk_WhenGlobalJsonExists_UsesVersionsFromGlobalJson()
         {
             var expectedVersions = new Dictionary<string, string>
             {
-                {"foo", "5.11.77"},
-                {"bar", "2.0.0"}
+                [PackageA] = "5.11.77",
+                [PackageB] = "2.0.0"
             };
 
             using (var testDirectory = TestDirectory.Create())
             {
                 GlobalJsonReaderTests.WriteGlobalJson(testDirectory, expectedVersions);
 
-                var context = new MockSdkResolverContext(Path.Combine(testDirectory.Path, "foo.proj"));
+                var sdkResolverContext = new MockSdkResolverContext(testDirectory);
 
                 VerifyTryGetNuGetVersionForSdk(
                     version: null,
-                    expectedVersion: NuGetVersion.Parse(expectedVersions["foo"]),
-                    context: context);
+                    expectedVersion: NuGetVersion.Parse(expectedVersions[PackageA]),
+                    sdkResolverContext);
             }
         }
 
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContext, out object)" /> returns <c>null</c> when an invalid version is specified in global.json.
+        /// </summary>
         [Fact]
-        public void TryGetNuGetVersionForSdkGetsVersionFromState()
+        public void TryGetNuGetVersionForSdk_WhenInvalidVersionInGlobalJson_ReturnsNull()
         {
-            var context = new MockSdkResolverContext("foo.proj")
+            var sdkResolverContext = new MockSdkResolverContext(ProjectName)
             {
                 State = new Dictionary<string, string>
                 {
-                    {"foo", "1.2.3"}
+                    [PackageA] = "InvalidVersion"
                 }
             };
 
             VerifyTryGetNuGetVersionForSdk(
                 version: null,
-                expectedVersion: NuGetVersion.Parse("1.2.3"),
-                context: context);
-        }
-
-        [Fact]
-        public void TryGetNuGetVersionForSdkInvalidVersion()
-        {
-            VerifyTryGetNuGetVersionForSdk(
-                version: "abc",
-                expectedVersion: null);
-        }
-
-        [Fact]
-        public void TryGetNuGetVersionForSdkInvalidVersionInGlobalJson()
-        {
-            var context = new MockSdkResolverContext("foo.proj")
-            {
-                State = new Dictionary<string, string>
-                {
-                    {"foo", "abc"}
-                }
-            };
-
-            VerifyTryGetNuGetVersionForSdk(
-                version: "abc",
                 expectedVersion: null,
-                context: context);
+                sdkResolverContext);
         }
 
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContext, out object)" /> returns <c>null</c> when an invalid version is specified in a project.
+        /// </summary>
         [Fact]
-        public void TryGetNuGetVersionForSdkSucceeds()
+        public void TryGetNuGetVersionForSdk_WhenInvalidVersionSpecified_ReturnsNull()
         {
+            var sdkResolverContext = new MockSdkResolverContext(ProjectName);
+
             VerifyTryGetNuGetVersionForSdk(
-                version: "3.2.1",
-                expectedVersion: NuGetVersion.Parse("3.2.1"));
+                version: "InvalidVersion",
+                expectedVersion: null,
+                sdkResolverContext);
         }
 
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContext, out object)" /> returns a <see cref="NuGetVersion" /> when a project specifies a valid version but the project path is null.
+        /// </summary>
         [Fact]
-        public void TryGetNuGetVersionNoVersionSpecified()
+        public void TryGetNuGetVersionForSdk_WhenProjectPathIsNullAndVersionIsNotNull_ReturnsNuGetVersion()
         {
-            var context = new MockSdkResolverContext("foo.proj")
+            var sdkResolverContext = new MockSdkResolverContext(projectPath: null);
+
+            VerifyTryGetNuGetVersionForSdk(
+                version: "1.0.0",
+                expectedVersion: NuGetVersion.Parse("1.0.0"),
+                sdkResolverContext);
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContext, out object)" /> returns <c>null</c> when the project path is <c>null</c>.
+        /// </summary>
+        [Fact]
+        public void TryGetNuGetVersionForSdk_WhenProjectPathIsNullAndVersionIsNull_ReturnsNull()
+        {
+            var sdkResolverContext = new MockSdkResolverContext(projectPath: null);
+
+            VerifyTryGetNuGetVersionForSdk(
+                version: null,
+                expectedVersion: null,
+                sdkResolverContext);
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContext, out object)" /> returns <c>null</c> when the state of a previous call has no version specified.
+        /// </summary>
+        [Fact]
+        public void TryGetNuGetVersionForSdk_WhenStateContainsNoVersion_ReturnsNull()
+        {
+            var sdkResolverContext = new MockSdkResolverContext(ProjectName)
             {
                 State = new Dictionary<string, string>()
             };
@@ -96,34 +180,32 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             VerifyTryGetNuGetVersionForSdk(
                 version: null,
                 expectedVersion: null,
-                context: context);
+                sdkResolverContext);
         }
 
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContextBase, out object)" /> uses the saved state from a previous call when passed in via the <see cref="SdkResolverContext" />.
+        /// </summary>
         [Fact]
-        public void TryGetNuGetVersionNullProjectPath()
+        public void TryGetNuGetVersionForSdk_WhenStateIsNotNull_StateIsUsed()
         {
-            var context = new MockSdkResolverContext(projectPath: null);
+            var sdkResolverContext = new MockSdkResolverContext(ProjectName)
+            {
+                State = new Dictionary<string, string>
+                {
+                    [PackageA] = "1.2.3"
+                }
+            };
 
             VerifyTryGetNuGetVersionForSdk(
                 version: null,
-                expectedVersion: null,
-                context: context);
+                expectedVersion: NuGetVersion.Parse("1.2.3"),
+                sdkResolverContext);
         }
 
-        [Fact]
-        public void TryGetNuGetVersionNullProjectPathWithVersion()
+        private void VerifyTryGetNuGetVersionForSdk(string version, NuGetVersion expectedVersion, SdkResolverContext context)
         {
-            var context = new MockSdkResolverContext(projectPath: null);
-
-            VerifyTryGetNuGetVersionForSdk(
-                version: "1.0.0",
-                expectedVersion: NuGetVersion.Parse("1.0.0"),
-                context: context);
-        }
-
-        private void VerifyTryGetNuGetVersionForSdk(string version, NuGetVersion expectedVersion, SdkResolverContextBase context = null)
-        {
-            var result = NuGetSdkResolver.TryGetNuGetVersionForSdk("foo", version, context, out var parsedVersion);
+            var result = NuGetSdkResolver.TryGetNuGetVersionForSdk(PackageA, version, context, out var parsedVersion);
 
             if (expectedVersion != null)
             {
