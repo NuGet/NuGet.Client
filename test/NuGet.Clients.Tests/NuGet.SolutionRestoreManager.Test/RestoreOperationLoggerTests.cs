@@ -13,22 +13,6 @@ namespace NuGet.SolutionRestoreManager.Test
     public class RestoreOperationLoggerTests
     {
         [Fact]
-        public async Task WaitDialogProgress_StartAsync_CancellationTokenThrowsAsync()
-        {
-            // Prepare
-            var cts = new CancellationTokenSource();
-
-            var tsk = RestoreOperationLogger.WaitDialogProgress.StartAsync(
-                AsyncServiceProvider.GlobalProvider,
-                ThreadHelper.JoinableTaskFactory,
-                cts.Token);
-            cts.Cancel();
-
-            // Act and Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await tsk);
-        }
-
-        [Fact]
         public async Task StatusBarProgress_StartAsync_CancellationTokenThrowsAsync()
         {
             // Prepare

@@ -213,13 +213,18 @@ namespace NuGet.SolutionRestoreManager
 
         private static bool ShouldReportProgress(ILogMessage logMessage)
         {
-            // Only show messages with VerbosityLevel.Normal. That is, info messages only.
+            // Only show messages with VerbosityLevel.Minimal.
             // Do not show errors, warnings, verbose or debug messages on the progress dialog
             // Avoid showing indented messages, these are typically not useful for the progress dialog since
             // they are missing the context of the parent text above it
             return RestoreOperationProgressUI.Current != null
-                && GetMSBuildLevel(logMessage.Level) == MSBuildVerbosityLevel.Normal
-                && logMessage.Message.Length == logMessage.Message.TrimStart().Length;
+                && GetMSBuildLevel(logMessage.Level) == MSBuildVerbosityLevel.Minimal
+                && !IsStringIndented(logMessage);
+
+            static bool IsStringIndented(ILogMessage logMessage)
+            {
+                return logMessage.Message.Length > 0 && char.IsWhiteSpace(logMessage.Message[0]);
+            }
         }
 
         /// <summary>
@@ -465,71 +470,6 @@ namespace NuGet.SolutionRestoreManager
                     return LogLevel.Verbose;
                 default:
                     return LogLevel.Debug;
-            }
-        }
-
-        internal class WaitDialogProgress : RestoreOperationProgressUI
-        {
-            private readonly ThreadedWaitDialogHelper.Session _session;
-            private readonly JoinableTaskFactory _taskFactory;
-
-            private WaitDialogProgress(
-                ThreadedWaitDialogHelper.Session session,
-                JoinableTaskFactory taskFactory)
-            {
-                _session = session;
-                _taskFactory = taskFactory;
-                UserCancellationToken = _session.UserCancellationToken;
-            }
-
-            public static async Task<RestoreOperationProgressUI> StartAsync(
-                IAsyncServiceProvider asyncServiceProvider,
-                JoinableTaskFactory jtf,
-                CancellationToken token)
-            {
-                token.ThrowIfCancellationRequested();
-
-                await jtf.SwitchToMainThreadAsync(token);
-
-                var waitDialogFactory = await asyncServiceProvider.GetServiceAsync<
-                    SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
-
-                var session = waitDialogFactory.StartWaitDialog(
-                    waitCaption: Resources.DialogTitle,
-                    initialProgress: new ThreadedWaitDialogProgressData(
-                        Resources.RestoringPackages,
-                        progressText: string.Empty,
-                        statusBarText: string.Empty,
-                        isCancelable: true,
-                        currentStep: 0,
-                        totalSteps: 0));
-
-                return new WaitDialogProgress(session, jtf);
-            }
-
-            public async override ValueTask DisposeAsync()
-            {
-                await _taskFactory.SwitchToMainThreadAsync();
-                _session.Dispose();
-            }
-
-            public override async Task ReportProgressAsync(
-                string progressMessage,
-                uint currentStep,
-                uint totalSteps)
-            {
-                await _taskFactory.SwitchToMainThreadAsync();
-
-                // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-                var progressData = new ThreadedWaitDialogProgressData(
-                    progressMessage,
-                    progressText: string.Empty,
-                    statusBarText: string.Empty,
-                    isCancelable: true,
-                    currentStep: (int)currentStep,
-                    totalSteps: (int)totalSteps);
-
-                _session.Progress.Report(progressData);
             }
         }
 

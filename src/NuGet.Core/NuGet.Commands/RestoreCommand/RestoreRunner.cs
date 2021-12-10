@@ -259,7 +259,7 @@ namespace NuGet.Commands
             var log = summaryRequest.Request.Log;
 
             // Commit the result
-            log.LogInformation(Strings.Log_Committing);
+            log.LogVerbose(Strings.Log_Committing);
             await result.CommitAsync(log, token);
 
             if (result.Success)

@@ -24,6 +24,8 @@ namespace NuGet.SolutionRestoreManager
 
         public bool IsEnabled { get; }
 
+        public bool ShouldFormatWithTime { get; }
+
         // The DateTimeOffset and Stopwatch ticks are not equivalent. 1/10000000 is 1 DateTime tick.
         public DateTimeOffset Now => _startTime.AddTicks(_stopwatch.ElapsedTicks * 10000000 / Stopwatch.Frequency);
 
@@ -34,11 +36,20 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(environmentVariableReader));
             }
 
-            _logDirectoryPath = environmentVariableReader.GetEnvironmentVariable("NUGET_SOLUTION_LOAD_LOGGING_PATH");
+            _logDirectoryPath = environmentVariableReader.GetEnvironmentVariable("NUGET_VS_RESTORE_LOGGING_PATH");
 
             if (!string.IsNullOrWhiteSpace(_logDirectoryPath))
             {
                 IsEnabled = true;
+            }
+
+            var formatWithTime = environmentVariableReader.GetEnvironmentVariable("NUGET_VS_RESTORE_FORMAT_WITH_TIME");
+
+            if (!string.IsNullOrWhiteSpace(formatWithTime))
+            {
+                _ = bool.TryParse(formatWithTime, out bool formatWithTimeOverride);
+
+                ShouldFormatWithTime = formatWithTimeOverride;
             }
 
             _startTime = DateTimeOffset.UtcNow;
@@ -84,7 +95,13 @@ namespace NuGet.SolutionRestoreManager
 
             lock (_streamWriterLock)
             {
-                _streamWriter.Value.WriteLine(FormatWithTime(logMessage));
+                string message = logMessage;
+                if (ShouldFormatWithTime)
+                {
+                    message = FormatWithTime(logMessage);
+                }
+                _streamWriter.Value.WriteLine(message);
+
             }
         }
 
