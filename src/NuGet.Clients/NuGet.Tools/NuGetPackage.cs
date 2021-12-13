@@ -170,7 +170,7 @@ namespace NuGetVSExtension
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // get the UI context cookie for the debugging mode
-                    var vsMonitorSelection = await GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
+                    var vsMonitorSelection = await this.GetServiceAsync<IVsMonitorSelection, IVsMonitorSelection>();
                     Assumes.Present(vsMonitorSelection);
                     // get the solution not building and not debugging cookie
                     var guidCmdUI = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
@@ -193,7 +193,7 @@ namespace NuGetVSExtension
 
             VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
 
-            var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+            var componentModel = await this.GetFreeThreadedServiceAsync<SComponentModel, IComponentModel>();
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
         }
@@ -210,7 +210,7 @@ namespace NuGetVSExtension
                     return;
                 }
 
-                var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+                var componentModel = await this.GetFreeThreadedServiceAsync<SComponentModel, IComponentModel>();
                 Assumes.Present(componentModel);
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -219,7 +219,7 @@ namespace NuGetVSExtension
 
                 Brushes.LoadVsBrushes(NuGetExperimentationService.Value);
 
-                _dte = (DTE)await GetServiceAsync(typeof(SDTE));
+                _dte = await this.GetServiceAsync<SDTE, DTE>();
                 Assumes.Present(_dte);
 
                 if (SolutionManager.Value.NuGetProjectContext == null)
@@ -277,7 +277,7 @@ namespace NuGetVSExtension
 
         private async Task AddMenuCommandHandlersAsync()
         {
-            _mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+            _mcs = await this.GetServiceAsync<IMenuCommandService, OleMenuCommandService>();
             if (null != _mcs)
             {
                 // Switch to Main Thread before calling AddCommand which calls GetService() which should
@@ -454,7 +454,7 @@ namespace NuGetVSExtension
 
             // Find existing hierarchy and item id of the document window if it's
             // already registered.
-            var rdt = await GetServiceAsync(typeof(IVsRunningDocumentTable)) as IVsRunningDocumentTable;
+            var rdt = await this.GetServiceAsync<IVsRunningDocumentTable, IVsRunningDocumentTable>();
             Assumes.Present(rdt);
             IVsHierarchy hier;
             uint itemId;
@@ -544,7 +544,7 @@ namespace NuGetVSExtension
                 project.Name);
 
             IVsWindowFrame windowFrame;
-            var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+            var uiShell = await this.GetServiceAsync<SVsUIShell, IVsUIShell>();
             Assumes.Present(uiShell);
             var ppunkDocView = IntPtr.Zero;
             var ppunkDocData = IntPtr.Zero;
@@ -714,7 +714,7 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+            var uiShell = await this.GetServiceAsync<SVsUIShell, IVsUIShell>();
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object property;
