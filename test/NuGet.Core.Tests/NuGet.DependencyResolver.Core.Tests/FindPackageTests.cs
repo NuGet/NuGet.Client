@@ -112,6 +112,58 @@ namespace NuGet.DependencyResolver.Core.Tests
             Assert.Equal("x", result.Key.Name);
         }
 
+        [Theory]
+        [InlineData(LibraryDependencyTarget.Package)]
+        [InlineData(LibraryDependencyTarget.Project)]
+        [InlineData(LibraryDependencyTarget.ExternalProject)]
+        [InlineData(LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)]
+        public async Task FindLibraryEntryAsync_LogsOnlyPackages(LibraryDependencyTarget libraryDependencyTarget)
+        {
+            // Arrange
+            const string packageX = "x", version = "1.0.0-beta.1", source = "source";
+            var range = new LibraryRange(packageX, VersionRange.Parse(version), libraryDependencyTarget);
+            var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var token = CancellationToken.None;
+            var edge = new GraphEdge<RemoteResolveResult>(null, null, null);
+            var actualIdentity = new LibraryIdentity(packageX, NuGetVersion.Parse(version), LibraryType.Package);
+            var dependencies = new[] { new LibraryDependency() { LibraryRange = new LibraryRange("y", VersionRange.All, LibraryDependencyTarget.Package) } };
+            var dependencyInfo = LibraryDependencyInfo.Create(actualIdentity, framework, dependencies);
+
+            //package source mapping configuration
+            Dictionary<string, IReadOnlyList<string>> patterns = new();
+            patterns.Add(source, new List<string>() { packageX });
+            PackageSourceMapping sourceMappingConfiguration = new(patterns);
+            var context = new RemoteWalkContext(cacheContext, sourceMappingConfiguration, testLogger);
+
+            var remoteProvider = new Mock<IRemoteDependencyProvider>();
+            remoteProvider.Setup(e => e.FindLibraryAsync(range, It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(actualIdentity);
+            remoteProvider.SetupGet(e => e.IsHttp).Returns(true);
+            remoteProvider.SetupGet(e => e.Source).Returns(new PackageSource(source));
+            remoteProvider.Setup(e => e.GetDependenciesAsync(It.IsAny<LibraryIdentity>(), It.IsAny<NuGetFramework>(), It.IsAny<SourceCacheContext>(), testLogger, token))
+                .ReturnsAsync(dependencyInfo);
+            context.RemoteLibraryProviders.Add(remoteProvider.Object);
+
+            // Act
+            var result = await ResolverUtility.FindLibraryEntryAsync(range, framework, null, context, token);
+
+            // Assert
+            Assert.Equal(0, testLogger.Errors);
+            testLogger.DebugMessages.TryPeek(out string message);
+            if (libraryDependencyTarget == LibraryDependencyTarget.Package)
+            {
+                Assert.Equal($"Package source mapping matches found for package ID '{packageX}' are: '{source}'.", message);
+                Assert.Equal(version, result.Key.Version.ToString());
+                Assert.Equal(source, result.Data.Match.Provider.Source.Name);
+            }
+            else
+            {
+                Assert.Equal(message, null);
+            }
+        }
+
         [Fact]
         public async Task FindPackage_VerifyMissingListedPackageThrowsNotFound()
         {
