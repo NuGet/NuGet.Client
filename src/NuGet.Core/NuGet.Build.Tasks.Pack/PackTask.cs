@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 using ILogger = NuGet.Common.ILogger;
 
 namespace NuGet.Build.Tasks.Pack
@@ -123,7 +125,27 @@ namespace NuGet.Build.Tasks.Pack
                 if (string.IsNullOrEmpty(request.NuspecFile))
                 {
                     packageBuilder = logic.GetPackageBuilder(request);
+                    string noWarnProperties = string.Empty;
+
+                    if (packageBuilder?.Properties?.TryGetValue("NoWarn", out noWarnProperties) == true)
+                    {
+                        HashSet<NuGetLogCode> noWarns = new(packArgs.WarningProperties.NoWarn);
+
+                        foreach (string noWarnProperty in noWarnProperties.Split(' '))
+                        {
+                            noWarns.Add((NuGetLogCode)Enum.Parse(typeof(NuGetLogCode), noWarnProperty));
+                        }
+
+                        WarningProperties warningProperties = new WarningProperties(
+                            warningsAsErrors: new HashSet<NuGetLogCode>(packArgs.WarningProperties.WarningsAsErrors),
+                            noWarn: noWarns,
+                            allWarningsAsErrors: packArgs.WarningProperties.AllWarningsAsErrors);
+
+                        // Override logger with project no warn properties
+                        packArgs.Logger = new PackCollectorLogger(request.Logger, warningProperties);
+                    }
                 }
+
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
 
                 return logic.BuildPackage(packRunner);

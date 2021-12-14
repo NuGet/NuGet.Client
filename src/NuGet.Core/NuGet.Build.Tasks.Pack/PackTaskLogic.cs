@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -21,6 +22,7 @@ namespace NuGet.Build.Tasks.Pack
     public class PackTaskLogic : IPackTaskLogic
     {
         private const string IdentityProperty = "Identity";
+        private const string NoWarn = nameof(NoWarn);
         public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
         {
             var packArgs = new PackArgs
@@ -807,7 +809,7 @@ namespace NuGet.Build.Tasks.Pack
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
             InitializeProjectDependencies(assetsFile, dependenciesByFramework, projectRefToVersionMap, frameworksWithSuppressedDependencies);
-            InitializePackageDependencies(assetsFile, dependenciesByFramework, frameworksWithSuppressedDependencies);
+            InitializePackageDependencies(assetsFile, packageBuilder, dependenciesByFramework, frameworksWithSuppressedDependencies);
 
             foreach (var pair in dependenciesByFramework)
             {
@@ -903,6 +905,7 @@ namespace NuGet.Build.Tasks.Pack
 
         private static void InitializePackageDependencies(
             LockFile assetsFile,
+            PackageBuilder packageBuilder,
             Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
             ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
@@ -961,6 +964,18 @@ namespace NuGet.Build.Tasks.Pack
                                     includeMinVersion: packageDependency.LibraryRange.VersionRange.IsMinInclusive);
                             }
                         }
+                    }
+
+                    if (packageDependency.NoWarn.Count > 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+
+                        foreach (NuGetLogCode nuGetLogCode in packageDependency.NoWarn)
+                        {
+                            sb.Append(" " + nuGetLogCode.ToString());
+                        }
+
+                        packageBuilder.Properties[NoWarn] = sb.ToString().Trim();
                     }
 
                     PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
