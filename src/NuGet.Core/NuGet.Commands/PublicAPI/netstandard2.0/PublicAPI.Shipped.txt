@@ -1163,6 +1163,7 @@ static NuGet.Commands.UnexpectedDependencyMessages.GetBumpedUpDependencies(Syste
 static NuGet.Commands.UnexpectedDependencyMessages.GetDependenciesAboveUpperBounds(System.Collections.Generic.List<NuGet.Commands.IndexedRestoreTargetGraph> graphs, NuGet.Common.ILogger logger) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
 static NuGet.Commands.UnexpectedDependencyMessages.GetMissingLowerBoundMessage(NuGet.Commands.ResolvedDependencyKey dependency, params string[] targetGraphs) -> NuGet.Common.RestoreLogMessage
 static NuGet.Commands.UnexpectedDependencyMessages.GetMissingLowerBounds(System.Collections.Generic.IEnumerable<NuGet.Commands.IRestoreTargetGraph> graphs, System.Collections.Generic.ISet<string> ignoreIds) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
+static NuGet.Commands.UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(NuGet.ProjectModel.PackageSpec project) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
 static NuGet.Commands.UnexpectedDependencyMessages.HasMissingLowerBound(NuGet.Versioning.VersionRange range) -> bool
 static NuGet.Commands.UnexpectedDependencyMessages.LogAsync(System.Collections.Generic.IEnumerable<NuGet.Commands.IRestoreTargetGraph> graphs, NuGet.ProjectModel.PackageSpec project, NuGet.Common.ILogger logger) -> System.Threading.Tasks.Task
 static NuGet.Commands.UpdateClientCertRunner.Run(NuGet.Commands.UpdateClientCertArgs args, System.Func<NuGet.Common.ILogger> getLogger) -> void
