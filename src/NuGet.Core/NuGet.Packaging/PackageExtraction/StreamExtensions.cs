@@ -3,11 +3,8 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NuGet.Packaging
 {
