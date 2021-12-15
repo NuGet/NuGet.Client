@@ -85,20 +85,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return false;
             }
 
-            Dictionary<string, string> msbuildSdkVersions;
-
-            // Get the SDK versions from a previous state, otherwise find and load global.json to get them
-            if (context.State is Dictionary<string, string> dictionary)
-            {
-                msbuildSdkVersions = dictionary;
-            }
-            else
-            {
-                msbuildSdkVersions = GlobalJsonReader.GetMSBuildSdkVersions(context);
-
-                // Save the SDK versions in case this resolver is called again for another SDK in the same build
-                context.State = msbuildSdkVersions;
-            }
+            Dictionary<string, string> msbuildSdkVersions = GlobalJsonReader.GetMSBuildSdkVersions(context, out bool _);
 
             // Check if global.json specified a version for this SDK and make sure its a version compatible with NuGet
             if (msbuildSdkVersions != null && msbuildSdkVersions.TryGetValue(id, out var globalJsonVersion) &&

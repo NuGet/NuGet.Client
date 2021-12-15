@@ -183,26 +183,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 sdkResolverContext);
         }
 
-        /// <summary>
-        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContextBase, out object)" /> uses the saved state from a previous call when passed in via the <see cref="SdkResolverContext" />.
-        /// </summary>
-        [Fact]
-        public void TryGetNuGetVersionForSdk_WhenStateIsNotNull_StateIsUsed()
-        {
-            var sdkResolverContext = new MockSdkResolverContext(ProjectName)
-            {
-                State = new Dictionary<string, string>
-                {
-                    [PackageA] = "1.2.3"
-                }
-            };
-
-            VerifyTryGetNuGetVersionForSdk(
-                version: null,
-                expectedVersion: NuGetVersion.Parse("1.2.3"),
-                sdkResolverContext);
-        }
-
         private void VerifyTryGetNuGetVersionForSdk(string version, NuGetVersion expectedVersion, SdkResolverContext context)
         {
             var result = NuGetSdkResolver.TryGetNuGetVersionForSdk(PackageA, version, context, out var parsedVersion);
