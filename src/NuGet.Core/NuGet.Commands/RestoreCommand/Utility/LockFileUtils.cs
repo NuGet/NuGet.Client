@@ -142,11 +142,11 @@ namespace NuGet.Commands
             if (assetTargetFallback != null)
             {
                 // Add the root project framework first.
-                orderedCriteriaSets.Add(CreateCriteria(codeConventions, assetTargetFallback.RootFramework));
+                orderedCriteriaSets.Add(CreateCriteria(codeConventions, assetTargetFallback.RootFramework, runtimeIdentifier));
                 // Add the secondary framework if dual compatibility framework.
                 if (assetTargetFallback.RootFramework is DualCompatibilityFramework dualCompatibilityFramework)
                 {
-                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework));
+                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier));
                 }
 
                 // Add all fallbacks in order.
@@ -155,11 +155,11 @@ namespace NuGet.Commands
             else
             {
                 // Add the current framework.
-                orderedCriteriaSets.Add(CreateCriteria(codeConventions, framework));
+                orderedCriteriaSets.Add(CreateCriteria(codeConventions, framework, runtimeIdentifier));
 
                 if (framework is DualCompatibilityFramework dualCompatibilityFramework)
                 {
-                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework));
+                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier));
                 }
             }
 
@@ -771,7 +771,7 @@ namespace NuGet.Commands
         private static List<SelectionCriteria> CreateCriteria(
             ManagedCodeConventions conventions,
             NuGetFramework framework,
-            string runtimeIdentifier = null)
+            string runtimeIdentifier)
         {
             var managedCriteria = new List<SelectionCriteria>(1);
 
