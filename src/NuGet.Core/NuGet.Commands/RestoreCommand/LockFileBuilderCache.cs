@@ -38,7 +38,7 @@ namespace NuGet.Commands
         {
             // Criteria are unique on graph and framework override.
             var key = new CriteriaKey(graph.TargetGraphName, framework);
-            return _criteriaSets.GetOrAdd(key, _ => LockFileUtils.CreateOrderedCriteriaSets(graph, framework));
+            return _criteriaSets.GetOrAdd(key, _ => LockFileUtils.CreateOrderedCriteriaSets(graph.Conventions, framework, runtimeIdentifier: null));
         }
 
         /// <summary>
