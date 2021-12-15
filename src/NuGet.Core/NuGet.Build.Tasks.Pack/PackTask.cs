@@ -125,9 +125,9 @@ namespace NuGet.Build.Tasks.Pack
                 if (string.IsNullOrEmpty(request.NuspecFile))
                 {
                     packageBuilder = logic.GetPackageBuilder(request);
-                    string noWarnProperties = string.Empty;
 
-                    if (packageBuilder?.Properties?.TryGetValue("NoWarn", out noWarnProperties) == true)
+                    if (packageBuilder?.Properties?.TryGetValue("NoWarn", out string noWarnProperties) == true
+                        && !string.IsNullOrWhiteSpace(noWarnProperties))
                     {
                         HashSet<NuGetLogCode> noWarns = new(packArgs.WarningProperties.NoWarn);
 

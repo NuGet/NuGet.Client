@@ -5724,5 +5724,76 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath));
             }
         }
+
+
+        [Theory]
+        [InlineData("net472")]
+        [InlineData("net5.0")]
+        public void PackCommand_PackProject_PackageReference_PreReleaseDependency(string platform)
+        {
+            // Arrange
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            {
+                var dependencyName = "NuGet.Packaging";
+                var dependencyVersion = "6.0.0-preview.3";
+
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", platform);
+                    ProjectFileUtils.AddProperty(xml, "TreatWarningsAsErrors", "true");
+                    ProjectFileUtils.AddProperty(xml, "Version", "1.2.3");
+
+                    var attributes = new Dictionary<string, string>();
+                    attributes["NoWarn"] = "NU5104";
+
+                    attributes["Version"] = dependencyVersion;
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        dependencyName,
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Act
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RunDotnet(workingDirectory, $"pack -o {workingDirectory}", false);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(1,
+                        dependencyGroups.Count);
+
+                    var dependencyPackage = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(1, dependencyPackage.Count);
+                    Assert.Equal(dependencyName, dependencyPackage[0].Id);
+                    Assert.Equal(new VersionRange(new NuGetVersion(dependencyVersion), true, null, true), dependencyPackage[0].VersionRange);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[0].Exclude);
+                    Assert.Empty(dependencyPackage[0].Include);
+                }
+            }
+        }
     }
 }
