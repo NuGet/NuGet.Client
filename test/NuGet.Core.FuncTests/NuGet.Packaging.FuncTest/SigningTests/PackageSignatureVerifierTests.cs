@@ -150,7 +150,8 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            // https://github.com/NuGet/Home/issues/11459
+            [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestamp_SuccessAsync()
             {
                 CertificateAuthority ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
