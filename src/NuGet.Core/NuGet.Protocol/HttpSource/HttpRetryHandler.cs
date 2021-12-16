@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -44,6 +46,8 @@ namespace NuGet.Protocol
         {
             return SendAsync(request, source: string.Empty, log, cancellationToken);
         }
+
+        private static int HasLoggedTokenAuth = 0;
 
         /// <summary>
         /// Make an HTTP request while retrying after failed attempts or timeouts.
@@ -113,6 +117,20 @@ namespace NuGet.Protocol
                         headerStopwatch = new Stopwatch();
                         stopwatches.Add(headerStopwatch);
                     }
+
+                    var bearerToken = Environment.GetEnvironmentVariable("NUGET_BEARER_TOKEN");
+                    var username = Environment.GetEnvironmentVariable("NUGET_USERNAME");
+                    if (!string.IsNullOrEmpty(bearerToken) && !string.IsNullOrEmpty(username))
+                    {
+                        if (Interlocked.CompareExchange(ref HasLoggedTokenAuth, 1, 0) == 0)
+                        {
+                            log.LogInformation($"Using NuGet bearer token authorization with username '{username}'");
+                        }
+
+                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("bearer", bearerToken);
+                        requestMessage.Headers.TryAddWithoutValidation("X-NuGet-Username", username);
+                    }
+
 #if NET5_0
                     requestMessage.Options.Set(new HttpRequestOptionsKey<List<Stopwatch>>(StopwatchPropertyName), stopwatches);
 #else
