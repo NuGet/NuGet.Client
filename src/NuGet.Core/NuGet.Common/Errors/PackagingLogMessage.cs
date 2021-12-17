@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Frameworks;
 
 namespace NuGet.Common
 {
@@ -18,6 +19,8 @@ namespace NuGet.Common
         public int StartColumnNumber { get; set; }
         public int EndLineNumber { get; set; }
         public int EndColumnNumber { get; set; }
+        public string LibraryId { get; set; }
+        public NuGetFramework Framework { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the PackLogMessage class
@@ -30,6 +33,24 @@ namespace NuGet.Common
             Level = logLevel;
             Code = logCode;
             Message = message;
+            Time = DateTimeOffset.UtcNow;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the PackLogMessage class
+        /// </summary>
+        /// <param name="logLevel">The log level</param>
+        /// <param name="logCode">The NuGet log code</param>
+        /// <param name="message">The log message</param>
+        /// <param name="libraryId">The package Id</param>
+        /// <param name="framework">The NuGet framework</param>
+        private PackagingLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message, string libraryId, NuGetFramework framework)
+        {
+            Level = logLevel;
+            Code = logCode;
+            Message = message;
+            LibraryId = libraryId;
+            Framework = framework;
             Time = DateTimeOffset.UtcNow;
         }
 
@@ -59,6 +80,11 @@ namespace NuGet.Common
         public static PackagingLogMessage CreateMessage(string message, LogLevel logLevel)
         {
             return new PackagingLogMessage(logLevel, message);
+        }
+
+        public static PackagingLogMessage CreateWarning(string message, NuGetLogCode code, string libraryId, NuGetFramework framework)
+        {
+            return new PackagingLogMessage(LogLevel.Warning, code, message, libraryId, framework);
         }
 
         /// <summary>

@@ -909,8 +909,10 @@ namespace NuGet.Build.Tasks.Pack
             Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
             ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
+            StringBuilder nowarnProperties = new();
+            //System.Diagnostics.Debugger.Launch();
             // From the package spec, we know the direct package dependencies of this project.
-            foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
+            foreach (TargetFrameworkInformation framework in assetsFile.PackageSpec.TargetFrameworks)
             {
                 if (frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
                 {
@@ -968,18 +970,16 @@ namespace NuGet.Build.Tasks.Pack
 
                     if (packageDependency.NoWarn.Count > 0)
                     {
-                        StringBuilder sb = new StringBuilder();
-
-                        foreach (NuGetLogCode nuGetLogCode in packageDependency.NoWarn)
-                        {
-                            sb.Append(" " + nuGetLogCode.ToString());
-                        }
-
-                        packageBuilder.Properties[NoWarn] = sb.ToString().Trim();
+                        nowarnProperties.AppendLine(framework.FrameworkName + ";" + packageDependency.Name + ";" + string.Join(" ", packageDependency.NoWarn));
                     }
 
                     PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
                 }
+            }
+
+            if (nowarnProperties.Length > 0)
+            {
+                packageBuilder.Properties[NoWarn] = nowarnProperties.ToString();
             }
         }
 

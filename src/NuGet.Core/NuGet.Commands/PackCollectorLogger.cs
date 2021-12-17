@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectModel;
@@ -15,6 +16,7 @@ namespace NuGet.Commands
         private ILogger _innerLogger;
 
         public WarningProperties WarningProperties { get; set; }
+        public WarningPropertiesCollection PackageReferenceWarningPropertiesCollection { get; set; }
 
         public IEnumerable<ILogMessage> Errors => _errors.ToArray();
 
@@ -22,6 +24,14 @@ namespace NuGet.Commands
         {
             _innerLogger = innerLogger;
             WarningProperties = warningProperties;
+            _errors = new ConcurrentQueue<ILogMessage>();
+        }
+
+        public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties, WarningPropertiesCollection packageReferenceWarningPropertiesCollection)
+        {
+            _innerLogger = innerLogger;
+            WarningProperties = warningProperties;
+            PackageReferenceWarningPropertiesCollection = packageReferenceWarningPropertiesCollection;
             _errors = new ConcurrentQueue<ILogMessage>();
         }
 
@@ -67,11 +77,33 @@ namespace NuGet.Commands
             return Task.FromResult(0);
         }
 
+        /// <summary>
+        /// This method checks if at least one of the warning properties collections is not null and it suppresses the warning.
+        /// </summary>
+        /// <param name="message">IRestoreLogMessage to be logged.</param>
+        /// <returns>bool indicating if the message should be suppressed.</returns>
         private bool IsWarningSuppressed(ILogMessage message)
         {
             if (message.Level == LogLevel.Warning)
             {
-                return WarningPropertiesCollection.ApplyProjectWideNoWarnProperties(message, warningProperties: WarningProperties);
+                System.Diagnostics.Debugger.Break();
+                // If the WarningPropertiesCollection is present then test if the warning is suppressed in
+                // project wide no warn
+                if (WarningPropertiesCollection.ApplyProjectWideNoWarnProperties(message, warningProperties: WarningProperties))
+                {
+                    return true;
+                }
+                else
+                {
+                    // Use packagereference warning properties only if the project does not suppress the warning
+                    // In packagereference warning properties look at only the package specific ones as all properties are per package reference.
+                    IPackLogMessage packLogMessage = message as IPackLogMessage;
+
+                    if (packLogMessage != null)
+                    {
+                        return PackageReferenceWarningPropertiesCollection?.ApplyNoWarnProperties(packLogMessage) == true;
+                    }
+                }
             }
 
             return false;

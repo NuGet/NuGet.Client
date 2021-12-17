@@ -1,0 +1,4 @@
+NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger innerLogger, NuGet.ProjectModel.WarningProperties warningProperties, NuGet.Commands.WarningPropertiesCollection packageReferenceWarningPropertiesCollection) -> void
+NuGet.Commands.PackCollectorLogger.PackageReferenceWarningPropertiesCollection.get -> NuGet.Commands.WarningPropertiesCollection
+NuGet.Commands.PackCollectorLogger.PackageReferenceWarningPropertiesCollection.set -> void
+NuGet.Commands.WarningPropertiesCollection.ApplyNoWarnProperties(NuGet.Common.IPackLogMessage message) -> bool
