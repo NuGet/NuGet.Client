@@ -130,7 +130,7 @@ namespace NuGet.Build.Tasks.Pack
                         && !string.IsNullOrWhiteSpace(noWarnProperties))
                     {
                         PackageSpecificWarningProperties packageSpecificWarningProperties = new();
-                        //Debugger.Launch();
+
                         foreach (string packageNoWarnProperty in noWarnProperties.Split(new string[] { Environment.NewLine },
                             StringSplitOptions.RemoveEmptyEntries))
                         {

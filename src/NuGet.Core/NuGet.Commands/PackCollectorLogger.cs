@@ -86,7 +86,6 @@ namespace NuGet.Commands
         {
             if (message.Level == LogLevel.Warning)
             {
-                System.Diagnostics.Debugger.Break();
                 // If the WarningPropertiesCollection is present then test if the warning is suppressed in
                 // project wide no warn
                 if (WarningPropertiesCollection.ApplyProjectWideNoWarnProperties(message, warningProperties: WarningProperties))

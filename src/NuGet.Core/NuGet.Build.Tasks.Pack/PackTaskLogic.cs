@@ -910,7 +910,7 @@ namespace NuGet.Build.Tasks.Pack
             ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
             StringBuilder nowarnProperties = new();
-            //System.Diagnostics.Debugger.Launch();
+
             // From the package spec, we know the direct package dependencies of this project.
             foreach (TargetFrameworkInformation framework in assetsFile.PackageSpec.TargetFrameworks)
             {

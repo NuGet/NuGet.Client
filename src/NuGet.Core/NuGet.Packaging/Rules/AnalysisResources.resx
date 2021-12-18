@@ -167,7 +167,9 @@
     <comment>0 - file path ending in _._</comment>
   </data>
   <data name="InvalidPrereleaseDependencyWarning" xml:space="preserve">
-    <value>A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field in the nuspec.</value>
+    <value>A stable release of a package should not have a prerelease dependency for "{0}". Either modify the version spec of dependency "{1}" or update the version field in the nuspec.</value>
+    <comment>0 - nuget framework
+1 - package dependency</comment>
   </data>
   <data name="InvalidUndottedFrameworkInDependencyGroupsWarning" xml:space="preserve">
     <value>The following dependency group(s) require(s) dots in the framework version: {0}</value>

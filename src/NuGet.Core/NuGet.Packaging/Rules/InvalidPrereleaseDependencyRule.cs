@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Rules
         private PackagingLogMessage CreatePackageIssueForPrereleaseDependency(PackageDependency dependency, NuGetFramework framework)
         {
             return PackagingLogMessage.CreateWarning(
-                string.Format(CultureInfo.CurrentCulture, MessageFormat, dependency.ToString()),
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, framework.ToString(), dependency.ToString()),
                 NuGetLogCode.NU5104,
                 dependency.Id,
                 framework);

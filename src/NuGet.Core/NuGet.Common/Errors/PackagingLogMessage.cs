@@ -45,13 +45,10 @@ namespace NuGet.Common
         /// <param name="libraryId">The package Id</param>
         /// <param name="framework">The NuGet framework</param>
         private PackagingLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message, string libraryId, NuGetFramework framework)
+            : this(logLevel, logCode, message)
         {
-            Level = logLevel;
-            Code = logCode;
-            Message = message;
             LibraryId = libraryId;
             Framework = framework;
-            Time = DateTimeOffset.UtcNow;
         }
 
         private PackagingLogMessage(LogLevel logLevel, string message)

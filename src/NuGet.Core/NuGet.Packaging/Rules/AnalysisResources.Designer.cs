@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Rules {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class AnalysisResources {
@@ -187,7 +187,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency &quot;{0}&quot; or update the version field in the nuspec..
+        ///   Looks up a localized string similar to A stable release of a package should not have a prerelease dependency for &quot;{0}&quot;. Either modify the version spec of dependency &quot;{1}&quot; or update the version field in the nuspec..
         /// </summary>
         public static string InvalidPrereleaseDependencyWarning {
             get {
