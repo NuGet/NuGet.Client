@@ -5726,7 +5726,7 @@ namespace ClassLibrary
         }
 
         [Theory]
-        [InlineData("net472")]
+        [InlineData("netstandard2.1")]
         [InlineData("net5.0")]
         public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_Fails(string platform)
         {
@@ -5781,7 +5781,7 @@ namespace ClassLibrary
         }
 
         [Theory]
-        [InlineData("net472")]
+        [InlineData("netstandard2.1")]
         [InlineData("net5.0")]
         public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_NoWarn_Succeeds(string platform)
         {
@@ -5861,163 +5861,6 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_FrameWorkSpecificPackageReference_PreReleaseDependency_Fails()
-        {
-            using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
-            {
-                var stableDependencyName = "StablePackage";
-                var stableDependencyVersion = "2.0.0";
-                var stableDependencyPackage = new SimpleTestPackageContext(stableDependencyName, stableDependencyVersion);
-                stableDependencyPackage.Files.Clear();
-                stableDependencyPackage.AddFile("_._");
-
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, stableDependencyPackage);
-
-                var prereleaseDependencyAName = "PreReleasePackageA";
-                var prereleaseDependencyAVersion = "4.8.0-beta00011";
-                var prereleaseDependencyAPackage = new SimpleTestPackageContext(prereleaseDependencyAName, prereleaseDependencyAVersion);
-                prereleaseDependencyAPackage.Files.Clear();
-                prereleaseDependencyAPackage.AddFile("_._");
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, prereleaseDependencyAPackage);
-
-                var prereleaseDependencyBName = "PreReleasePackageB";
-                var prereleaseDependencyBVersion = "4.4.0-preview1-25305-02";
-                var prereleaseDependencyBPackage = new SimpleTestPackageContext(prereleaseDependencyBName, prereleaseDependencyBVersion);
-                prereleaseDependencyBPackage.Files.Clear();
-                prereleaseDependencyBPackage.AddFile("_._");
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, prereleaseDependencyBPackage);
-
-                var projectName = "ClassLibrary1";
-                string testDirectory = pathContext.WorkingDirectory;
-                var workingDirectory = Path.Combine(testDirectory, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
-                string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <TargetFrameworks>net5.0;net451</TargetFrameworks>
-    <Version>1.2.3</Version>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include=""{stableDependencyName}"" Version=""{stableDependencyVersion}""/>
-    <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" NoWarn = ""NU5104""/>
-  </ItemGroup>
-
-  <ItemGroup Condition="" '$(TargetFramework)' == 'net451'"">
-    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}""/>
-  </ItemGroup>
-</Project>";
-                File.WriteAllText(projectFile, projectXml);
-
-                // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
-
-                // Assert
-                result.Success.Should().BeFalse();
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
-                Assert.False(File.Exists(nupkgPath), "The output .nupkg is shouldn't created.");
-                result.AllOutput.Should().Contain(NuGetLogCode.NU5104.ToString());
-                result.AllOutput.Should().Contain($"A stable release of a package should not have a prerelease dependency for \"{NuGetFramework.Parse("net451")}\". Either modify the version spec of dependency \"{prereleaseDependencyBName} [{prereleaseDependencyBVersion}, )\" or update the version field in the nuspec.");
-            }
-        }
-
-        [Fact]
-        public async Task PackCommand_PackProject_FrameWorkSpecificPackageReference_PreReleaseDependency_NoWarn_Succeed()
-        {
-            using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
-            {
-                var stableDependencyName = "StablePackage";
-                var stableDependencyVersion = "2.0.0";
-                var stableDependencyPackage = new SimpleTestPackageContext(stableDependencyName, stableDependencyVersion);
-                stableDependencyPackage.Files.Clear();
-                stableDependencyPackage.AddFile("_._");
-
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, stableDependencyPackage);
-
-                var prereleaseDependencyAName = "PreReleasePackageA";
-                var prereleaseDependencyAVersion = "4.8.0-beta00011";
-                var prereleaseDependencyAPackage = new SimpleTestPackageContext(prereleaseDependencyAName, prereleaseDependencyAVersion);
-                prereleaseDependencyAPackage.Files.Clear();
-                prereleaseDependencyAPackage.AddFile("_._");
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, prereleaseDependencyAPackage);
-
-                var prereleaseDependencyBName = "PreReleasePackageB";
-                var prereleaseDependencyBVersion = "4.4.0-preview1-25305-02";
-                var prereleaseDependencyBPackage = new SimpleTestPackageContext(prereleaseDependencyBName, prereleaseDependencyBVersion);
-                prereleaseDependencyBPackage.Files.Clear();
-                prereleaseDependencyBPackage.AddFile("_._");
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, prereleaseDependencyBPackage);
-
-                var projectName = "ClassLibrary1";
-                string testDirectory = pathContext.WorkingDirectory;
-                var workingDirectory = Path.Combine(testDirectory, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
-                string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <TargetFrameworks>net5.0;net451</TargetFrameworks>
-    <Version>1.2.3</Version>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include=""{stableDependencyName}"" Version=""{stableDependencyVersion}""/>
-    <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" NoWarn = ""NU5104""/>
-  </ItemGroup>
-
-  <ItemGroup Condition="" '$(TargetFramework)' == 'net451'"">
-    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}"" NoWarn = ""NU5104""/>
-  </ItemGroup>
-</Project>";
-                File.WriteAllText(projectFile, projectXml);
-
-                // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
-
-                // Assert
-                result.Success.Should().BeTrue();
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
-                result.AllOutput.Should().NotContain(stableDependencyName);
-                result.AllOutput.Should().NotContain(prereleaseDependencyAName);
-                result.AllOutput.Should().NotContain(NuGetLogCode.NU5104.ToString());
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    var dependencyGroups = nuspecReader
-                        .GetDependencyGroups()
-                        .OrderBy(x => x.TargetFramework,
-                            new NuGetFrameworkSorter())
-                        .ToList();
-
-                    Assert.Equal(2,
-                        dependencyGroups.Count);
-
-                    var dependencyPackage = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(2, dependencyPackage.Count);
-                    Assert.Equal(prereleaseDependencyAName, dependencyPackage[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion(prereleaseDependencyAVersion), true, null, true), dependencyPackage[0].VersionRange);
-                    Assert.Equal(stableDependencyName, dependencyPackage[1].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion(stableDependencyVersion), true, null, true), dependencyPackage[1].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[0].Exclude);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[1].Exclude);
-                    Assert.Empty(dependencyPackage[0].Include);
-                    Assert.Empty(dependencyPackage[1].Include);
-
-                    dependencyPackage = dependencyGroups[1].Packages.ToList();
-                    Assert.Equal(3, dependencyPackage.Count);
-                }
-            }
-        }
-
-        [Fact]
         public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_ProjectLevelNoWarn_Succeed()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
@@ -6037,13 +5880,6 @@ namespace ClassLibrary
                 prereleaseDependencyAPackage.AddFile("_._");
                 await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, prereleaseDependencyAPackage);
 
-                var prereleaseDependencyBName = "PreReleasePackageB";
-                var prereleaseDependencyBVersion = "4.4.0-preview1-25305-02";
-                var prereleaseDependencyBPackage = new SimpleTestPackageContext(prereleaseDependencyBName, prereleaseDependencyBVersion);
-                prereleaseDependencyBPackage.Files.Clear();
-                prereleaseDependencyBPackage.AddFile("_._");
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, prereleaseDependencyBPackage);
-
                 var projectName = "ClassLibrary1";
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -6051,7 +5887,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net451</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5104</NoWarn>
@@ -6060,10 +5896,6 @@ namespace ClassLibrary
   <ItemGroup>
     <PackageReference Include=""{stableDependencyName}"" Version=""{stableDependencyVersion}""/>
     <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" />
-  </ItemGroup>
-
-  <ItemGroup Condition="" '$(TargetFramework)' == 'net451'"">
-    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}"" />
   </ItemGroup>
 </Project>";
                 File.WriteAllText(projectFile, projectXml);
@@ -6091,7 +5923,7 @@ namespace ClassLibrary
                             new NuGetFrameworkSorter())
                         .ToList();
 
-                    Assert.Equal(2,
+                    Assert.Equal(1,
                         dependencyGroups.Count);
 
                     var dependencyPackage = dependencyGroups[0].Packages.ToList();
@@ -6104,9 +5936,6 @@ namespace ClassLibrary
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[1].Exclude);
                     Assert.Empty(dependencyPackage[0].Include);
                     Assert.Empty(dependencyPackage[1].Include);
-
-                    dependencyPackage = dependencyGroups[1].Packages.ToList();
-                    Assert.Equal(3, dependencyPackage.Count);
                 }
             }
         }
