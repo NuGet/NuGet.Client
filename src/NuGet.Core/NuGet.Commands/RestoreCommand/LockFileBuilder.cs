@@ -338,7 +338,7 @@ namespace NuGet.Commands
 
             foreach (LockFileTargetLibrary library in libraries)
             {
-                var libraryKey = library.Name + " " + library.Version;
+                var libraryKey = library.Name + library.Version;
 
                 if (libraryReferences.TryGetValue(libraryKey, out LockFileTargetLibrary existingLibrary))
                 {

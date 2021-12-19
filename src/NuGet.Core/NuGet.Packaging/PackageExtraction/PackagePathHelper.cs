@@ -65,7 +65,7 @@ namespace NuGet.Packaging
 
         private static IEnumerable<string> GetPackageFiles(string root, string filter)
         {
-            filter = filter ?? "*" + PackagingCoreConstants.NupkgExtension;
+            filter ??= "*" + PackagingCoreConstants.NupkgExtension;
             Debug.Assert(
                 filter.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase) ||
                 filter.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase));
