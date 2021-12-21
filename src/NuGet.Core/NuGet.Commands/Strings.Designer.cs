@@ -2690,7 +2690,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project dependency {0} does not specify a version. Include a version for the dependency to ensure consistent restore results..
+        ///   Looks up a localized string similar to Project dependency &apos;{0}&apos; does not specify a version. Include a version for the dependency to ensure consistent restore results..
         /// </summary>
         internal static string Warning_ProjectDependencyMissingVersion {
             get {

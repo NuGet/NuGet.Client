@@ -176,7 +176,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Warn for project dependencies that do not have a version.
         /// </summary>
-        public static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingVersion(PackageSpec project)
+        internal static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingVersion(PackageSpec project)
         {
             return project.GetAllPackageDependencies()
                     .Where(e => e.LibraryRange.VersionRange == null)

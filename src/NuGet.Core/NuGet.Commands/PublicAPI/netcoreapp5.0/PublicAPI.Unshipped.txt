@@ -1,1 +1,0 @@
-static NuGet.Commands.UnexpectedDependencyMessages.GetProjectDependenciesMissingVersion(NuGet.ProjectModel.PackageSpec project) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
