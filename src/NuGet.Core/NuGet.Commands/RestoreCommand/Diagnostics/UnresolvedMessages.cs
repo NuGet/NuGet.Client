@@ -27,7 +27,17 @@ namespace NuGet.Commands
         /// </summary>
         internal static async Task LogAsync(IEnumerable<IRestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
         {
-            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph.TargetGraphName, e, context.FilterDependencyProvidersForLibrary(e), context.CacheContext, context.Logger, token))).ToArray();
+            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e =>
+            GetMessageAsync(
+                graph.TargetGraphName,
+                e,
+                context.FilterDependencyProvidersForLibrary(e),
+                context.PackageSourceMapping.IsEnabled,
+                context.RemoteLibraryProviders,
+                context.CacheContext,
+                context.Logger,
+                token))).ToArray();
+
             var messages = await Task.WhenAll(tasks);
 
             await context.Logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
@@ -45,6 +55,8 @@ namespace NuGet.Commands
                         ddi.Framework.ToString(),
                         unresolved,
                         context.FilterDependencyProvidersForLibrary(unresolved),
+                        context.PackageSourceMapping.IsEnabled,
+                        context.RemoteLibraryProviders,
                         context.CacheContext,
                         context.Logger,
                         token));
@@ -60,7 +72,9 @@ namespace NuGet.Commands
         /// </summary>
         internal static async Task<RestoreLogMessage> GetMessageAsync(string targetGraphName,
             LibraryRange unresolved,
-            IList<IRemoteDependencyProvider> remoteLibraryProviders,
+            IList<IRemoteDependencyProvider> applicableRemoteLibraryProviders,
+            bool isPackageSourceMappingEnabled,
+            IList<IRemoteDependencyProvider> allRemoteLibraryProviders,
             SourceCacheContext sourceCacheContext,
             ILogger logger,
             CancellationToken token)
@@ -91,11 +105,11 @@ namespace NuGet.Commands
                     message = string.Format(CultureInfo.CurrentCulture, Strings.Error_ProjectDoesNotExist, unresolved.Name);
                 }
             }
-            else if (unresolved.TypeConstraintAllows(LibraryDependencyTarget.Package) && remoteLibraryProviders.Count > 0)
+            else if (unresolved.TypeConstraintAllows(LibraryDependencyTarget.Package) && applicableRemoteLibraryProviders.Count > 0)
             {
                 // Package
                 var range = unresolved.VersionRange ?? VersionRange.All;
-                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, remoteLibraryProviders, sourceCacheContext, logger, token);
+                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, applicableRemoteLibraryProviders, sourceCacheContext, logger, token);
                 var allVersions = new SortedSet<NuGetVersion>(sourceInfo.SelectMany(e => e.Value));
 
                 if (allVersions.Count == 0)
@@ -107,6 +121,20 @@ namespace NuGet.Commands
                                                   .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
 
                     message = string.Format(CultureInfo.CurrentCulture, Strings.Error_NoPackageVersionsExist, unresolved.Name, sourceList);
+
+                    if (isPackageSourceMappingEnabled && applicableRemoteLibraryProviders.Count != allRemoteLibraryProviders.Count)
+                    {
+                        var notConsideredSourceList = string.Join(", ", allRemoteLibraryProviders
+                            .Select(e => e.Source.Name)
+                            .Where(e => !sourceList.Contains(e))
+                            .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+
+                        message += ". " + string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_SourceMappingEnabledNoMatchingPackageSources,
+                            notConsideredSourceList);
+
+                        // TODO NK - Utility method for the source generation?
+                    }
                 }
                 else
                 {
@@ -130,6 +158,11 @@ namespace NuGet.Commands
                         firstLine
                     };
 
+                    if (isPackageSourceMappingEnabled && allRemoteLibraryProviders.Count > 0)
+                    {
+                        // TODO NK - Add details about the fact that package source mapping is enabled?
+                    }
+
                     lines.AddRange(sourceInfo.Select(e => FormatSourceInfo(e, range)));
 
                     message = DiagnosticUtility.GetMultiLineMessage(lines);
@@ -143,6 +176,13 @@ namespace NuGet.Commands
                     Strings.Log_UnresolvedDependency,
                     unresolved.ToString(),
                     targetGraphName);
+
+                if (isPackageSourceMappingEnabled && applicableRemoteLibraryProviders.Count != allRemoteLibraryProviders.Count)
+                {
+                    message += " " + string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_SourceMappingEnabledNoMatchingPackageSources,
+                            string.Join(", ", allRemoteLibraryProviders.Select(e => e.Source.Name).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
+                }
 
                 // Set again for clarity
                 code = NuGetLogCode.NU1100;

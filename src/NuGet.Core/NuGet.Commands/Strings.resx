@@ -1130,4 +1130,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_TrustFingerPrintAlreadyExist" xml:space="preserve">
     <value>The certificate finger you're trying to add is already in the certificate fingerprint list.</value>
   </data>
+  <data name="Log_SourceMappingEnabledNoMatchingPackageSources" xml:space="preserve">
+    <value>PackageSourceMapping is enabled, the following source(s) were not considered: {0}.</value>
+    <comment>Please do not localize `PackageSourceMapping`. 0 - package source names list.</comment>
+  </data>
 </root>

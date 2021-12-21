@@ -136,7 +136,7 @@ namespace NuGet.Commands.Test
             var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
             var targetGraphName = "abc";
 
-            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, remoteLibraryProviders, cacheContext.Object, logger, token);
+            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, remoteLibraryProviders, false, remoteLibraryProviders, cacheContext.Object, logger, token);
 
             message.Code.Should().Be(NuGetLogCode.NU1101);
             message.LibraryId.Should().Be("x");
@@ -429,6 +429,47 @@ namespace NuGet.Commands.Test
             info.Key.Source.Should().Be(source.Source);
         }
 
+        [Fact]
+        public async Task GetMessageAsync_WithPackageSourceMappingAndNoMatchingProviders_NU1100IncludesSourceMappingDetails()
+        {
+            var libraryId = "x";
+            var range = new LibraryRange(libraryId, LibraryDependencyTarget.Package);
+            bool isPackageSourceMappingEnabled = true;
+            var provider1 = GetProvider("http://nuget.org/a/", new List<NuGetVersion>());
+            var enabledProviders = new List<IRemoteDependencyProvider>() { };
+            var allProviders = new List<IRemoteDependencyProvider>() { provider1.Object };
+            var targetGraphName = "targetGraphName";
+
+            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, enabledProviders, isPackageSourceMappingEnabled, allProviders, new Mock<SourceCacheContext>().Object, new TestLogger(), CancellationToken.None);
+
+            message.Code.Should().Be(NuGetLogCode.NU1100);
+            message.LibraryId.Should().Be(libraryId);
+            message.Message.Should().Be($"Unable to resolve '{libraryId}' for '{targetGraphName}'. PackageSourceMapping is enabled, the following source(s) were not considered: http://nuget.org/a/.");
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { targetGraphName });
+            message.Level.Should().Be(LogLevel.Error);
+        }
+
+        [Fact]
+        public async Task GetMessageAsync_WithPackageSourceMappingAndProvidersNotConsidered_NU1101IncludesSourceMappingDetails()
+        {
+            var libraryId = "x";
+            var range = new LibraryRange(libraryId, LibraryDependencyTarget.Package);
+            bool isPackageSourceMappingEnabled = true;
+            var provider1 = GetProvider("http://nuget.org/a/", new List<NuGetVersion>());
+            var provider2 = GetProvider("http://nuget.org/b/", new List<NuGetVersion>());
+            var enabledProviders = new List<IRemoteDependencyProvider>() { provider1.Object };
+            var allProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
+            var targetGraphName = "targetGraphName";
+
+            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, enabledProviders, isPackageSourceMappingEnabled, allProviders, new Mock<SourceCacheContext>().Object, new TestLogger(), CancellationToken.None);
+
+            message.Code.Should().Be(NuGetLogCode.NU1101);
+            message.LibraryId.Should().Be(libraryId);
+            message.Message.Should().Be($"Unable to find package x. No packages exist with this id in source(s): http://nuget.org/a/. PackageSourceMapping is enabled, the following source(s) were not considered: http://nuget.org/b/.");
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { targetGraphName });
+            message.Level.Should().Be(LogLevel.Error);
+        }
+
         private static Mock<IRemoteDependencyProvider> GetProvider(string source, IEnumerable<NuGetVersion> versions)
         {
             var provider = new Mock<IRemoteDependencyProvider>();
@@ -445,11 +486,10 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var provider = GetProvider("http://nuget.org/a/", versions);
             var cacheContext = new Mock<SourceCacheContext>();
-            var remoteWalkContext = new RemoteWalkContext(cacheContext.Object, PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance), NullLogger.Instance);
             var remoteLibraryProviders = new List<IRemoteDependencyProvider>() { provider.Object };
             var targetGraphName = "abc";
 
-            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, remoteLibraryProviders, cacheContext.Object, logger, token);
+            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, remoteLibraryProviders, false, remoteLibraryProviders, cacheContext.Object, logger, token);
             return message;
         }
     }
