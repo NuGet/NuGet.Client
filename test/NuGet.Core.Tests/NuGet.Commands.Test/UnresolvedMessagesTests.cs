@@ -457,15 +457,16 @@ namespace NuGet.Commands.Test
             bool isPackageSourceMappingEnabled = true;
             var provider1 = GetProvider("http://nuget.org/a/", new List<NuGetVersion>());
             var provider2 = GetProvider("http://nuget.org/b/", new List<NuGetVersion>());
+            var provider3 = GetProvider("http://nuget.org/c/", new List<NuGetVersion>());
             var enabledProviders = new List<IRemoteDependencyProvider>() { provider1.Object };
-            var allProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
+            var allProviders = new List<IRemoteDependencyProvider>() { provider3.Object, provider1.Object, provider2.Object };
             var targetGraphName = "targetGraphName";
 
             var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, enabledProviders, isPackageSourceMappingEnabled, allProviders, new Mock<SourceCacheContext>().Object, new TestLogger(), CancellationToken.None);
 
             message.Code.Should().Be(NuGetLogCode.NU1101);
             message.LibraryId.Should().Be(libraryId);
-            message.Message.Should().Be($"Unable to find package x. No packages exist with this id in source(s): http://nuget.org/a/. PackageSourceMapping is enabled, the following source(s) were not considered: http://nuget.org/b/.");
+            message.Message.Should().Be($"Unable to find package x. No packages exist with this id in source(s): http://nuget.org/a/. PackageSourceMapping is enabled, the following source(s) were not considered: http://nuget.org/b/, http://nuget.org/c/.");
             message.TargetGraphs.Should().BeEquivalentTo(new[] { targetGraphName });
             message.Level.Should().Be(LogLevel.Error);
         }
@@ -478,8 +479,9 @@ namespace NuGet.Commands.Test
             bool isPackageSourceMappingEnabled = true;
             var provider1 = GetProvider("http://nuget.org/a/", new List<NuGetVersion>() { NuGetVersion.Parse("6.0.0") });
             var provider2 = GetProvider("http://nuget.org/b/", new List<NuGetVersion>());
+            var provider3 = GetProvider("http://nuget.org/c/", new List<NuGetVersion>());
             var enabledProviders = new List<IRemoteDependencyProvider>() { provider1.Object };
-            var allProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
+            var allProviders = new List<IRemoteDependencyProvider>() { provider3.Object, provider1.Object, provider2.Object };
             var targetGraphName = "targetGraphName";
 
             var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, enabledProviders, isPackageSourceMappingEnabled, allProviders, new Mock<SourceCacheContext>().Object, new TestLogger(), CancellationToken.None);
@@ -490,7 +492,9 @@ namespace NuGet.Commands.Test
                 Environment.NewLine +
                 "  - Found 1 version(s) in http://nuget.org/a/ [ Nearest version: 6.0.0 ]" +
                 Environment.NewLine +
-                "  - Versions from http://nuget.org/b/ were not considered"
+                "  - Versions from http://nuget.org/b/ were not considered" +
+                Environment.NewLine +
+                "  - Versions from http://nuget.org/c/ were not considered"
                 );
             message.TargetGraphs.Should().BeEquivalentTo(new[] { targetGraphName });
             message.Level.Should().Be(LogLevel.Error);

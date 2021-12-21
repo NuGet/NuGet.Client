@@ -124,16 +124,11 @@ namespace NuGet.Commands
 
                     if (isPackageSourceMappingEnabled && applicableRemoteLibraryProviders.Count != allRemoteLibraryProviders.Count)
                     {
-                        var notConsideredSourceList = string.Join(", ", allRemoteLibraryProviders
-                            .Select(e => e.Source.Name)
-                            .Where(e => !sourceList.Contains(e))
-                            .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+                        var notConsideredSourceList = FormatProviderNames(GetUnusedLibraryProviders(applicableRemoteLibraryProviders, allRemoteLibraryProviders));
 
                         message += ". " + string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_SourceMappingEnabledNoMatchingPackageSources,
                             notConsideredSourceList);
-
-                        // TODO NK - Utility method for the source generation?
                     }
                 }
                 else
@@ -162,14 +157,11 @@ namespace NuGet.Commands
 
                     if (isPackageSourceMappingEnabled && allRemoteLibraryProviders.Count != applicableRemoteLibraryProviders.Count)
                     {
-                        var notConsideredSourceList = allRemoteLibraryProviders
-                            .Where(e => !applicableRemoteLibraryProviders.Contains(e))
-                            .Select(e => e.Source)
-                            .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase);
-
-                        lines.AddRange(notConsideredSourceList.Select(packageSource => string.Format(CultureInfo.CurrentCulture,
+                        lines.AddRange(GetUnusedLibraryProviders(applicableRemoteLibraryProviders, allRemoteLibraryProviders)
+                            .OrderBy(e => e.Source.Name)
+                            .Select(packageSource => string.Format(CultureInfo.CurrentCulture,
                                             Strings.SourceNotConsidered,
-                                            packageSource.Name)));
+                                            packageSource.Source.Name)));
                     }
 
                     message = DiagnosticUtility.GetMultiLineMessage(lines);
@@ -188,7 +180,7 @@ namespace NuGet.Commands
                 {
                     message += " " + string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_SourceMappingEnabledNoMatchingPackageSources,
-                            string.Join(", ", allRemoteLibraryProviders.Select(e => e.Source.Name).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
+                            FormatProviderNames(allRemoteLibraryProviders));
                 }
 
                 // Set again for clarity
@@ -196,6 +188,19 @@ namespace NuGet.Commands
             }
 
             return RestoreLogMessage.CreateError(code, message, unresolved.Name, targetGraphName);
+        }
+
+        private static IEnumerable<IRemoteDependencyProvider> GetUnusedLibraryProviders(IList<IRemoteDependencyProvider> applicableRemoteLibraryProviders, IList<IRemoteDependencyProvider> allRemoteLibraryProviders)
+        {
+            return allRemoteLibraryProviders
+                    .Where(e => !applicableRemoteLibraryProviders.Contains(e))
+                    .Select(e => e);
+        }
+
+        private static string FormatProviderNames(IEnumerable<IRemoteDependencyProvider> allRemoteLibraryProviders)
+        {
+            return string.Join(", ", allRemoteLibraryProviders.Select(e => e.Source.Name)
+                    .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
         }
 
         /// <summary>
