@@ -470,6 +470,32 @@ namespace NuGet.Commands.Test
             message.Level.Should().Be(LogLevel.Error);
         }
 
+        [Fact]
+        public async Task GetMessageAsync_WithPackageSourceMappingAndProvidersNotConsidered_NU1102IncludesSourceMappingDetails()
+        {
+            var libraryId = "x";
+            var range = new LibraryRange(libraryId, VersionRange.Parse("6.0.0"), LibraryDependencyTarget.Package);
+            bool isPackageSourceMappingEnabled = true;
+            var provider1 = GetProvider("http://nuget.org/a/", new List<NuGetVersion>() { NuGetVersion.Parse("6.0.0") });
+            var provider2 = GetProvider("http://nuget.org/b/", new List<NuGetVersion>());
+            var enabledProviders = new List<IRemoteDependencyProvider>() { provider1.Object };
+            var allProviders = new List<IRemoteDependencyProvider>() { provider1.Object, provider2.Object };
+            var targetGraphName = "targetGraphName";
+
+            var message = await UnresolvedMessages.GetMessageAsync(targetGraphName, range, enabledProviders, isPackageSourceMappingEnabled, allProviders, new Mock<SourceCacheContext>().Object, new TestLogger(), CancellationToken.None);
+
+            message.Code.Should().Be(NuGetLogCode.NU1102);
+            message.LibraryId.Should().Be(libraryId);
+            message.Message.Should().Be($"Unable to find package x with version (>= 6.0.0)" +
+                Environment.NewLine +
+                "  - Found 1 version(s) in http://nuget.org/a/ [ Nearest version: 6.0.0 ]" +
+                Environment.NewLine +
+                "  - Versions from http://nuget.org/b/ were not considered"
+                );
+            message.TargetGraphs.Should().BeEquivalentTo(new[] { targetGraphName });
+            message.Level.Should().Be(LogLevel.Error);
+        }
+
         private static Mock<IRemoteDependencyProvider> GetProvider(string source, IEnumerable<NuGetVersion> versions)
         {
             var provider = new Mock<IRemoteDependencyProvider>();

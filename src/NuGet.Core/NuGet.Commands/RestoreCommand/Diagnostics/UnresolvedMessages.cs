@@ -158,12 +158,19 @@ namespace NuGet.Commands
                         firstLine
                     };
 
-                    if (isPackageSourceMappingEnabled && allRemoteLibraryProviders.Count > 0)
-                    {
-                        // TODO NK - Add details about the fact that package source mapping is enabled?
-                    }
-
                     lines.AddRange(sourceInfo.Select(e => FormatSourceInfo(e, range)));
+
+                    if (isPackageSourceMappingEnabled && allRemoteLibraryProviders.Count != applicableRemoteLibraryProviders.Count)
+                    {
+                        var notConsideredSourceList = allRemoteLibraryProviders
+                            .Where(e => !applicableRemoteLibraryProviders.Contains(e))
+                            .Select(e => e.Source)
+                            .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase);
+
+                        lines.AddRange(notConsideredSourceList.Select(packageSource => string.Format(CultureInfo.CurrentCulture,
+                                            Strings.SourceNotConsidered,
+                                            packageSource.Name)));
+                    }
 
                     message = DiagnosticUtility.GetMultiLineMessage(lines);
                 }

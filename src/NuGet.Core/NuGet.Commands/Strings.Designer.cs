@@ -2141,6 +2141,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Versions from {0} were not considered.
+        /// </summary>
+        internal static string SourceNotConsidered {
+            get {
+                return ResourceManager.GetString("SourceNotConsidered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package source name &apos;All&apos; is a reserved name..
         /// </summary>
         internal static string SourcesCommandAllNameIsReserved {

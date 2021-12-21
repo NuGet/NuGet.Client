@@ -1134,4 +1134,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>PackageSourceMapping is enabled, the following source(s) were not considered: {0}.</value>
     <comment>Please do not localize `PackageSourceMapping`. 0 - package source names list.</comment>
   </data>
+  <data name="SourceNotConsidered" xml:space="preserve">
+    <value>Versions from {0} were not considered</value>
+    <comment>0 - source name</comment>
+  </data>
 </root>
