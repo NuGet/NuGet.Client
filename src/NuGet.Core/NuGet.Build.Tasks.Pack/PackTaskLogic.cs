@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
+using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 using WarningPropertiesCollection = NuGet.Commands.PackCommand.WarningPropertiesCollection;
 
 namespace NuGet.Build.Tasks.Pack
@@ -23,12 +24,9 @@ namespace NuGet.Build.Tasks.Pack
     public class PackTaskLogic : IPackTaskLogic
     {
         private const string IdentityProperty = "Identity";
-        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
-        {
-            return GetPackArgs(request, null);
-        }
+        private PackageBuilder _packageBuilder;
 
-        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, WarningPropertiesCollection warningPropertiesCollection)
+        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
         {
             var packArgs = new PackArgs
             {
@@ -45,6 +43,14 @@ namespace NuGet.Build.Tasks.Pack
                 WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn),
                 PackTargetArgs = new MSBuildPackTargetArgs()
             };
+
+            WarningPropertiesCollection warningPropertiesCollection = null;
+
+            if (_packageBuilder?.PackageSpecificNoWarnProperties.Keys.Count > 0)
+            {
+                warningPropertiesCollection = new WarningPropertiesCollection(PackageSpecificWarningProperties
+                    .CreatePackageSpecificWarningProperties(_packageBuilder?.PackageSpecificNoWarnProperties));
+            }
 
             packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, warningPropertiesCollection);
 
@@ -263,6 +269,7 @@ namespace NuGet.Build.Tasks.Pack
             PopulateFrameworkAssemblyReferences(builder, request);
             PopulateFrameworkReferences(builder, assetsFile);
 
+            _packageBuilder = builder;
             return builder;
         }
 

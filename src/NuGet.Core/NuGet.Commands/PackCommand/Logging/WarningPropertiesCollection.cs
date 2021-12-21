@@ -60,10 +60,7 @@ namespace NuGet.Commands.PackCommand
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
-
             hashCode.AddObject(PackageSpecificWarningProperties);
-            //hashCode.AddSequence(ProjectFrameworks);
-
             return hashCode.CombinedHash;
         }
 

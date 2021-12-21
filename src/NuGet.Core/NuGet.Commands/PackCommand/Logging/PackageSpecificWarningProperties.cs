@@ -27,6 +27,9 @@ namespace NuGet.Commands.PackCommand
         /// <returns>PackageSpecific WarningProperties extracted from a noWarnProperties</returns>
         public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(IDictionary<string, ISet<(NuGetLogCode, NuGetFramework)>> noWarnProperties)
         {
+            if (noWarnProperties == null)
+                return null;
+
             // NuGetLogCode -> LibraryId -> Set of Frameworks.
             var warningProperties = new PackageSpecificWarningProperties();
 
@@ -106,7 +109,7 @@ namespace NuGet.Commands.PackCommand
         /// <param name="code">NugetLogCode to be checked.</param>
         /// <param name="libraryId">library Id to be checked.</param>
         /// <param name="framework">target graph to be checked.</param>
-        /// <returns>True iff the NugetLogCode is part of the NoWarn list for the specified libraryId and Target Graph.</returns>
+        /// <returns>True if the NugetLogCode is part of the NoWarn list for the specified libraryId and Target Graph.</returns>
         public bool Contains(NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
             return Properties != null &&

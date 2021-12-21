@@ -5731,8 +5731,6 @@ namespace ClassLibrary
             // Arrange
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
-                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, stableDependencyPackage);
-
                 var prereleaseDependencyName = "PreReleasePackageA";
                 var prereleaseDependencyVersion = "6.0.0-preview.3";
                 var prereleaseDependencyPackage = new SimpleTestPackageContext(prereleaseDependencyName, prereleaseDependencyVersion);
@@ -5862,12 +5860,13 @@ namespace ClassLibrary
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Version>1.2.3</Version>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" NoWarn = ""NU5104""/>
     <!-- Below pre-release doesn't have no warn -->
-    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyAVersion}""/> 
+    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}""/> 
   </ItemGroup>
 </Project>";
                 File.WriteAllText(projectFile, projectXml);
@@ -5877,38 +5876,13 @@ namespace ClassLibrary
                 CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
 
                 // Assert
-                result.Success.Should().BeTrue();
+                result.Success.Should().BeFalse();
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyAName);
                 result.AllOutput.Should().Contain(prereleaseDependencyBName);
-                result.AllOutput.Should().NotContain(NuGetLogCode.NU5104.ToString());
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    var dependencyGroups = nuspecReader
-                        .GetDependencyGroups()
-                        .OrderBy(x => x.TargetFramework,
-                            new NuGetFrameworkSorter())
-                        .ToList();
-
-                    Assert.Equal(1,
-                        dependencyGroups.Count);
-
-                    var dependencyPackage = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(2, dependencyPackage.Count);
-                    Assert.Equal(prereleaseDependencyAName, dependencyPackage[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion(prereleaseDependencyAVersion), true, null, true), dependencyPackage[0].VersionRange);
-                    Assert.Equal(prereleaseDependencyBName, dependencyPackage[1].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion(prereleaseDependencyBVersion), true, null, true), dependencyPackage[1].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[0].Exclude);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[1].Exclude);
-                    Assert.Empty(dependencyPackage[0].Include);
-                    Assert.Empty(dependencyPackage[1].Include);
-                }
+                result.AllOutput.Should().Contain(NuGetLogCode.NU5104.ToString());
             }
         }
 
@@ -5969,13 +5943,11 @@ namespace ClassLibrary
                         dependencyGroups.Count);
 
                     var dependencyPackage = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(2, dependencyPackage.Count);
+                    Assert.Equal(1, dependencyPackage.Count);
                     Assert.Equal(prereleaseDependencyAName, dependencyPackage[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion(prereleaseDependencyAVersion), true, null, true), dependencyPackage[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[0].Exclude);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[1].Exclude);
                     Assert.Empty(dependencyPackage[0].Include);
-                    Assert.Empty(dependencyPackage[1].Include);
                 }
             }
         }
