@@ -3,6 +3,7 @@
 
 using NuGet.Commands;
 using NuGet.Packaging;
+using WarningPropertiesCollection = NuGet.Commands.PackCommand.WarningPropertiesCollection;
 
 namespace NuGet.Build.Tasks.Pack
 {
@@ -18,6 +19,11 @@ namespace NuGet.Build.Tasks.Pack
         /// Initialize the pack args from the pack task request.
         /// </summary>
         PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request);
+
+        /// <summary>
+        /// Initialize the pack args from the pack task request and warningProperties.
+        /// </summary>
+        PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, WarningPropertiesCollection warningPropertiesCollection);
 
         /// <summary>
         /// Initialize the package builder from the pack task request.

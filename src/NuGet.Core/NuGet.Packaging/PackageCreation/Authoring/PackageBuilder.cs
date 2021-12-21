@@ -131,6 +131,7 @@ namespace NuGet.Packaging
             TargetFrameworks = new List<NuGetFramework>();
             // Just like parameter replacements, these are also case insensitive, for consistency.
             Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            PackageSpecificNoWarnProperties = new Dictionary<string, ISet<(NuGetLogCode, NuGetFramework)>>(StringComparer.OrdinalIgnoreCase);
         }
 
         public string Id
@@ -398,6 +399,15 @@ namespace NuGet.Packaging
             set;
         }
 
+        /// <summary>
+        /// Contains Package specific No warn properties.
+        /// LibraryId -> Set of (NuGetLogCode + Framework)s.
+        /// </summary>
+        public IDictionary<string, ISet<(NuGetLogCode, NuGetFramework)>> PackageSpecificNoWarnProperties
+        {
+            get;
+        }
+
         public void Save(Stream stream)
         {
             // Make sure we're saving a valid package id
@@ -587,7 +597,7 @@ namespace NuGet.Packaging
                 .Select(framework => framework.GetShortFolderName()));
             if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, String.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
             }
 
             if (version == null)

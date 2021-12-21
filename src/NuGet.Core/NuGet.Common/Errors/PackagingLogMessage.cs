@@ -29,12 +29,7 @@ namespace NuGet.Common
         /// <param name="logCode">The NuGet log code</param>
         /// <param name="message">The log message</param>
         private PackagingLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message)
-        {
-            Level = logLevel;
-            Code = logCode;
-            Message = message;
-            Time = DateTimeOffset.UtcNow;
-        }
+            : this(logLevel, logCode, message, null, null) { }
 
         /// <summary>
         /// Initializes a new instance of the PackLogMessage class
@@ -45,19 +40,17 @@ namespace NuGet.Common
         /// <param name="libraryId">The package Id</param>
         /// <param name="framework">The NuGet framework</param>
         private PackagingLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message, string libraryId, NuGetFramework framework)
-            : this(logLevel, logCode, message)
         {
+            Level = logLevel;
+            Code = logCode;
+            Message = message;
             LibraryId = libraryId;
             Framework = framework;
+            Time = DateTimeOffset.UtcNow;
         }
 
         private PackagingLogMessage(LogLevel logLevel, string message)
-        {
-            Message = message;
-            Code = NuGetLogCode.Undefined;
-            Level = logLevel;
-            Time = DateTimeOffset.UtcNow;
-        }
+            : this(logLevel, NuGetLogCode.Undefined, message) { }
 
         /// <summary>
         /// Create an error log message.

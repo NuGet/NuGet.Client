@@ -16,14 +16,19 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
+using WarningPropertiesCollection = NuGet.Commands.PackCommand.WarningPropertiesCollection;
 
 namespace NuGet.Build.Tasks.Pack
 {
     public class PackTaskLogic : IPackTaskLogic
     {
         private const string IdentityProperty = "Identity";
-        private const string NoWarn = nameof(NoWarn);
         public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
+        {
+            return GetPackArgs(request, null);
+        }
+
+        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, WarningPropertiesCollection warningPropertiesCollection)
         {
             var packArgs = new PackArgs
             {
@@ -41,7 +46,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackTargetArgs = new MSBuildPackTargetArgs()
             };
 
-            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties);
+            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, warningPropertiesCollection);
 
             if (request.MinClientVersion != null)
             {
@@ -909,8 +914,6 @@ namespace NuGet.Build.Tasks.Pack
             Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
             ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
-            StringBuilder nowarnProperties = new();
-
             // From the package spec, we know the direct package dependencies of this project.
             foreach (TargetFrameworkInformation framework in assetsFile.PackageSpec.TargetFrameworks)
             {
@@ -970,16 +973,13 @@ namespace NuGet.Build.Tasks.Pack
 
                     if (packageDependency.NoWarn.Count > 0)
                     {
-                        nowarnProperties.AppendLine(framework.FrameworkName + ";" + packageDependency.Name + ";" + string.Join(" ", packageDependency.NoWarn));
+                        var nowarnProperties = new HashSet<(NuGetLogCode, NuGetFramework)>();
+                        nowarnProperties.AddRange(packageDependency.NoWarn.Select(n => (n, framework.FrameworkName)));
+                        packageBuilder.PackageSpecificNoWarnProperties[packageDependency.Name] = nowarnProperties;
                     }
 
                     PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
                 }
-            }
-
-            if (nowarnProperties.Length > 0)
-            {
-                packageBuilder.Properties[NoWarn] = nowarnProperties.ToString();
             }
         }
 

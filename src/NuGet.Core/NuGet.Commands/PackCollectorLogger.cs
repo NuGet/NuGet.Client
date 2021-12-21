@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectModel;
@@ -15,19 +14,18 @@ namespace NuGet.Commands
         private readonly ConcurrentQueue<ILogMessage> _errors;
         private ILogger _innerLogger;
 
+        // Project level warnings properties
         public WarningProperties WarningProperties { get; set; }
-        public WarningPropertiesCollection PackageReferenceWarningPropertiesCollection { get; set; }
+
+        // Package specific warning property
+        public PackCommand.WarningPropertiesCollection PackageReferenceWarningPropertiesCollection { get; set; }
 
         public IEnumerable<ILogMessage> Errors => _errors.ToArray();
 
         public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties)
-        {
-            _innerLogger = innerLogger;
-            WarningProperties = warningProperties;
-            _errors = new ConcurrentQueue<ILogMessage>();
-        }
+            : this(innerLogger, warningProperties, null) { }
 
-        public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties, WarningPropertiesCollection packageReferenceWarningPropertiesCollection)
+        public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties, PackCommand.WarningPropertiesCollection packageReferenceWarningPropertiesCollection)
         {
             _innerLogger = innerLogger;
             WarningProperties = warningProperties;
