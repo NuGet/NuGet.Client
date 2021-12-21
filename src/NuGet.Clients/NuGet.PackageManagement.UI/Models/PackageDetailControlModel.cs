@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.UI
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
                 !latestPrerelease.version.Equals(installedVersion))
             {
-                VersionRange latestPrereleaseVersionRange = VersionRange.Parse(latestPrerelease.version.ToString(), false);
+                VersionRange latestPrereleaseVersionRange = VersionRange.Parse(latestPrerelease.version.ToString(), allowFloating: false);
                 _versions.Add(new DisplayVersion(latestPrereleaseVersionRange, latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
             }
 
@@ -182,7 +182,7 @@ namespace NuGet.PackageManagement.UI
             if (latestStableVersion.version != null &&
                 !latestStableVersion.version.Equals(installedVersion))
             {
-                VersionRange latestStableVersionRange = VersionRange.Parse(latestStableVersion.version.ToString(), false);
+                VersionRange latestStableVersionRange = VersionRange.Parse(latestStableVersion.version.ToString(), allowFloating: false);
                 _versions.Add(new DisplayVersion(latestStableVersionRange, latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
 
@@ -190,7 +190,7 @@ namespace NuGet.PackageManagement.UI
             IsBeforeNullSeparator = _versions.Count == 1;
 
             // add a separator
-            if (_versions.Count > 0)
+            if (_versions.Count > 1)
             {
                 _versions.Add(null);
             }
@@ -210,7 +210,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (!installed)
                 {
-                    VersionRange versionRange = VersionRange.Parse(version.version.ToString(), false);
+                    VersionRange versionRange = VersionRange.Parse(version.version.ToString(), allowFloating: false);
                     _versions.Add(new DisplayVersion(versionRange, version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
                 }
             }
@@ -241,7 +241,7 @@ namespace NuGet.PackageManagement.UI
 
         private bool VersionsFilter(object o)
         {
-            DisplayVersion version = o as DisplayVersion;
+            var version = o as DisplayVersion;
             // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
             if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase))
             {
