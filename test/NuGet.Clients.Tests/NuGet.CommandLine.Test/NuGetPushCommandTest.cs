@@ -417,7 +417,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.True(0 == result.ExitCode, result.AllOutput);
                 Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Item2);
                 Assert.Contains($"Created {pushUri}", result.Item2);
                 Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Item2);

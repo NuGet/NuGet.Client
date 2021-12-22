@@ -80,7 +80,7 @@ namespace NuGet.Protocol.Core.Types
                 if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     // Push nupkgs and possibly the corresponding snupkgs.
-                    await PushPackagePath(packagePath, _source, symbolSource, apiKey, noServiceEndpoint, skipDuplicate,
+                    await PushPackagePath(packagePath, _source, symbolSource, apiKey, getSymbolApiKey, noServiceEndpoint, skipDuplicate,
                         symbolPackageUpdateResource, requestTimeout, log, tokenSource.Token);
                 }
                 else // Explicit snupkg push
@@ -231,6 +231,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="packagePath"></param>
         /// <param name="source"></param>
         /// <param name="apiKey"></param>
+        /// <param name="getSymbolApiKey"></param>
         /// <param name="noServiceEndpoint"></param>
         /// <param name="skipDuplicate"></param>
         /// <param name="requestTimeout"></param>
@@ -242,6 +243,7 @@ namespace NuGet.Protocol.Core.Types
             string source,
             string symbolSource, // empty to not push symbols
             string apiKey,
+            Func<string, string> getSymbolApiKey,
             bool noServiceEndpoint,
             bool skipDuplicate,
             SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
@@ -300,7 +302,8 @@ namespace NuGet.Protocol.Core.Types
                         }
                     }
 
-                    await PushPackageCore(symbolSource, apiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
+                    string symbolApiKey = getSymbolApiKey(symbolSource);
+                    await PushPackageCore(symbolSource, symbolApiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
                 }
             }
         }
