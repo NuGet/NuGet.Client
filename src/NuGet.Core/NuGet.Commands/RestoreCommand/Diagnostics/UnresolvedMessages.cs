@@ -124,11 +124,11 @@ namespace NuGet.Commands
 
                     if (isPackageSourceMappingEnabled && applicableRemoteLibraryProviders.Count != allRemoteLibraryProviders.Count)
                     {
-                        var notConsideredSourceList = FormatProviderNames(GetUnusedLibraryProviders(applicableRemoteLibraryProviders, allRemoteLibraryProviders));
+                        string sourcesNotConsidered = FormatProviderNames(GetUnusedLibraryProviders(applicableRemoteLibraryProviders, allRemoteLibraryProviders));
 
                         message += ". " + string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_SourceMappingEnabledNoMatchingPackageSources,
-                            notConsideredSourceList);
+                            sourcesNotConsidered);
                     }
                 }
                 else
