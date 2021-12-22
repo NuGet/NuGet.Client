@@ -131,7 +131,7 @@ namespace NuGet.Packaging
             TargetFrameworks = new List<NuGetFramework>();
             // Just like parameter replacements, these are also case insensitive, for consistency.
             Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            PackageSpecificNoWarnProperties = new Dictionary<string, ISet<(NuGetLogCode, NuGetFramework)>>(StringComparer.OrdinalIgnoreCase);
+            PackageSpecificNoWarnProperties = new Dictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>>(StringComparer.OrdinalIgnoreCase);
         }
 
         public string Id
@@ -403,7 +403,7 @@ namespace NuGet.Packaging
         /// Contains Package specific No warn properties.
         /// LibraryId -> Set of (NuGetLogCode + Framework)s.
         /// </summary>
-        public IDictionary<string, ISet<(NuGetLogCode, NuGetFramework)>> PackageSpecificNoWarnProperties
+        public IDictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>> PackageSpecificNoWarnProperties
         {
             get;
         }

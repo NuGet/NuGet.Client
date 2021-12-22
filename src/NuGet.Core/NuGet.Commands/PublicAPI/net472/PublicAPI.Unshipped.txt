@@ -15,4 +15,4 @@ override NuGet.Commands.PackCommand.PackageSpecificWarningProperties.Equals(obje
 override NuGet.Commands.PackCommand.PackageSpecificWarningProperties.GetHashCode() -> int
 override NuGet.Commands.PackCommand.WarningPropertiesCollection.Equals(object obj) -> bool
 override NuGet.Commands.PackCommand.WarningPropertiesCollection.GetHashCode() -> int
-static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties
+static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties

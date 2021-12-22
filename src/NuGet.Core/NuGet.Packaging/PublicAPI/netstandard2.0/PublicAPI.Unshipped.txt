@@ -1,2 +1,2 @@
 NuGet.ContentModel.ContentItemCollection.PopulateItemGroups(NuGet.ContentModel.PatternSet definition, System.Collections.Generic.IList<NuGet.ContentModel.ContentItemGroup> contentItemGroupList) -> void
-NuGet.Packaging.PackageBuilder.PackageSpecificNoWarnProperties.get -> System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>>
+NuGet.Packaging.PackageBuilder.PackageSpecificNoWarnProperties.get -> System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>>

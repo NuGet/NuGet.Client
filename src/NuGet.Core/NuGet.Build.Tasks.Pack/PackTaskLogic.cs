@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -980,7 +979,13 @@ namespace NuGet.Build.Tasks.Pack
 
                     if (packageDependency.NoWarn.Count > 0)
                     {
-                        var nowarnProperties = new HashSet<(NuGetLogCode, NuGetFramework)>();
+                        HashSet<(NuGetLogCode, NuGetFramework)> nowarnProperties = null;
+
+                        if (!packageBuilder.PackageSpecificNoWarnProperties.TryGetValue(packageDependency.Name, out nowarnProperties))
+                        {
+                            nowarnProperties = new HashSet<(NuGetLogCode, NuGetFramework)>();
+                        }
+
                         nowarnProperties.AddRange(packageDependency.NoWarn.Select(n => (n, framework.FrameworkName)));
                         packageBuilder.PackageSpecificNoWarnProperties[packageDependency.Name] = nowarnProperties;
                     }

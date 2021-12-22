@@ -25,7 +25,7 @@ namespace NuGet.Commands.PackCommand
         /// </summary>
         /// <param name="noWarnProperties">noWarnProperties containing the Dependencies with WarningProperties</param>
         /// <returns>PackageSpecific WarningProperties extracted from a noWarnProperties</returns>
-        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(IDictionary<string, ISet<(NuGetLogCode, NuGetFramework)>> noWarnProperties)
+        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(IDictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>> noWarnProperties)
         {
             if (noWarnProperties == null)
                 return null;
@@ -33,7 +33,7 @@ namespace NuGet.Commands.PackCommand
             // NuGetLogCode -> LibraryId -> Set of Frameworks.
             var warningProperties = new PackageSpecificWarningProperties();
 
-            foreach (KeyValuePair<string, ISet<(NuGetLogCode, NuGetFramework)>> packageNoWarnProperty in noWarnProperties)
+            foreach (KeyValuePair<string, HashSet<(NuGetLogCode, NuGetFramework)>> packageNoWarnProperty in noWarnProperties)
             {
                 string packageId = packageNoWarnProperty.Key;
 
