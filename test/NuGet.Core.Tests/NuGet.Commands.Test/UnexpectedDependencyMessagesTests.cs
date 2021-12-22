@@ -910,6 +910,7 @@ namespace NuGet.Commands.Test
             await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
 
             testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Where(e => e.Code == NuGetLogCode.NU1604).Should().HaveCount(1);
             testLogger.LogMessages.Where(e => e.Code == NuGetLogCode.NU1604).Select(e => e.Message)
                 .First().Should().Be("Project dependency 'x' does not specify a version. Include a version for the dependency to ensure consistent restore results.");
             testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
