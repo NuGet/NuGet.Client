@@ -276,6 +276,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             runtimes = runtimes
                 .Select(x => x.Trim())
+                .Distinct(StringComparer.Ordinal)
                 .Where(x => !string.IsNullOrEmpty(x));
 
             return runtimes
