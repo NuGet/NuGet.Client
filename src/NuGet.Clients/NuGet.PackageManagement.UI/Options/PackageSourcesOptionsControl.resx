@@ -133,7 +133,7 @@
     <value>3, 0, 2, 0</value>
   </data>
   <data name="HeaderLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 30</value>
+    <value>93, 30</value>
   </data>
   <data name="HeaderLabel.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -196,66 +196,65 @@
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAD0
-        CwAAAk1TRnQBSQFMAgEBBAEAATABAAEwAQABEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
-        AwABIAMAAQEBAAEgBgABIP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AogADIAEuAwoBDgMA
-        AQEwAAMYASEDJgE4EAADLwFJAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJLAADJgE4
-        A1cB3wNXAd8DJgE4NAADOgFiAzoBYhwAA0wBkwEHASABoQH/AVYBWAFhAcwDDQESKAADPAFmAkEBQgFz
-        FAADLwFJAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJLAADKgFAAzwB/wM8Af8DKgFA
-        MAADOgFiA0AB/QNAAf0DOgFiGAABMwFAAYQB8gEHASABoQH/AQcBIAGhAf8BVwFYAV4BxAMHAQocAAMB
-        AQICSAFJAYgCUwFUAawDAAEBFAADLwFJAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJ
-        LAADKgFAAzwB/wM8Af8DKgFALAADOgFiA0AB/QM8Af8DPAH/A0AB/QM6AWIUAANQAZ0BBwEgAaEB/wEH
-        ASABoQH/AQcBIAGhAf8CVQFWAbIDAwEEFAADBwEJAVICUwGqAVMBVgFmAdcDCgENGAADLwFJAS4BigEy
-        Af8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJLAADKgFAAzwB/wM8Af8DKgFAKAADOgFiA0AB/QM8
-        Af8DPAH/AzwB/wM8Af8DQAH9AzoBYhAAAwIBAwJNAU4BlgEHASABoQH/AQcBIAGhAf8BBwEgAaEB/wNQ
-        AZ0DAAEBDAADEAEVAVUBVgFeAcYBMwFAAYQB8gMdASkcAAMvAUkBLgGKATIB/wEuAYoBMgH/AS4BigEy
-        Af8BLgGKATIB/wMvAUksAAMqAUADPAH/AzwB/wMqAUAkAAM6AWIDQAH9AzwB/wM8Af8DPAH/AzwB/wM8
-        Af8DPAH/A0AB/QM6AWIUAANFAX0BBwEgAaEB/wEHASABoQH/AQcBIAGhAf8DSAGGCAADHAEnAVEBVQFq
-        AdwBDQEmAZUB/gMzAVMMAAMvAUkDLwFJAy8BSQMvAUkDLwFJA0UBfQEuAYoBMgH/AS4BigEyAf8BLgGK
-        ATIB/wEuAYoBMgH/A0UBfQMvAUkDLwFJAy8BSQMvAUkDLwFJDAADOgFiCAADKgFAAzwB/wM8Af8DKgFA
-        CAADOgFiGAADQAH9AzwB/wNAAf0DUAGfAzwB/wM8Af8DUAGfA0AB/QM8Af8DQAH9GAADOwFkARkBJgGV
-        AfsBBwEgAaEB/wEHASABoQH/Aj8BQAFuAykBPwE9AUYBfQHtAQcBIAGhAf8CSAFJAYgQAAEuAYoBMgH/
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADW
+        CwAAAk1TRnQBSQFMAgEBBAEAATgBAAE4AQABEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        AwABIAMAAQEBAAEgBgABIP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AogADIAEuAwsBDgQB
+        MAADGAEhAyYBOBAAAy8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSSwAAyYBOANY
+        Ad8DWAHfAyYBODQAAzoBYgM6AWIcAANNAZMBBwEgAaEB/wFZAVoBYAHMAw4BEigAAzwBZgJBAUIBcxQA
+        Ay8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSSwAAyoBQAM8Af8DPAH/AyoBQDAA
+        AzoBYgNAAf0DQAH9AzoBYhgAATcBRAGAAfIBBwEgAaEB/wEHASABoQH/AVkBWgFcAcQDCAEKHAAEAgNJ
+        AYgCVAFVAawEARQAAy8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSSwAAyoBQAM8
+        Af8DPAH/AyoBQCwAAzoBYgNAAf0DPAH/AzwB/wNAAf0DOgFiFAADUAGdAQcBIAGhAf8BBwEgAaEB/wEH
+        ASABoQH/A1YBsgMDAQQUAAMHAQkDUwGqAVcBWQFjAdcDCgENGAADLwFJAS4BigEyAf8BLgGKATIB/wEu
+        AYoBMgH/AS4BigEyAf8DLwFJLAADKgFAAzwB/wM8Af8DKgFAKAADOgFiA0AB/QM8Af8DPAH/AzwB/wM8
+        Af8DQAH9AzoBYhAAAwIBAwNOAZYBBwEgAaEB/wEHASABoQH/AQcBIAGhAf8DUAGdBAEMAAMQARUBVwFZ
+        AV0BxgE3AUQBgAHyAx0BKRwAAy8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSSwA
+        AyoBQAM8Af8DPAH/AyoBQCQAAzoBYgNAAf0DPAH/AzwB/wM8Af8DPAH/AzwB/wM8Af8DQAH9AzoBYhQA
+        A0YBfQEHASABoQH/AQcBIAGhAf8BBwEgAaEB/wNJAYYIAAMcAScBVQFXAWgB3AEOAScBkwH+AzQBUwwA
+        Ay8BSQMvAUkDLwFJAy8BSQMvAUkDRgF9AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DRgF9
+        Ay8BSQMvAUkDLwFJAy8BSQMvAUkMAAM6AWIIAAMqAUADPAH/AzwB/wMqAUAIAAM6AWIYAANAAf0DPAH/
+        A0AB/QNQAZ8DPAH/AzwB/wNQAZ8DQAH9AzwB/wNAAf0YAAM7AWQBHAEmAZQB+wEHASABoQH/AQcBIAGh
+        Af8CPwFAAW4DKgE/AUMBSQF5Ae0BBwEgAaEB/wNJAYgQAAEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEu
+        AYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEy
+        Af8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/DAADQAH9AzoBYgQAAyoBQAM8
+        Af8DPAH/AyoBQAQAAzoBYgNAAf0YAAM8Af8DQAH9AzoBYgMqAUADPAH/AzwB/wMqAUADOgFiA0AB/QM8
+        Af8cAAMxAU4BLQE5AYQB9QEHASABoQH/ARUBLgGhAf0BIQEwAY0B+QEHASABoQH/AlcBWQG7AwIBAxAA
         AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGK
         ATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/
-        DAADQAH9AzoBYgQAAyoBQAM8Af8DPAH/AyoBQAQAAzoBYgNAAf0YAAM8Af8DQAH9AzoBYgMqAUADPAH/
-        AzwB/wMqAUADOgFiA0AB/QM8Af8cAAMxAU4BKgE1AYYB9QEHASABoQH/ARMBLAGhAf0BHwEtAY4B+QEH
-        ASABoQH/AlYBWQG7AwIBAxAAAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEu
-        AYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEy
-        Af8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8MAAM8Af8DQAH9AzoBYgMqAUADPAH/AzwB/wMqAUADOgFi
-        A0AB/QM8Af8YAANAAf0DOgFiBAADKgFAAzwB/wM8Af8DKgFABAADOgFiA0AB/SAAAycBOgEtATwBhAHz
-        AQcBIAGhAf8BBwEgAaEB/wFLAU8BdgHlAw8BFBQAAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEy
-        Af8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEu
-        AYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8MAANAAf0DPAH/A0AB/QNQAZ8DPAH/
-        AzwB/wNQAZ8DQAH9AzwB/wNAAf0YAAM6AWIIAAMqAUADPAH/AzwB/wMqAUAIAAM6AWIgAAI+AT8BbAEN
-        ASYBlgH+AQcBIAGhAf8BBwEgAaEB/wEdASkBkwH6AykBPxQAAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/
+        AS4BigEyAf8MAAM8Af8DQAH9AzoBYgMqAUADPAH/AzwB/wMqAUADOgFiA0AB/QM8Af8YAANAAf0DOgFi
+        BAADKgFAAzwB/wM8Af8DKgFABAADOgFiA0AB/SAAAycBOgEzAT8BggHzAQcBIAGhAf8BBwEgAaEB/wFP
+        AVQBcwHlAw8BFBQAAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/
         AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGK
-        ATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8MAAM6AWIDQAH9AzwB/wM8
-        Af8DPAH/AzwB/wM8Af8DPAH/A0AB/QM6AWIkAAMqAUADPAH/AzwB/wMqAUAoAAI+AT8BbAENASYBlgH+
-        AQcBIAGhAf8BQAFIAXcB6gFIAU8BcwHmAQcBIAGhAf8BQQFLAXsB6wMYASEQAAMvAUkDLwFJAy8BSQMv
-        AUkDLwFJA0UBfQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/A0UBfQMvAUkDLwFJAy8BSQMv
-        AUkDLwFJEAADOgFiA0AB/QM8Af8DPAH/AzwB/wM8Af8DQAH9AzoBYigAAyoBQAM8Af8DPAH/AyoBQCQA
-        Aj4BPwFsAQ0BJgGWAf4BBwEgAaEB/wENASYBlgH+AjABMQFNAxMBGgFVAVYBXgHGAQcBIAGhAf8BVAFW
-        AWQB0gMKAQ0gAAMvAUkBLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wMvAUkoAAM6AWIDQAH9
-        AzwB/wM8Af8DQAH9AzoBYiwAAyoBQAM8Af8DPAH/AyoBQCAAAzYBWQENASYBlgH+AQcBIAGhAf8BBwEg
-        AaEB/wJNAU4BlQgAAwQBBgJOAU8BlwEHASABoQH/AlUBVgGxAwEBAhwAAy8BSQEuAYoBMgH/AS4BigEy
-        Af8BLgGKATIB/wEuAYoBMgH/Ay8BSSwAAzoBYgNAAf0DQAH9AzoBYjAAAyoBQAM8Af8DPAH/AyoBQCAA
-        AlIBUwGoAQcBIAGhAf8BBwEgAaEB/wFVAVcBZwHVAwcBCRAAAzoBYgElATcBjAH3A0gBhhwAAy8BSQEu
-        AYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSTAAAzoBYgM6AWI0AAMmATgDVwHfA1cB3wMm
-        ATggAAMvAUkBMwFAAYQB8gE/AUoBfAHsAyABLxgAAyQBNQFNAVABbwHiAzcBWxgAAy8BSQEuAYoBMgH/
-        AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSaAAAwMBBAMCAQMgAAMMARADGwEmGAADLwFJAS4BigEy
-        Af8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJFAABQgFNAT4HAAE+AwABKAMAAUADAAEgAwABAQEA
-        AQEGAAEBFgAD/4EABP8BHwH+AXgBHwH8AT8B/gF/AQ8B/AH4AR8B/AE/AfwBPwEHAfAB+AEfAfwBPwH4
-        AR8BAwHhAfgBHwH8AT8B8AEPAQEBwwH4AR8B/AE/AeABBwHBAYcCAAHsATcB4AEHAeABDwIAAeQBJwHg
-        AQcB8AEPAgAB4AEHAeQBJwH4AR8CAAHgAQcB7AE3AfgBHwIAAeABBwH8AT8B8AEPAgAB8AEPAfwBPwHg
-        AQcB+AEfAfgBHwH8AT8BwQGDAfgBHwH8AT8B/AE/AcEB4wH4AR8B/gF/AfwBPwHDAfEB+AEfBP8B5wH5
-        AfgBHws=
+        ATIB/wEuAYoBMgH/AS4BigEyAf8MAANAAf0DPAH/A0AB/QNQAZ8DPAH/AzwB/wNQAZ8DQAH9AzwB/wNA
+        Af0YAAM6AWIIAAMqAUADPAH/AzwB/wMqAUAIAAM6AWIgAAM/AWwBDgEnAZQB/gEHASABoQH/AQcBIAGh
+        Af8BHgEqAZAB+gMqAT8UAAEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGK
+        ATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/
+        AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/DAADOgFiA0AB/QM8Af8DPAH/AzwB/wM8Af8DPAH/AzwB/wNA
+        Af0DOgFiJAADKgFAAzwB/wM8Af8DKgFAKAADPwFsAQ4BJwGUAf4BBwEgAaEB/wFGAUsBcwHqAU4BUgFx
+        AeYBBwEgAaEB/wFHAU4BdwHrAxgBIRAAAy8BSQMvAUkDLwFJAy8BSQMvAUkDRgF9AS4BigEyAf8BLgGK
+        ATIB/wEuAYoBMgH/AS4BigEyAf8DRgF9Ay8BSQMvAUkDLwFJAy8BSQMvAUkQAAM6AWIDQAH9AzwB/wM8
+        Af8DPAH/AzwB/wNAAf0DOgFiKAADKgFAAzwB/wM8Af8DKgFAJAADPwFsAQ4BJwGUAf4BBwEgAaEB/wEO
+        AScBlAH+AzEBTQMTARoBVwFZAV0BxgEHASABoQH/AVYBWQFiAdIDCgENIAADLwFJAS4BigEyAf8BLgGK
+        ATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJKAADOgFiA0AB/QM8Af8DPAH/A0AB/QM6AWIsAAMqAUADPAH/
+        AzwB/wMqAUAgAAM2AVkBDgEnAZQB/gEHASABoQH/AQcBIAGhAf8DTgGVCAADBQEGAk4BTwGXAQcBIAGh
+        Af8CVQFXAbEEAhwAAy8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSSwAAzoBYgNA
+        Af0DQAH9AzoBYjAAAyoBQAM8Af8DPAH/AyoBQCAAAlIBVAGoAQcBIAGhAf8BBwEgAaEB/wFYAVoBZAHV
+        AwcBCRAAAzoBYgEqATkBiwH3A0kBhhwAAy8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/
+        Ay8BSTAAAzoBYgM6AWI0AAMmATgDWAHfA1gB3wMmATggAAMvAUkBNwFEAYAB8gFEAU4BeQHsAyEBLxgA
+        AyQBNQFRAVQBawHiAzgBWxgAAy8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSaAA
+        AwMBBAMCAQMgAAMMARADGwEmGAADLwFJAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJ
+        FAABQgFNAT4HAAE+AwABKAMAAUADAAEgAwABAQEAAQEGAAEBFgAD/4EABP8BHwH+AXgBHwH8AT8B/gF/
+        AQ8B/AH4AR8B/AE/AfwBPwEHAfAB+AEfAfwBPwH4AR8BAwHhAfgBHwH8AT8B8AEPAQEBwwH4AR8B/AE/
+        AeABBwHBAYcCAAHsATcB4AEHAeABDwIAAeQBJwHgAQcB8AEPAgAB4AEHAeQBJwH4AR8CAAHgAQcB7AE3
+        AfgBHwIAAeABBwH8AT8B8AEPAgAB8AEPAfwBPwHgAQcB+AEfAfgBHwH8AT8BwQGDAfgBHwH8AT8B/AE/
+        AcEB4wH4AR8B/gF/AfwBPwHDAfEB+AEfBP8B5wH5AfgBHws=
 </value>
   </data>
   <data name="removeButton.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="removeButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>390, 0</value>
+    <value>453, 0</value>
   </data>
   <data name="removeButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 3, 0</value>
@@ -278,87 +277,6 @@
   <data name="&gt;&gt;removeButton.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="MoveUpButton.AccessibleDescription" xml:space="preserve">
-    <value>Move the selected source up</value>
-  </data>
-  <data name="MoveUpButton.AccessibleName" xml:space="preserve">
-    <value>Move package source up</value>
-  </data>
-  <data name="MoveUpButton.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="MoveUpButton.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
-  </data>
-  <data name="MoveUpButton.ImageIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="MoveUpButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>423, 0</value>
-  </data>
-  <data name="MoveUpButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 3, 0</value>
-  </data>
-  <data name="MoveUpButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>30, 30</value>
-  </data>
-  <data name="MoveUpButton.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;MoveUpButton.Name" xml:space="preserve">
-    <value>MoveUpButton</value>
-  </data>
-  <data name="&gt;&gt;MoveUpButton.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MoveUpButton.Parent" xml:space="preserve">
-    <value>tableLayoutPanel2</value>
-  </data>
-  <data name="&gt;&gt;MoveUpButton.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="MoveDownButton.AccessibleDescription" xml:space="preserve">
-    <value>Move the selected source down</value>
-  </data>
-  <data name="MoveDownButton.AccessibleName" xml:space="preserve">
-    <value>Move package source down</value>
-  </data>
-  <data name="MoveDownButton.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="MoveDownButton.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
-  </data>
-  <data name="MoveDownButton.ImageIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="MoveDownButton.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="MoveDownButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>456, 0</value>
-  </data>
-  <data name="MoveDownButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="MoveDownButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>30, 30</value>
-  </data>
-  <data name="MoveDownButton.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;MoveDownButton.Name" xml:space="preserve">
-    <value>MoveDownButton</value>
-  </data>
-  <data name="&gt;&gt;MoveDownButton.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MoveDownButton.Parent" xml:space="preserve">
-    <value>tableLayoutPanel2</value>
-  </data>
-  <data name="&gt;&gt;MoveDownButton.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <metadata name="packageListToolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
@@ -378,7 +296,7 @@
     <value>NoControl</value>
   </data>
   <data name="updateButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>369, 280</value>
+    <value>408, 292</value>
   </data>
   <data name="updateButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 0, 2</value>
@@ -387,7 +305,7 @@
     <value>11, 0, 11, 0</value>
   </data>
   <data name="updateButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>117, 34</value>
+    <value>78, 22</value>
   </data>
   <data name="updateButton.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -426,7 +344,7 @@
     <value>NoControl</value>
   </data>
   <data name="BrowseButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>317, 280</value>
+    <value>370, 292</value>
   </data>
   <data name="BrowseButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -435,7 +353,7 @@
     <value>2, 0, 2, 0</value>
   </data>
   <data name="BrowseButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 34</value>
+    <value>34, 22</value>
   </data>
   <data name="BrowseButton.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -465,13 +383,13 @@
     <value>NoControl</value>
   </data>
   <data name="NewPackageSourceLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 284</value>
+    <value>2, 296</value>
   </data>
   <data name="NewPackageSourceLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
   </data>
   <data name="NewPackageSourceLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 25</value>
+    <value>44, 13</value>
   </data>
   <data name="NewPackageSourceLabel.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -495,7 +413,7 @@
     <value>Left, Right</value>
   </data>
   <data name="NewPackageSource.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 281</value>
+    <value>50, 293</value>
   </data>
   <data name="NewPackageSource.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -504,7 +422,7 @@
     <value>1000</value>
   </data>
   <data name="NewPackageSource.Size" type="System.Drawing.Size, System.Drawing">
-    <value>221, 31</value>
+    <value>316, 20</value>
   </data>
   <data name="NewPackageSource.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -531,13 +449,13 @@
     <value>NoControl</value>
   </data>
   <data name="NewPackageNameLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 248</value>
+    <value>2, 271</value>
   </data>
   <data name="NewPackageNameLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
   </data>
   <data name="NewPackageNameLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>74, 25</value>
+    <value>38, 13</value>
   </data>
   <data name="NewPackageNameLabel.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -561,13 +479,13 @@
     <value>Left, Right</value>
   </data>
   <data name="NewPackageName.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 245</value>
+    <value>50, 268</value>
   </data>
   <data name="NewPackageName.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
   </data>
   <data name="NewPackageName.Size" type="System.Drawing.Size, System.Drawing">
-    <value>221, 31</value>
+    <value>316, 20</value>
   </data>
   <data name="NewPackageName.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -603,7 +521,7 @@
     <value>GrowAndShrink</value>
   </data>
   <data name="tableLayoutPanel2.ColumnCount" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>3</value>
   </data>
   <data name="addButton.AccessibleDescription" xml:space="preserve">
     <value>Add a new package source</value>
@@ -624,7 +542,7 @@
     <value>NoControl</value>
   </data>
   <data name="addButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>357, 0</value>
+    <value>420, 0</value>
   </data>
   <data name="addButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 3, 0</value>
@@ -678,7 +596,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel2.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="HeaderLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="addButton" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="removeButton" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="MoveUpButton" Row="0" RowSpan="1" Column="3" ColumnSpan="1" /&gt;&lt;Control Name="MoveDownButton" Row="0" RowSpan="1" Column="4" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,100,Absolute,33,Absolute,33,Absolute,33,Absolute,30" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="HeaderLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="addButton" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="removeButton" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,100,Absolute,33,Absolute,33,Absolute,20,Absolute,20" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="MachineWideSourcesLabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -687,13 +605,13 @@
     <value>NoControl</value>
   </data>
   <data name="MachineWideSourcesLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 133</value>
+    <value>0, 168</value>
   </data>
   <data name="MachineWideSourcesLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="MachineWideSourcesLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>321, 25</value>
+    <value>161, 13</value>
   </data>
   <data name="MachineWideSourcesLabel.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -726,7 +644,7 @@
     <value>False</value>
   </data>
   <data name="MachineWidePackageSourcesListBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 161</value>
+    <value>3, 184</value>
   </data>
   <data name="MachineWidePackageSourcesListBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 3, 0, 12</value>
@@ -741,7 +659,7 @@
     <value>MachineWidePackageSourcesListBox</value>
   </data>
   <data name="&gt;&gt;MachineWidePackageSourcesListBox.Type" xml:space="preserve">
-    <value>NuGet.Options.PackageSourceCheckedListBox, NuGet.PackageManagement.UI, Version=0.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35</value>
+    <value>NuGet.Options.PackageSourceCheckedListBox, NuGet.PackageManagement.UI, Version=6.1.0.32767, Culture=neutral, PublicKeyToken=31bf3856ad364e35</value>
   </data>
   <data name="&gt;&gt;MachineWidePackageSourcesListBox.Parent" xml:space="preserve">
     <value>tableLayoutPanel1</value>
@@ -792,7 +710,7 @@
     <value>3, 0, 0, 3</value>
   </data>
   <data name="PackageSourcesListBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>483, 96</value>
+    <value>483, 131</value>
   </data>
   <data name="PackageSourcesListBox.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -801,7 +719,7 @@
     <value>PackageSourcesListBox</value>
   </data>
   <data name="&gt;&gt;PackageSourcesListBox.Type" xml:space="preserve">
-    <value>NuGet.Options.PackageSourceCheckedListBox, NuGet.PackageManagement.UI, Version=0.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35</value>
+    <value>NuGet.Options.PackageSourceCheckedListBox, NuGet.PackageManagement.UI, Version=6.1.0.32767, Culture=neutral, PublicKeyToken=31bf3856ad364e35</value>
   </data>
   <data name="&gt;&gt;PackageSourcesListBox.Parent" xml:space="preserve">
     <value>tableLayoutPanel1</value>
@@ -817,7 +735,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADq
-        DwAAAk1TRnQBSQFMAgEBBAEAATABAAEwAQABIAEAASABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        DwAAAk1TRnQBSQFMAgEBBAEAATgBAAE4AQABIAEAASABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABgAMAAUADAAEBAQABCAYAASAYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -895,7 +813,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABS
-        GgAAAk1TRnQBSQFMAgEBBAEAATABAAEwAQABQAEAAUABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        GgAAAk1TRnQBSQFMAgEBBAEAATgBAAE4AQABQAEAAUABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         BAABAQIAAYADAAEBAQABCAYAAYAYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
