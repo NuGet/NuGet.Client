@@ -1137,6 +1137,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="SourceNotConsidered" xml:space="preserve">
     <value>Versions from {0} were not considered</value>
     <comment>0 - source name</comment>
+  </data>
   <data name="Warning_ProjectDependencyMissingVersion" xml:space="preserve">
     <value>Project dependency '{0}' does not specify a version. Include a version for the dependency to ensure consistent restore results.</value>
     <comment>0 - package id</comment>
