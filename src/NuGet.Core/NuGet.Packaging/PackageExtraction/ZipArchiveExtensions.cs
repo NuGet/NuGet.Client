@@ -66,6 +66,19 @@ namespace NuGet.Packaging
             return fileFullPath;
         }
 
+        private static readonly int UpdateFileTimeFromEntryMaxRetries = GetUpdateFileTimeFromEntryMaxRetries();
+
+        private static int GetUpdateFileTimeFromEntryMaxRetries()
+        {
+            string value = Environment.GetEnvironmentVariable("NUGET_UpdateFileTime_MaxRetries");
+            if (int.TryParse(value, out int maxRetries) && maxRetries > 0)
+            {
+                return maxRetries;
+            }
+
+            return 5;
+        }
+
         public static void UpdateFileTimeFromEntry(this ZipArchiveEntry entry, string fileFullPath, ILogger logger)
         {
             var attr = File.GetAttributes(fileFullPath);
@@ -85,10 +98,8 @@ namespace NuGet.Packaging
                             File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
                             successful = true;
                         }
-                        catch (IOException) when (retry < 5)
+                        catch (IOException) when (retry < UpdateFileTimeFromEntryMaxRetries)
                         {
-                            // Most likely cause is anti-virus (Windows doesn't allow file metadata to be changed
-                            // when the file is open
                             Thread.Sleep(1 << retry);
                             retry++;
                         }
