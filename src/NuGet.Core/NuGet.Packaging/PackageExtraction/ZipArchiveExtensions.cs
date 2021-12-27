@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using NuGet.Common;
 
 namespace NuGet.Packaging
@@ -75,7 +76,23 @@ namespace NuGet.Packaging
             {
                 try
                 {
-                    File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
+                    int retry = 0;
+                    bool successful = false;
+                    while (!successful)
+                    {
+                        try
+                        {
+                            File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
+                            successful = true;
+                        }
+                        catch (IOException) when (retry < 5)
+                        {
+                            // Most likely cause is anti-virus (Windows doesn't allow file metadata to be changed
+                            // when the file is open
+                            Thread.Sleep(1 << retry);
+                            retry++;
+                        }
+                    }
                 }
                 catch (ArgumentOutOfRangeException ex)
                 {
