@@ -6,14 +6,17 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test.PackageExtraction
 {
     public class ZipArchiveExtensionsTests
     {
-        [Fact]
+        // Trying to change a file timestamp when the file is open only throws on Windows
+        [PlatformFact(Platform.Windows)]
         public void UpdateFileTimeFromEntry_FileBusyForShortTime_Retries()
         {
             // Arrange
@@ -22,12 +25,23 @@ namespace NuGet.Packaging.Test.PackageExtraction
             FileStream fileStream = null;
             try
             {
+                // At the time this test was written, UpdateFileTimeFromEntry's retry delay is exponential, with the max retries waiting
+                // Math.Pow(2, MaxRetries) - 1 milliseconds. Given this test depends on timing of multiple tasks that are not synchronised,
+                // this test is at high risk of being flakey, especially when tests are run in parallel, meaning the CPU is busy and might
+                // not run continuations as soon as they're ready. Therefore, use 13 retries so retries keep happening for about 8.2 seconds
+                // which should be plenty given the simulated AV locks the file for only 5 milliseconds + task scheduling latency.
+                Mock<IEnvironmentVariableReader> environmentVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentVariableReader.Setup(x => x.GetEnvironmentVariable("NUGET_UpdateFileTime_MaxRetries"))
+                    .Returns("13");
+                ZipArchiveExtensions.Testable zipArchiveExtensions = new ZipArchiveExtensions.Testable(environmentVariableReader.Object);
+
                 using MemoryStream memoryStream = new();
                 using ZipArchive zipArchive = new(memoryStream, ZipArchiveMode.Create);
 
                 ZipArchiveEntry zipEntry = zipArchive.CreateEntry("test.file");
                 DateTime expectedTime = DateTime.UtcNow.AddHours(-5);
                 zipEntry.LastWriteTime = expectedTime;
+
 
                 fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
                 Task avSimulation = Task.Run(async () =>
@@ -37,7 +51,7 @@ namespace NuGet.Packaging.Test.PackageExtraction
                 });
 
                 // Act
-                zipEntry.UpdateFileTimeFromEntry(tempFile, NullLogger.Instance);
+                zipArchiveExtensions.UpdateFileTimeFromEntry(zipEntry, tempFile, NullLogger.Instance);
 
                 // Assert
                 var fileLastWriteTime = File.GetLastWriteTimeUtc(tempFile);
@@ -51,13 +65,17 @@ namespace NuGet.Packaging.Test.PackageExtraction
             }
         }
 
-        [Fact]
+        // Trying to change a file timestamp when the file is open only throws on Windows
+        [PlatformFact(Platform.Windows)]
         public async Task UpdateFileTimeFromEntry_FileBusyForLongTime_Throws()
         {
             // Arrange
             string tempFile = Path.GetTempFileName();
             try
             {
+                Mock<IEnvironmentVariableReader> environmentVariableReader = new Mock<IEnvironmentVariableReader>();
+                ZipArchiveExtensions.Testable zipArchiveExtensions = new ZipArchiveExtensions.Testable(environmentVariableReader.Object);
+
                 using MemoryStream memoryStream = new();
                 using ZipArchive zipArchive = new(memoryStream, ZipArchiveMode.Create);
 

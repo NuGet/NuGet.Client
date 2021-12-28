@@ -66,54 +66,67 @@ namespace NuGet.Packaging
             return fileFullPath;
         }
 
-        private static readonly int UpdateFileTimeFromEntryMaxRetries = GetUpdateFileTimeFromEntryMaxRetries();
-
-        private static int GetUpdateFileTimeFromEntryMaxRetries()
-        {
-            string value = Environment.GetEnvironmentVariable("NUGET_UpdateFileTime_MaxRetries");
-            if (int.TryParse(value, out int maxRetries) && maxRetries > 0)
-            {
-                return maxRetries;
-            }
-
-            return 5;
-        }
-
         public static void UpdateFileTimeFromEntry(this ZipArchiveEntry entry, string fileFullPath, ILogger logger)
         {
-            var attr = File.GetAttributes(fileFullPath);
+            Testable.Default.UpdateFileTimeFromEntry(entry, fileFullPath, logger);
+        }
 
-            if (!attr.HasFlag(FileAttributes.Directory) &&
-                entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
-                entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
+        internal class Testable
+        {
+            public static Testable Default { get; } = new Testable(EnvironmentVariableWrapper.Instance);
+
+            internal Testable(IEnvironmentVariableReader environmentVariableReader)
             {
-                try
+                _updateFileTimeFromEntryMaxRetries = 5;
+                string value = environmentVariableReader.GetEnvironmentVariable("NUGET_UpdateFileTime_MaxRetries");
+                if (int.TryParse(value, out int maxRetries) && maxRetries > 0)
                 {
-                    int retry = 0;
-                    bool successful = false;
-                    while (!successful)
+                    _updateFileTimeFromEntryMaxRetries = maxRetries;
+                }
+            }
+
+            private readonly int _updateFileTimeFromEntryMaxRetries;
+
+            public void UpdateFileTimeFromEntry(ZipArchiveEntry entry, string fileFullPath, ILogger logger)
+            {
+                if (entry == null) throw new ArgumentNullException(nameof(entry));
+                if (fileFullPath == null) throw new ArgumentNullException(nameof(fileFullPath));
+                if (logger == null) throw new ArgumentNullException(nameof(logger));
+
+                var attr = File.GetAttributes(fileFullPath);
+
+                if (!attr.HasFlag(FileAttributes.Directory) &&
+                    entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
+                    entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
+                {
+                    try
                     {
-                        try
+                        int retry = 0;
+                        bool successful = false;
+                        while (!successful)
                         {
-                            File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
-                            successful = true;
-                        }
-                        catch (IOException) when (retry < UpdateFileTimeFromEntryMaxRetries)
-                        {
-                            Thread.Sleep(1 << retry);
-                            retry++;
+                            try
+                            {
+                                File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
+                                successful = true;
+                            }
+                            catch (IOException) when (retry < _updateFileTimeFromEntryMaxRetries)
+                            {
+                                Thread.Sleep(1 << retry);
+                                retry++;
+                            }
                         }
                     }
-                }
-                catch (ArgumentOutOfRangeException ex)
-                {
-                    string message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.FailedFileTime,
-                        fileFullPath, // {0}
-                        ex.Message); // {1}
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        string message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.FailedFileTime,
+                            fileFullPath, // {0}
+                            ex.Message); // {1}
 
-                    logger.LogVerbose(message);
+                        logger.LogVerbose(message);
+                    }
                 }
             }
         }
