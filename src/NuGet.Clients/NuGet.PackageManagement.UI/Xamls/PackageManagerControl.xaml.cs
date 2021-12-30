@@ -1010,31 +1010,38 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         internal async Task UpdateDetailPaneAsync(CancellationToken cancellationToken)
         {
-            PackageItemViewModel selectedItem = _packageList.SelectedItem;
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
-            int selectedIndex = _packageList.SelectedIndex;
-            int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
-
-            if (selectedItem == null)
+            try
             {
-                _packageDetail.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                _packageDetail.Visibility = Visibility.Visible;
-                _packageDetail.DataContext = _detailModel;
+                PackageItemViewModel selectedItem = _packageList.SelectedItem;
+                IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
+                int selectedIndex = _packageList.SelectedIndex;
+                int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
 
-                EmitSearchSelectionTelemetry(selectedItem);
-
-                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
-                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
-
-                _packageDetail.ScrollToHome();
-
-                if (cancellationToken.IsCancellationRequested)
+                if (selectedItem == null)
                 {
-                    return;
+                    _packageDetail.Visibility = Visibility.Hidden;
                 }
+                else
+                {
+                    _packageDetail.Visibility = Visibility.Visible;
+                    _packageDetail.DataContext = _detailModel;
+
+                    EmitSearchSelectionTelemetry(selectedItem);
+
+                    await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                    _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
+
+                    _packageDetail.ScrollToHome();
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // cancellation was requested, this is expected.
             }
         }
 
