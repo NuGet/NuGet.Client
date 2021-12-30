@@ -1001,7 +1001,17 @@ namespace NuGet.PackageManagement.UI
             oldCts?.Dispose();
 
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(async () => await UpdateDetailPaneAsync(loadCts.Token))
+                .RunAsync(async () =>
+                {
+                    try
+                    {
+                        await UpdateDetailPaneAsync(loadCts.Token);
+                    }
+                    catch (OperationCanceledException) when (loadCts.Token.IsCancellationRequested)
+                    {
+                        // Expected
+                    }
+                })
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 
@@ -1010,38 +1020,31 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         internal async Task UpdateDetailPaneAsync(CancellationToken cancellationToken)
         {
-            try
+            PackageItemViewModel selectedItem = _packageList.SelectedItem;
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
+            int selectedIndex = _packageList.SelectedIndex;
+            int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+
+            if (selectedItem == null)
             {
-                PackageItemViewModel selectedItem = _packageList.SelectedItem;
-                IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
-                int selectedIndex = _packageList.SelectedIndex;
-                int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
-
-                if (selectedItem == null)
-                {
-                    _packageDetail.Visibility = Visibility.Hidden;
-                }
-                else
-                {
-                    _packageDetail.Visibility = Visibility.Visible;
-                    _packageDetail.DataContext = _detailModel;
-
-                    EmitSearchSelectionTelemetry(selectedItem);
-
-                    await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
-                    _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
-
-                    _packageDetail.ScrollToHome();
-
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-                }
+                _packageDetail.Visibility = Visibility.Hidden;
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            else
             {
-                // cancellation was requested, this is expected.
+                _packageDetail.Visibility = Visibility.Visible;
+                _packageDetail.DataContext = _detailModel;
+
+                EmitSearchSelectionTelemetry(selectedItem);
+
+                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
+
+                _packageDetail.ScrollToHome();
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
             }
         }
 

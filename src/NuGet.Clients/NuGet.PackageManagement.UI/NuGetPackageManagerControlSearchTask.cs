@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
@@ -38,8 +39,15 @@ namespace NuGet.PackageManagement.UI
                 oldCts?.Cancel();
                 oldCts?.Dispose();
 
-                await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
-                SetStatus(VsSearchTaskStatus.Completed);
+                try
+                {
+                    await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
+                    SetStatus(VsSearchTaskStatus.Completed);
+                }
+                catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
+                {
+                    // Expected
+                }
             }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
         }
 
