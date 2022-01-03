@@ -3272,7 +3272,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WithPackageNamesacesConfiguredAndNoMatchingSourceForAPackage_Fails()
+        public async Task RestoreCommand_WithPackageNamespacesConfiguredAndNoMatchingSourceForAPackage_Fails()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -3355,7 +3355,7 @@ namespace NuGet.Commands.FuncTest
 
             Assert.Equal(1, log.Errors);
             log.ErrorMessages.TryPeek(out string message);
-            Assert.Equal("NU1100: Unable to resolve 'PackageB (>= 1.0.0)' for 'net5.0'.", message);
+            Assert.Equal($"NU1100: Unable to resolve 'PackageB (>= 1.0.0)' for 'net5.0'. PackageSourceMapping is enabled, the following source(s) were not considered: {pathContext.PackageSource}, {packageSource2}.", message);
 
             //packageA should be installed from source2
             string packageASource = restoreGraph.Install.ElementAt(0).Provider.Source.Name;

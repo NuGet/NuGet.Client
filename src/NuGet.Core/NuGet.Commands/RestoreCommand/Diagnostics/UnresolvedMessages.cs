@@ -27,7 +27,17 @@ namespace NuGet.Commands
         /// </summary>
         internal static async Task LogAsync(IEnumerable<IRestoreTargetGraph> graphs, RemoteWalkContext context, CancellationToken token)
         {
-            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e => GetMessageAsync(graph.TargetGraphName, e, context.FilterDependencyProvidersForLibrary(e), context.CacheContext, context.Logger, token))).ToArray();
+            var tasks = graphs.SelectMany(graph => graph.Unresolved.Select(e =>
+            GetMessageAsync(
+                graph.TargetGraphName,
+                e,
+                context.FilterDependencyProvidersForLibrary(e),
+                context.PackageSourceMapping.IsEnabled,
+                context.RemoteLibraryProviders,
+                context.CacheContext,
+                context.Logger,
+                token))).ToArray();
+
             var messages = await Task.WhenAll(tasks);
 
             await context.Logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(messages));
@@ -45,6 +55,8 @@ namespace NuGet.Commands
                         ddi.Framework.ToString(),
                         unresolved,
                         context.FilterDependencyProvidersForLibrary(unresolved),
+                        context.PackageSourceMapping.IsEnabled,
+                        context.RemoteLibraryProviders,
                         context.CacheContext,
                         context.Logger,
                         token));
@@ -60,7 +72,9 @@ namespace NuGet.Commands
         /// </summary>
         internal static async Task<RestoreLogMessage> GetMessageAsync(string targetGraphName,
             LibraryRange unresolved,
-            IList<IRemoteDependencyProvider> remoteLibraryProviders,
+            IList<IRemoteDependencyProvider> applicableRemoteLibraryProviders,
+            bool isPackageSourceMappingEnabled,
+            IList<IRemoteDependencyProvider> allRemoteLibraryProviders,
             SourceCacheContext sourceCacheContext,
             ILogger logger,
             CancellationToken token)
@@ -91,11 +105,11 @@ namespace NuGet.Commands
                     message = string.Format(CultureInfo.CurrentCulture, Strings.Error_ProjectDoesNotExist, unresolved.Name);
                 }
             }
-            else if (unresolved.TypeConstraintAllows(LibraryDependencyTarget.Package) && remoteLibraryProviders.Count > 0)
+            else if (unresolved.TypeConstraintAllows(LibraryDependencyTarget.Package) && applicableRemoteLibraryProviders.Count > 0)
             {
                 // Package
                 var range = unresolved.VersionRange ?? VersionRange.All;
-                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, remoteLibraryProviders, sourceCacheContext, logger, token);
+                var sourceInfo = await GetSourceInfosForIdAsync(unresolved.Name, applicableRemoteLibraryProviders, sourceCacheContext, logger, token);
                 var allVersions = new SortedSet<NuGetVersion>(sourceInfo.SelectMany(e => e.Value));
 
                 if (allVersions.Count == 0)
@@ -107,6 +121,15 @@ namespace NuGet.Commands
                                                   .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
 
                     message = string.Format(CultureInfo.CurrentCulture, Strings.Error_NoPackageVersionsExist, unresolved.Name, sourceList);
+
+                    if (isPackageSourceMappingEnabled && applicableRemoteLibraryProviders.Count != allRemoteLibraryProviders.Count)
+                    {
+                        string sourcesNotConsidered = FormatProviderNames(GetUnusedLibraryProviders(applicableRemoteLibraryProviders, allRemoteLibraryProviders));
+
+                        message += ". " + string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_SourceMappingEnabledNoMatchingPackageSources,
+                            sourcesNotConsidered);
+                    }
                 }
                 else
                 {
@@ -132,6 +155,15 @@ namespace NuGet.Commands
 
                     lines.AddRange(sourceInfo.Select(e => FormatSourceInfo(e, range)));
 
+                    if (isPackageSourceMappingEnabled && allRemoteLibraryProviders.Count != applicableRemoteLibraryProviders.Count)
+                    {
+                        lines.AddRange(GetUnusedLibraryProviders(applicableRemoteLibraryProviders, allRemoteLibraryProviders)
+                            .OrderBy(e => e.Source.Name)
+                            .Select(packageSource => string.Format(CultureInfo.CurrentCulture,
+                                            Strings.SourceNotConsidered,
+                                            packageSource.Source.Name)));
+                    }
+
                     message = DiagnosticUtility.GetMultiLineMessage(lines);
                 }
             }
@@ -144,11 +176,31 @@ namespace NuGet.Commands
                     unresolved.ToString(),
                     targetGraphName);
 
+                if (isPackageSourceMappingEnabled && applicableRemoteLibraryProviders.Count != allRemoteLibraryProviders.Count)
+                {
+                    message += " " + string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_SourceMappingEnabledNoMatchingPackageSources,
+                            FormatProviderNames(allRemoteLibraryProviders));
+                }
+
                 // Set again for clarity
                 code = NuGetLogCode.NU1100;
             }
 
             return RestoreLogMessage.CreateError(code, message, unresolved.Name, targetGraphName);
+        }
+
+        private static IEnumerable<IRemoteDependencyProvider> GetUnusedLibraryProviders(IList<IRemoteDependencyProvider> applicableRemoteLibraryProviders, IList<IRemoteDependencyProvider> allRemoteLibraryProviders)
+        {
+            return allRemoteLibraryProviders
+                    .Where(e => !applicableRemoteLibraryProviders.Contains(e))
+                    .Select(e => e);
+        }
+
+        private static string FormatProviderNames(IEnumerable<IRemoteDependencyProvider> allRemoteLibraryProviders)
+        {
+            return string.Join(", ", allRemoteLibraryProviders.Select(e => e.Source.Name)
+                    .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
         }
 
         /// <summary>
