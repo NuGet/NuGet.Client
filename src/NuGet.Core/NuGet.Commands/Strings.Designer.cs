@@ -1709,6 +1709,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PackageSourceMapping is enabled, the following source(s) were not considered: {0}..
+        /// </summary>
+        internal static string Log_SourceMappingEnabledNoMatchingPackageSources {
+            get {
+                return ResourceManager.GetString("Log_SourceMappingEnabledNoMatchingPackageSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The targets file for {0} at location {1} does not exist, no-op is not possible. Continuing restore..
         /// </summary>
         internal static string Log_TargetsFileNotOnDisk {
@@ -2128,6 +2137,15 @@ namespace NuGet.Commands {
         internal static string Source_InvalidFormatValue {
             get {
                 return ResourceManager.GetString("Source_InvalidFormatValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Versions from {0} were not considered.
+        /// </summary>
+        internal static string SourceNotConsidered {
+            get {
+                return ResourceManager.GetString("SourceNotConsidered", resourceCulture);
             }
         }
         
