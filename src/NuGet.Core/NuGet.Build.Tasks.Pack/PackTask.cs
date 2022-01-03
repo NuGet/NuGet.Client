@@ -8,6 +8,8 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
 using ILogger = NuGet.Common.ILogger;
+using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
+using WarningPropertiesCollection = NuGet.Commands.PackCommand.WarningPropertiesCollection;
 
 namespace NuGet.Build.Tasks.Pack
 {
@@ -115,6 +117,7 @@ namespace NuGet.Build.Tasks.Pack
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;
+                var packArgs = logic.GetPackArgs(request);
 
                 // If packing using a Nuspec file, we don't need to build a PackageBuilder here
                 // as the package builder is built by reading the manifest file later in the code path.
@@ -122,9 +125,16 @@ namespace NuGet.Build.Tasks.Pack
                 if (string.IsNullOrEmpty(request.NuspecFile))
                 {
                     packageBuilder = logic.GetPackageBuilder(request);
+
+                    if (packageBuilder?.PackageSpecificNoWarnProperties.Keys.Count > 0)
+                    {
+                        var warningPropertiesCollection = new WarningPropertiesCollection(PackageSpecificWarningProperties
+                            .CreatePackageSpecificWarningProperties(packageBuilder.PackageSpecificNoWarnProperties));
+                        // Override logger with warning properties
+                        packArgs = logic.GetPackArgs(request, warningPropertiesCollection);
+                    }
                 }
 
-                PackArgs packArgs = logic.GetPackArgs(request);
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
 
                 return logic.BuildPackage(packRunner);
