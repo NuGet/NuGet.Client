@@ -5726,7 +5726,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_Fails()
+        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_FailsAndLogsWarning()
         {
             // Arrange
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
@@ -5769,7 +5769,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_NoWarn_Succeeds()
+        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_WarningIsSuppressed_Succeeds()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -5790,7 +5790,6 @@ namespace ClassLibrary
     <TargetFramework>net5.0</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include=""{prereleaseDependencyName}"" Version=""{prereleaseDependencyVersion}"" NoWarn = ""NU5104""/>
   </ItemGroup>
@@ -5833,7 +5832,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependencies_PartialNoWarn_Fails()
+        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependencies_PartialWarningSuppressed_Fails()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -5887,7 +5886,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_ProjectLevelNoWarn_Succeed()
+        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_ProjectLevelWarnningSuppressed_Succeed()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
