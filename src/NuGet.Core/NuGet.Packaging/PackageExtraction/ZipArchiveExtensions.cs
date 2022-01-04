@@ -77,7 +77,7 @@ namespace NuGet.Packaging
 
             internal Testable(IEnvironmentVariableReader environmentVariableReader)
             {
-                _updateFileTimeFromEntryMaxRetries = 5;
+                _updateFileTimeFromEntryMaxRetries = 9;
                 string value = environmentVariableReader.GetEnvironmentVariable("NUGET_UpdateFileTime_MaxRetries");
                 if (int.TryParse(value, out int maxRetries) && maxRetries > 0)
                 {
