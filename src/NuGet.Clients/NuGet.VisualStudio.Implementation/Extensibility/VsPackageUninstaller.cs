@@ -6,7 +6,6 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using EnvDTE;
-using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -27,8 +26,7 @@ namespace NuGet.VisualStudio
         private IVsSolutionManager _solutionManager;
         private IDeleteOnRestartManager _deleteOnRestartManager;
         private INuGetTelemetryProvider _telemetryProvider;
-
-        private JoinableTaskFactory PumpingJTF { get; }
+        private IVsProjectThreadingService _threadingService;
 
         [ImportingConstructor]
         public VsPackageUninstaller(
@@ -36,15 +34,15 @@ namespace NuGet.VisualStudio
             Configuration.ISettings settings,
             IVsSolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-            INuGetTelemetryProvider telemetryProvider)
+            INuGetTelemetryProvider telemetryProvider,
+            IVsProjectThreadingService threadingService)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
             _telemetryProvider = telemetryProvider;
-
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
             _deleteOnRestartManager = deleteOnRestartManager;
+            _threadingService = threadingService;
         }
 
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
@@ -61,7 +59,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                PumpingJTF.Run(async delegate
+                _threadingService.JoinableTaskFactory.Run(async delegate
                     {
                         NuGetPackageManager packageManager =
                            new NuGetPackageManager(

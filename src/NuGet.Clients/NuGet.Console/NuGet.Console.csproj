@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -62,6 +62,7 @@
     <Compile Include="Token.cs" />
     <Compile Include="TokenType.cs" />
     <Compile Include="Utils\CommandUiUtilities.cs" />
+    <Compile Include="Utils\PumpingJTF.cs" />
     <Compile Include="Xamls\ConsoleContainer.xaml.cs">
       <DependentUpon>ConsoleContainer.xaml</DependentUpon>
     </Compile>

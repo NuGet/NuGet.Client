@@ -40,13 +40,13 @@ namespace NuGet.VisualStudio
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private bool _isCPSJTFLoaded;
         private readonly INuGetTelemetryProvider _telemetryProvider;
+        private readonly IVsProjectThreadingService _threadingService;
+        private readonly IScriptExecutor _scriptExecutor;
 
         // Reason it's lazy<object> is because we don't want to load any CPS assemblies until
         // we're really going to use any of CPS api. Which is why we also don't use nameof or typeof apis.
         [Import("Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor")]
         private Lazy<object> ProjectServiceAccessor { get; set; }
-
-        private JoinableTaskFactory PumpingJTF { get; set; }
 
         [ImportingConstructor]
         public VsPackageInstaller(
@@ -54,7 +54,9 @@ namespace NuGet.VisualStudio
             ISettings settings,
             IVsSolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-            INuGetTelemetryProvider telemetryProvider)
+            INuGetTelemetryProvider telemetryProvider,
+            IVsProjectThreadingService threadingService,
+            IScriptExecutor scriptExecutor)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
@@ -62,8 +64,8 @@ namespace NuGet.VisualStudio
             _deleteOnRestartManager = deleteOnRestartManager;
             _isCPSJTFLoaded = false;
             _telemetryProvider = telemetryProvider;
-
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+            _threadingService = threadingService;
+            _scriptExecutor = scriptExecutor;
         }
 
         private void RunJTFWithCorrectContext(Project project, Func<Task> asyncTask)
@@ -80,14 +82,13 @@ namespace NuGet.VisualStudio
                     {
                         // Lazy load the CPS enabled JoinableTaskFactory for the UI.
                         NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(ProjectServiceAccessor.Value as IProjectServiceAccessor);
-
-                        PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+                        _scriptExecutor.ResetPumpingJTF();
                         _isCPSJTFLoaded = true;
                     }
                 });
             }
 
-            PumpingJTF.Run(asyncTask);
+            _threadingService.JoinableTaskFactory.Run(asyncTask);
         }
 
         public void InstallLatestPackage(

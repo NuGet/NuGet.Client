@@ -22,5 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
         bool TryMarkVisited(PackageIdentity packageIdentity, PackageInitPS1State initPS1State);
 
         Task<bool> ExecuteInitScriptAsync(PackageIdentity packageIdentity);
+
+        void ResetPumpingJTF();
     }
 }

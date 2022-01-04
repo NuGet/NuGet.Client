@@ -16,6 +16,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGetConsole.Utils;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
@@ -40,10 +41,13 @@ namespace NuGetConsole
         [Import]
         public IOutputConsoleProvider OutputConsoleProvider { get; set; }
 
+        private PumpingJTF _pumpingJTF;
+
         public ScriptExecutor()
         {
             Host = new AsyncLazy<IHost>(GetHostAsync, ThreadHelper.JoinableTaskFactory);
             Reset();
+            _pumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public void Reset()
@@ -169,6 +173,11 @@ namespace NuGetConsole
             return result;
         }
 
+        public void ResetPumpingJTF()
+        {
+            _pumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+        }
+
         private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request)
         {
             var console = await OutputConsoleProvider.CreatePowerShellConsoleAsync();
@@ -178,7 +187,11 @@ namespace NuGetConsole
             // to switch to powershell pipeline execution thread. In order not to block the UI thread,
             // go off the UI thread. This is important, since, switches to UI thread,
             // using SwitchToMainThreadAsync will deadlock otherwise
-            await Task.Run(() => host.Execute(console, request.BuildCommand(), request.BuildInput()));
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            _pumpingJTF.Run(async () =>
+            {
+                await Task.Run(() => host.Execute(console, request.BuildCommand(), request.BuildInput()));
+            });
         }
 
         private async Task<IHost> GetHostAsync()
