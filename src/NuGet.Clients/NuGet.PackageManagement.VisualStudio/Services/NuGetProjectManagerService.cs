@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     .Select(p => p.InstalledPackages));
 
             PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
-            PackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            TransitivePackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => TransitivePackageReferenceContextInfo.Create(pr)).ToArray();
             return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 

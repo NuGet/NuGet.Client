@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             try
             {
                 List<IPackageReferenceContextInfo>? installedPackages = null;
-                List<IPackageReferenceContextInfo>? transitivePackages = null;
+                List<ITransitivePackageReferenceContextInfo>? transitivePackages = null;
 
                 int propertyCount = reader.ReadMapHeader();
 
@@ -61,13 +61,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
                         case TransitivePackagesPropertyName:
                             if (!reader.TryReadNil())
                             {
-                                transitivePackages = new List<IPackageReferenceContextInfo>();
+                                transitivePackages = new List<ITransitivePackageReferenceContextInfo>();
 
                                 int transitivePackagesCount = reader.ReadArrayHeader();
 
                                 for (int i = 0; i < transitivePackagesCount; ++i)
                                 {
-                                    IPackageReferenceContextInfo? packageReferenceContextInfo = IPackageReferenceContextInfoFormatter.Instance.Deserialize(ref reader, options);
+                                    ITransitivePackageReferenceContextInfo? packageReferenceContextInfo = ITransitivePackageReferenceContextInfoFormatter.Instance.Deserialize(ref reader, options);
                                     Assumes.NotNull(packageReferenceContextInfo);
                                     transitivePackages.Add(packageReferenceContextInfo);
                                 }

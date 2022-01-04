@@ -252,6 +252,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
 
+            /*
+             * foreach transitive package:
+             *   get its transitive origins
+             */
+
             IsInstalledAndTransitiveComputationNeeded = false;
 
             return new ProjectPackages(installedPackages, transitivePackages);

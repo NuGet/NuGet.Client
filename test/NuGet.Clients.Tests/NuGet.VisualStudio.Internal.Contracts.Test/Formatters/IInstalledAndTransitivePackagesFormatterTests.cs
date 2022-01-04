@@ -23,14 +23,14 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
 
         private static readonly PackageIdentity TransitivePackageIdentity1 = new PackageIdentity(id: "cc", NuGetVersion.Parse("1.2.5"));
         private static readonly NuGetFramework TransitiveFramework1 = NuGetFramework.Parse("net50");
-        private static readonly IPackageReferenceContextInfo TransitivePackageReferenceContextInfo1 = PackageReferenceContextInfo.Create(TransitivePackageIdentity1, TransitiveFramework1);
+        private static readonly ITransitivePackageReferenceContextInfo TransitivePackageReferenceContextInfo1 = TransitivePackageReferenceContextInfo.Create(TransitivePackageIdentity1, TransitiveFramework1);
         private static readonly PackageIdentity TransitivePackageIdentity2 = new PackageIdentity(id: "dd", NuGetVersion.Parse("1.2.6"));
         private static readonly NuGetFramework TransitiveFramework2 = NuGetFramework.Parse("net50");
-        private static readonly IPackageReferenceContextInfo TransitivePackageReferenceContextInfo2 = PackageReferenceContextInfo.Create(TransitivePackageIdentity2, TransitiveFramework2);
+        private static readonly ITransitivePackageReferenceContextInfo TransitivePackageReferenceContextInfo2 = TransitivePackageReferenceContextInfo.Create(TransitivePackageIdentity2, TransitiveFramework2);
         private static readonly PackageIdentity TransitivePackageIdentity3 = new PackageIdentity(id: "ee", NuGetVersion.Parse("1.2.7"));
         private static readonly NuGetFramework TransitiveFramework3 = NuGetFramework.Parse("net50");
-        private static readonly IPackageReferenceContextInfo TransitivePackageReferenceContextInfo3 = PackageReferenceContextInfo.Create(TransitivePackageIdentity3, TransitiveFramework3);
-        private static readonly List<IPackageReferenceContextInfo> TransitivePackages = new List<IPackageReferenceContextInfo>() { TransitivePackageReferenceContextInfo1, TransitivePackageReferenceContextInfo2, TransitivePackageReferenceContextInfo3 };
+        private static readonly ITransitivePackageReferenceContextInfo TransitivePackageReferenceContextInfo3 = TransitivePackageReferenceContextInfo.Create(TransitivePackageIdentity3, TransitiveFramework3);
+        private static readonly List<ITransitivePackageReferenceContextInfo> TransitivePackages = new List<ITransitivePackageReferenceContextInfo>() { TransitivePackageReferenceContextInfo1, TransitivePackageReferenceContextInfo2, TransitivePackageReferenceContextInfo3 };
 
         [Theory]
         [MemberData(nameof(IInstalledAndTransitivePackages))]
@@ -58,8 +58,8 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
         public static TheoryData IInstalledAndTransitivePackages => new TheoryData<IInstalledAndTransitivePackages>
         {
             { new InstalledAndTransitivePackages(DirectPackages, TransitivePackages) },
-            { new InstalledAndTransitivePackages(DirectPackages, Array.Empty<IPackageReferenceContextInfo>()) },
-            { new InstalledAndTransitivePackages(Array.Empty<IPackageReferenceContextInfo>(), Array.Empty<IPackageReferenceContextInfo>()) }
+            { new InstalledAndTransitivePackages(DirectPackages, Array.Empty<ITransitivePackageReferenceContextInfo>()) },
+            { new InstalledAndTransitivePackages(Array.Empty<IPackageReferenceContextInfo>(), Array.Empty<ITransitivePackageReferenceContextInfo>()) }
         };
 
         private static void CheckPackageReferencesContextInfoAreEqual(IPackageReferenceContextInfo packageA, IPackageReferenceContextInfo packageB)

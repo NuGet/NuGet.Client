@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private readonly SourceRepository _sourceRepository;
         private readonly IEnumerable<IPackageReferenceContextInfo> _installedPackages;
-        private readonly IEnumerable<IPackageReferenceContextInfo> _transitivePackages;
+        private readonly IEnumerable<ITransitivePackageReferenceContextInfo> _transitivePackages;
         private readonly IReadOnlyCollection<IProjectContextInfo> _projects;
         private readonly Mock<IComponentModel> _componentModel;
 
@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             : base(globalServiceProvider)
         {
             _installedPackages = new List<IPackageReferenceContextInfo>();
-            _transitivePackages = new List<IPackageReferenceContextInfo>();
+            _transitivePackages = new List<ITransitivePackageReferenceContextInfo>();
             _projects = new List<IProjectContextInfo>
             {
                 new ProjectContextInfo(

@@ -11,6 +11,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
     public interface IInstalledAndTransitivePackages
     {
         IReadOnlyCollection<IPackageReferenceContextInfo> InstalledPackages { get; }
-        IReadOnlyCollection<IPackageReferenceContextInfo> TransitivePackages { get; }
+        IReadOnlyCollection<ITransitivePackageReferenceContextInfo> TransitivePackages { get; }
     }
 }
