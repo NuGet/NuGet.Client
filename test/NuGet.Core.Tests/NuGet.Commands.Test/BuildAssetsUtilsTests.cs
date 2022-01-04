@@ -745,7 +745,7 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal($" '$({expectedProperty.Name.LocalName})' == '' ", expectedProperty.Attribute("Condition")?.Value);
 
-                Assert.Equal(packageDirectory.FullName, expectedProperty?.Value, ignoreCase: true);
+                Assert.Equal($@"{packageDirectory.FullName}{Path.DirectorySeparatorChar}", expectedProperty?.Value, ignoreCase: true);
             }
         }
 
@@ -856,7 +856,7 @@ namespace NuGet.Commands.Test
 
                     Assert.Equal($" '$({actualPropertyElement.Name.LocalName})' == '' ", actualPropertyElement.Attribute("Condition")?.Value);
 
-                    Assert.Equal(packageDirectory.FullName, actualPropertyElement?.Value, ignoreCase: true);
+                    Assert.Equal($@"{packageDirectory.FullName}{Path.DirectorySeparatorChar}", actualPropertyElement?.Value, ignoreCase: true);
 
                     Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", actualPropertyElement.Parent.Attribute("Condition")?.Value);
                 }

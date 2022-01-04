@@ -763,9 +763,9 @@ namespace NuGet.Commands
         private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
         {
 #if NETCOREAPP
-            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal)}", localPackageInfo.ExpandedPath);
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal)}", $"{localPackageInfo.ExpandedPath}{Path.DirectorySeparatorChar}");
 #else
-            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", localPackageInfo.ExpandedPath);
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", $"{localPackageInfo.ExpandedPath}{Path.DirectorySeparatorChar}");
 #endif
         }
     }
