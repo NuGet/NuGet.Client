@@ -268,7 +268,7 @@ namespace NuGet.CommandLine.Test.Caching
     <clear />
   </packageSourceMapping>
 </configuration>";
-            var fileName = "nuget.config";
+            var fileName = NuGet.Configuration.Settings.DefaultSettingsFileName;
 
             File.WriteAllText(Path.Combine(workingDirectory, fileName), nugetConfigContent);
         }
