@@ -667,6 +667,7 @@ namespace NuGet.Commands.Test
                         }
                     }
                 }";
+
                 var projectName = "a";
                 var rootProjectsPath = pathContext.WorkingDirectory;
                 var projectDirectory = Path.Combine(rootProjectsPath, projectName);
@@ -737,13 +738,13 @@ namespace NuGet.Commands.Test
 
                 Assert.NotNull(expectedPropertyGroup);
 
-                Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", expectedPropertyGroup.Attribute("Condition")?.Value);
+                Assert.Equal("'$(ExcludeRestorePackageImports)' != 'true'", expectedPropertyGroup.Attribute("Condition")?.Value);
 
                 var expectedProperty = expectedPropertyGroup.Elements().FirstOrDefault();
 
                 Assert.Equal($"Pkg{identity.Id.Replace(".", "_")}", expectedProperty.Name.LocalName);
 
-                Assert.Equal($" '$({expectedProperty.Name.LocalName})' == '' ", expectedProperty.Attribute("Condition")?.Value);
+                Assert.Equal($"'$({expectedProperty.Name.LocalName})' == ''", expectedProperty.Attribute("Condition")?.Value);
 
                 Assert.Equal($@"{packageDirectory.FullName}{Path.DirectorySeparatorChar}", expectedProperty?.Value, ignoreCase: true);
             }
@@ -854,11 +855,11 @@ namespace NuGet.Commands.Test
                     Assert.NotNull(actualPropertyElement);
 
 
-                    Assert.Equal($" '$({actualPropertyElement.Name.LocalName})' == '' ", actualPropertyElement.Attribute("Condition")?.Value);
+                    Assert.Equal($"'$({actualPropertyElement.Name.LocalName})' == ''", actualPropertyElement.Attribute("Condition")?.Value);
 
                     Assert.Equal($@"{packageDirectory.FullName}{Path.DirectorySeparatorChar}", actualPropertyElement?.Value, ignoreCase: true);
 
-                    Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", actualPropertyElement.Parent.Attribute("Condition")?.Value);
+                    Assert.Equal("'$(ExcludeRestorePackageImports)' != 'true'", actualPropertyElement.Parent.Attribute("Condition")?.Value);
                 }
                 else
                 {
