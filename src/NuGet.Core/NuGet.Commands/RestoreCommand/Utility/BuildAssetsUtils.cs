@@ -762,11 +762,16 @@ namespace NuGet.Commands
 
         private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
         {
+
 #if NETCOREAPP
-            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal)}", $"{localPackageInfo.ExpandedPath}{Path.DirectorySeparatorChar}");
+            string propertyName = "Pkg" + localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal);
 #else
-            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", $"{localPackageInfo.ExpandedPath}{Path.DirectorySeparatorChar}");
+            string propertyName = "Pkg" + localPackageInfo.Id.Replace(".", "_");
 #endif
+
+            string propertyValue = localPackageInfo.ExpandedPath + Path.DirectorySeparatorChar;
+
+            return GenerateProperty(propertyName, propertyValue);
         }
     }
 }
