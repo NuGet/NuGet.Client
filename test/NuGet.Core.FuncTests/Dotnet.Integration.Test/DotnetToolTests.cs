@@ -50,8 +50,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void DotnetToolTests_RegularDependencyPackageWithDependenciesToolRestore_ThrowsError()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -59,7 +60,7 @@ namespace Dotnet.Integration.Test
                 var rid = "win-x86";
                 var packages = new List<PackageIdentity>() { new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("10.0.3")) };
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -74,8 +75,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_BasicDotnetToolRestore_SucceedsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -93,7 +95,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -116,8 +118,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_MismatchedRID_FailsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -136,7 +139,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, projectRID, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, projectRID, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -150,8 +153,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_BasicDotnetToolRestore_WithJsonCompatibleAssets_SucceedsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -171,7 +175,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -196,8 +200,9 @@ namespace Dotnet.Integration.Test
         [InlineData("netcoreapp2.0", "any", "win-x86")]
         public async Task DotnetToolTests_PackageWithRuntimeJson_RuntimeIdentifierAny_SucceedsAsync(string tfm, string packageRID, string projectRID)
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var packageSource = Path.Combine(testDirectory, "packageSource");
@@ -215,7 +220,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, projectRID, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, projectRID, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -238,8 +243,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_RegularDependencyAndToolPackageWithDependenciesToolRestore_ThrowsErrorAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -265,7 +271,7 @@ namespace Dotnet.Integration.Test
                     new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("10.0.3"))
                 };
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSources, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSources, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -282,8 +288,9 @@ namespace Dotnet.Integration.Test
         [InlineData("netcoreapp1.0", "any", "win7-x64")]
         public async Task DotnetToolTests_ToolWithPlatformPackage_SucceedsAsync(string tfm, string packageRid, string projectRid)
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var packageSource = Path.Combine(testDirectory, "packageSource");
@@ -315,7 +322,7 @@ namespace Dotnet.Integration.Test
                     new PackageIdentity(packageName, packageVersion),
                 };
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, projectRid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, projectRid, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -336,8 +343,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolPackageWithIncompatibleToolsAssets_FailsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -359,7 +367,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -373,8 +381,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolsPackageWithExtraPackageTypes_FailsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -392,7 +401,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.Dependency);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -406,8 +415,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_BasicDotnetToolRestoreWithNestedValues_SucceedsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -426,7 +436,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
                 var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
@@ -450,8 +460,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_AutoreferencedDependencyAndToolPackagToolRestore_SucceedsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -478,7 +489,7 @@ namespace Dotnet.Integration.Test
                     new PackageIdentity(autoReferencePackageName, NuGetVersion.Parse("2.0.1"))
                 };
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSources, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSources, packages);
 
                 var fullProjectPath = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
@@ -501,8 +512,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_AutoreferencedDependencyRegularDependencyAndToolPackagToolRestore_ThrowsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -530,7 +542,7 @@ namespace Dotnet.Integration.Test
                     new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0"))
                 };
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSources, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSources, packages);
 
                 var fullProjectPath = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
@@ -551,8 +563,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolPackageAndPlatformsPackageAnyRID_SucceedsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -580,7 +593,7 @@ namespace Dotnet.Integration.Test
                     new PackageIdentity(autoReferencePackageName, NuGetVersion.Parse("2.0.1")),
                 };
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSources, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSources, packages);
 
                 var fullProjectPath = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
@@ -603,8 +616,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_IncompatibleAutorefPackageAndToolsPackageAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp1.0";
                 var incompatibletfm = "netcoreapp2.0";
                 var rid = "win-x64";
@@ -637,7 +651,7 @@ namespace Dotnet.Integration.Test
                     new PackageIdentity(autoReferencePackageName, packageVersion)
                 };
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSources, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSources, packages);
 
                 var fullProjectPath = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
@@ -661,8 +675,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolRestoreWithFallback_SucceedsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var actualTfm = "netcoreapp2.0";
                 var fallbackTfm = "net46";
                 var projectName = "ToolRestoreProject";
@@ -683,7 +698,7 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, actualTfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, actualTfm, rid, packageSource, packages);
 
                 using (var stream = File.Open(Path.Combine(workingDirectory, projectName + ".csproj"), FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -717,8 +732,9 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolRestoreWithRuntimeIdentiferGraphPath_SucceedsAsync()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -739,10 +755,10 @@ namespace Dotnet.Integration.Test
                 package.PackageTypes.Add(PackageType.DotnetTool);
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, package);
 
-                _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid, packageSource, packages);
+                _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // set up rid graph
-                var ridGraphPath = Path.Combine(testDirectory.Path, "runtime.json");
+                var ridGraphPath = Path.Combine(testDirectory, "runtime.json");
                 File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
 
                 using (var stream = File.Open(Path.Combine(workingDirectory, projectName + ".csproj"), FileMode.Open, FileAccess.ReadWrite))
