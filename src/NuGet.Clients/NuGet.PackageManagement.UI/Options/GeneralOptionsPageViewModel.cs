@@ -40,8 +40,6 @@ namespace NuGet.Options
             _packageManagementFormat = packageManagementFormat ?? throw new ArgumentNullException(nameof(packageManagementFormat));
             _commandRunner = commandRunner ?? throw new ArgumentNullException(nameof(commandRunner));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            Refresh();
         }
 
         public bool IsRestoreConsentGranted
@@ -104,6 +102,47 @@ namespace NuGet.Options
                 MessageHelper.ShowErrorMessage(Resources.ShowError_SettingActivatedFailed, Resources.ErrorDialogBoxTitle);
                 ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
             }
+        }
+
+        public bool ApplyChanges()
+        {
+            bool isApplySuccessful = false;
+
+            try
+            {
+                _packageRestoreConsent.IsGrantedInSettings = IsRestoreConsentGranted;
+                _packageRestoreConsent.IsAutomatic = IsRestoreAutomatic;
+
+                _bindingRedirectBehavior.IsSkipped = IsSkipBindingRedirects;
+
+                _packageManagementFormat.SelectedPackageManagementFormat = SelectedPackageManagementFormat;
+                _packageManagementFormat.Enabled = IsPackageManagementSelectionShown;
+                _packageManagementFormat.ApplyChanges();
+
+                isApplySuccessful = true;
+            }
+            // Thrown during creating or saving NuGet.Config.
+            catch (NuGetConfigurationException ex)
+            {
+                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
+            }
+            // Thrown if no nuget.config found.
+            catch (InvalidOperationException ex)
+            {
+                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
+            }
+            // Unknown exception.
+            catch (Exception ex)
+            {
+                MessageHelper.ShowErrorMessage(Resources.ShowError_ApplySettingFailed, Resources.ErrorDialogBoxTitle);
+                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+            }
+
+            return isApplySuccessful;
         }
     }
 }

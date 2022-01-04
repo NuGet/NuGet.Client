@@ -43,7 +43,22 @@ namespace NuGet.Options
                 _view = new GeneralOptionsPageView(_viewModel);
             }
 
+            if (_viewModel != null)
+            {
+                _viewModel.Refresh();
+            }
+
             return _view;
+        }
+
+        protected override void OnApply(PageApplyEventArgs e)
+        {
+            base.OnApply(e);
+            bool isApplySuccessful = _viewModel.ApplyChanges();
+            if (!isApplySuccessful && e != null)
+            {
+                e.ApplyBehavior = ApplyKind.Cancel;
+            }
         }
     }
 }

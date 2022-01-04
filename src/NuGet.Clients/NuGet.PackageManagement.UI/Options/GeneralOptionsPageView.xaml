@@ -37,12 +37,16 @@
     <CheckBox
       IsChecked="{Binding IsRestoreConsentGranted}"
       Content="_Allow NuGet to download missing packages" />
-    <CheckBox>Auto_matically check for missing packages during build in Visual Studio</CheckBox>
+    <CheckBox
+      IsChecked="{Binding IsRestoreAutomatic}"
+      Content="Auto_matically check for missing packages during build in Visual Studio" />
     <TextBlock
       Style="{StaticResource TextHeadingStyle}">
       Binding Redirects
     </TextBlock>
-    <CheckBox>Skip applying _binding redirects</CheckBox>
+    <CheckBox
+      IsChecked="{Binding IsSkipBindingRedirects}"
+      Content="Skip applying _binding redirects" />
     <TextBlock
       Style="{StaticResource TextHeadingStyle}">
       Package Management
@@ -51,9 +55,15 @@
       Orientation="Horizontal"
       VerticalAlignment="Center">
       <Label>Default package management format:</Label>
-      <ComboBox></ComboBox>
+      <ComboBox
+        SelectedIndex="{Binding SelectedPackageManagementFormat}">
+        <ComboBoxItem>Packages.config</ComboBoxItem>
+        <ComboBoxItem>Package Reference</ComboBoxItem>
+      </ComboBox>
     </StackPanel>
-    <CheckBox>Allow _format selection on first package install</CheckBox>
+    <CheckBox
+      IsChecked="{Binding IsPackageManagementSelectionShown}"
+      Content="Allow _format selection on first package install" />
     <StackPanel
       Orientation="Horizontal">
       <Button>_Clear All NuGet Cache(s)</Button>
