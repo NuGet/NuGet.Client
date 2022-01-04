@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 
-namespace NuGet.VisualStudio
+namespace NuGetConsole.Utils
 {
     // Note that accessing DTE objects from a background thread is a bad thing. It violates VS threading rule #1 and does not switch to main thread
     // beforing accessing a method with STA requirement. This will RPC its way into main thread and might do work that is unrelated.

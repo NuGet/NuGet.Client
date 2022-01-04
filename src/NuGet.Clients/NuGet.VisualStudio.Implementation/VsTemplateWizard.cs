@@ -46,8 +46,7 @@ namespace NuGet.VisualStudio
         private readonly Configuration.ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
-
-        private JoinableTaskFactory PumpingJTF { get; }
+        private readonly IVsProjectThreadingService _threadingService;
 
         [ImportingConstructor]
         public VsTemplateWizard(
@@ -59,7 +58,8 @@ namespace NuGet.VisualStudio
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
-            IVsProjectAdapterProvider vsProjectAdapterProvider
+            IVsProjectAdapterProvider vsProjectAdapterProvider,
+            IVsProjectThreadingService threadingService
             )
         {
             _installer = installer;
@@ -73,7 +73,7 @@ namespace NuGet.VisualStudio
                                             {
                                                 return new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
                                             });
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+            _threadingService = threadingService;
         }
 
         private PreinstalledPackageInstaller PreinstalledPackageInstaller
@@ -444,7 +444,7 @@ namespace NuGet.VisualStudio
 
         void IWizard.ProjectFinishedGenerating(Project project)
         {
-            PumpingJTF.Run(async delegate
+            _threadingService.JoinableTaskFactory.Run(async delegate
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -454,7 +454,7 @@ namespace NuGet.VisualStudio
 
         void IWizard.ProjectItemFinishedGenerating(ProjectItem projectItem)
         {
-            PumpingJTF.Run(async delegate
+            _threadingService.JoinableTaskFactory.Run(async delegate
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

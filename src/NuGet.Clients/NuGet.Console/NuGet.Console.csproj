@@ -60,6 +60,7 @@
     <Compile Include="Token.cs" />
     <Compile Include="TokenType.cs" />
     <Compile Include="Utils\CommandUiUtilities.cs" />
+    <Compile Include="Utils\PumpingJTF.cs" />
     <Compile Include="Xamls\ConsoleContainer.xaml.cs">
       <DependentUpon>ConsoleContainer.xaml</DependentUpon>
     </Compile>

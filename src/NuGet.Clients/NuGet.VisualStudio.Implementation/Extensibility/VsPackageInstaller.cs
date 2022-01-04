@@ -39,8 +39,7 @@ namespace NuGet.VisualStudio
         private readonly IVsSolutionManager _solutionManager;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly INuGetTelemetryProvider _telemetryProvider;
-
-        private JoinableTaskFactory PumpingJTF { get; set; }
+        private readonly IVsProjectThreadingService _threadingService;
 
         [ImportingConstructor]
         public VsPackageInstaller(
@@ -48,15 +47,15 @@ namespace NuGet.VisualStudio
             ISettings settings,
             IVsSolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-            INuGetTelemetryProvider telemetryProvider)
+            INuGetTelemetryProvider telemetryProvider,
+            IVsProjectThreadingService threadingService)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
             _deleteOnRestartManager = deleteOnRestartManager;
             _telemetryProvider = telemetryProvider;
-
-            PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+            _threadingService = threadingService;
         }
 
         public void InstallLatestPackage(
@@ -68,7 +67,7 @@ namespace NuGet.VisualStudio
         {
             try
             {
-                PumpingJTF.Run(() => InstallPackageAsync(
+                _threadingService.JoinableTaskFactory.Run(() => InstallPackageAsync(
                     source,
                     project,
                     packageId,
@@ -94,7 +93,7 @@ namespace NuGet.VisualStudio
                     semVer = new NuGetVersion(version);
                 }
 
-                PumpingJTF.Run(() => InstallPackageAsync(
+                _threadingService.JoinableTaskFactory.Run(() => InstallPackageAsync(
                     source,
                     project,
                     packageId,
@@ -120,7 +119,7 @@ namespace NuGet.VisualStudio
                     _ = NuGetVersion.TryParse(version, out semVer);
                 }
 
-                PumpingJTF.Run(() => InstallPackageAsync(
+                _threadingService.JoinableTaskFactory.Run(() => InstallPackageAsync(
                     source,
                     project,
                     packageId,
@@ -193,9 +192,9 @@ namespace NuGet.VisualStudio
 
             try
             {
-                PumpingJTF.Run(async () =>
+                _threadingService.JoinableTaskFactory.Run(async () =>
                     {
-                        // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source 
+                        // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source
                         // (located at C:\Program Files (x86)\Microsoft SDKs\NuGetPackages) follows the V3
                         // folder version format.
                         if (isPreUnzipped)
@@ -269,7 +268,7 @@ namespace NuGet.VisualStudio
 
             try
             {
-                PumpingJTF.Run(() =>
+                _threadingService.JoinableTaskFactory.Run(() =>
                     {
                         var repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
                         repoProvider.AddFromExtension(_sourceRepositoryProvider, extensionId);
