@@ -228,17 +228,7 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Push nupkgs, and if successful, push any corresponding symbols.
         /// </summary>
-        /// <param name="packagePath"></param>
-        /// <param name="source"></param>
-        /// <param name="apiKey"></param>
-        /// <param name="getSymbolApiKey"></param>
-        /// <param name="noServiceEndpoint"></param>
-        /// <param name="skipDuplicate"></param>
-        /// <param name="requestTimeout"></param>
-        /// <param name="log"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentException">Thrown when any resolved file path does not exist.</exception>
         private async Task PushPackagePath(string packagePath,
             string source,
             string symbolSource, // empty to not push symbols

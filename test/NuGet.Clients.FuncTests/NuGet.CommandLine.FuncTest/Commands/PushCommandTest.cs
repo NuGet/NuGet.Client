@@ -673,8 +673,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.DoesNotContain(MESSAGE_PACKAGE_PUSHED, result.AllOutput); //nothing is pushed since nupkg/snupkgs are all skipped duplicates
                 Assert.DoesNotContain(genericFileNotFoundError, result.Errors);
 
-                Assert.DoesNotContain(snupkgFileName, result.AllOutput); //first snupkg is not attempted since snupkg was duplicate.
-                Assert.DoesNotContain(snupkgFileName2, result.AllOutput); //second snupkg is not attempted since snupkg was duplicate.
+                Assert.DoesNotContain(snupkgFileName, result.AllOutput); //first snupkg is not attempted since nupkg was duplicate.
+                Assert.DoesNotContain(snupkgFileName2, result.AllOutput); //second snupkg is not attempted since nupkg was duplicate.
             }
         }
 
