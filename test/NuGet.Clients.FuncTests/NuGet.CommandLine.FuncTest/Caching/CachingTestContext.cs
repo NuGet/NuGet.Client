@@ -251,7 +251,26 @@ namespace NuGet.CommandLine.Test.Caching
             ProjectPath = Path.Combine(WorkingPath, "project.csproj");
 
             OutputPackagesPath = Path.Combine(WorkingPath, "packages");
+            CreateNuGetConfig(WorkingPath);
+
             Directory.CreateDirectory(OutputPackagesPath);
+        }
+
+        private void CreateNuGetConfig(string workingDirectory)
+        {
+            string nugetConfigContent =
+                @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <clear />
+  </packageSources>
+  <packageSourceMapping>
+    <clear />
+  </packageSourceMapping>
+</configuration>";
+            var fileName = NuGet.Configuration.Settings.DefaultSettingsFileName;
+
+            File.WriteAllText(Path.Combine(workingDirectory, fileName), nugetConfigContent);
         }
 
         private string MakeTestPackage(string repositoryPath, PackageIdentity identity, string packageFileName, string contentFileName)

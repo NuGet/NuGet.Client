@@ -646,12 +646,16 @@ namespace Dotnet.Integration.Test
         public void PackCommand_PackProject_SupportMultipleFrameworks()
         {
             // Arrange
-            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                SimpleTestSettingsContext settings = pathContext.Settings;
+                settings.AddNetStandardFeeds();
+
+                string testDirectory = pathContext.WorkingDirectory;
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -733,8 +737,9 @@ namespace Dotnet.Integration.Test
         public void PackProject_DependenciesWithContentFiles_NupkgExcludesContentFilesFromDependencies()
         {
             // Arrange
-            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string testDirectory = pathContext.WorkingDirectory;
                 // layout
                 var topName = "top";
                 var basePackageName = "BasePackage";
@@ -2156,13 +2161,17 @@ namespace Dotnet.Integration.Test
         [InlineData("netstandard1.4;net451;netcoreapp1.0")]
         public void PackCommand_MultipleFrameworks_GeneratesPackageOnBuild(string frameworks)
         {
-            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                SimpleTestSettingsContext settings = pathContext.Settings;
+                settings.AddNetStandardFeeds();
+
+                string testDirectory = pathContext.WorkingDirectory;
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3882,12 +3891,16 @@ namespace ClassLibrary
         public void PackCommand_ManualAddPackage_DevelopmentDependency()
         {
             // Arrange
-            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                SimpleTestSettingsContext settings = pathContext.Settings;
+                settings.AddNetStandardFeeds();
+
+                string testDirectory = pathContext.WorkingDirectory;
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
