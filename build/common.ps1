@@ -177,6 +177,7 @@ Function Install-DotnetCLI {
         $CliBranch = $CliBranch.trim()
         $CliChannelAndVersion = $CliBranch -split ":"
 
+        # If version is not specified, use 'latest' as the version.
         $Channel = $CliChannelAndVersion[0].trim()
         if ($CliChannelAndVersion.count -eq 1) {
             $Version = 'latest'
@@ -200,76 +201,21 @@ Function Install-DotnetCLI {
             $arch = "x86";
         }
 
-        if ($Version -eq 'latest') {
+        # The channel needs to be two-part version in A.B format, according to https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script#options.
+        # The '-Quality Daily' is not applicable for 'Current' and 'LTS' channels.
+        Trace-Log "$DotNetInstall -Channel $($cli.Channel) -Quality Daily -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"            & $DotNetInstall -Channel $cli.Channel -Quality Daily -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
 
-            # When installing latest, we firstly check the latest version from the server against what we have installed locally. This also allows us to check the SDK was correctly installed.
-            # Get the latest specific version number for a certain channel from url like : https://dotnetcli.blob.core.windows.net/dotnet/Sdk/release/3.0.1xx/latest.version
-            $latestVersionLink = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $Channel + "/latest.version"
-            $latestVersionFile = Invoke-RestMethod -Method Get -Uri $latestVersionLink
-
-            $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $latestVersionFile
-            [int]$count = 0
-            while ( $line = $stringReader.ReadLine() ) {
-                if ($count -eq 1) {
-                    $expectedVersion = $line.trim()
-                }
-                $count += 1
-            }
-
-            $httpGetUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $expectedVersion + "/productVersion.txt"
-            $versionFile = Invoke-RestMethod -Method Get -Uri $httpGetUrl
-
-            $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $versionFile
-            [int]$count = 0
-            while ( $line = $stringReader.ReadLine() ) {
-                if ($count -eq 1) {
-                    $specificVersion = $line.trim()
-                }
-                $count += 1
-            }
-        }
-        else {
-            $specificVersion = $Version
-        }
-
-        Trace-Log "The version of SDK should be installed is : $specificVersion"
-
-        $probeDotnetPath = Join-Path (Join-Path $cli.Root sdk)  $specificVersion
-
-        Trace-Log "Probing folder : $probeDotnetPath"
-
-        #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
-        if ($Force -or -not (Test-Path $probeDotnetPath)) {
-            $channelMainVersion = ""
-            foreach($channelPart in $cli.Channel.Split('/'))
-            {
-                if ($channelPart -match "\d+.*")
-                {
-                    $channelMainVersion = $channelPart.Split('.')[0]
-                    Break
-                }
-            }
-
-            if ([string]::IsNullOrEmpty($channelMainVersion)) {
-                Error-Log "Unable to detect channel version for dotnetinstall.ps1. The CLI install cannot be initiated." -Fatal
-            }
-
-            Trace-Log "$DotNetInstall -Channel $($channelMainVersion) -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
-            # dotnet-install might make http requests that fail, but it handles those errors internally
-            # However, Invoke-BuildStep checks if any error happened, ever. Hence we need to run dotnet-install
-            # in a different process, to avoid treating their handled errors as build errors.
-            & powershell $DotNetInstall -Channel $channelMainVersion -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
-            if ($LASTEXITCODE -ne 0)
-            {
-                throw "dotnet-install.ps1 exited with non-zero exit code"
-            }
+        # dotnet-install might make http requests that fail, but it handles those errors internally
+        # However, Invoke-BuildStep checks if any error happened, ever. Hence we need to run dotnet-install
+        # in a different process, to avoid treating their handled errors as build errors.
+        & powershell $DotNetInstall -Channel $cli.Channel -Quality Daily -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "dotnet-install.ps1 exited with non-zero exit code"
         }
 
         if (-not (Test-Path $DotNetExe)) {
             Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
-        }
-        if (-not(Test-Path $probeDotnetPath)) {
-            Error-Log "Unable to find specific version of sdk. The CLI install may have failed." -Fatal
         }
 
         # Display build info
