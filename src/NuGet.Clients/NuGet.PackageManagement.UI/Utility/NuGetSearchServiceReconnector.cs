@@ -79,8 +79,15 @@ namespace NuGet.PackageManagement.UI.Utility
 
         internal async Task AvailabilityChangedAsync()
         {
-            _service?.Dispose();
-            _service = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, _disposedTokenSource.Token);
+            try
+            {
+                _service?.Dispose();
+                _service = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, _disposedTokenSource.Token);
+            }
+            catch (OperationCanceledException) when (_disposedTokenSource.Token.IsCancellationRequested)
+            {
+                // Expected
+            }
         }
 
         public void Dispose()

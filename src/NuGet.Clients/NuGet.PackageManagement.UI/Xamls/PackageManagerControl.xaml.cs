@@ -1001,7 +1001,17 @@ namespace NuGet.PackageManagement.UI
             oldCts?.Dispose();
 
             NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(async () => await UpdateDetailPaneAsync(loadCts.Token))
+                .RunAsync(async () =>
+                {
+                    try
+                    {
+                        await UpdateDetailPaneAsync(loadCts.Token);
+                    }
+                    catch (OperationCanceledException) when (loadCts.Token.IsCancellationRequested)
+                    {
+                        // Expected
+                    }
+                })
                 .PostOnFailure(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged));
         }
 

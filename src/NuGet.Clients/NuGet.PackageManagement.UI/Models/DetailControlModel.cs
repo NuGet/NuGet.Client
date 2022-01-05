@@ -562,8 +562,18 @@ namespace NuGet.PackageManagement.UI
                             PackageMetadata = detailedPackageMetadata;
                         }
 
-                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask())
-                                                               .PostOnFailure(nameof(DetailControlModel));
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                        {
+                            try
+                            {
+                                await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
+                            }
+                            catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
+                            {
+                                // Expected
+                            }
+                        })
+                            .PostOnFailure(nameof(DetailControlModel));
                     }
 
                     OnPropertyChanged(nameof(SelectedVersion));
