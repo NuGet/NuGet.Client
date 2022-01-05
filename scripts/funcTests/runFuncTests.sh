@@ -36,7 +36,9 @@ curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 chmod +x cli/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
-cli/dotnet-install.sh -i cli -c 3.1 -nopath
+
+echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath"
+cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath
 
 if (( $? )); then
 	echo "The .NET CLI Install failed!!"
@@ -77,9 +79,8 @@ do
 	fi
 	unset IFS
 
-	echo "Channel is: $Channel"
-	echo "Version is: $Version"
-	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+	echo "cli/dotnet-install.sh --install-dir cli --channel $Channel --quality daily --version $Version -nopath"
+    cli/dotnet-install.sh --install-dir cli --channel $Channel --quality daily --version $Version -nopath
 
 	if (( $? )); then
 		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
