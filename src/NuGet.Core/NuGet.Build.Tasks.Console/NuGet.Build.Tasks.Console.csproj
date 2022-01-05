@@ -17,6 +17,7 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

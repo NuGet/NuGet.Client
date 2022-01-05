@@ -18,6 +18,7 @@
     <Description>NuGet tasks for MSBuild and dotnet pack.</Description>
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <DepsFileGenerationMode>old</DepsFileGenerationMode>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,7 +51,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -58,7 +59,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target 
+  <Target
     Name="PublishAndMergePackNupkg"
     AfterTargets="AfterBuild"
     Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
@@ -104,7 +105,7 @@
     <PropertyGroup>
       <ILMergeResultDir>$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetPack)))</ILMergeResultDir>
     </PropertyGroup>
-    
+
     <MakeDir Directories="$(ILMergeResultDir)" />
 
     <PropertyGroup>
@@ -144,9 +145,9 @@
     <PropertyGroup>
       <ILMergeResultDir>$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetPackResource)))</ILMergeResultDir>
     </PropertyGroup>
-    
+
     <MakeDir Directories="$(ILMergeResultDir)" />
-    
+
     <PropertyGroup>
       <IlmergeCommand>$(ILMergeExePath) ^
         /out:$(PathToMergedNuGetPackResource) ^
@@ -165,14 +166,14 @@
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
-  
+
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
   <Target Name="GetIlmergeBuildOutput" DependsOnTargets="ILMergeNuGetPackResourcesPerCulture;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
     </ItemGroup>
   </Target>
-  
+
   <Target Name="_GetDllsInOutputDirectory" Returns="@(DllsInOutputDir)">
     <ItemGroup>
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.dll" KeepDuplicates="false">
@@ -215,13 +216,13 @@
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet*.dll" Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
-    </ItemGroup>    
+    </ItemGroup>
   </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-  
+
   <PropertyGroup>
     <SignTargetsForRealSigning Condition="'$(IsSymbolsBuild)' != 'true'">GetIlmergeBuildOutput</SignTargetsForRealSigning>
     <SymbolTargetsToGetPdbs>GetIlmergeSymbolOutput;GetFinalBuildOutput</SymbolTargetsToGetPdbs>
