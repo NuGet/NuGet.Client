@@ -36,8 +36,6 @@ namespace NuGet.Options
             this.CopyPackageSourceStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeButton = new System.Windows.Forms.Button();
             this.images16px = new System.Windows.Forms.ImageList(this.components);
-            this.MoveUpButton = new System.Windows.Forms.Button();
-            this.MoveDownButton = new System.Windows.Forms.Button();
             this.packageListToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.updateButton = new System.Windows.Forms.Button();
             this.BrowseButton = new System.Windows.Forms.Button();
@@ -92,20 +90,6 @@ namespace NuGet.Options
             this.images16px.Images.SetKeyName(1, "down_512.png");
             this.images16px.Images.SetKeyName(2, "cancel_512.png");
             this.images16px.Images.SetKeyName(3, "add_512.png");
-            // 
-            // MoveUpButton
-            // 
-            resources.ApplyResources(this.MoveUpButton, "MoveUpButton");
-            this.MoveUpButton.ImageList = this.images16px;
-            this.MoveUpButton.Name = "MoveUpButton";
-            this.MoveUpButton.UseVisualStyleBackColor = true;
-            // 
-            // MoveDownButton
-            // 
-            resources.ApplyResources(this.MoveDownButton, "MoveDownButton");
-            this.MoveDownButton.ImageList = this.images16px;
-            this.MoveDownButton.Name = "MoveDownButton";
-            this.MoveDownButton.UseVisualStyleBackColor = true;
             // 
             // updateButton
             // 
@@ -176,8 +160,6 @@ namespace NuGet.Options
             this.tableLayoutPanel2.Controls.Add(this.HeaderLabel, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.addButton, 1, 0);
             this.tableLayoutPanel2.Controls.Add(this.removeButton, 2, 0);
-            this.tableLayoutPanel2.Controls.Add(this.MoveUpButton, 3, 0);
-            this.tableLayoutPanel2.Controls.Add(this.MoveDownButton, 4, 0);
             this.tableLayoutPanel2.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.FixedSize;
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             // 
@@ -248,8 +230,6 @@ namespace NuGet.Options
         private System.Windows.Forms.Button removeButton;
         private ContextMenuStrip PackageSourcesContextMenu;
         private ToolStripMenuItem CopyPackageSourceStripMenuItem;
-        private Button MoveUpButton;
-        private Button MoveDownButton;
         private ToolTip packageListToolTip;
         private Button updateButton;
         private Button BrowseButton;

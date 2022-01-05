@@ -72,8 +72,6 @@ namespace NuGet.Options
 
             addButton.ImageList = imgs;
             removeButton.ImageList = imgs;
-            MoveUpButton.ImageList = imgs;
-            MoveDownButton.ImageList = imgs;
         }
 
         private void SetupEventHandlers()
@@ -81,8 +79,6 @@ namespace NuGet.Options
             Disposed += PackageSourcesOptionsControl_Disposed;
             NewPackageName.TextChanged += (o, e) => UpdateUI();
             NewPackageSource.TextChanged += (o, e) => UpdateUI();
-            MoveUpButton.Click += (o, e) => MoveSelectedItem(-1);
-            MoveDownButton.Click += (o, e) => MoveSelectedItem(1);
             NewPackageName.Focus();
             UpdateUI();
         }
@@ -101,8 +97,6 @@ namespace NuGet.Options
                 // This block corresponds to MachineWidePackageSourcesListBox
                 addButton.Enabled = false;
                 removeButton.Enabled = false;
-                MoveUpButton.Enabled = false;
-                MoveDownButton.Enabled = false;
                 BrowseButton.Enabled = false;
                 updateButton.Enabled = false;
 
@@ -110,10 +104,6 @@ namespace NuGet.Options
             }
             else
             {
-                // This block corresponds to PackageSourcesListBox
-                MoveUpButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex > 0;
-                MoveDownButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex < PackageSourcesListBox.Items.Count - 1;
-
                 bool allowEditing = selectedSource != null;
 
                 BrowseButton.Enabled = updateButton.Enabled = removeButton.Enabled = allowEditing;
@@ -122,29 +112,6 @@ namespace NuGet.Options
                 // Always enable addButton for PackageSourceListBox
                 addButton.Enabled = true;
             }
-        }
-
-        private void MoveSelectedItem(int offset)
-        {
-            if (PackageSourcesListBox.SelectedItem == null)
-            {
-                return;
-            }
-
-            int oldIndex = PackageSourcesListBox.SelectedIndex;
-            int newIndex = oldIndex + offset;
-
-            if (newIndex < 0
-                || newIndex > PackageSourcesListBox.Items.Count - 1)
-            {
-                return;
-            }
-            var item = PackageSourcesListBox.SelectedItem;
-            _packageSources.Remove(item);
-            _packageSources.Insert(newIndex, item);
-
-            PackageSourcesListBox.SelectedIndex = newIndex;
-            UpdateUI();
         }
 
         internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
