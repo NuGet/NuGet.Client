@@ -135,23 +135,18 @@ namespace NuGet.PackageManagement.VisualStudio
         /// packages that depends on given transitive package, or <c>null</c> if none found</returns>
         /// <remarks>Computes all transitive origings for each Framework/Runtime-ID combiation. Runtime-ID can be <c>null</c>.
         /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
-        internal async ValueTask<TransitiveEntry> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, CancellationToken ct)
+        internal TransitiveEntry GetTransitivePackageOrigin(PackageIdentity transitivePackage, IReadOnlyList<PackageReference> installedPackages, IList<LockFileTarget> targetsList, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
-            // 1. Get project restore graph
-            RestoreGraphRead reading = await GetCachedPackageSpecAsync(ct);
-            if (reading.IsCacheHit) // 2. If it is cached
+            if (!IsTransitiveComputationNeeded)
             {
                 // Assets file has not changed, look at transtive origin cache
-                if (!IsTransitiveComputationNeeded)
+                // 2.1 Look for a transitive cached entry and return that entry
+                TransitiveEntry cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
+                if (cacheEntry != null)
                 {
-                    // 2.1 Look for a transitive cached entry and return that entry
-                    TransitiveEntry cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
-                    if (cacheEntry != null)
-                    {
-                        return cacheEntry;
-                    }
+                    return cacheEntry;
                 }
             }
 
@@ -161,16 +156,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Otherwise, find all Transitive origin and update cache
             var memory = new Dictionary<PackageIdentity, bool?>();
 
-            IList<LockFileTarget> targetsList = await GetTargetsListAsync(ct);
-
-            ProjectPackages pkgs = await GetInstalledAndTransitivePackagesAsync(targetsList, ct);
-
             // 3. For each target framework graph (Framework, RID)-pair:
             foreach (LockFileTarget targetFxGraph in targetsList)
             {
                 var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
 
-                foreach (var directPkg in pkgs.InstalledPackages) // 3.1 For each direct dependency d:
+                foreach (var directPkg in installedPackages) // 3.1 For each direct dependency d:
                 {
                     memory.Clear();
                     // 3.1.1 Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
@@ -342,6 +333,26 @@ namespace NuGet.PackageManagement.VisualStudio
         internal void ClearCachedTransitiveOrigins()
         {
             TransitiveOriginsCache.Clear();
+        }
+
+        internal TransitivePackageReference MergeTransitiveOrigin(PackageReference pr, TransitiveEntry transitiveEntry)
+        {
+            var transitiveOrigins = new SortedSet<PackageReference>();
+
+            transitiveOrigins.ToList();
+
+
+            foreach (var key in transitiveEntry.Keys)
+            {
+                transitiveOrigins.AddRange(transitiveEntry[key]);
+            }
+
+            var transitivePR = new TransitivePackageReference(pr)
+            {
+                TransitiveOrigins = transitiveOrigins,
+            };
+
+            return transitivePR;
         }
 
         /// <summary>

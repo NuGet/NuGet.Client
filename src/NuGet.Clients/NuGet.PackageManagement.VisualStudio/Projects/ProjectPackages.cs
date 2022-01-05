@@ -13,12 +13,12 @@ namespace NuGet.PackageManagement.VisualStudio
     public struct ProjectPackages
     {
         public IReadOnlyList<PackageReference> InstalledPackages { get; }
-        public IReadOnlyList<PackageReference> TransitivePackages { get; }
+        public IReadOnlyList<TransitivePackageReference> TransitivePackages { get; }
 
-        public ProjectPackages(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<PackageReference> transitivePackages)
+        public ProjectPackages(IReadOnlyList<PackageReference> installedPackages, IReadOnlyList<TransitivePackageReference> transitivePackages)
         {
             InstalledPackages = installedPackages ?? Array.Empty<PackageReference>();
-            TransitivePackages = transitivePackages ?? Array.Empty<PackageReference>();
+            TransitivePackages = transitivePackages ?? Array.Empty<TransitivePackageReference>();
         }
 
         public override bool Equals(object obj)

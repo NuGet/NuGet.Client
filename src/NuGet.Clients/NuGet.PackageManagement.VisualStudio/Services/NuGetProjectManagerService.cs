@@ -720,43 +720,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        /// TODO: REMOVE THIS API
         /// <inheritdoc/>
         public async ValueTask<IReadOnlyDictionary<FrameworkRuntimePair, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
         {
-            if (transitivePackage == null)
-            {
-                throw new ArgumentNullException(nameof(transitivePackage));
-            }
-            if (projectId == null)
-            {
-                throw new ArgumentNullException(nameof(projectId));
-            }
-            if (ct == null)
-            {
-                throw new ArgumentNullException(nameof(ct));
-            }
-
-            ct.ThrowIfCancellationRequested();
-
-            var singleProjectId = new[] { projectId };
-            var packageOrigins = new Dictionary<FrameworkRuntimePair, IReadOnlyList<IPackageReferenceContextInfo>>();
-            IReadOnlyList<NuGetProject>? projectsList = await GetProjectsAsync(singleProjectId, ct);
-            NuGetProject? project = projectsList.FirstOrDefault();
-
-            if (project != null && project is PackageReferenceProject prProject)
-            {
-                var prOrigins = await prProject.GetTransitivePackageOriginAsync(transitivePackage, ct);
-                if (prOrigins != null)
-                {
-                    foreach (KeyValuePair<FrameworkRuntimePair, IList<PackageReference>> fwRuntimeKey in prOrigins)
-                    {
-                        List<PackageReferenceContextInfo>? list = fwRuntimeKey.Value.Select(pr => PackageReferenceContextInfo.Create(pr)).ToList();
-                        packageOrigins[fwRuntimeKey.Key] = list;
-                    }
-                }
-            }
-
-            return packageOrigins.ToImmutableDictionary();
+            await Task.Run(() => { });
+            throw new NotImplementedException();
         }
     }
 }

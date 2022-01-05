@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -11,6 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
     {
         public VersionRange AllowedVersions { get; }
         public PackageIdentity InstalledPackage { get; }
+        public IEnumerable<PackageIdentity> TransitiveOrigins { get; }
 
         public ProjectInstalledPackage(VersionRange versionRange, PackageIdentity installedPackage)
         {

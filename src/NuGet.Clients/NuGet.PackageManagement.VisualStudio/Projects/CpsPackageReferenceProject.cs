@@ -41,6 +41,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly UnconfiguredProject _unconfiguredProject;
+
+        // key is packageId
         private List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
         private List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
 
@@ -220,7 +222,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 IsInstalledAndTransitiveComputationNeeded = false;
 
-                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
+                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
             }
 
             IList<LockFileTarget> targetsList = null;
@@ -247,19 +249,27 @@ namespace NuGet.PackageManagement.VisualStudio
             // get the transitive packages, excluding any already contained in the installed packages
             List<PackageReference> transitivePackages = reading.PackageSpec
                 .TargetFrameworks
-                .SelectMany(f => GetTransitivePackageReferencesForFramework(f.FrameworkName, _installedPackages, _transitivePackages, targetsList))
+                .SelectMany(f => GetTransitivePackageReferencesForFramework(
+                    f.FrameworkName,
+                    _installedPackages,
+                    _transitivePackages,
+                    targetsList))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
 
-            /*
-             * foreach transitive package:
-             *   get its transitive origins
-             */
+            List<TransitivePackageReference> tasks = transitivePackages
+                .Select(pr => Tuple.Create(pr, GetTransitivePackageOrigin(
+                    pr.PackageIdentity,
+                    installedPackages,
+                    targetsList,
+                    token)))
+                .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
+                .ToList();
 
             IsInstalledAndTransitiveComputationNeeded = false;
 
-            return new ProjectPackages(installedPackages, transitivePackages);
+            return new ProjectPackages(installedPackages, tasks);
         }
 
         private IEnumerable<PackageReference> GetPackageReferencesForFramework(

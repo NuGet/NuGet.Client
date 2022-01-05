@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
 
+        // key is packageId
         private readonly Dictionary<string, ProjectInstalledPackage> _installedPackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, ProjectInstalledPackage> _transitivePackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
         public NuGetFramework TargetFramework { get; }
@@ -187,7 +188,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 IsInstalledAndTransitiveComputationNeeded = false;
 
-                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<PackageReference>());
+                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
             }
 
             IList<LockFileTarget> targetsList = null;
@@ -215,14 +216,27 @@ namespace NuGet.PackageManagement.VisualStudio
             // get the transitive packages, excluding any already contained in the installed packages
             List<PackageReference> transitivePackages = reading.PackageSpec
                .TargetFrameworks
-               .SelectMany(f => GetTransitivePackageReferences(f.FrameworkName, _installedPackages, _transitivePackages, targetsList))
+               .SelectMany(f => GetTransitivePackageReferences(
+                   f.FrameworkName,
+                   _installedPackages,
+                   _transitivePackages,
+                   targetsList))
                .GroupBy(p => p.PackageIdentity)
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                .ToList();
 
+            List<TransitivePackageReference> tasks = transitivePackages
+                .Select(pr => Tuple.Create(pr, GetTransitivePackageOrigin(
+                    pr.PackageIdentity,
+                    installedPackages,
+                    targetsList,
+                    token)))
+                .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
+                .ToList();
+
             IsInstalledAndTransitiveComputationNeeded = false;
 
-            return new ProjectPackages(installedPackages, transitivePackages);
+            return new ProjectPackages(installedPackages, tasks);
         }
 
         public override async Task<bool> InstallPackageAsync(
