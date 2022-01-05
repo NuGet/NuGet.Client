@@ -12,7 +12,7 @@ namespace NuGet.Commands.PackCommand
     /// <summary>
     /// Contains Package specific properties for Warnings.
     /// </summary>
-    public class PackageSpecificWarningProperties : IEquatable<PackageSpecificWarningProperties>
+    public class PackageSpecificWarningProperties
     {
         /// <summary>
         /// Contains Package specific No warn properties.
@@ -72,35 +72,6 @@ namespace NuGet.Commands.PackCommand
             {
                 Properties[code].Add(libraryId, new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer()) { framework });
             }
-        }
-
-        public override int GetHashCode()
-        {
-            // return a constant hash for all objects since the contents of Properties are mutable
-            return 1;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as PackageSpecificWarningProperties);
-        }
-
-        public bool Equals(PackageSpecificWarningProperties other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return EqualityUtility.DictionaryEquals(
-                Properties,
-                other.Properties,
-                (sv1, ov1) => EqualityUtility.DictionaryEquals(sv1, ov1, (sv2, ov2) => EqualityUtility.SetEqualsWithNullCheck(sv2, ov2)));
         }
 
         /// <summary>

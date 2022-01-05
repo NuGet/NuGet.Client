@@ -29,7 +29,7 @@ namespace NuGet.Common
         /// <param name="logCode">The NuGet log code</param>
         /// <param name="message">The log message</param>
         private PackagingLogMessage(LogLevel logLevel, NuGetLogCode logCode, string message)
-            : this(logLevel, logCode, message, null, null) { }
+            : this(logLevel: logLevel, logCode: logCode, message: message, libraryId: null, framework: null) { }
 
         /// <summary>
         /// Initializes a new instance of the PackLogMessage class
@@ -74,7 +74,7 @@ namespace NuGet.Common
 
         public static PackagingLogMessage CreateWarning(string message, NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
-            return new PackagingLogMessage(LogLevel.Warning, code, message, libraryId, framework);
+            return new PackagingLogMessage(logLevel: LogLevel.Warning, logCode: code, message: message, libraryId: libraryId, framework: framework);
         }
 
         /// <summary>

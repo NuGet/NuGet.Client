@@ -5726,7 +5726,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_FailsAndLogsWarning()
+        public async Task PackCommand_PrereleaseDependency_SucceedAndLogsWarning()
         {
             // Arrange
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
@@ -5769,7 +5769,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_WarningIsSuppressed_Succeeds()
+        public async Task PackCommand_PrereleaseDependency_WarningSuppressed_Succeed()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -5832,7 +5832,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependencies_PartialWarningSuppressed_Fails()
+        public async Task PackCommand_PrereleaseDependencies_PartialWarningSuppressed_SucceedAndLogsWarning()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -5859,7 +5859,6 @@ namespace ClassLibrary
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Version>1.2.3</Version>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -5875,10 +5874,9 @@ namespace ClassLibrary
                 CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
 
                 // Assert
-                result.Success.Should().BeFalse();
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
-                Assert.False(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyAName);
                 result.AllOutput.Should().Contain(prereleaseDependencyBName);
                 result.AllOutput.Should().Contain(NuGetLogCode.NU5104.ToString());
@@ -5886,7 +5884,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_ProjectLevelWarnningSuppressed_Succeed()
+        public async Task PackCommand_PrereleaseDependency_ProjectLevelWarningSuppressed_Succeed()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -5952,7 +5950,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_FrameWorkSpecificPackageReference_PreReleaseDependency_MultiTfm_FailsAndLogsWarning()
+        public async Task PackCommand_MultiTfm_PrereleaseDependency_TreatWarningsAsErrors_FailsAndLogsWarning()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -6022,7 +6020,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_FrameWorkSpecificPackageReference_PreReleaseDependency_WarningIsSuppressed_Succeeds()
+        public async Task PackCommand_MultiTfm_PrereleaseDependency_WarningIsSuppressed_Succeeds()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -6115,7 +6113,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public async Task PackCommand_PackProject_PackageReference_PreReleaseDependency_MultiTfm_ProjectLevelWarnningSuppressed_Succeed()
+        public async Task PackCommand_MultiTfm_PrereleaseDependency_ProjectLevelWarningSuppressed_Succeed()
         {
             using (var pathContext = new SimpleTestPathContext())
             {

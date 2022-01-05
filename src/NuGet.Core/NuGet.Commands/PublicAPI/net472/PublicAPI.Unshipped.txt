@@ -3,7 +3,6 @@ NuGet.Commands.PackCollectorLogger.PackageReferenceWarningPropertiesCollection.g
 NuGet.Commands.PackCollectorLogger.PackageReferenceWarningPropertiesCollection.set -> void
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties.Contains(NuGet.Common.NuGetLogCode code, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> bool
-NuGet.Commands.PackCommand.PackageSpecificWarningProperties.Equals(NuGet.Commands.PackCommand.PackageSpecificWarningProperties other) -> bool
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties.PackageSpecificWarningProperties() -> void
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties.Properties.get -> System.Collections.Generic.IDictionary<NuGet.Common.NuGetLogCode, System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<NuGet.Frameworks.NuGetFramework>>>
 NuGet.Commands.PackCommand.WarningPropertiesCollection
@@ -11,8 +10,6 @@ NuGet.Commands.PackCommand.WarningPropertiesCollection.ApplyNoWarnProperties(NuG
 NuGet.Commands.PackCommand.WarningPropertiesCollection.Equals(NuGet.Commands.PackCommand.WarningPropertiesCollection other) -> bool
 NuGet.Commands.PackCommand.WarningPropertiesCollection.PackageSpecificWarningProperties.get -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 NuGet.Commands.PackCommand.WarningPropertiesCollection.WarningPropertiesCollection(NuGet.Commands.PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties) -> void
-override NuGet.Commands.PackCommand.PackageSpecificWarningProperties.Equals(object obj) -> bool
-override NuGet.Commands.PackCommand.PackageSpecificWarningProperties.GetHashCode() -> int
 override NuGet.Commands.PackCommand.WarningPropertiesCollection.Equals(object obj) -> bool
 override NuGet.Commands.PackCommand.WarningPropertiesCollection.GetHashCode() -> int
 static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties

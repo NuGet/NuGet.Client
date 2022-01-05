@@ -117,7 +117,7 @@ namespace NuGet.Build.Tasks.Pack
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;
-                var packArgs = logic.GetPackArgs(request);
+                var packArgs = logic.GetPackArgs(request: request, warningPropertiesCollection: null);
 
                 // If packing using a Nuspec file, we don't need to build a PackageBuilder here
                 // as the package builder is built by reading the manifest file later in the code path.

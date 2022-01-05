@@ -16,11 +16,6 @@ namespace NuGet.Build.Tasks.Pack
     public interface IPackTaskLogic
     {
         /// <summary>
-        /// Initialize the pack args from the pack task request.
-        /// </summary>
-        PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request);
-
-        /// <summary>
         /// Initialize the pack args from the pack task request and warningProperties.
         /// </summary>
         PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, WarningPropertiesCollection warningPropertiesCollection);
@@ -32,7 +27,7 @@ namespace NuGet.Build.Tasks.Pack
 
         /// <summary>
         /// Initialize the pack command runner from the pack task request and the output of
-        /// <see cref="GetPackArgs(IPackTaskRequest{IMSBuildItem})"/> and
+        /// <see cref="GetPackArgs"/> and
         /// <see cref="GetPackageBuilder(IPackTaskRequest{IMSBuildItem})"/>.
         /// </summary>
         PackCommandRunner GetPackCommandRunner(

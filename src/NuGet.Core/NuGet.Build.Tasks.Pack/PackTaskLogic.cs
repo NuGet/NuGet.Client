@@ -22,12 +22,6 @@ namespace NuGet.Build.Tasks.Pack
     public class PackTaskLogic : IPackTaskLogic
     {
         private const string IdentityProperty = "Identity";
-
-        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
-        {
-            return GetPackArgs(request, warningPropertiesCollection: null);
-        }
-
         public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, WarningPropertiesCollection warningPropertiesCollection)
         {
             var packArgs = new PackArgs
