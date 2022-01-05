@@ -10,6 +10,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
         public const string SchemaName = "ConfigurationGeneral";
 
         public const string ProjectAssetsFileProperty = "ProjectAssetsFile";
+        public const string TargetFrameworkProperty = "TargetFramework";
         public const string TargetFrameworkMonikerProperty = "TargetFrameworkMoniker";
     }
 
