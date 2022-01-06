@@ -3,9 +3,14 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
@@ -278,6 +283,230 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 verifyResult.Success.Should().BeFalse();
                 verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 verifyResult.AllOutput.Should().Contain(_noMatchingCertErrorCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyCommand_PackageSignedWithAllowedCertificate_AllowUntrustedRootIsSetFalse_Succeeds()
+        {
+            // Arrange
+            TrustedTestCert<TestCertificate> cert = _testFixture.TrustedTestCertificateChain.Leaf;
+            var package = new SimpleTestPackageContext();
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var zipStream = await package.CreateAsStreamAsync())
+            {
+                var packagePath = Path.Combine(pathContext.PackageSource, "testpackage.nupkg");
+
+                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                using (var fileStream = File.OpenWrite(packagePath))
+                {
+                    zipStream.CopyTo(fileStream);
+                }
+
+                var signResult = CommandRunner.Run(
+                    _nugetExePath,
+                    pathContext.PackageSource,
+                    $"sign {packagePath} -CertificateFingerprint {cert.Source.Cert.Thumbprint} -CertificateStoreName {cert.StoreName} -CertificateStoreLocation {cert.StoreLocation}",
+                    waitForExit: true);
+
+                signResult.Success.Should().BeTrue();
+
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(cert.Source.Cert, HashAlgorithmName.SHA256);
+
+                var trustedSignersSectionContent = $@"
+    <trustedSigners>
+        <author name=""signed"">
+            <certificate fingerprint=""{certificateFingerprintString}"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+    </trustedSigners>
+";
+                SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
+
+                // Act
+                var verifyResult = CommandRunner.Run(
+                    _nugetExePath,
+                    pathContext.PackageSource,
+                    $"verify {packagePath} -Signatures -CertificateFingerprint {certificateFingerprintString};abc;def",
+                    waitForExit: true);
+
+                // Assert
+                // Succeeds even allowUntrustedRoot is set false in nuget.config since actual signing certificate has trusted root
+                verifyResult.Success.Should().BeTrue();
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [CIOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task VerifyCommand_PackageSignedWithUntrustedCertificate_AllowUntrustedRootIsSetFalse_Fails(bool withTrustedSignersSection)
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
+            {
+                var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, pathContext.WorkingDirectory);
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
+
+                if (withTrustedSignersSection)
+                {
+                    var trustedSignersSectionContent = $@"
+    <trustedSigners>
+        <author name=""MyCert"">
+            <certificate fingerprint=""{certificateFingerprintString}"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""false"" />
+        </author>
+    </trustedSigners>
+";
+                    SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
+                }
+
+                // Act
+                var verifyResult = CommandRunner.Run(
+                    _nugetExePath,
+                    pathContext.PackageSource,
+                    $"verify {packagePath} -Signatures -CertificateFingerprint {certificateFingerprintString};abc;def",
+                    waitForExit: true);
+
+                // Assert
+                // Unless allowUntrustedRoot is set true in nuget.config verify always fails for cert without trusted root.
+                verifyResult.Success.Should().BeFalse();
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                verifyResult.AllOutput.Should().Contain(_primarySignatureInvalidErrorCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyCommand_PackageSignedWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_Succeeds()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
+            {
+                var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
+
+                //Act
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, pathContext.WorkingDirectory);
+
+                // Arrange
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
+
+                var trustedSignersSectionContent = $@"
+    <trustedSigners>
+        <author name=""MyCert"">
+            <certificate fingerprint=""{certificateFingerprintString}"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""true"" />
+        </author>
+    </trustedSigners>
+";
+                SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
+
+                // Act
+                var verifyResult = CommandRunner.Run(
+                    _nugetExePath,
+                    pathContext.PackageSource,
+                    $"verify {packagePath} -Signatures -CertificateFingerprint {certificateFingerprintString};abc;def",
+                    waitForExit: true);
+
+                // Assert
+                // If allowUntrustedRoot is set true in nuget.config then verify succeeds for cert with untrusted root.
+                verifyResult.Success.Should().BeTrue();
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyCommand_PackageSignedWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_WrongNugetConfig_Fails()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
+            {
+                var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
+
+                //Act
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, pathContext.WorkingDirectory);
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
+
+                // Arrange
+                string nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, NuGet.Configuration.Settings.DefaultSettingsFileName);
+                string nugetConfigPath2 = Path.Combine(pathContext.WorkingDirectory, "nuget2.config");
+                // nuget2.config doesn't have change for trustedSigners
+                File.Copy(nugetConfigPath, nugetConfigPath2);
+
+                var trustedSignersSectionContent = $@"
+    <trustedSigners>
+        <author name=""MyCert"">
+            <certificate fingerprint=""{certificateFingerprintString}"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""true"" />
+        </author>
+    </trustedSigners>
+";
+                SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
+
+                // Act
+                // pass custom nuget2.config file, but doesn't have trustedSigners section
+                var verifyResult = CommandRunner.Run(
+                    _nugetExePath,
+                    pathContext.PackageSource,
+                    $"verify {packagePath} -All -CertificateFingerprint {certificateFingerprintString};abc;def -ConfigFile {nugetConfigPath2}",
+                    waitForExit: true);
+
+                // Assert
+                // allowUntrustedRoot is not set true in nuget2.config, but in nuget.config, so verify fails.
+                verifyResult.Success.Should().BeFalse();
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                verifyResult.AllOutput.Should().Contain(_primarySignatureInvalidErrorCode);
+            }
+        }
+
+        [CIOnlyFact]
+        public async Task VerifyCommand_PackageSignedWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_CorrectNugetConfig_Succeed()
+        {
+            // Arrange
+            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+
+            using (var pathContext = new SimpleTestPathContext())
+            using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
+            {
+                var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
+
+                //Act
+                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, pathContext.WorkingDirectory);
+                var certificateFingerprintString = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
+
+                // Arrange
+                string nugetConfigPath = Path.Combine(pathContext.WorkingDirectory, NuGet.Configuration.Settings.DefaultSettingsFileName);
+                string nugetConfigPath2 = Path.Combine(pathContext.WorkingDirectory, "nuget2.config");
+                File.Copy(nugetConfigPath, nugetConfigPath2);
+
+                var trustedSignersSectionContent = $@"
+    <trustedSigners>
+        <author name=""MyCert"">
+            <certificate fingerprint=""{certificateFingerprintString}"" hashAlgorithm=""SHA256"" allowUntrustedRoot=""true"" />
+        </author>
+    </trustedSigners>
+";
+                SimpleTestSettingsContext.AddSectionIntoNuGetConfig(nugetConfigPath2, trustedSignersSectionContent, "configuration");
+
+                // Act
+                // pass custom nuget2.config file, it has trustedSigners section
+                var verifyResult = CommandRunner.Run(
+                    _nugetExePath,
+                    pathContext.PackageSource,
+                    $"verify {packagePath} -All -CertificateFingerprint {certificateFingerprintString};abc;def -ConfigFile {nugetConfigPath2}",
+                    waitForExit: true);
+
+                // Assert
+                // allowUntrustedRoot is set true in nuget2.config, so verify succeeds.
+                verifyResult.Success.Should().BeTrue();
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
     }

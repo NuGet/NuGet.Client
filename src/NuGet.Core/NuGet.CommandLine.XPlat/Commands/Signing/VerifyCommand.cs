@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine.XPlat
@@ -16,8 +17,7 @@ namespace NuGet.CommandLine.XPlat
     {
         internal static void Register(CommandLineApplication app,
                               Func<ILogger> getLogger,
-                              Action<LogLevel> setLogLevel,
-                              Func<IVerifyCommandRunner> getCommandRunner)
+                              Action<LogLevel> setLogLevel)
         {
             app.Command("verify", verifyCmd =>
             {
@@ -36,6 +36,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.VerifyCommandCertificateFingerprintDescription,
                     CommandOptionType.MultipleValue);
 
+                CommandOption configFile = verifyCmd.Option(
+                    "--configfile",
+                    Strings.Option_ConfigFile,
+                    CommandOptionType.SingleValue);
+
                 CommandOption verbosity = verifyCmd.Option(
                     "-v|--verbosity",
                     Strings.Verbosity_Description,
@@ -46,6 +51,7 @@ namespace NuGet.CommandLine.XPlat
 
                 verifyCmd.OnExecute(async () =>
                 {
+                    ISettings settings = XPlatUtility.ProcessConfigFile(configFile.Value());
                     ValidatePackagePaths(packagePaths);
 
                     VerifyArgs args = new VerifyArgs();
@@ -57,7 +63,7 @@ namespace NuGet.CommandLine.XPlat
                     args.Logger = getLogger();
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
-                    var runner = getCommandRunner();
+                    var runner = new VerifyCommandRunner(settings);
                     var verifyTask = runner.ExecuteCommandAsync(args);
                     await verifyTask;
 

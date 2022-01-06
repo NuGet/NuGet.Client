@@ -248,7 +248,7 @@ namespace NuGet.CommandLine.XPlat
 
             try
             {
-                ISettings settings = ProcessConfigFile(configFile.Value());
+                ISettings settings = XPlatUtility.ProcessConfigFile(configFile.Value());
 
                 var trustedSignersArgs = new TrustedSignersArgs()
                 {
@@ -336,22 +336,6 @@ namespace NuGet.CommandLine.XPlat
                 default:
                     return TrustedSignersAction.Add;
             }
-        }
-
-        private static ISettings ProcessConfigFile(string configFile)
-        {
-            if (string.IsNullOrEmpty(configFile))
-            {
-                return XPlatUtility.CreateDefaultSettings();
-            }
-
-            var configFileFullPath = Path.GetFullPath(configFile);
-            var directory = Path.GetDirectoryName(configFileFullPath);
-            var configFileName = Path.GetFileName(configFileFullPath);
-            return Settings.LoadDefaultSettings(
-                directory,
-                configFileName,
-                machineWideSettings: new XPlatMachineWideSetting());
         }
     }
 }

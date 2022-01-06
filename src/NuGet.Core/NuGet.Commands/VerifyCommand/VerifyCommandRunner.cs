@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
@@ -24,6 +25,17 @@ namespace NuGet.Commands
         private const int SuccessCode = 0;
         private const int FailureCode = 1;
         private const HashAlgorithmName _defaultFingerprintAlgorithm = HashAlgorithmName.SHA256;
+        private const string TrustedSignersSectionName = "trustedSigners";
+        private ISettings _settings;
+
+        [Obsolete("This API does ignores NuGet.Config file or trusted-signers list")]
+        public VerifyCommandRunner()
+        { }
+
+        public VerifyCommandRunner(ISettings settings)
+        {
+            _settings = settings;
+        }
 
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
@@ -58,10 +70,16 @@ namespace NuGet.Commands
                         _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+                var trustedSignersSection = _settings.GetSection(TrustedSignersSectionName);
+                List<TrustedSignerItem> trustedSigners = trustedSignersSection?.Items.Select(c => c as TrustedSignerItem).Where(c => c != null).ToList();
+                IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = trustedSigners?
+                    .SelectMany(c => c.Certificates)
+                    .Where(c => c.AllowUntrustedRoot)
+                    .Select(c => new KeyValuePair<string, HashAlgorithmName>(c.Fingerprint, c.HashAlgorithm));
                 var verificationProviders = new List<ISignatureVerificationProvider>()
                 {
                     new IntegrityVerificationProvider(),
-                    new SignatureTrustAndValidityVerificationProvider()
+                    new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList)
                 };
 
                 verificationProviders.Add(

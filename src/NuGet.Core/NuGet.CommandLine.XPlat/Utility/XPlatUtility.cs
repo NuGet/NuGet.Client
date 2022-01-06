@@ -70,5 +70,21 @@ namespace NuGet.CommandLine.XPlat
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
 #endif
         }
+
+        internal static ISettings ProcessConfigFile(string configFile)
+        {
+            if (string.IsNullOrEmpty(configFile))
+            {
+                return CreateDefaultSettings();
+            }
+
+            var configFileFullPath = Path.GetFullPath(configFile);
+            var directory = Path.GetDirectoryName(configFileFullPath);
+            var configFileName = Path.GetFileName(configFileFullPath);
+            return Settings.LoadDefaultSettings(
+                directory,
+                configFileName,
+                machineWideSettings: new XPlatMachineWideSetting());
+        }
     }
 }

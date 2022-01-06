@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -20,7 +23,7 @@ namespace NuGet.XPlat.FuncTest
         public void VerifyCommandArgsParsing_MissingPackagePath_Throws()
         {
             VerifyCommandArgs(
-                (mockCommandRunner, testApp, getLogLevel) =>
+                (testApp, getLogLevel) =>
                 {
                     // Arrange
                     var argList = new List<string>() { "verify" };
@@ -42,7 +45,7 @@ namespace NuGet.XPlat.FuncTest
         public void VerifyCommandArgsParsing_UnrcognizedOption_Throws(string unrecognizedOption)
         {
             VerifyCommandArgs(
-                (mockCommandRunner, testApp, getLogLevel) =>
+                (testApp, getLogLevel) =>
                 {
                     //Arrange
                     string[] args = new string[] { "verify", unrecognizedOption };
@@ -66,40 +69,41 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("-v", "diagnostic", LogLevel.Debug)]
         public void VerifyCommandArgsParsing_VerbosityOption(string option, string verbosity, LogLevel logLevel)
         {
+            using var pathContext = new SimpleTestPathContext();
+
+            var testDirectory = pathContext.WorkingDirectory;
+            var packageFile = new FileInfo(Path.Combine(testDirectory, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+            var package = SigningTestUtility.GetResourceBytes(packageFile.Name);
+            File.WriteAllBytes(packageFile.FullName, package);
+
             VerifyCommandArgs(
-                (mockCommandRunner, testApp, getLogLevel) =>
+                (testApp, getLogLevel) =>
                 {
                     // Arrange                   
-                    var argList = new List<string> { "verify", "packageX.nupkg", option, verbosity };
+                    var argList = new List<string> { "verify", packageFile.FullName, option, verbosity };
 
                     // Act
                     var result = testApp.Execute(argList.ToArray());
 
                     // Assert
                     Assert.Equal(logLevel, getLogLevel());
-                    Assert.Equal(0, result);
                 });
         }
 
-        private void VerifyCommandArgs(Action<Mock<IVerifyCommandRunner>, CommandLineApplication, Func<LogLevel>> verify)
+        private void VerifyCommandArgs(Action<CommandLineApplication, Func<LogLevel>> verify)
         {
             // Arrange
             var logLevel = LogLevel.Information;
             var logger = new TestCommandOutputLogger();
             var testApp = new CommandLineApplication();
-            var mockCommandRunner = new Mock<IVerifyCommandRunner>();
-            mockCommandRunner
-                .Setup(m => m.ExecuteCommandAsync(It.IsAny<VerifyArgs>()))
-                .Returns(Task.FromResult(0));
 
             testApp.Name = "dotnet nuget_test";
             VerifyCommand.Register(testApp,
                 () => logger,
-                ll => logLevel = ll,
-                () => mockCommandRunner.Object);
+                ll => logLevel = ll);
 
             // Act & Assert
-            verify(mockCommandRunner, testApp, () => logLevel);
+            verify(testApp, () => logLevel);
         }
     }
 }

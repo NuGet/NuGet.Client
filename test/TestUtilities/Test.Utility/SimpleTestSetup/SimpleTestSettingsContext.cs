@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
 using Xunit;
@@ -190,6 +191,21 @@ namespace NuGet.Test.Utility
             AddEntry(section, "nuget", nuget);
 
             Save();
+        }
+
+        // Simply add any text as section into nuget.config file, adding large child node into nuget.config via api is tedious.
+        public static void AddSectionIntoNuGetConfig(string path, string content, string parentNode)
+        {
+            FileAttributes attr = File.GetAttributes(path);
+            // if path is directory then add section to default nuget.config, else add to file.
+            string nugetConfigPath = (attr & FileAttributes.Directory) == FileAttributes.Directory ?
+                Path.Combine(path, NuGet.Configuration.Settings.DefaultSettingsFileName) : path;
+            XmlDocument doc = new XmlDocument();
+            doc.Load(nugetConfigPath);
+            XmlDocumentFragment docFragment = doc.CreateDocumentFragment();
+            docFragment.InnerXml = content;
+            doc.SelectSingleNode(parentNode).AppendChild(docFragment);
+            doc.Save(nugetConfigPath);
         }
     }
 }

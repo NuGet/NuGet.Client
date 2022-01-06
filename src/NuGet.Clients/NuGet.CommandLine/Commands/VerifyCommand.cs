@@ -60,7 +60,7 @@ namespace NuGet.CommandLine
                     break;
             }
 
-            var verifyCommandRunner = new VerifyCommandRunner();
+            var verifyCommandRunner = new VerifyCommandRunner(Settings);
             var result = verifyCommandRunner.ExecuteCommandAsync(verifyArgs).Result;
             if (result > 0)
             {
