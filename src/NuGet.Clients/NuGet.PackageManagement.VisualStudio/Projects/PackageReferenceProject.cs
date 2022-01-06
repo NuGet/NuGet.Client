@@ -335,19 +335,20 @@ namespace NuGet.PackageManagement.VisualStudio
             TransitiveOriginsCache.Clear();
         }
 
-        internal TransitivePackageReference MergeTransitiveOrigin(PackageReference pr, TransitiveEntry transitiveEntry)
+        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
+
+        internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
         {
-            var transitiveOrigins = new SortedSet<PackageReference>();
+            var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
 
             transitiveOrigins.ToList();
-
 
             foreach (var key in transitiveEntry.Keys)
             {
                 transitiveOrigins.AddRange(transitiveEntry[key]);
             }
 
-            var transitivePR = new TransitivePackageReference(pr)
+            var transitivePR = new TransitivePackageReference(currentPackage)
             {
                 TransitiveOrigins = transitiveOrigins,
             };

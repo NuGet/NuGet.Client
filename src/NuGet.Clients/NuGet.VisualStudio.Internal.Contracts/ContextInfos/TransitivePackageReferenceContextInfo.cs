@@ -54,7 +54,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             var prCtxInfo = PackageReferenceContextInfo.Create(transitivePackageReference);
 
             var tranPkgRefCtxInfo = Create(prCtxInfo);
-            tranPkgRefCtxInfo.TransitiveOrigins = transitivePackageReference.TransitiveOrigins.Select(x => PackageReferenceContextInfo.Create(x));
+            tranPkgRefCtxInfo.TransitiveOrigins = transitivePackageReference.TransitiveOrigins.Select(pr => PackageReferenceContextInfo.Create(pr)).ToList();
 
             return tranPkgRefCtxInfo;
         }

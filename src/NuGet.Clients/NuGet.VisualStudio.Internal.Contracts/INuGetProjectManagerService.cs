@@ -17,8 +17,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetInstalledPackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
-
-
         ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);

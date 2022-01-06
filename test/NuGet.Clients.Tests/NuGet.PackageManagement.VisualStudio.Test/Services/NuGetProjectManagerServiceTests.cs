@@ -541,7 +541,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetTransitivePackageOriginAsync_WithLegacyPackageReferenceProject_OneTransitiveReferenceAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigin_WithLegacyPackageReferenceProject_OneTransitiveOriginAsync()
         {
             string projectId = Guid.NewGuid().ToString();
 
@@ -591,39 +591,39 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new PackageDependency("packageB", VersionRange.Parse("1.0.0"))
                     });
 
-                // Act
                 var command = new RestoreCommand(request);
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
 
                 // Act
-                var packages = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("packageB", new NuGetVersion(1, 0, 0)),
-                    projectId,
-                    CancellationToken.None);
+                var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
 
-                // Verify
-                Assert.NotNull(packages);
-                Assert.NotEmpty(packages);
-                Assert.Equal(1, packages.Count);
-                var tuple = packages.First();
-                Assert.Equal(1, tuple.Value.Count);
-                var dep = tuple.Value.First();
-                Assert.Equal("packageA", dep.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.15.3"), dep.Identity.Version);
+                // packageB and packageC are transitive dependencies
+                installedAndTransitive.TransitivePackages.Should().HaveCount(2);
+
+                var transitivePackageB = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageB").First();
+                transitivePackageB.TransitiveOrigins.Should().HaveCount(1);
+                var transitiveOriginB = transitivePackageB.TransitiveOrigins.First();
+                Assert.Equal("packageA", transitiveOriginB.Identity.Id);
+                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginB.Identity.Version);
+
+                var transitivePackageC = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageC").First();
+                transitivePackageC.TransitiveOrigins.Should().HaveCount(1);
+                var transitiveOriginC = transitivePackageC.TransitiveOrigins.First();
+                Assert.Equal("packageA", transitiveOriginC.Identity.Id);
+                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginC.Identity.Version);
             }
         }
 
         [Fact]
-        private async Task GetTransitivePackageOriginAsync_WithLegacyPackageReferenceProject_MultipleReferences_SucceedsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigin_WithLegacyPackageReferenceProject_MultipleOriginsAsync()
         {
             string projectId = Guid.NewGuid().ToString();
 
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 // Setup
-
                 var onedep = new[]
                 {
                     new LibraryDependency
@@ -691,42 +691,31 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
+                var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
 
-                // Act I
-                var packages = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("packageB", new NuGetVersion(1, 0, 0)),
-                    projectId,
-                    CancellationToken.None);
+                // Verify transitive package B
+                var transitivePackageB = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageB").First();
+                Assert.NotNull(transitivePackageB);
+                Assert.Equal(1, transitivePackageB.TransitiveOrigins.Count());
+                var transitiveOriginB = transitivePackageB.TransitiveOrigins.First();
+                Assert.Equal("packageA", transitiveOriginB.Identity.Id);
+                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginB.Identity.Version);
 
-                // Verify I
-                Assert.NotNull(packages);
-                Assert.NotEmpty(packages);
-                Assert.Equal(1, packages.Count);
-                var tuple = packages.First();
-                Assert.Equal(1, tuple.Value.Count);
-                var dep = tuple.Value.First();
-                Assert.Equal("packageA", dep.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.15.3"), dep.Identity.Version);
+                // Verify transitive package C
+                var transitivePackageC = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageC").First();
+                Assert.NotNull(transitivePackageC);
+                Assert.Equal(1, transitivePackageC.TransitiveOrigins.Count());
+                var transitiveOriginC = transitivePackageC.TransitiveOrigins.First();
+                Assert.Equal("packageA", transitiveOriginB.Identity.Id);
+                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginB.Identity.Version);
 
-                // Act II
-                var packages2 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("packageD", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
-
-                // Verify II
-                Assert.NotNull(packages2);
-                Assert.Equal(1, packages2.Count); // One framework/RID entry
-                Assert.Equal(2, packages2.First().Value.Count); // Two top dependencies
-
-
-                // Act III: Unknown dependency
-                var packages3 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("abc", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
-
-                Assert.Empty(packages3);
+                // Verify transitive package D
+                var transitivePackageD = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageD").First();
+                Assert.NotNull(transitivePackageD);
+                Assert.Equal(2, transitivePackageD.TransitiveOrigins.Count()); // Two top dependencies
+                Assert.Collection(transitivePackageD.TransitiveOrigins,
+                    x => Assert.Equal(x.Identity, new PackageIdentity("packageA", NuGetVersion.Parse("2.15.3"))),
+                    x => Assert.Equal(x.Identity, new PackageIdentity("packageX", NuGetVersion.Parse("3.0.0"))));
             }
         }
 
@@ -1087,6 +1076,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(result.Success);
                 Assert.True(File.Exists(pajFilepath));
 
+                var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
+
                 // Act I
                 var topPackages = await _projectManager.GetTransitivePackageOriginAsync(
                     new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
@@ -1131,44 +1122,37 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-
         [Fact]
-        private async Task GetTransitivePackageOriginAsync_InvalidInput_DoesNotThrowAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_InvalidInput_ThrowsAsync()
         {
             Initialize();
 
-            // nulls
-            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+            try
             {
-                _ = await _projectManager.GetTransitivePackageOriginAsync(
-                    transitivePackage: null,
-                    projectId: "abc",
-                    ct: CancellationToken.None);
-            });
+                _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(null, CancellationToken.None);
+                Assert.True(false);
+            }
+            catch
+            {
+            }
 
-            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+            try
             {
-                _ = await _projectManager.GetTransitivePackageOriginAsync(
-                    transitivePackage: new PackageIdentity("abc", NuGetVersion.Parse("1.2.3")),
-                    projectId: null,
-                    ct: CancellationToken.None);
-            });
+                _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { }, CancellationToken.None);
+                Assert.True(false);
+            }
+            catch
+            {
+            }
 
-            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+            try
             {
-                _ = await _projectManager.GetTransitivePackageOriginAsync(
-                    transitivePackage: new PackageIdentity("abc", NuGetVersion.Parse("1.2.3")),
-                    projectId: null,
-                    ct: CancellationToken.None);
-            });
-
-            await Assert.ThrowsAsync(typeof(ArgumentNullException), async () =>
+                _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { "abc" }, CancellationToken.None);
+                Assert.True(!false);
+            }
+            catch
             {
-                _ = await _projectManager.GetTransitivePackageOriginAsync(
-                   transitivePackage: null,
-                   projectId: null,
-                   ct: CancellationToken.None);
-            });
+            }
         }
 
         [Fact]
