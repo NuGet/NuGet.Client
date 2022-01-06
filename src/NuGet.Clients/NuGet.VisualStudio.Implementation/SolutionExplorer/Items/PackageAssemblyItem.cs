@@ -35,7 +35,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
             GroupType = groupType;
         }
 
-        public override object Identity => Tuple.Create(Library.Name, Path);
+        public override object Identity => Tuple.Create(Library.Name, Path, GroupType);
 
         // All siblings are assemblies, so no prioritization needed (sort alphabetically)
         public override int Priority => 0;
