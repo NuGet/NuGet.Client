@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -22,6 +23,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             Identity = identity;
             Framework = framework;
+            TransitiveOrigins = new List<IPackageReferenceContextInfo>();
         }
 
         internal static TransitivePackageReferenceContextInfo Create(PackageIdentity identity, NuGetFramework? framework)
@@ -29,12 +31,35 @@ namespace NuGet.VisualStudio.Internal.Contracts
             return new TransitivePackageReferenceContextInfo(identity, framework);
         }
 
-        public static TransitivePackageReferenceContextInfo Create(PackageReference packageReference)
+        public static TransitivePackageReferenceContextInfo Create(IPackageReferenceContextInfo packageReference)
         {
-            throw new NotImplementedException();
+            var tranPkgRefCtxInfo = new TransitivePackageReferenceContextInfo(packageReference.Identity, packageReference.Framework)
+            {
+                IsAutoReferenced = packageReference.IsAutoReferenced,
+                AllowedVersions = packageReference.AllowedVersions,
+                IsUserInstalled = packageReference.IsUserInstalled,
+                IsDevelopmentDependency = packageReference.IsDevelopmentDependency,
+            };
+
+            return tranPkgRefCtxInfo;
         }
 
-        public IEnumerable<IPackageReferenceContextInfo> TransitiveOrigins => throw new NotImplementedException();
+        public static TransitivePackageReferenceContextInfo Create(TransitivePackageReference transitivePackageReference)
+        {
+            if (transitivePackageReference == null)
+            {
+                throw new ArgumentNullException(nameof(transitivePackageReference));
+            }
+
+            var prCtxInfo = PackageReferenceContextInfo.Create(transitivePackageReference);
+
+            var tranPkgRefCtxInfo = Create(prCtxInfo);
+            tranPkgRefCtxInfo.TransitiveOrigins = transitivePackageReference.TransitiveOrigins.Select(x => PackageReferenceContextInfo.Create(x));
+
+            return tranPkgRefCtxInfo;
+        }
+
+        public IEnumerable<IPackageReferenceContextInfo> TransitiveOrigins { get; internal set; }
 
         public PackageIdentity Identity { get; internal set; }
 

@@ -225,7 +225,7 @@ namespace NuGet.PackageManagement.VisualStudio
                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                .ToList();
 
-            List<TransitivePackageReference> tasks = transitivePackages
+            List<TransitivePackageReference> transitivePackagesWithOrigins = transitivePackages
                 .Select(pr => Tuple.Create(pr, GetTransitivePackageOrigin(
                     pr.PackageIdentity,
                     installedPackages,
@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IsInstalledAndTransitiveComputationNeeded = false;
 
-            return new ProjectPackages(installedPackages, tasks);
+            return new ProjectPackages(installedPackages, transitivePackagesWithOrigins);
         }
 
         public override async Task<bool> InstallPackageAsync(

@@ -14,4 +14,5 @@ NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.IsDe
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.IsUserInstalled.get -> bool
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.TransitiveOrigins.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>!
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.TransitivePackageReferenceContextInfo(NuGet.Packaging.Core.PackageIdentity! identity, NuGet.Frameworks.NuGetFramework? framework) -> void
-static NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.Create(NuGet.Packaging.PackageReference! packageReference) -> NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo!
+static NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.Create(NuGet.Packaging.TransitivePackageReference! transitivePackageReference) -> NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo!
+static NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.Create(NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo! packageReference) -> NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo!

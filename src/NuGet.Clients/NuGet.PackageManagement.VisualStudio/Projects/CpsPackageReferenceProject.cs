@@ -18,6 +18,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.PackageManagement.VisualStudio.Utility;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -258,7 +259,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
 
-            List<TransitivePackageReference> tasks = transitivePackages
+            List<TransitivePackageReference> transitivePackagesWithOrigins = transitivePackages
                 .Select(pr => Tuple.Create(pr, GetTransitivePackageOrigin(
                     pr.PackageIdentity,
                     installedPackages,
@@ -269,7 +270,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IsInstalledAndTransitiveComputationNeeded = false;
 
-            return new ProjectPackages(installedPackages, tasks);
+            return new ProjectPackages(installedPackages, transitivePackagesWithOrigins);
         }
 
         private IEnumerable<PackageReference> GetPackageReferencesForFramework(

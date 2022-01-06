@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -37,7 +38,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             int propertyCount = reader.ReadMapHeader();
             for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                switch (reader.ReadString())
+                var switchKey = reader.ReadString();
+
+                switch (switchKey)
                 {
                     case IdentityPropertyName:
                         identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
@@ -86,6 +89,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
         protected override void SerializeCore(ref MessagePackWriter writer, IPackageReferenceContextInfo value, MessagePackSerializerOptions options)
         {
             writer.WriteMapHeader(count: 6);
+
+            WriteSerialize(ref writer, value, options);
+        }
+
+        internal static void WriteSerialize(ref MessagePackWriter writer, IPackageReferenceContextInfo value, MessagePackSerializerOptions options)
+        {
             writer.Write(IdentityPropertyName);
             PackageIdentityFormatter.Instance.Serialize(ref writer, value.Identity, options);
             writer.Write(FrameworkPropertyName);

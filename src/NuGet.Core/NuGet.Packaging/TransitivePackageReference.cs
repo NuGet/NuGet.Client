@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
-namespace NuGet.PackageManagement.VisualStudio
+namespace NuGet.Packaging
 {
     public class TransitivePackageReference : PackageReference
     {
@@ -22,7 +21,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
 
         }
-
 
         public IEnumerable<PackageReference> TransitiveOrigins { get; set; }
     }
