@@ -33,7 +33,8 @@ namespace Dotnet.Integration.Test
 
         public MsbuildIntegrationTestFixture()
         {
-            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli();
+            string testAssemblyPath = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
+            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath);
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
