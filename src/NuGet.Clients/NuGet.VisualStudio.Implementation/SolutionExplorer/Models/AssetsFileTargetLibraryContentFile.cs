@@ -9,7 +9,7 @@ using NuGet.ProjectModel;
 namespace NuGet.VisualStudio.SolutionExplorer.Models
 {
     /// <summary>
-    /// Data about a a content file within a package in a given target, from <c>project.assets.json</c>. Immutable.
+    /// Data about a content file within a package in a given target, from <c>project.assets.json</c>. Immutable.
     /// </summary>
     internal sealed class AssetsFileTargetLibraryContentFile
     {
