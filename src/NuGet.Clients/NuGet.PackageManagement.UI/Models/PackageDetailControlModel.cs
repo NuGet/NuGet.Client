@@ -243,7 +243,7 @@ namespace NuGet.PackageManagement.UI
         {
             var version = o as DisplayVersion;
             // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
-            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.Range.OriginalString, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
