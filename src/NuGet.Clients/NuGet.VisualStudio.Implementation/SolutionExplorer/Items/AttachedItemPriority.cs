@@ -23,5 +23,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
         public const int CompileTimeAssemblyGroup = 400;
         public const int FrameworkAssemblyGroup = 500;
         public const int ContentFilesGroup = 600;
+        public const int PackageBuildFileGroup = 700;
+        public const int PackageBuildMultiTargetingFileGroup = 800;
     }
 }

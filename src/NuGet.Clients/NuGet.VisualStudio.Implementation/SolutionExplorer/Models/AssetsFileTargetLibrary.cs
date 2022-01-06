@@ -58,6 +58,16 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 .Select(file => new AssetsFileTargetLibraryContentFile(file))
                 .ToImmutableArray();
 
+            BuildFiles = library.Build
+                .Where(file => !IsPlaceholderFile(file.Path))
+                .Select(file => file.Path)
+                .ToImmutableArray();
+
+            BuildMultiTargetingFiles = library.BuildMultiTargeting
+                .Where(file => !IsPlaceholderFile(file.Path))
+                .Select(file => file.Path)
+                .ToImmutableArray();
+
             return;
 
             static bool IsPlaceholderFile(string path)
@@ -84,6 +94,8 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         public ImmutableArray<string> FrameworkAssemblies { get; }
         public ImmutableArray<string> CompileTimeAssemblies { get; }
         public ImmutableArray<AssetsFileTargetLibraryContentFile> ContentFiles { get; }
+        public ImmutableArray<string> BuildFiles { get; }
+        public ImmutableArray<string> BuildMultiTargetingFiles { get; }
 
         public override string ToString() => $"{Type} {Name} ({Version}) {Dependencies.Length} {(Dependencies.Length == 1 ? "dependency" : "dependencies")}";
     }
