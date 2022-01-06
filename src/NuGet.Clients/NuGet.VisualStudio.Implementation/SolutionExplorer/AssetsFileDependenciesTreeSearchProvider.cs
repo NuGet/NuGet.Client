@@ -56,7 +56,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
             AssetsFileDependenciesSnapshot snapshot = (await dataSource.Value.GetLatestVersionAsync<AssetsFileDependenciesSnapshot>(dataSourceRegistry, cancellationToken: context.CancellationToken)).Value;
 
-            if (!(context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<IActiveConfigurationGroupService>() is IActiveConfigurationGroupService3 activeConfigurationGroupService))
+            if (context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<IActiveConfigurationGroupService>() is not IActiveConfigurationGroupService3 activeConfigurationGroupService)
             {
                 return;
             }
