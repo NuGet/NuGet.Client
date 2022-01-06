@@ -629,6 +629,10 @@ namespace NuGet.CommandLine.Test
                 packageSources.Add(sourceEntry);
             }
 
+            var packageSourceMapping = new XElement(XName.Get("packageSourceMapping"));
+            configuration.Add(packageSourceMapping);
+            packageSourceMapping.Add(new XElement(XName.Get("clear")));
+
             Util.CreateFile(workingPath, "NuGet.Config", doc.ToString());
         }
 
