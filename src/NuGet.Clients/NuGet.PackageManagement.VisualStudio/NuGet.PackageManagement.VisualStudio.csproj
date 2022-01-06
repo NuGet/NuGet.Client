@@ -46,7 +46,6 @@
     <Compile Include="ProjectServices\CpsProjectSystemReferenceReader.cs" />
     <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Projects\ProjectPackages.cs" />
-    <Compile Include="Projects\TransitivePackageReference.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
     <Compile Include="Services\NuGetPackageSearchService.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
