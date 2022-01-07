@@ -1,4 +1,11 @@
 steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 6.x
+    installationPath: $(Agent.TempDirectory)/dotnet
+
 - task: ShellScript@2
   displayName: "Run Tests (continue on error)"
   continueOnError: "true"
