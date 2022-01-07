@@ -718,13 +718,5 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw exception;
             }
         }
-
-        /// TODO: REMOVE THIS API
-        /// <inheritdoc/>
-        public async ValueTask<IReadOnlyDictionary<FrameworkRuntimePair, IReadOnlyList<IPackageReferenceContextInfo>>> GetTransitivePackageOriginAsync(PackageIdentity transitivePackage, string projectId, CancellationToken ct)
-        {
-            await Task.Run(() => { });
-            throw new NotImplementedException();
-        }
     }
 }

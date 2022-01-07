@@ -76,20 +76,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns the package reference as two separate lists (installed and transitive).
         /// </summary>
         /// <param name="token">Cancellation token</param>
-        /// <returns>A <see cref="ProjectPackages"/> with two lists: Installed and transitive packages</returns>
-        public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
-        {
-            return await GetInstalledAndTransitivePackagesAsync(existingTargets: null, token);
-        }
-
-        /// <summary>
-        /// Gets the both the installed (top level) and transitive package references for this project.
-        /// Returns the package reference as two separate lists (installed and transitive).
-        /// </summary>
-        /// <param name="existingTargets">Existing Targets list</param>
-        /// <param name="token">Cancellation token</param>
-        /// <returns>A <see cref="ProjectPackages"/> with two lists: Installed and transitive packages</returns>
-        public abstract Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(IList<LockFileTarget> existingTargets, CancellationToken token);
+        /// <returns>A <see cref="ProjectPackages"/> object with two lists: Installed and transitive packages</returns>
+        public abstract Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token);
 
         private protected IEnumerable<PackageReference> GetPackageReferences(
             IEnumerable<LibraryDependency> libraries,

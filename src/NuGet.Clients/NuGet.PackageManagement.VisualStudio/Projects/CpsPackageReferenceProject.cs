@@ -216,7 +216,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(IList<LockFileTarget> existingTargets, CancellationToken token)
+        public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
             RestoreGraphRead reading = await GetCachedPackageSpecAsync(token);
             if (reading.PackageSpec == null)
@@ -231,7 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 CleanCache();
-                targetsList = existingTargets ?? await GetTargetsListAsync(token);
+                targetsList = await GetTargetsListAsync(token);
             }
 
             var frameworkSorter = new NuGetFrameworkSorter();
@@ -297,10 +297,8 @@ namespace NuGet.PackageManagement.VisualStudio
             List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> transitivePackages,
             IList<LockFileTarget> targets)
         {
-            (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkInstalledPackages = installedPackages
-                .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
-            (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkTransitivePackages = transitivePackages
-                .FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
             if (targetFrameworkInstalledPackages.Packages == null)
             {
