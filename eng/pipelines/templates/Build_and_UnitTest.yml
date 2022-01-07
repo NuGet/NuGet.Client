@@ -218,7 +218,7 @@ steps:
     ArtifactName: 'msbuild.binlog'
     ArtifactType: 'Container'
     PathToPublish: '$(Build.Repository.LocalPath)\msbuild.binlog'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeededOrFailed(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
