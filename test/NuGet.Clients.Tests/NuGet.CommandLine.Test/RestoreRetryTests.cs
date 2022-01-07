@@ -382,7 +382,7 @@ namespace NuGet.CommandLine.Test
 
                     Assert.True(
                         File.Exists(
-                            Path.Combine(pathContext.UserPackagesFolder,"testpackage1/1.1.0/testPackage1.1.1.0.nupkg.sha512")));
+                            Path.Combine(pathContext.UserPackagesFolder, "testpackage1/1.1.0/testPackage1.1.1.0.nupkg.sha512")));
 
                     Assert.True(File.Exists(Path.Combine(workingDirectory, "project.lock.json")));
 

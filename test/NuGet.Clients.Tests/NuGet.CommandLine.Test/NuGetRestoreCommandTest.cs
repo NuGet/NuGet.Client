@@ -717,7 +717,7 @@ EndProject");
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                string optOutMessage = String.Format(
+                string optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -757,7 +757,7 @@ EndProject");
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                string optOutMessage = String.Format(
+                string optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -990,7 +990,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
 EndProject");
                 Util.CreateFile(workingPath, "my.config",
-                    String.Format(CultureInfo.InvariantCulture,
+                    string.Format(CultureInfo.InvariantCulture,
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -1888,7 +1888,7 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using( var pathContext = new SimpleTestPathContext())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = pathContext.PackageSource;
