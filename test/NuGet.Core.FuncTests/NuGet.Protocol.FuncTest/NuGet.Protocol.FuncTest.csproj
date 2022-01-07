@@ -6,6 +6,7 @@
     <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
     <TestProjectType>functional</TestProjectType>
     <Description>Integration tests for the more involved NuGet.Protocol functionality, such as plugins.</Description>
+    <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
 
   <ItemGroup>
