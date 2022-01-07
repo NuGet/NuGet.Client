@@ -541,7 +541,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigin_WithLegacyPackageReferenceProject_OneTransitiveOriginAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithLegacyPackageReferenceProject_OneTransitiveOriginAsync()
         {
             string projectId = Guid.NewGuid().ToString();
 
@@ -617,7 +617,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigin_WithLegacyPackageReferenceProject_MultipleOriginsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithLegacyPackageReferenceProject_MultipleOriginsAsync()
         {
             string projectId = Guid.NewGuid().ToString();
 
@@ -706,8 +706,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.NotNull(transitivePackageC);
                 Assert.Equal(1, transitivePackageC.TransitiveOrigins.Count());
                 var transitiveOriginC = transitivePackageC.TransitiveOrigins.First();
-                Assert.Equal("packageA", transitiveOriginB.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginB.Identity.Version);
+                Assert.Equal("packageA", transitiveOriginC.Identity.Id);
+                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginC.Identity.Version);
 
                 // Verify transitive package D
                 var transitivePackageD = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageD").First();
@@ -792,25 +792,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(File.Exists(pajFilepath));
 
                 // Act
-                var packages = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
-                    projectId,
-                    CancellationToken.None);
+                var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
+
+                var packagesB = installedAndTransitive
+                    .TransitivePackages
+                    .First(pkg => pkg.Identity.Id == "packageB")
+                    .TransitiveOrigins;
 
                 // Verify
-                Assert.NotNull(packages);
-                Assert.NotEmpty(packages);
-                Assert.Equal(1, packages.Count);
-                var tuple = packages.First();
-                Assert.Equal(1, tuple.Value.Count);
-                var dep = tuple.Value.First();
-                Assert.Equal("packageA", dep.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.0.0"), dep.Identity.Version);
+                Assert.Equal(1, packagesB.Count());
+                Assert.Collection(packagesB,
+                    pkg => AssertElement(pkg, "packageA", "2.0.0"));
             }
         }
 
         [Fact]
-        private async Task GetTransitivePackageOriginAsync_WithCpsPackageReferenceProject_MultipleCalls_SucceedsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithCpsPackageReferenceProject_MultipleCalls_SucceedsAsync()
         {
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -912,58 +909,51 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(result.Success);
                 Assert.True(File.Exists(pajFilepath));
 
-                // Act I
-                var topPackages = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
-                    projectId,
+                // Act
+                var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(
+                    new[] { projectId },
                     CancellationToken.None);
 
+                Assert.Equal(2, installedAndTransitive.InstalledPackages.Count);
+                Assert.Equal(3, installedAndTransitive.TransitivePackages.Count);
+
+                // Act I
+                var topPackagesB = installedAndTransitive
+                    .TransitivePackages
+                    .First(x => x.Identity.Id == "packageB")
+                    .TransitiveOrigins;
+
                 // Verify I
-                Assert.NotNull(topPackages);
-                Assert.NotEmpty(topPackages);
-                Assert.Equal(1, topPackages.Count); // only one framework/RID pair
-                var fwRidEntry = topPackages.First();
-                Assert.Equal(1, fwRidEntry.Value.Count); // only one top dependency
-                var dep = fwRidEntry.Value.First();
+                Assert.NotNull(topPackagesB);
+                Assert.Equal(1, topPackagesB.Count()); // only one top dependency
+                var dep = topPackagesB.First();
                 Assert.Equal("packageA", dep.Identity.Id);
                 Assert.Equal(new NuGetVersion("2.0.0"), dep.Identity.Version);
 
                 // Act II
-                var topPackages2 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("packageD", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
+                var topPackagesD = installedAndTransitive
+                    .TransitivePackages
+                    .First(x => x.Identity.Id == "packageD")
+                    .TransitiveOrigins;
 
                 // Verify II
-                Assert.NotNull(topPackages2);
-                Assert.Equal(1, topPackages2.Count); // only one framework/RID pair
-                Assert.Equal(2, topPackages2.First().Value.Count); // two top packages
-                Assert.Collection(topPackages2.First().Value,
+                Assert.NotNull(topPackagesD);
+                Assert.Equal(2, topPackagesD.Count()); // two top packages
+                Assert.Collection(topPackagesD,
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));
 
-                // Act III: Unknown transitive dependency
-                var topPackages3 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("abc", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
-
-                Assert.Empty(topPackages3);
-
-                // Act IV: Call to another APIs
+                
+                // Act III: Call to another APIs
                 IReadOnlyCollection<IPackageReferenceContextInfo> installed = await _projectManager.GetInstalledPackagesAsync(new[] { projectId }, CancellationToken.None);
 
-                IInstalledAndTransitivePackages installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
-
-                // Verify IV
+                // Verify III
                 Assert.Equal(2, installed.Count);
-                Assert.Equal(2, installedAndTransitive.InstalledPackages.Count);
-                Assert.Equal(3, installedAndTransitive.TransitivePackages.Count);
             }
         }
 
         [Fact]
-        private async Task GetTransitivePackageOriginAsync_WithCpsPackageReferenceProject_Multitargeting_MultipleCalls_SucceedsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithCpsPackageReferenceProject_Multitargeting_SucceedsAsync()
         {
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -1079,46 +1069,27 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
 
                 // Act I
-                var topPackages = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
-                    projectId,
-                    CancellationToken.None);
+                var topPackagesB = installedAndTransitive
+                    .TransitivePackages
+                    .First(pkg => pkg.Identity.Id == "packageB")
+                    .TransitiveOrigins;
 
                 // Verify I
-                Assert.NotNull(topPackages);
-                Assert.NotEmpty(topPackages);
-                Assert.Equal(1, topPackages.Count); // only one framework/RID pair
-                var fwRidEntry = topPackages.First();
-                Assert.Equal(1, fwRidEntry.Value.Count); // only one top dependency
-                var dep = fwRidEntry.Value.First();
-                Assert.Equal("packageA", dep.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.0.0"), dep.Identity.Version);
+                Assert.Equal(1, topPackagesB.Count()); // only one framework/RID pair
+                Assert.Collection(topPackagesB,
+                    x => AssertElement(x, "packageA", "2.0.0"));
 
                 // Act II
-                var topPackages2 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("packageD", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
+                var topPackagesD = installedAndTransitive
+                    .TransitivePackages
+                    .First(pkg => pkg.Identity.Id == "packageD")
+                    .TransitiveOrigins;
 
                 // Verify II
-                Assert.NotNull(topPackages2);
-                Assert.Equal(2, topPackages2.Count); // multitargeting: 2 keys
-                string nullKey = null;
-                var keyNetFx = new FrameworkRuntimePair(NuGetFramework.Parse("net472"), nullKey);
-                var keyNetCore = new FrameworkRuntimePair(NuGetFramework.Parse("net5.0"), nullKey);
-                Assert.Collection(topPackages2[keyNetCore],
+                Assert.Equal(2, topPackagesD.Count()); // multitargeting: 2 keys
+                Assert.Collection(topPackagesD,
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));
-                Assert.Collection(topPackages2[keyNetFx],
-                    x => AssertElement(x, "packageX", "3.0.0"));
-
-                // Act III: Unknown transitive dependency
-                var topPackages3 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("abc", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
-
-                Assert.Empty(topPackages3);
             }
         }
 
@@ -1156,7 +1127,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetTransitivePackageOriginAsync_WithCpsPackageReferenceProject_Multitargeting_MultipleRuntimeIDs_MultipleCalls_SucceedsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithCpsPackageReferenceProject_Multitargeting_MultipleCalls_MergedResults_SucceedsAsync()
         {
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -1275,47 +1246,34 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(result.Success);
                 Assert.True(File.Exists(pajFilepath));
 
+                // Act
+                var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
+
                 // Act I
-                var topPackages = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("PackageB", new NuGetVersion(1, 0, 0)),
-                    projectId,
-                    CancellationToken.None);
+                var topPackagesB = installedAndTransitive
+                    .TransitivePackages
+                    .First(pkg => pkg.Identity.Id == "packageB")
+                    .TransitiveOrigins;
 
                 // Verify I
-                Assert.NotNull(topPackages);
-                Assert.NotEmpty(topPackages);
-                Assert.Equal(4, topPackages.Count); // 3 fw/RID pairs + 1 fw/null-RID pair = 4 elements
-                var fwRidEntry = topPackages.First();
-                Assert.Equal(1, fwRidEntry.Value.Count); // only one top dependency
-                var dep = fwRidEntry.Value.First();
-                Assert.Equal("packageA", dep.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.0.0"), dep.Identity.Version);
+                Assert.NotNull(topPackagesB);
+                Assert.NotEmpty(topPackagesB);
+                Assert.Equal(1, topPackagesB.Count()); // 3 fw/RID pairs + 1 fw/null-RID pair = 4 elements
+                Assert.Collection(topPackagesB,
+                    x => AssertElement(x, "packageA", "2.0.0"));
 
                 // Act II
-                var topPackages2 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("packageD", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
+                var topPackagesD = installedAndTransitive
+                    .TransitivePackages
+                    .First(pkg => pkg.Identity.Id == "packageD")
+                    .TransitiveOrigins;
 
                 // Verify II
-                Assert.NotNull(topPackages2);
-                Assert.Equal(8, topPackages2.Count); // multitargeting: 2 keys * 3 RIDs + 2 fw/null-RID pair = 8 elements
-                string nullKey = null;
-                var keyNetFx = new FrameworkRuntimePair(NuGetFramework.Parse("net472"), nullKey);
-                var keyNetCore = new FrameworkRuntimePair(NuGetFramework.Parse("net5.0"), nullKey);
-                Assert.Collection(topPackages2[keyNetCore],
+                Assert.NotNull(topPackagesD);
+                Assert.Equal(2, topPackagesD.Count()); // Multitargeting, merged into two dependencies
+                Assert.Collection(topPackagesD,
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));
-                Assert.Collection(topPackages2[keyNetFx],
-                    x => AssertElement(x, "packageX", "3.0.0"));
-
-                // Act III: Unknown transitive dependency
-                var topPackages3 = await _projectManager.GetTransitivePackageOriginAsync(
-                    new PackageIdentity("abc", new NuGetVersion(0, 1, 1)),
-                    projectId,
-                    CancellationToken.None);
-
-                Assert.Empty(topPackages3);
             }
         }
 
