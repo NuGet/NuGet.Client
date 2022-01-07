@@ -244,7 +244,7 @@ namespace NuGet.Common
                 return string.Empty;
             }
 
-            var path = StringBuilderPool.Shared.Rent(100);
+            var path = StringBuilderPool.Shared.Rent(256);
 
             const string twoDots = "..";
             for (var i = index; len1 > i; ++i)
