@@ -177,7 +177,7 @@ namespace $(RootNamespace)
         /// <summary>
         /// The current version of the NuGet Visual Studio package which is displayed in the Help - About box of Visual Studio
         /// </summary>
-        public const string ProductVersion = "$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)"%3B
+        public const string ProductVersion = "$(SemanticVersion)"%3B
     }
 }
 ]]>
