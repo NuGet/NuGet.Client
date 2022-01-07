@@ -871,7 +871,8 @@ namespace NuGet.Build.Tasks.Console
             string binlogParameters = Environment.GetEnvironmentVariable("RESTORE_TASK_BINLOG_PARAMETERS");
 
             // Attach the binary logger if Debug or binlog parameters were specified
-            if (Debug || !string.IsNullOrWhiteSpace(binlogParameters))
+            bool useBinlog = Debug || !string.IsNullOrWhiteSpace(binlogParameters);
+            if (useBinlog)
             {
                 loggers.Add(new BinaryLogger
                 {
@@ -911,7 +912,7 @@ namespace NuGet.Build.Tasks.Console
                 {
                     // Use the same loggers as the project collection
                     Loggers = projectCollection.Loggers,
-                    LogTaskInputs = Debug
+                    LogTaskInputs = useBinlog
                 };
 
                 // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
