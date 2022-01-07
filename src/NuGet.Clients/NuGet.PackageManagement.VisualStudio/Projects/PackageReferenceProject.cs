@@ -27,6 +27,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
+        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
+
         private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
 
         private readonly protected string _projectName;
@@ -322,8 +324,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             TransitiveOriginsCache.Clear();
         }
-
-        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
 
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
         {

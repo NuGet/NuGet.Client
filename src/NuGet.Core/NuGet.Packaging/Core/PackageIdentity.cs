@@ -122,7 +122,7 @@ namespace NuGet.Packaging.Core
         public override string ToString()
         {
             return HasVersion
-                ? string.Format(CultureInfo.InvariantCulture, ToStringFormat, Id, Version.ToNormalizedString())
+                ? String.Format(CultureInfo.InvariantCulture, ToStringFormat, Id, Version.ToNormalizedString())
                 : Id;
         }
     }

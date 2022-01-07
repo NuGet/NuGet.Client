@@ -2,5 +2,4 @@ NuGet.ContentModel.ContentItemCollection.PopulateItemGroups(NuGet.ContentModel.P
 NuGet.Packaging.TransitivePackageReference
 NuGet.Packaging.TransitivePackageReference.TransitiveOrigins.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReference>
 NuGet.Packaging.TransitivePackageReference.TransitiveOrigins.set -> void
-NuGet.Packaging.TransitivePackageReference.TransitivePackageReference(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Frameworks.NuGetFramework targetFramework) -> void
 NuGet.Packaging.TransitivePackageReference.TransitivePackageReference(NuGet.Packaging.PackageReference pr) -> void

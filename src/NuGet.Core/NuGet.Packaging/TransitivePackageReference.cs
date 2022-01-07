@@ -10,16 +10,9 @@ namespace NuGet.Packaging
 {
     public class TransitivePackageReference : PackageReference
     {
-        public TransitivePackageReference(PackageIdentity identity, NuGetFramework targetFramework)
-            : base(identity, targetFramework, true)
-        {
-        }
-
         public TransitivePackageReference(PackageReference pr)
             : base(pr?.PackageIdentity ?? throw new ArgumentNullException(nameof(pr)), pr.TargetFramework, pr.IsUserInstalled, pr.IsDevelopmentDependency, pr.RequireReinstallation, pr.AllowedVersions)
         {
-
-
         }
 
         public IEnumerable<PackageReference> TransitiveOrigins { get; set; }
