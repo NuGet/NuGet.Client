@@ -12,7 +12,6 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -70,6 +69,8 @@ namespace NuGet.Commands
         /// Messages that should be written to the assets file, in addition to any messages generated during the restore.
         /// </summary>
         public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
+
+        public IRestoreProgressReporter ProgressReporter { get; set; }
 
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache

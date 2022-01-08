@@ -793,7 +793,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -882,7 +882,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -981,7 +981,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1073,7 +1073,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1179,7 +1179,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1284,7 +1284,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1392,7 +1392,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1502,7 +1502,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1593,7 +1593,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1671,7 +1671,7 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec = projectSpec.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
@@ -1792,14 +1792,14 @@ namespace NuGet.Commands.Test
                 var project2Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project2)); project2Folder.Create();
 
                 // set up project1
-                var projectSpec1 = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                var projectSpec1 = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, project1Folder.FullName);
                 projectSpec1 = projectSpec1.EnsureRestoreMetadata();
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec1.RestoreMetadata.Sources = sources;
                 projectSpec1.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
 
                 // set up project2
-                var projectSpec2 = JsonPackageSpecReader.GetPackageSpec(packageSpec2, project2, Path.Combine(project2Folder.FullName, "packageSpec.json"));
+                var projectSpec2 = JsonPackageSpecReader.GetPackageSpec(packageSpec2, project2, project2Folder.FullName);
                 projectSpec2 = projectSpec2.EnsureRestoreMetadata();
                 projectSpec2.RestoreMetadata.Sources = sources;
                 projectSpec2.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;

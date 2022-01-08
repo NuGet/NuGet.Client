@@ -143,7 +143,10 @@ namespace NuGet.Commands.Test
         {
             var updated = spec.Clone();
             var packageSpecFile = new FileInfo(spec.FilePath);
-            var projectDir = packageSpecFile.Directory.FullName;
+
+            var projectDir = (packageSpecFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory ?
+                packageSpecFile.FullName :
+                packageSpecFile.Directory.FullName;
 
             var projectPath = Path.Combine(projectDir, spec.Name + ".csproj");
             updated.FilePath = projectPath;
@@ -284,6 +287,13 @@ namespace NuGet.Commands.Test
             return updated;
         }
 
+        /// <summary>
+        /// Returns a PackageReference spec.
+        /// </summary>
+        /// <param name="projectName">Project name</param>
+        /// <param name="rootPath">Root path, normally solution root. The project is gonna be "located" at rootPath/projectName/projectName.csproj </param>
+        /// <param name="framework">framework</param>
+        /// <returns>Returns a PackageReference spec with all details similar to what a spec from a nomination would contain.</returns>
         public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0")
         {
             const string referenceSpec = @"
@@ -299,6 +309,28 @@ namespace NuGet.Commands.Test
             var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework);
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
             packageSpec.RestoreSettings.HideWarningsAndErrors = true; // Pretend this is running in VS and this is a .NET Core project.
+            return packageSpec;
+        }
+
+        /// <summary>
+        /// Returns a PackageReference spec.
+        /// </summary>
+        /// <param name="settings">Settings to be used for the restore metadata.</param>
+        /// <param name="projectName">Project name</param>
+        /// <param name="rootPath">Root path, normally solution root. The project is gonna be "located" at rootPath/projectName/projectName.csproj </param>
+        /// <param name="framework">framework</param>
+        /// <returns>Returns a PackageReference spec with all details similar to what a spec after the post processing before restore would look like.
+        /// The RestoreMetadata has the settings, sources etc set based on the ISettings provided.
+        /// </returns>
+        public static PackageSpec GetPackageSpec(ISettings settings, string projectName, string rootPath = @"C:\", string framework = "net5.0")
+        {
+            var packageSpec = GetPackageSpec(projectName, rootPath, framework);
+
+            packageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
+            packageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).ToList();
+            packageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList();
+            packageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+
             return packageSpec;
         }
 
