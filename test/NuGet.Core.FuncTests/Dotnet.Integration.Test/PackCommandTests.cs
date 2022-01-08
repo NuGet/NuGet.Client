@@ -6028,15 +6028,6 @@ namespace ClassLibrary
                 settings.AddNetStandardFeeds();
 
                 string testDirectory = pathContext.WorkingDirectory;
-                var customNuGetConfigContent = @"<configuration>
-  <packageSources>
-    <clear />
-    <add key='nuget' value ='https://api.nuget.org/v3/index.json' />
-    <add key ='local' value ='../pkgs' />
-  </packageSources>
-</configuration>";
-
-                File.WriteAllText(Path.Combine(testDirectory, "NuGet.Config"), customNuGetConfigContent);
                 var mainDirectory = Directory.GetParent(testDirectory).FullName;
                 string packageSource = Path.Combine(mainDirectory, "pkgs");
 
@@ -6121,15 +6112,6 @@ namespace ClassLibrary
                 settings.AddNetStandardFeeds();
 
                 string testDirectory = pathContext.WorkingDirectory;
-                var customNuGetConfigContent = @"<configuration>
-  <packageSources>
-    <clear />
-    <add key='nuget' value ='https://api.nuget.org/v3/index.json' />
-    <add key ='local' value ='../pkgs' />
-  </packageSources>
-</configuration>";
-
-                File.WriteAllText(Path.Combine(testDirectory, "NuGet.Config"), customNuGetConfigContent);
                 var mainDirectory = Directory.GetParent(testDirectory).FullName;
                 string packageSource = Path.Combine(mainDirectory, "pkgs");
 

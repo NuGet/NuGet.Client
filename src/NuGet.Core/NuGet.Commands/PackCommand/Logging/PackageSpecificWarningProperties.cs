@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Shared;
 
 namespace NuGet.Commands.PackCommand
 {
@@ -18,7 +17,7 @@ namespace NuGet.Commands.PackCommand
         /// Contains Package specific No warn properties.
         /// NuGetLogCode -> LibraryId -> Set of Frameworks.
         /// </summary>
-        public IDictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>> Properties { get; private set; }
+        internal IDictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>> Properties { get; private set; }
 
         /// <summary>
         /// Extracts PackageSpecific WarningProperties from a PackageSpec
@@ -81,7 +80,7 @@ namespace NuGet.Commands.PackCommand
         /// <param name="libraryId">library Id to be checked.</param>
         /// <param name="framework">target graph to be checked.</param>
         /// <returns>True if the NugetLogCode is part of the NoWarn list for the specified libraryId and Target Graph.</returns>
-        public bool Contains(NuGetLogCode code, string libraryId, NuGetFramework framework)
+        internal bool Contains(NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
             return Properties != null &&
                 Properties.TryGetValue(code, out var libraryIdsAndFrameworks) &&
