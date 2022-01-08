@@ -1922,8 +1922,6 @@ EndProject";
                 var dllFileInfo = new FileInfo(dllPath);
                 Assert.True(File.Exists(dllFileInfo.FullName));
                 Assert.Equal(entryModifiedTime, dllFileInfo.LastWriteTime);
-
-                // TODO NK - 
             }
         }
 
