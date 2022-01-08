@@ -23,12 +23,6 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
   <PropertyGroup>
     <PostBuildEvent Condition="'$(OS)' == 'Windows_NT'">
       xcopy /diye $(ArtifactsDirectory)TestablePlugin\bin\$(Configuration)\$(TargetFramework)\* $(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\TestablePlugin\
