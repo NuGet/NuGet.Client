@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -68,34 +70,31 @@ namespace NuGet.Protocol.Core.Types
             // TODO: Figure out how to hook this up with the HTTP request
             _disableBuffering = disableBuffering;
 
-            using (var tokenSource = new CancellationTokenSource())
+            using var tokenSource = new CancellationTokenSource();
+            var requestTimeout = TimeSpan.FromSeconds(timeoutInSecond);
+            tokenSource.CancelAfter(requestTimeout);
+            var apiKey = getApiKey(_source);
+
+            foreach (string packagePath in packagePaths)
             {
-                var requestTimeout = TimeSpan.FromSeconds(timeoutInSecond);
-                tokenSource.CancelAfter(requestTimeout);
-                var apiKey = getApiKey(_source);
-
-                foreach (var packagePath in packagePaths)
+                if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    bool explicitSnupkgPush = true;
-                    if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
-                    {
-                        await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
-                            requestTimeout, log, tokenSource.Token);
-
-                        //Since this was not a snupkg push (probably .nupkg), when we try pushing symbols later, don't error if there are no snupkg files found.
-                        explicitSnupkgPush = false;
-                    }
-
+                    // Push nupkgs and possibly the corresponding snupkgs.
+                    await PushPackagePath(packagePath, _source, symbolSource, apiKey, getSymbolApiKey, noServiceEndpoint, skipDuplicate,
+                        symbolPackageUpdateResource, requestTimeout, log, tokenSource.Token);
+                }
+                else // Explicit snupkg push
+                {
                     // symbolSource is only set when:
                     // - The user specified it on the command line
                     // - The endpoint for main package supports pushing snupkgs
                     if (!string.IsNullOrEmpty(symbolSource))
                     {
-                        var symbolApiKey = getSymbolApiKey(symbolSource);
+                        string symbolApiKey = getSymbolApiKey(symbolSource);
 
-                        await PushSymbols(packagePath, symbolSource, symbolApiKey,
+                        await PushSymbolsPath(packagePath, symbolSource, symbolApiKey,
                             noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource,
-                            requestTimeout, log, explicitSnupkgPush, tokenSource.Token);
+                            requestTimeout, log, explicitSymbolsPush: true, tokenSource.Token);
                     }
                 }
             }
@@ -178,8 +177,8 @@ namespace NuGet.Protocol.Core.Types
             }
         }
 
-        private async Task PushSymbols(string packagePath,
-            string source,
+        private async Task PushSymbolsPath(string packagePath,
+            string symbolSource,
             string apiKey,
             bool noServiceEndpoint,
             bool skipDuplicate,
@@ -189,12 +188,11 @@ namespace NuGet.Protocol.Core.Types
             bool explicitSymbolsPush,
             CancellationToken token)
         {
-
-            var isSymbolEndpointSnupkgCapable = symbolPackageUpdateResource != null;
+            bool isSymbolEndpointSnupkgCapable = symbolPackageUpdateResource != null;
             // Get the symbol package for this package
-            var symbolPackagePath = GetSymbolsPath(packagePath, isSymbolEndpointSnupkgCapable);
+            string symbolPackagePath = GetSymbolsPath(packagePath, isSymbolEndpointSnupkgCapable);
 
-            var symbolsToPush = LocalFolderUtility.ResolvePackageFromPath(symbolPackagePath, isSnupkg: isSymbolEndpointSnupkgCapable);
+            IEnumerable<string> symbolsToPush = LocalFolderUtility.ResolvePackageFromPath(symbolPackagePath, isSnupkg: isSymbolEndpointSnupkgCapable);
             bool symbolsPathResolved = symbolsToPush != null && symbolsToPush.Any();
 
             //No files were resolved.
@@ -209,10 +207,10 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                var sourceUri = UriUtility.CreateSourceUri(source);
+                Uri symbolSourceUri = UriUtility.CreateSourceUri(symbolSource);
 
                 // See if the api key exists
-                if (string.IsNullOrEmpty(apiKey) && !sourceUri.IsFile)
+                if (string.IsNullOrEmpty(apiKey) && !symbolSourceUri.IsFile)
                 {
                     log.LogWarning(string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_SymbolServerNotConfigured,
@@ -220,20 +218,31 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: symbolsToPush, token);
+                foreach (string packageToPush in symbolsToPush)
+                {
+                    await PushPackageCore(symbolSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
+                }
             }
         }
 
-        private async Task PushPackage(string packagePath,
+        /// <summary>
+        /// Push nupkgs, and if successful, push any corresponding symbols.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown when any resolved file path does not exist.</exception>
+        private async Task PushPackagePath(string packagePath,
             string source,
+            string symbolSource, // empty to not push symbols
             string apiKey,
+            Func<string, string> getSymbolApiKey,
             bool noServiceEndpoint,
             bool skipDuplicate,
+            SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
         {
-            var nupkgsToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath, isSnupkg: false);
+            IEnumerable<string> nupkgsToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath, isSnupkg: false);
+            bool alreadyWarnedSymbolServerNotConfigured = false;
 
             if (!(nupkgsToPush != null && nupkgsToPush.Any()))
             {
@@ -242,27 +251,54 @@ namespace NuGet.Protocol.Core.Types
                     packagePath));
             }
 
-            var sourceUri = UriUtility.CreateSourceUri(source);
+            Uri packageSourceUri = UriUtility.CreateSourceUri(source);
 
-            if (string.IsNullOrEmpty(apiKey) && !sourceUri.IsFile)
+            if (string.IsNullOrEmpty(apiKey) && !packageSourceUri.IsFile)
             {
                 log.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.NoApiKeyFound,
                     GetSourceDisplayName(source)));
             }
 
-            await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: nupkgsToPush, token);
-        }
-
-        private async Task PushAll(string source, string apiKey, bool noServiceEndpoint, bool skipDuplicate, TimeSpan requestTimeout, ILogger log, IEnumerable<string> packagesToPush, CancellationToken token)
-        {
-            foreach (var packageToPush in packagesToPush)
+            foreach (string nupkgToPush in nupkgsToPush)
             {
-                await PushPackageCore(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
+                bool packageWasPushed = await PushPackageCore(source, apiKey, nupkgToPush, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
+
+                // Push corresponding symbols, if successful.
+                if (packageWasPushed && !string.IsNullOrEmpty(symbolSource))
+                {
+                    bool isSymbolEndpointSnupkgCapable = symbolPackageUpdateResource != null;
+                    string symbolPackagePath = GetSymbolsPath(nupkgToPush, isSnupkg: isSymbolEndpointSnupkgCapable);
+
+                    // There may not be a snupkg with the same filename. Ignore it since this isn't an explicit snupkg push.
+                    if (!File.Exists(symbolPackagePath))
+                    {
+                        continue;
+                    }
+
+                    if (!alreadyWarnedSymbolServerNotConfigured)
+                    {
+                        Uri symbolSourceUri = UriUtility.CreateSourceUri(symbolSource);
+
+                        // See if the api key exists
+                        if (string.IsNullOrEmpty(apiKey) && !symbolSourceUri.IsFile)
+                        {
+                            log.LogWarning(string.Format(CultureInfo.CurrentCulture,
+                                Strings.Warning_SymbolServerNotConfigured,
+                                Path.GetFileName(symbolPackagePath),
+                                Strings.DefaultSymbolServer));
+
+                            alreadyWarnedSymbolServerNotConfigured = true;
+                        }
+                    }
+
+                    string symbolApiKey = getSymbolApiKey(symbolSource);
+                    await PushPackageCore(symbolSource, symbolApiKey, symbolPackagePath, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
+                }
             }
         }
 
-        private async Task PushPackageCore(string source,
+        private async Task<bool> PushPackageCore(string source,
             string apiKey,
             string packageToPush,
             bool noServiceEndpoint,
@@ -279,7 +315,7 @@ namespace NuGet.Protocol.Core.Types
                 Path.GetFileName(packageToPush),
                 sourceName));
 
-            bool showPushCommandPackagePushed = true;
+            bool wasPackagePushed = true;
 
             if (sourceUri.IsFile)
             {
@@ -288,15 +324,16 @@ namespace NuGet.Protocol.Core.Types
             else
             {
                 var length = new FileInfo(packageToPush).Length;
-                showPushCommandPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, skipDuplicate
-                                                    , requestTimeout, log, token);
-
+                wasPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, skipDuplicate,
+                    requestTimeout, log, token);
             }
 
-            if (showPushCommandPackagePushed)
+            if (wasPackagePushed)
             {
                 log.LogInformation(Strings.PushCommandPackagePushed);
             }
+
+            return wasPackagePushed;
         }
 
         private static string GetSourceDisplayName(string source)
@@ -344,10 +381,10 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
-            var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
-            var useTempApiKey = IsSourceNuGetSymbolServer(source);
-            var codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
-            var showPushCommandPackagePushed = true;
+            Uri serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
+            bool useTempApiKey = IsSourceNuGetSymbolServer(source);
+            HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
+            bool showPushCommandPackagePushed = true;
 
             if (useTempApiKey)
             {
@@ -355,7 +392,7 @@ namespace NuGet.Protocol.Core.Types
 
                 using (var packageReader = new PackageArchiveReader(pathToPackage))
                 {
-                    var packageIdentity = packageReader.GetIdentity();
+                    PackageIdentity packageIdentity = packageReader.GetIdentity();
                     var success = false;
                     var retry = 0;
 
@@ -366,7 +403,7 @@ namespace NuGet.Protocol.Core.Types
                             retry++;
                             success = true;
                             // If user push to https://nuget.smbsrc.net/, use temp api key.
-                            var tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
+                            string tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
 
                             await _httpSource.ProcessResponseAsync(
                                 new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, tmpApiKey, logger))
@@ -376,9 +413,8 @@ namespace NuGet.Protocol.Core.Types
                                 },
                                 response =>
                                 {
-                                    var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
-
-                                    var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
+                                    HttpStatusCode? responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
+                                    bool logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
                                     showPushCommandPackagePushed = !logOccurred;
 
                                     return Task.FromResult(0);
@@ -419,8 +455,8 @@ namespace NuGet.Protocol.Core.Types
                     },
                     response =>
                     {
-                        var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
-                        var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
+                        HttpStatusCode? responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
+                        bool logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
                         showPushCommandPackagePushed = !logOccurred;
 
                         return Task.FromResult(0);
@@ -462,9 +498,13 @@ namespace NuGet.Protocol.Core.Types
         /// Gently log any specified Skipped status code without throwing.
         /// </summary>
         /// <param name="skippedErrorStatusCode">If provided, it indicates that this StatusCode occurred but was flagged as to be Skipped.</param>
+        /// <param name="source"></param>
+        /// <param name="packageIdentity"></param>
+        /// <param name="reasonMessage"></param>
         /// <param name="logger"></param>
         /// <returns>Indication of whether the log occurred.</returns>
-        private static bool DetectAndLogSkippedErrorOccurrence(HttpStatusCode? skippedErrorStatusCode, string source, string packageIdentity, string reasonMessage, ILogger logger)
+        private static bool DetectAndLogSkippedErrorOccurrence(HttpStatusCode? skippedErrorStatusCode, string source, string packageIdentity,
+            string reasonMessage, ILogger logger)
         {
             bool skippedErrorOccurred = false;
 
@@ -476,7 +516,6 @@ namespace NuGet.Protocol.Core.Types
                 switch (skippedErrorStatusCode.Value)
                 {
                     case HttpStatusCode.Conflict:
-
                         messageToLog = string.Format(
                                    CultureInfo.CurrentCulture,
                                    Strings.AddPackage_PackageAlreadyExists,

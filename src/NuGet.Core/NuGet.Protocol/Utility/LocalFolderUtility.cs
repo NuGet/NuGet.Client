@@ -956,11 +956,16 @@ namespace NuGet.Protocol
         /// <returns>A list of package paths that match the input path.</returns>
         public static IEnumerable<string> ResolvePackageFromPath(string packagePath, bool isSnupkg = false)
         {
-            // Ensure packagePath ends with *.nupkg
             packagePath = EnsurePackageExtension(packagePath, isSnupkg);
             return PathResolver.PerformWildcardSearch(Directory.GetCurrentDirectory(), packagePath);
         }
 
+        /// <summary>
+        /// Ensure any wildcards in packagePath end with *.nupkg or *.snupkg.
+        /// </summary>
+        /// <param name="packagePath"></param>
+        /// <param name="isSnupkg"></param>
+        /// <returns>The absolute path, or the normalized wildcard path.</returns>
         private static string EnsurePackageExtension(string packagePath, bool isSnupkg)
         {
 #if NETCOREAPP
