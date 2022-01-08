@@ -10,8 +10,7 @@ using Xunit;
 
 namespace Msbuild.Integration.Test
 {
-    [Collection("Msbuild Integration Tests")]
-    public class GenerateRestoreGraphFileTargetTests
+    public class GenerateRestoreGraphFileTargetTests : IClassFixture<MsbuildIntegrationTestFixture>
     {
         private MsbuildIntegrationTestFixture _msbuildFixture;
 

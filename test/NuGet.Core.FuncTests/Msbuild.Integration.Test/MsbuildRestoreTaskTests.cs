@@ -18,8 +18,7 @@ using Xunit;
 
 namespace Msbuild.Integration.Test
 {
-    [Collection("Msbuild Integration Tests")]
-    public class MsbuildRestoreTaskTests
+    public class MsbuildRestoreTaskTests : IClassFixture<MsbuildIntegrationTestFixture>
     {
         private MsbuildIntegrationTestFixture _msbuildFixture;
 
