@@ -18,18 +18,18 @@ namespace NuGet.Commands
         public WarningProperties WarningProperties { get; set; }
 
         // Package specific warning property
-        public PackCommand.WarningPropertiesCollection PackageReferenceWarningPropertiesCollection { get; set; }
+        internal PackCommand.PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
 
         public IEnumerable<ILogMessage> Errors => _errors.ToArray();
 
         public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties)
             : this(innerLogger, warningProperties, null) { }
 
-        public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties, PackCommand.WarningPropertiesCollection packageReferenceWarningPropertiesCollection)
+        public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties, PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties)
         {
             _innerLogger = innerLogger;
             WarningProperties = warningProperties;
-            PackageReferenceWarningPropertiesCollection = packageReferenceWarningPropertiesCollection;
+            PackageSpecificWarningProperties = packageSpecificWarningProperties;
             _errors = new ConcurrentQueue<ILogMessage>();
         }
 
@@ -93,7 +93,7 @@ namespace NuGet.Commands
 
                     if (packLogMessage != null)
                     {
-                        return PackageReferenceWarningPropertiesCollection?.ApplyNoWarnProperties(packLogMessage) == true;
+                        return PackageSpecificWarningProperties?.ApplyNoWarnProperties(packLogMessage) == true;
                     }
                 }
             }

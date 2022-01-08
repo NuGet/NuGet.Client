@@ -15,14 +15,14 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using WarningPropertiesCollection = NuGet.Commands.PackCommand.WarningPropertiesCollection;
+using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack
 {
     public class PackTaskLogic : IPackTaskLogic
     {
         private const string IdentityProperty = "Identity";
-        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, WarningPropertiesCollection warningPropertiesCollection)
+        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, PackageSpecificWarningProperties packageSpecificWarningProperties)
         {
             var packArgs = new PackArgs
             {
@@ -40,7 +40,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackTargetArgs = new MSBuildPackTargetArgs()
             };
 
-            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, warningPropertiesCollection);
+            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, packageSpecificWarningProperties);
 
             if (request.MinClientVersion != null)
             {

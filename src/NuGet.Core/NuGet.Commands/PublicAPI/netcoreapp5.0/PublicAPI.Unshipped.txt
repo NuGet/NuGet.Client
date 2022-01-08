@@ -1,8 +1,4 @@
-NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger innerLogger, NuGet.ProjectModel.WarningProperties warningProperties, NuGet.Commands.PackCommand.WarningPropertiesCollection packageReferenceWarningPropertiesCollection) -> void
-NuGet.Commands.PackCollectorLogger.PackageReferenceWarningPropertiesCollection.get -> NuGet.Commands.PackCommand.WarningPropertiesCollection
-NuGet.Commands.PackCollectorLogger.PackageReferenceWarningPropertiesCollection.set -> void
+NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger innerLogger, NuGet.ProjectModel.WarningProperties warningProperties, NuGet.Commands.PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties) -> void
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties.PackageSpecificWarningProperties() -> void
-NuGet.Commands.PackCommand.WarningPropertiesCollection
-NuGet.Commands.PackCommand.WarningPropertiesCollection.WarningPropertiesCollection(NuGet.Commands.PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties) -> void
 static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties

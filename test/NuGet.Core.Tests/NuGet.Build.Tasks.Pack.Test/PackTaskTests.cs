@@ -15,7 +15,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
-using WarningPropertiesCollection = NuGet.Commands.PackCommand.WarningPropertiesCollection;
+using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack.Test
 {
@@ -32,9 +32,9 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var logic = new Mock<IPackTaskLogic>();
             logic
-                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>(), It.IsAny<WarningPropertiesCollection>()))
+                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>(), It.IsAny<PackageSpecificWarningProperties>()))
                 .Returns(packArgs)
-                .Callback<IPackTaskRequest<IMSBuildItem>, WarningPropertiesCollection>((r, w) => request = r);
+                .Callback<IPackTaskRequest<IMSBuildItem>, PackageSpecificWarningProperties>((r, w) => request = r);
             logic
                 .Setup(x => x.GetPackageBuilder(It.IsAny<IPackTaskRequest<IMSBuildItem>>()))
                 .Returns(packageBuilder);
@@ -410,8 +410,8 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var logic = new Mock<IPackTaskLogic>();
             logic
-                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>(), It.IsAny<WarningPropertiesCollection>()))
-                .Callback<IPackTaskRequest<IMSBuildItem>, WarningPropertiesCollection>((r, w) => request = r);
+                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>(), It.IsAny<PackageSpecificWarningProperties>()))
+                .Callback<IPackTaskRequest<IMSBuildItem>, PackageSpecificWarningProperties>((r, w) => request = r);
 
             target.PackTaskLogic = logic.Object;
 

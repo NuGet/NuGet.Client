@@ -890,7 +890,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 var target = new PackTaskLogic();
 
                 // Act
-                var packArgs = target.GetPackArgs(request: Request, warningPropertiesCollection: null);
+                var packArgs = target.GetPackArgs(request: Request, packageSpecificWarningProperties: null);
                 var packageBuilder = target.GetPackageBuilder(Request);
                 var runner = target.GetPackCommandRunner(Request, packArgs, packageBuilder);
                 target.BuildPackage(runner);
