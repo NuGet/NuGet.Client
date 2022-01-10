@@ -88,9 +88,11 @@ namespace NuGet.Test.Utility
             var packageSources = GetOrAddSection(doc, "packageSources");
             var disabledSources = GetOrAddSection(doc, "disabledPackageSources");
             var fallbackFolders = GetOrAddSection(doc, "fallbackPackageFolders");
+            var packageSourceMapping = GetOrAddSection(doc, "packageSourceMapping");
 
             packageSources.Add(new XElement(XName.Get("clear")));
             disabledSources.Add(new XElement(XName.Get("clear")));
+            packageSourceMapping.Add(new XElement(XName.Get("clear")));
 
             return doc;
         }

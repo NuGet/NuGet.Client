@@ -5793,6 +5793,10 @@ namespace NuGet.CommandLine.Test
                 localSource.Add(new XAttribute(XName.Get("value"), pathContext.PackageSource));
                 packageSources.Add(localSource);
 
+                var packageSourceMapping = new XElement(XName.Get("packageSourceMapping"));
+                packageSourceMapping.Add(new XElement(XName.Get("clear")));
+                configuration.Add(packageSourceMapping);
+
                 File.WriteAllText(configPath, doc.ToString());
 
                 var solutionParent = Directory.GetParent(pathContext.SolutionRoot);
@@ -5820,6 +5824,8 @@ namespace NuGet.CommandLine.Test
                 disabledPackageSources.Add(disabledBrokenSource);
 
                 configuration2.Add(disabledPackageSources);
+
+                configuration2.Add(packageSourceMapping);
 
                 File.WriteAllText(configPath2, doc2.ToString());
 

@@ -629,6 +629,10 @@ namespace NuGet.CommandLine.Test
                 packageSources.Add(sourceEntry);
             }
 
+            var packageSourceMapping = new XElement(XName.Get("packageSourceMapping"));
+            configuration.Add(packageSourceMapping);
+            packageSourceMapping.Add(new XElement(XName.Get("clear")));
+
             Util.CreateFile(workingPath, "NuGet.Config", doc.ToString());
         }
 
@@ -1061,7 +1065,7 @@ EndProject";
                  </Project>".Replace("$NAME$", projectName);
         }
 
-        public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName)
+        public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName, bool redirectGlobalPackagesFolder = true)
         {
             var repositoryPath = Path.Combine(workingPath, "Repository");
             var proj1Directory = Path.Combine(workingPath, "proj1");
@@ -1143,7 +1147,7 @@ EndProject");
 
             // If either project uses project.json, then define "globalPackagesFolder" so the package doesn't get
             // installed in the usual global packages folder.
-            if (IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName))
+            if ((IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName)) && redirectGlobalPackagesFolder)
             {
                 CreateFile(workingPath, "nuget.config",
 @"<?xml version=""1.0"" encoding=""utf-8""?>
