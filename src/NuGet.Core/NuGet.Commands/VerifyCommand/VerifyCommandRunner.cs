@@ -26,16 +26,6 @@ namespace NuGet.Commands
         private const int FailureCode = 1;
         private const HashAlgorithmName _defaultFingerprintAlgorithm = HashAlgorithmName.SHA256;
         private const string TrustedSignersSectionName = "trustedSigners";
-        private ISettings _settings;
-
-        [Obsolete("This API does ignores NuGet.Config file or trusted-signers list")]
-        public VerifyCommandRunner()
-        { }
-
-        public VerifyCommandRunner(ISettings settings)
-        {
-            _settings = settings;
-        }
 
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
@@ -70,7 +60,7 @@ namespace NuGet.Commands
                         _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-                var trustedSignersSection = _settings.GetSection(TrustedSignersSectionName);
+                var trustedSignersSection = verifyArgs.Settings.GetSection(TrustedSignersSectionName);
                 List<TrustedSignerItem> trustedSigners = trustedSignersSection?.Items.Select(c => c as TrustedSignerItem).Where(c => c != null).ToList();
                 IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = trustedSigners?
                     .SelectMany(c => c.Certificates)

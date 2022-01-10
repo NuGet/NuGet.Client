@@ -39,7 +39,7 @@ namespace NuGet.CommandLine
                 throw new ArgumentException(nameof(PackagePath));
             }
 
-            var verifyArgs = new VerifyArgs()
+            var verifyArgs = new VerifyArgs(Settings)
             {
                 Verifications = GetVerificationTypes(),
                 PackagePaths = new[] { PackagePath },
@@ -60,7 +60,7 @@ namespace NuGet.CommandLine
                     break;
             }
 
-            var verifyCommandRunner = new VerifyCommandRunner(Settings);
+            var verifyCommandRunner = new VerifyCommandRunner();
             var result = verifyCommandRunner.ExecuteCommandAsync(verifyArgs).Result;
             if (result > 0)
             {
