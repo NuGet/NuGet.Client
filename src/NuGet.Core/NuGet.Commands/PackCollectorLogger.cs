@@ -101,11 +101,22 @@ namespace NuGet.Commands
             return false;
         }
 
+        /// <summary>
+        /// This method upgrades the warning to an error if the project wide warning properties have set the code in WarningsAsErrors or
+        /// set TreatWarningsAsErrors to true
+        /// </summary>
+        /// <param name="message">ILogMessage to be logged as an error or warning.</param>
+        /// <returns>bool indicating if the message should be suppressed.</returns>
         private void UpgradeWarningToErrorIfNeeded(ILogMessage message)
         {
             WarningPropertiesCollection.ApplyProjectWideWarningsAsErrorProperties(message, WarningProperties);
         }
 
+        /// <summary>
+        /// Decides if the log should be passed to the inner logger.
+        /// </summary>
+        /// <param name="message">ILogMessage to be logged.</param>
+        /// <returns>bool indicating if this message should be logged.</returns>
         private bool DisplayMessage(ILogMessage message)
         {
             return (message.Level >= VerbosityLevel);
