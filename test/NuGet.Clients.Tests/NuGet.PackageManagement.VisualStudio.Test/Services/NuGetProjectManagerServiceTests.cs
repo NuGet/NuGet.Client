@@ -38,6 +38,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
 using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
@@ -55,8 +56,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private NuGetProjectManagerServiceState _state;
         private TestDirectory _testDirectory;
         private readonly IVsProjectThreadingService _threadingService;
+        private readonly TestLogger _logger;
 
-        public NuGetProjectManagerServiceTests(GlobalServiceProvider globalServiceProvider)
+        public NuGetProjectManagerServiceTests(GlobalServiceProvider globalServiceProvider, ITestOutputHelper output)
             : base(globalServiceProvider)
         {
             _projectContext = new TestNuGetProjectContext();
@@ -65,6 +67,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var componentModel = new Mock<IComponentModel>();
             componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(_projectContext);
             AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
+
+            _logger = new TestLogger(output);
         }
 
         public void Dispose()
@@ -960,7 +964,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectSystemCache = new ProjectSystemCache();
             IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
 
-            using (TestDirectory testDirectory = TestDirectory.Create())
+            using (var testDirectory = TestDirectory.Create())
             {
                 Initialize();
 
@@ -1090,6 +1094,136 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Collection(topPackagesD,
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));
+            }
+        }
+
+        [Fact]
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_TwoCpsPackageReferenceProjects_ProjectReference_Succeeds_Async()
+        {
+            var projectSystemCache = new ProjectSystemCache();
+            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+            var projectAName = "projectA";
+            var projectBName = "projectB";
+
+            using (var testDirectory = new SimpleTestPathContext())
+            {
+                Initialize();
+
+                string referenceSpecProjectA = $@"
+                {{
+                    ""frameworks"":
+                    {{
+                        ""netstandard1.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                            }}
+                        }}
+                    }}
+                }}";
+                string referenceSpecProjectB = $@"
+                {{
+                    ""frameworks"":
+                    {{
+                        ""netstandard1.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                                ""packageA"":
+                                {{
+                                    ""version"": ""2.0.0"",
+                                    ""target"": ""Package""
+                                }}
+                            }}
+                        }}
+                    }}
+                }}";
+
+                // Prepare: Create projects
+                string projectAFullPath = Path.Combine(testDirectory.SolutionRoot, projectAName, $"{projectAName}.csproj");
+                string projectBFullPath = Path.Combine(testDirectory.SolutionRoot, projectBName, $"{projectBName}.csproj");
+
+                var prProjectA = CreateCpsPackageReferenceProject(projectAName, projectAFullPath, projectSystemCache);
+                var prProjectB = CreateCpsPackageReferenceProject(projectBName, projectBFullPath, projectSystemCache);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(projectAFullPath));
+                File.WriteAllText(projectAFullPath, @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include=""..\..\projectB\projectB.csproj"" />
+  </ItemGroup>
+</ Project>");
+                Directory.CreateDirectory(Path.GetDirectoryName(projectBFullPath));
+                File.WriteAllText(projectBFullPath, @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include=""packageA"" Version=""2.0.0"" />
+  </ItemGroup>
+</Project>");
+
+                PackageSpec packageSpecB = JsonPackageSpecReader.GetPackageSpec(referenceSpecProjectB, projectBName, projectBFullPath)
+                    .WithTestRestoreMetadata();
+                PackageSpec packageSpecA = JsonPackageSpecReader.GetPackageSpec(referenceSpecProjectA, projectAName, projectAFullPath)
+                    .WithTestRestoreMetadata()
+                    .WithTestProjectReference(packageSpecB, new[] { NuGetFramework.Parse("netstandard1.0") });
+
+                ProjectNames projectNamesA = GetTestProjectNames(projectAFullPath, projectAName);
+                ProjectNames projectNamesB = GetTestProjectNames(projectBFullPath, projectBName);
+
+                // Restore info
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpecA, packageSpecB);
+                projectSystemCache.AddProjectRestoreInfo(projectNamesA, projectRestoreInfo, new List<IAssetsLogMessage>());
+                projectSystemCache.AddProjectRestoreInfo(projectNamesB, projectRestoreInfo, new List<IAssetsLogMessage>());
+                projectSystemCache.AddProject(projectNamesA, projectAdapter, prProjectA).Should().BeTrue();
+                projectSystemCache.AddProject(projectNamesB, projectAdapter, prProjectB).Should().BeTrue();
+
+                // Packages
+                await SimpleTestPackageUtility.CreateFullPackageAsync(testDirectory.PackageSource, "packageA", "2.0.0");
+
+                // Prepare: Create telemetry
+                var telemetrySession = new Mock<ITelemetrySession>();
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+                telemetrySession
+                    .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+                TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+                // Prepare: Force a nuget Restore
+                var sources = new List<PackageSource>()
+                {
+                    new PackageSource(testDirectory.PackageSource),
+                };
+
+                var pajAFilepath = Path.Combine(Path.GetDirectoryName(projectAFullPath), "project.assets.json");
+                var requestA = new TestRestoreRequest(packageSpecA, sources, testDirectory.PackageSource, _logger)
+                {
+                    LockFilePath = pajAFilepath,
+                    ProjectStyle = ProjectStyle.PackageReference,
+                };
+                var pajBFilepath = Path.Combine(Path.GetDirectoryName(projectBFullPath), "project.assets.json");
+                var requestB = new TestRestoreRequest(packageSpecB, sources, testDirectory.PackageSource, _logger)
+                {
+                    LockFilePath = pajBFilepath,
+                    ProjectStyle = ProjectStyle.PackageReference,
+                };
+
+                var commandB = new RestoreCommand(requestB);
+                // Force writing project.assets.json
+                var resultB = await commandB.ExecuteAsync();
+                await resultB.CommitAsync(_logger, CancellationToken.None);
+                Assert.True(resultB.Success);
+                Assert.True(File.Exists(pajBFilepath));
+
+                var commandA = new RestoreCommand(requestA);
+                // Force writing project.assets.json
+                var resultA = await commandA.ExecuteAsync();
+                await resultA.CommitAsync(_logger, CancellationToken.None);
+                Assert.True(resultA.Success);
+                Assert.True(File.Exists(pajAFilepath));
             }
         }
 

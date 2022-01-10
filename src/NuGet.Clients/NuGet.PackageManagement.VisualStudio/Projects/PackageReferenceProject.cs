@@ -169,9 +169,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns <see cref="PackageSpec"/> found in assets file (project.assets.json)
         /// </summary>
         /// <param name="token">Cancellation token</param>
-        /// <returns>An <see cref="RestoreGraphRead"/> object</returns>
+        /// <returns>An <see cref="PackageSpec"/> object</returns>
         /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
-        internal async Task<RestoreGraphRead> GetCachedPackageSpecAsync(CancellationToken token)
+        internal async Task<PackageSpec> GetCachedPackageSpecAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -180,10 +180,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
             PackageSpec cachedPackageSpec = null;
-            bool cacheHitPackageSpec = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
+            _ = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
 
             bool cacheMissAssets = (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified);
-            bool isCacheHit = false;
 
             if (cacheMissAssets || IsPackageSpecDifferent(currentPackageSpec, cachedPackageSpec))
             {
@@ -192,12 +191,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 IsInstalledAndTransitiveComputationNeeded = true;
                 IsTransitiveComputationNeeded = true;
             }
-            else if (cacheHitPackageSpec && cachedPackageSpec != null)
-            {
-                isCacheHit = true;
-            }
 
-            return new RestoreGraphRead(currentPackageSpec, isCacheHit);
+            return currentPackageSpec;
         }
 
         /// <summary>
@@ -323,17 +318,19 @@ namespace NuGet.PackageManagement.VisualStudio
         internal void ClearCachedTransitiveOrigins()
         {
             TransitiveOriginsCache.Clear();
+            IsTransitiveComputationNeeded = true;
         }
 
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
         {
             var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
 
-            transitiveOrigins.ToList();
-
-            foreach (var key in transitiveEntry.Keys)
+            if (transitiveEntry != null)
             {
-                transitiveOrigins.AddRange(transitiveEntry[key]);
+                foreach (var key in transitiveEntry.Keys)
+                {
+                    transitiveOrigins.AddRange(transitiveEntry[key]);
+                }
             }
 
             var transitivePR = new TransitivePackageReference(currentPackage)
@@ -363,6 +360,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Clears Cached Transitive package prigins, Installed packages and Transitive packages
         /// </summary>
-        internal abstract void CleanCache();
+        internal abstract void ClearCache();
     }
 }

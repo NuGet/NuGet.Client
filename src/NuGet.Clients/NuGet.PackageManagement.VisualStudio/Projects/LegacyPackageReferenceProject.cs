@@ -183,10 +183,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc/>
         public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
-            RestoreGraphRead reading = await GetCachedPackageSpecAsync(token);
-            if (reading.PackageSpec == null)
+            PackageSpec reading = await GetCachedPackageSpecAsync(token);
+            if (reading! == null)
             {
-                IsInstalledAndTransitiveComputationNeeded = false;
+                IsInstalledAndTransitiveComputationNeeded = true;
 
                 return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
             }
@@ -195,14 +195,14 @@ namespace NuGet.PackageManagement.VisualStudio
             if (IsInstalledAndTransitiveComputationNeeded)
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
-                CleanCache();
+                ClearCache();
                 targetsList = await GetTargetsListAsync(token);
             }
 
             var frameworkSorter = new NuGetFrameworkSorter();
 
             // get the installed packages
-            List<PackageReference> installedPackages = reading.PackageSpec
+            List<PackageReference> installedPackages = reading
                .TargetFrameworks
                .SelectMany(f => GetPackageReferences(
                    f.Dependencies,
@@ -214,7 +214,7 @@ namespace NuGet.PackageManagement.VisualStudio
                .ToList();
 
             // get the transitive packages, excluding any already contained in the installed packages
-            List<PackageReference> transitivePackages = reading.PackageSpec
+            List<PackageReference> transitivePackages = reading
                .TargetFrameworks
                .SelectMany(f => GetTransitivePackageReferences(
                    f.FrameworkName,
@@ -526,7 +526,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        internal override void CleanCache()
+        internal override void ClearCache()
         {
             _installedPackages.Clear();
             _transitivePackages.Clear();
