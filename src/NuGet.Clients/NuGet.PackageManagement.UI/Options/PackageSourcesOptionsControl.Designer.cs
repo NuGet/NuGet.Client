@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 namespace NuGet.Options
 {
     partial class PackageSourcesOptionsControl
@@ -152,7 +152,7 @@ namespace NuGet.Options
             this.PackageSourcesListBox.Name = "PackageSourcesListBox";
             this.PackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
             this.PackageSourcesListBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PackageSourcesListBox_MouseMove);
-            this.PackageSourcesListBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PackageSourcesListBox_MouseUp);
+            this.PackageSourcesListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.PackageSourcesListBox_ItemCheck);
             // 
             // tableLayoutPanel1
             // 
@@ -206,7 +206,7 @@ namespace NuGet.Options
             this.MachineWidePackageSourcesListBox.Name = "MachineWidePackageSourcesListBox";
             this.MachineWidePackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
             this.MachineWidePackageSourcesListBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PackageSourcesListBox_MouseMove);
-            this.MachineWidePackageSourcesListBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PackageSourcesListBox_MouseUp);
+            this.MachineWidePackageSourcesListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.PackageSourcesListBox_ItemCheck);
             // 
             // images32px
             // 
