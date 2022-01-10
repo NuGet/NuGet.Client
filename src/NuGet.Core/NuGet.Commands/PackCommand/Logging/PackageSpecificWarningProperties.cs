@@ -27,7 +27,9 @@ namespace NuGet.Commands.PackCommand
         public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(IDictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>> noWarnProperties)
         {
             if (noWarnProperties == null)
+            {
                 return null;
+            }
 
             // NuGetLogCode -> LibraryId -> Set of Frameworks.
             var warningProperties = new PackageSpecificWarningProperties();

@@ -3,7 +3,6 @@
 
 using NuGet.Commands;
 using NuGet.Packaging;
-using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack
 {
@@ -16,9 +15,9 @@ namespace NuGet.Build.Tasks.Pack
     public interface IPackTaskLogic
     {
         /// <summary>
-        /// Initialize the pack args from the pack task request and warningProperties.
+        /// Initialize the pack args from the pack task request.
         /// </summary>
-        PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, PackageSpecificWarningProperties packageSpecificWarningProperties);
+        PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request);
 
         /// <summary>
         /// Initialize the package builder from the pack task request.
@@ -27,7 +26,7 @@ namespace NuGet.Build.Tasks.Pack
 
         /// <summary>
         /// Initialize the pack command runner from the pack task request and the output of
-        /// <see cref="GetPackArgs"/> and
+        /// <see cref="GetPackArgs(IPackTaskRequest{IMSBuildItem})"/> and
         /// <see cref="GetPackageBuilder(IPackTaskRequest{IMSBuildItem})"/>.
         /// </summary>
         PackCommandRunner GetPackCommandRunner(

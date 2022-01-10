@@ -22,7 +22,9 @@ namespace NuGet.Build.Tasks.Pack
     public class PackTaskLogic : IPackTaskLogic
     {
         private const string IdentityProperty = "Identity";
-        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request, PackageSpecificWarningProperties packageSpecificWarningProperties)
+        private PackageSpecificWarningProperties _packageSpecificWarningProperties;
+
+        public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
         {
             var packArgs = new PackArgs
             {
@@ -40,7 +42,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackTargetArgs = new MSBuildPackTargetArgs()
             };
 
-            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, packageSpecificWarningProperties);
+            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, _packageSpecificWarningProperties);
 
             if (request.MinClientVersion != null)
             {
@@ -808,7 +810,7 @@ namespace NuGet.Build.Tasks.Pack
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
             InitializeProjectDependencies(assetsFile, dependenciesByFramework, projectRefToVersionMap, frameworksWithSuppressedDependencies);
-            InitializePackageDependencies(assetsFile, packageBuilder, dependenciesByFramework, frameworksWithSuppressedDependencies);
+            InitializePackageDependencies(assetsFile, dependenciesByFramework, frameworksWithSuppressedDependencies);
 
             foreach (var pair in dependenciesByFramework)
             {
@@ -902,12 +904,13 @@ namespace NuGet.Build.Tasks.Pack
             }
         }
 
-        private static void InitializePackageDependencies(
+        private void InitializePackageDependencies(
             LockFile assetsFile,
-            PackageBuilder packageBuilder,
             Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
             ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
+            var packageSpecificNoWarnProperties = new Dictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>>(StringComparer.OrdinalIgnoreCase);
+
             // From the package spec, we know the direct package dependencies of this project.
             foreach (TargetFrameworkInformation framework in assetsFile.PackageSpec.TargetFrameworks)
             {
@@ -969,17 +972,22 @@ namespace NuGet.Build.Tasks.Pack
                     {
                         HashSet<(NuGetLogCode, NuGetFramework)> nowarnProperties = null;
 
-                        if (!packageBuilder.PackageSpecificNoWarnProperties.TryGetValue(packageDependency.Name, out nowarnProperties))
+                        if (!packageSpecificNoWarnProperties.TryGetValue(packageDependency.Name, out nowarnProperties))
                         {
                             nowarnProperties = new HashSet<(NuGetLogCode, NuGetFramework)>();
                         }
 
                         nowarnProperties.AddRange(packageDependency.NoWarn.Select(n => (n, framework.FrameworkName)));
-                        packageBuilder.PackageSpecificNoWarnProperties[packageDependency.Name] = nowarnProperties;
+                        packageSpecificNoWarnProperties[packageDependency.Name] = nowarnProperties;
                     }
 
                     PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
                 }
+            }
+
+            if (packageSpecificNoWarnProperties.Keys.Count > 0)
+            {
+                _packageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(packageSpecificNoWarnProperties);
             }
         }
 

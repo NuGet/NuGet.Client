@@ -116,7 +116,6 @@ namespace NuGet.Build.Tasks.Pack
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;
-                PackArgs packArgs = null;
 
                 // If packing using a Nuspec file, we don't need to build a PackageBuilder here
                 // as the package builder is built by reading the manifest file later in the code path.
@@ -124,16 +123,9 @@ namespace NuGet.Build.Tasks.Pack
                 if (string.IsNullOrEmpty(request.NuspecFile))
                 {
                     packageBuilder = logic.GetPackageBuilder(request);
-
-                    if (packageBuilder?.PackageSpecificNoWarnProperties.Keys.Count > 0)
-                    {
-                        PackageSpecificWarningProperties packageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(packageBuilder.PackageSpecificNoWarnProperties);
-                        // Override logger with warning properties
-                        packArgs = logic.GetPackArgs(request: request, packageSpecificWarningProperties: packageSpecificWarningProperties);
-                    }
                 }
 
-                packArgs ??= logic.GetPackArgs(request: request, packageSpecificWarningProperties: null);
+                PackArgs packArgs = logic.GetPackArgs(request);
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
 
                 return logic.BuildPackage(packRunner);

@@ -14,8 +14,8 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
-using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack.Test
 {
@@ -32,9 +32,9 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var logic = new Mock<IPackTaskLogic>();
             logic
-                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>(), It.IsAny<PackageSpecificWarningProperties>()))
+                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>()))
                 .Returns(packArgs)
-                .Callback<IPackTaskRequest<IMSBuildItem>, PackageSpecificWarningProperties>((r, w) => request = r);
+                .Callback<IPackTaskRequest<IMSBuildItem>>(r => request = r);
             logic
                 .Setup(x => x.GetPackageBuilder(It.IsAny<IPackTaskRequest<IMSBuildItem>>()))
                 .Returns(packageBuilder);
@@ -52,7 +52,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             // We cannot mock the PackCommandRunner because it's not overridable.
             Assert.False(result);
             Assert.NotNull(request);
-            logic.Verify(x => x.GetPackArgs(request, null));
+            logic.Verify(x => x.GetPackArgs(request));
             logic.Verify(x => x.GetPackageBuilder(request));
             logic.Verify(x => x.GetPackCommandRunner(request, packArgs, packageBuilder));
             logic.Verify(x => x.BuildPackage(packCommandRunner));
@@ -410,8 +410,8 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var logic = new Mock<IPackTaskLogic>();
             logic
-                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>(), It.IsAny<PackageSpecificWarningProperties>()))
-                .Callback<IPackTaskRequest<IMSBuildItem>, PackageSpecificWarningProperties>((r, w) => request = r);
+                .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>()))
+                .Callback<IPackTaskRequest<IMSBuildItem>>(r => request = r);
 
             target.PackTaskLogic = logic.Object;
 
