@@ -147,6 +147,10 @@ namespace NuGet.Options
                 _packageSources.CurrentChanged += OnSelectedPackageSourceChanged;
                 PackageSourcesListBox.GotFocus += PackageSourcesListBox_GotFocus;
                 PackageSourcesListBox.DataSource = _packageSources;
+                for (int i = 0; i < packageSources.Count; i++)
+                {
+                    PackageSourcesListBox.SetItemChecked(i, packageSources[i].IsEnabled);
+                }
 
                 if (machineWidePackageSources.Count > 0)
                 {
@@ -154,6 +158,10 @@ namespace NuGet.Options
                     _machineWidepackageSources.CurrentChanged += OnSelectedMachineWidePackageSourceChanged;
                     MachineWidePackageSourcesListBox.GotFocus += MachineWidePackageSourcesListBox_GotFocus;
                     MachineWidePackageSourcesListBox.DataSource = _machineWidepackageSources;
+                    for (int i = 0; i < machineWidePackageSources.Count; i++)
+                    {
+                        MachineWidePackageSourcesListBox.SetItemChecked(i, machineWidePackageSources[i].IsEnabled);
+                    }
                 }
                 else
                 {
@@ -451,24 +459,24 @@ namespace NuGet.Options
                 CopySelectedItem((PackageSourceContextInfo)currentListBox.SelectedItem);
                 e.Handled = true;
             }
-            else if (e.KeyCode == Keys.Space)
-            {
-                TogglePackageSourceEnabled(currentListBox.SelectedIndex, currentListBox);
-                e.Handled = true;
-            }
         }
 
-        private void TogglePackageSourceEnabled(int itemIndex, PackageSourceCheckedListBox currentListBox)
+        private void PackageSourcesListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if (itemIndex < 0 || itemIndex >= currentListBox.Items.Count)
+            var checkedListBox = sender as CheckedListBox;
+            if (checkedListBox == null)
             {
                 return;
             }
 
-            var item = (PackageSourceContextInfo)currentListBox.Items[itemIndex];
-            item.IsEnabled = !item.IsEnabled;
+            if (e.Index < 0 || e.Index >= checkedListBox.Items.Count)
+            {
+                return;
+            }
 
-            currentListBox.Invalidate(GetCheckBoxRectangleForListBoxItem(currentListBox, itemIndex));
+            bool isEnabled = e.NewValue == CheckState.Checked;
+            var packageSource = (PackageSourceContextInfo)checkedListBox.Items[e.Index];
+            packageSource.IsEnabled = isEnabled;
         }
 
         private Rectangle GetCheckBoxRectangleForListBoxItem(PackageSourceCheckedListBox currentListBox, int itemIndex)
@@ -491,33 +499,6 @@ namespace NuGet.Options
         {
             Clipboard.Clear();
             Clipboard.SetText(selectedPackageSource.Source);
-        }
-
-        private void PackageSourcesListBox_MouseUp(object sender, MouseEventArgs e)
-        {
-            var currentListBox = (PackageSourceCheckedListBox)sender;
-            if (e.Button == MouseButtons.Right)
-            {
-                int itemIndexToSelect = currentListBox.IndexFromPoint(e.Location);
-                if (itemIndexToSelect >= 0 && itemIndexToSelect < currentListBox.Items.Count)
-                {
-                    currentListBox.SelectedIndex = itemIndexToSelect;
-                }
-            }
-            else if (e.Button == MouseButtons.Left)
-            {
-                var itemIndex = currentListBox.SelectedIndex;
-                if (itemIndex >= 0
-                    && itemIndex < currentListBox.Items.Count)
-                {
-                    var checkBoxRectangle = GetCheckBoxRectangleForListBoxItem(currentListBox, itemIndex);
-                    // if the mouse click position is inside the checkbox, toggle the IsEnabled property
-                    if (checkBoxRectangle.Contains(e.Location))
-                    {
-                        TogglePackageSourceEnabled(itemIndex, currentListBox);
-                    }
-                }
-            }
         }
 
         private void PackageSourcesListBox_MouseMove(object sender, MouseEventArgs e)

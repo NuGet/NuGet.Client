@@ -62,7 +62,7 @@ namespace NuGet.Options
                     const int textMargin = 4;
 
                     // draw the enabled/disabled checkbox
-                    var checkBoxState = currentItem.IsEnabled ? CheckBoxState.CheckedNormal : CheckBoxState.UncheckedNormal;
+                    var checkBoxState = currentListBox.GetItemChecked(e.Index) ? CheckBoxState.CheckedNormal : CheckBoxState.UncheckedNormal;
                     var checkBoxSize = CheckBoxRenderer.GetGlyphSize(graphics, checkBoxState);
                     CheckBoxRenderer.DrawCheckBox(
                         graphics,
