@@ -52,16 +52,16 @@ namespace NuGet.CommandLine.XPlat
 
                 verifyCmd.OnExecute(async () =>
                 {
-                    ISettings settings = XPlatUtility.ProcessConfigFile(configFile.Value());
                     ValidatePackagePaths(packagePaths);
 
-                    VerifyArgs args = new VerifyArgs(settings);
+                    VerifyArgs args = new VerifyArgs();
                     args.PackagePaths = packagePaths.Values;
                     args.Verifications = all.HasValue() ?
                         new List<Verification>() { Verification.All } :
                         new List<Verification>() { Verification.Signatures };
                     args.CertificateFingerprint = fingerPrint.Values;
                     args.Logger = getLogger();
+                    args.Settings = XPlatUtility.ProcessConfigFile(configFile.Value());
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
                     var runner = getCommandRunner();

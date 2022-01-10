@@ -39,12 +39,13 @@ namespace NuGet.CommandLine
                 throw new ArgumentException(nameof(PackagePath));
             }
 
-            var verifyArgs = new VerifyArgs(Settings)
+            var verifyArgs = new VerifyArgs()
             {
                 Verifications = GetVerificationTypes(),
                 PackagePaths = new[] { PackagePath },
                 CertificateFingerprint = CertificateFingerprint,
-                Logger = Console
+                Logger = Console,
+                Settings = Settings
             };
 
             switch (Verbosity)

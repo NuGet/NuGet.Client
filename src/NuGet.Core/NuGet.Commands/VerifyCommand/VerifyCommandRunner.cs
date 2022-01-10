@@ -60,7 +60,7 @@ namespace NuGet.Commands
                         _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-                var trustedSignersSection = verifyArgs.Settings.GetSection(TrustedSignersSectionName);
+                SettingSection trustedSignersSection = verifyArgs.Settings?.GetSection(TrustedSignersSectionName);
                 List<TrustedSignerItem> trustedSigners = trustedSignersSection?.Items.Select(c => c as TrustedSignerItem).Where(c => c != null).ToList();
                 IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = trustedSigners?
                     .SelectMany(c => c.Certificates)

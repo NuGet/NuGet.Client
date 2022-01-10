@@ -71,15 +71,9 @@ namespace NuGet.Commands
         /// </summary>
         public IEnumerable<string> CertificateFingerprint { get; set; }
 
-        [Obsolete("This API does ignores NuGet.Config file or trusted-signers list")]
-        public VerifyArgs()
-        { }
-
-        public VerifyArgs(ISettings settings)
-        {
-            Settings = settings;
-        }
-
-        internal ISettings Settings { get; }
+        /// <summary>
+        /// Loaded NuGet settings
+        /// </summary>
+        public ISettings Settings { get; set; }
     }
 }
