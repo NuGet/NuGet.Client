@@ -71,6 +71,11 @@ namespace NuGet.Packaging
             Testable.Default.UpdateFileTimeFromEntry(entry, fileFullPath, logger);
         }
 
+        internal static void UpdateFileTime(string fileFullPath, DateTime dateTime)
+        {
+            Testable.Default.UpdateFileTimeEntry(fileFullPath, dateTime);
+        }
+
         internal class Testable
         {
             public static Testable Default { get; } = new Testable(EnvironmentVariableWrapper.Instance);
@@ -78,7 +83,7 @@ namespace NuGet.Packaging
             internal Testable(IEnvironmentVariableReader environmentVariableReader)
             {
                 _updateFileTimeFromEntryMaxRetries = 9;
-                string value = environmentVariableReader.GetEnvironmentVariable("NUGET_UpdateFileTime_MaxRetries");
+                string value = environmentVariableReader.GetEnvironmentVariable("NUGET_UPDATEFILETIME_MAXRETRIES");
                 if (int.TryParse(value, out int maxRetries) && maxRetries > 0)
                 {
                     _updateFileTimeFromEntryMaxRetries = maxRetries;
@@ -87,7 +92,7 @@ namespace NuGet.Packaging
 
             private readonly int _updateFileTimeFromEntryMaxRetries;
 
-            public void UpdateFileTimeFromEntry(ZipArchiveEntry entry, string fileFullPath, ILogger logger)
+            internal void UpdateFileTimeFromEntry(ZipArchiveEntry entry, string fileFullPath, ILogger logger)
             {
                 if (entry == null) throw new ArgumentNullException(nameof(entry));
                 if (fileFullPath == null) throw new ArgumentNullException(nameof(fileFullPath));
@@ -101,21 +106,8 @@ namespace NuGet.Packaging
                 {
                     try
                     {
-                        int retry = 0;
-                        bool successful = false;
-                        while (!successful)
-                        {
-                            try
-                            {
-                                File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime);
-                                successful = true;
-                            }
-                            catch (IOException) when (retry < _updateFileTimeFromEntryMaxRetries)
-                            {
-                                Thread.Sleep(1 << retry);
-                                retry++;
-                            }
-                        }
+                        DateTime dateTime = entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime;
+                        UpdateFileTimeEntry(fileFullPath, dateTime);
                     }
                     catch (ArgumentOutOfRangeException ex)
                     {
@@ -126,6 +118,27 @@ namespace NuGet.Packaging
                             ex.Message); // {1}
 
                         logger.LogVerbose(message);
+                    }
+                }
+            }
+
+            internal void UpdateFileTimeEntry(string fileFullPath, DateTime dateTime)
+            {
+                if (string.IsNullOrEmpty(fileFullPath)) throw new ArgumentNullException(nameof(fileFullPath));
+
+                int retry = 0;
+                bool successful = false;
+                while (!successful)
+                {
+                    try
+                    {
+                        File.SetLastWriteTimeUtc(fileFullPath, dateTime);
+                        successful = true;
+                    }
+                    catch (IOException) when (retry < _updateFileTimeFromEntryMaxRetries)
+                    {
+                        Thread.Sleep(1 << retry);
+                        retry++;
                     }
                 }
             }
