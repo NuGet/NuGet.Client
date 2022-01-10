@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Test.PackageExtraction
                 // not run continuations as soon as they're ready. Therefore, use 13 retries so retries keep happening for about 8.2 seconds
                 // which should be plenty given the simulated AV locks the file for only 5 milliseconds + task scheduling latency.
                 Mock<IEnvironmentVariableReader> environmentVariableReader = new Mock<IEnvironmentVariableReader>();
-                environmentVariableReader.Setup(x => x.GetEnvironmentVariable("NUGET_UpdateFileTime_MaxRetries"))
+                environmentVariableReader.Setup(x => x.GetEnvironmentVariable("NUGET_UPDATEFILETIME_MAXRETRIES"))
                     .Returns("13");
                 ZipArchiveExtensions.Testable zipArchiveExtensions = new ZipArchiveExtensions.Testable(environmentVariableReader.Object);
 
@@ -92,7 +92,7 @@ namespace NuGet.Packaging.Test.PackageExtraction
 
                     // If the above deadlocks until the file is unlocked, then we need another way to fail the test within a reasonable time.
                     using CancellationTokenSource cts = new();
-                    Task delay = Task.Delay(TimeSpan.FromSeconds(1), cts.Token);
+                    Task delay = Task.Delay(TimeSpan.FromSeconds(10), cts.Token);
                     var completed = await Task.WhenAny(task, delay);
                     cts.Cancel();
                     if (completed == delay)
