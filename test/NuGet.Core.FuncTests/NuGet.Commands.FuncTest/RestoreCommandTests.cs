@@ -2672,7 +2672,7 @@ namespace NuGet.Commands.FuncTest
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", projectDirectory).WithTestRestoreMetadata();
                 var dgSpec = new DependencyGraphSpec();
                 dgSpec.AddProject(spec);
                 dgSpec.AddRestore(spec.Name);

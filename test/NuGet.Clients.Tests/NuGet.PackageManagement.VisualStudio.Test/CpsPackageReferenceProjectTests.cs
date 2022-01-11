@@ -390,15 +390,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Setup
                 var projectName = "project1";
-                var projectFullPath = Path.Combine(testDirectory.Path, projectName + ".csproj");
 
                 // Project
                 var projectCache = new ProjectSystemCache();
                 IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+                var packageSpec = GetPackageSpec(projectName, testDirectory, "[2.0.0, )");
+                var projectFullPath = packageSpec.RestoreMetadata.ProjectPath;
                 var project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
-
                 var projectNames = GetTestProjectNames(projectFullPath, projectName);
-                var packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
 
                 // Restore info
                 var projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
@@ -433,7 +432,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 packages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.0.0"))));
 
                 // Setup
-                packageSpec = GetPackageSpec(projectName, projectFullPath, "[3.0.0, )");
+                packageSpec = GetPackageSpec(projectName, testDirectory, "[3.0.0, )");
 
                 // Restore info
                 projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);

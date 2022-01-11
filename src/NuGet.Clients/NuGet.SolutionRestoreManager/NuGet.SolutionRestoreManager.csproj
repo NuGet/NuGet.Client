@@ -42,6 +42,7 @@
     <Compile Include="Guids.cs" />
     <Compile Include="ISolutionRestoreChecker.cs" />
     <Compile Include="ISolutionRestoreJob.cs" />
+    <Compile Include="IVsNuGetProgressReporter.cs" />
     <Compile Include="Logger\NuGetFileLogger.cs" />
     <Compile Include="NuGetSolutionService.cs" />
     <Compile Include="PkgCmdID.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="SolutionUpToDateChecker.cs" />
     <Compile Include="VerbosityLevel.cs" />
     <Compile Include="VSNominationUtilities.cs" />
+    <Compile Include="VsRestoreProgressEvents.cs" />
     <Compile Include="VsSolutionRestoreService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VsSolutionRestoreStatusProvider.cs" />

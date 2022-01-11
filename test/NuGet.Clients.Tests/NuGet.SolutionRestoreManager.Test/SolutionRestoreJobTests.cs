@@ -43,6 +43,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();
+            var nuGetProgressReporter = Mock.Of<IVsNuGetProgressReporter>();
 
             Mock.Get(settings)
                 .Setup(x => x.GetSection("packageRestore"))
@@ -59,7 +60,8 @@ namespace NuGet.SolutionRestoreManager.Test
                 sourceRepositoryProvider: sourceRepositoryProvider,
                 restoreEventsPublisher: eventsPublisher,
                 settings: settings,
-                solutionRestoreChecker: restoreChecker);
+                solutionRestoreChecker: restoreChecker,
+                nuGetProgressReporter: nuGetProgressReporter);
 
             var restoreRequest = new SolutionRestoreRequest(
                 forceRestore: true,
@@ -89,6 +91,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();
+            var nuGetProgressReporter = Mock.Of<IVsNuGetProgressReporter>();
 
             Mock.Get(settings)
                 .Setup(x => x.GetSection("packageRestore"))
@@ -105,7 +108,8 @@ namespace NuGet.SolutionRestoreManager.Test
                 sourceRepositoryProvider: sourceRepositoryProvider,
                 restoreEventsPublisher: eventsPublisher,
                 settings: settings,
-                solutionRestoreChecker: restoreChecker);
+                solutionRestoreChecker: restoreChecker,
+                nuGetProgressReporter: nuGetProgressReporter);
 
             var restoreRequest = new SolutionRestoreRequest(
                 forceRestore: true,
