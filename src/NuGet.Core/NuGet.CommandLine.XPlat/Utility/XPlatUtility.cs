@@ -44,7 +44,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public static ISettings CreateDefaultSettings()
+        public static ISettings GetSettingsForCurrentWorkingDirectory()
         {
             return Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
@@ -75,7 +75,7 @@ namespace NuGet.CommandLine.XPlat
         {
             if (string.IsNullOrEmpty(configFile))
             {
-                return CreateDefaultSettings();
+                return GetSettingsForCurrentWorkingDirectory();
             }
 
             var configFileFullPath = Path.GetFullPath(configFile);
