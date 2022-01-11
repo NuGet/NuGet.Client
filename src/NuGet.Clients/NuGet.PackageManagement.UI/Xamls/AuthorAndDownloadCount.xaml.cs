@@ -84,10 +84,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!string.IsNullOrEmpty(Author))
             {
-                _textBlockAuthor.Text = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Text_ByAuthor,
-                    Author);
+                _textBlockAuthor.Text = Author;
                 _textBlockAuthor.Visibility = Visibility.Visible;
             }
             else

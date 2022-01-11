@@ -22,6 +22,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
+using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -71,6 +72,15 @@ namespace NuGet.PackageManagement.UI
             {
                 _author = value;
                 OnPropertyChanged(nameof(Author));
+                OnPropertyChanged(nameof(ByAuthor));
+            }
+        }
+
+        public string ByAuthor
+        {
+            get
+            {
+                return _author != null ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
             }
         }
 
