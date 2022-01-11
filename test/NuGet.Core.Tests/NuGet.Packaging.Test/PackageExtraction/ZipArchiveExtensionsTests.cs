@@ -42,7 +42,6 @@ namespace NuGet.Packaging.Test.PackageExtraction
                 DateTime expectedTime = DateTime.UtcNow.AddHours(-5);
                 zipEntry.LastWriteTime = expectedTime;
 
-
                 fileStream = File.Open(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
                 Task avSimulation = Task.Run(async () =>
                 {
@@ -54,7 +53,7 @@ namespace NuGet.Packaging.Test.PackageExtraction
                 zipArchiveExtensions.UpdateFileTimeFromEntry(zipEntry, tempFile, NullLogger.Instance);
 
                 // Assert
-                var fileLastWriteTime = File.GetLastWriteTimeUtc(tempFile);
+                DateTime fileLastWriteTime = File.GetLastWriteTimeUtc(tempFile);
                 Assert.Equal(expectedTime, fileLastWriteTime);
             }
             finally

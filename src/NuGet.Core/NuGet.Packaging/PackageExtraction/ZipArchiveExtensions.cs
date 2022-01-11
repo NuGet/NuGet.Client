@@ -98,7 +98,7 @@ namespace NuGet.Packaging
                 if (fileFullPath == null) throw new ArgumentNullException(nameof(fileFullPath));
                 if (logger == null) throw new ArgumentNullException(nameof(logger));
 
-                var attr = File.GetAttributes(fileFullPath);
+                FileAttributes attr = File.GetAttributes(fileFullPath);
 
                 if (!attr.HasFlag(FileAttributes.Directory) &&
                     entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
@@ -137,6 +137,8 @@ namespace NuGet.Packaging
                     }
                     catch (IOException) when (retry < _updateFileTimeFromEntryMaxRetries)
                     {
+                        // Use exponentional backoff, to reduce CPU usage, allowing other threads to work, even if this
+                        // isn't an async method and therefore requires the ThreadPool to spin up new threads.
                         Thread.Sleep(1 << retry);
                         retry++;
                     }
