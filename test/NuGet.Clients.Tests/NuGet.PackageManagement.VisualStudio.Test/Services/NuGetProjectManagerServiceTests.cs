@@ -136,7 +136,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 Initialize(packageSources);
 
-                string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
                 var unconfiguredProject = new Mock<UnconfiguredProject>();
                 var configuredProject = new Mock<ConfiguredProject>();
                 var projectServices = new Mock<ConfiguredProjectServices>();
@@ -160,6 +159,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 nuGetProjectServices.SetupGet(x => x.ScriptService)
                     .Returns(Mock.Of<IProjectScriptHostService>());
 
+                PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, testDirectory);
+                var projectFullPath = packageSpec.RestoreMetadata.ProjectPath;
+
                 var project = new CpsPackageReferenceProject(
                     projectName: projectName,
                     projectUniqueName: projectFullPath,
@@ -169,9 +171,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     nuGetProjectServices.Object,
                     projectId);
 
-                PackageSpec packageSpec = CreatePackageSpec(
-                    project.ProjectName,
-                    Path.Combine(testDirectory, "package.spec"));
                 DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectRestoreInfo.AddProject(packageSpec);
                 var projectNames = new ProjectNames(
@@ -418,7 +417,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 Initialize(packageSources);
 
-                string projectFullPath = Path.Combine(testDirectory.Path, $"{projectName}.csproj");
                 var unconfiguredProject = new Mock<UnconfiguredProject>();
                 var configuredProject = new Mock<ConfiguredProject>();
                 var projectServices = new Mock<ConfiguredProjectServices>();
@@ -442,6 +440,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 nuGetProjectServices.SetupGet(x => x.ScriptService)
                     .Returns(Mock.Of<IProjectScriptHostService>());
 
+                PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, testDirectory);
+                var projectFullPath = packageSpec.RestoreMetadata.ProjectPath;
+
                 var project = new CpsPackageReferenceProject(
                     projectName: projectName,
                     projectUniqueName: projectFullPath,
@@ -451,9 +452,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     nuGetProjectServices.Object,
                     projectId);
 
-                PackageSpec packageSpec = CreatePackageSpec(
-                    project.ProjectName,
-                    Path.Combine(testDirectory, "package.spec"));
+
                 DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
                 projectRestoreInfo.AddProject(packageSpec);
                 var projectNames = new ProjectNames(
@@ -616,26 +615,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             return settings;
-        }
-
-        private static PackageSpec CreatePackageSpec(string projectName, string packageSpecFilePath)
-        {
-            string referenceSpec = @"
-                {
-                    ""frameworks"":
-                    {
-                        ""net5.0"":
-                        {
-                            ""dependencies"": { }
-                        }
-                    }
-                }";
-
-            return JsonPackageSpecReader.GetPackageSpec(
-                    referenceSpec,
-                    projectName,
-                    packageSpecFilePath)
-                .WithTestRestoreMetadata();
         }
 
         private sealed class TestMSBuildNuGetProject : MSBuildNuGetProject

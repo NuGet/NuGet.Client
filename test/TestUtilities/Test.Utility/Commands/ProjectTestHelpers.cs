@@ -144,7 +144,7 @@ namespace NuGet.Commands.Test
             var updated = spec.Clone();
             var packageSpecFile = new FileInfo(spec.FilePath);
 
-            var projectDir = (packageSpecFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory ?
+            var projectDir = (packageSpecFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory && !spec.FilePath.EndsWith(".csproj") ?
                 packageSpecFile.FullName :
                 packageSpecFile.Directory.FullName;
 
