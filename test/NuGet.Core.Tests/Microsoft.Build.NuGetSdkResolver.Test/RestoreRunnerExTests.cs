@@ -9,7 +9,6 @@ using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -23,6 +22,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         public async Task RestoreRunnerEx_WithExistingPackage_DoesNotCreateAnyAssetsAsync()
         {
             using (var pathContext = new SimpleTestPathContext())
+            using (var context = new SourceCacheContext())
             {
                 // Arrange
                 var packageId = "x";
@@ -30,7 +30,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 var logger = new TestLogger();
                 var library = new LibraryIdentity(packageId, NuGetVersion.Parse(packageVersion), LibraryType.Reference);
 
-                var package = new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
+                var package = new SimpleTestPackageContext(packageId, packageVersion);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
