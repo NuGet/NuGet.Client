@@ -18,7 +18,7 @@ namespace NuGet.Commands
         public WarningProperties WarningProperties { get; set; }
 
         // Package specific warning property
-        internal PackCommand.PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
+        private PackCommand.PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
 
         public IEnumerable<ILogMessage> Errors => _errors.ToArray();
 
