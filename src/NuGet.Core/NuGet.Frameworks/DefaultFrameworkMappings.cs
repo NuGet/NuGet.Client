@@ -79,6 +79,7 @@ namespace NuGet.Frameworks
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Tizen, "tizen"),
+                new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NanoFramework, "netnano"),
             };
         });
 
