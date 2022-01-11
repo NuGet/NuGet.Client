@@ -240,6 +240,8 @@ namespace NuGet.Test
         [InlineData("net5.0-tvos1.0", "net5.0-tvos1.0")]
         [InlineData("net5.0-windows10.0", "net5.0-windows10.0")]
         [InlineData("net5.0-macos10.15.2.3", "net5.0-macos10.15.2.3")]
+        [InlineData("netnano1.0", "netnano1.0")]
+        [InlineData("netnano1.0", ".NETnanoFramework,Version=v1.0")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
             // Arrange
@@ -296,6 +298,7 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5", "")]
         [InlineData("netcoreapp2", ".NETCoreApp,Version=v2.0", "")]
         [InlineData("netcoreapp3", ".NETCoreApp,Version=v3.0", "")]
+        [InlineData("netnano1.0", ".NETnanoFramework,Version=v1.0", "")]
         public void NuGetFramework_Basic(string folderName, string frameworkMoniker, string platformMoniker)
         {
             NuGetFramework output = NuGetFramework.Parse(folderName);
@@ -444,7 +447,5 @@ namespace NuGet.Test
             // Assert
             Assert.Same(frameworkObject, parsedFramework);
         }
-
-
     }
 }
