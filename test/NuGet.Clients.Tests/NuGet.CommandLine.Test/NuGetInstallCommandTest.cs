@@ -351,9 +351,6 @@ namespace NuGet.CommandLine.Test
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
                 Directory.CreateDirectory(repositoryPath);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
@@ -413,9 +410,6 @@ namespace NuGet.CommandLine.Test
                 var workingPath = pathContext.WorkingDirectory;
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
-
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
@@ -498,9 +492,6 @@ namespace NuGet.CommandLine.Test
                 var workingPath = pathContext.WorkingDirectory;
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
-
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
@@ -595,8 +586,6 @@ namespace NuGet.CommandLine.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
@@ -636,14 +625,11 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_FromPackagesConfigFile_SpecifyingRelativeSolutionDir()
         {
             // Arrange
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var folderName = Path.GetFileName(workingPath);
 
@@ -1041,9 +1027,6 @@ namespace NuGet.CommandLine.Test
                 var workingPath = pathContext.WorkingDirectory;
                 var packageDirectory = pathContext.PackageSource;
 
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
 
@@ -1070,10 +1053,10 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    r1.Success.Should().BeTrue(because: r1.AllOutput);
 
                     // testPackage1 1.2.0 is installed
-                    Assert.True(Directory.Exists(Path.Combine(workingPath, "packages", "testPackage1.1.2.0")));
+                    Assert.True(Directory.Exists(Path.Combine(pathContext.PackagesV2, "testPackage1.1.2.0")));
                 }
             }
         }
@@ -1088,9 +1071,6 @@ namespace NuGet.CommandLine.Test
                 var workingPath = pathContext.WorkingDirectory;
                 var packageDirectory = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
-
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package1 = new ZipPackage(packageFileName);
@@ -1114,7 +1094,7 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // testPackage1 1.2.0-beta1 is installed
-                    Assert.True(Directory.Exists(Path.Combine(workingPath, "packages", "testPackage1.1.2.0-beta1")));
+                    Assert.True(Directory.Exists(Path.Combine(pathContext.PackagesV2, "testPackage1.1.2.0-beta1")));
                 }
             }
         }
@@ -1128,9 +1108,6 @@ namespace NuGet.CommandLine.Test
                 var workingPath = pathContext.WorkingDirectory;
                 var packageDirectory = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
-
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package1 = new ZipPackage(packageFileName);
@@ -1154,7 +1131,7 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // testPackage1 1.2.0-beta1 is installed
-                    Assert.True(Directory.Exists(Path.Combine(workingPath, "packages", "testPackage1.1.2.0-beta1")));
+                    Assert.True(Directory.Exists(Path.Combine(pathContext.PackagesV2, "testPackage1.1.2.0-beta1")));
                 }
             }
         }
@@ -1166,17 +1143,9 @@ namespace NuGet.CommandLine.Test
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                var workingPath = pathContext.WorkingDirectory;
-                var packageDirectory = pathContext.PackageSource;
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
                 // Arrange
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.PackageSource);
                 var package = new ZipPackage(packageFileName);
-
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 using (var server = new MockServer())
                 {
@@ -1215,12 +1184,12 @@ namespace NuGet.CommandLine.Test
                     var args = "install testPackage1 -Version 1.1.0 -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        workingPath,
+                        pathContext.WorkingDirectory,
                         args,
                         waitForExit: true);
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    r1.Success.Should().BeTrue(r1.AllOutput);
                     Assert.True(getPackageByVersionIsCalled);
                     Assert.True(packageDownloadIsCalled);
                 }
@@ -1234,15 +1203,10 @@ namespace NuGet.CommandLine.Test
             {
                 var workingPath = pathContext.WorkingDirectory;
                 var packageDirectory = pathContext.PackageSource;
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-
-                // Add a nuget.config to clear out sources and set the global packages folder
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 using (var server = new MockServer())
                 {
@@ -1421,12 +1385,12 @@ namespace NuGet.CommandLine.Test
 
                 var r = CommandRunner.Run(
                     nugetexe,
-                    workingPath,
+                    pathContext.WorkingDirectory,
                     string.Join(" ", args),
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                r.Success.Should().BeTrue(because: r.AllOutput);
                 var testTxtFile = Path.Combine(
                     outputDirectory,
                     "testPackage1.1.1.0", "content", "test1.txt");
@@ -1489,17 +1453,18 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_DependencyResolution(string dependencyType, string requestedVersion, string expectedVersion)
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var testDirectory = TestDirectory.Create())
-            using (var outputDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var source = pathContext.PackageSource;
+                var outputDirectory = Path.Combine(pathContext.WorkingDirectory, "outDir");
                 // Arrange
-                Util.CreateTestPackage("depPackage", "1.1.0", testDirectory);
-                Util.CreateTestPackage("depPackage", "1.1.1", testDirectory);
-                Util.CreateTestPackage("depPackage", "1.2.0", testDirectory);
-                Util.CreateTestPackage("depPackage", "2.0.0", testDirectory);
+                Util.CreateTestPackage("depPackage", "1.1.0", source);
+                Util.CreateTestPackage("depPackage", "1.1.1", source);
+                Util.CreateTestPackage("depPackage", "1.2.0", source);
+                Util.CreateTestPackage("depPackage", "2.0.0", source);
 
                 var packageFileName = PackageCreater.CreatePackage(
-                    "testPackage", "1.1.0", testDirectory,
+                    "testPackage", "1.1.0", pathContext.PackageSource,
                     (builder) =>
                     {
                         if (requestedVersion == null)
@@ -1524,7 +1489,7 @@ namespace NuGet.CommandLine.Test
                 // change the path separator for mono
                 if (RuntimeEnvironmentHelper.IsMono)
                 {
-                    depPackageFile = NuGet.Common.PathUtility.GetPathWithForwardSlashes(depPackageFile);
+                    depPackageFile = Common.PathUtility.GetPathWithForwardSlashes(depPackageFile);
                 }
 
                 // Act
@@ -1533,17 +1498,17 @@ namespace NuGet.CommandLine.Test
                 {
                     cmd = string.Format(
                         CultureInfo.InvariantCulture,
-                        "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, testDirectory);
+                        "install testPackage -OutputDirectory {0} -Source {1}", outputDirectory, source);
                 }
                 else
                 {
                     cmd = string.Format(
                         CultureInfo.InvariantCulture,
-                        "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, testDirectory, dependencyType);
+                        "install testPackage -OutputDirectory {0} -Source {1} -DependencyVersion {2}", outputDirectory, source, dependencyType);
                 }
                 var r = CommandRunner.Run(
                     nugetexe,
-                    testDirectory,
+                    pathContext.WorkingDirectory,
                     cmd,
                     waitForExit: true);
 
