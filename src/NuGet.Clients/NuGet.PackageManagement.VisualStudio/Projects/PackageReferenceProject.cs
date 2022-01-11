@@ -134,10 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Assets file has not changed, look at transtive origin cache
                 // 2.1 Look for a transitive cached entry and return that entry
                 TransitiveEntry cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
-                if (cacheEntry != null)
-                {
-                    return cacheEntry;
-                }
+                return cacheEntry;
             }
 
             // Assets file changed, recompute transitive origins
@@ -220,19 +217,20 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="top">Top, Direct dependency</param>
         /// <param name="current">Current package/node to visit</param>
         /// <param name="graph">Package dependency graph, from assets file</param>
-        /// <param name="memory">Dictionary to remember visited nodes</param>
+        /// <param name="visited">Dictionary to remember visited nodes</param>
         /// <param name="fxRidEntry">Framework/Runtime-ID associated with current <paramref name="graph"/></param>
-        private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> memory, FrameworkRuntimePair fxRidEntry)
+        private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> visited, FrameworkRuntimePair fxRidEntry)
         {
             LockFileTargetLibrary node = graph
                 .Libraries
                 .Where(lib => string.Equals(lib.Name, current.Id, StringComparison.OrdinalIgnoreCase)
-                        && lib.Version.Equals(current.Version) && lib.Type == "package")
+                        && lib.Version.Equals(current.Version)
+                        && lib.Type == LibraryType.Package.Value)
                 .FirstOrDefault();
 
             if (node != default)
             {
-                memory[current] = true; // visited
+                visited[current] = true; // visited
 
                 // Update cache
                 TransitiveEntry cachedEntry = GetCachedTransitiveOrigin(current);
@@ -258,9 +256,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
 
-                    if (!memory.ContainsKey(pkgChild))
+                    if (!visited.ContainsKey(pkgChild))
                     {
-                        MarkTransitiveOrigin(top, pkgChild, graph, memory, fxRidEntry);
+                        MarkTransitiveOrigin(top, pkgChild, graph, visited, fxRidEntry);
                     }
                 }
             }

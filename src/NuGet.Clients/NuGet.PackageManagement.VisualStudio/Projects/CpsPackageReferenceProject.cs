@@ -260,12 +260,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
 
             List<TransitivePackageReference> transitivePackagesWithOrigins = transitivePackages
-                .Select(pr => Tuple.Create(pr, GetTransitivePackageOrigin(
-                    pr.PackageIdentity,
+                .Select(transPr => Tuple.Create(transPr, GetTransitivePackageOrigin(
+                    transPr.PackageIdentity,
                     installedPackages,
                     targetsList,
                     token)))
                 .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
+                .Where(transitivePR => transitivePR.TransitiveOrigins.Any())
                 .ToList();
 
             IsInstalledAndTransitiveComputationNeeded = false;
