@@ -5,25 +5,13 @@ using System.Diagnostics.Tracing;
 
 namespace NuGet.VisualStudio.Etw
 {
-    public static class NuGetExtensibilityEtw
+    public static class NuGetETW
     {
-        public static EventSource EventSource { get; } = new EventSource("NuGet-VS-Extensibility");
-
-        public static EventSourceOptions StartEventOptions { get; } =
-            new EventSourceOptions()
-            {
-                Opcode = EventOpcode.Start,
-                Level = EventLevel.Informational,
-                ActivityOptions = EventActivityOptions.Detachable
-            };
-
-        public static EventSourceOptions StopEventOptions { get; } =
-            new EventSourceOptions()
-            {
-                Opcode = EventOpcode.Stop,
-                Level = EventLevel.Informational,
-                ActivityOptions = EventActivityOptions.Detachable
-            };
+        /// <summary>
+        /// This EventSource should only be used to track usage for NuGet's VS extensibility APIs. It is listened to
+        /// by ExtensibilityTelemetryCollector.
+        /// </summary>
+        public static EventSource ExtensibilityEventSource { get; } = new EventSource("NuGet-VS-Extensibility");
 
         public static EventSourceOptions AddEventOptions { get; } =
             new EventSourceOptions()
