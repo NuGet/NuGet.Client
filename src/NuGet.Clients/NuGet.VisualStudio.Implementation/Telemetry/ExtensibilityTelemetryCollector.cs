@@ -45,15 +45,19 @@ namespace NuGet.VisualStudio.Telemetry
                 [nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetNearest)] = new Count(),
 
                 // IVsFrameworkCompatibility2
+#pragma warning disable CS0618 // Type or member is obsolete
                 [nameof(IVsFrameworkCompatibility2) + "." + nameof(IVsFrameworkCompatibility2.GetNearest)] = new Count(),
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 // IVsFrameworkCompatibility2
                 [nameof(IVsFrameworkCompatibility3) + "." + nameof(IVsFrameworkCompatibility3.GetNearest) + ".2"] = new Count(),
                 [nameof(IVsFrameworkCompatibility3) + "." + nameof(IVsFrameworkCompatibility3.GetNearest) + ".3"] = new Count(),
 
                 // IVsFrameworkParser
+#pragma warning disable CS0618 // Type or member is obsolete
                 [nameof(IVsFrameworkParser) + "." + nameof(IVsFrameworkParser.ParseFrameworkName)] = new Count(),
                 [nameof(IVsFrameworkParser) + "." + nameof(IVsFrameworkParser.GetShortFrameworkName)] = new Count(),
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 // IVsFrameworkParser2
                 [nameof(IVsFrameworkParser2) + "." + nameof(IVsFrameworkParser2.TryParse)] = new Count(),

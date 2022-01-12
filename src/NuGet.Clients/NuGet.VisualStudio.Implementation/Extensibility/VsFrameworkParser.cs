@@ -32,7 +32,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public FrameworkName ParseFrameworkName(string shortOrFullName)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             const string eventName = nameof(IVsFrameworkParser) + "." + nameof(ParseFrameworkName);
+#pragma warning restore CS0618 // Type or member is obsolete
             using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
                 new
                 {
@@ -62,7 +64,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public string GetShortFrameworkName(FrameworkName frameworkName)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             const string eventName = nameof(IVsFrameworkParser) + "." + nameof(GetShortFrameworkName);
+#pragma warning restore CS0618 // Type or member is obsolete
             using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
                 new
                 {

@@ -108,7 +108,9 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> fallbackTargetFrameworks, IEnumerable<FrameworkName> frameworks)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             const string eventName = nameof(IVsFrameworkCompatibility2) + "." + nameof(GetNearest);
+#pragma warning restore CS0618 // Type or member is obsolete
             using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
             return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
