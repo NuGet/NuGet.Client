@@ -120,8 +120,14 @@
   <data name="CouldNotFindInstalledPackage" xml:space="preserve">
     <value>Failed to resolve SDK '{0}'. A package was successfully restored but the package could not be located.</value>
   </data>
+  <data name="FailedToFindPathToGlobalJson" xml:space="preserve">
+    <value>Failed to determine path to global.json from path "{0}". {1}</value>
+  </data>
   <data name="FailedToParseGlobalJson" xml:space="preserve">
     <value>Failed to parse "{0}". {1}</value>
+  </data>
+  <data name="FailedToReadGlobalJson" xml:space="preserve">
+    <value>Failed to read file "{0}". {1}</value>
   </data>
   <data name="PackageWasNotInstalled" xml:space="preserve">
     <value>Failed to resolve SDK '{0}'. Package restore was successful but a package with the ID of "{1}" was not installed.</value>

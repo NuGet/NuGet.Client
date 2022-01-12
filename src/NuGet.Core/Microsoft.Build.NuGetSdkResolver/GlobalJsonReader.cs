@@ -13,78 +13,79 @@ using Newtonsoft.Json;
 namespace Microsoft.Build.NuGetSdkResolver
 {
     /// <summary>
-    /// Reads MSBuild related sections from a global.json.
+    /// Represents an implementation of <see cref="IGlobalJsonReader" /> that reads MSBuild project SDK related sections from a global.json.
+    /// <seealso href="https://docs.microsoft.com/en-us/dotnet/core/tools/global-json?#msbuild-sdks" />
     /// </summary>
-    internal static class GlobalJsonReader
+    internal sealed partial class GlobalJsonReader : IGlobalJsonReader
     {
+        /// <summary>
+        /// The default name of the file containing configuration information.
+        /// </summary>
         public const string GlobalJsonFileName = "global.json";
 
+        /// <summary>
+        /// Tthe section of global.json contains MSBuild project SDK versions.
+        /// </summary>
         public const string MSBuildSdksPropertyName = "msbuild-sdks";
 
         /// <summary>
         /// Represents a thread-safe cache for files based on their full path and last write time.
         /// </summary>
-        private static readonly ConcurrentDictionary<FileInfo, (DateTime LastWriteTime, Lazy<Dictionary<string, string>> Lazy)> FileCache = new ConcurrentDictionary<FileInfo, (DateTime, Lazy<Dictionary<string, string>>)>(FileSystemInfoFullNameEqualityComparer.Instance);
+        private readonly ConcurrentDictionary<FileInfo, (DateTime LastWriteTime, Lazy<Dictionary<string, string>> Lazy)> _fileCache = new ConcurrentDictionary<FileInfo, (DateTime, Lazy<Dictionary<string, string>>)>(FileSystemInfoFullNameEqualityComparer.Instance);
 
         /// <summary>
-        /// Walks up the directory tree to find the first global.json and reads the msbuild-sdks section.
+        /// Occurs when a file is read.
         /// </summary>
-        /// <returns>A <see cref="Dictionary{String,String}"/> of MSBuild SDK versions from a global.json if found, otherwise <code>null</code>.</returns>
-        public static Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, out bool wasGlobalJsonRead, string fileName = GlobalJsonFileName)
+        public event EventHandler FileRead;
+
+        /// <inheritdoc cref="IGlobalJsonReader.GetMSBuildSdkVersions(SdkResolverContext, string)" />
+        public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, string fileName = GlobalJsonFileName)
         {
-            bool wasRead = false;
+            // Prefer looking next to the solution file as its more likely to be closer to global.json
+            string startingPath = context?.SolutionFilePath ?? context?.ProjectFilePath;
 
-            wasGlobalJsonRead = wasRead;
-
-            if (string.IsNullOrWhiteSpace(context?.ProjectFilePath) || string.IsNullOrWhiteSpace(fileName))
-            {
-                // If the ProjectFilePath is not set, an in-memory project is being evaluated and there's no way to know which directory to start looking for a global.json
-                return null;
-            }
-
-            DirectoryInfo projectDirectory = Directory.GetParent(context.ProjectFilePath);
-
-            if (projectDirectory == null || !TryGetPathOfFileAbove(fileName, projectDirectory, out FileInfo globalJsonPath))
+            // If the SolutionFilePath and ProjectFilePath are not set, an in-memory project is being evaluated and there's no way to know which directory to start looking for a global.json
+            if (string.IsNullOrWhiteSpace(startingPath) || string.IsNullOrWhiteSpace(fileName))
             {
                 return null;
             }
 
-            if (!globalJsonPath.Exists)
+            FileInfo globalJsonPath;
+
+            try
             {
-                FileCache.TryRemove(globalJsonPath, out var _);
+                DirectoryInfo projectDirectory = Directory.GetParent(startingPath);
+
+                if (projectDirectory == null || !TryGetPathOfFileAbove(fileName, projectDirectory, out globalJsonPath))
+                {
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                // Failed to determine path to global.json from path "{0}". {1}
+                context.Logger.LogMessage(string.Format(CultureInfo.CurrentCulture, Strings.FailedToFindPathToGlobalJson, startingPath, e.Message));
 
                 return null;
             }
 
             // Add a new file to the cache if it doesn't exist.  If the file is already in the cache, read it again if the file has changed
-            (DateTime LastWriteTime, Lazy<Dictionary<string, string>> Lazy) result = FileCache.AddOrUpdate(
+            (DateTime _, Lazy<Dictionary<string, string>> Lazy) cacheEntry = _fileCache.AddOrUpdate(
                 globalJsonPath,
-                key => (key.LastWriteTime, new Lazy<Dictionary<string, string>>(() =>
-                {
-                    wasRead = true;
-
-                    return ParseMSBuildSdkVersions(key, context);
-                })),
+                key => (key.LastWriteTime, new Lazy<Dictionary<string, string>>(() => ParseMSBuildSdkVersions(key.FullName, context))),
                 (key, item) =>
                 {
                     DateTime lastWriteTime = key.LastWriteTime;
 
                     if (item.LastWriteTime < lastWriteTime)
                     {
-                        return (lastWriteTime, new Lazy<Dictionary<string, string>>(() =>
-                        {
-                            wasRead = true;
-
-                            return ParseMSBuildSdkVersions(key, context);
-                        }));
+                        return (lastWriteTime, new Lazy<Dictionary<string, string>>(() => ParseMSBuildSdkVersions(key.FullName, context)));
                     }
 
                     return item;
                 });
 
-            Dictionary<string, string> sdkVersions = result.Lazy.Value;
-
-            wasGlobalJsonRead = wasRead;
+            Dictionary<string, string> sdkVersions = cacheEntry.Lazy.Value;
 
             return sdkVersions;
         }
@@ -126,38 +127,6 @@ namespace Microsoft.Build.NuGetSdkResolver
             while (currentDirectory != null);
 
             return false;
-        }
-
-        /// <summary>
-        /// Parses the <c>msbuild-sdks</c> section of the specified file.
-        /// </summary>
-        /// <param name="globalJsonPath"></param>
-        /// <param name="sdkResolverContext">The current <see cref="SdkResolverContext" /> to use.</param>
-        /// <returns>A <see cref="Dictionary{TKey, TValue}" /> containing MSBuild project SDK versions if any were found, otherwise <c>null</c>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Dictionary<string, string> ParseMSBuildSdkVersions(FileInfo globalJsonPath, SdkResolverContext sdkResolverContext)
-        {
-            // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
-            string json = File.ReadAllText(globalJsonPath.FullName);
-
-            // Look ahead in the contents to see if there is an msbuild-sdks section.  Deserializing the file requires us to load
-            // Newtonsoft.Json which is 500 KB while a global.json is usually ~100 bytes of text.
-            if (json.IndexOf(MSBuildSdksPropertyName, StringComparison.Ordinal) == -1)
-            {
-                return null;
-            }
-
-            try
-            {
-                return ParseMSBuildSdkVersionsFromJson(json);
-            }
-            catch (Exception e)
-            {
-                // Failed to parse "{0}". {1}
-                sdkResolverContext.Logger.LogMessage(string.Format(CultureInfo.CurrentCulture, Strings.FailedToParseGlobalJson, globalJsonPath, e.Message));
-
-                return null;
-            }
         }
 
         /// <summary>
@@ -207,45 +176,59 @@ namespace Microsoft.Build.NuGetSdkResolver
         }
 
         /// <summary>
-        /// An <see cref="IEqualityComparer{T}" /> that compares <see cref="FileSystemInfo" /> objects by the value of the <see cref="FileSystemInfo.FullName" /> property.
+        /// Fires the <see cref="FileRead" /> event for the specified file.
         /// </summary>
-        private class FileSystemInfoFullNameEqualityComparer : IEqualityComparer<FileSystemInfo>
+        /// <param name="filePath">The full path to file that was read.</param>
+        private void OnFileRead(string filePath)
         {
-            /// <summary>
-            /// Gets a static singleton for the <see cref="FileSystemInfoFullNameEqualityComparer" /> class.
-            /// </summary>
-            public static FileSystemInfoFullNameEqualityComparer Instance = new FileSystemInfoFullNameEqualityComparer();
+            EventHandler fileReadEventHandler = FileRead;
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="FileSystemInfoFullNameEqualityComparer" /> class.
-            /// </summary>
-            private FileSystemInfoFullNameEqualityComparer()
+            fileReadEventHandler?.Invoke(filePath, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Parses the <c>msbuild-sdks</c> section of the specified file.
+        /// </summary>
+        /// <param name="globalJsonPath"></param>
+        /// <param name="sdkResolverContext">The current <see cref="SdkResolverContext" /> to use.</param>
+        /// <returns>A <see cref="Dictionary{TKey, TValue}" /> containing MSBuild project SDK versions if any were found, otherwise <c>null</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Dictionary<string, string> ParseMSBuildSdkVersions(string globalJsonPath, SdkResolverContext sdkResolverContext)
+        {
+            // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
+            string json;
+
+            try
             {
+                json = File.ReadAllText(globalJsonPath);
+            }
+            catch (Exception e)
+            {
+                // Failed to read file "{0}". {1}
+                sdkResolverContext.Logger.LogMessage(string.Format(CultureInfo.CurrentCulture, Strings.FailedToReadGlobalJson, globalJsonPath, e.Message));
+
+                return null;
             }
 
-            /// <summary>
-            /// Determines whether the specified <see cref="FileSystemInfo" /> objects are equal by comparing their <see cref="FileSystemInfo.FullName" /> property.
-            /// </summary>
-            /// <param name="x">The first <see cref="FileSystemInfo" /> to compare.</param>
-            /// <param name="y">The second <see cref="FileSystemInfo" /> to compare.</param>
-            /// <returns><c>true</c> if the specified <see cref="FileSystemInfo" /> objects' <see cref="FileSystemInfo.FullName" /> property are equal, otherwise <c>false</c>.</returns>
-            public bool Equals(FileSystemInfo x, FileSystemInfo y)
+            OnFileRead(globalJsonPath);
+
+            // Look ahead in the contents to see if there is an msbuild-sdks section.  Deserializing the file requires us to load
+            // Newtonsoft.Json which is 500 KB while a global.json is usually ~100 bytes of text.
+            if (json.IndexOf(MSBuildSdksPropertyName, StringComparison.Ordinal) == -1)
             {
-                return string.Equals(x.FullName, y.FullName, StringComparison.Ordinal);
+                return null;
             }
 
-            /// <summary>
-            /// Returns a hash code for the specified <see cref="FileSystemInfo" /> object's <see cref="FileSystemInfo.FullName" /> property.
-            /// </summary>
-            /// <param name="obj">The <see cref="FileSystemInfo" /> for which a hash code is to be returned.</param>
-            /// <returns>A hash code for the specified <see cref="FileSystemInfo" /> object's <see cref="FileSystemInfo.FullName" /> property..</returns>
-            public int GetHashCode(FileSystemInfo obj)
+            try
             {
-#if NETFRAMEWORK || NETSTANDARD
-                return obj.FullName.GetHashCode();
-#else
-                return obj.FullName.GetHashCode(StringComparison.Ordinal);
-#endif
+                return ParseMSBuildSdkVersionsFromJson(json);
+            }
+            catch (Exception e)
+            {
+                // Failed to parse "{0}". {1}
+                sdkResolverContext.Logger.LogMessage(string.Format(CultureInfo.CurrentCulture, Strings.FailedToParseGlobalJson, globalJsonPath, e.Message));
+
+                return null;
             }
         }
     }

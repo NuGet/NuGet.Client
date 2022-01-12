@@ -29,6 +29,25 @@ namespace Microsoft.Build.NuGetSdkResolver
     {
         private static readonly Lazy<bool> DisableNuGetSdkResolver = new Lazy<bool>(() => Environment.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1");
 
+        private readonly IGlobalJsonReader _globalJsonReader;
+
+        /// <summary>
+        /// Initializes a new instance of the NuGetSdkResolver class.
+        /// </summary>
+        public NuGetSdkResolver()
+            : this(new GlobalJsonReader())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the NuGetSdkResolver class with the specified <see cref="IGlobalJsonReader" />.
+        /// </summary>
+        /// <param name="globalJsonReader">An <see cref="IGlobalJsonReader" /> to use when reading a global.json file.</param>
+        internal NuGetSdkResolver(IGlobalJsonReader globalJsonReader)
+        {
+            _globalJsonReader = globalJsonReader;
+        }
+
         /// <inheritdoc />
         public override string Name => nameof(NuGetSdkResolver);
 
@@ -41,7 +60,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="factory">Factory class to create an <see cref="T:Microsoft.Build.Framework.SdkResult" /></param>
         /// <returns>
         ///     An <see cref="T:Microsoft.Build.Framework.SdkResult" /> containing the resolved SDKs or associated error / reason
-        ///     the SDK could not be resolved.  Return <code>null</code> if the resolver is not
+        ///     the SDK could not be resolved.  Return <c>null</c> if the resolver is not
         ///     applicable for a particular <see cref="T:Microsoft.Build.Framework.SdkReference" />.
         /// </returns>
         public override SdkResult Resolve(SdkReference sdkReference, SdkResolverContext resolverContext, SdkResultFactory factory)
@@ -67,8 +86,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// This method should not consume any NuGet classes directly to avoid loading additional assemblies when they are not needed.  This method
         /// returns an object so that NuGetVersion is not consumed directly.
         /// </summary>
-        internal static bool TryGetNuGetVersionForSdk(string id, string version, SdkResolverContext context,
-            out object parsedVersion)
+        internal bool TryGetNuGetVersionForSdk(string id, string version, SdkResolverContext context, out object parsedVersion)
         {
             if (!string.IsNullOrWhiteSpace(version))
             {
@@ -85,7 +103,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return false;
             }
 
-            Dictionary<string, string> msbuildSdkVersions = GlobalJsonReader.GetMSBuildSdkVersions(context, out bool _);
+            Dictionary<string, string> msbuildSdkVersions = _globalJsonReader.GetMSBuildSdkVersions(context);
 
             // Check if global.json specified a version for this SDK and make sure its a version compatible with NuGet
             if (msbuildSdkVersions != null && msbuildSdkVersions.TryGetValue(id, out var globalJsonVersion) &&
