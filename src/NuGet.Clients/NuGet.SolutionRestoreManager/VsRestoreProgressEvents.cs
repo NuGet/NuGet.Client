@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using NuGet.VisualStudio.Etw;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -13,10 +14,70 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class VsRestoreProgressEvents : IVsNuGetProjectUpdateEvents, IVsNuGetProgressReporter
     {
-        public event SolutionRestoreEventHandler SolutionRestoreStarted;
-        public event SolutionRestoreEventHandler SolutionRestoreFinished;
-        public event ProjectUpdateEventHandler ProjectUpdateStarted;
-        public event ProjectUpdateEventHandler ProjectUpdateFinished;
+        private const string SolutionRestoreStartedEventName = nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(SolutionRestoreStarted);
+        public event SolutionRestoreEventHandler SolutionRestoreStarted
+        {
+            add
+            {
+                NuGetETW.ExtensibilityEventSource.Write(SolutionRestoreStartedEventName, NuGetETW.AddEventOptions);
+                _solutionRestoreStarted += value;
+            }
+            remove
+            {
+                NuGetETW.ExtensibilityEventSource.Write(SolutionRestoreStartedEventName, NuGetETW.RemoveEventOptions);
+                _solutionRestoreStarted -= value;
+            }
+        }
+
+        private const string SolutionRestoreFinishedEventName = nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(SolutionRestoreFinished);
+        public event SolutionRestoreEventHandler SolutionRestoreFinished
+        {
+            add
+            {
+                NuGetETW.ExtensibilityEventSource.Write(SolutionRestoreFinishedEventName, NuGetETW.AddEventOptions);
+                _solutionRestoreFinished += value;
+            }
+            remove
+            {
+                NuGetETW.ExtensibilityEventSource.Write(SolutionRestoreFinishedEventName, NuGetETW.RemoveEventOptions);
+                _solutionRestoreFinished -= value;
+            }
+        }
+
+        private const string ProjectUpdateStartedEventName = nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(ProjectUpdateStarted);
+        public event ProjectUpdateEventHandler ProjectUpdateStarted
+        {
+            add
+            {
+                NuGetETW.ExtensibilityEventSource.Write(ProjectUpdateStartedEventName, NuGetETW.AddEventOptions);
+                _projectUpdateStarted += value;
+            }
+            remove
+            {
+                NuGetETW.ExtensibilityEventSource.Write(ProjectUpdateStartedEventName, NuGetETW.RemoveEventOptions);
+                _projectUpdateStarted -= value;
+            }
+        }
+
+        private const string ProjectUpdateFinishedEventName = nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(ProjectUpdateFinished);
+        public event ProjectUpdateEventHandler ProjectUpdateFinished
+        {
+            add
+            {
+                NuGetETW.ExtensibilityEventSource.Write(ProjectUpdateFinishedEventName, NuGetETW.AddEventOptions);
+                _projectUpdateFinished += value;
+            }
+            remove
+            {
+                NuGetETW.ExtensibilityEventSource.Write(ProjectUpdateFinishedEventName, NuGetETW.RemoveEventOptions);
+                _projectUpdateFinished -= value;
+            }
+        }
+
+        private event SolutionRestoreEventHandler _solutionRestoreStarted;
+        private event SolutionRestoreEventHandler _solutionRestoreFinished;
+        private event ProjectUpdateEventHandler _projectUpdateStarted;
+        private event ProjectUpdateEventHandler _projectUpdateFinished;
 
         public void EndProjectUpdate(string projectName, IReadOnlyList<string> updatedFiles)
         {
@@ -30,9 +91,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(updatedFiles));
             }
 
-            if (ProjectUpdateFinished != null)
+            if (_projectUpdateFinished != null)
             {
-                foreach (var handler in ProjectUpdateFinished.GetInvocationList())
+                foreach (var handler in _projectUpdateFinished.GetInvocationList())
                 {
                     try
                     {
@@ -55,9 +116,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(updatedFiles));
             }
 
-            if (ProjectUpdateStarted != null)
+            if (_projectUpdateStarted != null)
             {
-                foreach (var handler in ProjectUpdateStarted.GetInvocationList())
+                foreach (var handler in _projectUpdateStarted.GetInvocationList())
                 {
                     try
                     {
@@ -75,9 +136,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projects)));
             }
 
-            if (SolutionRestoreStarted != null)
+            if (_solutionRestoreStarted != null)
             {
-                foreach (var handler in SolutionRestoreStarted.GetInvocationList())
+                foreach (var handler in _solutionRestoreStarted.GetInvocationList())
                 {
                     try
                     {
@@ -95,9 +156,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projects)));
             }
 
-            if (SolutionRestoreFinished != null)
+            if (_solutionRestoreFinished != null)
             {
-                foreach (var handler in SolutionRestoreFinished.GetInvocationList())
+                foreach (var handler in _solutionRestoreFinished.GetInvocationList())
                 {
                     try
                     {
