@@ -68,7 +68,6 @@ do
 
 	IFS=$':'
 	ChannelAndVersion=($DOTNET_BRANCH)
-	Channel=${ChannelAndVersion[0]}
 	if [ ${#ChannelAndVersion[@]} -eq 1 ]
 	then
 		Version="latest"
@@ -77,9 +76,8 @@ do
 	fi
 	unset IFS
 
-	echo "Channel is: $Channel"
 	echo "Version is: $Version"
-	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+	cli/dotnet-install.sh -i cli -v $Version -nopath
 
 	if (( $? )); then
 		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
