@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             List<TransitivePackageReference> transitivePackagesWithOrigins = transitivePackages
                 .Select(pr => Tuple.Create(pr, GetTransitivePackageOrigin(
-                    pr.PackageIdentity,
+                    pr,
                     installedPackages,
                     targetsList,
                     token)))

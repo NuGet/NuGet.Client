@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// packages that depends on given transitive package, or <c>null</c> if none found</returns>
         /// <remarks>Computes all transitive origings for each Framework/Runtime-ID combiation. Runtime-ID can be <c>null</c>.
         /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
-        internal TransitiveEntry GetTransitivePackageOrigin(PackageIdentity transitivePackage, IReadOnlyList<PackageReference> installedPackages, IList<LockFileTarget> targetsList, CancellationToken ct)
+        internal TransitiveEntry GetTransitivePackageOrigin(PackageReference transitivePackage, IReadOnlyList<PackageReference> installedPackages, IList<LockFileTarget> targetsList, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // Assets file has not changed, look at transtive origin cache
                 // 2.1 Look for a transitive cached entry and return that entry
-                TransitiveEntry cacheEntry = GetCachedTransitiveOrigin(transitivePackage);
+                TransitiveEntry cacheEntry = GetCachedTransitiveOrigin(transitivePackage.PackageIdentity);
                 return cacheEntry;
             }
 
@@ -152,14 +152,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     memory.Clear();
                     // 3.1.1 Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
-                    MarkTransitiveOrigin(directPkg, directPkg.PackageIdentity, targetFxGraph, memory, key);
+                    MarkTransitiveOrigin(directPkg, directPkg, targetFxGraph, memory, key, ct);
                 }
             }
 
             IsTransitiveComputationNeeded = false;
 
             // 4. return cached result for specific transitive dependency
-            return GetCachedTransitiveOrigin(transitivePackage);
+            return GetCachedTransitiveOrigin(transitivePackage.PackageIdentity);
         }
 
         /// <summary>
@@ -219,21 +219,23 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="graph">Package dependency graph, from assets file</param>
         /// <param name="visited">Dictionary to remember visited nodes</param>
         /// <param name="fxRidEntry">Framework/Runtime-ID associated with current <paramref name="graph"/></param>
-        private void MarkTransitiveOrigin(PackageReference top, PackageIdentity current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> visited, FrameworkRuntimePair fxRidEntry)
+        private void MarkTransitiveOrigin(PackageReference top, PackageReference current, LockFileTarget graph, Dictionary<PackageIdentity, bool?> visited, FrameworkRuntimePair fxRidEntry, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             LockFileTargetLibrary node = graph
                 .Libraries
-                .Where(lib => string.Equals(lib.Name, current.Id, StringComparison.OrdinalIgnoreCase)
-                        && lib.Version.Equals(current.Version)
+                .Where(lib => string.Equals(lib.Name, current.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)
+                        && current.AllowedVersions.Satisfies(lib.Version)
                         && lib.Type == LibraryType.Package.Value)
                 .FirstOrDefault();
 
             if (node != default)
             {
-                visited[current] = true; // visited
+                visited[current.PackageIdentity] = true; // visited
 
                 // Update cache
-                TransitiveEntry cachedEntry = GetCachedTransitiveOrigin(current);
+                TransitiveEntry cachedEntry = GetCachedTransitiveOrigin(current.PackageIdentity);
                 if (cachedEntry == null)
                 {
                     cachedEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
@@ -250,15 +252,22 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     cachedEntry[fxRidEntry].Add(top);
                 }
-                SetCachedTransitiveOrigin(current, cachedEntry);
+                SetCachedTransitiveOrigin(current.PackageIdentity, cachedEntry);
 
                 foreach (PackageDependency dep in node.Dependencies)
                 {
-                    var pkgChild = new PackageIdentity(dep.Id, dep.VersionRange.MinVersion);
+                    // Create PackageReference object as a data-model based on dependency
+                    var pkgChild = new PackageReference(
+                        identity: new PackageIdentity(dep.Id, dep.VersionRange.MinVersion),
+                        targetFramework: fxRidEntry.Framework,
+                        userInstalled: false,
+                        developmentDependency: false,
+                        requireReinstallation: false,
+                        allowedVersions: dep.VersionRange);
 
-                    if (!visited.ContainsKey(pkgChild))
+                    if (!visited.ContainsKey(pkgChild.PackageIdentity))
                     {
-                        MarkTransitiveOrigin(top, pkgChild, graph, visited, fxRidEntry);
+                        MarkTransitiveOrigin(top, pkgChild, graph, visited, fxRidEntry, token);
                     }
                 }
             }
