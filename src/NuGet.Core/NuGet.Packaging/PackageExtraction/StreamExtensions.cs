@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using NuGet.Common;
 
 namespace NuGet.Packaging
 {
@@ -13,9 +14,35 @@ namespace NuGet.Packaging
         /**
         Only files smaller than this value will be mmap'ed
         */
-        private const long MAX_MMAP_SIZE = 10 * 1024 * 1024; // 10 MB
+        private const long MAX_MMAP_SIZE = 10 * 1024 * 1024;
 
-        private static bool IsMMapEnabled { get; } = string.Equals(Environment.GetEnvironmentVariable("NUGET_MMAP_PACKAGE_EXTRACTION"), "1", StringComparison.OrdinalIgnoreCase);
+        // Mmap can improve file writing performance, but it can make it slower too.
+        // It all depends on a particular hardware configuration, operating system or anti-virus software.
+        // From our benchmarks we concluded that mmap is a good choice for Windows,
+        // but it is not so for other systems.
+        //
+        // 1 - always use memory-mapped files
+        // 0 - never use memory-mapped files
+        // default - use memory-mapped files on Windows, but not on other systems
+        private const string MMAP_VARIABLE_NAME = "NUGET_PACKAGE_EXTRACTION_USE_MMAP";
+        private static bool IsMMapEnabled { get; }
+
+        static StreamExtensions()
+        {
+            if (string.Equals(Environment.GetEnvironmentVariable(MMAP_VARIABLE_NAME), "1", StringComparison.OrdinalIgnoreCase))
+            {
+                IsMMapEnabled = true;
+                return;
+            }
+
+            if (string.Equals(Environment.GetEnvironmentVariable(MMAP_VARIABLE_NAME), "0", StringComparison.OrdinalIgnoreCase))
+            {
+                IsMMapEnabled = false;
+                return;
+            }
+
+            IsMMapEnabled = RuntimeEnvironmentHelper.IsWindows;
+        }
 
         public static string CopyToFile(this Stream inputStream, string fileFullPath)
         {
