@@ -14,7 +14,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
-    <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+    <NETCoreTargetFramework>netcoreapp3.1</NETCoreTargetFramework>
     <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</NETCoreTargetFramework>
     <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
