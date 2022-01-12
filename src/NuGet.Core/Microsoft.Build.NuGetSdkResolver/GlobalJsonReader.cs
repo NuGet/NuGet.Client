@@ -16,7 +16,7 @@ namespace Microsoft.Build.NuGetSdkResolver
     /// Represents an implementation of <see cref="IGlobalJsonReader" /> that reads MSBuild project SDK related sections from a global.json.
     /// <seealso href="https://docs.microsoft.com/en-us/dotnet/core/tools/global-json?#msbuild-sdks" />
     /// </summary>
-    internal sealed partial class GlobalJsonReader : IGlobalJsonReader
+    internal sealed class GlobalJsonReader : IGlobalJsonReader
     {
         /// <summary>
         /// The default name of the file containing configuration information.
