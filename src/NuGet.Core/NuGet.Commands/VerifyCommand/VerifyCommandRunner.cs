@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
@@ -25,7 +24,6 @@ namespace NuGet.Commands
         private const int SuccessCode = 0;
         private const int FailureCode = 1;
         private const HashAlgorithmName _defaultFingerprintAlgorithm = HashAlgorithmName.SHA256;
-        private const string TrustedSignersSectionName = "trustedSigners";
 
         public async Task<int> ExecuteCommandAsync(VerifyArgs verifyArgs)
         {
@@ -60,12 +58,11 @@ namespace NuGet.Commands
                         _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-                SettingSection trustedSignersSection = verifyArgs.Settings?.GetSection(TrustedSignersSectionName);
-                List<TrustedSignerItem> trustedSigners = trustedSignersSection?.Items.Select(c => c as TrustedSignerItem).Where(c => c != null).ToList();
-                IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = trustedSigners?
-                    .SelectMany(c => c.Certificates)
+                IReadOnlyList<TrustedSignerAllowListEntry> allowList = TrustedSignersProvider.GetAllowListEntries(verifyArgs.Settings, verifyArgs.Logger);
+                IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = allowList?
                     .Where(c => c.AllowUntrustedRoot)
-                    .Select(c => new KeyValuePair<string, HashAlgorithmName>(c.Fingerprint, c.HashAlgorithm));
+                    .Select(c => new KeyValuePair<string, HashAlgorithmName>(c.Fingerprint, c.FingerprintAlgorithm));
+
                 var verificationProviders = new List<ISignatureVerificationProvider>()
                 {
                     new IntegrityVerificationProvider(),
