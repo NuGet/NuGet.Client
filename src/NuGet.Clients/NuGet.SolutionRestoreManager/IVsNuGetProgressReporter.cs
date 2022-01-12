@@ -21,7 +21,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// List of PackageReference projects that were be restored.
         /// </summary>
-        /// <param name="projects">Projects that were restored.</param>
+        /// <param name="projects">Projects that are going were restored.</param>
         void EndSolutionRestore(IReadOnlyList<string> projects);
     }
 }
