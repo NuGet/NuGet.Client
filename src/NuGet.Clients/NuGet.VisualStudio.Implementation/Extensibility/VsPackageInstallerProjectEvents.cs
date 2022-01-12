@@ -29,12 +29,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(BatchStartEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(BatchStartEventName, NuGetETW.AddEventOptions);
                 _batchStart += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(BatchStartEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(BatchStartEventName, NuGetETW.RemoveEventOptions);
                 _batchStart -= value;
             }
         }
@@ -45,12 +45,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(BatchEndEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(BatchEndEventName, NuGetETW.AddEventOptions);
                 _batchEnd += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(BatchEndEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(BatchEndEventName, NuGetETW.RemoveEventOptions);
                 _batchEnd -= value;
             }
         }

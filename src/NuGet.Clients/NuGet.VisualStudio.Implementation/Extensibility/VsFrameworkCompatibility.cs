@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public IEnumerable<FrameworkName> GetNetStandardFrameworks()
         {
             const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetNetStandardFrameworks);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
             try
             {
@@ -51,92 +51,67 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
                 throw;
             }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
         }
 
         public IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName)
         {
             const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetFrameworksSupportingNetStandard);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
                 new
                 {
                     Framework = frameworkName?.FullName
                 });
 
+            if (frameworkName == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkName));
+            }
+
             try
             {
-                if (frameworkName == null)
+                var nuGetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
+
+                if (!StringComparer.OrdinalIgnoreCase.Equals(
+                    nuGetFramework.Framework,
+                    FrameworkConstants.FrameworkIdentifiers.NetStandard))
                 {
-                    throw new ArgumentNullException(nameof(frameworkName));
+                    throw new ArgumentException(string.Format(
+                        VsResources.InvalidNetStandardFramework,
+                        frameworkName));
                 }
 
-                try
-                {
-                    var nuGetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
-
-                    if (!StringComparer.OrdinalIgnoreCase.Equals(
-                        nuGetFramework.Framework,
-                        FrameworkConstants.FrameworkIdentifiers.NetStandard))
-                    {
-                        throw new ArgumentException(string.Format(
-                            VsResources.InvalidNetStandardFramework,
-                            frameworkName));
-                    }
-
-                    return CompatibilityListProvider
-                        .Default
-                        .GetFrameworksSupporting(nuGetFramework)
-                        .Select(framework => new FrameworkName(framework.DotNetFrameworkName))
-                        .ToList();
-                }
-                catch (Exception exception)
-                {
-                    _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
-                    throw;
-                }
+                return CompatibilityListProvider
+                    .Default
+                    .GetFrameworksSupporting(nuGetFramework)
+                    .Select(framework => new FrameworkName(framework.DotNetFrameworkName))
+                    .ToList();
             }
-            finally
+            catch (Exception exception)
             {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+                _telemetryProvider.PostFault(exception, typeof(VsFrameworkCompatibility).FullName);
+                throw;
             }
         }
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks)
         {
             const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetNearest);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
                 new
                 {
                     Target = targetFramework?.FullName,
                     Frameworks = frameworks != null ? string.Join("|", frameworks.Select(f => f.FullName)) : null
                 });
 
-            try
-            {
-                return GetNearestImpl(targetFramework, Enumerable.Empty<FrameworkName>(), frameworks);
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            return GetNearestImpl(targetFramework, Enumerable.Empty<FrameworkName>(), frameworks);
         }
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> fallbackTargetFrameworks, IEnumerable<FrameworkName> frameworks)
         {
             const string eventName = nameof(IVsFrameworkCompatibility2) + "." + nameof(GetNearest);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            try
-            {
-                return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
         }
 
         private FrameworkName GetNearestImpl(FrameworkName targetFramework, IEnumerable<FrameworkName> fallbackTargetFrameworks, IEnumerable<FrameworkName> frameworks)
@@ -201,31 +176,17 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> frameworks)
         {
             const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + ".2";
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            try
-            {
-                return GetNearestImpl(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            return GetNearestImpl(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
         }
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
         {
             const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + ".3";
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            try
-            {
-                return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
         }
 
         public IVsNuGetFramework GetNearestImpl(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)

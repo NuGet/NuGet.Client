@@ -28,29 +28,22 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public int Compare(string versionA, string versionB)
         {
             const string eventName = nameof(IVsSemanticVersionComparer) + "." + nameof(Compare);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            try
+            if (versionA == null)
             {
-                if (versionA == null)
-                {
-                    throw new ArgumentNullException(nameof(versionA));
-                }
-
-                if (versionB == null)
-                {
-                    throw new ArgumentNullException(nameof(versionB));
-                }
-
-                var parsedVersionA = NuGetVersion.Parse(versionA);
-                var parsedVersionB = NuGetVersion.Parse(versionB);
-
-                return parsedVersionA.CompareTo(parsedVersionB);
+                throw new ArgumentNullException(nameof(versionA));
             }
-            finally
+
+            if (versionB == null)
             {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+                throw new ArgumentNullException(nameof(versionB));
             }
+
+            var parsedVersionA = NuGetVersion.Parse(versionA);
+            var parsedVersionB = NuGetVersion.Parse(versionB);
+
+            return parsedVersionA.CompareTo(parsedVersionB);
         }
     }
 }

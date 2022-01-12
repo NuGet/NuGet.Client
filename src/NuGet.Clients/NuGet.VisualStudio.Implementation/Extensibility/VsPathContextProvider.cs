@@ -140,50 +140,43 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public bool TryCreateContext(string projectUniqueName, out IVsPathContext outputPathContext)
         {
             const string eventName = nameof(IVsPathContextProvider) + "." + nameof(TryCreateContext);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            if (projectUniqueName == null)
+            {
+                throw new ArgumentNullException(nameof(projectUniqueName));
+            }
 
             try
             {
-                if (projectUniqueName == null)
-                {
-                    throw new ArgumentNullException(nameof(projectUniqueName));
-                }
+                // invoke async operation from within synchronous method
+                outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                    async () =>
+                    {
+                        var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
 
-                try
-                {
-                    // invoke async operation from within synchronous method
-                    outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                        async () =>
+                        // It's possible the project isn't a NuGet-compatible project at all.
+                        if (nuGetProject == null)
                         {
-                            var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
+                            return null;
+                        }
 
-                            // It's possible the project isn't a NuGet-compatible project at all.
-                            if (nuGetProject == null)
-                            {
-                                return null;
-                            }
+                        return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
+                    });
 
-                            return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
-                        });
-
-                    return outputPathContext != null;
-                }
-                catch (Exception exception)
-                {
-                    _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
-                    throw;
-                }
+                return outputPathContext != null;
             }
-            finally
+            catch (Exception exception)
             {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                throw;
             }
         }
 
         public bool TryCreateSolutionContext(out IVsPathContext2 outputPathContext)
         {
             const string eventName = nameof(IVsPathContextProvider2) + "." + nameof(TryCreateSolutionContext) + ".1";
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
             try
             {
@@ -198,41 +191,30 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
                 throw;
             }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
         }
 
         public bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 outputPathContext)
         {
             const string eventName = nameof(IVsPathContextProvider2) + "." + nameof(TryCreateSolutionContext) + ".2";
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            if (solutionDirectory == null)
+            {
+                throw new ArgumentNullException(nameof(solutionDirectory));
+            }
 
             try
             {
-                if (solutionDirectory == null)
-                {
-                    throw new ArgumentNullException(nameof(solutionDirectory));
-                }
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
 
-                try
-                {
-                    var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings.Value);
+                outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), _telemetryProvider, packagesFolderPath);
 
-                    outputPathContext = new VsPathContext(NuGetPathContext.Create(_settings.Value), _telemetryProvider, packagesFolderPath);
-
-                    return outputPathContext != null;
-                }
-                catch (Exception exception)
-                {
-                    _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
-                    throw;
-                }
+                return outputPathContext != null;
             }
-            finally
+            catch (Exception exception)
             {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                throw;
             }
         }
 
@@ -405,7 +387,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public bool TryCreateNoSolutionContext(out IVsPathContext vsPathContext)
         {
             const string eventName = nameof(IVsPathContextProvider2) + "." + nameof(TryCreateNoSolutionContext);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
             try
             {
@@ -418,10 +400,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
                 throw;
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 

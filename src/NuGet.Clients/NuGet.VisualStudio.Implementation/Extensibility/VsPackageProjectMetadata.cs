@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageProjectMetadata) + "." + nameof(BatchId);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _batchId;
             }
         }
@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageProjectMetadata) + "." + nameof(ProjectName);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _projectName;
             }
         }

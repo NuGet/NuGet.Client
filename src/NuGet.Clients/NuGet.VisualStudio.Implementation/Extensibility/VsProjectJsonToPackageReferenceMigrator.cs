@@ -40,7 +40,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public async Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
         {
             const string eventName = nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(MigrateProjectJsonToPackageReferenceAsync);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
             try
             {
@@ -60,10 +60,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 await _telemetryProvider.PostFaultAsync(ex, nameof(VsProjectJsonToPackageReferenceMigrator));
                 throw;
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 

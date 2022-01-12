@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled)
         {
             const string eventName = nameof(IVsPackageSourceProvider) + "." + nameof(GetSources);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
                 new
                 {
                     IncludeUnOfficial = includeUnOfficial,
@@ -63,10 +63,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 _telemetryProvider.PostFault(ex, typeof(VsPackageSourceProvider).FullName);
                 throw new InvalidOperationException(ex.Message, ex);
             }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
         }
 
         private event EventHandler _sourcesChanged;
@@ -75,12 +71,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(SourcesChangedEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(SourcesChangedEventName, NuGetETW.AddEventOptions);
                 _sourcesChanged += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(SourcesChangedEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(SourcesChangedEventName, NuGetETW.RemoveEventOptions);
                 _sourcesChanged -= value;
             }
         }

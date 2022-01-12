@@ -27,12 +27,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(VsPackageInstalledEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(VsPackageInstalledEventName, NuGetETW.AddEventOptions);
                 _packageInstalled += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(VsPackageInstalledEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(VsPackageInstalledEventName, NuGetETW.RemoveEventOptions);
                 _packageInstalled -= value;
             }
         }
@@ -43,12 +43,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageUninstallingEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageUninstallingEventName, NuGetETW.AddEventOptions);
                 _packageUninstalling += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageUninstallingEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageUninstallingEventName, NuGetETW.RemoveEventOptions);
                 _packageUninstalling -= value;
             }
         }
@@ -59,12 +59,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageInstallingEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageInstallingEventName, NuGetETW.AddEventOptions);
                 _packageInstalling += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageInstallingEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageInstallingEventName, NuGetETW.RemoveEventOptions);
                 _packageInstalling -= value;
             }
         }
@@ -75,12 +75,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageUninstalledEvnentName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageUninstalledEvnentName, NuGetETW.AddEventOptions);
                 _packageUninstalled += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageUninstalledEvnentName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageUninstalledEvnentName, NuGetETW.RemoveEventOptions);
                 _packageUninstalled -= value;
             }
         }
@@ -91,12 +91,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageReferenceAddedEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageReferenceAddedEventName, NuGetETW.AddEventOptions);
                 _packageReferenceAdded += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageReferenceAddedEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageReferenceAddedEventName, NuGetETW.RemoveEventOptions);
                 _packageReferenceAdded -= value;
             }
         }
@@ -107,12 +107,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             add
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageReferenceRemovedEventName, NuGetExtensibilityEtw.AddEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageReferenceRemovedEventName, NuGetETW.AddEventOptions);
                 _packageReferenceRemoved += value;
             }
             remove
             {
-                NuGetExtensibilityEtw.EventSource.Write(PackageReferenceRemovedEventName, NuGetExtensibilityEtw.RemoveEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(PackageReferenceRemovedEventName, NuGetETW.RemoveEventOptions);
                 _packageReferenceRemoved -= value;
             }
         }

@@ -88,7 +88,7 @@ namespace NuGet.SolutionRestoreManager
             get
             {
                 const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService.CurrentRestoreOperation);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _restoreWorker.CurrentRestoreOperation;
             }
         }
@@ -98,7 +98,7 @@ namespace NuGet.SolutionRestoreManager
             get
             {
                 const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService3.CurrentRestoreOperation);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _restoreWorker.CurrentRestoreOperation;
             }
         }
@@ -110,10 +110,11 @@ namespace NuGet.SolutionRestoreManager
             {
                 ProjectUniqueName = projectUniqueName
             };
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
 
-            try
+            Task<bool> restoreTask;
+            using (NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName, eventData))
             {
+
                 Assumes.NotNullOrEmpty(projectUniqueName);
 
                 ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
@@ -128,16 +129,12 @@ namespace NuGet.SolutionRestoreManager
 
                 await PopulateRestoreInfoSourcesAsync();
                 // returned task completes when scheduled restore operation completes.
-                var restoreTask = _restoreWorker.ScheduleRestoreAsync(
+                restoreTask = _restoreWorker.ScheduleRestoreAsync(
                     SolutionRestoreRequest.OnUpdate(),
                     token);
+            }
 
-                return await restoreTask;
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            return await restoreTask;
         }
 
         [System.Diagnostics.Tracing.EventData]
@@ -154,15 +151,9 @@ namespace NuGet.SolutionRestoreManager
             {
                 ProjectUniqueName = projectUniqueName
             };
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
-            try
-            {
-                return NominateProjectAsync(projectUniqueName, projectRestoreInfo, null, token);
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName, eventData);
+
+            return NominateProjectAsync(projectUniqueName, projectRestoreInfo, null, token);
         }
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo2 projectRestoreInfo, CancellationToken token)
@@ -172,16 +163,9 @@ namespace NuGet.SolutionRestoreManager
             {
                 ProjectUniqueName = projectUniqueName
             };
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName, eventData);
 
-            try
-            {
-                return NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            return NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
         }
 
         /// <summary>
@@ -403,30 +387,23 @@ namespace NuGet.SolutionRestoreManager
         public async Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken token)
         {
             const string eventName = nameof(IVsSolutionRestoreService4) + "." + nameof(RegisterRestoreInfoSourceAsync);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            try
+            if (restoreInfoSource == null)
             {
-                if (restoreInfoSource == null)
-                {
-                    throw new ArgumentNullException(nameof(restoreInfoSource));
-                }
-
-                if (string.IsNullOrEmpty(restoreInfoSource.Name))
-                {
-                    throw new ArgumentNullException(Resources.Argument_Cannot_Be_Null_Or_Empty, $"{nameof(restoreInfoSource)}.{nameof(restoreInfoSource.Name)}");
-                }
-                token.ThrowIfCancellationRequested();
-
-                // This is called early in the project loading process, so as such the project info may not be available yet. The data will be processed before the restore itself is started.
-                var taskCompletionSource = new TaskCompletionSource<bool>();
-                _projectRestoreInfoSources.Enqueue((restoreInfoSource, token, taskCompletionSource));
-                await taskCompletionSource.Task;
+                throw new ArgumentNullException(nameof(restoreInfoSource));
             }
-            finally
+
+            if (string.IsNullOrEmpty(restoreInfoSource.Name))
             {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+                throw new ArgumentNullException(Resources.Argument_Cannot_Be_Null_Or_Empty, $"{nameof(restoreInfoSource)}.{nameof(restoreInfoSource.Name)}");
             }
+            token.ThrowIfCancellationRequested();
+
+            // This is called early in the project loading process, so as such the project info may not be available yet. The data will be processed before the restore itself is started.
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            _projectRestoreInfoSources.Enqueue((restoreInfoSource, token, taskCompletionSource));
+            await taskCompletionSource.Task;
         }
 
         private async Task<ProjectNames> GetProjectNamesAsync(string projectUniqueName, CancellationToken token)

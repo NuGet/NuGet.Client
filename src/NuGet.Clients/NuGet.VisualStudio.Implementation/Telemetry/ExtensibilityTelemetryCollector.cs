@@ -198,7 +198,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             protected override void OnEventSourceCreated(EventSource eventSource)
             {
-                if (eventSource.Name == "NuGet-VS-Extensibility")
+                if (eventSource.Name == NuGetETW.ExtensibilityEventSource.Name)
                 {
                     _expectedEtwSourceGuid = eventSource.Guid;
                     EnableEvents(eventSource, EventLevel.LogAlways);
@@ -215,7 +215,7 @@ namespace NuGet.VisualStudio.Telemetry
                 }
 
                 var opcode = eventData.Opcode;
-                if (opcode == EventOpcode.Start || opcode == NuGetExtensibilityEtw.CustomOpcodes.Add || opcode == EventOpcode.Info)
+                if (opcode == EventOpcode.Start || opcode == NuGetETW.CustomOpcodes.Add || opcode == EventOpcode.Info)
                 {
                     if (_collector._counts.TryGetValue(eventData.EventName, out Count count))
                     {

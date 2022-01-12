@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Id);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _package.Id;
             }
         }
@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Version);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return new SemanticVersion(_package.Version.ToNormalizedString());
             }
         }
@@ -56,7 +56,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageMetadata) + "." + nameof(VersionString);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _package.Version.ToString();
             }
         }
@@ -66,7 +66,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Title);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _title;
             }
         }
@@ -76,7 +76,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Authors);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _authors;
             }
         }
@@ -86,7 +86,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageMetadata) + "." + nameof(Description);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _description;
             }
         }
@@ -96,7 +96,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPackageMetadata) + "." + nameof(InstallPath);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _installPath;
             }
         }

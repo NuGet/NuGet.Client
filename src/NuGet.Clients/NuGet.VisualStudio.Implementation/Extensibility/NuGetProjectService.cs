@@ -49,7 +49,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 Project = projectId
             };
-            NuGetExtensibilityEtw.EventSource.Write(etwEventName, NuGetExtensibilityEtw.StartEventOptions, eventData);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(etwEventName, eventData);
 
             try
             {
@@ -88,10 +88,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 extraProperties["projectId"] = projectId.ToString();
                 await _telemetryProvider.PostFaultAsync(exception, typeof(NuGetProjectService).FullName, extraProperties: extraProperties);
                 throw;
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(etwEventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 

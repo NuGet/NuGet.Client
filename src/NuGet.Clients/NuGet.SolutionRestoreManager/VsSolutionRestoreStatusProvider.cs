@@ -41,7 +41,7 @@ namespace NuGet.SolutionRestoreManager
         public async Task<bool> IsRestoreCompleteAsync(CancellationToken token)
         {
             const string eventName = nameof(IVsSolutionRestoreStatusProvider) + "." + nameof(IsRestoreCompleteAsync);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
             try
             {
@@ -78,10 +78,6 @@ namespace NuGet.SolutionRestoreManager
             {
                 await _telemetryProvider.PostFaultAsync(ex, nameof(VsSolutionRestoreStatusProvider));
                 throw;
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
 

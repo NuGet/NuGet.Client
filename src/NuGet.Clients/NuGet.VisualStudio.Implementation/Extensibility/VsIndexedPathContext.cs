@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPathContext) + "." + nameof(UserPackageFolder);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _userPackageFolder;
             }
         }
@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPathContext) + "." + nameof(FallbackPackageFolders);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _fallbackPackageFolders;
             }
         }
@@ -59,7 +59,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
             const string eventName = nameof(IVsPathContext) + "." + nameof(TryResolvePackageAsset);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
             try
             {
@@ -75,10 +75,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 _telemetryProvider.PostFault(exception, typeof(VsIndexedPathContext).FullName);
                 throw;
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
             }
         }
     }

@@ -51,7 +51,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
         {
             const string eventName = nameof(IVsPackageUninstaller) + "." + nameof(UninstallPackage);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions,
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
                 new
                 {
                     // Can't add project information, since it's a COM object that this method might be called on a background thread
@@ -59,55 +59,48 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                     RemoveDependencies = removeDependencies
                 });
 
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            if (string.IsNullOrEmpty(packageId))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
+            }
+
             try
             {
-                if (project == null)
-                {
-                    throw new ArgumentNullException(nameof(project));
-                }
+                PumpingJTF.Run(async delegate
+                    {
+                        var packageManager =
+                           new NuGetPackageManager(
+                               _sourceRepositoryProvider,
+                               _settings,
+                               _solutionManager,
+                               _deleteOnRestartManager);
 
-                if (string.IsNullOrEmpty(packageId))
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
-                }
-
-                try
-                {
-                    PumpingJTF.Run(async delegate
+                        var uninstallContext = new UninstallationContext(removeDependencies, forceRemove: false);
+                        var projectContext = new VSAPIProjectContext
                         {
-                            var packageManager =
-                               new NuGetPackageManager(
-                                   _sourceRepositoryProvider,
-                                   _settings,
-                                   _solutionManager,
-                                   _deleteOnRestartManager);
+                            PackageExtractionContext = new PackageExtractionContext(
+                                PackageSaveMode.Defaultv2,
+                                PackageExtractionBehavior.XmlDocFileSaveMode,
+                                ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                                NullLogger.Instance)
+                        };
 
-                            var uninstallContext = new UninstallationContext(removeDependencies, forceRemove: false);
-                            var projectContext = new VSAPIProjectContext
-                            {
-                                PackageExtractionContext = new PackageExtractionContext(
-                                    PackageSaveMode.Defaultv2,
-                                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                                    ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                                    NullLogger.Instance)
-                            };
+                        // find the project
+                        NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
 
-                            // find the project
-                            NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
-
-                            // uninstall the package
-                            await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);
-                        });
-                }
-                catch (Exception exception)
-                {
-                    _telemetryProvider.PostFault(exception, typeof(VsPackageUninstaller).FullName);
-                    throw;
-                }
+                        // uninstall the package
+                        await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);
+                    });
             }
-            finally
+            catch (Exception exception)
             {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
+                _telemetryProvider.PostFault(exception, typeof(VsPackageUninstaller).FullName);
+                throw;
             }
         }
     }

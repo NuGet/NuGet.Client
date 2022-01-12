@@ -21,7 +21,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPathContext) + "." + nameof(UserPackageFolder);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _userPackageFolder;
             }
         }
@@ -32,7 +32,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPathContext) + "." + nameof(FallbackPackageFolders);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _fallbackPackageFolders;
             }
         }
@@ -43,7 +43,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             get
             {
                 const string eventName = nameof(IVsPathContext2) + "." + nameof(SolutionPackageFolder);
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.InfoEventOptions);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
                 return _solutionPackageFolder;
             }
         }
@@ -101,18 +101,11 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
             const string eventName = nameof(IVsPathContext) + "." + nameof(IVsPathContext.TryResolvePackageAsset);
-            NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StartEventOptions);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            try
-            {
-                // unable to resolve the reference file path without the index
-                packageDirectoryPath = null;
-                return false;
-            }
-            finally
-            {
-                NuGetExtensibilityEtw.EventSource.Write(eventName, NuGetExtensibilityEtw.StopEventOptions);
-            }
+            // unable to resolve the reference file path without the index
+            packageDirectoryPath = null;
+            return false;
         }
     }
 }
