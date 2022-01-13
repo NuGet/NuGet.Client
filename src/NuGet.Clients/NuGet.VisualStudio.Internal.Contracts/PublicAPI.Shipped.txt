@@ -91,7 +91,7 @@ NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.ImplicitProjectActio
 NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.PackageIdentity.get -> NuGet.Packaging.Core.PackageIdentity!
 NuGet.VisualStudio.Internal.Contracts.ImplicitProjectAction.ProjectActionType.get -> NuGet.PackageManagement.NuGetProjectActionType
 NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages
-NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.InstalledAndTransitivePackages(System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>? installedPackages, System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>? transitivePackages) -> void
+NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.InstalledPackages.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>!
 NuGet.VisualStudio.Internal.Contracts.ItemFilter
 NuGet.VisualStudio.Internal.Contracts.ItemFilter.All = 0 -> NuGet.VisualStudio.Internal.Contracts.ItemFilter
 NuGet.VisualStudio.Internal.Contracts.ItemFilter.Consolidate = 3 -> NuGet.VisualStudio.Internal.Contracts.ItemFilter
