@@ -425,7 +425,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                         nameof(source));
                 }
 
-                var newSource = new PackageSource(source);
+                var newSource = new Configuration.PackageSource(source);
 
                 repo = _sourceRepositoryProvider.CreateRepository(newSource);
             }
@@ -472,7 +472,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 // Check if default package format is set to `PackageReference` and project has no
                 // package installed yet then upgrade it to `PackageReference` based project.
                 if (preferPackageReference &&
-                   nuGetProject is MSBuildNuGetProject &&
+                   (nuGetProject is MSBuildNuGetProject) &&
                    !(await nuGetProject.GetInstalledPackagesAsync(token)).Any() &&
                    await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
                 {

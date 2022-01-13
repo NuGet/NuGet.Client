@@ -7,11 +7,13 @@ namespace NuGet.VisualStudio.Etw
 {
     public static class NuGetETW
     {
+        public const string ExtensibilityEventSourceName = "NuGet-VS-Extensibility";
+
         /// <summary>
         /// This EventSource should only be used to track usage for NuGet's VS extensibility APIs. It is listened to
         /// by ExtensibilityTelemetryCollector.
         /// </summary>
-        public static EventSource ExtensibilityEventSource { get; } = new EventSource("NuGet-VS-Extensibility");
+        public static EventSource ExtensibilityEventSource { get; } = new EventSource(ExtensibilityEventSourceName);
 
         public static EventSourceOptions AddEventOptions { get; } =
             new EventSourceOptions()

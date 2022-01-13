@@ -227,7 +227,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             foreach (Project solutionProject in supportedProjects)
             {
-                var solutionProjectPath = solutionProject.GetFullProjectPath();
+                string solutionProjectPath = solutionProject.GetFullProjectPath();
 
                 if (!string.IsNullOrEmpty(solutionProjectPath) &&
                     PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))

@@ -45,7 +45,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             try
             {
-                var packageRestoreConsent = new PackageRestoreConsent(_settings);
+                var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
                 return packageRestoreConsent.IsGranted;
             }
             catch (Exception exception)

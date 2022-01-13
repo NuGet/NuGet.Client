@@ -77,7 +77,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
                             NuGetPackageManager nuGetPackageManager = CreateNuGetPackageManager();
 
-                            foreach (var project in await _solutionManager.GetNuGetProjectsAsync())
+                            foreach (var project in (await _solutionManager.GetNuGetProjectsAsync()))
                             {
                                 FallbackPackagePathResolver pathResolver = null;
                                 var buildIntegratedProject = project as BuildIntegratedNuGetProject;

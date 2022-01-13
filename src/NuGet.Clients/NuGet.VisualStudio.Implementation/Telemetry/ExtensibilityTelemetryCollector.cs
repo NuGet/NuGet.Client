@@ -208,7 +208,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             protected override void OnEventSourceCreated(EventSource eventSource)
             {
-                if (eventSource.Name == NuGetETW.ExtensibilityEventSource.Name)
+                if (eventSource.Name == NuGetETW.ExtensibilityEventSourceName)
                 {
                     _expectedEtwSourceGuid = eventSource.Guid;
                     EnableEvents(eventSource, EventLevel.LogAlways);

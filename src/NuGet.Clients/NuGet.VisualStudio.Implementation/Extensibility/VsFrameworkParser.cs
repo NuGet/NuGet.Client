@@ -131,10 +131,10 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             try
             {
-                var framework = NuGetFramework.Parse(input);
+                NuGetFramework framework = NuGetFramework.Parse(input);
 
-                var targetFrameworkMoniker = framework.DotNetFrameworkName;
-                var targetPlatformMoniker = framework.DotNetPlatformName;
+                string targetFrameworkMoniker = framework.DotNetFrameworkName;
+                string targetPlatformMoniker = framework.DotNetPlatformName;
                 string targetPlatforMinVersion = null;
 
                 nuGetFramework = new VsNuGetFramework(targetFrameworkMoniker, targetPlatformMoniker, targetPlatforMinVersion);

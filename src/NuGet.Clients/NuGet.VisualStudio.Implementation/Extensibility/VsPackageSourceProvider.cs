@@ -98,7 +98,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         private static bool IsOfficial(Configuration.PackageSource source)
         {
-            var official = source.IsOfficial;
+            bool official = source.IsOfficial;
 
             // override the official flag if the domain is nuget.org
             if (source.Source.StartsWith("http://www.nuget.org/", StringComparison.OrdinalIgnoreCase)

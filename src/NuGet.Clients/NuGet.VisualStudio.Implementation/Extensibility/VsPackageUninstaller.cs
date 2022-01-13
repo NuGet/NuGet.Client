@@ -73,7 +73,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 PumpingJTF.Run(async delegate
                     {
-                        var packageManager =
+                        NuGetPackageManager packageManager =
                            new NuGetPackageManager(
                                _sourceRepositoryProvider,
                                _settings,
