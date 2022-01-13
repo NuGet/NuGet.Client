@@ -97,11 +97,7 @@ namespace NuGet.Core.FuncTest
             }
             else
             {
-#if NETCOREAPP3_1
                 Assert.Equal("No connection could be made because the target machine actively refused it.", exception.InnerException.Message);
-#else
-                Assert.Equal("No connection could be made because the target machine actively refused it", exception.InnerException.Message);
-#endif
             }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
