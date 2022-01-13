@@ -213,7 +213,13 @@ namespace NuGet.Configuration.Test
             var exception = Assert.Throws<ArgumentException>(
                 () => configuration.GetConfiguredPackageSources(term));
 
-            Assert.Equal("Argument cannot be null, empty, or whitespace only." + Environment.NewLine + "Parameter name: term", exception.Message);
+#if NETCOREAPP
+            var expectedLine = "Argument cannot be null, empty, or whitespace only. (Parameter 'term')";
+#else
+            var expectedLine = "Argument cannot be null, empty, or whitespace only." + Environment.NewLine + "Parameter name: term";
+#endif
+
+            Assert.Equal(expectedLine, exception.Message);
         }
 
         private SearchTree GetSearchTree(string packagePatterns)
