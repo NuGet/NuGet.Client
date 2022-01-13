@@ -115,7 +115,7 @@ namespace NuGet.Core.FuncTest
             var exception = await ThrowsException<HttpRequestException>(server);
 #if IS_CORECLR
             Assert.Null(exception.InnerException);
-#if (NETCOREAPP3_1 || NETCORE5_0)
+#if NETCOREAPP3_1_OR_GREATER
             Assert.Equal("Received an invalid status code: 'BAD'.", exception.Message);
 #else
             Assert.Equal("The server returned an invalid or unrecognized response.", exception.Message);
@@ -139,7 +139,7 @@ namespace NuGet.Core.FuncTest
 
             if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-#if (NETCOREAPP3_1 || NETCORE5_0)
+#if NETCOREAPP3_1_OR_GREATER
                 Assert.Equal("nodename nor servname provided, or not known", exception.InnerException.Message);
 #else
                 Assert.Equal("Device not configured", exception.InnerException.Message);
@@ -147,7 +147,7 @@ namespace NuGet.Core.FuncTest
             }
             else if (!RuntimeEnvironmentHelper.IsWindows)
             {
-#if (NETCOREAPP3_1 || NETCORE5_0)
+#if NETCOREAPP3_1_OR_GREATER
                 Assert.Equal("Name or service not known", exception.InnerException.Message);
 #else
                 Assert.Equal("No such device or address", exception.InnerException.Message);
@@ -155,7 +155,7 @@ namespace NuGet.Core.FuncTest
             }
             else
             {
-#if (NETCOREAPP3_1 || NETCORE5_0)
+#if NETCOREAPP3_1_OR_GREATER
                 Assert.Equal("No such host is known.", exception.InnerException.Message);
 #else
                 Assert.Equal("No such host is known", exception.InnerException.Message);
