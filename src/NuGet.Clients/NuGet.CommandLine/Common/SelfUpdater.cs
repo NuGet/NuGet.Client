@@ -15,6 +15,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine
@@ -34,14 +35,22 @@ namespace NuGet.CommandLine
         });
 
         private readonly IConsole _console;
+        private readonly EmbeddedSignatureVerifier _embeddedSignatureVerifier;
 
-        public SelfUpdater(IConsole console)
+        public SelfUpdater(IConsole console, EmbeddedSignatureVerifier signatureVerifier)
         {
             if (console == null)
             {
                 throw new ArgumentNullException(nameof(console));
             }
+
+            if (signatureVerifier == null)
+            {
+                throw new ArgumentNullException(nameof(signatureVerifier));
+            }
+
             _console = console;
+            _embeddedSignatureVerifier = signatureVerifier;
         }
 
         /// <summary>
@@ -113,6 +122,17 @@ namespace NuGet.CommandLine
                         if (nugetExeInPackageFilePath == null)
                         {
                             throw new CommandException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
+                        }
+
+                        //Verify nuget.exe authenticode signature if nuget.org is the package source
+                        if (string.Equals(source.Source, NuGetConstants.V3FeedUrl, StringComparison.Ordinal))
+                        {
+                            string nugetExePath = Path.Combine(tempDir, NuGetCommandLinePackageId, packageIdentity.Version.ToNormalizedString(), nugetExeInPackageFilePath);
+
+                            if (!_embeddedSignatureVerifier.IsValid(nugetExePath))
+                            {
+                                throw new CommandException(LocalizedResourceManager.GetString("Error_AuthenticodeVerificationFailed"));
+                            }
                         }
 
                         string renamedPath = exePath + ".old";

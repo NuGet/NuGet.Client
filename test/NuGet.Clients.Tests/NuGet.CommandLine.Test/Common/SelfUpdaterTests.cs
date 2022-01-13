@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Commands;
+using NuGet.Configuration;
+using NuGet.Protocol.Plugins;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -163,6 +165,28 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [PlatformFact(Platform = Platform.Windows)]
+        public async Task SelfUpdater_AuthenticodeVerifedWhenPackageDownloadedFromNuGetOrg_SucceedsAsync()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+            var currentVersion = new NuGetVersion("5.5.0");
+            var tc = new TestContext(testDirectory, EmbeddedSignatureVerifier.Create());
+
+            // Act
+            await tc.Target.UpdateSelfFromVersionAsync(
+                tc.Target.AssemblyLocation,
+                prerelease: false,
+                currentVersion,
+                new Configuration.PackageSource(NuGetConstants.V3FeedUrl),
+                CancellationToken.None);
+
+            //Assert
+            Assert.True(File.Exists(tc.Target.AssemblyLocation));
+            File.WriteAllBytes(tc.Target.AssemblyLocation, tc.NewContent);
+            Assert.NotEqual(tc.OriginalContent, tc.NewContent);
+        }
+
         private static SimpleTestPackageContext GetNuGetCommandLinePackage(TestContext tc, string version, bool isExpected)
         {
             var package = new SimpleTestPackageContext("NuGet.CommandLine", version);
@@ -180,7 +204,19 @@ namespace NuGet.CommandLine.Test
 
         private class TestContext
         {
-            public TestContext(TestDirectory directory)
+            static TestContext()
+            {
+                EmbeddedSignatureVerifier = new Mock<EmbeddedSignatureVerifier>();
+                EmbeddedSignatureVerifier.Setup(x => x.IsValid("filePath"))
+                    .Returns(true);
+            }
+
+            public TestContext(TestDirectory directory) :
+                this(directory, EmbeddedSignatureVerifier.Object)
+            {
+            }
+
+            public TestContext(TestDirectory directory, EmbeddedSignatureVerifier embeddedSignatureVerifier)
             {
                 Directory = directory;
                 Console = new Mock<IConsole>();
@@ -188,7 +224,7 @@ namespace NuGet.CommandLine.Test
                 NewContent = new byte[] { 1 };
                 WrongContent = new byte[] { 2 };
 
-                Target = new SelfUpdater(Console.Object)
+                Target = new SelfUpdater(Console.Object, embeddedSignatureVerifier)
                 {
                     AssemblyLocation = Path.Combine(Directory, "nuget.exe")
                 };
@@ -197,6 +233,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllBytes(Target.AssemblyLocation, OriginalContent);
             }
 
+            public static readonly Mock<EmbeddedSignatureVerifier> EmbeddedSignatureVerifier;
             public Mock<IConsole> Console { get; }
             public SelfUpdater Target { get; }
             public TestDirectory Directory { get; }

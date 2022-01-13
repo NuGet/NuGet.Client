@@ -18,8 +18,8 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 using NuGet.Resolver;
 using NuGet.Versioning;
 
@@ -146,7 +146,7 @@ namespace NuGet.CommandLine
                 default:
                     throw new CommandException(NuGetResources.Error_UpdateSelf_Source);
             }
-            var selfUpdater = new SelfUpdater(Console);
+            var selfUpdater = new SelfUpdater(Console, EmbeddedSignatureVerifier.Create());
             await selfUpdater.UpdateSelfAsync(Prerelease, targetSource);
         }
 

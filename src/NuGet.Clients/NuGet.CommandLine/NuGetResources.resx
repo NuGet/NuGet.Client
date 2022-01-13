@@ -5433,4 +5433,7 @@ Please consider migrating '{0}' to `PackageReference` and using the pack targets
 You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</value>
     <comment>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</comment>
   </data>
+  <data name="Error_AuthenticodeVerificationFailed" xml:space="preserve">
+    <value>Invalid NuGet.CommandLine package. Authenticode signature verification failed for NuGet.exe within the package.</value>
+  </data>
 </root>
