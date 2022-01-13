@@ -947,7 +947,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));
 
-                
+
                 // Act III: Call to another APIs
                 IReadOnlyCollection<IPackageReferenceContextInfo> installed = await _projectManager.GetInstalledPackagesAsync(new[] { projectId }, CancellationToken.None);
 

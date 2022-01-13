@@ -3,7 +3,6 @@ NuGet.VisualStudio.Internal.Contracts.IInstalledAndTransitivePackages.Transitive
 NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo
 NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo.TransitiveOrigins.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>!
 NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.InstalledAndTransitivePackages(System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>? installedPackages, System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo!>? transitivePackages) -> void
-NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.InstalledPackages.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>!
 NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.TransitivePackages.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo!>!
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.AllowedVersions.get -> NuGet.Versioning.VersionRange?
