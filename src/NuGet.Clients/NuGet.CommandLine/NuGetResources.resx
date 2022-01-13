@@ -5435,7 +5435,6 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
   </data>
   <data name="Error_AuthenticodeVerificationFailed" xml:space="preserve">
     <value>Invalid NuGet.CommandLine package. Authenticode signature verification failed for NuGet.exe within the package.</value>
-Write
     <comment>Please do not localize 'NuGet.Commandline', 'Authenticode' and 'NuGet.exe'</comment>
   </data>
 </root>
