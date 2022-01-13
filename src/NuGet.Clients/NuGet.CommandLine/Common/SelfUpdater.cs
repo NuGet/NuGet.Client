@@ -105,7 +105,7 @@ namespace NuGet.CommandLine
                     {
                         DirectoryUtility.CreateSharedDirectory(tempDir);
 
-                        DownloadResourceResult downloadResourceResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                        using DownloadResourceResult downloadResourceResult = await PackageDownloader.GetDownloadResourceResultAsync(
                                             sourceRepository,
                                             packageIdentity,
                                             new PackageDownloadContext(sourceCacheContext),
