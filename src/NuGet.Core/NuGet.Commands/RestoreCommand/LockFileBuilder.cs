@@ -12,6 +12,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGet.Shared;
 using NuGetVersion = NuGet.Versioning.NuGetVersion;
 
 namespace NuGet.Commands
@@ -331,26 +332,24 @@ namespace NuGet.Commands
             return libraryReferences;
         }
 
-        private void EnsureUniqueLockFileTargetLibraries(LockFileTarget lockFileTarget)
+        private static void EnsureUniqueLockFileTargetLibraries(LockFileTarget lockFileTarget)
         {
             IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
-            var libraryReferences = new Dictionary<string, LockFileTargetLibrary>();
+            var libraryReferences = new Dictionary<LockFileTargetLibrary, LockFileTargetLibrary>(comparer: LockFileTargetLibraryNameAndVersionEqualityComparer.Instance);
 
             foreach (LockFileTargetLibrary library in libraries)
             {
-                var libraryKey = library.Name + " " + library.Version;
-
-                if (libraryReferences.TryGetValue(libraryKey, out LockFileTargetLibrary existingLibrary))
+                if (libraryReferences.TryGetValue(library, out LockFileTargetLibrary existingLibrary))
                 {
                     if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
                     {
                         // Prefer project reference over package reference, so replace the the package reference.
-                        libraryReferences[libraryKey] = library;
+                        libraryReferences[library] = library;
                     }
                 }
                 else
                 {
-                    libraryReferences[libraryKey] = library;
+                    libraryReferences[library] = library;
                 }
             }
 
@@ -360,7 +359,7 @@ namespace NuGet.Commands
             }
 
             lockFileTarget.Libraries = new List<LockFileTargetLibrary>(libraryReferences.Count);
-            foreach (KeyValuePair<string, LockFileTargetLibrary> pair in libraryReferences)
+            foreach (KeyValuePair<LockFileTargetLibrary, LockFileTargetLibrary> pair in libraryReferences)
             {
                 lockFileTarget.Libraries.Add(pair.Value);
             }
@@ -550,6 +549,50 @@ namespace NuGet.Commands
         private static bool HasTools(string file)
         {
             return file.StartsWith("tools/", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// An <see cref="IEqualityComparer{T}" /> that compares <see cref="LockFileTargetLibrary" /> objects by the value of the <see cref="LockFileTargetLibrary.Name" /> and <see cref="LockFileTargetLibrary.Version" /> properties.
+        /// </summary>
+        private class LockFileTargetLibraryNameAndVersionEqualityComparer : IEqualityComparer<LockFileTargetLibrary>
+        {
+            /// <summary>
+            /// Gets a static singleton for the <see cref="LockFileTargetLibraryNameAndVersionEqualityComparer" /> class.
+            /// </summary>
+            public static LockFileTargetLibraryNameAndVersionEqualityComparer Instance = new();
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LockFileTargetLibraryNameAndVersionEqualityComparer" /> class.
+            /// </summary>
+            private LockFileTargetLibraryNameAndVersionEqualityComparer()
+            {
+            }
+
+            /// <summary>
+            /// Determines whether the specified <see cref="LockFileTargetLibrary" /> objects are equal by comparing their <see cref="LockFileTargetLibrary.Name" /> and <see cref="LockFileTargetLibrary.Version" /> properties.
+            /// </summary>
+            /// <param name="x">The first <see cref="LockFileTargetLibrary" /> to compare.</param>
+            /// <param name="y">The second <see cref="LockFileTargetLibrary" /> to compare.</param>
+            /// <returns><c>true</c> if the specified <see cref="LockFileTargetLibrary" /> objects' <see cref="LockFileTargetLibrary.Name" /> and <see cref="LockFileTargetLibrary.Version" /> properties are equal, otherwise <c>false</c>.</returns>
+            public bool Equals(LockFileTargetLibrary x, LockFileTargetLibrary y)
+            {
+                return string.Equals(x.Name, y.Name, StringComparison.Ordinal) && x.Version.Equals(y.Version);
+            }
+
+            /// <summary>
+            /// Returns a hash code for the specified <see cref="LockFileTargetLibrary" /> object's <see cref="LockFileTargetLibrary.Name" /> property.
+            /// </summary>
+            /// <param name="obj">The <see cref="LockFileTargetLibrary" /> for which a hash code is to be returned.</param>
+            /// <returns>A hash code for the specified <see cref="LockFileTargetLibrary" /> object's <see cref="LockFileTargetLibrary.Name" /> and and <see cref="LockFileTargetLibrary.Version" /> properties.</returns>
+            public int GetHashCode(LockFileTargetLibrary obj)
+            {
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddObject(obj.Name);
+                combiner.AddObject(obj.Version);
+
+                return combiner.CombinedHash;
+            }
         }
     }
 }

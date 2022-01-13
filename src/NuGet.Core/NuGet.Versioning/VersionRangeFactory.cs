@@ -199,7 +199,7 @@ namespace NuGet.Versioning
             if (!string.IsNullOrWhiteSpace(minVersionString))
             {
                 // parse the min version string
-                if (allowFloating && minVersionString.Contains("*"))
+                if (allowFloating && minVersionString.Contains('*'))
                 {
                     // single floating version
                     if (FloatRange.TryParse(minVersionString, out floatRange)
