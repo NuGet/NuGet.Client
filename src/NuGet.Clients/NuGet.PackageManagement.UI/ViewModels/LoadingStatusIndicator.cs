@@ -56,12 +56,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void Reset(string loadingMessage)
-        {
-            Status = LoadingStatus.Unknown;
-            LoadingMessage = loadingMessage;
-        }
-
         public void SetError(string message)
         {
             Status = LoadingStatus.ErrorOccurred;

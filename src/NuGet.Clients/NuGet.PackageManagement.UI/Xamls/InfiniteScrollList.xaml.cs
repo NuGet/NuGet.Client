@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -162,7 +163,7 @@ namespace NuGet.PackageManagement.UI
         // Load items using the specified loader
         internal async Task LoadItemsAsync(
             IPackageItemLoader loader,
-            string loadingMessage,
+            string searchText,
             INuGetUILogger logger,
             Task<SearchResultContextInfo> searchResultTask,
             CancellationToken token)
@@ -170,11 +171,6 @@ namespace NuGet.PackageManagement.UI
             if (loader == null)
             {
                 throw new ArgumentNullException(nameof(loader));
-            }
-
-            if (string.IsNullOrEmpty(loadingMessage))
-            {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(loadingMessage));
             }
 
             if (searchResultTask == null)
@@ -187,17 +183,21 @@ namespace NuGet.PackageManagement.UI
             _loader = loader;
             _logger = logger;
             _initialSearchResultTask = searchResultTask;
-            ViewModel.LoadingStatusIndicator.LoadingMessage = loadingMessage;
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var searchingMessage = string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
+                ViewModel.LoadingStatusIndicator.LoadingMessage = searchingMessage;
+            }
+            else
+            {
+                ViewModel.LoadingStatusIndicator.LoadingMessage = Resx.Resources.Text_Loading;
+            }
+
             _loadingStatusBar.Visibility = Visibility.Hidden;
-            _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
+            _loadingStatusBar.Reset(searchText, loader.IsMultiSource);
 
             var selectedPackageItem = SelectedPackageItem;
-
-            await _list.ItemsLock.ExecuteAsync(() =>
-            {
-                ClearPackageList();
-                return Task.CompletedTask;
-            });
 
             _selectedCount = 0;
 
@@ -352,7 +352,7 @@ namespace NuGet.PackageManagement.UI
             // makes sure we update using the relevant one.
             if (currentLoader == _loader)
             {
-                UpdatePackageList(loadedItems, refresh: false);
+                await AppendPackages(loadedItems);
             }
 
             token.ThrowIfCancellationRequested();
@@ -375,7 +375,7 @@ namespace NuGet.PackageManagement.UI
                 && !loadedItems.Any()
                 && currentLoader.State.LoadingStatus == LoadingStatus.Ready)
             {
-                UpdatePackageList(currentLoader.GetCurrent(), refresh: false);
+                await AppendPackages(currentLoader.GetCurrent());
             }
 
             token.ThrowIfCancellationRequested();
@@ -442,7 +442,9 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Shows the Loading status bar, if necessary. Also, it inserts the Loading... indicator, if necesary
+        /// Shows the <see cref="LoadingStatusBar"/>, if necessary.
+        /// The <see cref="LoadingStatusIndicator"/> State will be updated only for <see cref="LoadingStatus.Cancelled"/> or <see cref="LoadingStatus.ErrorOccurred"/>,
+        /// so to reflect those conditions as early as possible. Other states will be updated as late as possible: when the loader completes.
         /// </summary>
         /// <param name="loader">Current loader</param>
         /// <param name="state">Progress reported by the <c>Progress</c> callback</param>
@@ -465,7 +467,11 @@ namespace NuGet.PackageManagement.UI
                         _loadingStatusBar.Visibility = desiredVisibility;
                     }
 
-                    ViewModel.LoadingStatusIndicator.Status = state.LoadingStatus;
+                    // Change the status as soon as a cancellation or an Error occurs.
+                    if (state.LoadingStatus == LoadingStatus.Cancelled || state.LoadingStatus == LoadingStatus.ErrorOccurred)
+                    {
+                        ViewModel.LoadingStatusIndicator.Status = state.LoadingStatus;
+                    }
                 }
             });
         }
@@ -498,27 +504,20 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Appends <c>packages</c> to the internal <see cref="Items"> list
+        /// Appends <c>packages</c> to the internal <see cref="Items"> list. 
         /// </summary>
         /// <param name="packages">Packages collection to add</param>
-        /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
-        private void UpdatePackageList(IEnumerable<PackageItemViewModel> packages, bool refresh)
+        private async Task AppendPackages(IEnumerable<PackageItemViewModel> packages)
         {
-
             // Synchronize updating Items list
-            _list.ItemsLock.ExecuteAsync(async () =>
+            await _list.ItemsLock.ExecuteAsync(async () =>
             {
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                 NuGetUIThreadHelper.JoinableTaskFactory.WithPriority(Dispatcher, DispatcherPriority.Background).Run(() =>
                 {
-                    if (refresh)
-                    {
-                        ClearPackageList();
-                    }
-
-                        // add newly loaded items
-                        foreach (var package in packages)
+                    // add newly loaded items
+                    foreach (var package in packages)
                     {
                         package.PropertyChanged += Package_PropertyChanged;
                         ViewModel.Collection.Add(package);
@@ -534,7 +533,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Clear <c>Items</c> list and removes the event handlers for each element
         /// </summary>
-        private void ClearPackageList()
+        internal void ClearPackageList()
         {
             foreach (PackageItemViewModel package in ViewModel.Collection)
             {
@@ -669,16 +668,16 @@ namespace NuGet.PackageManagement.UI
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            //Scrolled down to the bottom of the viewport and there's more to load.
-            if (!e.Handled
-                && e.VerticalChange > 0
-                && _scrollViewer.VerticalOffset == _scrollViewer.ScrollableHeight
-                && _loader?.State.LoadingStatus == LoadingStatus.Ready)
+            if (ViewModel.FetchPageOnScroll)
             {
-                var first = _scrollViewer.VerticalOffset;
-                var last = _scrollViewer.ViewportHeight + first;
-                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
+                //Scrolled down to the bottom of the viewport and there's more to load.
+                if (!e.Handled
+                    && e.VerticalChange > 0
+                    && _scrollViewer.VerticalOffset == _scrollViewer.ScrollableHeight
+                    && _loader?.State.LoadingStatus == LoadingStatus.Ready)
                 {
+                    e.Handled = true;
+
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
                     ).PostOnFailure(nameof(InfiniteScrollList));
@@ -729,7 +728,7 @@ namespace NuGet.PackageManagement.UI
         private void _loadingStatusBar_ShowMoreResultsClick(object sender, RoutedEventArgs e)
         {
             var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemViewModel>();
-            UpdatePackageList(packageItems, refresh: true);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => AppendPackages(packageItems));
             _loadingStatusBar.ItemsLoaded = _loader?.State.ItemsCount ?? 0;
 
             var desiredVisibility = EvaluateStatusBarVisibility(_loader, _loader.State);
@@ -744,9 +743,10 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Visibility = Visibility.Hidden;
         }
 
-        public void ResetLoadingStatusIndicator()
+        public void LoadingIndicator_Begin()
         {
-            ViewModel.LoadingStatusIndicator.Reset(string.Empty);
+            ViewModel.LoadingStatusIndicator.LoadingMessage = Resx.Resources.Text_Loading;
+            ViewModel.LoadingStatusIndicator.Status = LoadingStatus.Loading;
         }
     }
 }

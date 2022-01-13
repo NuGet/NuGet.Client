@@ -68,8 +68,8 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _author = value;
-                OnPropertyChanged(nameof(Author));
-                OnPropertyChanged(nameof(ByAuthor));
+                RaisePropertyChanged(nameof(Author));
+                RaisePropertyChanged(nameof(ByAuthor));
             }
         }
 
@@ -78,6 +78,7 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return _author != null ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
+                RaisePropertyChanged(nameof(Author));
             }
         }
 
@@ -405,6 +406,7 @@ namespace NuGet.PackageManagement.UI
                 if (_isPackageDeprecated != value)
                 {
                     _isPackageDeprecated = value;
+<<<<<<< HEAD
                     RaisePropertyChanged(nameof(IsPackageWithWarnings));
                     RaisePropertyChanged(nameof(IsPackageDeprecated));
                 }
@@ -428,6 +430,9 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
                     OnPropertyChanged(nameof(IsPackageWithWarnings));
+=======
+                    RaisePropertyChanged(nameof(IsPackageDeprecated));
+>>>>>>> 73053a084 (Squash 8981b49932a4f127338799ca1085b4496701480b...afa35d573ca044b8cef4f5355dbe59eaf2174853)
                 }
             }
         }
@@ -774,11 +779,14 @@ namespace NuGet.PackageManagement.UI
             return status;
         }
 
+<<<<<<< HEAD
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+=======
+>>>>>>> 73053a084 (Squash 8981b49932a4f127338799ca1085b4496701480b...afa35d573ca044b8cef4f5355dbe59eaf2174853)
         public string PackagePath { get; set; }
         public INuGetPackageFileService PackageFileService { get; internal set; }
 

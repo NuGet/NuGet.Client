@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
@@ -64,12 +65,10 @@ namespace NuGet.PackageManagement.UI
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
 
-        public PackageManagerViewModel ViewModel { get; private set; }
+        public PackageManagerViewModel ViewModel { get; set; }
 
         private PackageManagerControl()
         {
-            ViewModel = new PackageManagerViewModel();
-
             DataContext = this;
 
             InitializeComponent();
@@ -89,6 +88,7 @@ namespace NuGet.PackageManagement.UI
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
 
+            ViewModel = new PackageManagerViewModel();
             Model = model;
             _uiLogger = uiLogger;
             Settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
@@ -142,6 +142,8 @@ namespace NuGet.PackageManagement.UI
             _initialized = true;
 
             // UI is initialized. Start the first search
+            ViewModel.SetActivePackageListViewModel(_topPanel.Filter);
+            _packageList.DataContext = ViewModel.PackageListViewModel;
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
@@ -390,6 +392,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// The <see cref="FrameworkElement.Loaded"/> event handler for <see cref="PackageManagerControl"/>.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
@@ -398,20 +405,21 @@ namespace NuGet.PackageManagement.UI
 
         private async Task PackageManagerLoadedAsync()
         {
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            TimeSpan timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
+
             // Do not trigger a refresh if this is not the first load of the control.
-            // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
+            // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search.
             if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
+                _packageList.LoadingIndicator_Begin();
+                await ExecutePackageSearchAsync();
+                EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp);
+                EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp);
             }
-            await RefreshConsolidatablePackagesCountAsync();
         }
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
@@ -496,6 +504,10 @@ namespace NuGet.PackageManagement.UI
             // _sourceRepoList_SelectionChanged(). This method will start the new
             // search when needed by itself.
             _dontStartNewSearch = true;
+
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
+
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
@@ -813,8 +825,6 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            ItemFilter filterToRender = _topPanel.Filter;
-
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
 
             if (useCachedPackageMetadata)
@@ -839,18 +849,11 @@ namespace NuGet.PackageManagement.UI
                     includePrerelease: IncludePrerelease,
                     useRecommender: useRecommender);
 
-                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
-                    ? Resx.Resources.Text_Loading
-                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-
-                // Set a new cancellation token source which will be used to cancel this task in case
-                // new loading task starts or manager ui is closed while loading packages.
-                _loadCts = new CancellationTokenSource();
-
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
+
                 // this will wait for searchResultTask to complete instead of creating a new task
-                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+                await _packageList.LoadItemsAsync(loader, searchText, _uiLogger, searchResultTask, _loadCts.Token);
 
                 if (pSearchCallback != null && searchTask != null)
                 {
@@ -1089,6 +1092,9 @@ namespace NuGet.PackageManagement.UI
 
             if (SelectedSource != null)
             {
+                _packageList.LoadingIndicator_Begin();
+                _packageList.ClearPackageList();
+
                 _topPanel.SourceToolTip.Visibility = Visibility.Visible;
                 _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
@@ -1108,8 +1114,10 @@ namespace NuGet.PackageManagement.UI
         {
             if (_initialized)
             {
+                ViewModel.SetActivePackageListViewModel(_topPanel.Filter);
+                _packageList.LoadingIndicator_Begin();
+                _packageList.ClearPackageList();
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
-                _packageList.ResetLoadingStatusIndicator();
 
                 // Collapse the Update controls when the current tab is not "Updates".
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
@@ -1138,6 +1146,15 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async ValueTask RefreshAsync()
         {
+            //WithPriority(Dispatcher, DispatcherPriority.Background)
+            await NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _packageList.LoadingIndicator_Begin();
+                _packageList.ClearPackageList();
+                return Task.CompletedTask;
+            });
+
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
@@ -1167,6 +1184,9 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
+
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
             EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
@@ -1192,6 +1212,17 @@ namespace NuGet.PackageManagement.UI
             public string SearchString { get; set; }
         }
 
+        // Returns the text to be displayed in the search box.
+        private string GetSearchText()
+        {
+            var focusOnSearchKeyGesture = (KeyGesture)InputBindings.OfType<KeyBinding>().First(
+                x => x.Command == Commands.FocusOnSearchBox).Gesture;
+            return string.Format(CultureInfo.CurrentCulture,
+                Resx.Resources.Text_SearchBoxText,
+                focusOnSearchKeyGesture.GetDisplayStringForCulture(CultureInfo.CurrentCulture));
+        }
+
+        #region IVsWindowSearch implementation
         public Guid Category
         {
             get { return Guid.Empty; }
@@ -1199,6 +1230,9 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
+
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
@@ -1229,16 +1263,6 @@ namespace NuGet.PackageManagement.UI
             settings.SearchWatermark = GetSearchText();
         }
 
-        // Returns the text to be displayed in the search box.
-        private string GetSearchText()
-        {
-            var focusOnSearchKeyGesture = (KeyGesture)InputBindings.OfType<KeyBinding>().First(
-                x => x.Command == Commands.FocusOnSearchBox).Gesture;
-            return string.Format(CultureInfo.CurrentCulture,
-                Resx.Resources.Text_SearchBoxText,
-                focusOnSearchKeyGesture.GetDisplayStringForCulture(CultureInfo.CurrentCulture));
-        }
-
         public bool SearchEnabled
         {
             get { return true; }
@@ -1253,6 +1277,7 @@ namespace NuGet.PackageManagement.UI
         {
             get { return null; }
         }
+        #endregion
 
         private void FocusOnSearchBox_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -1500,10 +1525,17 @@ namespace NuGet.PackageManagement.UI
             UpdatePackage(packagesToUpdate, selectedPackages);
         }
 
+        /// <summary>
+        /// The <see cref="CommandBinding"/> for the refresh search command.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
+            _packageList.LoadingIndicator_Begin();
+            _packageList.ClearPackageList();
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecutePackageSearchAsync())
                 .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
