@@ -165,8 +165,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform = Platform.Windows)]
-        public async Task SelfUpdater_AuthenticodeVerifedWhenPackageDownloadedFromNuGetOrg_SucceedsAsync()
+        [Fact]
+        public async Task WhenPackageDownloadedFromNuGetOrgAuthenticodeIsVerified_SucceedsAsync()
         {
             // Arrange
             using var testDirectory = TestDirectory.Create();
@@ -185,6 +185,31 @@ namespace NuGet.CommandLine.Test
             Assert.True(File.Exists(tc.Target.AssemblyLocation));
             File.WriteAllBytes(tc.Target.AssemblyLocation, tc.NewContent);
             Assert.NotEqual(tc.OriginalContent, tc.NewContent);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task WhenPackageDownloadedFromNuGetOrgAuthenticodeIsVerified_FailsAsync()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+            var currentVersion = new NuGetVersion("5.5.0");
+            var embeddedSignatureVerifier = new Mock<EmbeddedSignatureVerifier>();
+            embeddedSignatureVerifier.Setup(x => x.IsValid(It.IsAny<string>()))
+                .Returns(false);
+
+            var tc = new TestContext(testDirectory, embeddedSignatureVerifier.Object);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<CommandException>(() =>
+                tc.Target.UpdateSelfFromVersionAsync(
+                       tc.Target.AssemblyLocation,
+                       prerelease: false,
+                       currentVersion,
+                       new Configuration.PackageSource(NuGetConstants.V3FeedUrl),
+                       CancellationToken.None));
+
+            Assert.Contains("Invalid NuGet.CommandLine package. Authenticode signature verification failed for NuGet.exe within the package.", exception.Message);
+            tc.VerifyReplacedState(replaced: false);
         }
 
         private static SimpleTestPackageContext GetNuGetCommandLinePackage(TestContext tc, string version, bool isExpected)
@@ -207,7 +232,7 @@ namespace NuGet.CommandLine.Test
             static TestContext()
             {
                 EmbeddedSignatureVerifier = new Mock<EmbeddedSignatureVerifier>();
-                EmbeddedSignatureVerifier.Setup(x => x.IsValid("filePath"))
+                EmbeddedSignatureVerifier.Setup(x => x.IsValid(It.IsAny<string>()))
                     .Returns(true);
             }
 
