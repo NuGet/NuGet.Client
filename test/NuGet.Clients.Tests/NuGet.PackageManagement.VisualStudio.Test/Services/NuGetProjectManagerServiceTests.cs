@@ -1131,6 +1131,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        private async Task GetInstalledAndTransitivePackagesAsync_WithCancellationToken_ThrowsAsync()
+        {
+            Initialize();
+
+            try
+            {
+                using var cts = new CancellationTokenSource();
+                cts.Cancel();
+                _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(null, cts.Token);
+                Assert.True(false);
+            }
+            catch
+            {
+            }
+        }
+
+        [Fact]
         private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithCpsPackageReferenceProject_Multitargeting_MultipleCalls_MergedResults_SucceedsAsync()
         {
             string projectName = Guid.NewGuid().ToString();
