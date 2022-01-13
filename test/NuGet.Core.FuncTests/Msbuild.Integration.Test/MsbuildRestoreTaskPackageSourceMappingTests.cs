@@ -4,6 +4,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
@@ -753,7 +754,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
@@ -777,9 +777,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 </packages>");
                 }
 
-                var sharedRepositoryPath = pathContext.UserPackagesFolder;
-                Directory.CreateDirectory(sharedRepositoryPath);
-
                 var packageContosoMvcReal = new SimpleTestPackageContext()
                 {
                     Id = "Contoso.MVC.ASP",
@@ -788,32 +785,15 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 packageContosoMvcReal.AddFile("lib/net461/realA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    sharedRepositoryPath,
+                    pathContext.PackageSource,
                     packageContosoMvcReal);
-
-                // SimpleTestPathContext adds a NuGet.Config with a repositoryPath,
-                // so we go ahead and replace that config before running MSBuild.
-                var configPath = Path.Combine(Path.GetDirectoryName(pathContext.SolutionRoot), "NuGet.Config");
-                var configText =
-$@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSources>
-    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
-    <clear />
-    <add key=""SharedRepository"" value=""{sharedRepositoryPath}"" />
-    </packageSources>
-</configuration>";
-                using (var writer = new StreamWriter(configPath))
-                {
-                    writer.Write(configText);
-                }
 
                 // Act
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-                Assert.DoesNotContain("namespace", result.Output);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.AllOutput.Should().NotContain("source mapping");
             }
         }
 
