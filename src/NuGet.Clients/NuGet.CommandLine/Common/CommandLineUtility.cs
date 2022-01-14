@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -35,6 +33,36 @@ namespace NuGet.CommandLine
                 return LocalizedResourceManager.GetString("DefaultSymbolServer") + " (" + NuGetConstants.DefaultSymbolServerUrl + ")";
             }
             return "'" + source + "'";
+        }
+
+        /// <summary>
+        /// True if the source is HTTP and has a *.nuget.org or nuget.org host.
+        /// </summary>
+        internal static bool IsNuGetOrg(PackageSource source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (!source.IsHttp)
+            {
+                return false;
+            }
+
+            var uri = source.TrySourceAsUri;
+            if (uri == null)
+            {
+                return false;
+            }
+
+            if (StringComparer.OrdinalIgnoreCase.Equals(uri.Host, "nuget.org")
+                || uri.Host.EndsWith(".nuget.org", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public static bool IsValidConfigFileName(string fileName)

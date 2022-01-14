@@ -125,7 +125,7 @@ namespace NuGet.CommandLine
                         }
 
                         //Verify nuget.exe authenticode signature if nuget.org is the package source
-                        if (string.Equals(source.Source, NuGetConstants.V3FeedUrl, StringComparison.Ordinal))
+                        if (CommandLineUtility.IsNuGetOrg(source))
                         {
                             string nugetExePath = Path.Combine(tempDir, NuGetCommandLinePackageId, packageIdentity.Version.ToNormalizedString(), nugetExeInPackageFilePath);
 
