@@ -266,7 +266,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     targetsList,
                     token)))
                 .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
-                .Where(transitivePR => transitivePR.TransitiveOrigins.Any())
                 .ToList();
 
             IsInstalledAndTransitiveComputationNeeded = false;
