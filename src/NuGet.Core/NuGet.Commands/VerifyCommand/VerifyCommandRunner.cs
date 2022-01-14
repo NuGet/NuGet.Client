@@ -50,6 +50,8 @@ namespace NuGet.Commands
                     return packages;
                 });
 
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(verifyArgs.Settings, verifyArgs.Logger);
+
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
                     new CertificateHashAllowListEntry(
                         VerificationTarget.Author | VerificationTarget.Repository,
@@ -59,21 +61,35 @@ namespace NuGet.Commands
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
                 IReadOnlyList<TrustedSignerAllowListEntry> allowList = TrustedSignersProvider.GetAllowListEntries(verifyArgs.Settings, verifyArgs.Logger);
+
+                var verificationProviders = new List<ISignatureVerificationProvider>()
+                {
+                    new IntegrityVerificationProvider()
+                };
+
+                // trustedSigners section >> Owners are considered here.
+                verificationProviders.Add(
+                      new AllowListVerificationProvider(
+                          allowList,
+                          requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require,
+                          emptyListErrorMessage: Strings.Error_NoClientAllowList,
+                          noMatchErrorMessage: Strings.Error_NoMatchingClientCertificate));
+
                 IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = allowList?
                     .Where(c => c.AllowUntrustedRoot)
                     .Select(c => new KeyValuePair<string, HashAlgorithmName>(c.Fingerprint, c.FingerprintAlgorithm));
 
-                var verificationProviders = new List<ISignatureVerificationProvider>()
-                {
-                    new IntegrityVerificationProvider(),
-                    new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList)
-                };
+                // trustedSigners section >> allowUntrustedRoot set true are considered here.
+                verificationProviders.Add(new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList));
 
+                // List of values passed through --certificate-fingerprint option are considered here.
                 verificationProviders.Add(
                     new AllowListVerificationProvider(
                         allowListEntries,
                         requireNonEmptyAllowList: false,
                         noMatchErrorMessage: Strings.Error_NoMatchingCertificate));
+
+                // For verify action repository signing allow list not considered.
 
                 var verifier = new PackageSignatureVerifier(verificationProviders);
 

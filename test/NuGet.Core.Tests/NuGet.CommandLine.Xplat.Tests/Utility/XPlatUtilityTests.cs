@@ -1,8 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests.Utility
@@ -36,6 +42,37 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             LogLevel actual = XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity);
 
             Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ProcessConfigFile_GetSettingsForWorkingDirectory(string emptyConfig)
+        {
+            ISettings settings = XPlatUtility.ProcessConfigFile(emptyConfig);
+            var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            string baseNugetConfigPath = Path.Combine(baseDirectory, Settings.DefaultSettingsFileName);
+            List<string> configPaths = settings.GetConfigFilePaths().ToList();
+            Assert.True(configPaths.Count > 1);
+            // Assert user default nuget.config is loaded
+            Assert.True(configPaths.Contains(baseNugetConfigPath));
+        }
+
+        [Fact]
+        public void ProcessConfigFile_PassConfigFile_OnlyPassedConfigLoaded()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                string currentFolderNugetConfigPath = Path.Combine(pathContext.WorkingDirectory, Settings.DefaultSettingsFileName);
+                var tempFolder = Path.Combine(pathContext.WorkingDirectory, "Temp");
+                string tempFolderNuGetConfigPath = Path.Combine(tempFolder, Settings.DefaultSettingsFileName);
+                Directory.CreateDirectory(tempFolder);
+                File.Copy(currentFolderNugetConfigPath, tempFolderNuGetConfigPath);
+                ISettings settings = XPlatUtility.ProcessConfigFile(tempFolderNuGetConfigPath);
+                List<string> configPaths = settings.GetConfigFilePaths().ToList();
+                Assert.Equal(1, configPaths.Count);
+                Assert.True(configPaths.Contains(tempFolderNuGetConfigPath));
+            }
         }
     }
 }
