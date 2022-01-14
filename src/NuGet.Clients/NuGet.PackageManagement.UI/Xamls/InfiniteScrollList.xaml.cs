@@ -682,11 +682,6 @@ namespace NuGet.PackageManagement.UI
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
                     ).PostOnFailure(nameof(InfiniteScrollList));
                 }
-                e.Handled = true;
-
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
-                    LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
-                );
             }
         }
 
@@ -747,6 +742,11 @@ namespace NuGet.PackageManagement.UI
         {
             ViewModel.LoadingStatusIndicator.LoadingMessage = Resx.Resources.Text_Loading;
             ViewModel.LoadingStatusIndicator.Status = LoadingStatus.Loading;
+        }
+
+        public void LoadingIndicator_Ready()
+        {
+            ViewModel.LoadingStatusIndicator.Status = LoadingStatus.Ready;
         }
     }
 }

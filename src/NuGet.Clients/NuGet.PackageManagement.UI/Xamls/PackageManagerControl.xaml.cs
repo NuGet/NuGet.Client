@@ -413,13 +413,14 @@ namespace NuGet.PackageManagement.UI
             {
                 _loadedAndInitialized = true;
                 _packageList.LoadingIndicator_Begin();
-                await ExecutePackageSearchAsync();
+                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                 EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
             }
             else
             {
                 EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp);
             }
+            await RefreshConsolidatablePackagesCountAsync();
         }
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
@@ -506,7 +507,6 @@ namespace NuGet.PackageManagement.UI
             _dontStartNewSearch = true;
 
             _packageList.LoadingIndicator_Begin();
-            _packageList.ClearPackageList();
 
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
 
@@ -530,6 +530,7 @@ namespace NuGet.PackageManagement.UI
                 if (prevSelectedItem == SelectedSource)
                 {
                     EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable);
+                    _packageList.LoadingIndicator_Ready();
                 }
                 else
                 {
@@ -1535,8 +1536,8 @@ namespace NuGet.PackageManagement.UI
             _packageList.LoadingIndicator_Begin();
             _packageList.ClearPackageList();
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecutePackageSearchAsync())
-                .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
+                .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommandAsync));
         }
 
         private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)

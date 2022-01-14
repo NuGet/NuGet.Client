@@ -78,7 +78,6 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return _author != null ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
-                RaisePropertyChanged(nameof(Author));
             }
         }
 
@@ -272,7 +271,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsNotInstalled
+        // If the values that help calculate this property change, make sure you raise RaisePropertyChanged for IsNotInstalled
         // in all those properties.
         public bool IsNotInstalled
         {
@@ -282,7 +281,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsUninstallable
+        // If the values that help calculate this property change, make sure you raise RaisePropertyChanged for IsUninstallable
         // in all those properties.
         public bool IsUninstallable
         {
@@ -292,7 +291,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsLatestInstalled
+        // If the values that help calculate this property change, make sure you raise RaisePropertyChanged for IsLatestInstalled
         // in all those properties.
         public bool IsLatestInstalled
         {
@@ -302,7 +301,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsUpdateAvailable
+        // If the values that help calculate this property change, make sure you raise RaisePropertyChanged for IsUpdateAvailable
         // in all those properties.
         public bool IsUpdateAvailable
         {
@@ -337,52 +336,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _providersLoaderStarted;
-
-        private AlternativePackageManagerProviders _providers;
-        public AlternativePackageManagerProviders Providers
-        {
-            get
-            {
-                if (!_providersLoaderStarted && ProvidersLoader != null)
-                {
-                    _providersLoaderStarted = true;
-                    NuGetUIThreadHelper.JoinableTaskFactory
-                        .RunAsync(ReloadProvidersAsync)
-                        .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadProvidersAsync));
-                }
-
-                return _providers;
-            }
-
-            private set
-            {
-                _providers = value;
-                RaisePropertyChanged(nameof(Providers));
-            }
-        }
-
-
-        private Lazy<Task<AlternativePackageManagerProviders>> _providersLoader;
-        internal Lazy<Task<AlternativePackageManagerProviders>> ProvidersLoader
-        {
-            get
-            {
-                return _providersLoader;
-            }
-
-            set
-            {
-                if (_providersLoader != value)
-                {
-                    _providersLoaderStarted = false;
-                }
-
-                _providersLoader = value;
-                RaisePropertyChanged(nameof(Providers));
-            }
-        }
-
         private bool _prefixReserved;
         public bool PrefixReserved
         {
@@ -406,7 +359,6 @@ namespace NuGet.PackageManagement.UI
                 if (_isPackageDeprecated != value)
                 {
                     _isPackageDeprecated = value;
-<<<<<<< HEAD
                     RaisePropertyChanged(nameof(IsPackageWithWarnings));
                     RaisePropertyChanged(nameof(IsPackageDeprecated));
                 }
@@ -427,12 +379,9 @@ namespace NuGet.PackageManagement.UI
                 if (_vulnerabilityMaxSeverity != value)
                 {
                     _vulnerabilityMaxSeverity = value;
-                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
-                    OnPropertyChanged(nameof(IsPackageVulnerable));
-                    OnPropertyChanged(nameof(IsPackageWithWarnings));
-=======
-                    RaisePropertyChanged(nameof(IsPackageDeprecated));
->>>>>>> 73053a084 (Squash 8981b49932a4f127338799ca1085b4496701480b...afa35d573ca044b8cef4f5355dbe59eaf2174853)
+                    RaisePropertyChanged(nameof(VulnerabilityMaxSeverity));
+                    RaisePropertyChanged(nameof(IsPackageVulnerable));
+                    RaisePropertyChanged(nameof(IsPackageWithWarnings));
                 }
             }
         }
@@ -534,7 +483,7 @@ namespace NuGet.PackageManagement.UI
                 if (_deprecationMetadata != value)
                 {
                     _deprecationMetadata = value;
-                    OnPropertyChanged(nameof(DeprecationMetadata));
+                    RaisePropertyChanged(nameof(DeprecationMetadata));
                 }
             }
         }
@@ -779,14 +728,6 @@ namespace NuGet.PackageManagement.UI
             return status;
         }
 
-<<<<<<< HEAD
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-=======
->>>>>>> 73053a084 (Squash 8981b49932a4f127338799ca1085b4496701480b...afa35d573ca044b8cef4f5355dbe59eaf2174853)
         public string PackagePath { get; set; }
         public INuGetPackageFileService PackageFileService { get; internal set; }
 

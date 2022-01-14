@@ -205,7 +205,6 @@
     <Compile Include="IItemLoader.cs" />
     <Compile Include="InfiniteScrollListItemStyleSelector.cs" />
     <Compile Include="ViewModels\LoadingStatusIndicator.cs" />
-    <Compile Include="Models\AlternativePackageManagerProviders.cs" />
     <Compile Include="ViewModels\PackageItemViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Converters\NotNullToBooleanConverter.cs" />
