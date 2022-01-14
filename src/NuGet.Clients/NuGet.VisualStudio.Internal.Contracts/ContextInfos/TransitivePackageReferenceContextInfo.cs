@@ -26,6 +26,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             TransitiveOrigins = new List<IPackageReferenceContextInfo>();
         }
 
+        // Only for testing purposes
         internal static TransitivePackageReferenceContextInfo Create(PackageIdentity identity, NuGetFramework? framework)
         {
             return new TransitivePackageReferenceContextInfo(identity, framework);
@@ -33,6 +34,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public static TransitivePackageReferenceContextInfo Create(IPackageReferenceContextInfo packageReference)
         {
+            if (packageReference == null)
+            {
+                throw new ArgumentNullException(nameof(packageReference));
+            }
+
             var tranPkgRefCtxInfo = new TransitivePackageReferenceContextInfo(packageReference.Identity, packageReference.Framework)
             {
                 IsAutoReferenced = packageReference.IsAutoReferenced,
@@ -54,6 +60,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             var prCtxInfo = PackageReferenceContextInfo.Create(transitivePackageReference);
 
             var tranPkgRefCtxInfo = Create(prCtxInfo);
+
             tranPkgRefCtxInfo.TransitiveOrigins = transitivePackageReference.TransitiveOrigins.Select(pr => PackageReferenceContextInfo.Create(pr)).ToList();
 
             return tranPkgRefCtxInfo;
