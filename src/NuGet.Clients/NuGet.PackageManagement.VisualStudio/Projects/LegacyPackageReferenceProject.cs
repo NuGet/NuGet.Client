@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
             PackageSpec reading = await GetCachedPackageSpecAsync(token);
-            if (reading! == null)
+            if (reading == null)
             {
                 IsInstalledAndTransitiveComputationNeeded = true;
 

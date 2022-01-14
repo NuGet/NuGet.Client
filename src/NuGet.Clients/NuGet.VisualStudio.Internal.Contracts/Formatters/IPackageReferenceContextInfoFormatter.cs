@@ -38,9 +38,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             int propertyCount = reader.ReadMapHeader();
             for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                var switchKey = reader.ReadString();
+                var serializedPropertyName = reader.ReadString();
 
-                switch (switchKey)
+                switch (serializedPropertyName)
                 {
                     case IdentityPropertyName:
                         identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
