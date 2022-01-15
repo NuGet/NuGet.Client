@@ -530,6 +530,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _installedPackages.Clear();
             _transitivePackages.Clear();
+            IsInstalledAndTransitiveComputationNeeded = true;
         }
     }
 }

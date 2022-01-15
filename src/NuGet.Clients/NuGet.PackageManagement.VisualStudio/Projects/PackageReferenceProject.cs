@@ -39,7 +39,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
 
-        protected bool IsTransitiveComputationNeeded { get; set; } = true;
         protected bool IsInstalledAndTransitiveComputationNeeded { get; set; } = true;
 
         protected PackageReferenceProject(
@@ -130,7 +129,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ct.ThrowIfCancellationRequested();
 
-            if (!IsTransitiveComputationNeeded)
+            if (!IsInstalledAndTransitiveComputationNeeded)
             {
                 // Assets file has not changed, look at transtive origin cache
                 // 2.1 Look for a transitive cached entry and return that entry
@@ -156,8 +155,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     MarkTransitiveOrigin(directPkg, directPkg, targetFxGraph, memoryVisited, key, ct);
                 }
             }
-
-            IsTransitiveComputationNeeded = false;
 
             // 4. return cached result for specific transitive dependency
             return GetCachedTransitiveOrigin(transitivePackage.PackageIdentity);
@@ -187,7 +184,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 _lastTimeAssetsModified = assets.LastWriteTimeUtc;
                 _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
                 IsInstalledAndTransitiveComputationNeeded = true;
-                IsTransitiveComputationNeeded = true;
             }
 
             return currentPackageSpec;
@@ -224,12 +220,20 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             token.ThrowIfCancellationRequested();
 
-            LockFileTargetLibrary node = graph
-                .Libraries
-                .Where(lib => string.Equals(lib.Name, current.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)
-                        && current.AllowedVersions.Satisfies(lib.Version)
-                        && lib.Type == LibraryType.Package.Value)
-                .FirstOrDefault();
+            LockFileTargetLibrary node = default;
+
+            // Find first target node that matches current
+            foreach (LockFileTargetLibrary lib in graph.Libraries)
+            {
+                if (lib.Type == LibraryType.Package.Value
+                    && string.Equals(lib.Name, current.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)
+                    && ((current.HasAllowedVersions && current.AllowedVersions.Satisfies(lib.Version)) ||
+                        (current.PackageIdentity.HasVersion && current.PackageIdentity.Version.Equals(lib.Version))))
+                {
+                    node = lib;
+                    break;
+                }
+            }
 
             if (node != default)
             {
@@ -258,7 +262,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 SetCachedTransitiveOrigin(current.PackageIdentity, cachedEntry);
 
-                foreach (PackageDependency dep in node.Dependencies)
+                foreach (PackageDependency dep in node.Dependencies.ToList()) // Casting to list to prevent backing allocations
                 {
                     // Create PackageReference object as a data-model based on dependency
                     var pkgChild = new PackageReference(
@@ -329,7 +333,7 @@ namespace NuGet.PackageManagement.VisualStudio
         internal void ClearCachedTransitiveOrigins()
         {
             TransitiveOriginsCache.Clear();
-            IsTransitiveComputationNeeded = true;
+            IsInstalledAndTransitiveComputationNeeded = true;
         }
 
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
