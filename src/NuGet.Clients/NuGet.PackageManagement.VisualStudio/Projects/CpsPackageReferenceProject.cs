@@ -218,8 +218,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc/>
         public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
-            PackageSpec reading = await GetCachedPackageSpecAsync(token);
-            if (reading == null)
+            PackageSpec packageSpec = await GetCachedPackageSpecAsync(token);
+            if (packageSpec == null)
             {
                 IsInstalledAndTransitiveComputationNeeded = true;
 
@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var frameworkSorter = new NuGetFrameworkSorter();
 
-            List<PackageReference> installedPackages = reading
+            List<PackageReference> installedPackages = packageSpec
                 .TargetFrameworks
                 .SelectMany(f => GetPackageReferencesForFramework(
                     f.Dependencies,
@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
 
             // get the transitive packages, excluding any already contained in the installed packages
-            List<PackageReference> transitivePackages = reading
+            List<PackageReference> transitivePackages = packageSpec
                 .TargetFrameworks
                 .SelectMany(f => GetTransitivePackageReferencesForFramework(
                     f.FrameworkName,
