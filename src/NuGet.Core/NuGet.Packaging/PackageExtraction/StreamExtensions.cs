@@ -53,11 +53,11 @@ namespace NuGet.Packaging
             // default - use memory-mapped files on Windows, but not on other systems
             private const string MMAP_VARIABLE_NAME = "NUGET_PACKAGE_EXTRACTION_USE_MMAP";
 
-            internal bool IsMMapEnabled { get; }
+            private bool _isMMapEnabled { get; }
 
             internal Testable(IEnvironmentVariableReader environmentVariableReader)
             {
-                IsMMapEnabled = environmentVariableReader.GetEnvironmentVariable(MMAP_VARIABLE_NAME) switch
+                _isMMapEnabled = environmentVariableReader.GetEnvironmentVariable(MMAP_VARIABLE_NAME) switch
                 {
                     "0" => false,
                     "1" => true,
@@ -101,7 +101,7 @@ namespace NuGet.Packaging
                     // If we can't get Length, just move on.
                 }
 
-                if (IsMMapEnabled && size > 0 && size <= MAX_MMAP_SIZE)
+                if (_isMMapEnabled && size > 0 && size <= MAX_MMAP_SIZE)
                 {
                     MmapCopy(inputStream, fileFullPath, size.Value);
                 }
