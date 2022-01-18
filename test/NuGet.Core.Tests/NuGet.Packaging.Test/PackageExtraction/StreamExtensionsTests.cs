@@ -10,29 +10,27 @@ using Xunit;
 
 namespace NuGet.Packaging.Test.PackageExtraction
 {
-    class TestableProxy : NuGet.Packaging.StreamExtensions.Testable
-    {
-        public bool MmapCopyWasCalled { get; set; }
-        public bool FileStreamCopyWasCalled { get; set; }
-        internal TestableProxy(IEnvironmentVariableReader environmentVariableReader) : base(environmentVariableReader)
-        {
-        }
-
-        internal override void MmapCopy(Stream inputStream, string fileFullPath, long size)
-        {
-            MmapCopyWasCalled = true;
-            base.MmapCopy(inputStream, fileFullPath, size);
-        }
-
-        internal override void FileStreamCopy(Stream inputStream, string fileFullPath)
-        {
-            FileStreamCopyWasCalled = true;
-            base.FileStreamCopy(inputStream, fileFullPath);
-        }
-    }
-
     public class StreamExtensionsTests
     {
+        class TestableProxy : NuGet.Packaging.StreamExtensions.Testable
+        {
+            public bool MmapCopyWasCalled { get; set; }
+            public bool FileStreamCopyWasCalled { get; set; }
+            internal TestableProxy(IEnvironmentVariableReader environmentVariableReader) : base(environmentVariableReader)
+            {
+            }
+
+            internal override void MmapCopy(Stream inputStream, string fileFullPath, long size)
+            {
+                MmapCopyWasCalled = true;
+            }
+
+            internal override void FileStreamCopy(Stream inputStream, string fileFullPath)
+            {
+                FileStreamCopyWasCalled = true;
+            }
+        }
+
         [PlatformFact(Platform.Windows)]
         public void CopyToFile_Windows_CallsMmapCopy()
         {
