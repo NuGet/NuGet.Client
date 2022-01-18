@@ -12,6 +12,8 @@ namespace NuGet.Packaging.Test.PackageExtraction
 {
     public class StreamExtensionsTests
     {
+        private const string TestText = "Hello world";
+
         class TestableProxy : NuGet.Packaging.StreamExtensions.Testable
         {
             public bool MmapCopyWasCalled { get; set; }
@@ -23,11 +25,13 @@ namespace NuGet.Packaging.Test.PackageExtraction
             internal override void MmapCopy(Stream inputStream, string fileFullPath, long size)
             {
                 MmapCopyWasCalled = true;
+                base.MmapCopy(inputStream, fileFullPath, size);
             }
 
             internal override void FileStreamCopy(Stream inputStream, string fileFullPath)
             {
                 FileStreamCopyWasCalled = true;
+                base.FileStreamCopy(inputStream, fileFullPath);
             }
         }
 
@@ -39,9 +43,10 @@ namespace NuGet.Packaging.Test.PackageExtraction
                 var testPath = Path.Combine(directory, Path.GetRandomFileName());
                 var environmentVariableReader = new Mock<IEnvironmentVariableReader>();
                 var uut = new TestableProxy(environmentVariableReader.Object);
-                uut.CopyToFile(new MemoryStream(Encoding.UTF8.GetBytes("Hello world")), testPath);
+                uut.CopyToFile(new MemoryStream(Encoding.UTF8.GetBytes(TestText)), testPath);
                 Assert.True(uut.MmapCopyWasCalled);
                 Assert.False(uut.FileStreamCopyWasCalled);
+                Assert.Equal(TestText, File.ReadAllText(testPath));
             }
         }
 
@@ -53,9 +58,10 @@ namespace NuGet.Packaging.Test.PackageExtraction
                 var testPath = Path.Combine(directory, Path.GetRandomFileName());
                 var environmentVariableReader = new Mock<IEnvironmentVariableReader>();
                 var uut = new TestableProxy(environmentVariableReader.Object);
-                uut.CopyToFile(new MemoryStream(Encoding.UTF8.GetBytes("Hello world")), testPath);
+                uut.CopyToFile(new MemoryStream(Encoding.UTF8.GetBytes(TestText)), testPath);
                 Assert.False(uut.MmapCopyWasCalled);
                 Assert.True(uut.FileStreamCopyWasCalled);
+                Assert.Equal(TestText, File.ReadAllText(testPath));
             }
         }
 
@@ -71,9 +77,10 @@ namespace NuGet.Packaging.Test.PackageExtraction
                     .Returns(env);
                 var uut = new TestableProxy(environmentVariableReader.Object);
                 var testPath = Path.Combine(directory, Path.GetRandomFileName());
-                uut.CopyToFile(new MemoryStream(Encoding.UTF8.GetBytes("Hello world")), testPath);
+                uut.CopyToFile(new MemoryStream(Encoding.UTF8.GetBytes(TestText)), testPath);
                 Assert.Equal(uut.MmapCopyWasCalled, expectedMMap);
                 Assert.Equal(uut.FileStreamCopyWasCalled, !uut.MmapCopyWasCalled);
+                Assert.Equal(TestText, File.ReadAllText(testPath));
             }
         }
     }
