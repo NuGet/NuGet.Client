@@ -18,6 +18,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             // MEF components do not participate in Visual Studio's Package extensibility,
             // hence importing INuGetTelemetryProvider ensures that the ETW collector is
             // set up correctly.
+            _ = telemetryProvider;
         }
 
         public VsSemanticVersionComparer()

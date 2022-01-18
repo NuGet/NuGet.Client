@@ -13,14 +13,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     [Export(typeof(VsPackageInstallerEvents))]
     public class VsPackageInstallerEvents : IVsPackageInstallerEvents
     {
-        [ImportingConstructor]
-        public VsPackageInstallerEvents(INuGetTelemetryProvider telemetryProvider)
-        {
-            // MEF components do not participate in Visual Studio's Package extensibility,
-            // hence importing INuGetTelemetryProvider ensures that the ETW collector is
-            // set up correctly.
-        }
-
         private event VsPackageEventHandler _packageInstalled;
         const string VsPackageInstalledEventName = nameof(IVsPackageInstallerEvents) + "." + nameof(PackageInstalled);
         public event VsPackageEventHandler PackageInstalled
@@ -120,7 +112,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         private readonly PackageEvents _eventSource;
 
         [ImportingConstructor]
-        public VsPackageInstallerEvents(IPackageEventsProvider eventProvider)
+        public VsPackageInstallerEvents(IPackageEventsProvider eventProvider, INuGetTelemetryProvider telemetryProvider)
         {
             _eventSource = eventProvider.GetPackageEvents();
 
@@ -130,6 +122,11 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             _eventSource.PackageReferenceRemoved += Source_PackageReferenceRemoved;
             _eventSource.PackageUninstalled += Source_PackageUninstalled;
             _eventSource.PackageUninstalling += Source_PackageUninstalling;
+
+            // MEF components do not participate in Visual Studio's Package extensibility,
+            // hence importing INuGetTelemetryProvider ensures that the ETW collector is
+            // set up correctly.
+            _ = telemetryProvider;
         }
 
         // TODO: If the extra metadata fields are needed use: PackageManagementHelpers.CreateMetadata()

@@ -15,14 +15,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
     [Export(typeof(IVsPackageInstallerProjectEvents))]
     public class VsPackageInstallerProjectEvents : IVsPackageInstallerProjectEvents
     {
-        [ImportingConstructor]
-        public VsPackageInstallerProjectEvents(INuGetTelemetryProvider telemetryProvider)
-        {
-            // MEF components do not participate in Visual Studio's Package extensibility,
-            // hence importing INuGetTelemetryProvider ensures that the ETW collector is
-            // set up correctly.
-        }
-
         public event VsPackageProjectEventHandler _batchStart;
         const string BatchStartEventName = nameof(IVsPackageInstallerProjectEvents) + "." + nameof(BatchStart);
         public event VsPackageProjectEventHandler BatchStart
@@ -56,12 +48,17 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         }
 
         [ImportingConstructor]
-        public VsPackageInstallerProjectEvents(IPackageProjectEventsProvider eventProvider)
+        public VsPackageInstallerProjectEvents(IPackageProjectEventsProvider eventProvider, INuGetTelemetryProvider telemetryProvider)
         {
             var eventSource = eventProvider.GetPackageProjectEvents();
 
             eventSource.BatchStart += NotifyBatchStart;
             eventSource.BatchEnd += NotifyBatchEnd;
+
+            // MEF components do not participate in Visual Studio's Package extensibility,
+            // hence importing INuGetTelemetryProvider ensures that the ETW collector is
+            // set up correctly.
+            _ = telemetryProvider;
         }
 
         private void NotifyDelegates(PackageProjectEventArgs e, Delegate[] delegates)
