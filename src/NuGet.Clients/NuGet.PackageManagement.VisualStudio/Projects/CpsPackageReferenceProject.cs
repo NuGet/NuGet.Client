@@ -68,9 +68,9 @@ namespace NuGet.PackageManagement.VisualStudio
             _unconfiguredProject = unconfiguredProject;
             ProjectServices = projectServices;
 
-            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, ProjectName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, ProjectUniqueName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.CompletedTask;
         }
 
-        private protected override Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+        protected override Task<string> GetAssetsFilePathAsync(bool shouldThrow)
         {
             var packageSpec = GetPackageSpec();
             if (packageSpec == null)
@@ -106,9 +106,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private PackageSpec GetPackageSpec()
         {
             DependencyGraphSpec projectRestoreInfo;
-            if (_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo, out _))
+            if (_projectSystemCache.TryGetProjectRestoreInfo(ProjectFullPath, out projectRestoreInfo, out _))
             {
-                return projectRestoreInfo.GetProjectSpec(_projectFullPath);
+                return projectRestoreInfo.GetProjectSpec(ProjectFullPath);
             }
 
             // if restore data was not found in the cache, meaning project nomination
@@ -120,7 +120,7 @@ namespace NuGet.PackageManagement.VisualStudio
         #region IDependencyGraphProject
 
 
-        public override string MSBuildProjectPath => _projectFullPath;
+        public override string MSBuildProjectPath => ProjectFullPath;
 
         public override Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             DependencyGraphSpec projectRestoreInfo;
             IReadOnlyList<IAssetsLogMessage> additionalMessages;
-            if (!_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo, out additionalMessages))
+            if (!_projectSystemCache.TryGetProjectRestoreInfo(ProjectFullPath, out projectRestoreInfo, out additionalMessages))
             {
                 throw new ProjectNotNominatedException(
                     string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
@@ -336,7 +336,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     throw new InvalidOperationException(string.Format(
                         Strings.UnableToGetCPSPackageInstallationService,
-                        _projectFullPath));
+                        ProjectFullPath));
                 }
 
                 foreach (var framework in installationContext.SuccessfulFrameworks)

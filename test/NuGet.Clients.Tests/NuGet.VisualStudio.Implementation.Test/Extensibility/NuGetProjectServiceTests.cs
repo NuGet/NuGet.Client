@@ -2,18 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
+using NuGet.Versioning;
 using NuGet.VisualStudio.Contracts;
 using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Telemetry;
+using Test.Utility.ProjectManagement;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
@@ -72,6 +80,115 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             // Assert
             Assert.NotNull(actual);
             Assert.Equal(InstalledPackageResultStatus.ProjectInvalid, actual.Status);
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesAsync_PackageReferenceProject_ReturnsTransitive()
+        {
+            // Arrange
+            var projectGuid = Guid.NewGuid();
+
+            var settings = new Mock<ISettings>();
+            var telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
+
+            var installedPackages = new List<PackageReference>()
+            {
+                new PackageReference(new PackageIdentity("a", new Versioning.NuGetVersion(1, 0, 0)), FrameworkConstants.CommonFrameworks.Net50)
+            };
+            var transitivePackages = new List<PackageReference>()
+            {
+                new PackageReference(new PackageIdentity("b", new Versioning.NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)
+            };
+            var projectPackages = new ProjectPackages(installedPackages, transitivePackages);
+            var project = new TestPackageReferenceProject("ProjectA", @"src\ProjectA\Project.csproj", @"c:\path\to\src\ProjectA\ProjectA.csproj",
+                installedPackages, transitivePackages);
+
+            var solutionManager = new Mock<IVsSolutionManager>();
+            solutionManager.Setup(sm => sm.GetNuGetProjectAsync(projectGuid.ToString()))
+                .Returns(() => Task.FromResult<NuGetProject>(project));
+
+            // Act
+            var target = new NuGetProjectService(solutionManager.Object, settings.Object, telemetryProvider.Object);
+            InstalledPackagesResult actual = await target.GetInstalledPackagesAsync(projectGuid, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(actual);
+            Assert.Equal(InstalledPackageResultStatus.Successful, actual.Status);
+
+            NuGetInstalledPackage package = actual.Packages.FirstOrDefault(p => p.Id == "a");
+            Assert.NotNull(package);
+            Assert.True(package.DirectDependency);
+
+            package = actual.Packages.FirstOrDefault(p => p.Id == "b");
+            Assert.NotNull(package);
+            Assert.False(package.DirectDependency);
+        }
+
+        private class TestPackageReferenceProject : PackageReferenceProject
+        {
+            IReadOnlyList<PackageReference> _installedPackages;
+            IReadOnlyList<PackageReference> _transitivePackages;
+
+            public TestPackageReferenceProject(
+                string projectName,
+                string projectUniqueName,
+                string projectFullPath,
+                IReadOnlyList<PackageReference> installedPackages,
+                IReadOnlyList<PackageReference> transitivePackages)
+                : base(projectName, projectUniqueName, projectFullPath)
+            {
+                _installedPackages = installedPackages;
+                _transitivePackages = transitivePackages;
+            }
+
+            //public override string MSBuildProjectPath => throw new NotImplementedException();
+
+            public override Task AddFileToProjectAsync(string filePath)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<string> GetCacheFilePathAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
+            {
+                var projectPackages = new ProjectPackages(_installedPackages, _transitivePackages);
+                return Task.FromResult(projectPackages);
+            }
+
+            public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
+            {
+                DependencyGraphSpec dgSpec = DependencyGraphSpecTestUtilities.CreateMinimalDependencyGraphSpec(ProjectFullPath, MSBuildProjectPath);
+
+                List<PackageSpec> packageSpecs = new List<PackageSpec>();
+                packageSpecs.Add(dgSpec.GetProjectSpec(ProjectFullPath));
+
+                (IReadOnlyList<PackageSpec>, IReadOnlyList<IAssetsLogMessage>) result = (packageSpecs, null);
+                return Task.FromResult(result);
+            }
+
+            public override Task<bool> InstallPackageAsync(string packageId, VersionRange range, INuGetProjectContext nuGetProjectContext, BuildIntegratedInstallationContext installationContext, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

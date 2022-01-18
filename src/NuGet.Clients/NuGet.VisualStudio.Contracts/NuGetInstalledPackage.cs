@@ -12,8 +12,8 @@ namespace NuGet.VisualStudio.Contracts
 
         /// <summary>The project's requested package range for the package.</summary>
         /// <remarks>
-        /// If the project uses packages.config, this will be same as the installed package version.
-        /// If the project uses PackageReference, this is the version string in the project file, which may not match the resolved package version, and may not be single version string.
+        /// If the project uses packages.config, this will be same as the installed package version. <br/>
+        /// If the project uses PackageReference, this is the version string in the project file, which may not match the resolved package version, and may be a range, not a single version.<br/>
         /// If the project uses PackageReference, and the package is a transitive dependency, the value will be null.
         /// </remarks>
         public string RequestedRange { get; }
@@ -21,13 +21,13 @@ namespace NuGet.VisualStudio.Contracts
         /// <summary>The installed package version</summary>
         /// <remarks>
         /// If the project uses packages.config, this will be the same as requested range.
-        /// If the project uses PackageReference, this will be the resolved version.
+        /// <para>If the project uses PackageReference, this will be the resolved version, if the project has been restored successfully.
+        /// If the project has not been restored, or the package could not be found on any package sources, this value will be null</para>
         /// </remarks>
         public string Version { get; }
 
         /// <summary>Path to the extracted package</summary>
         /// <remarks>
-        /// When Visual Studio is connected to a Codespaces or Live Share environment, the path will be for the remote envionrment, not local.
         /// This may be null if the package was not restored successfully.
         /// </remarks>
         public string InstallPath { get; }
