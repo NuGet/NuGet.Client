@@ -12,6 +12,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -25,12 +26,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Update_DeletedFile()
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -135,12 +138,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_References()
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -215,13 +220,15 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Success_References_MultipleProjects()
         {
 
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 var projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
                 var projectDirectory2 = Path.Combine(solutionDirectory, "proj2");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -518,12 +525,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Prerelease()
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0-BETA"));
@@ -603,12 +612,14 @@ namespace NuGet.CommandLine.Test
         [InlineData("2.0.0-BETA", "2.0.1")]
         public async Task UpdateCommand_Success_Prerelease_With_Id(string oldVersion, string newVersion)
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion(oldVersion));
                 var a2 = new PackageIdentity("A", new NuGetVersion(newVersion));
@@ -686,12 +697,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Version_Upgrade()
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -777,12 +790,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Version_Downgrade()
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -868,12 +883,15 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_ProjectFile_References()
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
+
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -947,12 +965,15 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_PackagesConfig_References()
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
+
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -1025,15 +1046,17 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-
         [Fact]
         public async Task UpdateCommand_Success_ContentFiles()
         {
             // Arrange
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var workingPath = pathContext.WorkingDirectory;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
@@ -1144,9 +1167,11 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Success_CustomPackagesFolder_RelativePath()
         {
             // Arrange
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
                 // Use a different folder name instead of 'packages'
                 var packagesDirectory = Path.Combine(solutionDirectory, "custom-pcks");
 
@@ -1169,7 +1194,7 @@ namespace NuGet.CommandLine.Test
                     new List<PackageDependencyGroup>() { });
 
                 // Create a nuget.config file with a relative 'repositoryPath' setting
-                Util.CreateNuGetConfig(solutionDirectory, new[] { packagesSourceDirectory.Path }.ToList(), "custom-pcks");
+                Util.CreateNuGetConfig(solutionDirectory, new[] { packagesSourceDirectory }.ToList(), "custom-pcks");
 
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 Directory.CreateDirectory(projectDirectory);
@@ -1239,9 +1264,11 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -1332,10 +1359,13 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Success_CustomPackagesFolder_AbsolutePath()
         {
             // Arrange
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var packagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var packagesDirectory = pathContext.PackagesV2;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
+
                 // Create some packages
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
@@ -1355,8 +1385,6 @@ namespace NuGet.CommandLine.Test
                     new List<PackageDependencyGroup>() { });
 
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                // Create a nuget.config file that has the full absolute path to 'packagesDirectory'
-                Util.CreateNuGetConfig(solutionDirectory, new[] { packagesSourceDirectory.Path }.ToList(), packagesDirectory);
 
                 Directory.CreateDirectory(projectDirectory);
                 // create project 1
@@ -1411,7 +1439,7 @@ namespace NuGet.CommandLine.Test
 
                 // Check the custom package folder is used in the assembly reference
                 var content1 = File.ReadAllText(projectFile);
-                var customPackageFolderName = new DirectoryInfo(packagesDirectory.Path).Name;
+                var customPackageFolderName = new DirectoryInfo(packagesDirectory).Name;
                 var a1Path = Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
                     Path.Combine("A.1.0.0", "lib", "net45", "file.dll");
                 var a2Path = Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
@@ -1544,13 +1572,14 @@ namespace NuGet.CommandLine.Test
         [InlineData("HighestPatch", "1.0.1")]
         public async Task UpdateCommand_DependencyResolution_Success(string dependencyVersion, string expectedVersion)
         {
-            using (var packagesSourceDirectory = TestDirectory.Create())
-            using (var solutionDirectory = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 //Arrange
+                var workingPath = pathContext.WorkingDirectory;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+                var packagesDirectory = pathContext.PackagesV2;
                 var nugetFramework = NuGetFramework.Parse("net45");
                 // version installed will be the 1.1.0  - Create Package a1
                 var a1PackageIdentity = new PackageIdentity("A", new NuGetVersion("1.1.0"));
@@ -1681,10 +1710,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_NF_Project_Success()
         {
-            using (TestDirectory packagesSourceDirectory = TestDirectory.Create())
-            using (TestDirectory solutionDirectory = TestDirectory.Create())
-            using (TestDirectory workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                //Arrange
+                var workingPath = pathContext.WorkingDirectory;
+                var solutionDirectory = pathContext.SolutionRoot;
+                var packagesSourceDirectory = pathContext.PackageSource;
                 // setup directories
                 string projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
                 string projectDirectory2 = Path.Combine(solutionDirectory, "proj2");
@@ -1706,8 +1737,6 @@ namespace NuGet.CommandLine.Test
                 a1Package.Files.Clear();
                 a1Package.AddFile($"lib/{a1.Id}.dll");
 
-                FileInfo a1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, a1Package.PackageName);
-
                 var a2Package = new SimpleTestPackageContext()
                 {
                     Id = a2.Id,
@@ -1715,8 +1744,6 @@ namespace NuGet.CommandLine.Test
                 };
                 a2Package.Files.Clear();
                 a2Package.AddFile($"lib/{a2.Id}.dll");
-
-                await a2Package.CreateAsFileAsync(packagesSourceDirectory, a2Package.PackageName);
 
                 var b1Package = new SimpleTestPackageContext()
                 {
@@ -1726,8 +1753,6 @@ namespace NuGet.CommandLine.Test
                 b1Package.Files.Clear();
                 b1Package.AddFile($"lib/{b1.Id}.dll");
 
-                FileInfo b1File = await a1Package.CreateAsFileAsync(packagesSourceDirectory, b1Package.PackageName);
-
                 var b2Package = new SimpleTestPackageContext()
                 {
                     Id = b2.Id,
@@ -1736,7 +1761,7 @@ namespace NuGet.CommandLine.Test
                 b2Package.Files.Clear();
                 b2Package.AddFile($"lib/{b2.Id}.dll");
 
-                await b2Package.CreateAsFileAsync(packagesSourceDirectory, b2Package.PackageName);
+                await SimpleTestPackageUtility.CreatePackagesAsync(packagesSourceDirectory, a1Package, a2Package, b1Package, b2Package);
 
                 // build list of packages (initial versions on the project files)
                 var packages = new List<(string, string)>();
@@ -1791,7 +1816,11 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);
                 var msBuildProject2 = new MSBuildNuGetProject(projectSystem2, packagesDirectory, projectDirectory2);
 
-                using (FileStream stream = File.OpenRead(a1File.FullName))
+                var packagesInSource = LocalFolderUtility.GetPackagesV2(pathContext.PackageSource, Common.NullLogger.Instance);
+                var a1File = packagesInSource.Single(e => e.Identity.Equals(a1Package.Identity));
+                var b1File = packagesInSource.Single(e => e.Identity.Equals(b1Package.Identity));
+
+                using (FileStream stream = File.OpenRead(a1File.Path))
                 {
                     var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject1.InstallPackageAsync(
@@ -1801,7 +1830,7 @@ namespace NuGet.CommandLine.Test
                         CancellationToken.None);
                 }
 
-                using (FileStream stream = File.OpenRead(b1File.FullName))
+                using (FileStream stream = File.OpenRead(b1File.Path))
                 {
                     var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
                     await msBuildProject2.InstallPackageAsync(

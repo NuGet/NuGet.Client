@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Configuration.Test;
@@ -162,9 +163,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -198,9 +200,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var a = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
                 await SimpleTestPackageUtility.CreateFolderFeedV2Async(repositoryPath, a);
                 await SimpleTestPackageUtility.DeleteNuspecFileFromPackageAsync(Path.Combine(repositoryPath, a.ToString() + NuGetConstants.PackageExtension));
@@ -302,8 +305,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
                 // Act
@@ -315,8 +320,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -326,9 +331,11 @@ namespace NuGet.CommandLine.Test
         public void RestoreCommand_FromProjectFile()
         {
             // Arrange
-            using (var repositoryPath = TestDirectory.Create())
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
+
                 var proj1Directory = Path.Combine(workingPath, "proj1");
                 Directory.CreateDirectory(proj1Directory);
 
@@ -379,8 +386,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -429,10 +436,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, proj1ConfigFileName, proj2ConfigFileName);
-
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, proj1ConfigFileName, proj2ConfigFileName, redirectGlobalPackagesFolder: false);
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -497,8 +504,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                 msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
                 // Act
@@ -511,8 +519,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                 // Assert
                 Assert.True(_successCode == r.Item1, r.Item2);
                 Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -586,9 +594,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+
+                var repositoryPath = pathContext.PackageSource;
                 var proj1Directory = Path.Combine(workingPath, "proj1");
 
                 Directory.CreateDirectory(repositoryPath);
@@ -630,7 +640,7 @@ EndProject");
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
         }
@@ -643,9 +653,10 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
 
                 Directory.CreateDirectory(repositoryPath);
 
@@ -656,15 +667,6 @@ EndProject");
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
-                var repoPath = (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows) ?
-                    @"../Packages2" : @"$\..\..\Packages2";
-                Util.CreateFile(Path.Combine(workingPath, ".nuget"), "nuget.config",
-$@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <config>
-    <add key=""repositorypath"" value=""{repoPath}"" />
-  </config>
-</configuration>");
 
                 string[] args = new string[] { "restore", "-Source", repositoryPath, "-solutionDir", workingPath };
 
@@ -677,8 +679,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(workingPath, @"Packages2", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"Packages2", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -715,7 +717,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                string optOutMessage = String.Format(
+                string optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -755,7 +757,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                string optOutMessage = String.Format(
+                string optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -777,9 +779,11 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrang
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var randomTestFolder = Path.Combine(pathContext.WorkingDirectory, "random");
+                Directory.CreateDirectory(randomTestFolder);
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
                 // Act
@@ -791,8 +795,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -986,7 +990,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
 EndProject");
                 Util.CreateFile(workingPath, "my.config",
-                    String.Format(CultureInfo.InvariantCulture,
+                    string.Format(CultureInfo.InvariantCulture,
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -1055,8 +1059,10 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
                 var expectedPackageFileAExists = false;
@@ -1066,12 +1072,12 @@ EndProject");
                 var expectedNuspecFileBExists = false;
                 var expectedContentBExists = false;
 
-                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var nuspecFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.nuspec");
-                var contentFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "content", "test1.txt");
-                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
-                var nuspecFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.nuspec");
-                var contentFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "content", "test1.txt");
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var nuspecFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.nuspec");
+                var contentFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "content", "test1.txt");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var nuspecFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.nuspec");
+                var contentFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "content", "test1.txt");
 
                 // Act & Assert
                 // None of the files should exist before any restore.
@@ -1157,9 +1163,10 @@ EndProject");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestDirectory.Create())
-            using (var workingDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageDirectory");
+                var workingDirectory = pathContext.WorkingDirectory;
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
@@ -1204,8 +1211,6 @@ EndProject");
 
                     server.Start();
 
-                    Util.CreateNuGetConfig(workingDirectory, new List<string>() { });
-
                     // Act
                     var args = "restore packages.config -PackagesDirectory . -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
@@ -1216,7 +1221,7 @@ EndProject");
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(_successCode, r1.Item1);
+                    r1.Success.Should().BeTrue(r1.AllOutput);
                     Assert.True(getPackageByVersionIsCalled, "getPackageByVersionIsCalled");
                     Assert.True(packageDownloadIsCalled, "getPackageByVersionIsCalled");
                 }
@@ -1229,9 +1234,9 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var basePath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var workingPath = Path.Combine(basePath, "sub1", "sub2");
+                var workingPath = Path.Combine(pathContext.WorkingDirectory, "sub1", "sub2");
 
                 Directory.CreateDirectory(workingPath);
 
@@ -1487,10 +1492,10 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_SolutionDirectory()
         {
-            using (var randomRepositoryPath = TestDirectory.Create())
-            using (var randomSolutionFolder = TestDirectory.Create())
-
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var randomRepositoryPath = pathContext.PackageSource;
+                var randomSolutionFolder = pathContext.SolutionRoot;
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
@@ -1560,9 +1565,10 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_SolutionFile()
         {
-            using (var randomRepositoryPath = TestDirectory.Create())
-            using (var randomSolutionFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var randomRepositoryPath = pathContext.PackageSource;
+                var randomSolutionFolder = pathContext.SolutionRoot;
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
@@ -1632,10 +1638,10 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_NoArgument()
         {
-            using (var randomRepositoryPath = TestDirectory.Create())
-            using (var randomSolutionFolder = TestDirectory.Create())
-
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var randomRepositoryPath = pathContext.PackageSource;
+                var randomSolutionFolder = pathContext.SolutionRoot;
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
@@ -1705,9 +1711,10 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_DuplicatePackageIds()
         {
-            using (var randomRepositoryPath = TestDirectory.Create())
-            using (var randomSolutionFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var randomRepositoryPath = pathContext.PackageSource;
+                var randomSolutionFolder = pathContext.SolutionRoot;
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 Util.CreateTestPackage("packageA", "1.0.0", randomRepositoryPath);
@@ -1881,9 +1888,11 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
-            using (var repositoryPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
+
                 var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0)).DateTime;
 
                 var packageFileFullPath = Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
@@ -1926,8 +1935,9 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var basePath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var basePath = pathContext.WorkingDirectory;
                 Directory.CreateDirectory(Path.Combine(basePath, "A"));
                 Directory.CreateDirectory(Path.Combine(basePath, "A", "A.Util"));
                 Directory.CreateDirectory(Path.Combine(basePath, "B"));
@@ -1992,14 +2002,6 @@ EndProject";
             }
 }");
 
-                Util.CreateFile(basePath, "nuget.config",
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <config>
-    <add key=""globalPackagesFolder"" value=""GlobalPackages2"" />
-  </config>
-</configuration>");
-
                 Util.CreateFile(Path.Combine(basePath, "A"), "A.sln",
                     @"
 Microsoft Visual Studio Solution File, Format Version 12.00
@@ -2040,11 +2042,12 @@ EndProject");
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var identity = new Packaging.Core.PackageIdentity("packageA", new Versioning.NuGetVersion("1.1.0"));
+            var identity = new PackageIdentity("packageA", new NuGetVersion("1.1.0"));
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var repositoryPath = pathContext.PackageSource;
+                var workingPath = pathContext.WorkingDirectory;
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage(identity.Id, identity.Version.ToNormalizedString(), repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
@@ -2076,17 +2079,11 @@ EndProject");
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var identity = new Packaging.Core.PackageIdentity("Newtonsoft.Json", new Versioning.NuGetVersion("7.0.1"));
+            var identity = new PackageIdentity("Newtonsoft.Json", new Versioning.NuGetVersion("7.0.1"));
             var source = @"https://api.nuget.org/v3/index.json";
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                // Overriding globalPackages folder
-                Util.CreateFile(workingPath, "nuget.config",
-@"<configuration>
-  <config>
-    <add key=""globalPackagesFolder"" value=""globalPackages"" />
-  </config>
-</configuration>");
+                var workingPath = pathContext.WorkingDirectory;
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
   <package id=""" + identity.Id + @""" version=""" + identity.Version.ToNormalizedString() + @""" targetFramework=""net45"" />
@@ -2121,17 +2118,11 @@ EndProject");
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var identity = new Packaging.Core.PackageIdentity("Newtonsoft.Json", new Versioning.NuGetVersion("7.0.1"));
+            var identity = new PackageIdentity("Newtonsoft.Json", new NuGetVersion("7.0.1"));
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                // Overriding globalPackages folder
-                Util.CreateFile(workingPath, "nuget.config",
-@"<configuration>
-  <config>
-    <add key=""globalPackagesFolder"" value=""globalPackages"" />
-  </config>
-</configuration>");
+                var workingPath = pathContext.WorkingDirectory;
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
   <package id=""" + identity.Id + @""" version=""" + identity.Version.ToNormalizedString() + @""" targetFramework=""net45"" />
@@ -2172,20 +2163,13 @@ EndProject");
         [Fact]
         public void RestoreCommand_ProjectContainsSolutionDirs()
         {
-            using (var randomRepositoryPath = TestDirectory.Create())
-            using (var randomSolutionFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var randomRepositoryPath = pathContext.PackageSource;
+                var randomSolutionFolder = pathContext.SolutionRoot;
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
                 Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
-
-                Util.CreateFile(randomSolutionFolder, "nuget.config",
-$@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <config>
-    <add key=""globalPackagesFolder"" value=""GlobalPackages"" />
-  </config>
-</configuration>");
 
                 var solutionFile = Path.Combine(randomSolutionFolder, "A.sln");
                 var targetFile = Path.Combine(randomSolutionFolder, "MSBuild.Community.Tasks.Targets");
@@ -2239,7 +2223,7 @@ EndProject";
 
                 // Assert
                 Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(randomSolutionFolder, "GlobalPackages", "packagea", "1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.UserPackagesFolder, "packagea", "1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
         }
@@ -2247,16 +2231,15 @@ EndProject";
         [Fact]
         public void RestoreCommand_WithAuthorSignedPackage_Succeeds()
         {
-            using (var packageSourceFolder = TestDirectory.Create())
-            using (var packageDestinationFolder = TestDirectory.Create())
-            using (var projectFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var packageFile = new FileInfo(Path.Combine(packageSourceFolder.Path, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var packageDestinationFolder = Path.Combine(pathContext.WorkingDirectory, "outDir");
+                var packageFile = new FileInfo(Path.Combine(pathContext.PackageSource, "TestPackage.AuthorSigned.1.0.0.nupkg"));
                 var package = GetResource(packageFile.Name);
 
                 File.WriteAllBytes(packageFile.FullName, package);
 
-                var projectFile = new FileInfo(Path.Combine(projectFolder, "ClassLibrary1.csproj"));
+                var projectFile = new FileInfo(Path.Combine(pathContext.SolutionRoot, "ClassLibrary1.csproj"));
                 File.WriteAllText(
                     projectFile.FullName,
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -2287,7 +2270,7 @@ EndProject";
 </Project>
                     ");
 
-                var expectedFilePath = Path.Combine(packageDestinationFolder.Path, "testpackage.authorsigned", "1.0.0", packageFile.Name);
+                var expectedFilePath = Path.Combine(packageDestinationFolder, "testpackage.authorsigned", "1.0.0", packageFile.Name);
                 var nugetExe = Util.GetNuGetExePath();
 
                 var args = new string[]
@@ -2295,16 +2278,16 @@ EndProject";
                         "restore",
                         projectFile.Name,
                         "-Source",
-                        packageSourceFolder.Path,
+                        pathContext.PackageSource,
                         "-PackagesDirectory",
-                        packageDestinationFolder.Path
+                        packageDestinationFolder
                     };
 
                 Assert.False(File.Exists(expectedFilePath));
 
                 var result = CommandRunner.Run(
                     nugetExe,
-                    projectFolder.Path,
+                    pathContext.SolutionRoot,
                     string.Join(" ", args),
                     waitForExit: true);
 
@@ -2320,9 +2303,9 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var repositoryPath = pathContext.PackageSource;
                 Directory.CreateDirectory(repositoryPath);
                 var aPackage = Util.CreateTestPackage(
                     "packageA",
@@ -2331,7 +2314,7 @@ EndProject";
                     new List<NuGetFramework> { NuGetFramework.Parse("net45") },
                     @"2.5.6/core/store/x64/netcoreapp2.0/microsoft.extensions.configuration.environmentvariables/2.0.0/lib/netstandard2.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll"
                     );
-                Util.CreateFile(workingPath, "packages.config",
+                Util.CreateFile(pathContext.WorkingDirectory, "packages.config",
 @"<packages>
   <package id=""packageA"" version=""1.0.0"" targetFramework=""net45"" />
 </packages>");
@@ -2341,13 +2324,13 @@ EndProject";
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
-                    workingPath,
+                    pathContext.WorkingDirectory,
                     string.Join(" ", args),
                     waitForExit: true);
 
                 // Assert
                 Assert.Equal(_successCode, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"outputDir", "packageA.1.0.0", "packageA.1.0.0.nupkg");
+                var packageFileA = Path.Combine(pathContext.WorkingDirectory, @"outputDir", "packageA.1.0.0", "packageA.1.0.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
         }
@@ -2504,6 +2487,7 @@ EndProject";
     <add key=""signed"" value=""{signedRepository}"" />
     </packageSources>
     <packageSourceMapping>
+        <clear />
         <packageSource key=""PublicRepository"">
             <package pattern=""Moq*"" />
             <package pattern=""Nerdbank.*"" />
@@ -2547,6 +2531,7 @@ EndProject";
                     waitForExit: true);
 
                 // Assert
+                r.Success.Should().BeTrue(r.AllOutput);
                 Assert.Equal(_successCode, r.ExitCode);
                 var packageNerdBankAlgorithms = Path.Combine(packagePath, "NerdBank.Algorithms.1.0.0", "NerdBank.Algorithms.1.0.0.nupkg");
                 Assert.True(File.Exists(packageNerdBankAlgorithms));
@@ -2616,6 +2601,7 @@ EndProject";
     <add key=""SharedRepository"" value=""{sharedRepository}"" />
     </packageSources>
     <packageSourceMapping>
+        <clear />
         <packageSource key=""PublicRepository"">
             <package pattern=""Newton.*"" />
             <package pattern=""Great.*"" />
@@ -2900,8 +2886,9 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.SolutionRoot;
                 var proj1Directory = Path.Combine(workingPath, "proj1");
                 Directory.CreateDirectory(proj1Directory);
 
@@ -2977,8 +2964,9 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingPath = pathContext.SolutionRoot;
                 var proj1Directory = Path.Combine(workingPath, "proj1");
                 Directory.CreateDirectory(proj1Directory);
 

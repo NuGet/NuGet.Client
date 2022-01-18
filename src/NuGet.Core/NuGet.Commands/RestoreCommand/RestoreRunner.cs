@@ -45,12 +45,12 @@ namespace NuGet.Commands
         /// </summary>
         private static async Task<IReadOnlyList<RestoreSummary>> RunAsync(
             IEnumerable<RestoreSummaryRequest> restoreRequests,
-            RestoreArgs restoreContext,
+            RestoreArgs restoreArgs,
             CancellationToken token)
         {
-            var maxTasks = GetMaxTaskCount(restoreContext);
+            var maxTasks = GetMaxTaskCount(restoreArgs);
 
-            var log = restoreContext.Log;
+            var log = restoreArgs.Log;
 
             if (maxTasks > 1)
             {
@@ -81,7 +81,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(() => ExecuteAndCommitAsync(request, token), token);
+                var task = Task.Run(() => ExecuteAndCommitAsync(request, restoreArgs.ProgressReporter, token), token);
                 restoreTasks.Add(task);
             }
 
@@ -226,11 +226,37 @@ namespace NuGet.Commands
             return maxTasks;
         }
 
-        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
+        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, IRestoreProgressReporter progressReporter, CancellationToken token)
         {
-            var result = await ExecuteAsync(summaryRequest, token);
+            RestoreResultPair result = await ExecuteAsync(summaryRequest, token);
+            bool isNoOp = result.Result is NoOpRestoreResult;
+            IReadOnlyList<string> filesToBeUpdated = isNoOp ? null : GetFilesToBeUpdated(result);
 
-            return await CommitAsync(result, token);
+            if (!isNoOp)
+            {
+                progressReporter?.StartProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+            }
+
+            RestoreSummary summary = await CommitAsync(result, token);
+
+            if (!isNoOp)
+            {
+                progressReporter?.EndProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+            }
+            return summary;
+
+            static IReadOnlyList<string> GetFilesToBeUpdated(RestoreResultPair result)
+            {
+                List<string> filesToBeUpdated = new(3); // We know that we have 3 files.
+                filesToBeUpdated.Add(result.Result.LockFilePath);
+
+                foreach (MSBuildOutputFile msbuildOutputFile in result.Result.MSBuildOutputFiles)
+                {
+                    filesToBeUpdated.Add(msbuildOutputFile.Path);
+                }
+
+                return filesToBeUpdated.AsReadOnly();
+            }
         }
 
         private static async Task<RestoreResultPair> ExecuteAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)

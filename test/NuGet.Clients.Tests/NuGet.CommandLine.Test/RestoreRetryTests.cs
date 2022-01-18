@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Test.Utility;
 using Xunit;
@@ -21,9 +22,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingDirectory = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
@@ -116,10 +118,9 @@ namespace NuGet.CommandLine.Test
                     // Assert
                     Assert.True(Util.IsSuccess(r1), r1.Item2 + " " + r1.Item3);
 
-                    Assert.True(
-                        File.Exists(
-                            Path.Combine(workingDirectory,
-                                "packages/testpackage1.1.1.0/testpackage1.1.1.0.nupkg")));
+                    var path = Path.Combine(pathContext.PackagesV2, "testpackage1.1.1.0", "testpackage1.1.1.0.nupkg");
+
+                    File.Exists(path).Should().BeTrue($"{path} does not exist");
                 }
             }
         }
@@ -131,9 +132,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingDirectory = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
@@ -146,14 +148,7 @@ namespace NuGet.CommandLine.Test
                                 }
                   }";
 
-                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <configuration>
-                          <config>
-                            <add key=""globalPackagesFolder"" value=""globalPackages"" />
-                          </config>
-                        </configuration>";
-
-                var projectFile = Util.CreateUAPProject(workingDirectory, projectJson, "a", config);
+                var projectFile = Util.CreateUAPProject(workingDirectory, projectJson, "a");
 
                 // Server setup
                 using (var server = new MockServer())
@@ -241,13 +236,13 @@ namespace NuGet.CommandLine.Test
 
                     Assert.True(
                         File.Exists(
-                            Path.Combine(workingDirectory,
-                                "globalPackages/testpackage1/1.1.0/testpackage1.1.1.0.nupkg")));
+                            Path.Combine(pathContext.UserPackagesFolder,
+                                "testpackage1/1.1.0/testpackage1.1.1.0.nupkg")));
 
                     Assert.True(
                         File.Exists(
-                            Path.Combine(workingDirectory,
-                                "globalPackages/testpackage1/1.1.0/testPackage1.1.1.0.nupkg.sha512")));
+                            Path.Combine(pathContext.UserPackagesFolder,
+                                "testpackage1/1.1.0/testPackage1.1.1.0.nupkg.sha512")));
 
                     Assert.True(File.Exists(Path.Combine(workingDirectory, "project.lock.json")));
 
@@ -267,9 +262,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingDirectory = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
@@ -282,14 +278,7 @@ namespace NuGet.CommandLine.Test
                                 }
                   }";
 
-                var nugetConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <configuration>
-                          <config>
-                            <add key=""globalPackagesFolder"" value=""globalPackages"" />
-                          </config>
-                        </configuration>";
-
-                var projectFile = Util.CreateUAPProject(workingDirectory, projectJsonContent, "a", nugetConfigContent);
+                var projectFile = Util.CreateUAPProject(workingDirectory, projectJsonContent, "a");
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -389,13 +378,11 @@ namespace NuGet.CommandLine.Test
 
                     Assert.True(
                         File.Exists(
-                            Path.Combine(workingDirectory,
-                                "globalPackages/testpackage1/1.1.0/testpackage1.1.1.0.nupkg")));
+                            Path.Combine(pathContext.UserPackagesFolder, "testpackage1/1.1.0/testpackage1.1.1.0.nupkg")));
 
                     Assert.True(
                         File.Exists(
-                            Path.Combine(workingDirectory,
-                                "globalPackages/testpackage1/1.1.0/testPackage1.1.1.0.nupkg.sha512")));
+                            Path.Combine(pathContext.UserPackagesFolder, "testpackage1/1.1.0/testPackage1.1.1.0.nupkg.sha512")));
 
                     Assert.True(File.Exists(Path.Combine(workingDirectory, "project.lock.json")));
 
@@ -417,9 +404,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestDirectory.Create())
-            using (var packageDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                var workingDirectory = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
@@ -429,16 +418,6 @@ namespace NuGet.CommandLine.Test
                     @"<packages>
                     <package id=""testPackage1"" version=""1.1.0"" />
                   </packages>");
-
-                Util.CreateFile(
-                    workingDirectory,
-                    "nuget.config",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <configuration>
-                            <config>
-                            <add key=""globalPackagesFolder"" value=""globalPackages"" />
-                            </config>
-                        </configuration>");
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -580,12 +559,12 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(Util.IsSuccess(r1), r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.Success, r1.AllOutput);
 
                     Assert.True(
                         File.Exists(
-                            Path.Combine(workingDirectory,
-                                "packages/testpackage1.1.1.0/testpackage1.1.1.0.nupkg")));
+                            Path.Combine(pathContext.PackagesV2,
+                                "testpackage1.1.1.0", "testpackage1.1.1.0.nupkg")));
 
                     // Everything should be hit 3 times
                     foreach (var url in hitsByUrl.Keys)

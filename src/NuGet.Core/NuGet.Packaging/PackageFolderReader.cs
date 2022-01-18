@@ -215,7 +215,7 @@ namespace NuGet.Packaging
                     targetPath = extractFile(sourceFile.FullName, targetPath, fileStream);
                     if (targetPath != null)
                     {
-                        File.SetLastWriteTimeUtc(targetPath, sourceFile.LastWriteTimeUtc);
+                        ZipArchiveExtensions.UpdateFileTime(targetPath, sourceFile.LastWriteTimeUtc);
                         filesCopied.Add(targetPath);
                     }
                 }

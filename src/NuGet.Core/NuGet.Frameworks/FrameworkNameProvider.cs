@@ -219,7 +219,11 @@ namespace NuGet.Frameworks
                         framework,
                         FrameworkConstants.FrameworkIdentifiers.NetStandard,
                         StringComparison.OrdinalIgnoreCase)
-                    || versionParts.Any(x => x > 9))
+                    || versionParts.Any(x => x > 9)
+                    || string.Equals(
+                        framework,
+                        FrameworkConstants.FrameworkIdentifiers.NanoFramework,
+                        StringComparison.OrdinalIgnoreCase))
                 {
                     // An additional zero is needed for decimals
                     if (versionParts.Count < 2)

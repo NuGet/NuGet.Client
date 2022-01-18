@@ -158,6 +158,7 @@ namespace NuGet.Test
         [InlineData("unsupported", "any", "any")]
         [InlineData("any", "any", "any")]
         [InlineData("any", "unsupported", "unsupported")]
+        [InlineData("netnano1.0", "net48,netstandard1.0,netcoreapp1.0", null)]
         public void FrameworkReducer_GetNearestWithGenerations(
             string projectFramework,
             string packageFrameworks,

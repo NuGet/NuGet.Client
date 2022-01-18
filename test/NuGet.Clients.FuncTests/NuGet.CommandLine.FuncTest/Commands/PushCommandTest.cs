@@ -478,7 +478,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 string expectedFileNotFoundErrorMessage = string.Format(MESSAGE_FILE_DOES_NOT_EXIST, pushArgument);
 
-                Assert.True(result.Success, "Snupkg File did not exist but should not fail a nupkg push.");
+                Assert.True(result.Success, "Snupkg File did not exist but should not fail a nupkg push.\n\n" + result.AllOutput);
                 Assert.Contains(MESSAGE_PACKAGE_PUSHED, result.Output);
                 Assert.DoesNotContain(WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST, result.Errors);
                 Assert.DoesNotContain(NuGetConstants.SnupkgExtension, result.AllOutput); //Snupkgs should not be mentioned.
@@ -592,7 +592,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     result = CommandRunner.Run(
                         nuget,
                         packageDirectory,
-                        $"push {wildcardPush} -Source {sourceName} -Timeout 110",
+                        $"push {wildcardPush} -Source {sourceName} -SymbolSource {sourceName} -Timeout 110",
                         waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -612,7 +612,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         /// <summary>
-        /// When pushing *.Nupkg with SkipDuplicate, a 409 Conflict is ignored and the secondary symbols push proceeds.
+        /// When pushing *.Nupkg with SkipDuplicate, a 409 Conflict is ignored and the corresponding symbols push is skipped.
         /// </summary>
         [Fact]
         public void PushCommand_Server_Nupkg_ByWildcard_FindsMatchingSnupkgs_SkipDuplicate()
@@ -666,15 +666,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 //Ignoring filename in File Not Found error since the error should not appear in any case.
                 string genericFileNotFoundError = WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST;
 
-                //Nupkg should be an ignored conflict, so its snupkg should push.
-                Assert.True(result.Success, "Expected to successfully push a snupkg with SkipDuplicate option when the nupkg is a duplicate.");
+                //Nupkg should be an ignored conflict, so its snupkg shouldn't push.
+                Assert.True(result.Success, "Expected to skip pushing a snupkg with SkipDuplicate option when the nupkg is a duplicate.\n\n" + result.AllOutput);
                 Assert.DoesNotContain(MESSAGE_RESPONSE_NO_SUCCESS, result.Errors); //nupkg duplicate
                 Assert.Contains(MESSAGE_EXISTING_PACKAGE, result.AllOutput);
                 Assert.DoesNotContain(MESSAGE_PACKAGE_PUSHED, result.AllOutput); //nothing is pushed since nupkg/snupkgs are all skipped duplicates
                 Assert.DoesNotContain(genericFileNotFoundError, result.Errors);
 
-                Assert.Contains(snupkgFileName, result.AllOutput); //first snupkg is attempted as push
-                Assert.Contains(snupkgFileName2, result.AllOutput); //second snupkg is attempted when first duplicate is skipped
+                Assert.DoesNotContain(snupkgFileName, result.AllOutput); //first snupkg is not attempted since nupkg was duplicate.
+                Assert.DoesNotContain(snupkgFileName2, result.AllOutput); //second snupkg is not attempted since nupkg was duplicate.
             }
         }
 

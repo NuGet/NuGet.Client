@@ -1,3 +1,8 @@
+NuGet.Commands.IRestoreProgressReporter
+NuGet.Commands.IRestoreProgressReporter.EndProjectUpdate(string projectPath, System.Collections.Generic.IReadOnlyList<string> updatedFiles) -> void
+NuGet.Commands.IRestoreProgressReporter.StartProjectUpdate(string projectPath, System.Collections.Generic.IReadOnlyList<string> updatedFiles) -> void
+NuGet.Commands.RestoreArgs.ProgressReporter.get -> NuGet.Commands.IRestoreProgressReporter
+NuGet.Commands.RestoreArgs.ProgressReporter.set -> void
 NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger innerLogger, NuGet.ProjectModel.WarningProperties warningProperties, NuGet.Commands.PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties) -> void
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties.PackageSpecificWarningProperties() -> void

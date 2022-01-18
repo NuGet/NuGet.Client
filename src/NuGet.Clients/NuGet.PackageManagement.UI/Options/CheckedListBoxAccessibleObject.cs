@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows.Forms;
-using NuGet.Configuration;
+using NuGet.VisualStudio.Internal.Contracts;
 using static System.Windows.Forms.Control;
 
 namespace NuGet.Options
@@ -31,7 +31,7 @@ namespace NuGet.Options
         {
             if (index >= 0 && index < CheckedListBox.Items.Count)
             {
-                var packageSource = (PackageSource)CheckedListBox.Items[index];
+                var packageSource = (PackageSourceContextInfo)CheckedListBox.Items[index];
                 return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, packageSource.Source);
             }
             else

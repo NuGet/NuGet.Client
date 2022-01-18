@@ -569,10 +569,27 @@ namespace NuGet.Protocol
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersionString = parsedVersion.ToNormalizedString();
+            string idInLowerCase = id.ToLowerInvariant();
+
+            var builder = StringBuilderPool.Shared.Rent(256);
+
+            builder.Append(baseUri);
+            builder.Append(idInLowerCase);
+            builder.Append('/');
+            builder.Append(normalizedVersionString);
+            builder.Append('/');
+            builder.Append(idInLowerCase);
+            builder.Append('.');
+            builder.Append(normalizedVersionString);
+            builder.Append(".nupkg");
+            string contentUri = builder.ToString();
+
+            StringBuilderPool.Shared.Return(builder);
+
             return new PackageInfo
             {
                 Identity = new PackageIdentity(id, parsedVersion),
-                ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
+                ContentUri = contentUri,
             };
         }
 

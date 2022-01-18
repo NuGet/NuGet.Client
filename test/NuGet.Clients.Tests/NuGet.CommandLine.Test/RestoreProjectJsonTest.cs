@@ -23,13 +23,13 @@ namespace NuGet.CommandLine.Test
         public async Task RestoreProjectJson_MinClientVersionFailAsync()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
                 var packageContext = new SimpleTestPackageContext()
                 {
@@ -40,7 +40,6 @@ namespace NuGet.CommandLine.Test
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageContext);
 
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                                     'dependencies': {
                                                     'packageA': '1.0.0'
@@ -1277,19 +1276,18 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_FloatReleaseLabelTakesStable()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
                 Util.CreateTestPackage("packageA", "2.0.0", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                                     'dependencies': {
                                                     'packageA': '1.0.0-*'
@@ -1393,18 +1391,17 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFiltersToStablePackages()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageB", "1.0.0");
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.0.0-beta", repositoryPath);
                 Util.CreateTestPackage("packageB", "3.0.0", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                                     'dependencies': {
                                                     'packageA': '1.0.0'
@@ -2083,14 +2080,13 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateTargetsFileFromNuProj()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
 

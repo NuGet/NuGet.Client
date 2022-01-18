@@ -46,7 +46,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Read a nuspec file from disk. The nuspec is expected to exist.
         /// </summary>
-        public Lazy<NuspecReader> GetOrAddNuspec(string manifestPath, string expandedPath)
+        public virtual Lazy<NuspecReader> GetOrAddNuspec(string manifestPath, string expandedPath)
         {
             return _nuspecCache.GetOrAdd(expandedPath,
                 e => new Lazy<NuspecReader>(() => GetNuspec(manifestPath, e)));
@@ -55,7 +55,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Read a the package files from disk.
         /// </summary>
-        public Lazy<IReadOnlyList<string>> GetOrAddFiles(string expandedPath)
+        public virtual Lazy<IReadOnlyList<string>> GetOrAddFiles(string expandedPath)
         {
             return _filesCache.GetOrAdd(expandedPath,
                 e => new Lazy<IReadOnlyList<string>>(() => GetFiles(e)));
@@ -65,7 +65,7 @@ namespace NuGet.Protocol
         /// Read the .metadata.json file from disk.
         /// </summary>
         /// <remarks>Throws if the file is not found or corrupted.</remarks>
-        public Lazy<string> GetOrAddSha512(string sha512Path)
+        public virtual Lazy<string> GetOrAddSha512(string sha512Path)
         {
             return _sha512Cache.GetOrAdd(sha512Path,
                 e => new Lazy<string>(() =>
@@ -79,7 +79,7 @@ namespace NuGet.Protocol
         /// True if the path exists on disk. This also uses
         /// the SHA512 cache for already read files.
         /// </summary>
-        public bool Sha512Exists(string sha512Path)
+        public virtual bool Sha512Exists(string sha512Path)
         {
             // Avoid checking the desk if we have already read the file.
             var exists = _fileExistsCache.ContainsKey(sha512Path);
@@ -99,7 +99,7 @@ namespace NuGet.Protocol
         /// Read runtime.json from a package.
         /// Returns null if runtime.json does not exist.
         /// </summary>
-        public Lazy<RuntimeGraph> GetOrAddRuntimeGraph(string expandedPath)
+        public virtual Lazy<RuntimeGraph> GetOrAddRuntimeGraph(string expandedPath)
         {
             return _runtimeCache.GetOrAdd(expandedPath, p => new Lazy<RuntimeGraph>(() => GetRuntimeGraph(p)));
         }
