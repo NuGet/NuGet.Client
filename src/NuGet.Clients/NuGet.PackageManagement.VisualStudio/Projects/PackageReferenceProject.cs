@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ProjectName = projectName;
             ProjectUniqueName = projectUniqueName;
-            MSBuildProjectPath = projectFullPath;
+            ProjectFullPath = projectFullPath;
         }
 
         public override async Task<string> GetAssetsFilePathAsync()
@@ -48,8 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override string ProjectName { get; }
         protected string ProjectUniqueName { get; }
-        protected string ProjectFullPath => MSBuildProjectPath;
-        public override string MSBuildProjectPath { get; }
+        protected string ProjectFullPath { get; }
 
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
