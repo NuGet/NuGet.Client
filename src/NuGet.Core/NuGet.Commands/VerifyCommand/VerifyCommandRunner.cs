@@ -52,6 +52,7 @@ namespace NuGet.Commands
 
                 var clientPolicyContext = ClientPolicyContext.GetClientPolicy(verifyArgs.Settings, verifyArgs.Logger);
 
+                // List of values passed through --certificate-fingerprint option read
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
                     new CertificateHashAllowListEntry(
                         VerificationTarget.Author | VerificationTarget.Repository,
@@ -60,7 +61,9 @@ namespace NuGet.Commands
                         _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-                IReadOnlyList<TrustedSignerAllowListEntry> allowList = TrustedSignersProvider.GetAllowListEntries(verifyArgs.Settings, verifyArgs.Logger);
+
+                // nuget.config >> trustedSigners section read
+                IReadOnlyList<TrustedSignerAllowListEntry> trustedSignerAllowList = TrustedSignersProvider.GetAllowListEntries(verifyArgs.Settings, verifyArgs.Logger);
 
                 var verificationProviders = new List<ISignatureVerificationProvider>()
                 {
@@ -70,17 +73,17 @@ namespace NuGet.Commands
                 // trustedSigners section >> Owners are considered here.
                 verificationProviders.Add(
                       new AllowListVerificationProvider(
-                          allowList,
+                          trustedSignerAllowList,
                           requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require,
                           emptyListErrorMessage: Strings.Error_NoClientAllowList,
                           noMatchErrorMessage: Strings.Error_NoMatchingClientCertificate));
 
-                IEnumerable<KeyValuePair<string, HashAlgorithmName>> allowUntrustedRootList = allowList?
+                IEnumerable<KeyValuePair<string, HashAlgorithmName>> trustedSignerAllowUntrustedRootList = trustedSignerAllowList?
                     .Where(c => c.AllowUntrustedRoot)
                     .Select(c => new KeyValuePair<string, HashAlgorithmName>(c.Fingerprint, c.FingerprintAlgorithm));
 
                 // trustedSigners section >> allowUntrustedRoot set true are considered here.
-                verificationProviders.Add(new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList));
+                verificationProviders.Add(new SignatureTrustAndValidityVerificationProvider(trustedSignerAllowUntrustedRootList));
 
                 // List of values passed through --certificate-fingerprint option are considered here.
                 verificationProviders.Add(
@@ -88,8 +91,6 @@ namespace NuGet.Commands
                         allowListEntries,
                         requireNonEmptyAllowList: false,
                         noMatchErrorMessage: Strings.Error_NoMatchingCertificate));
-
-                // For verify action repository signing allow list not considered.
 
                 var verifier = new PackageSignatureVerifier(verificationProviders);
 

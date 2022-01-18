@@ -150,7 +150,7 @@ namespace Dotnet.Integration.Test
         [InlineData("true", false)]
         [InlineData("false", true)]
         [InlineData("false", false)]
-        public void Verify_AuthorSignedPackageWithTrustedCertificate_AuthorTag_Succeeds(string trust, bool fingerPrintOption)
+        public void Verify_AuthorSignedPackage_WithAuthorItemTrustedCertificate_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -170,7 +170,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -190,7 +190,7 @@ namespace Dotnet.Integration.Test
         [InlineData("true", false)]
         [InlineData("false", true)]
         [InlineData("false", false)]
-        public void Verify_AuthorSignedPackageWithTrustedCertificate_RepositoryTag_Fails(string trust, bool fingerPrintOption)
+        public void Verify_AuthorSignedPackage_WithRepositoryItemTrustedCertificate_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -210,7 +210,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -229,7 +229,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
         [InlineData(true)]
         [InlineData(false)]
-        public void Verify_RepositorySignedPackageWithUntrustedCertificate_AuthorTag_Fails(bool trust)
+        public void Verify_RepositorySignedPackage_WithAuthorItemeUntrustedCertificate_Fails(bool trust)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -274,9 +274,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
         [InlineData("false", true)]
         [InlineData("false", false)]
-        [InlineData("FALSE", true)]
-        [InlineData("FALSE", false)]
-        public void Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetFalse_Fails(string trust, bool fingerPrintOption)
+        public void Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetFalse_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -297,7 +295,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -318,9 +316,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
         [InlineData("true", true)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public void Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetTrue_Succeeds(string trust, bool fingerPrintOption)
+        public void Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetTrue_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -341,7 +337,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -362,17 +358,13 @@ namespace Dotnet.Integration.Test
         [InlineData("false", true)]
         [InlineData("true", false)]
         [InlineData("false", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetTrue_WrongOwners_Fails(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetTrue_WrongOwners_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
-            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
             using (X509Certificate2 trustedTestCert = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false))
             {
+                var package = new SimpleTestPackageContext();
                 var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
@@ -393,7 +385,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -412,17 +404,13 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
         [InlineData("true", true)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetTrue_CorrectOwners_Succeeds(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetTrue_CorrectOwners_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
-            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
             using (X509Certificate2 trustedTestCert = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false))
             {
+                var package = new SimpleTestPackageContext();
                 var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
@@ -443,7 +431,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -464,17 +452,13 @@ namespace Dotnet.Integration.Test
         [InlineData("false", true)]
         [InlineData("false", false)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithTrustedCertificate_RepositoryTag_AllowUntrustedRootSet_WrongOwners_Fails(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemTrustedCertificate_AllowUntrustedRootSet_WrongOwners_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
-            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
             using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
             {
+                var package = new SimpleTestPackageContext();
                 var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
@@ -495,7 +479,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -516,17 +500,13 @@ namespace Dotnet.Integration.Test
         [InlineData("false", true)]
         [InlineData("false", false)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithTrustedCertificate_RepositoryTag_AllowUntrustedRootSet_CorrectOwners_Succeeds(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemTrustedCertificate_AllowUntrustedRootSet_CorrectOwners_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
-            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
             using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
             {
+                var package = new SimpleTestPackageContext();
                 var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
@@ -547,7 +527,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = fingerprintOption ? $"--certificate-fingerprint {certFingerprint} --certificate-fingerprint DEF" : string.Empty;
 
                 //Act
                 var result = _msbuildFixture.RunDotnet(
@@ -565,7 +545,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
-        public void Verify_RepositorySignedPackageWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_PassWrongNugetConfigOption_Fails()
+        public void Verify_RepositorySignedPackage_WithUntrustedCertificate_AllowUntrustedRootIsSetTrue_PassWrongNugetConfigOption_Fails()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -608,7 +588,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
-        public void Verify_RepositorySignedPackageWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_PassCorrectNugetConfigOption_Succeeds()
+        public void Verify_RepositorySignedPackag_eWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_PassCorrectNugetConfigOption_Succeeds()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())

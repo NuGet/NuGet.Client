@@ -288,23 +288,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("true", false)]
         [InlineData("false", true)]
         [InlineData("false", false)]
-        public async Task Verify_AuthorSignedPackageWithTrustedCertificate_AuthorTag_Succeeds(string trust, bool fingerPrintOption)
+        public async Task Verify_AuthorSignedPackage_WithAuthorItemTrustedCertificate_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
             TrustedTestCert<TestCertificate> cert = _testFixture.TrustedTestCertificateChain.Leaf;
-            var package = new SimpleTestPackageContext();
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var zipStream = await package.CreateAsStreamAsync())
             {
-                var packagePath = Path.Combine(pathContext.PackageSource, "testpackage.nupkg");
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
+                var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
 
                 var signResult = CommandRunner.Run(
                     _nugetExePath,
@@ -324,7 +317,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
 
                 // Act
                 var verifyResult = CommandRunner.Run(
@@ -345,23 +338,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("true", false)]
         [InlineData("false", true)]
         [InlineData("false", false)]
-        public async Task Verify_AuthorSignedPackageWithTrustedCertificate_RepositoryTag_Fails(string trust, bool fingerPrintOption)
+        public async Task Verify_AuthorSignedPackage_WithRepositoryItemTrustedCertificate_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
             TrustedTestCert<TestCertificate> cert = _testFixture.TrustedTestCertificateChain.Leaf;
-            var package = new SimpleTestPackageContext();
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var zipStream = await package.CreateAsStreamAsync())
             {
-                var packagePath = Path.Combine(pathContext.PackageSource, "testpackage.nupkg");
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
+                var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
 
                 var signResult = CommandRunner.Run(
                     _nugetExePath,
@@ -381,7 +367,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
 
                 // Act
                 var verifyResult = CommandRunner.Run(
@@ -403,23 +389,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("true", false)]
         [InlineData("false", true)]
         [InlineData("false", false)]
-        public async Task Verify_RepositorySignedPackageWithUntrustedCertificate_AuthorTag_Fails(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithAuthorItemUntrustedCertificate_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
             using (var pathContext = new SimpleTestPathContext())
-            using (var zipStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
                 var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
 
                 //Act
                 string certFingerprint = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
@@ -437,7 +415,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
 
                 // Act
                 var verifyResult = CommandRunner.Run(
@@ -461,25 +439,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [CIOnlyTheory]
         [InlineData("false", true)]
         [InlineData("false", false)]
-        [InlineData("FALSE", true)]
-        [InlineData("FALSE", false)]
-        public async Task Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetFalse_Fails(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetFalse_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
             using (var pathContext = new SimpleTestPathContext())
-            using (var zipStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
                 var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
 
                 //Act
                 string certFingerprint = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
@@ -497,7 +465,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
 
                 // Act
                 var verifyResult = CommandRunner.Run(
@@ -517,25 +485,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [CIOnlyTheory]
         [InlineData("true", true)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetTrue_Succeeds(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetTrue_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
 
             using (var pathContext = new SimpleTestPathContext())
-            using (var zipStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
                 var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
 
                 //Act
                 string certFingerprint = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
@@ -553,7 +512,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
 
                 // Act
                 var verifyResult = CommandRunner.Run(
@@ -574,25 +533,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("false", true)]
         [InlineData("true", false)]
         [InlineData("false", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetTrue_WrongOwners_Fails(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetTrue_WrongOwners_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
             using (var pathContext = new SimpleTestPathContext())
-            using (var zipStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
                 var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
 
                 //Act
                 string certFingerprint = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
@@ -616,7 +565,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
 
                 // Act
                 var verifyResult = CommandRunner.Run(
@@ -636,25 +585,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [CIOnlyTheory]
         [InlineData("true", true)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithUntrustedCertificate_RepositoryTag_AllowUntrustedRootSetTrue_CorrectOwners_Succeeds(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemUntrustedCertificate_AllowUntrustedRootSetTrue_CorrectOwners_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
             using (var pathContext = new SimpleTestPathContext())
-            using (var zipStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
                 var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
-
-                zipStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-                using (var fileStream = File.OpenWrite(packagePath))
-                {
-                    zipStream.CopyTo(fileStream);
-                }
 
                 //Act
                 string certFingerprint = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
@@ -678,7 +617,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
 
                 // Act
                 var verifyResult = CommandRunner.Run(
@@ -699,17 +638,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("false", true)]
         [InlineData("false", false)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithTrustedCertificate_RepositoryTag_AllowUntrustedRootSet_WrongOwners_Fails(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemTrustedCertificate_AllowUntrustedRootSet_WrongOwners_Fails(string trust, bool fingerprintOption)
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
             using (var pathContext = new SimpleTestPathContext())
-            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
             using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
             {
+                var package = new SimpleTestPackageContext();
                 var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
@@ -730,7 +665,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certFingerprint};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certFingerprint};abc;def" : string.Empty;
 
                 //Act
                 var verifyResult = CommandRunner.Run(
@@ -751,17 +686,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("false", true)]
         [InlineData("false", false)]
         [InlineData("true", false)]
-        [InlineData("TRUE", true)]
-        [InlineData("TRUE", false)]
-        public async Task Verify_RepositorySignedPackageWithTrustedCertificate_RepositoryTag_AllowUntrustedRootSet_CorrectOwners_Succeeds(string trust, bool fingerPrintOption)
+        public async Task Verify_RepositorySignedPackage_WithRepositoryItemTrustedCertificate_AllowUntrustedRootSet_CorrectOwners_Succeeds(string trust, bool fingerprintOption)
         {
             // Arrange
-            var package = new SimpleTestPackageContext();
-
             using (var pathContext = new SimpleTestPathContext())
-            using (MemoryStream zipStream = await package.CreateAsStreamAsync())
             using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
             {
+                var package = new SimpleTestPackageContext();
                 var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
@@ -782,7 +713,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = fingerPrintOption ? $"-CertificateFingerprint {certFingerprint};abc;def" : string.Empty;
+                string fingerprint = fingerprintOption ? $"-CertificateFingerprint {certFingerprint};abc;def" : string.Empty;
 
                 //Act
                 var verifyResult = CommandRunner.Run(
@@ -800,14 +731,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task VerifyCommand_PackageSignedWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_WrongNugetConfig_Fails()
+        public async Task VerifyCommand_AuthorSignedPackage_WithUntrustedCertificate_AllowUntrustedRootIsSetTrue_WrongNugetConfig_Fails()
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
             using (var pathContext = new SimpleTestPathContext())
             using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
 
                 //Act
@@ -846,14 +776,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task VerifyCommand_PackageSignedWithUntrustedCertificate_AllowUntrustedRootIsSetTrue_CorrectNugetConfig_Succeed()
+        public async Task VerifyCommand_AuthorSignedPackage_WithUntrustedCertificate_AllowUntrustedRootIsSetTrue_CorrectNugetConfig_Succeed()
         {
             // Arrange
-            var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-
             using (var pathContext = new SimpleTestPathContext())
             using (var testCertificate = new X509Certificate2(_testFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
+                var nupkg = new SimpleTestPackageContext("A", "1.0.0");
                 var packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
 
                 //Act
