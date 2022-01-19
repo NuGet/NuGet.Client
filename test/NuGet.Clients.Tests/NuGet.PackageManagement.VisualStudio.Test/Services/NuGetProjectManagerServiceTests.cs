@@ -25,6 +25,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -621,6 +622,72 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        private async Task GetInstalledAndTransitivePackagesAsync_WithTransitivePackage_NotRestored_NoTransitivePackageInfoAsync()
+        {
+            var projectSystemCache = new ProjectSystemCache();
+            var projectAdapter = Mock.Of<IVsProjectAdapter>();
+            var projectName = "projectA";
+
+            using var pathContext = new SimpleTestPathContext();
+            Initialize();
+
+            string projectFullPath = Path.Combine(pathContext.SolutionRoot, projectName, $"{projectName}.csproj");
+
+            var prProject = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectSystemCache);
+
+            ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+            // This test PackageSpec makes the project look NuGet-restored 
+            PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[1.0.0, )");
+
+            // Packages
+            await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, "packageA", "1.0.0",
+                new[]
+                {
+                    new PackageDependency("packageB", VersionRange.Parse("2.0.0"))
+                });
+            await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, "packageB", "2.0.0");
+
+            // Restore info
+            DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+            projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+            projectSystemCache.AddProject(projectNames, projectAdapter, prProject).Should().BeTrue();
+
+            _solutionManager.NuGetProjects.Add(prProject);
+
+            // Act I: We will not have transitive packages data
+
+            var installedProject1 = await prProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+            Assert.NotEmpty(installedProject1.InstalledPackages);
+            Assert.Empty(installedProject1.TransitivePackages);
+
+            var installedService1 = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectName }, CancellationToken.None);
+            Assert.NotEmpty(installedService1.InstalledPackages);
+            Assert.Empty(installedService1.TransitivePackages);
+
+            // Now, make a NuGet-Restore
+            var pajFilepath = Path.Combine(Path.GetDirectoryName(projectFullPath), "project.assets.json");
+            TestRestoreRequest restoreRequest = ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, _logger);
+            restoreRequest.LockFilePath = pajFilepath;
+            restoreRequest.ProjectStyle = ProjectStyle.PackageReference;
+            var command = new RestoreCommand(restoreRequest);
+            var resultA = await command.ExecuteAsync();
+            await resultA.CommitAsync(_logger, CancellationToken.None);
+            Assert.True(resultA.Success);
+            Assert.True(File.Exists(pajFilepath));
+
+            // Act II: From this point, we will have transitive packages
+
+            var installedProject2 = await prProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+            Assert.NotEmpty(installedProject2.InstalledPackages);
+            Assert.NotEmpty(installedProject2.TransitivePackages);
+
+            var installedService2 = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectName }, CancellationToken.None);
+            Assert.NotEmpty(installedService2.InstalledPackages);
+            Assert.NotEmpty(installedProject2.TransitivePackages);
+        }
+
+
+        [Fact]
         private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithLegacyPackageReferenceProject_MultipleOriginsAsync()
         {
             string projectId = Guid.NewGuid().ToString();
@@ -1102,32 +1169,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Initialize();
 
-            try
+            Exception ex1 = await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
+                // Throws Assumes.InternalErrorException, but that class is private
                 _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(null, CancellationToken.None);
-                Assert.True(false);
-            }
-            catch
-            {
-            }
+            });
+            Assert.Equal(ex1.GetType().FullName, "Microsoft.Assumes+InternalErrorException");
 
-            try
+            Exception ex2 = await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
+                // Throws Assumes.InternalErrorException, but that class is private
                 _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { }, CancellationToken.None);
-                Assert.True(false);
-            }
-            catch
-            {
-            }
+            });
+            Assert.Equal(ex2.GetType().FullName, "Microsoft.Assumes+InternalErrorException");
 
-            try
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
+                // Project not found
                 _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { "abc" }, CancellationToken.None);
-                Assert.True(!false);
-            }
-            catch
-            {
-            }
+            });
         }
 
         [Fact]
@@ -1135,16 +1195,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Initialize();
 
-            try
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             {
                 using var cts = new CancellationTokenSource();
                 cts.Cancel();
-                _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(null, cts.Token);
-                Assert.True(false);
-            }
-            catch
-            {
-            }
+                _ = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { "aProjectId" }, cts.Token);
+            });
         }
 
         [Fact]

@@ -170,12 +170,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             token.ThrowIfCancellationRequested();
 
-            string assetsFilePath = await GetAssetsFilePathAsync();
-            var assets = new FileInfo(assetsFilePath);
-
             PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
             PackageSpec cachedPackageSpec = null;
             _ = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
+
+            string assetsFilePath = await GetAssetsFilePathAsync();
+            var assets = new FileInfo(assetsFilePath);
 
             bool cacheMissAssets = (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified);
 
