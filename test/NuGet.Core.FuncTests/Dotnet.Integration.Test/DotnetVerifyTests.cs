@@ -486,18 +486,19 @@ namespace Dotnet.Integration.Test
         public async Task Verify_RepositorySignedPackage_WithRepositoryItemTrustedCertificate_AllowUntrustedRootSet_WrongOwners_Fails(string allowUntrustedRoot, bool verifyCertificateFingerprint)
         {
             // Arrange
+            TrustedTestCert<TestCertificate> cert = _signFixture.TrustedTestCertificateChain.Leaf;
+
             using (var pathContext = new SimpleTestPathContext())
-            using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
             {
                 var package = new SimpleTestPackageContext();
-                string certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                string certFingerprint = SignatureTestUtility.GetFingerprint(cert.Source.Cert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
                     "nuget",
                     "contoso"
                 };
                 string repoServiceIndex = "https://serviceindex.test/v3/index.json";
-                string signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(trustedTestCert.Source.Cert, package, pathContext.PackageSource, new Uri(repoServiceIndex), null, packageOwners);
+                string signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(cert.Source.Cert, package, pathContext.PackageSource, new Uri(repoServiceIndex), null, packageOwners);
 
                 string testDirectory = pathContext.WorkingDirectory;
 
@@ -534,19 +535,19 @@ namespace Dotnet.Integration.Test
         public async Task Verify_RepositorySignedPackage_WithRepositoryItemTrustedCertificate_AllowUntrustedRootSet_CorrectOwners_Succeeds(string allowUntrustedRoot, bool verifyCertificateFingerprint)
         {
             // Arrange
+            TrustedTestCert<TestCertificate> cert = _signFixture.TrustedTestCertificateChain.Leaf;
+
             using (var pathContext = new SimpleTestPathContext())
-            using (TrustedTestCert<TestCertificate> trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
             {
                 var package = new SimpleTestPackageContext();
-                string certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                string certFingerprint = SignatureTestUtility.GetFingerprint(cert.Source.Cert, HashAlgorithmName.SHA256);
                 var packageOwners = new List<string>()
                 {
                     "nuget",
                     "contoso"
                 };
                 string repoServiceIndex = "https://serviceindex.test/v3/index.json";
-                string signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(trustedTestCert.Source.Cert, package, pathContext.PackageSource, new Uri(repoServiceIndex), null, packageOwners);
-
+                string signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(cert.Source.Cert, package, pathContext.PackageSource, new Uri(repoServiceIndex), null, packageOwners);
                 string testDirectory = pathContext.WorkingDirectory;
 
                 string trustedSignersSectionContent = $@"
