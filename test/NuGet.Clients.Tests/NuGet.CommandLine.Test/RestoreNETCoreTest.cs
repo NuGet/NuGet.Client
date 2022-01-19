@@ -10131,6 +10131,157 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_CPVMProject_WithVersionOverride_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var packagesForSource = new List<SimpleTestPackageContext>();
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+
+                var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
+
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   new[]
+                   {
+                       new SimpleTestPackageContext()
+                    {
+                        Id = "PackageA",
+                        Version = "1.0.0"
+                    },
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageB",
+                        Version = "1.0.0"
+                    },
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageB",
+                        Version = "2.0.0"
+                    }
+                   });
+
+                projectA.AddPackageToAllFrameworks(new[]
+                {
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageA",
+                        Version = null,
+                    },
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageB",
+                        Version = null,
+                        VersionOverride = "2.0.0"
+                    },
+                });
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("A", "1.0.0")
+                    .AddPackageVersion("B", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+
+                var expectedLibraries = new List<string>() { "PackageA.1.0.0", "PackageB.2.0.0" };
+                var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
+                Assert.Equal(expectedLibraries, libraries);
+
+                var centralfileDependencyGroups = assetsFile
+                    .CentralTransitiveDependencyGroups
+                    .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
+
+                Assert.Equal(0, centralfileDependencyGroups.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_WithVersionOverrideDisabled_Fails()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var packagesForSource = new List<SimpleTestPackageContext>();
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+
+                var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
+
+                projectA.Properties.Add("ManagePackageVersionsCentrally", bool.TrueString);
+                projectA.Properties.Add("EnablePackageVersionOverride", bool.FalseString);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   new[]
+                   {
+                       new SimpleTestPackageContext()
+                    {
+                        Id = "PackageA",
+                        Version = "1.0.0"
+                    },
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageB",
+                        Version = "1.0.0"
+                    },
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageB",
+                        Version = "2.0.0"
+                    }
+                   });
+
+                projectA.AddPackageToAllFrameworks(new[]
+                {
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageA",
+                        Version = null,
+                    },
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageB",
+                        Version = null,
+                        VersionOverride = "2.0.0"
+                    },
+                });
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("A", "1.0.0")
+                    .AddPackageVersion("B", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                CommandRunnerResult result = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                result.Success.Should().BeFalse();
+
+                result.Errors.Should().Contain("NU1013");
+            }
+        }
+
+        [Fact]
         public async Task RestorePackageReference_WithPackagesConfigProjectReference_IncludesTransitivePackageReferenceProjects()
         {
             // Arrange
