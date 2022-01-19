@@ -61,7 +61,6 @@ namespace NuGet.Commands
                         _defaultFingerprintAlgorithm)).ToList();
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-
                 var verificationProviders = new List<ISignatureVerificationProvider>()
                 {
                     new IntegrityVerificationProvider()

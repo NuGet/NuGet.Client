@@ -7,7 +7,6 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
-using Xunit;
 
 namespace NuGet.Test.Utility
 {
@@ -200,11 +199,28 @@ namespace NuGet.Test.Utility
             // if path is directory then add section to default nuget.config, else add to file.
             string nugetConfigPath = (attr & FileAttributes.Directory) == FileAttributes.Directory ?
                 Path.Combine(path, NuGet.Configuration.Settings.DefaultSettingsFileName) : path;
+
             XmlDocument doc = new XmlDocument();
             doc.Load(nugetConfigPath);
-            XmlDocumentFragment docFragment = doc.CreateDocumentFragment();
-            docFragment.InnerXml = content;
-            doc.SelectSingleNode(parentNode).AppendChild(docFragment);
+            XmlNode docParentNode = doc.SelectSingleNode(parentNode);
+
+            XmlDocument tempDoc = new XmlDocument();
+            tempDoc.LoadXml(content);
+
+            foreach (XmlNode child in tempDoc.ChildNodes)
+            {
+                XmlNode existingNode = docParentNode.SelectSingleNode(child.Name);
+
+                if (existingNode != null)
+                {
+                    throw new ArgumentException($"Element node {existingNode.Name} already exist inside {parentNode} element.");
+                }
+
+                //necessary for crossing XmlDocument contexts
+                XmlNode importNode = docParentNode.OwnerDocument.ImportNode(child, true);
+                docParentNode.AppendChild(importNode);
+            }
+
             doc.Save(nugetConfigPath);
         }
     }

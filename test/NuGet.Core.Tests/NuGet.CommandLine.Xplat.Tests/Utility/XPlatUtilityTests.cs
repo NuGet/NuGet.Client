@@ -72,6 +72,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
                 File.Copy(currentFolderNugetConfigPath, tempFolderNuGetConfigPath);
                 ISettings settings = XPlatUtility.ProcessConfigFile(tempFolderNuGetConfigPath);
                 List<string> configPaths = settings.GetConfigFilePaths().ToList();
+                // If optional nuget.config passed then only that 1 file get loaded.
                 Assert.Equal(1, configPaths.Count);
                 Assert.True(configPaths.Contains(tempFolderNuGetConfigPath));
             }
