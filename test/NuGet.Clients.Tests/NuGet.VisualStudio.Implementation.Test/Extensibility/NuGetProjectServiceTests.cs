@@ -141,7 +141,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 _transitivePackages = transitivePackages;
             }
 
-            //public override string MSBuildProjectPath => throw new NotImplementedException();
+            public override string MSBuildProjectPath => ProjectFullPath;
 
             public override Task AddFileToProjectAsync(string filePath)
             {
