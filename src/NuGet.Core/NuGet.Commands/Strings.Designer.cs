@@ -286,6 +286,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package reference {0} specifies a VersionOverride but the ability to override a centrally defined version is currently disabled..
+        /// </summary>
+        internal static string Error_CentralPackageVersions_VersionOverrideDisabled {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_VersionOverrideDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}..
         /// </summary>
         internal static string Error_CentralPackageVersions_VersionsNotAllowed {
@@ -2623,6 +2632,15 @@ namespace NuGet.Commands {
         internal static string VerifyCommand_VerifyingPackage {
             get {
                 return ResourceManager.GetString("VerifyCommand_VerifyingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package reference {0} specifies a VersionOverride but central package manageent is currently disabled so the value was ignored..
+        /// </summary>
+        internal static string Warning_CentralPackageVersions_VersionOverrideIgnored {
+            get {
+                return ResourceManager.GetString("Warning_CentralPackageVersions_VersionOverrideIgnored", resourceCulture);
             }
         }
         

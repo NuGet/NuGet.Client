@@ -263,6 +263,8 @@ namespace NuGet.Build.Tasks.Console
             {
                 string version = packageReferenceItem.GetProperty("Version");
 
+                string versionOverride = packageReferenceItem.GetProperty("VersionOverride");
+
                 libraryDependencies.Add(new LibraryDependency
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
@@ -274,7 +276,8 @@ namespace NuGet.Build.Tasks.Console
                         string.IsNullOrWhiteSpace(version) ? isCentralPackageVersionManagementEnabled ? null : VersionRange.All : VersionRange.Parse(version),
                         LibraryDependencyTarget.Package),
                     NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
-                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)
+                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
+                    VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
                 });
             }
 
@@ -783,15 +786,17 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>A <see cref="Tuple" /> containing the <see cref="ProjectRestoreMetadata" /> and <see cref="List{TargetFrameworkInformation}" /> for the specified project.</returns>
         private (ProjectRestoreMetadata RestoreMetadata, List<TargetFrameworkInformation> TargetFrameworkInfos) GetProjectRestoreMetadataAndTargetFrameworkInformation(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> projectsByTargetFramework, ISettings settings)
         {
-            var projectName = GetProjectName(project);
+            string projectName = GetProjectName(project);
 
-            var outputPath = GetRestoreOutputPath(project);
+            string outputPath = GetRestoreOutputPath(project);
 
-            var projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
-            var isCpvmEnabled = IsCentralVersionsManagementEnabled(project, projectStyleOrNull);
-            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCpvmEnabled);
+            ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
 
-            var projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
+            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
+
+            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
+
+            (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
                 restoreProjectStyle: projectStyleOrNull,
                 hasPackageReferenceItems: targetFrameworkInfos.Any(i => i.Dependencies.Any()),
                 projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
@@ -799,9 +804,9 @@ namespace NuGet.Build.Tasks.Console
                 projectName: project.GetProperty("MSBuildProjectName"),
                 log: MSBuildLogger);
 
-            var projectStyle = projectStyleResult.ProjectStyle;
+            ProjectStyle projectStyle = projectStyleResult.ProjectStyle;
 
-            var innerNodes = projectsByTargetFramework.Values.ToList();
+            List<IMSBuildProject> innerNodes = projectsByTargetFramework.Values.ToList();
 
             ProjectRestoreMetadata restoreMetadata;
 
@@ -830,7 +835,8 @@ namespace NuGet.Build.Tasks.Console
                         settings),
                     SkipContentFileWrite = IsLegacyProject(project),
                     ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
-                    CentralPackageVersionsEnabled = isCpvmEnabled && projectStyle == ProjectStyle.PackageReference
+                    CentralPackageVersionsEnabled = isCentralPackageManagementEnabled && projectStyle == ProjectStyle.PackageReference,
+                    CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled
                 };
             }
 
@@ -1009,18 +1015,19 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// It evaluates the project and returns true if the project has CentralPackageVersionManagement enabled.
+        /// Determines the current settings for central package managent for the specified project.
         /// </summary>
-        /// <param name="project">The <see cref="IMSBuildProject"/> for which the CentralPackageVersionManagement will be evaluated.</param>
-        /// <param name="projectStyle">The <see cref="ProjectStyle?"/>. Null is the project did not have a defined ProjectRestoreStyle property.</param>
-        /// <returns>True if the project has CentralPackageVersionManagement enabled and the project is PackageReference or the projectStyle is null.</returns>
-        internal static bool IsCentralVersionsManagementEnabled(IMSBuildProject project, ProjectStyle? projectStyle)
+        /// <param name="project">The <see cref="IMSBuildProject" /> to get the central package management settings for.</param>
+        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <c>null</c> when the project does not define a restore style.</param>
+        /// <returns>A <see cref="Tuple{T1, T2}" /> containing values indicating whether or not central package management is enabled and if the ability to override a package version is disabled.</returns>
+        internal static (bool IsEnabled, bool IsVersionOverrideDisabled) GetCentralPackageManagementSettings(IMSBuildProject project, ProjectStyle? projectStyle)
         {
             if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
             {
-                return StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("_CentralPackageVersionsEnabled"), bool.TrueString);
+                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("EnablePackageVersionOverride"));
             }
-            return false;
+
+            return (false, false);
         }
 
         /// <summary>

@@ -369,6 +369,7 @@ namespace NuGet.ProjectModel
                     var versionCentrallyManaged = false;
                     string aliases = null;
                     string dependencyVersionValue = null;
+                    VersionRange versionOverride = null;
 
                     if (jsonReader.TokenType == JsonToken.String)
                     {
@@ -422,7 +423,23 @@ namespace NuGet.ProjectModel
                                         dependencyVersionValue = (string)jsonReader.Value;
                                     }
                                     break;
-
+                                case "versionOverride":
+                                    if (jsonReader.ReadNextToken())
+                                    {
+                                        try
+                                        {
+                                            versionOverride = VersionRange.Parse((string)jsonReader.Value);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw FileFormatException.Create(
+                                                ex,
+                                                jsonReader.LineNumber,
+                                                jsonReader.LinePosition,
+                                                packageSpecPath);
+                                        }
+                                    }
+                                    break;
                                 case "versionCentrallyManaged":
                                     versionCentrallyManaged = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpecPath);
                                     break;
@@ -488,7 +505,8 @@ namespace NuGet.ProjectModel
                         Aliases = aliases,
                         // The ReferenceType is not persisted to the assets file
                         // Default to LibraryDependencyReferenceType.Direct on Read
-                        ReferenceType = LibraryDependencyReferenceType.Direct
+                        ReferenceType = LibraryDependencyReferenceType.Direct,
+                        VersionOverride = versionOverride
                     };
 
                     if (noWarn != null)
@@ -883,6 +901,7 @@ namespace NuGet.ProjectModel
         private static void ReadMSBuildMetadata(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
             var centralPackageVersionsManagementEnabled = false;
+            var centralPackageVersionOverrideDisabled = false;
             List<string> configFilePaths = null;
             var crossTargeting = false;
             List<string> fallbackFolders = null;
@@ -911,6 +930,10 @@ namespace NuGet.ProjectModel
                 {
                     case "centralPackageVersionsManagementEnabled":
                         centralPackageVersionsManagementEnabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "centralPackageVersionOverrideDisabled":
+                        centralPackageVersionOverrideDisabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
 
                     case "configFilePaths":
@@ -1068,6 +1091,7 @@ namespace NuGet.ProjectModel
             }
 
             msbuildMetadata.CentralPackageVersionsEnabled = centralPackageVersionsManagementEnabled;
+            msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
 
             if (configFilePaths != null)
             {

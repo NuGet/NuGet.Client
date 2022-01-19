@@ -60,13 +60,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         static VsManagedLanguagesProjectSystemServices()
         {
-            ReferenceMetadata = Array.CreateInstance(typeof(string), 6);
+            ReferenceMetadata = Array.CreateInstance(typeof(string), 7);
             ReferenceMetadata.SetValue(ProjectItemProperties.IncludeAssets, 0);
             ReferenceMetadata.SetValue(ProjectItemProperties.ExcludeAssets, 1);
             ReferenceMetadata.SetValue(ProjectItemProperties.PrivateAssets, 2);
             ReferenceMetadata.SetValue(ProjectItemProperties.NoWarn, 3);
             ReferenceMetadata.SetValue(ProjectItemProperties.GeneratePathProperty, 4);
             ReferenceMetadata.SetValue(ProjectItemProperties.Aliases, 5);
+            ReferenceMetadata.SetValue(ProjectItemProperties.VersionOverride, 6);
         }
 
         public VsManagedLanguagesProjectSystemServices(
@@ -208,6 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined)),
                 GeneratePathProperty = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.GeneratePathProperty)),
                 Aliases = GetReferenceMetadataValue(reference, ProjectItemProperties.Aliases, defaultValue: null),
+                VersionOverride = GetVersionOVerride(reference),
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
                     versionRange: ToVersionRange(reference.Version, isCpvmEnabled),
@@ -246,6 +248,18 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return VersionRange.Parse(version);
+        }
+
+        private static VersionRange GetVersionOVerride(PackageReference reference)
+        {
+            string versionOverride = GetReferenceMetadataValue(reference, ProjectItemProperties.VersionOverride, defaultValue: null);
+
+            if (string.IsNullOrWhiteSpace(versionOverride))
+            {
+                return null;
+            }
+
+            return VersionRange.Parse(versionOverride);
         }
 
         private static string GetReferenceMetadataValue(PackageReference reference, string metadataElement, string defaultValue = "")
@@ -357,6 +371,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             public string Name { get; }
             public string Version { get; }
+            public string VersionOverride { get; }
             public Array MetadataElements { get; }
             public Array MetadataValues { get; }
             public NuGetFramework TargetNuGetFramework { get; }

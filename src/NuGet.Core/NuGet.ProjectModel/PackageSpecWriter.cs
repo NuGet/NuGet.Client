@@ -177,6 +177,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
             SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
             SetValueIfTrue(writer, "centralPackageVersionsManagementEnabled", msbuildMetadata.CentralPackageVersionsEnabled);
+            SetValueIfTrue(writer, "centralPackageVersionOverrideDisabled", msbuildMetadata.CentralPackageVersionOverrideDisabled);
         }
 
 
@@ -431,6 +432,11 @@ namespace NuGet.ProjectModel
                     else
                     {
                         SetValue(writer, "version", versionString);
+                    }
+
+                    if (dependency.VersionOverride != null)
+                    {
+                        SetValue(writer, "versionOverride", dependency.VersionOverride.ToNormalizedString());
                     }
 
                     SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
