@@ -2031,6 +2031,67 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
+        [InlineData(null, true)]
+        [InlineData("", true)]
+        [InlineData("                     ", true)]
+        [InlineData("true", true)]
+        [InlineData("invalid", true)]
+        [InlineData("false", false)]
+        [InlineData("           false    ", false)]
+        public void ToPackageSpec_CentralVersionOverride_CanBeDisabled(string isCentralPackageVersionOverrideEnabled, bool expected)
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC", Guid.NewGuid().ToString());
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+
+            var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
+                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
+                packageReferences: new[] { new VsReferenceItem("foo", new VsReferenceProperties()) },
+                projectReferences: emptyReferenceItems,
+                packageDownloads: emptyReferenceItems,
+                frameworkReferences: emptyReferenceItems,
+                projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20).Concat(new VsProjectProperty[]
+                {
+                    new VsProjectProperty(ProjectBuildProperties.ManagePackageVersionsCentrally, "true"),
+                    new VsProjectProperty(ProjectBuildProperties.EnablePackageVersionOverride, isCentralPackageVersionOverrideEnabled)
+                }),
+                centralPackageVersions: new[]
+                        {
+                            new VsReferenceItem("foo", new VsReferenceProperties(new []
+                            {
+                                new VsReferenceProperty("Version", "2.0.0")
+                            })),
+                            // the second centralPackageVersion with the same version name will be ignored
+                            new VsReferenceItem("foo", new VsReferenceProperties(new []
+                            {
+                                new VsReferenceProperty("Version", "3.0.0")
+                            }))
+                        })
+            };
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, CommonFrameworks.NetStandard20.ToString(), string.Empty);
+
+            // Assert
+            var tfm = result.TargetFrameworks.First();
+
+            var packageVersion = Assert.Single(tfm.CentralPackageVersions);
+            Assert.Equal("foo", packageVersion.Key);
+            Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString());
+            var packageReference = Assert.Single(tfm.Dependencies);
+            Assert.Equal("[2.0.0, )", packageReference.LibraryRange.VersionRange.ToNormalizedString());
+
+            if (expected)
+            {
+                Assert.False(result.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+            }
+            else
+            {
+                Assert.True(result.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+            }
+        }
+
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task NominateProjectAsync_PackageReferenceWithAliases(bool isV2Nominate)

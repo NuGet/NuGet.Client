@@ -1978,7 +1978,8 @@ namespace NuGet.ProjectModel.Test
                         generatePathProperty: false,
                         versionCentrallyManaged: false,
                         LibraryDependencyReferenceType.Direct,
-                        aliases: null);
+                        aliases: null,
+                        versionOverride: null);
             newtonSoftDependency.VersionCentrallyManaged = true;
 
             lockFile.CentralTransitiveDependencyGroups

@@ -26,6 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly bool _restoreLockedMode;
         private readonly bool _isCPVMEnabled;
         private readonly IEnumerable<(string PackageId, string Version)> _projectPackageVersions;
+        private readonly string _isCentralPackageVersionOverrideEnabled;
 
         public TestVSProjectAdapter(
             string fullProjectPath,
@@ -34,7 +35,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             string restorePackagesWithLockFile = null,
             string nuGetLockFilePath = null,
             bool restoreLockedMode = false,
-            IEnumerable<(string PackageId, string Version)> projectPackageVersions = null)
+            IEnumerable<(string PackageId, string Version)> projectPackageVersions = null,
+            string isCentralPackageVersionOverrideEnabled = null)
         {
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
@@ -44,6 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _restoreLockedMode = restoreLockedMode;
             _isCPVMEnabled = projectPackageVersions?.Any() == true;
             _projectPackageVersions = projectPackageVersions;
+            _isCentralPackageVersionOverrideEnabled = isCentralPackageVersionOverrideEnabled;
         }
 
         public string AssetTargetFallback
@@ -228,14 +231,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
         }
 
-        public async Task<string> GetPropertyValueAsync(string propertyName)
+        public Task<string> GetPropertyValueAsync(string propertyName)
         {
-            if (propertyName == "ManagePackageVersionsCentrally")
+            switch (propertyName)
             {
-                return (await Task.FromResult(_isCPVMEnabled)).ToString();
-            }
+                case ProjectBuildProperties.ManagePackageVersionsCentrally:
+                    return Task.FromResult(_isCPVMEnabled.ToString());
 
-            return string.Empty;
+                case ProjectBuildProperties.EnablePackageVersionOverride:
+                    return Task.FromResult(_isCentralPackageVersionOverrideEnabled ?? string.Empty);
+
+                default:
+                    return Task.FromResult(string.Empty);
+            }
         }
 
         public Task<bool> IsCapabilityMatchAsync(string capabilityExpression)

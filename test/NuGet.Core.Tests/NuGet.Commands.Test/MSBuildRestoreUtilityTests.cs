@@ -10,6 +10,7 @@ using Moq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -3611,6 +3612,113 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("                     ", false)]
+        [InlineData("true", false)]
+        [InlineData("invalid", false)]
+        [InlineData("false", true)]
+        [InlineData("           false    ", true)]
+        public void MSBuildRestoreUtility_GetPackageSpec_CPVM_VersionOverrideCanBeDisabled(string isCentralPackageVersionOverrideEnabled, bool disabled)
+        {
+            var projectName = "alegacycpvm";
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectUniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", projectName },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "_CentralPackageVersionsEnabled", "true"},
+                    { "CentralPackageVersionOverrideEnabled", isCentralPackageVersionOverrideEnabled }
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "net472" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.7.2" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.2" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                // Package reference
+                // No TargetFrameworks metadata
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "IncludeAssets", "build;compile" },
+                    { "CrossTargeting", "true" },
+                });
+
+
+                // Central Version for the package above and another one for a package y
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0" },
+                });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "2.0.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
+
+                // Assert
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Count);
+                Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
+
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().Dependencies[0].LibraryRange.VersionRange.ToNormalizedString());
+                Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, project1Spec.TargetFrameworks.First().Dependencies[0].IncludeType);
+
+                Assert.Equal("x", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].Name);
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].VersionRange.ToNormalizedString());
+
+                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].Name);
+                Assert.Equal("[2.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].VersionRange.ToNormalizedString());
+
+                Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+
+                if (disabled)
+                {
+                    Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+                }
+                else
+                {
+                    Assert.False(project1Spec.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+                }
+            }
+        }
+
+        [Theory]
         [InlineData(ProjectStyle.DotnetCliTool)]
         [InlineData(ProjectStyle.DotnetToolReference)]
         [InlineData(ProjectStyle.PackagesConfig)]
@@ -3638,7 +3746,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // Act + Assert
-                Assert.False(MSBuildRestoreUtility.IsCentralVersionsManagementEnabled(projectSpec, projectStyle));
+                Assert.False(MSBuildRestoreUtility.GetCentralPackageManagementSettings(projectSpec, projectStyle).IsEnabled);
             }
         }
 
@@ -3823,6 +3931,239 @@ namespace NuGet.Commands.Test
                 Assert.Equal("(, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
                 Assert.Equal("(, )", centralDependencyX.VersionRange.ToNormalizedString());
                 Assert.Equal("(, )", centralDependencyY.VersionRange.ToNormalizedString());
+            }
+        }
+
+        /// <summary>
+        /// Verifies taht <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> applies version overrides correctly depending on whether or not central package management is enabled.
+        /// </summary>
+        /// <param name="isCentralPackageManagementEnabled"><c>true</c> if central pacakge management is enabled, otherwise <c>false</c>.</param>
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void MSBuildRestoreUtility_GetDependencySpec_VersionOverrideAppliesWhenCPVMEnabled(bool isCentralPackageManagementEnabled)
+        {
+            var projectName = "acpvm";
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                const string projectUniqueName = "3BA10BF9-98DF-4952-A062-651AEE292848";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", projectName },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "CrossTargeting", "true" },
+                    { "_CentralPackageVersionsEnabled", isCentralPackageManagementEnabled.ToString()}
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "netcoreapp3.0" },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                // Package reference
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                    { "VersionRange", isCentralPackageManagementEnabled ? null : "1.0.0" },
+                    { "IncludeAssets", "build;compile" },
+                    { "CrossTargeting", "true" },
+                });
+
+                // Package reference with version but is implicitly defined
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "1.2.1" },
+                    { "IsImplicitlyDefined", "true" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                // Package reference with version 
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "z" },
+                    { "VersionRange", isCentralPackageManagementEnabled ? null : "3.0.0" },
+                    { "VersionOverride", isCentralPackageManagementEnabled ? "9.9.9" : null },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                // Central Version for the package above and another one for a package y
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "2.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "z" },
+                    { "VersionRange", "3.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
+
+                TargetFrameworkInformation targetFrameworkInformation = project1Spec.TargetFrameworks.First();
+
+                // Assert
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(3, targetFrameworkInformation.Dependencies.Count);
+                Assert.Equal(isCentralPackageManagementEnabled ? 3 : 0, targetFrameworkInformation.CentralPackageVersions.Count);
+
+                var dependencyX = targetFrameworkInformation.Dependencies.First(d => d.Name == "x");
+                var dependencyY = targetFrameworkInformation.Dependencies.First(d => d.Name == "y");
+                var dependencyZ = targetFrameworkInformation.Dependencies.First(d => d.Name == "z");
+
+                Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, dependencyX.IncludeType);
+
+                if (isCentralPackageManagementEnabled)
+                {
+                    Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+
+                    Assert.True(dependencyX.VersionCentrallyManaged);
+                    Assert.False(dependencyY.VersionCentrallyManaged);
+                    Assert.False(dependencyZ.VersionCentrallyManaged);
+
+                    Assert.Equal("[1.0.0, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[1.2.1, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[9.9.9, )", dependencyZ.LibraryRange.VersionRange.ToNormalizedString());
+
+                    var centralDependencyX = targetFrameworkInformation.CentralPackageVersions["x"];
+                    var centralDependencyY = targetFrameworkInformation.CentralPackageVersions["y"];
+                    var centralDependencyZ = targetFrameworkInformation.CentralPackageVersions["Z"];
+
+                    Assert.Equal("x", centralDependencyX.Name);
+                    Assert.Equal("[1.0.0, )", centralDependencyX.VersionRange.ToNormalizedString());
+
+                    Assert.Equal("y", centralDependencyY.Name);
+                    Assert.Equal("[2.0.0, )", centralDependencyY.VersionRange.ToNormalizedString());
+
+                    Assert.Equal("z", centralDependencyZ.Name);
+                    Assert.Equal("[3.0.0, )", centralDependencyZ.VersionRange.ToNormalizedString());
+                }
+                else
+                {
+                    Assert.False(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+
+                    Assert.Equal("[1.0.0, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[1.2.1, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[3.0.0, )", dependencyZ.LibraryRange.VersionRange.ToNormalizedString());
+
+                    Assert.False(dependencyX.VersionCentrallyManaged);
+                    Assert.False(dependencyY.VersionCentrallyManaged);
+                    Assert.False(dependencyZ.VersionCentrallyManaged);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verifies taht <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> throws a <see cref="ArgumentException" /> if PackageReference contains a value for VersionOverride is not a valid <see cref="VersionRange" />.
+        /// </summary>
+        [Fact]
+        public void MSBuildRestoreUtility_GetDependencySpec_ThrowsArgumentExceptionWhenVersionOverrideIsInvalid()
+        {
+            var projectName = "acpvm";
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                const string projectUniqueName = "3BA10BF9-98DF-4952-A062-651AEE292848";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", projectName },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "CrossTargeting", "true" },
+                    { "_CentralPackageVersionsEnabled", bool.TrueString}
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "netcoreapp3.0" },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                    { "VersionOverride", "invalid" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "3.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Assert
+                ArgumentException exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.GetDependencySpec(wrappedItems));
+
+                Assert.Equal("'invalid' is not a valid version string.", exception.Message);
             }
         }
 

@@ -137,7 +137,8 @@ namespace NuGet.ProjectModel.Test
                 generatePathProperty: false,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuffff");
+                aliases: "stuffff",
+               versionOverride: null);
 
             return dependency;
         }
@@ -626,7 +627,8 @@ namespace NuGet.ProjectModel.Test
                 generatePathProperty: false,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
             var imports = NuGetFramework.Parse("net45"); // This makes no sense in the context of fallback, just for testing :)
 
             var originalTargetFrameworkInformation = new TargetFrameworkInformation();

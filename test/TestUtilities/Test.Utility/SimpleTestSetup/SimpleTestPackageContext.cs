@@ -41,6 +41,7 @@ namespace NuGet.Test.Utility
 
         public string Id { get; set; } = "packageA";
         public string Version { get; set; } = "1.0.0";
+        public string VersionOverride { get; set; }
         public string MinClientVersion { get; set; }
         public List<SimpleTestPackageContext> Dependencies { get; set; } = new List<SimpleTestPackageContext>();
         public Dictionary<NuGetFramework, List<SimpleTestPackageContext>> PerFrameworkDependencies { get; set; } = new();

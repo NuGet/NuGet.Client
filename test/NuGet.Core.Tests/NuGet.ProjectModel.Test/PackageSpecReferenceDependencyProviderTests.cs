@@ -29,7 +29,8 @@ namespace NuGet.ProjectModel.Test
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));

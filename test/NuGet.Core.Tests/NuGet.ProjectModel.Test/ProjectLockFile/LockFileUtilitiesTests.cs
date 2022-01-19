@@ -171,7 +171,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm1 = new TargetFrameworkInformation
             {
@@ -228,7 +229,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation
             {
@@ -280,7 +282,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -337,7 +340,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -390,7 +394,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -442,7 +447,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -494,7 +500,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -550,7 +557,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -621,7 +629,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -670,7 +679,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "stuff");
+                aliases: "stuff",
+               versionOverride: null);
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -829,7 +839,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct,
-                aliases: null);
+                aliases: null,
+               versionOverride: null);
 
             projectB.TargetFrameworks.First().Dependencies.Add(packageC);
 
@@ -916,7 +927,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct,
-                aliases: null);
+                aliases: null,
+               versionOverride: null);
 
             // B (PrivateAssets.All) -> C 
             projectB = projectB.WithTestProjectReference(projectC, privateAssets: LibraryIncludeFlags.All);
@@ -988,7 +1000,8 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct,
-                aliases: null);
+                aliases: null,
+               versionOverride: null);
 
             // B -> C 
             projectB = projectB.WithTestProjectReference(projectC);

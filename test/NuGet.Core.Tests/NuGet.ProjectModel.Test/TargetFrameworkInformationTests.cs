@@ -584,7 +584,8 @@ namespace NuGet.ProjectModel.Test
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
-                aliases: "Alias");
+                aliases: "Alias",
+               versionOverride: null);
 
             var downloadDependency = new DownloadDependency("foo", VersionRange.All);
             var frameworkDependency = new FrameworkDependency("framework", FrameworkDependencyFlags.All);

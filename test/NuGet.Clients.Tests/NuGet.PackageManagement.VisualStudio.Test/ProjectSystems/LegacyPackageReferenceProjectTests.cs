@@ -866,6 +866,61 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(VersionRange.Parse(packageB.Version), centralPackageVersions[packageB.PackageId].VersionRange);
         }
 
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("", true)]
+        [InlineData("                     ", true)]
+        [InlineData("true", true)]
+        [InlineData("invalid", true)]
+        [InlineData("false", false)]
+        [InlineData("           false    ", false)]
+        public async Task GetPackageSpecAsync_CentralPackageVersionOverride_DisabedWhenSpecified(string isCentralPackageVersionOverrideEnabled, bool expected)
+        {
+            // Arrange
+            var packageAv1 = (PackageId: "packageA", Version: "1.2.3");
+            var packageB = (PackageId: "packageB", Version: "3.4.5");
+            var packageAv5 = (PackageId: "packageA", Version: "5.0.0");
+
+            var projectNames = new ProjectNames(
+                        fullName: "projectName",
+                        uniqueName: "projectName",
+                        shortName: "projectName",
+                        customUniqueName: "projectName",
+                        projectId: Guid.NewGuid().ToString());
+
+            var vsProjectAdapter = new TestVSProjectAdapter(
+                        "projectPath",
+                        projectNames,
+                        "framework",
+                        restorePackagesWithLockFile: null,
+                        nuGetLockFilePath: null,
+                        restoreLockedMode: false,
+                        projectPackageVersions: new List<(string Id, string Version)>() { packageAv1, packageB, packageAv5 },
+                        isCentralPackageVersionOverrideEnabled: isCentralPackageVersionOverrideEnabled);
+
+            var legacyPRProject = new LegacyPackageReferenceProject(
+                       vsProjectAdapter,
+                       Guid.NewGuid().ToString(),
+                       new TestProjectSystemServices(),
+                       _threadingService);
+
+            var settings = NullSettings.Instance;
+            var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+            var packageSpecs = await legacyPRProject.GetPackageSpecsAsync(context);
+
+            Assert.Equal(1, packageSpecs.Count);
+
+            if (expected)
+            {
+                Assert.False(packageSpecs.First().RestoreMetadata.CentralPackageVersionOverrideDisabled);
+            }
+            else
+            {
+                Assert.True(packageSpecs.First().RestoreMetadata.CentralPackageVersionOverrideDisabled);
+            }
+        }
+
         [Fact]
         public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
         {
