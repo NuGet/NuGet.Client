@@ -113,7 +113,15 @@ namespace NuGet.ProjectModel
 
         public RestoreLockProperties RestoreLockProperties { get; set; } = new RestoreLockProperties();
 
+        /// <summary>
+        /// Gets or sets a value indicating whether or not central package management is enabled.
+        /// </summary>
         public bool CentralPackageVersionsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not a package version specified centrally can be overridden.
+        /// </summary>
+        public bool CentralPackageVersionOverrideDisabled { get; set; }
 
         public override int GetHashCode()
         {
@@ -166,6 +174,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ProjectWideWarningProperties);
             hashCode.AddObject(RestoreLockProperties);
             hashCode.AddObject(CentralPackageVersionsEnabled);
+            hashCode.AddObject(CentralPackageVersionOverrideDisabled);
 
             return hashCode.CombinedHash;
         }
@@ -206,7 +215,8 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
                    EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
                    EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties) &&
-                   EqualityUtility.EqualsWithNullCheck(CentralPackageVersionsEnabled, other.CentralPackageVersionsEnabled);
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageVersionsEnabled, other.CentralPackageVersionsEnabled) &&
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageVersionOverrideDisabled, other.CentralPackageVersionOverrideDisabled);
         }
 
         public virtual ProjectRestoreMetadata Clone()
@@ -239,6 +249,7 @@ namespace NuGet.ProjectModel
             clone.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
             clone.RestoreLockProperties = RestoreLockProperties?.Clone();
             clone.CentralPackageVersionsEnabled = CentralPackageVersionsEnabled;
+            clone.CentralPackageVersionOverrideDisabled = CentralPackageVersionOverrideDisabled;
         }
     }
 }

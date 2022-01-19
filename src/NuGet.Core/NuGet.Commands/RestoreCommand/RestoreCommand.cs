@@ -202,7 +202,7 @@ namespace NuGet.Commands
                 }
                 telemetry.TelemetryEvent[NoOpResult] = false; // Getting here means we did not no-op.
 
-                if (isCpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
+                if (!await AreCentralVersionRequirementsSatisfiedAsync(_request.Project.RestoreMetadata))
                 {
                     // the errors will be added to the assets file
                     _success = false;
@@ -444,10 +444,34 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync()
+        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync(ProjectRestoreMetadata projectRestoreMetadata)
         {
-            // The dependencies should not have versions explicitelly defined if cpvm is enabled.
-            IEnumerable<LibraryDependency> dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced));
+            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
+
+            if (projectRestoreMetadata == null || !projectRestoreMetadata.CentralPackageVersionsEnabled)
+            {
+                // Emit a warning for any package references that specified a VersionOverride since the value was ignored
+                foreach (var item in dependenciesWithVersionOverride)
+                {
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1014, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_VersionOverrideIgnored, item.Name)));
+                }
+
+                return true;
+            }
+
+            if (projectRestoreMetadata.CentralPackageVersionOverrideDisabled)
+            {
+                // Emit a error if VersionOverride was specified for a package reference but that functionality is disabled
+                foreach (var item in dependenciesWithVersionOverride)
+                {
+                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1013, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionOverrideDisabled, item.Name)));
+                }
+
+                return false;
+            }
+
+            // The dependencies should not have versions explicitly defined if cpvm is enabled.
+            IEnumerable<LibraryDependency> dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced && d.VersionOverride == null));
             if (dependenciesWithDefinedVersion.Any())
             {
                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));

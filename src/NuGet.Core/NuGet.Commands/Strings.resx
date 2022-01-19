@@ -909,6 +909,14 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed" xml:space="preserve">
     <value>The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs</value>
   </data>
+  <data name="Error_CentralPackageVersions_VersionOverrideDisabled" xml:space="preserve">
+    <value>The package reference {0} specifies a VersionOverride but the ability to override a centrally defined version is currently disabled.</value>
+    <comment>0 - The name of a package reference.</comment>
+  </data>
+  <data name="Warning_CentralPackageVersions_VersionOverrideIgnored" xml:space="preserve">
+    <value>The package reference {0} specifies a VersionOverride but central package manageent is currently disabled so the value was ignored.</value>
+    <comment>0 - The name of a package reference.</comment>
+  </data>
   <data name="Error_SourceProviderIsNull" xml:space="preserve">
     <value>Property SourceProvider is null.</value>
   </data>

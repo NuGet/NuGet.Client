@@ -88,6 +88,16 @@ namespace NuGet.Common
         }
 
         /// <summary>
+        /// Determines if the specified value is equivalent to the word "false".
+        /// </summary>
+        /// <param name="value">The value to determine if it is equivalent to the word "false".</param>
+        /// <returns><c>true</c> if the specified value is equivalent to the word "false", otherwise <c>false</c>.</returns>
+        public static bool IsFalse(string value)
+        {
+            return bool.FalseString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// True if the property is set to true or empty.
         /// </summary>
         public static bool IsTrueOrEmpty(string value)

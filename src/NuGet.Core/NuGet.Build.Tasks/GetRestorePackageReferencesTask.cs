@@ -57,6 +57,7 @@ namespace NuGet.Build.Tasks
                 properties.Add("Type", "Dependency");
                 properties.Add("Id", packageId);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "VersionOverride");
 
                 if (!string.IsNullOrEmpty(TargetFrameworks))
                 {

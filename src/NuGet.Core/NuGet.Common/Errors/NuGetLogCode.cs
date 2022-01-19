@@ -117,6 +117,16 @@ namespace NuGet.Common
         NU1012 = 1012,
 
         /// <summary>
+        /// Projects that use central package version management are not configured to allow package version overrides.
+        /// </summary>
+        NU1013 = 1013,
+
+        /// <summary>
+        /// A VersionOverride was specified for a PackageReference but central package management is not enabled so the value was ignored.
+        /// </summary>
+        NU1014 = 1014,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
