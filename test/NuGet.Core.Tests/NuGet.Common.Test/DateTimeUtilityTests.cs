@@ -17,6 +17,7 @@ namespace NuGet.Common.Test
                 new object[] { "1.23", TimeSpan.FromSeconds(1.23d) },
                 new object[] { "0", TimeSpan.FromMilliseconds(0.01d) }, // round down
                 new object[] { "1", TimeSpan.FromMilliseconds(1.21d) }, // round down
+                new object[] { "1", TimeSpan.FromMilliseconds(0.96d) }, // round up
                 new object[] { "92183.91", TimeSpan.FromHours(92183.91d) },
                 new object[] { "1", TimeSpan.FromSeconds(3600.0d) },
                 new object[] { "3.6", TimeSpan.FromMinutes(3.6d) },
