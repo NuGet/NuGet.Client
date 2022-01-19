@@ -50,7 +50,7 @@ namespace NuGet.Commands
                     return packages;
                 });
 
-                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(verifyArgs.Settings, verifyArgs.Logger);
+                ClientPolicyContext clientPolicyContext = ClientPolicyContext.GetClientPolicy(verifyArgs.Settings, verifyArgs.Logger);
 
                 // List of values passed through --certificate-fingerprint option read
                 var allowListEntries = verifyArgs.CertificateFingerprint.Select(fingerprint =>
@@ -62,9 +62,6 @@ namespace NuGet.Commands
 
                 var verifierSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
 
-                // nuget.config >> trustedSigners section read
-                IReadOnlyList<TrustedSignerAllowListEntry> trustedSignerAllowList = TrustedSignersProvider.GetAllowListEntries(verifyArgs.Settings, verifyArgs.Logger);
-
                 var verificationProviders = new List<ISignatureVerificationProvider>()
                 {
                     new IntegrityVerificationProvider()
@@ -72,13 +69,13 @@ namespace NuGet.Commands
 
                 // trustedSigners section >> Owners are considered here.
                 verificationProviders.Add(
-                      new AllowListVerificationProvider(
-                          trustedSignerAllowList,
-                          requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require,
-                          emptyListErrorMessage: Strings.Error_NoClientAllowList,
-                          noMatchErrorMessage: Strings.Error_NoMatchingClientCertificate));
+                    new AllowListVerificationProvider(
+                        clientPolicyContext.AllowList,
+                        requireNonEmptyAllowList: clientPolicyContext.Policy == SignatureValidationMode.Require,
+                        emptyListErrorMessage: Strings.Error_NoClientAllowList,
+                        noMatchErrorMessage: Strings.Error_NoMatchingClientCertificate));
 
-                IEnumerable<KeyValuePair<string, HashAlgorithmName>> trustedSignerAllowUntrustedRootList = trustedSignerAllowList?
+                IEnumerable<KeyValuePair<string, HashAlgorithmName>> trustedSignerAllowUntrustedRootList = clientPolicyContext.AllowList?
                     .Where(c => c.AllowUntrustedRoot)
                     .Select(c => new KeyValuePair<string, HashAlgorithmName>(c.Fingerprint, c.FingerprintAlgorithm));
 

@@ -53,6 +53,8 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
             string baseNugetConfigPath = Path.Combine(baseDirectory, Settings.DefaultSettingsFileName);
             List<string> configPaths = settings.GetConfigFilePaths().ToList();
+            // Since this command doesn't set specific working directory itself, it's just test binary folder,
+            // so several nuget.config including user default nuget.config'll get loaded.
             Assert.True(configPaths.Count > 1);
             // Assert user default nuget.config is loaded
             Assert.True(configPaths.Contains(baseNugetConfigPath));
