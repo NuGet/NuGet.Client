@@ -150,6 +150,13 @@ namespace NuGet.Common
                 return true;
             }
 
+            // The OSPlatform.FreeBSD property only exists in .NET Core 3.1 and higher, whereas this project is also
+            // compiled for .NET Standard and .NET Framework, where an OSPlatform for FreeBSD must be created manually
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Create("FREEBSD")))
+            {
+                return true;
+            }
+
             return false;
 #else
             var platform = (int)Environment.OSVersion.Platform;
