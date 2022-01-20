@@ -6,6 +6,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <Description>Unit and integration tests for NuGet.PackageManagement.UI.</Description>
+    <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
 
   <ItemGroup>
@@ -90,12 +91,10 @@
     <EmbeddedResource Include="compiler\resources\nugetSearchPage1.json" />
     <EmbeddedResource Include="compiler\resources\nugetSearchPage2.json" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <None Remove="C:\Users\mruizmares\Documents\GitHub\NuGet.Client\build\TestShared\xunit.runner.json" />
+  </ItemGroup>
 </Project>
