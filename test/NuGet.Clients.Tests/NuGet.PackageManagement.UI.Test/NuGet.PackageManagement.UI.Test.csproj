@@ -94,7 +94,4 @@
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <ItemGroup>
-    <None Remove="C:\Users\mruizmares\Documents\GitHub\NuGet.Client\build\TestShared\xunit.runner.json" />
-  </ItemGroup>
 </Project>
