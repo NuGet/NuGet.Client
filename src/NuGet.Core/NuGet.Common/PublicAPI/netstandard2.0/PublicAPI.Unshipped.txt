@@ -1,1 +1,10 @@
+NuGet.Common.IPackLogMessage.Framework.get -> NuGet.Frameworks.NuGetFramework
+NuGet.Common.IPackLogMessage.Framework.set -> void
+NuGet.Common.IPackLogMessage.LibraryId.get -> string
+NuGet.Common.IPackLogMessage.LibraryId.set -> void
 NuGet.Common.NuGetLogCode.NU5042 = 5042 -> NuGet.Common.NuGetLogCode
+NuGet.Common.PackagingLogMessage.Framework.get -> NuGet.Frameworks.NuGetFramework
+NuGet.Common.PackagingLogMessage.Framework.set -> void
+NuGet.Common.PackagingLogMessage.LibraryId.get -> string
+NuGet.Common.PackagingLogMessage.LibraryId.set -> void
+static NuGet.Common.PackagingLogMessage.CreateWarning(string message, NuGet.Common.NuGetLogCode code, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> NuGet.Common.PackagingLogMessage

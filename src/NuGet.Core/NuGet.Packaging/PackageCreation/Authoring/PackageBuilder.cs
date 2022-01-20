@@ -587,7 +587,7 @@ namespace NuGet.Packaging
                 .Select(framework => framework.GetShortFolderName()));
             if (frameworksMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, String.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromDependencyGroups, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
             }
 
             if (version == null)
