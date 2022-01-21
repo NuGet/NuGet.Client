@@ -217,7 +217,7 @@ namespace NuGet.Test.Utility
                 }
 
                 //necessary for crossing XmlDocument contexts
-                XmlNode importNode = docParentNode.OwnerDocument.ImportNode(child, true);
+                XmlNode importNode = docParentNode.OwnerDocument.ImportNode(node: child, deep: true);
                 docParentNode.AppendChild(importNode);
             }
 
