@@ -14,14 +14,22 @@ namespace NuGet.Commands
         private readonly ConcurrentQueue<ILogMessage> _errors;
         private ILogger _innerLogger;
 
+        // Project level warnings properties
         public WarningProperties WarningProperties { get; set; }
+
+        // Package specific warning property
+        private PackCommand.PackageSpecificWarningProperties PackageSpecificWarningProperties { get; set; }
 
         public IEnumerable<ILogMessage> Errors => _errors.ToArray();
 
         public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties)
+            : this(innerLogger, warningProperties, null) { }
+
+        public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties, PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties)
         {
             _innerLogger = innerLogger;
             WarningProperties = warningProperties;
+            PackageSpecificWarningProperties = packageSpecificWarningProperties;
             _errors = new ConcurrentQueue<ILogMessage>();
         }
 
@@ -71,7 +79,23 @@ namespace NuGet.Commands
         {
             if (message.Level == LogLevel.Warning)
             {
-                return WarningPropertiesCollection.ApplyProjectWideNoWarnProperties(message, warningProperties: WarningProperties);
+                // If the WarningPropertiesCollection is present then test if the warning is suppressed in
+                // project wide no warn
+                if (WarningPropertiesCollection.ApplyProjectWideNoWarnProperties(message, warningProperties: WarningProperties))
+                {
+                    return true;
+                }
+                else
+                {
+                    // Use packagereference warning properties only if the project does not suppress the warning
+                    // In packagereference warning properties look at only the package specific ones as all properties are per package reference.
+                    IPackLogMessage packLogMessage = message as IPackLogMessage;
+
+                    if (packLogMessage != null)
+                    {
+                        return PackageSpecificWarningProperties?.ApplyNoWarnProperties(packLogMessage) == true;
+                    }
+                }
             }
 
             return false;

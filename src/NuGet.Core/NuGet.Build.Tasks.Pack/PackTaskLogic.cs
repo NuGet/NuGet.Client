@@ -15,12 +15,15 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
+using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack
 {
     public class PackTaskLogic : IPackTaskLogic
     {
         private const string IdentityProperty = "Identity";
+        private PackageSpecificWarningProperties _packageSpecificWarningProperties;
+
         public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
         {
             var packArgs = new PackArgs
@@ -39,7 +42,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackTargetArgs = new MSBuildPackTargetArgs()
             };
 
-            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties);
+            packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, _packageSpecificWarningProperties);
 
             if (request.MinClientVersion != null)
             {
@@ -901,13 +904,15 @@ namespace NuGet.Build.Tasks.Pack
             }
         }
 
-        private static void InitializePackageDependencies(
+        private void InitializePackageDependencies(
             LockFile assetsFile,
             Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework,
             ISet<NuGetFramework> frameworkWithSuppressedDependencies)
         {
+            var packageSpecificNoWarnProperties = new Dictionary<string, HashSet<(NuGetLogCode, NuGetFramework)>>(StringComparer.OrdinalIgnoreCase);
+
             // From the package spec, we know the direct package dependencies of this project.
-            foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
+            foreach (TargetFrameworkInformation framework in assetsFile.PackageSpec.TargetFrameworks)
             {
                 if (frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
                 {
@@ -963,8 +968,26 @@ namespace NuGet.Build.Tasks.Pack
                         }
                     }
 
+                    if (packageDependency.NoWarn.Count > 0)
+                    {
+                        HashSet<(NuGetLogCode, NuGetFramework)> nowarnProperties = null;
+
+                        if (!packageSpecificNoWarnProperties.TryGetValue(packageDependency.Name, out nowarnProperties))
+                        {
+                            nowarnProperties = new HashSet<(NuGetLogCode, NuGetFramework)>();
+                        }
+
+                        nowarnProperties.AddRange(packageDependency.NoWarn.Select(n => (n, framework.FrameworkName)));
+                        packageSpecificNoWarnProperties[packageDependency.Name] = nowarnProperties;
+                    }
+
                     PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
                 }
+            }
+
+            if (packageSpecificNoWarnProperties.Keys.Count > 0)
+            {
+                _packageSpecificWarningProperties = PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(packageSpecificNoWarnProperties);
             }
         }
 

@@ -8,6 +8,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
 using ILogger = NuGet.Common.ILogger;
+using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack
 {
@@ -115,7 +116,6 @@ namespace NuGet.Build.Tasks.Pack
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;
-                var packArgs = logic.GetPackArgs(request);
 
                 // If packing using a Nuspec file, we don't need to build a PackageBuilder here
                 // as the package builder is built by reading the manifest file later in the code path.
@@ -124,6 +124,8 @@ namespace NuGet.Build.Tasks.Pack
                 {
                     packageBuilder = logic.GetPackageBuilder(request);
                 }
+
+                PackArgs packArgs = logic.GetPackArgs(request);
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
 
                 return logic.BuildPackage(packRunner);
