@@ -312,7 +312,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};def" : string.Empty;
 
                 // Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -323,7 +323,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 // For certificate with trusted root setting allowUntrustedRoot to true/false doesn't matter
-                verifyResult.Success.Should().BeTrue();
+                verifyResult.Success.Should().BeTrue(because: verifyResult.AllOutput);
                 verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -357,7 +357,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};def" : string.Empty;
 
                 // Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -367,9 +367,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     waitForExit: true);
 
                 // Assert
-                verifyResult.Success.Should().BeFalse();
-                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
+                verifyResult.Success.Should().BeFalse(because: verifyResult.AllOutput);
                 verifyResult.AllOutput.Should().Contain(_noMatchingCertErrorCode);
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 verifyResult.AllOutput.Should().Contain("This package is signed but not by a trusted signer.");
                 verifyResult.AllOutput.Should().NotContain(_primarySignatureInvalidErrorCode);
             }
@@ -405,7 +405,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};def" : string.Empty;
 
                 // Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -459,7 +459,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};def" : string.Empty;
 
                 // Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -505,7 +505,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};def" : string.Empty;
 
                 // Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -556,7 +556,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};def" : string.Empty;
 
                 // Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -606,7 +606,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certificateFingerprintString};def" : string.Empty;
 
                 // Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -656,7 +656,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certFingerprint};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certFingerprint};def" : string.Empty;
 
                 //Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -705,7 +705,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certFingerprint};abc;def" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"-CertificateFingerprint {certFingerprint};def" : string.Empty;
 
                 //Act
                 CommandRunnerResult verifyResult = CommandRunner.Run(
@@ -755,7 +755,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 CommandRunnerResult verifyResult = CommandRunner.Run(
                     _nugetExePath,
                     pathContext.PackageSource,
-                    $"verify {signedPackagePath} -All -CertificateFingerprint {certificateFingerprintString};abc;def -ConfigFile {nugetConfigPath2}",
+                    $"verify {signedPackagePath} -All -CertificateFingerprint {certificateFingerprintString};def -ConfigFile {nugetConfigPath2}",
                     waitForExit: true);
 
                 // Assert
@@ -798,7 +798,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 CommandRunnerResult verifyResult = CommandRunner.Run(
                     _nugetExePath,
                     pathContext.PackageSource,
-                    $"verify {signedPackagePath} -All -CertificateFingerprint {certificateFingerprintString};abc;def -ConfigFile {nugetConfigPath2}",
+                    $"verify {signedPackagePath} -All -CertificateFingerprint {certificateFingerprintString};def -ConfigFile {nugetConfigPath2}",
                     waitForExit: true);
 
                 // Assert

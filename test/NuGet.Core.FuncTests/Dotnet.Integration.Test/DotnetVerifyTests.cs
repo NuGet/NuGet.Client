@@ -109,7 +109,7 @@ namespace Dotnet.Integration.Test
                 var result = _msbuildFixture.RunDotnet(
                     testDirectory,
                     $"nuget verify {packageFile.FullName} " +
-                    $"--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE  --certificate-fingerprint DEF",
+                    $"--certificate-fingerprint 3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE --certificate-fingerprint def",
                     ignoreExitCode: true);
 
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -152,7 +152,7 @@ namespace Dotnet.Integration.Test
         [InlineData("true", false)]
         [InlineData("false", true)]
         [InlineData("false", false)]
-        public async Task Verify_AuthorSignedPackage_WithAuthorItemTrustedCertificate_SucceedsAsync(string allowUntrustedRoot, bool verifyCertificateFingerprint)
+        public async Task Verify_AuthorSignedPackage_WithAuthorItemTrustedCertificate_Succeeds(string allowUntrustedRoot, bool verifyCertificateFingerprint)
         {
             // Arrange
             TrustedTestCert<TestCertificate> cert = _signFixture.TrustedTestCertificateChain.Leaf;
@@ -176,7 +176,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(testDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def" : string.Empty;
 
                 //Act
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
@@ -187,6 +187,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 // For certificate with trusted root setting allowUntrustedRoot to true/false doesn't matter
                 verifyResult.Success.Should().BeTrue(because: verifyResult.AllOutput);
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
 
@@ -219,7 +220,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def" : string.Empty;
 
                 //Act
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
@@ -230,6 +231,7 @@ namespace Dotnet.Integration.Test
                 // Assert
                 verifyResult.Success.Should().BeFalse(because: verifyResult.AllOutput);
                 verifyResult.AllOutput.Should().Contain(_noMatchingCertErrorCode);
+                verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 verifyResult.AllOutput.Should().Contain("This package is signed but not by a trusted signer.");
                 verifyResult.AllOutput.Should().NotContain(_primarySignatureInvalidErrorCode);
             }
@@ -265,7 +267,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def" : string.Empty;
 
                 //Act
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
@@ -318,7 +320,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def" : string.Empty;
 
                 //Act
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
@@ -328,7 +330,7 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 // Unless allowUntrustedRoot is set true in nuget.config verify always fails for cert without trusted root.
-                verifyResult.Success.Should().BeFalse();
+                verifyResult.Success.Should().BeFalse(because: verifyResult.AllOutput);
                 verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 verifyResult.AllOutput.Should().Contain(_primarySignatureInvalidErrorCode);
                 verifyResult.AllOutput.Should().Contain("The repository primary signature's signing certificate is not trusted by the trust provider.");
@@ -363,7 +365,7 @@ namespace Dotnet.Integration.Test
     </trustedSigners>
 ";
                 SimpleTestSettingsContext.AddSectionIntoNuGetConfig(pathContext.WorkingDirectory, trustedSignersSectionContent, "configuration");
-                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF" : string.Empty;
+                string fingerprint = verifyCertificateFingerprint ? $"--certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def" : string.Empty;
 
                 //Act
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
@@ -390,7 +392,6 @@ namespace Dotnet.Integration.Test
             using (var testCertificate = new X509Certificate2(_signFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-                string testDirectory = pathContext.WorkingDirectory;
                 await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
                 string packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
 
@@ -418,14 +419,15 @@ namespace Dotnet.Integration.Test
 
                 //Act
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
-                    testDirectory,
+                    pathContext.WorkingDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
                     ignoreExitCode: true);
 
                 // Assert
                 // Owners is casesensitive, owner info should be "nuget;contoso" not "Nuget;Contoso"
-                verifyResult.Success.Should().BeFalse();
+                verifyResult.Success.Should().BeFalse(because: verifyResult.AllOutput);
                 verifyResult.AllOutput.Should().Contain(_noMatchingCertErrorCode);
+                verifyResult.AllOutput.Should().Contain("This package is signed but not by a trusted signer.");
             }
         }
 
@@ -439,7 +441,6 @@ namespace Dotnet.Integration.Test
             using (var testCertificate = new X509Certificate2(_signFixture.UntrustedSelfIssuedCertificateInCertificateStore))
             {
                 var nupkg = new SimpleTestPackageContext("A", "1.0.0");
-                string testDirectory = pathContext.WorkingDirectory;
                 await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.WorkingDirectory, nupkg);
                 string packagePath = Path.Combine(pathContext.WorkingDirectory, nupkg.PackageName);
 
@@ -467,7 +468,7 @@ namespace Dotnet.Integration.Test
 
                 //Act
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
-                    testDirectory,
+                    pathContext.WorkingDirectory,
                     $"nuget verify {signedPackagePath} {fingerprint}",
                     ignoreExitCode: true);
 
@@ -607,8 +608,7 @@ namespace Dotnet.Integration.Test
                 // pass custom nuget2.config file, but doesn't have trustedSigners section
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
                     pathContext.WorkingDirectory,
-                    $"nuget verify {signedPackagePath} " +
-                    $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF --configfile {nugetConfigPath2}",
+                    $"nuget verify {signedPackagePath} --all --certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def --configfile {nugetConfigPath2}",
                     ignoreExitCode: true);
 
                 // Assert
@@ -650,8 +650,7 @@ namespace Dotnet.Integration.Test
                 // pass custom nuget2.config file, it has trustedSigners section
                 CommandRunnerResult verifyResult = _msbuildFixture.RunDotnet(
                     pathContext.WorkingDirectory,
-                    $"nuget verify {signedPackagePath} " +
-                    $"--certificate-fingerprint {certificateFingerprintString}  --certificate-fingerprint DEF --configfile {nugetConfigPath2}",
+                    $"nuget verify {signedPackagePath} --all --certificate-fingerprint {certificateFingerprintString} --certificate-fingerprint def --configfile {nugetConfigPath2}",
                     ignoreExitCode: true);
 
                 // Assert
