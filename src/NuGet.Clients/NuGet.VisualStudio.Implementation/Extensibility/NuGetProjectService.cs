@@ -82,10 +82,18 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             {
                 var id = packageReference.PackageIdentity.Id;
 
-                string requestedRange =
-                    packageReference.AllowedVersions?.OriginalString // most packages
-                    ?? packageReference.AllowedVersions?.ToShortString();
-                string version = packageReference.PackageIdentity.Version?.ToNormalizedString();
+                string requestedRange = null;
+                if (directDependency)
+                {
+                    requestedRange =
+                        packageReference.AllowedVersions?.OriginalString // When Version is specified
+                        ?? packageReference.AllowedVersions?.ToShortString(); // Probably only when Version is not specified in msbuild
+                }
+
+                string version =
+                    packageReference.PackageIdentity.Version?.ToNormalizedString()
+                    ?? string.Empty;
+
                 var installPath =
                     version != null
                     ? pathResolver.GetPackageDirectory(id, version)

@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio.Contracts
         /// <remarks>
         /// If the project uses packages.config, this will be the same as requested range.
         /// <para>If the project uses PackageReference, this will be the resolved version, if the project has been restored successfully.
-        /// If the project has not been restored, or the package could not be found on any package sources, this value will be null</para>
+        /// In some error conditions this may be an empty string.</para>
         /// </remarks>
         public string Version { get; }
 
