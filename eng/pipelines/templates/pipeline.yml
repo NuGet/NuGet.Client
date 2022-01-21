@@ -44,7 +44,7 @@ jobs:
     BuildRTM: "false"
 
   pool:
-    name: VSEngSS-MicroBuild2019
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
       - DotNetFramework
       - msbuild
@@ -65,7 +65,7 @@ jobs:
     BuildRTM: "true"
 
   pool:
-    name: VSEngSS-MicroBuild2019
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
       - DotNetFramework
       - msbuild
@@ -82,7 +82,7 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
-    name: VSEngSS-MicroBuild2019
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
         - DotNetFramework
         - msbuild
@@ -125,46 +125,3 @@ jobs:
 
   steps:
   - template: Tests_On_Mac.yml
-
-- job: End_To_End_Tests_On_Windows
-  dependsOn:
-  - Build_and_UnitTest_NonRTM
-  - Initialize_Build
-  timeoutInMinutes: 100
-  variables:
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
-  pool:
-    name: DDNuGet-Windows
-    demands:
-    - DotNetFramework
-    - Allow_NuGet_E2E_Tests -equals true
-  strategy:
-    matrix:
-      Part1:
-        Part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1,PackageRestoreTest.ps1"
-      Part2:
-        Part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
-
-  steps:
-  - template: End_To_End_Tests_On_Windows.yml
-
-- job: Apex_Tests_On_Windows
-  dependsOn:
-  - Build_and_UnitTest_NonRTM
-  - Initialize_Build
-  timeoutInMinutes: 120
-  variables:
-    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
-  pool:
-    name: DDNuGet-Windows
-    demands:
-    - DotNetFramework
-    - Allow_NuGet_Apex_Tests -equals true
-
-  steps:
-  - template: Apex_Tests_On_Windows.yml
