@@ -254,8 +254,8 @@ Function Install-DotnetCLI {
                 Error-Log "Unable to detect channel version for dotnetinstall.ps1. The CLI install cannot be initiated." -Fatal
             }
 
-            Trace-Log "$DotNetInstall -Channel $($channelMainVersion) -Quality Daily -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
-            & $DotNetInstall -Channel $channelMainVersion -Quality Daily -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+            Trace-Log "$DotNetInstall -Channel $($channelMainVersion) -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
+            & $DotNetInstall -Channel $channelMainVersion -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
 
         if (-not (Test-Path $DotNetExe)) {
