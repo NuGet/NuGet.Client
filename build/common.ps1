@@ -255,7 +255,14 @@ Function Install-DotnetCLI {
             }
 
             Trace-Log "$DotNetInstall -Channel $($channelMainVersion) -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
-            & $DotNetInstall -Channel $channelMainVersion -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+            # dotnet-install might make http requests that fail, but it handles those errors internally
+            # However, Invoke-BuildStep checks if any error happened, ever. Hence we need to run dotnet-install
+            # in a different process, to avoid treating their handled errors as build errors.
+            & powershell $DotNetInstall -Channel $channelMainVersion -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+            if ($LASTEXITCODE -ne 0)
+            {
+                throw "dotnet-install.ps1 exited with non-zero exit code"
+            }
         }
 
         if (-not (Test-Path $DotNetExe)) {
@@ -271,9 +278,15 @@ Function Install-DotnetCLI {
 
     # Install the 2.x runtime because our tests target netcoreapp2x
     Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -InstallDir $CLIRoot -NoPath"
-    # Work around the following install script bug https://github.com/dotnet/install-scripts/issues/152.
-    # Start a new process to avoid the ev getting populated.
+    # dotnet-install might make http requests that fail, but it handles those errors internally
+    # However, Invoke-BuildStep checks if any error happened, ever. Hence we need to run dotnet-install
+    # in a different process, to avoid treating their handled errors as build errors.
     & powershell $DotNetInstall -Runtime dotnet -Channel 2.2 -InstallDir $CLIRoot -NoPath
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "dotnet-install.ps1 exited with non-zero exit code"
+    }
+
     # Display build info
     & $DotNetExe --info
 }
