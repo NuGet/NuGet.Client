@@ -233,7 +233,6 @@ namespace Dotnet.Integration.Test
                 verifyResult.AllOutput.Should().Contain(_noMatchingCertErrorCode);
                 verifyResult.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 verifyResult.AllOutput.Should().Contain("This package is signed but not by a trusted signer.");
-                verifyResult.AllOutput.Should().NotContain(_primarySignatureInvalidErrorCode);
             }
         }
 
