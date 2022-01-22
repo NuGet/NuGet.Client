@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.Versioning;
 using Moq;
+using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 

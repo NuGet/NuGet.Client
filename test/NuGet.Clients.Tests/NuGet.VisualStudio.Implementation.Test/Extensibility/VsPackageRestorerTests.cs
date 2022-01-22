@@ -10,6 +10,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Implementation.Test.TestUtilities;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;

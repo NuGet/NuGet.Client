@@ -15,9 +15,10 @@ using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageUninstaller))]
     public class VsPackageUninstaller : IVsPackageUninstaller
@@ -49,6 +50,15 @@ namespace NuGet.VisualStudio
 
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
         {
+            const string eventName = nameof(IVsPackageUninstaller) + "." + nameof(UninstallPackage);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    // Can't add project information, since it's a COM object that this method might be called on a background thread
+                    PackageId = packageId,
+                    RemoveDependencies = removeDependencies
+                });
+
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));

@@ -17,6 +17,7 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Contracts;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
@@ -34,8 +35,22 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
+        [System.Diagnostics.Tracing.EventData]
+        private struct GetInstalledPackagesAsyncEventData
+        {
+            [System.Diagnostics.Tracing.EventField]
+            public Guid Project { get; set; }
+        }
+
         public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(Guid projectId, CancellationToken cancellationToken)
         {
+            const string etwEventName = nameof(INuGetProjectService) + "." + nameof(GetInstalledPackagesAsync);
+            var eventData = new GetInstalledPackagesAsyncEventData()
+            {
+                Project = projectId
+            };
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(etwEventName, eventData);
+
             try
             {
                 // Just in case we're on the UI thread, switch to background thread. Very low cost (does not schedule new task) if already on background thread.

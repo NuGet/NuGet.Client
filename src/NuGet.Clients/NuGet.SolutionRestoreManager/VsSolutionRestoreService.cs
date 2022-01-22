@@ -22,6 +22,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
@@ -45,6 +46,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly ILogger _logger;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> _vsSolution2;
         private readonly ConcurrentQueue<(IVsProjectRestoreInfoSource, CancellationToken, TaskCompletionSource<bool>)> _projectRestoreInfoSources = new();
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
@@ -53,14 +55,16 @@ namespace NuGet.SolutionRestoreManager
             [Import(nameof(VisualStudioActivityLogger))]
             ILogger logger,
             [Import(typeof(SAsyncServiceProvider))]
-            IAsyncServiceProvider serviceProvider
+            IAsyncServiceProvider serviceProvider,
+            INuGetTelemetryProvider telemetryProvider
             )
             : this(
                   projectSystemCache,
                   restoreWorker,
                   logger,
                   new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() =>
-                  serviceProvider.GetServiceAsync<SVsSolution, IVsSolution2>(), NuGetUIThreadHelper.JoinableTaskFactory)
+                  serviceProvider.GetServiceAsync<SVsSolution, IVsSolution2>(), NuGetUIThreadHelper.JoinableTaskFactory),
+                  telemetryProvider
                   )
         {
         }
@@ -69,46 +73,98 @@ namespace NuGet.SolutionRestoreManager
             IProjectSystemCache projectSystemCache,
             ISolutionRestoreWorker restoreWorker,
             ILogger logger,
-            Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> vsSolution2)
+            Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> vsSolution2,
+            INuGetTelemetryProvider telemetryProvider)
         {
             _projectSystemCache = projectSystemCache ?? throw new ArgumentNullException(nameof(projectSystemCache));
             _restoreWorker = restoreWorker ?? throw new ArgumentNullException(nameof(restoreWorker));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _vsSolution2 = vsSolution2 ?? throw new ArgumentNullException(nameof(vsSolution2));
+            _telemetryProvider = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
-        public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
+        Task<bool> IVsSolutionRestoreService.CurrentRestoreOperation
+        {
+            get
+            {
+                const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService.CurrentRestoreOperation);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
+                return _restoreWorker.CurrentRestoreOperation;
+            }
+        }
+
+        Task<bool> IVsSolutionRestoreService3.CurrentRestoreOperation
+        {
+            get
+            {
+                const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(IVsSolutionRestoreService3.CurrentRestoreOperation);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
+                return _restoreWorker.CurrentRestoreOperation;
+            }
+        }
 
         public async Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
         {
-            Assumes.NotNullOrEmpty(projectUniqueName);
-
-            ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
-            var dgSpec = new DependencyGraphSpec();
-            var packageSpec = new PackageSpec()
+            const string eventName = nameof(IVsSolutionRestoreService2) + "." + nameof(NominateProjectAsync);
+            var eventData = new NominateProjectAsyncEventData()
             {
-                Name = projectUniqueName
+                ProjectUniqueName = projectUniqueName
             };
-            dgSpec.AddProject(packageSpec);
-            dgSpec.AddRestore(packageSpec.Name);
-            _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, new List<IAssetsLogMessage>());
 
-            await PopulateRestoreInfoSourcesAsync();
-            // returned task completes when scheduled restore operation completes.
-            var restoreTask = _restoreWorker.ScheduleRestoreAsync(
-                SolutionRestoreRequest.OnUpdate(),
-                token);
+            Task<bool> restoreTask;
+            using (NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName, eventData))
+            {
+
+                Assumes.NotNullOrEmpty(projectUniqueName);
+
+                ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
+                var dgSpec = new DependencyGraphSpec();
+                var packageSpec = new PackageSpec()
+                {
+                    Name = projectUniqueName
+                };
+                dgSpec.AddProject(packageSpec);
+                dgSpec.AddRestore(packageSpec.Name);
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, new List<IAssetsLogMessage>());
+
+                await PopulateRestoreInfoSourcesAsync();
+                // returned task completes when scheduled restore operation completes.
+                restoreTask = _restoreWorker.ScheduleRestoreAsync(
+                    SolutionRestoreRequest.OnUpdate(),
+                    token);
+            }
 
             return await restoreTask;
         }
 
+        [System.Diagnostics.Tracing.EventData]
+        private struct NominateProjectAsyncEventData
+        {
+            [System.Diagnostics.Tracing.EventField]
+            public string ProjectUniqueName { get; set; }
+        }
+
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
+            const string eventName = nameof(IVsSolutionRestoreService) + "." + nameof(NominateProjectAsync);
+            var eventData = new NominateProjectAsyncEventData()
+            {
+                ProjectUniqueName = projectUniqueName
+            };
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName, eventData);
+
             return NominateProjectAsync(projectUniqueName, projectRestoreInfo, null, token);
         }
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo2 projectRestoreInfo, CancellationToken token)
         {
+            const string eventName = nameof(IVsSolutionRestoreService3) + "." + nameof(NominateProjectAsync);
+            var eventData = new NominateProjectAsyncEventData()
+            {
+                ProjectUniqueName = projectUniqueName
+            };
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName, eventData);
+
             return NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
         }
 
@@ -202,7 +258,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                await TelemetryUtility.PostFaultAsync(e, nameof(VsSolutionRestoreService));
+                await _telemetryProvider.PostFaultAsync(e, nameof(VsSolutionRestoreService));
                 return false;
             }
         }
@@ -330,6 +386,9 @@ namespace NuGet.SolutionRestoreManager
 
         public async Task RegisterRestoreInfoSourceAsync(IVsProjectRestoreInfoSource restoreInfoSource, CancellationToken token)
         {
+            const string eventName = nameof(IVsSolutionRestoreService4) + "." + nameof(RegisterRestoreInfoSourceAsync);
+            NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             if (restoreInfoSource == null)
             {
                 throw new ArgumentNullException(nameof(restoreInfoSource));

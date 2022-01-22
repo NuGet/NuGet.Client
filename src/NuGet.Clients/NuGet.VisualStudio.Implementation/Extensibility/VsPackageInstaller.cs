@@ -8,9 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
-using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -24,11 +22,12 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageInstaller))]
     [Export(typeof(IVsPackageInstaller2))]
@@ -66,6 +65,8 @@ namespace NuGet.VisualStudio
             bool includePrerelease,
             bool ignoreDependencies)
         {
+            const string eventName = nameof(IVsPackageInstaller2) + "." + nameof(InstallLatestPackage);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
             try
             {
                 PumpingJTF.Run(() => InstallPackageAsync(
@@ -85,6 +86,13 @@ namespace NuGet.VisualStudio
 
         public void InstallPackage(string source, Project project, string packageId, Version version, bool ignoreDependencies)
         {
+            const string eventName = nameof(IVsPackageInstaller) + "." + nameof(InstallPackage) + ".1";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    PackageId = packageId,
+                    Version = version?.ToString()
+                });
             try
             {
                 NuGetVersion semVer = null;
@@ -111,6 +119,13 @@ namespace NuGet.VisualStudio
 
         public void InstallPackage(string source, Project project, string packageId, string version, bool ignoreDependencies)
         {
+            const string eventName = nameof(IVsPackageInstaller) + "." + nameof(InstallPackage) + ".2";
+            using var __ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    PackageId = packageId,
+                    Version = version
+                });
             try
             {
                 NuGetVersion semVer = null;
@@ -164,16 +179,30 @@ namespace NuGet.VisualStudio
 
         public void InstallPackage(IPackageRepository repository, Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences)
         {
+            const string eventName = nameof(IVsPackageInstaller) + "." + nameof(InstallPackage) + ".3";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             // It would be really difficult for anyone to use this method
             throw new NotSupportedException();
         }
 
         public void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions)
         {
-            InstallPackagesFromRegistryRepository(keyName, isPreUnzipped, skipAssemblyReferences, ignoreDependencies: true, project: project, packageVersions: packageVersions);
+            const string eventName = nameof(IVsPackageInstaller) + "." + nameof(InstallPackagesFromRegistryRepository) + ".1";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            InstallPackagesFromRegistryRepositoryImpl(keyName, isPreUnzipped, skipAssemblyReferences, ignoreDependencies: true, project: project, packageVersions: packageVersions);
         }
 
         public void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions)
+        {
+            const string eventName = nameof(IVsPackageInstaller) + "." + nameof(InstallPackagesFromRegistryRepository) + ".2";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            InstallPackagesFromRegistryRepositoryImpl(keyName, isPreUnzipped, skipAssemblyReferences, ignoreDependencies, project, packageVersions);
+        }
+
+        public void InstallPackagesFromRegistryRepositoryImpl(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions)
         {
             if (string.IsNullOrEmpty(keyName))
             {
@@ -241,6 +270,9 @@ namespace NuGet.VisualStudio
 
         public void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions)
         {
+            const string eventName = nameof(IVsPackageInstaller) + "." + nameof(InstallPackagesFromVSExtensionRepository) + ".1";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             InstallPackagesFromVSExtensionRepository(
                 extensionId,
                 isPreUnzipped,
@@ -251,6 +283,20 @@ namespace NuGet.VisualStudio
         }
 
         public void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions)
+        {
+            const string eventName = nameof(IVsPackageInstaller) + "." + nameof(InstallPackagesFromVSExtensionRepository) + ".2";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            InstallPackagesFromVSExtensionRepository(
+                extensionId,
+                isPreUnzipped,
+                skipAssemblyReferences,
+                ignoreDependencies,
+                project,
+                packageVersions);
+        }
+
+        public void InstallPackagesFromVSExtensionRepositoryImpl(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions)
         {
             if (string.IsNullOrEmpty(extensionId))
             {

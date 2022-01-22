@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsGlobalPackagesInitScriptExecutor))]
     public class VsGlobalPackagesInitScriptExecutor : IVsGlobalPackagesInitScriptExecutor
@@ -26,6 +27,14 @@ namespace NuGet.VisualStudio
 
         public async Task<bool> ExecuteInitScriptAsync(string packageId, string packageVersion)
         {
+            const string eventName = nameof(IVsGlobalPackagesInitScriptExecutor) + "." + nameof(ExecuteInitScriptAsync);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    PackageId = packageId,
+                    PackageVersion = packageVersion
+                });
+
             if (string.IsNullOrEmpty(packageId))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId));

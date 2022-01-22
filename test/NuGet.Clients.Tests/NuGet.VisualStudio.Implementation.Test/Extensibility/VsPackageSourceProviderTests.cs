@@ -7,6 +7,7 @@ using System.IO;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 

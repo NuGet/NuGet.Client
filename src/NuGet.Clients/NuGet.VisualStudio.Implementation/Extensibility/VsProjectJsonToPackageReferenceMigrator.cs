@@ -8,43 +8,59 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
+using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsProjectJsonToPackageReferenceMigrator))]
     internal class VsProjectJsonToPackageReferenceMigrator : IVsProjectJsonToPackageReferenceMigrator
     {
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGetProjectFactory> _projectFactory;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
         public VsProjectJsonToPackageReferenceMigrator(
             Lazy<IVsSolutionManager> solutionManager,
-            Lazy<NuGetProjectFactory> projectFactory)
+            Lazy<NuGetProjectFactory> projectFactory,
+            INuGetTelemetryProvider telemetryProvider)
         {
             Assumes.Present(solutionManager);
             Assumes.Present(projectFactory);
+            Assumes.Present(telemetryProvider);
 
             _solutionManager = solutionManager;
             _projectFactory = projectFactory;
+            _telemetryProvider = telemetryProvider;
         }
 
-        public Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
+        public async Task<object> MigrateProjectJsonToPackageReferenceAsync(string projectUniqueName)
         {
-            if (string.IsNullOrEmpty(projectUniqueName))
-            {
-                throw new ArgumentNullException(nameof(projectUniqueName));
-            }
+            const string eventName = nameof(IVsProjectJsonToPackageReferenceMigrator) + "." + nameof(MigrateProjectJsonToPackageReferenceAsync);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
 
-            if (!File.Exists(projectUniqueName))
+            try
             {
-                throw new FileNotFoundException(string.Format(VsResources.Error_FileNotExists, projectUniqueName));
-            }
+                if (string.IsNullOrEmpty(projectUniqueName))
+                {
+                    throw new ArgumentNullException(nameof(projectUniqueName));
+                }
 
-            return MigrateProjectToPackageRefAsync(projectUniqueName);
+                if (!File.Exists(projectUniqueName))
+                {
+                    throw new FileNotFoundException(string.Format(VsResources.Error_FileNotExists, projectUniqueName));
+                }
+
+                return await MigrateProjectToPackageRefAsync(projectUniqueName);
+            }
+            catch (Exception ex)
+            {
+                await _telemetryProvider.PostFaultAsync(ex, nameof(VsProjectJsonToPackageReferenceMigrator));
+                throw;
+            }
         }
 
         private async Task<object> MigrateProjectToPackageRefAsync(string projectUniqueName)

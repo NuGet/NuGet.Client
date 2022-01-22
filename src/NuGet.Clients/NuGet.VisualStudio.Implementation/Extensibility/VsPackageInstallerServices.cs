@@ -23,10 +23,11 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Obsolete]
     [Export(typeof(IVsPackageInstallerServices))]
@@ -58,6 +59,8 @@ namespace NuGet.VisualStudio
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages()
         {
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(GetInstalledPackages);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
             try
             {
                 var packages = new HashSet<IVsPackageMetadata>(new VsPackageMetadataComparer());
@@ -176,6 +179,9 @@ namespace NuGet.VisualStudio
 
         public IEnumerable<IVsPackageMetadata> GetInstalledPackages(Project project)
         {
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(GetInstalledPackages) + ".1";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
@@ -275,11 +281,17 @@ namespace NuGet.VisualStudio
 
         public bool IsPackageInstalled(Project project, string packageId)
         {
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(IsPackageInstalled) + ".2";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             return IsPackageInstalled(project, packageId, nugetVersion: null);
         }
 
         public bool IsPackageInstalledEx(Project project, string packageId, string versionString)
         {
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(IsPackageInstalledEx);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             NuGetVersion version;
             if (versionString == null)
             {
@@ -295,6 +307,9 @@ namespace NuGet.VisualStudio
 
         public bool IsPackageInstalled(Project project, string packageId, SemanticVersion version)
         {
+            const string eventName = nameof(IVsPackageInstallerServices) + "." + nameof(IsPackageInstalled) + ".3";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             NuGetVersion nugetVersion;
             if (NuGetVersion.TryParse(version.ToString(), out nugetVersion))
             {

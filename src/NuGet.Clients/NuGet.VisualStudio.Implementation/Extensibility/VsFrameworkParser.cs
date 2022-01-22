@@ -6,10 +6,11 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.Versioning;
 using NuGet.Frameworks;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
 #pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IVsFrameworkParser))]
@@ -31,6 +32,15 @@ namespace NuGet.VisualStudio
 
         public FrameworkName ParseFrameworkName(string shortOrFullName)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+            const string eventName = nameof(IVsFrameworkParser) + "." + nameof(ParseFrameworkName);
+#pragma warning restore CS0618 // Type or member is obsolete
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    Framework = shortOrFullName
+                });
+
             if (shortOrFullName == null)
             {
                 throw new ArgumentNullException(nameof(shortOrFullName));
@@ -54,6 +64,15 @@ namespace NuGet.VisualStudio
 
         public string GetShortFrameworkName(FrameworkName frameworkName)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+            const string eventName = nameof(IVsFrameworkParser) + "." + nameof(GetShortFrameworkName);
+#pragma warning restore CS0618 // Type or member is obsolete
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    Framework = frameworkName?.FullName
+                });
+
             if (frameworkName == null)
             {
                 throw new ArgumentNullException(nameof(frameworkName));
@@ -98,6 +117,13 @@ namespace NuGet.VisualStudio
 
         public bool TryParse(string input, out IVsNuGetFramework nuGetFramework)
         {
+            const string eventName = nameof(IVsFrameworkParser2) + "." + nameof(TryParse);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    Framework = input
+                });
+
             if (input == null)
             {
                 throw new ArgumentNullException(nameof(input));

@@ -8,10 +8,11 @@ using System.Linq;
 using System.Runtime.Versioning;
 using NuGet.Commands;
 using NuGet.Frameworks;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsFrameworkCompatibility))]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -34,6 +35,9 @@ namespace NuGet.VisualStudio
 
         public IEnumerable<FrameworkName> GetNetStandardFrameworks()
         {
+            const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetNetStandardFrameworks);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             try
             {
                 return DefaultFrameworkNameProvider
@@ -51,6 +55,13 @@ namespace NuGet.VisualStudio
 
         public IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName)
         {
+            const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetFrameworksSupportingNetStandard);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    Framework = frameworkName?.FullName
+                });
+
             if (frameworkName == null)
             {
                 throw new ArgumentNullException(nameof(frameworkName));
@@ -84,10 +95,28 @@ namespace NuGet.VisualStudio
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks)
         {
-            return GetNearest(targetFramework, Enumerable.Empty<FrameworkName>(), frameworks);
+            const string eventName = nameof(IVsFrameworkCompatibility) + "." + nameof(GetNearest);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    Target = targetFramework?.FullName,
+                    Frameworks = frameworks != null ? string.Join("|", frameworks.Select(f => f.FullName)) : null
+                });
+
+            return GetNearestImpl(targetFramework, Enumerable.Empty<FrameworkName>(), frameworks);
         }
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> fallbackTargetFrameworks, IEnumerable<FrameworkName> frameworks)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            const string eventName = nameof(IVsFrameworkCompatibility2) + "." + nameof(GetNearest);
+#pragma warning restore CS0618 // Type or member is obsolete
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
+        }
+
+        private FrameworkName GetNearestImpl(FrameworkName targetFramework, IEnumerable<FrameworkName> fallbackTargetFrameworks, IEnumerable<FrameworkName> frameworks)
         {
             if (targetFramework == null)
             {
@@ -148,10 +177,21 @@ namespace NuGet.VisualStudio
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> frameworks)
         {
-            return GetNearest(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
+            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + ".2";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            return GetNearestImpl(targetFramework, Enumerable.Empty<IVsNuGetFramework>(), frameworks);
         }
 
         public IVsNuGetFramework GetNearest(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
+        {
+            const string eventName = nameof(IVsFrameworkCompatibility3) + "." + nameof(GetNearest) + ".3";
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
+            return GetNearestImpl(targetFramework, fallbackTargetFrameworks, frameworks);
+        }
+
+        public IVsNuGetFramework GetNearestImpl(IVsNuGetFramework targetFramework, IEnumerable<IVsNuGetFramework> fallbackTargetFrameworks, IEnumerable<IVsNuGetFramework> frameworks)
         {
             if (targetFramework == null)
             {

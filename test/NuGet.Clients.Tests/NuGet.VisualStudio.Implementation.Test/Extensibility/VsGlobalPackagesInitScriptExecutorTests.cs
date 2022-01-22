@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 

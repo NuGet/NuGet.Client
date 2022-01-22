@@ -6,19 +6,47 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     // Implementation of IVsPathContext without support of reference resolving.
     // Used when project is not managed by NuGet or given project doesn't have any packages installed.
     internal class VsPathContext : IVsPathContext2
     {
-        public string UserPackageFolder { get; }
+        private readonly string _userPackageFolder;
+        public string UserPackageFolder
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext) + "." + nameof(UserPackageFolder);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
+                return _userPackageFolder;
+            }
+        }
 
-        public IEnumerable FallbackPackageFolders { get; }
+        private readonly IEnumerable _fallbackPackageFolders;
+        public IEnumerable FallbackPackageFolders
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext) + "." + nameof(FallbackPackageFolders);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
+                return _fallbackPackageFolders;
+            }
+        }
 
-        public string SolutionPackageFolder { get; }
+        private readonly string _solutionPackageFolder;
+        public string SolutionPackageFolder
+        {
+            get
+            {
+                const string eventName = nameof(IVsPathContext2) + "." + nameof(SolutionPackageFolder);
+                NuGetETW.ExtensibilityEventSource.Write(eventName, NuGetETW.InfoEventOptions);
+                return _solutionPackageFolder;
+            }
+        }
 
         private INuGetTelemetryProvider _telemetryProvider;
 
@@ -33,9 +61,9 @@ namespace NuGet.VisualStudio
 
             try
             {
-                UserPackageFolder = pathContext.UserPackageFolder;
-                FallbackPackageFolders = pathContext.FallbackPackageFolders;
-                SolutionPackageFolder = solutionPackageFolder;
+                _userPackageFolder = pathContext.UserPackageFolder;
+                _fallbackPackageFolders = pathContext.FallbackPackageFolders;
+                _solutionPackageFolder = solutionPackageFolder;
             }
             catch (Exception exception)
             {
@@ -60,8 +88,8 @@ namespace NuGet.VisualStudio
 
             try
             {
-                UserPackageFolder = userPackageFolder;
-                FallbackPackageFolders = fallbackPackageFolders.ToList();
+                _userPackageFolder = userPackageFolder;
+                _fallbackPackageFolders = fallbackPackageFolders.ToList();
             }
             catch (Exception exception)
             {
@@ -72,6 +100,9 @@ namespace NuGet.VisualStudio
 
         public bool TryResolvePackageAsset(string packageAssetPath, out string packageDirectoryPath)
         {
+            const string eventName = nameof(IVsPathContext) + "." + nameof(IVsPathContext.TryResolvePackageAsset);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             // unable to resolve the reference file path without the index
             packageDirectoryPath = null;
             return false;

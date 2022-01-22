@@ -9,9 +9,10 @@ using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Etw;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageRestorer))]
     public class VsPackageRestorer : IVsPackageRestorer
@@ -39,6 +40,9 @@ namespace NuGet.VisualStudio
 
         public bool IsUserConsentGranted()
         {
+            const string eventName = nameof(IVsPackageRestorer) + "." + nameof(IsUserConsentGranted);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             try
             {
                 var packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
@@ -53,6 +57,9 @@ namespace NuGet.VisualStudio
 
         public void RestorePackages(Project project)
         {
+            const string eventName = nameof(IVsPackageRestorer) + "." + nameof(RestorePackages);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName);
+
             try
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
