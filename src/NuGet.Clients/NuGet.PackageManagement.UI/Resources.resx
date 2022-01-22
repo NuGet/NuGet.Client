@@ -1035,4 +1035,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>{0} license</value>
     <comment>{0} = license name. Examples: MIT, Apache</comment>
   </data>
+  <data name="PackageLevelType_TopLevelPackageHeaderText" xml:space="preserve">
+    <value>Top-level packages</value>
+  </data>
+  <data name="PackageLevelType_TransitivePackageHeaderText" xml:space="preserve">
+    <value>Transitive packages</value>
+  </data>
 </root>

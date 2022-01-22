@@ -80,7 +80,8 @@ namespace NuGet.PackageManagement.UI
 
             BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
 
-            DataContext = Items;
+            ItemsView = new CollectionViewSource() { Source = Items }.View;
+            DataContext = ItemsView;
             CheckBoxesEnabled = false;
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
@@ -115,6 +116,8 @@ namespace NuGet.PackageManagement.UI
         public bool IsSolution { get; set; }
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
+
+        public ICollectionView ItemsView { get; private set; }
 
         /// <summary>
         /// Count of Items (excluding Loading indicator) that are currently shown after applying any UI filtering.
@@ -715,6 +718,19 @@ namespace NuGet.PackageManagement.UI
         public void ResetLoadingStatusIndicator()
         {
             _loadingStatusIndicator.Reset(string.Empty);
+        }
+
+        internal void OnFilterChanged(ItemFilter filter)
+        {
+            ItemsView.GroupDescriptions.Clear();
+
+            if (filter == ItemFilter.Installed
+                && ItemsView.OfType<PackageItemViewModel>()?
+                    .Where(p => p.PackageLevelType == PackageLevelType.Transitive)
+                    .Any() == true)
+            {
+                ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevelType)));
+            }
         }
     }
 }

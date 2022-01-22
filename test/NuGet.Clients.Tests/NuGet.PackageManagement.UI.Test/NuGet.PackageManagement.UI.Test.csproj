@@ -35,6 +35,7 @@
     <Compile Include="Converters\DownloadCountToVisibilityConverterTests.cs" />
     <Compile Include="Converters\FormattedStringPartConverterTests.cs" />
     <Compile Include="Converters\DeprecationToDeprecationLabelStateConverterTests.cs" />
+    <Compile Include="Converters\PackageLevelTypeToGroupNameConverterTests.cs" />
     <Compile Include="Converters\ParametersToHyperlinkTupleConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />

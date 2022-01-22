@@ -139,6 +139,7 @@ namespace NuGet.PackageManagement.UI
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
+            NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             Loaded += PackageManagerLoaded;
 
             // register with the UI controller
@@ -822,7 +823,7 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                bool useRecommender = await GetUseRecommendedPackagesAsync(loadContext, searchText);
+                bool useRecommender = GetUseRecommendedPackagesAsync(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
                     Model.Context.ReconnectingSearchService,
@@ -865,7 +866,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<bool> GetUseRecommendedPackagesAsync(PackageLoadContext loadContext, string searchText)
+        private bool GetUseRecommendedPackagesAsync(PackageLoadContext loadContext, string searchText)
         {
             // only make recommendations when
             //   the single source repository is nuget.org,
@@ -881,7 +882,6 @@ namespace NuGet.PackageManagement.UI
                 _recommendPackages = true;
             }
 
-            NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             // Check for A/B experiment here. For control group, return false instead of _recommendPackages
             if (IsRecommenderFlightEnabled(NuGetExperimentationService))
             {
@@ -1123,6 +1123,10 @@ namespace NuGet.PackageManagement.UI
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
                     EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+                    if (NuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI))
+                    {
+                        _packageList.OnFilterChanged(_topPanel.Filter);
+                    }
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
         }
