@@ -12,10 +12,7 @@ PersonalAccessToken of the NuGetLurker account
 The VS Branch that the NuGet build is being inserted into.
 
 .PARAMETER BuildOutputPath
-The output path for NuGet Build artifacts.
-
-.PARAMETER BuildInfoJsonFile
-Path to the buildInfo.json file that is published as artifact for every build.
+The path to root artifacts.
 #>
 
 [CmdletBinding()]
@@ -26,23 +23,19 @@ param
     [Parameter(Mandatory=$True)]
     [string]$VsTargetBranch,
     [Parameter(Mandatory=$True)]
-    [string]$BuildOutputPath,
-    [Parameter(Mandatory=$True)]
-    [string]$BuildInfoJsonFile
+    [string]$ArtifactsDirectory
 )
 
 # Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # These environment variables are set on the VSTS Release Definition agents.
-$Branch = ${env:BUILD_SOURCEBRANCHNAME}
-$Build = ${env:BUILD_BUILDNUMBER}
 $Commit = ${env:BUILD_SOURCEVERSION}
 
-$NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'artifacts', 'VS15', "NuGet.exe")
+$BuildInfoJsonFile = [System.IO.Path]::Combine($ArtifactsDirectory, 'BuildInfo','buildinfo.json')
+$NuGetExePath = [System.IO.Path]::Combine($ArtifactsDirectory, 'VS15', "NuGet.exe")
 Write-Host $NuGetExePath
 
-$TagName = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).FileVersion
 $AttemptNum = ${env:RELEASE_ATTEMPTNUMBER}
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
 $index = $ProductVersion.LastIndexOf('+')
@@ -55,7 +48,7 @@ $Date = Get-Date
 $Message = "Insert $ProductVersion into $VsTargetBranch on $Date"
 $buildInfoJson = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
 $LocRepoCommitHash = $buildInfoJson.LocalizationRepositoryCommitHash
-
+$TagName = $buildInfoJson.BuildNumber
 
 Function Tag-GitCommit {
     param(
