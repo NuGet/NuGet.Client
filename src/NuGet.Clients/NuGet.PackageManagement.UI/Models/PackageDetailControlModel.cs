@@ -195,7 +195,6 @@ namespace NuGet.PackageManagement.UI
                 _versions.Add(null);
             }
 
-
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
@@ -243,7 +242,9 @@ namespace NuGet.PackageManagement.UI
         {
             var version = o as DisplayVersion;
             // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
-            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.Range.OriginalString, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(UserInput) ||
+                UserInput.Equals(FirstDisplayedVersion?.Range.OriginalString, StringComparison.OrdinalIgnoreCase) ||
+                UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
