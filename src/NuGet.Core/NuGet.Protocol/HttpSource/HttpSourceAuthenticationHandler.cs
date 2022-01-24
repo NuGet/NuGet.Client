@@ -98,7 +98,7 @@ namespace NuGet.Protocol
                 {
                     List<Stopwatch> stopwatches = null;
 
-#if NET5_0
+#if NET5_0 || NET6_0
                     if (request.Options.TryGetValue(
                         new HttpRequestOptionsKey<List<Stopwatch>>(HttpRetryHandler.StopwatchPropertyName),
                         out stopwatches))

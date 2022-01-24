@@ -34,7 +34,7 @@ namespace NuGet.Protocol
                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-#if NET5_0
+#if NET5_0 || NET6_0
             var clonedOptions = (IDictionary<string, object>)clone.Options;
             foreach (var option in request.Options)
             {
@@ -118,7 +118,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-#if NET5_0
+#if NET5_0 || NET6_0
             request.Options.Set(new HttpRequestOptionsKey<HttpRequestMessageConfiguration>(NuGetConfigurationKey), configuration);
 #else
             request.Properties[NuGetConfigurationKey] = configuration;
@@ -128,7 +128,7 @@ namespace NuGet.Protocol
         private static T GetProperty<T>(this HttpRequestMessage request, string key)
         {
 
-#if NET5_0
+#if NET5_0 || NET6_0
             if (request.Options.TryGetValue<T>(new HttpRequestOptionsKey<T>(key), out T result))
 #else
             object result;
