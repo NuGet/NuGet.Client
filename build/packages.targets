@@ -10,6 +10,7 @@
         <CryptographyPackagesVersion>5.0.0</CryptographyPackagesVersion>
         <NuGetCoreV2Version>2.14.0-rtm-832</NuGetCoreV2Version>
         <ProjectSystemManagedVersion>17.0.0-beta1-10402-05</ProjectSystemManagedVersion>
+        <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion Condition="'$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)' == ''">5.0.1-rtm.21063.7</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->
@@ -34,7 +35,7 @@
         <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.2" />
         <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
-        <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
+        <PackageReference Update="Microsoft.Extensions.CommandLineUtils.Sources" Version="$($(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion))" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
