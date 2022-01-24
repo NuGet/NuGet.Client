@@ -14,7 +14,8 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs the latest version of a single package from the specified package source.
         /// </summary>
-        /// <remarks>Can be called from a background thread.</remarks>
+        /// <remarks>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></remarks>
         /// <param name="source">
         /// The package source to install the package from. This value can be <c>null</c>
         /// to indicate that the user's configured sources should be used. Otherwise,

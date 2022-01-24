@@ -17,7 +17,8 @@ namespace NuGet.VisualStudio
         /// Uninstall the specified package from a project and specify whether to uninstall its dependency packages
         /// too.
         /// </summary>
-        /// <remarks>Can be called from a background thread.</remarks>
+        /// <remarks>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></remarks>
         /// <param name="project">The project from which the package is uninstalled.</param>
         /// <param name="packageId">The package to be uninstalled</param>
         /// <param name="removeDependencies">
