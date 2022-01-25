@@ -43,7 +43,6 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.IconUrl)]
         public Uri IconUrl { get; private set; }
 
-        [JsonIgnore]
         private PackageIdentity _packageIdentity = null;
 
         [JsonIgnore]
