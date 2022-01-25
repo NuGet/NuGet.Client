@@ -37,12 +37,14 @@ namespace NuGet.VisualStudio
             {
                 Assembly extensionManagerAssembly = AppDomain.CurrentDomain.GetAssemblies()
                     .First(a => a.FullName.StartsWith("Microsoft.VisualStudio.ExtensionManager,"));
+                Assembly extensionEngineAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .First(a => a.FullName.StartsWith("Microsoft.VisualStudio.ExtensionEngine,"));
                 _sVsExtensionManagerType =
                     extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager");
                 _iVsExtensionManagerType =
                     extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager");
                 _iInstalledExtensionType =
-                    extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IInstalledExtension");
+                    extensionEngineAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IInstalledExtension");
                 _tryGetInstalledExtensionMethod = _iVsExtensionManagerType.GetMethod("TryGetInstalledExtension",
                     new[] { typeof(string), _iInstalledExtensionType.MakeByRefType() });
                 _installPathProperty = _iInstalledExtensionType.GetProperty("InstallPath", typeof(string));
