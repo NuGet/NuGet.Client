@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using Microsoft.Extensions.CommandLineUtils;
 
 #if IS_CORECLR
 using System.Runtime.InteropServices;
@@ -44,7 +42,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public static ISettings CreateDefaultSettings()
+        public static ISettings GetSettingsForCurrentWorkingDirectory()
         {
             return Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
@@ -69,6 +67,22 @@ namespace NuGet.CommandLine.XPlat
 #else
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
 #endif
+        }
+
+        internal static ISettings ProcessConfigFile(string configFile)
+        {
+            if (string.IsNullOrEmpty(configFile))
+            {
+                return GetSettingsForCurrentWorkingDirectory();
+            }
+
+            var configFileFullPath = Path.GetFullPath(configFile);
+            var directory = Path.GetDirectoryName(configFileFullPath);
+            var configFileName = Path.GetFileName(configFileFullPath);
+            return Settings.LoadDefaultSettings(
+                directory,
+                configFileName,
+                machineWideSettings: new XPlatMachineWideSetting());
         }
     }
 }

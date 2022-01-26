@@ -1142,4 +1142,10 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Project dependency '{0}' does not specify a version. Include a version for the dependency to ensure consistent restore results.</value>
     <comment>0 - package id</comment>
   </data>
+  <data name="Error_NoClientAllowList" xml:space="preserve">
+    <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.</value>
+  </data>
+  <data name="Error_NoMatchingClientCertificate" xml:space="preserve">
+    <value>This package is signed but not by a trusted signer.</value>
+  </data>
 </root>

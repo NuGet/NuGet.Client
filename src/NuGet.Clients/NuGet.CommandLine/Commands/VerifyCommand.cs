@@ -44,7 +44,8 @@ namespace NuGet.CommandLine
                 Verifications = GetVerificationTypes(),
                 PackagePaths = new[] { PackagePath },
                 CertificateFingerprint = CertificateFingerprint,
-                Logger = Console
+                Logger = Console,
+                Settings = Settings
             };
 
             switch (Verbosity)

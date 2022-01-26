@@ -556,11 +556,29 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified..
+        /// </summary>
+        internal static string Error_NoClientAllowList {
+            get {
+                return ResourceManager.GetString("Error_NoClientAllowList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package signature did not match any of the allowed certificate fingerprints..
         /// </summary>
         internal static string Error_NoMatchingCertificate {
             get {
                 return ResourceManager.GetString("Error_NoMatchingCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This package is signed but not by a trusted signer..
+        /// </summary>
+        internal static string Error_NoMatchingClientCertificate {
+            get {
+                return ResourceManager.GetString("Error_NoMatchingClientCertificate", resourceCulture);
             }
         }
         

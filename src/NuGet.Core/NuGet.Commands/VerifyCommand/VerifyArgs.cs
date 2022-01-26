@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
@@ -70,5 +70,10 @@ namespace NuGet.Commands
         /// If not empty, signer certificate fingerprint must match one in this list
         /// </summary>
         public IEnumerable<string> CertificateFingerprint { get; set; }
+
+        /// <summary>
+        /// Loaded NuGet settings
+        /// </summary>
+        public ISettings Settings { get; set; }
     }
 }

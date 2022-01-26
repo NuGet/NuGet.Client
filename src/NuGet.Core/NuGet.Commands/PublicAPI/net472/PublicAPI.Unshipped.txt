@@ -7,3 +7,5 @@ NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger inne
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties.PackageSpecificWarningProperties() -> void
 static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties
+NuGet.Commands.VerifyArgs.Settings.get -> NuGet.Configuration.ISettings
+NuGet.Commands.VerifyArgs.Settings.set -> void

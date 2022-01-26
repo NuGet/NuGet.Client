@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine.XPlat
@@ -36,6 +37,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.VerifyCommandCertificateFingerprintDescription,
                     CommandOptionType.MultipleValue);
 
+                CommandOption configFile = verifyCmd.Option(
+                    "--configfile",
+                    Strings.Option_ConfigFile,
+                    CommandOptionType.SingleValue);
+
                 CommandOption verbosity = verifyCmd.Option(
                     "-v|--verbosity",
                     Strings.Verbosity_Description,
@@ -55,6 +61,7 @@ namespace NuGet.CommandLine.XPlat
                         new List<Verification>() { Verification.Signatures };
                     args.CertificateFingerprint = fingerPrint.Values;
                     args.Logger = getLogger();
+                    args.Settings = XPlatUtility.ProcessConfigFile(configFile.Value());
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
                     var runner = getCommandRunner();

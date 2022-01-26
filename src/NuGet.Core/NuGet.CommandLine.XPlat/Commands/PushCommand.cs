@@ -105,7 +105,7 @@ namespace NuGet.CommandLine.XPlat
                     }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: false);
+                    var sourceProvider = new PackageSourceProvider(XPlatUtility.GetSettingsForCurrentWorkingDirectory(), enablePackageSourcesChangedEvent: false);
 #pragma warning restore CS0618 // Type or member is obsolete
 
                     try

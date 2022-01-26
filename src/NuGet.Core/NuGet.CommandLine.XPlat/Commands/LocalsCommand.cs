@@ -43,7 +43,7 @@ namespace NuGet.CommandLine.XPlat
                 locals.OnExecute(() =>
                 {
                     var logger = getLogger();
-                    var setting = XPlatUtility.CreateDefaultSettings();
+                    var setting = XPlatUtility.GetSettingsForCurrentWorkingDirectory();
 
                     // Using both -clear and -list command options, or neither one of them, is not supported.
                     // We use MinArgs = 0 even though the first argument is required,
