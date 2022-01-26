@@ -53,6 +53,5 @@ namespace NuGet.VisualStudio.SolutionExplorer
         };
 
         public override ImageMoniker IconMoniker => KnownMonikers.ReferenceGroup;
-
     }
 }

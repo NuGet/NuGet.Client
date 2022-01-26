@@ -322,6 +322,27 @@ The string representation of the user's input framework name.</comment>
   <data name="PackageFrameworkAssemblyGroupName" xml:space="preserve">
     <value>Framework Assemblies</value>
   </data>
+  <data name="PackageBuildFileGroupName" xml:space="preserve">
+    <value>Build Files</value>
+  </data>
+  <data name="PackageBuildMultiTargetingFileGroupName" xml:space="preserve">
+    <value>Build Files (Multi-targeting)</value>
+  </data>
+  <data name="PackageBuildFileBrowseObjectClassName" xml:space="preserve">
+    <value>Build File</value>
+  </data>
+  <data name="PackageBuildFileNameDisplayName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PackageBuildFileNameDescription" xml:space="preserve">
+    <value>The build file's name.</value>
+  </data>
+  <data name="PackageBuildFilePathDisplayName" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="PackageBuildFilePathDescription" xml:space="preserve">
+    <value>The build file's path.</value>
+  </data>
   <data name="PropertyCannotBeNull" xml:space="preserve">
     <value>'{0}' cannot be null.</value>
     <comment>0 - property name</comment>

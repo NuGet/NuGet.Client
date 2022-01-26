@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Composition;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
@@ -27,11 +28,15 @@ namespace NuGet.VisualStudio.SolutionExplorer
     [Export(typeof(IDependenciesTreeSearchProvider))]
     internal sealed class AssetsFileDependenciesTreeSearchProvider : IDependenciesTreeSearchProvider
     {
+        private readonly FileOpener _fileOpener;
         private readonly IFileIconProvider _fileIconProvider;
 
         [ImportingConstructor]
-        public AssetsFileDependenciesTreeSearchProvider(IFileIconProvider fileIconProvider)
+        public AssetsFileDependenciesTreeSearchProvider(
+            FileOpener fileOpener,
+            IFileIconProvider fileIconProvider)
         {
+            _fileOpener = fileOpener;
             _fileIconProvider = fileIconProvider;
         }
 
@@ -56,7 +61,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
             AssetsFileDependenciesSnapshot snapshot = (await dataSource.Value.GetLatestVersionAsync<AssetsFileDependenciesSnapshot>(dataSourceRegistry, cancellationToken: context.CancellationToken)).Value;
 
-            if (!(context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<IActiveConfigurationGroupService>() is IActiveConfigurationGroupService3 activeConfigurationGroupService))
+            if (context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<IActiveConfigurationGroupService>() is not IActiveConfigurationGroupService3 activeConfigurationGroupService)
             {
                 return;
             }
@@ -95,6 +100,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
                     SearchAssemblies(library, library.CompileTimeAssemblies, PackageAssemblyGroupType.CompileTime);
                     SearchAssemblies(library, library.FrameworkAssemblies, PackageAssemblyGroupType.Framework);
                     SearchContentFiles(library);
+                    SearchBuildFiles(library, library.BuildFiles, PackageBuildFileGroupType.Build);
+                    SearchBuildFiles(library, library.BuildMultiTargetingFiles, PackageBuildFileGroupType.BuildMultiTargeting);
                 }
 
                 SearchLogMessages();
@@ -160,6 +167,17 @@ namespace NuGet.VisualStudio.SolutionExplorer
                         if (targetContext.IsMatch(contentFile.Path))
                         {
                             targetContext.SubmitResult(new PackageContentFileItem(target, library, contentFile, _fileIconProvider));
+                        }
+                    }
+                }
+
+                void SearchBuildFiles(AssetsFileTargetLibrary library, ImmutableArray<string> buildFiles, PackageBuildFileGroupType groupType)
+                {
+                    foreach (string buildFile in buildFiles)
+                    {
+                        if (targetContext.IsMatch(Path.GetFileName(buildFile)))
+                        {
+                            targetContext.SubmitResult(new PackageBuildFileItem(target, library, buildFile, groupType, _fileOpener));
                         }
                     }
                 }

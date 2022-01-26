@@ -12,25 +12,25 @@ using NuGet.VisualStudio.SolutionExplorer.Models;
 namespace NuGet.VisualStudio.SolutionExplorer
 {
     [Export(typeof(IRelation))]
-    internal sealed class PackageToCompileTimeAssemblyGroupRelation : RelationBase<PackageReferenceItem, PackageAssemblyGroupItem>
+    internal sealed class PackageToBuildMultiTargetingFileGroupRelation : RelationBase<PackageReferenceItem, PackageBuildFileGroupItem>
     {
         protected override bool HasContainedItems(PackageReferenceItem parent)
         {
-            return parent.Library.CompileTimeAssemblies.Length != 0;
+            return parent.Library.BuildMultiTargetingFiles.Length != 0;
         }
 
         protected override void UpdateContainsCollection(PackageReferenceItem parent, AggregateContainsRelationCollectionSpan span)
         {
             span.UpdateContainsItems(
-                parent.Library.CompileTimeAssemblies.Length == 0 ? Enumerable.Empty<AssetsFileTargetLibrary>() : new[] { parent.Library },
+                parent.Library.BuildMultiTargetingFiles.Length == 0 ? Enumerable.Empty<AssetsFileTargetLibrary>() : new[] { parent.Library },
                 (library, item) => 0,
                 (library, item) => false,
-                library => new PackageAssemblyGroupItem(parent.Target, library, PackageAssemblyGroupType.CompileTime));
+                library => new PackageBuildFileGroupItem(parent.Target, library, PackageBuildFileGroupType.BuildMultiTargeting));
         }
 
-        protected override IEnumerable<PackageReferenceItem>? CreateContainedByItems(PackageAssemblyGroupItem child)
+        protected override IEnumerable<PackageReferenceItem>? CreateContainedByItems(PackageBuildFileGroupItem child)
         {
-            if (child.GroupType == PackageAssemblyGroupType.CompileTime)
+            if (child.GroupType == PackageBuildFileGroupType.BuildMultiTargeting)
             {
                 yield return new PackageReferenceItem(child.Target, child.Library);
             }

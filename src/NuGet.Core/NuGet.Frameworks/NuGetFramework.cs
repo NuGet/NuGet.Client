@@ -148,7 +148,7 @@ namespace NuGet.Frameworks
             get { return _frameworkProfile; }
         }
 
-        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFramework.</summary>
         /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
         public string DotNetFrameworkName
         {
@@ -162,7 +162,7 @@ namespace NuGet.Frameworks
             }
         }
 
-        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFramework.</summary>
         /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
         public string GetDotNetFrameworkName(IFrameworkNameProvider mappings)
         {
@@ -193,7 +193,7 @@ namespace NuGet.Frameworks
             }
         }
 
-        /// <summary>The TargetPlatformMoniker identifier of the current NuGetFrameowrk.</summary>
+        /// <summary>The TargetPlatformMoniker identifier of the current NuGetFramework.</summary>
         /// <remarks>Similar to a System.Versioning.FrameworkName, but missing the v at the beginning of the version.</remarks>
         public string DotNetPlatformName
         {

@@ -277,6 +277,69 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Build File.
+        /// </summary>
+        internal static string PackageBuildFileBrowseObjectClassName {
+            get {
+                return ResourceManager.GetString("PackageBuildFileBrowseObjectClassName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Build Files.
+        /// </summary>
+        internal static string PackageBuildFileGroupName {
+            get {
+                return ResourceManager.GetString("PackageBuildFileGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The build file&apos;s name..
+        /// </summary>
+        internal static string PackageBuildFileNameDescription {
+            get {
+                return ResourceManager.GetString("PackageBuildFileNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string PackageBuildFileNameDisplayName {
+            get {
+                return ResourceManager.GetString("PackageBuildFileNameDisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The build file&apos;s path..
+        /// </summary>
+        internal static string PackageBuildFilePathDescription {
+            get {
+                return ResourceManager.GetString("PackageBuildFilePathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path.
+        /// </summary>
+        internal static string PackageBuildFilePathDisplayName {
+            get {
+                return ResourceManager.GetString("PackageBuildFilePathDisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Build Files (Multi-targeting).
+        /// </summary>
+        internal static string PackageBuildMultiTargetingFileGroupName {
+            get {
+                return ResourceManager.GetString("PackageBuildMultiTargetingFileGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Compile Time Assemblies.
         /// </summary>
         internal static string PackageCompileTimeAssemblyGroupName {

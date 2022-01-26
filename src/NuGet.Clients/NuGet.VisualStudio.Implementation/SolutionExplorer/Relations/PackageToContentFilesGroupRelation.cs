@@ -3,9 +3,9 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 
@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
         protected override void UpdateContainsCollection(PackageReferenceItem parent, AggregateContainsRelationCollectionSpan span)
         {
             span.UpdateContainsItems(
-                parent.Library.ContentFiles.Length == 0 ? Array.Empty<AssetsFileTargetLibrary>() : new[] { parent.Library },
+                parent.Library.ContentFiles.Length == 0 ? Enumerable.Empty<AssetsFileTargetLibrary>() : new[] { parent.Library },
                 (library, item) => 0,
                 (library, item) => false,
                 library => new PackageContentFileGroupItem(parent.Target, library));
