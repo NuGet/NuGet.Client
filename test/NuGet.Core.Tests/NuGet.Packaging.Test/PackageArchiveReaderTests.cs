@@ -1604,6 +1604,29 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        /// <summary>
+        /// The NuGet Client SDK shipped many versions where PackageArchiveReader.ExtractFile would accept null
+        /// for the ILogger parameter, and would not throw. The .NET SDK make use of this and therefore throwing
+        /// ArgumentNullException is a breaking ABI change.
+        /// </summary>
+        [Fact]
+        public void ExtractFile_WithNullLogger_DoesNotThrow()
+        {
+            // Arrange
+            using (PackageReaderTest package = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                string firstFile = package.Reader.GetFiles().First();
+                string destination = Path.Combine(testDirectory, firstFile);
+
+                // Act
+                package.Reader.ExtractFile(firstFile, destination, logger: null);
+
+                // Assert is just that no exception was thrown.
+            }
+
+        }
+
 #if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task ValidateIntegrityAsync_WhenSignatureContentNull_Throws()
