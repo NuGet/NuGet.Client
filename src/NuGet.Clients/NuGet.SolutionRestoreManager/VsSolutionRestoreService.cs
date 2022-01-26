@@ -368,6 +368,7 @@ namespace NuGet.SolutionRestoreManager
             var packageSpec = new PackageSpec
             {
                 FilePath = projectPath,
+                Name = Path.GetFileNameWithoutExtension(projectPath),
                 RestoreMetadata = new ProjectRestoreMetadata()
                 {
                     ProjectUniqueName = projectPath,

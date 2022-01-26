@@ -12,6 +12,7 @@ namespace Test.Utility.ProjectManagement
         {
             var packageSpec = new PackageSpec();
             packageSpec.FilePath = projectPath;
+            packageSpec.Name = Path.GetFileNameWithoutExtension(projectPath);
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
             packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
             packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;

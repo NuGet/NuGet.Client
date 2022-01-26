@@ -22,10 +22,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
     {
-        private readonly protected string _projectName;
-        private readonly protected string _projectUniqueName;
-        private readonly protected string _projectFullPath;
-
         private protected DateTime _lastTimeAssetsModified;
 
         protected PackageReferenceProject(
@@ -33,9 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio
             string projectUniqueName,
             string projectFullPath)
         {
-            _projectName = projectName;
-            _projectUniqueName = projectUniqueName;
-            _projectFullPath = projectFullPath;
+            ProjectName = projectName;
+            ProjectUniqueName = projectUniqueName;
+            ProjectFullPath = projectFullPath;
         }
 
         public override async Task<string> GetAssetsFilePathAsync()
@@ -48,9 +44,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetAssetsFilePathAsync(shouldThrow: false);
         }
 
-        private protected abstract Task<string> GetAssetsFilePathAsync(bool shouldThrow);
+        protected abstract Task<string> GetAssetsFilePathAsync(bool shouldThrow);
 
-        public override string ProjectName => _projectName;
+        public override string ProjectName { get; }
+        protected string ProjectUniqueName { get; }
+        protected string ProjectFullPath { get; }
 
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {

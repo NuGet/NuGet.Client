@@ -59,9 +59,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ProjectStyle = ProjectStyle.PackageReference;
 
-            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, ProjectName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, ProjectUniqueName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
             ProjectServices = projectServices;
@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: await GetMSBuildProjectExtensionsPathAsync());
         }
 
-        private protected override async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+        protected override async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
         {
             var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync(shouldThrow);
             if (msbuildProjectExtensionsPath == null)
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region IDependencyGraphProject
 
-        public override string MSBuildProjectPath => _projectFullPath;
+        public override string MSBuildProjectPath => ProjectFullPath;
 
         public override async Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
@@ -117,7 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     throw new InvalidOperationException(
                         string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
-                context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
+                context?.PackageSpecCache.Add(ProjectFullPath, packageSpec);
             }
 
             return (new[] { packageSpec }, null);
@@ -331,7 +331,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return SettingsUtility.GetGlobalPackagesFolder(settings);
             }
 
-            return UriUtility.GetAbsolutePathFromFile(_projectFullPath, packagePath);
+            return UriUtility.GetAbsolutePathFromFile(ProjectFullPath, packagePath);
         }
 
         private IList<PackageSource> GetSources(ISettings settings)
@@ -352,7 +352,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Add additional sources
             sources = sources.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectSources));
 
-            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(_projectFullPath, e))).ToList();
+            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e))).ToList();
         }
 
         private IList<string> GetFallbackFolders(ISettings settings)
@@ -373,7 +373,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Add additional fallback folders
             fallbackFolders = fallbackFolders.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectFallbackFolders));
 
-            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(_projectFullPath, e)).ToList();
+            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e)).ToList();
         }
 
         private static bool ShouldReadFromSettings(IEnumerable<string> values)
@@ -437,7 +437,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // In legacy CSProj, we only have one target framework per project
             var tfis = new TargetFrameworkInformation[] { projectTfi };
 
-            var projectName = _projectName ?? _projectUniqueName;
+            var projectName = ProjectName ?? ProjectUniqueName;
 
             string specifiedPackageId = await GetSpecifiedPackageIdAsync();
 
@@ -459,15 +459,15 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 Name = projectName,
                 Version = new NuGetVersion(_vsProjectAdapter.Version),
-                FilePath = _projectFullPath,
+                FilePath = ProjectFullPath,
                 RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     ProjectStyle = ProjectStyle.PackageReference,
                     OutputPath = await GetMSBuildProjectExtensionsPathAsync(),
-                    ProjectPath = _projectFullPath,
+                    ProjectPath = ProjectFullPath,
                     ProjectName = projectName,
-                    ProjectUniqueName = _projectFullPath,
+                    ProjectUniqueName = ProjectFullPath,
                     OriginalTargetFrameworks = tfis
                         .Select(tfi => tfi.FrameworkName.GetShortFolderName())
                         .ToList(),
