@@ -116,16 +116,25 @@ namespace NuGet.VisualStudio.SolutionExplorer
                             nuGetRestoreSnapshot.Properties.TryGetValue(NuGetRestoreRule.NuGetTargetMonikerProperty, out string nuGetTargetMoniker) &&
                             StringComparer.OrdinalIgnoreCase.Equals(nuGetTargetMoniker, tfm))
                         {
-                            // Assets file 'target' string matches the configure project's NuGetTargetMoniker property value
+                            // Assets file 'target' string matches the configured project's NuGetTargetMoniker property value
                             return configuredProject;
                         }
 
-                        if (subscriptionUpdate.CurrentState.TryGetValue(ConfigurationGeneralRule.SchemaName, out IProjectRuleSnapshot configurationGeneralSnapshot) &&
-                                 configurationGeneralSnapshot.Properties.TryGetValue(ConfigurationGeneralRule.TargetFrameworkMonikerProperty, out string targetFrameworkMoniker) &&
-                                 StringComparer.OrdinalIgnoreCase.Equals(targetFrameworkMoniker, tfm))
+                        if (subscriptionUpdate.CurrentState.TryGetValue(ConfigurationGeneralRule.SchemaName, out IProjectRuleSnapshot configurationGeneralSnapshot))
                         {
-                            // Assets file 'target' string matches the configure project's TargetFrameworkMoniker property value
-                            return configuredProject;
+                            if (configurationGeneralSnapshot.Properties.TryGetValue(ConfigurationGeneralRule.TargetFrameworkMonikerProperty, out string targetFrameworkMoniker) &&
+                                StringComparer.OrdinalIgnoreCase.Equals(targetFrameworkMoniker, tfm))
+                            {
+                                // Assets file 'target' string matches the configured project's TargetFrameworkMoniker property value
+                                return configuredProject;
+                            }
+
+                            if (configurationGeneralSnapshot.Properties.TryGetValue(ConfigurationGeneralRule.TargetFrameworkProperty, out string targetFramework) &&
+                                StringComparer.OrdinalIgnoreCase.Equals(targetFramework, tfm))
+                            {
+                                // Assets file 'target' string matches the configured project's TargetFramework property value
+                                return configuredProject;
+                            }
                         }
                     }
 
