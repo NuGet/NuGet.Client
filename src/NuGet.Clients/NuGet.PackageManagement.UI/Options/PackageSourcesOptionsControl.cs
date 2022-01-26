@@ -147,10 +147,7 @@ namespace NuGet.Options
                 _packageSources.CurrentChanged += OnSelectedPackageSourceChanged;
                 PackageSourcesListBox.GotFocus += PackageSourcesListBox_GotFocus;
                 PackageSourcesListBox.DataSource = _packageSources;
-                for (int i = 0; i < packageSources.Count; i++)
-                {
-                    PackageSourcesListBox.SetItemChecked(i, packageSources[i].IsEnabled);
-                }
+                ResetItemsCheckedState(PackageSourcesListBox, _packageSources);
 
                 if (machineWidePackageSources.Count > 0)
                 {
@@ -158,10 +155,7 @@ namespace NuGet.Options
                     _machineWidepackageSources.CurrentChanged += OnSelectedMachineWidePackageSourceChanged;
                     MachineWidePackageSourcesListBox.GotFocus += MachineWidePackageSourcesListBox_GotFocus;
                     MachineWidePackageSourcesListBox.DataSource = _machineWidepackageSources;
-                    for (int i = 0; i < machineWidePackageSources.Count; i++)
-                    {
-                        MachineWidePackageSourcesListBox.SetItemChecked(i, machineWidePackageSources[i].IsEnabled);
-                    }
+                    ResetItemsCheckedState(MachineWidePackageSourcesListBox, _machineWidepackageSources);
                 }
                 else
                 {
@@ -189,6 +183,17 @@ namespace NuGet.Options
             {
                 MessageHelper.ShowErrorMessage(Resources.ShowError_SettingActivatedFailed, Resources.ErrorDialogBoxTitle);
                 ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+            }
+        }
+
+        private void ResetItemsCheckedState(PackageSourceCheckedListBox checkedListBox, BindingSource bindingSource)
+        {
+            var list = (IList<PackageSourceContextInfo>)bindingSource.List;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var isEnabled = list[i].IsEnabled;
+                checkedListBox.SetItemChecked(i, isEnabled);
             }
         }
 
@@ -310,6 +315,10 @@ namespace NuGet.Options
                 return;
             }
             _packageSources.Remove(PackageSourcesListBox.SelectedItem);
+
+            // changing _packageSources appears to clear all the checked items, so now we have to reset all the checkbox states
+            ResetItemsCheckedState(PackageSourcesListBox, _packageSources);
+
             UpdateUI();
         }
 
@@ -321,6 +330,9 @@ namespace NuGet.Options
             }
 
             _packageSources.Add(CreateNewPackageSource());
+
+            // changing _packageSources appears to clear all the checked items, so now we have to reset all the checkbox states
+            ResetItemsCheckedState(PackageSourcesListBox, _packageSources);
 
             // auto-select the newly-added item
             PackageSourcesListBox.SelectedIndex = PackageSourcesListBox.Items.Count - 1;
