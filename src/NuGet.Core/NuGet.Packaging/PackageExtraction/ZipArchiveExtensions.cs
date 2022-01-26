@@ -96,7 +96,7 @@ namespace NuGet.Packaging
             {
                 if (entry == null) throw new ArgumentNullException(nameof(entry));
                 if (fileFullPath == null) throw new ArgumentNullException(nameof(fileFullPath));
-                if (logger == null) throw new ArgumentNullException(nameof(logger));
+                logger ??= NullLogger.Instance;
 
                 FileAttributes attr = File.GetAttributes(fileFullPath);
 
