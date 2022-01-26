@@ -18,7 +18,8 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
-        /// <remarks>Can be called from a background thread.</remarks>
+        /// <remarks>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></remarks>
         /// <param name="source">
         /// The package source to install the package from. This value can be <c>null</c>
         /// to indicate that the user's configured sources should be used. Otherwise,
@@ -42,7 +43,8 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
-        /// <remarks>Can be called from a background thread.</remarks>
+        /// <remarks>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></remarks>
         /// <param name="source">
         /// The package source to install the package from. This value can be <c>null</c>
         /// to indicate that the user's configured sources should be used. Otherwise,
@@ -108,7 +110,8 @@ namespace NuGet.VisualStudio
         /// <para>
         /// Dependencies are always ignored.
         /// </para>
-        /// <para>Can be called from a background thread.</para>
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions);
 
@@ -135,7 +138,8 @@ namespace NuGet.VisualStudio
         /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
-        /// <para>Can be called from a background thread.</para>
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions);
 
@@ -161,7 +165,8 @@ namespace NuGet.VisualStudio
         /// <para>
         /// Dependencies are always ignored.
         /// </para>
-        /// <para>Can be called from a background thread.</para>
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions);
 
@@ -185,7 +190,8 @@ namespace NuGet.VisualStudio
         /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
-        /// <para>Can be called from a background thread.</para>
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions);
     }
