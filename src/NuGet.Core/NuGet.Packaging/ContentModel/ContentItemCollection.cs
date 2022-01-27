@@ -45,7 +45,6 @@ namespace NuGet.ContentModel
             }
         }
 
-        [Obsolete("This method causes excessive memory usage with yield return.")]
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
         {
             return FindItemsImplementation(definition, _assets);
