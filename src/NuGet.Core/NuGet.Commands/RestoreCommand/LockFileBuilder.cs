@@ -258,7 +258,7 @@ namespace NuGet.Commands
                                 dependencies: graphItem.Data.Dependencies,
                                 cache: lockFileBuilderCache);
 
-                            if (!targetLibrary.Equals(targetLibraryWithoutFallback) || graphItem.Data.UsedAssetTargetFallbackForDependencies)
+                            if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
                                 var libraryName = DiagnosticUtility.FormatIdentity(library);
 

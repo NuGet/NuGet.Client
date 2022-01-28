@@ -31,30 +31,16 @@ namespace NuGet.LibraryModel
         /// </summary>
         public NuGetFramework Framework { get; }
 
-        public bool UsedAssetTargetFallbackForDependencies { get; }
-
-        internal LibraryDependencyInfo(
-            LibraryIdentity library,
-            bool resolved,
-            NuGetFramework framework,
-            IEnumerable<LibraryDependency> dependencies,
-            bool usedAssetTargetFallbackForDependencies)
-        {
-            Resolved = resolved;
-            Library = library ?? throw new ArgumentNullException(nameof(library));
-            Framework = framework ?? throw new ArgumentNullException(nameof(framework));
-            Dependencies = dependencies ?? throw new ArgumentNullException(nameof(dependencies));
-            UsedAssetTargetFallbackForDependencies = usedAssetTargetFallbackForDependencies;
-        }
-
-        [Obsolete("May be removed in a future version. Use the factory Create and CreateUnresolved methods instead.")]
         public LibraryDependencyInfo(
             LibraryIdentity library,
             bool resolved,
             NuGetFramework framework,
             IEnumerable<LibraryDependency> dependencies)
-            : this(library, resolved, framework, dependencies, false)
         {
+            Resolved = resolved;
+            Library = library ?? throw new ArgumentNullException(nameof(library));
+            Framework = framework ?? throw new ArgumentNullException(nameof(framework));
+            Dependencies = dependencies ?? throw new ArgumentNullException(nameof(dependencies));
         }
 
         /// <summary>
@@ -62,23 +48,15 @@ namespace NuGet.LibraryModel
         /// </summary>
         public static LibraryDependencyInfo CreateUnresolved(LibraryIdentity library, NuGetFramework framework)
         {
-            return new LibraryDependencyInfo(library, resolved: false, framework: framework, dependencies: Enumerable.Empty<LibraryDependency>(), usedAssetTargetFallbackForDependencies: false);
-        }
-
-        /// <summary>
-        /// Resolved, not resolved with AssetTargetFallback.
-        /// </summary>
-        public static LibraryDependencyInfo Create(LibraryIdentity library, NuGetFramework framework, IEnumerable<LibraryDependency> dependencies)
-        {
-            return Create(library, framework, dependencies, usedAssetTargetFallbackForDependencies: false);
+            return new LibraryDependencyInfo(library, resolved: false, framework: framework, dependencies: Enumerable.Empty<LibraryDependency>());
         }
 
         /// <summary>
         /// Resolved
         /// </summary>
-        public static LibraryDependencyInfo Create(LibraryIdentity library, NuGetFramework framework, IEnumerable<LibraryDependency> dependencies, bool usedAssetTargetFallbackForDependencies)
+        public static LibraryDependencyInfo Create(LibraryIdentity library, NuGetFramework framework, IEnumerable<LibraryDependency> dependencies)
         {
-            return new LibraryDependencyInfo(library, resolved: true, framework: framework, dependencies: dependencies, usedAssetTargetFallbackForDependencies: usedAssetTargetFallbackForDependencies);
+            return new LibraryDependencyInfo(library, resolved: false, framework: framework, dependencies: dependencies);
         }
     }
 }
