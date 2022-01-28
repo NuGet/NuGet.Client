@@ -50,6 +50,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
+#if NET5_0_OR_GREATER || IS_DESKTOP
         [Fact]
         public void Build_WhenArgumentsAreValid_ReturnsExpectedResult()
         {
@@ -62,5 +63,6 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(X509ChainStatusFlags.UntrustedRoot, chain.ChainStatus[0].Status);
             }
         }
+#endif
     }
 }

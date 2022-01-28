@@ -36,7 +36,7 @@ curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 chmod +x cli/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
-cli/dotnet-install.sh -i cli -c 2.2 -nopath
+cli/dotnet-install.sh -i cli -c 3.1 -nopath
 
 if (( $? )); then
 	echo "The .NET CLI Install failed!!"
