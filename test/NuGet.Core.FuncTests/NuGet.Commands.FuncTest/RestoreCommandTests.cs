@@ -3485,7 +3485,7 @@ namespace NuGet.Commands.FuncTest
                 packageA,
                 packageB);
 
-            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0",  useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
             var project2spec = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net472", dependencyName: "a");
             project1spec = project1spec.WithTestProjectReference(project2spec);
             CreateFakeProjectFile(project2spec);
