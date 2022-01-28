@@ -13,6 +13,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.DependencyResolver
 {
@@ -115,6 +116,7 @@ namespace NuGet.DependencyResolver
 
             if (localMatch != null)
             {
+                // If the project dependencies are resolved via AssetTargetFallback,  MSBuild will raise the warning.
                 dependencies = LibraryDependencyInfo.Create(
                     localMatch.LocalLibrary.Identity,
                     framework,
@@ -141,7 +143,8 @@ namespace NuGet.DependencyResolver
                 Data = new RemoteResolveResult
                 {
                     Match = match,
-                    Dependencies = dependencies.Dependencies.ToList()
+                    Dependencies = dependencies.Dependencies.AsList(),
+                    UsedAssetTargetFallbackForDependencies = dependencies.UsedAssetTargetFallbackForDependencies,
                 },
             };
         }

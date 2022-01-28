@@ -1,0 +1,2 @@
+NuGet.LibraryModel.LibraryDependencyInfo.UsedAssetTargetFallbackForDependencies.get -> bool
+static NuGet.LibraryModel.LibraryDependencyInfo.Create(NuGet.LibraryModel.LibraryIdentity library, NuGet.Frameworks.NuGetFramework framework, System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, bool usedAssetTargetFallbackForDependencies) -> NuGet.LibraryModel.LibraryDependencyInfo

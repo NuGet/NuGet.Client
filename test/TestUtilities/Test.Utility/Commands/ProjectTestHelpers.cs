@@ -235,7 +235,7 @@ namespace NuGet.Commands.Test
                 dgSpec.AddProject(spec);
             }
 
-            var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.Name).ToList();
+            var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.RestoreMetadata.ProjectUniqueName).ToList();
 
             return new TestRestoreRequest(projectToRestore, sources, pathContext.UserPackagesFolder, logger)
             {
@@ -293,23 +293,26 @@ namespace NuGet.Commands.Test
         /// <param name="projectName">Project name</param>
         /// <param name="rootPath">Root path, normally solution root. The project is gonna be "located" at rootPath/projectName/projectName.csproj </param>
         /// <param name="framework">framework</param>
+        /// <param name="useAssetTargetFallback">Whether to use ATF. Default is false.</param>
+        /// <param name="assetTargetFallbackFrameworks">ATF string.</param>
         /// <returns>Returns a PackageReference spec with all details similar to what a spec from a nomination would contain.</returns>
-        public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0")
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0", bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "")
         {
+            var actualAssetTargetFallback = GetAssetTargetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks);
+
             const string referenceSpec = @"
                 {
                     ""frameworks"": {
                         ""TARGET_FRAMEWORK"": {
                             ""dependencies"": {
                             }
+                            ASSET_TARGET_FALLBACK
                         }
                     }
                 }";
 
-            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework);
-            var packageSpec = JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
-            packageSpec.RestoreSettings.HideWarningsAndErrors = true; // Pretend this is running in VS and this is a .NET Core project.
-            return packageSpec;
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework).Replace("ASSET_TARGET_FALLBACK", actualAssetTargetFallback);
+            return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
         }
 
         /// <summary>
@@ -334,8 +337,10 @@ namespace NuGet.Commands.Test
             return packageSpec;
         }
 
-        public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName)
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "")
         {
+            var actualAssetTargetFallback = GetAssetTargetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks);
+
             const string referenceSpec = @"
                 {
                     ""frameworks"": {
@@ -343,11 +348,31 @@ namespace NuGet.Commands.Test
                             ""dependencies"": {
                                 ""DEPENDENCY_NAME"" : ""1.0.0""
                             }
+                            ASSET_TARGET_FALLBACK
                         }
                     }
                 }";
 
-            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework).Replace("DEPENDENCY_NAME", dependencyName);
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework).Replace("DEPENDENCY_NAME", dependencyName).Replace("ASSET_TARGET_FALLBACK", actualAssetTargetFallback);
+            return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
+        }
+
+
+        private static string GetAssetTargetFallbackString(bool useAssetTargetFallback, string assetTargetFallbackFrameworks)
+        {
+            const string assetTargetFallback = @",
+                            ""assetTargetFallback"" : true,
+                            ""imports"" : [ ""ASSET_TARGET_FALLBACK_FRAMEWORK_LIST"" ],
+                            ""warn"" : true
+                        ";
+            var actualAssetTargetFallback = useAssetTargetFallback ?
+                assetTargetFallback.Replace("ASSET_TARGET_FALLBACK_FRAMEWORK_LIST", assetTargetFallbackFrameworks) :
+                string.Empty;
+            return actualAssetTargetFallback;
+        }
+
+        private static PackageSpec GetPackageSpecWithProjectNameAndSpec(string projectName, string rootPath, string spec)
+        {
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
             packageSpec.RestoreSettings.HideWarningsAndErrors = true; // Pretend this is running in VS and this is a .NET Core project.
             return packageSpec;

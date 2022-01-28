@@ -211,7 +211,7 @@ namespace NuGet.DependencyResolver.Tests
                 Assert.Same(library.Dependencies, dependencyInfo.Dependencies);
                 Assert.Equal(targetFramework, dependencyInfo.Framework);
                 Assert.Same(library.Identity, dependencyInfo.Library);
-                Assert.False(dependencyInfo.Resolved);
+                Assert.True(dependencyInfo.Resolved);
             }
         }
 

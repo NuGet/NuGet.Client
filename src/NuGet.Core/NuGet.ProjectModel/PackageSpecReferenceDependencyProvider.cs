@@ -212,9 +212,6 @@ namespace NuGet.ProjectModel
             }
         }
 
-        /// <summary>
-        /// .NETCore projects
-        /// </summary>
         private List<LibraryDependency> GetDependenciesFromSpecRestoreMetadata(PackageSpec packageSpec, NuGetFramework targetFramework)
         {
             var dependencies = GetSpecDependencies(packageSpec, targetFramework);
@@ -222,8 +219,14 @@ namespace NuGet.ProjectModel
             // Get the nearest framework
             var referencesForFramework = packageSpec.GetRestoreMetadataFramework(targetFramework);
 
+            if (referencesForFramework.FrameworkName == null &&
+                  targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            {
+                referencesForFramework = packageSpec.GetRestoreMetadataFramework(assetTargetFallbackFramework.AsFallbackFramework());
+            }
+
             // Ensure that this project is compatible
-            if (referencesForFramework.FrameworkName?.IsSpecificFramework == true)
+            if (referencesForFramework?.FrameworkName?.IsSpecificFramework == true)
             {
                 foreach (var reference in referencesForFramework.ProjectReferences)
                 {
@@ -328,6 +331,12 @@ namespace NuGet.ProjectModel
 
                 // Add framework specific dependencies
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
+
+                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
+                {
+                    targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
+                }
+
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
 #if enableCPVMTransitivePinning

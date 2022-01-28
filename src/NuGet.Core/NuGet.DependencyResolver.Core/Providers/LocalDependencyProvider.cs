@@ -127,6 +127,7 @@ namespace NuGet.DependencyResolver
 
             var library = _dependencyProvider.GetLibrary(libraryIdentity, targetFramework);
 
+            // Even if project references are resolved via AssetTargetFallback, NuGet does not raise this warning. MSBuild does.
             var dependencyInfo = LibraryDependencyInfo.Create(
                 library.Identity,
                 targetFramework,

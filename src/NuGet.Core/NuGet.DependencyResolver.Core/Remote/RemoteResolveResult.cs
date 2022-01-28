@@ -12,5 +12,6 @@ namespace NuGet.DependencyResolver
 
         public RemoteMatch Match { get; set; }
         public List<LibraryDependency> Dependencies { get; set; }
+        public bool UsedAssetTargetFallbackForDependencies { get; set; }
     }
 }

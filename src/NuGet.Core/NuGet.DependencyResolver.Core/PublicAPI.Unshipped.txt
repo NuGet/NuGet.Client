@@ -1,0 +1,2 @@
+NuGet.DependencyResolver.RemoteResolveResult.UsedAssetTargetFallbackForDependencies.get -> bool
+NuGet.DependencyResolver.RemoteResolveResult.UsedAssetTargetFallbackForDependencies.set -> void
