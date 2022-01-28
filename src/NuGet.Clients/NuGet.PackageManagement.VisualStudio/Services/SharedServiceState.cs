@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -51,12 +52,14 @@ namespace NuGet.PackageManagement.VisualStudio
             IDeleteOnRestartManager deleteOnRestartManager = await ServiceLocator.GetComponentModelServiceAsync<IDeleteOnRestartManager>();
             ISettings settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
             IVsSolutionManager solutionManager = await SolutionManager.GetValueAsync(cancellationToken);
+            IRestoreProgressReporter restoreProgressReporter = await ServiceLocator.GetComponentModelServiceAsync<IRestoreProgressReporter>();
 
             return new NuGetPackageManager(
                 SourceRepositoryProvider,
                 settings,
                 solutionManager,
-                deleteOnRestartManager);
+                deleteOnRestartManager,
+                restoreProgressReporter);
         }
 
         public async ValueTask<IReadOnlyCollection<SourceRepository>> GetRepositoriesAsync(

@@ -7,11 +7,13 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Etw;
+using NuGet.Commands;
 
 namespace NuGet.SolutionRestoreManager
 {
     [Export(typeof(IVsNuGetProjectUpdateEvents))]
     [Export(typeof(IVsNuGetProgressReporter))]
+    [Export(typeof(IRestoreProgressReporter))]
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class VsRestoreProgressEvents : IVsNuGetProjectUpdateEvents, IVsNuGetProgressReporter
     {

@@ -1752,7 +1752,7 @@ namespace NuGet.Test
 
                     // Install
                     await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, "packageA",
-                        resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                        resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories(), null, token);
 
                     // Pre-Assert
                     var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();

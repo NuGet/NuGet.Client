@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -65,11 +66,13 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<ISolutionManager>();
             var settings = await ServiceLocator.GetComponentModelServiceAsync<Configuration.ISettings>();
             var deleteOnRestartManager = await ServiceLocator.GetComponentModelServiceAsync<IDeleteOnRestartManager>();
+            var restoreProgressReporter = await ServiceLocator.GetComponentModelServiceAsync<IRestoreProgressReporter>();
             var packageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 settings,
                 solutionManager,
-                deleteOnRestartManager);
+                deleteOnRestartManager,
+                restoreProgressReporter);
 
             foreach (var packageReference in packageReferences)
             {

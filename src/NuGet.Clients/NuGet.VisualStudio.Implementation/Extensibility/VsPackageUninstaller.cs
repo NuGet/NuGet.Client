@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -28,6 +29,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         private IVsSolutionManager _solutionManager;
         private IDeleteOnRestartManager _deleteOnRestartManager;
         private INuGetTelemetryProvider _telemetryProvider;
+        private readonly IRestoreProgressReporter _restoreProgressReporter;
 
         private JoinableTaskFactory PumpingJTF { get; }
 
@@ -37,7 +39,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             Configuration.ISettings settings,
             IVsSolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-            INuGetTelemetryProvider telemetryProvider)
+            INuGetTelemetryProvider telemetryProvider,
+            IRestoreProgressReporter restoreProgressReporter)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
@@ -78,7 +81,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                                _sourceRepositoryProvider,
                                _settings,
                                _solutionManager,
-                               _deleteOnRestartManager);
+                               _deleteOnRestartManager,
+                               _restoreProgressReporter);
 
                         var uninstallContext = new UninstallationContext(removeDependencies, forceRemove: false);
                         var projectContext = new VSAPIProjectContext

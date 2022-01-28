@@ -182,6 +182,7 @@ namespace NuGet.PackageManagement
             Guid parentId,
             CancellationToken token)
         {
+            // nothing here?
             token.ThrowIfCancellationRequested();
 
             // Add the new spec to the dg file and fill in the rest.
@@ -272,8 +273,9 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Restore a build integrated project(PackageReference and Project.Json only) and update the lock file
+        /// Restore a build integrated project(PackageReference and Project.Json only) and update the assets file
         /// </summary>
+        [Obsolete("This is an unused method and will be removed in a future release.")]
         public static async Task<RestoreResult> RestoreProjectAsync(
             ISolutionManager solutionManager,
             BuildIntegratedNuGetProject project,
@@ -285,6 +287,11 @@ namespace NuGet.PackageManagement
             ILogger log,
             CancellationToken token)
         {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
             // Restore
             var specs = await project.GetPackageSpecsAsync(context);
             var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference

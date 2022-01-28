@@ -10,6 +10,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
@@ -139,6 +140,7 @@ namespace NuGet.PackageManagement.UI
             IUserSettingsManager userSettingsManager,
             IDeleteOnRestartManager deleteOnRestartManager,
             INuGetLockService lockService,
+            IRestoreProgressReporter restoreProgressReporter,
             CancellationToken cancellationToken)
         {
             Assumes.NotNull(serviceBroker);
@@ -150,6 +152,7 @@ namespace NuGet.PackageManagement.UI
             Assumes.NotNull(userSettingsManager);
             Assumes.NotNull(deleteOnRestartManager);
             Assumes.NotNull(lockService);
+            Assumes.NotNull(restoreProgressReporter);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -176,7 +179,9 @@ namespace NuGet.PackageManagement.UI
                 sourceRepositoryProvider,
                 settings,
                 solutionManager,
-                deleteOnRestartManager);
+                deleteOnRestartManager,
+                reporter: restoreProgressReporter
+                );
 
             var actionEngine = new UIActionEngine(
                 sourceRepositoryProvider,
