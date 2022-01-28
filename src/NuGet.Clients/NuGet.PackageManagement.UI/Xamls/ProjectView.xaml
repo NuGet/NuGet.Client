@@ -101,7 +101,7 @@
       ItemsSource="{Binding Path=Versions}"
       SelectedItem="{Binding Path=SelectedVersion}">
       <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+            <Style TargetType="{x:Type ComboBoxItem}">
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Path=IsValidVersion}" Value="false">

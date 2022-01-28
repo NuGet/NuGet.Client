@@ -274,11 +274,6 @@
                 Text="{Binding}" />
             </ToolTip>
           </ComboBox.ToolTip>
-          <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
-              <Setter Property="AutomationProperties.Name" Value="{Binding SourceName}"/>
-            </Style>
-          </ComboBox.ItemContainerStyle>
         </ComboBox>
         <Button
           Grid.Column="3"
