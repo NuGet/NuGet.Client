@@ -346,9 +346,9 @@ namespace NuGet.Commands
                     packageInfo.PackageIdentity.Version,
                     match.Type);
 
-                (bool, IEnumerable<LibraryDependency>) dependencyGroup = GetDependencies(packageInfo, targetFramework);
+                IEnumerable<LibraryDependency> dependencyGroup = GetDependencies(packageInfo, targetFramework);
 
-                return LibraryDependencyInfo.Create(originalIdentity, targetFramework, dependencies: dependencyGroup.Item2, usedAssetTargetFallbackForDependencies: dependencyGroup.Item1);
+                return LibraryDependencyInfo.Create(originalIdentity, targetFramework, dependencies: dependencyGroup);
             }
         }
 
@@ -436,13 +436,13 @@ namespace NuGet.Commands
             return null;
         }
 
-        private static (bool, IEnumerable<LibraryDependency>) GetDependencies(
+        private static IEnumerable<LibraryDependency> GetDependencies(
             FindPackageByIdDependencyInfo packageInfo,
             NuGetFramework targetFramework)
         {
             if (packageInfo == null)
             {
-                return (false, Enumerable.Empty<LibraryDependency>());
+                return Enumerable.Empty<LibraryDependency>();
             }
 
             var dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
@@ -454,7 +454,6 @@ namespace NuGet.Commands
                 dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups, dualCompatibilityFramework.SecondaryFramework, item => item.TargetFramework);
             }
 
-            bool assetTargetFallbackUsed = false;
             // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
             if (dependencyGroup == null &&
                 targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
@@ -462,15 +461,14 @@ namespace NuGet.Commands
                 dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
                     assetTargetFallbackFramework.AsFallbackFramework(),
                     item => item.TargetFramework);
-                assetTargetFallbackUsed = dependencyGroup != null;
             }
 
             if (dependencyGroup != null)
             {
-                return (assetTargetFallbackUsed, dependencyGroup.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec).ToArray());
+                return dependencyGroup.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec).ToArray();
             }
 
-            return (false, Enumerable.Empty<LibraryDependency>());
+            return Enumerable.Empty<LibraryDependency>();
         }
 
         private static NuGetFramework DeconstructFallbackFrameworks(NuGetFramework nuGetFramework)

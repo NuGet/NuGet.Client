@@ -3434,7 +3434,7 @@ namespace NuGet.Commands.FuncTest
 
         // Project1(net5.0) -> A(net472,netstandard2.0) -> B(net472,netstandard2.0)
         [Fact]
-        public async Task Restore_WhenPackageDependenciesAreSelectedWithATF_AndPackageAssetsAreNot_RaisesATFWarning()
+        public async Task Restore_WhenPackageDependenciesAreSelectedWithATF_AndPackageAssetsAreNot_DoesNotRaiseATFWarning()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -3463,10 +3463,7 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeTrue();
             result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
             result.GetAllInstalled().Should().HaveCount(2);
-            result.LockFile.LogMessages.Should().HaveCount(1);
-            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
-            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
-            Assert.True(false, "Unclear if a warning should be raised in these scenarios.");
+            result.LockFile.LogMessages.Should().HaveCount(0);
         }
 
         // Project1(net5.0) -> Project2(net472) -> A(net472) -> B(net472)
