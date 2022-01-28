@@ -59,16 +59,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            try
-            {
-                var property = _project.Properties.Item(propertyName);
-                return property?.Value as string;
-            }
-            catch (ArgumentException)
-            {
-                // If the property doesn't exist this will throw an argument exception
-            }
-
             return null;
         }
     }
