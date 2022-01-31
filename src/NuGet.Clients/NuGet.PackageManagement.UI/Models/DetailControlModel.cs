@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
@@ -524,6 +521,11 @@ namespace NuGet.PackageManagement.UI
             if (alternatePackageMetadata == null)
             {
                 return null;
+            }
+
+            if (!VersionRange.All.Equals(alternatePackageMetadata.VersionRange))
+            {
+                return alternatePackageMetadata.PackageId;
             }
 
             var versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.VersionRange, VersionRangeFormatter.Instance);

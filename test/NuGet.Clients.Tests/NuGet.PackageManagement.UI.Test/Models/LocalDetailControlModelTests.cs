@@ -176,6 +176,32 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.NotNull(model.InstalledVersion);
             Assert.True(model.IsSelectedVersionInstalled);
         }
+
+        [Theory]
+        [InlineData("*")]
+        [InlineData("*-*")]
+        [InlineData("0.0.0")]
+        [InlineData("[0.0.0,)")]
+        public void DeprecationAlternativePackage_WithAsterisk_ShowsNoVersionInfo(string versionRange)
+        {
+            var model = new PackageDetailControlModel(
+                Mock.Of<IServiceBroker>(),
+                Mock.Of<INuGetSolutionManagerService>(),
+                Enumerable.Empty<IProjectContextInfo>());
+
+            var metadata = new DetailedPackageMetadata()
+            {
+                DeprecationMetadata = new PackageDeprecationMetadataContextInfo(
+                    message: "package deprecated",
+                    reasons: new[] { "package deprecated", "legacy" },
+                    new AlternatePackageMetadataContextInfo("ANewPackage", VersionRange.Parse(versionRange))
+                    )
+            };
+            model.PackageMetadata = metadata;
+
+            Assert.NotNull(model.PackageDeprecationAlternatePackageText);
+            Assert.Equal("ANewPackage", model.PackageDeprecationAlternatePackageText);
+        }
     }
 
     public class LocalPackageSolutionDetailControlModelTests : LocalDetailControlModelTestBase
