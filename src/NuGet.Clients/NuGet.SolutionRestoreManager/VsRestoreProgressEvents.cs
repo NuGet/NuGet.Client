@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Etw;
 
 namespace NuGet.SolutionRestoreManager
