@@ -12,7 +12,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.RuntimeModel;
-using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.DependencyResolver
@@ -171,16 +170,49 @@ namespace NuGet.DependencyResolver
                 if (outerEdge == null
                     || dependency.SuppressParent != LibraryIncludeFlags.All)
                 {
-                    var result = predicate(dependency.LibraryRange);
+                    (DependencyResult, LibraryDependency) result = predicate(dependency.LibraryRange);
+
+                    var edge = outerEdge;
+                    bool exitFlag = false;
+
+                    while (edge != null && !exitFlag)
+                    {
+                        if (StringComparer.OrdinalIgnoreCase.Equals(edge.Item.Data.Match.Library.Name, dependency.Name))
+                        {
+                            result = (DependencyResult.Cycle, null);
+                            break;
+                        }
+
+                        foreach (var d in edge.Item.Data.Dependencies)
+                        {
+                            if (d != dependency && dependency.LibraryRange.IsEclipsedBy(d.LibraryRange))
+                            {
+                                if (d.LibraryRange.VersionRange != null &&
+                                    dependency.LibraryRange.VersionRange != null &&
+                                    !IsGreaterThanOrEqualTo(d.LibraryRange.VersionRange, dependency.LibraryRange.VersionRange))
+                                {
+                                    result = (DependencyResult.PotentiallyDowngraded, d);
+                                    exitFlag = true;
+                                    break;
+                                }
+
+                                result = (DependencyResult.Eclipsed, d);
+                                exitFlag = true;
+                                break;
+                            }
+                        }
+
+                        edge = edge.OuterEdge;
+                    }
 
                     // Check for a cycle, this is needed for A (project) -> A (package)
                     // since the predicate will not be called for leaf nodes.
                     if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, libraryRange.Name))
                     {
-                        result = (dependencyResult: DependencyResult.Cycle, conflictingDependency: dependency);
+                        result = (DependencyResult.Cycle, dependency);
                     }
 
-                    if (result.dependencyResult == DependencyResult.Acceptable)
+                    if (result.Item1 == DependencyResult.Acceptable)
                     {
                         // Dependency edge from the current node to the dependency
                         var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, node.Item, dependency);
@@ -195,7 +227,7 @@ namespace NuGet.DependencyResolver
                             framework,
                             runtimeName,
                             runtimeGraph,
-                            ChainPredicate(predicate, node, dependency),
+                            predicate,
                             innerEdge,
                             transitiveCentralPackageVersions));
                     }
@@ -203,20 +235,20 @@ namespace NuGet.DependencyResolver
                     {
                         // In case of conflict because of a centrally managed version that is not direct dependency
                         // the centrally managed package versions need to be added to the graph explicitelly as they are not added otherwise
-                        if (result.conflictingDependency != null &&
-                            result.conflictingDependency.VersionCentrallyManaged &&
-                            result.conflictingDependency.ReferenceType == LibraryDependencyReferenceType.None)
+                        if (result.Item2 != null &&
+                            result.Item2.VersionCentrallyManaged &&
+                            result.Item2.ReferenceType == LibraryDependencyReferenceType.None)
                         {
-                            MarkCentralVersionForTransitiveProcessing(result.conflictingDependency, transitiveCentralPackageVersions, node);
+                            MarkCentralVersionForTransitiveProcessing(result.Item2, transitiveCentralPackageVersions, node);
                         }
 
                         // Keep the node in the tree if we need to look at it later
-                        if (result.dependencyResult == DependencyResult.PotentiallyDowngraded ||
-                            result.dependencyResult == DependencyResult.Cycle)
+                        if (result.Item1 == DependencyResult.PotentiallyDowngraded ||
+                            result.Item1 == DependencyResult.Cycle)
                         {
                             var dependencyNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
                             {
-                                Disposition = result.dependencyResult == DependencyResult.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded
+                                Disposition = result.Item1 == DependencyResult.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded
                             };
 
                             dependencyNode.OuterNode = node;
