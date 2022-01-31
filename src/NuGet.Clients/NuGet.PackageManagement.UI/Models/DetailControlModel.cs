@@ -61,6 +61,8 @@ namespace NuGet.PackageManagement.UI
 
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
+
+            _versions = new ItemsChangeObservableCollection<DisplayVersion>();
         }
 
         /// <summary>
@@ -654,7 +656,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Calculate the version to select among _versions and select it
-        protected void SelectVersion(NuGetVersion latestVersion)
+        protected void SelectVersion(NuGetVersion latestVersion = null)
         {
             if (_versions.Count == 0)
             {
@@ -696,7 +698,6 @@ namespace NuGet.PackageManagement.UI
                     {
                         FirstDisplayedVersion = SelectedVersion;
                     }
-
                 }
                 else
                 {

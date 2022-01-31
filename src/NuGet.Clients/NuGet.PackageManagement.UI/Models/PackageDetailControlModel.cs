@@ -29,6 +29,13 @@ namespace NuGet.PackageManagement.UI
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
+
+            VersionsView = new CollectionViewSource() { Source = Versions }.View;
+
+            if (IsProjectPackageReference)
+            {
+                VersionsView.Filter += VersionsFilter;
+            }
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -116,7 +123,8 @@ namespace NuGet.PackageManagement.UI
                 return Task.CompletedTask;
             }
 
-            _versions = new ItemsChangeObservableCollection<DisplayVersion>();
+            Versions.Clear();
+
             var installedDependency = InstalledPackageDependencies.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id) && p.VersionRange != null && p.VersionRange.HasLowerBound)
                 .OrderByDescending(p => p.VersionRange.MinVersion)
@@ -220,26 +228,7 @@ namespace NuGet.PackageManagement.UI
             // Add disabled versions
             AddBlockedVersions(blockedVersions);
 
-            // Update the view and add the filter
-            VersionsView = new CollectionViewSource() { Source = Versions }.View;
-
-            if (IsProjectPackageReference)
-            {
-                VersionsView.Filter += VersionsFilter;
-            }
-
             SelectVersion(latestPrerelease.version ?? latestStableVersion.version);
-
-            OnPropertyChanged(nameof(Versions));
-            OnPropertyChanged(nameof(VersionsView));
-
-            if (_nugetProjects.Any() &&
-                IsProjectPackageReference &&
-                SelectedVersion != FirstDisplayedVersion)
-            {
-                SelectedVersion = FirstDisplayedVersion;
-                UserInput = SelectedVersion?.ToString();
-            }
 
             return Task.CompletedTask;
         }

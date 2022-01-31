@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            _versions = new ItemsChangeObservableCollection<DisplayVersion>();
+            _versions.Clear();
             List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version).ToList();
 
             // null, if no version constraint defined in package.config
@@ -254,7 +254,7 @@ namespace NuGet.PackageManagement.UI
             // Add disabled versions
             AddBlockedVersions(blockedVersions);
 
-            SelectVersion(latestPrerelease.version ?? latestStableVersion.version);
+            SelectVersion();
 
             OnPropertyChanged(nameof(Versions));
         }
