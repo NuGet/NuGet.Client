@@ -105,7 +105,7 @@
       IsReadOnly="{Binding IsProjectPackageReference, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       StaysOpenOnEdit="{Binding IsProjectPackageReference, Converter={StaticResource InverseNullToVisibilityConverter}}"
       ItemsSource="{Binding Path=VersionsView}"
-      Text="{Binding Path=UserInput}"
+      Text="{Binding Path=UserInput, Mode=OneWay}"
       SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
       <ComboBox.ItemContainerStyle>
             <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">

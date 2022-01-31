@@ -676,12 +676,11 @@ namespace NuGet.PackageManagement.UI
                 // The project level is the only one that has an editable combobox and we can only see one project.
                 if (!IsSolution && _nugetProjects.Count() == 1 && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
-                    // Select the installed version by default.
-                    // Otherwise, select the first version in the version list.
+                    // For the Updates and Browse tab we select the latest version, for the installed tab
+                    // select the installed version by default. Otherwise, select the first version in the version list.
                     IEnumerable<DisplayVersion> possibleVersions = _versions.Where(v => v != null);
                     if (_filter.Equals(ItemFilter.UpdatesAvailable) || _filter.Equals(ItemFilter.All))
                     {
-                        // If the latest version is not the installed version, we need to
                         SelectedVersion = possibleVersions.FirstOrDefault(v => v.Range.OriginalString.Equals(latestVersion.ToString(), StringComparison.OrdinalIgnoreCase));
                         UserInput = SelectedVersion.ToString();
                     }
@@ -690,7 +689,6 @@ namespace NuGet.PackageManagement.UI
                         SelectedVersion =
                             possibleVersions.FirstOrDefault(v => StringComparer.OrdinalIgnoreCase.Equals(v.Range?.OriginalString, _searchResultPackage?.AllowedVersions?.OriginalString))
                             ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
-                        // Set the text of the combobox
                         UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
                     }
 
