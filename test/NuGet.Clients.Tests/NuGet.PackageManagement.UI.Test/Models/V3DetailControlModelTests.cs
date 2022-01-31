@@ -350,7 +350,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             await model.SetCurrentPackageAsync(
                 vm,
-                ItemFilter.All,
+                ItemFilter.Installed,
                 () => vm);
 
             // Assert
