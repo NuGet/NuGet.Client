@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.VisualStudio
 {
     /// <summary>
     /// NuGet project update events.
