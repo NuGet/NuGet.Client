@@ -18,6 +18,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.VisualStudio.Internal.Contracts;
 using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -138,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Assets file changed, recompute transitive origins
-            ClearCachedTransitiveOrigins();
+            TransitiveOriginsCache.Clear();
 
             // Otherwise, find all Transitive origin and update cache
             var memoryVisited = new HashSet<PackageIdentity>();
@@ -298,7 +299,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="transitivePackage">Identity of transitive package</param>
         /// <returns>A <see cref="TransitiveEntry"/> object, or <c>null</c> if not found</returns>
-        /// <seealso cref="ClearCachedTransitiveOrigins"/>
         /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
         internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
         {
@@ -317,23 +317,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="transitivePackage">Identity of transitive package</param>
         /// <param name="origins">Packages identified as package origins</param>
-        /// <seealso cref="ClearCachedTransitiveOrigins"/>
         /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
         internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
         {
             var key = GetTransitiveCacheKey(transitivePackage);
             TransitiveOriginsCache[key] = origins;
-        }
-
-        /// <summary>
-        /// Clears Transitive Origins cache
-        /// </summary>
-        /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
-        /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
-        internal void ClearCachedTransitiveOrigins()
-        {
-            TransitiveOriginsCache.Clear();
-            IsInstalledAndTransitiveComputationNeeded = true;
         }
 
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)

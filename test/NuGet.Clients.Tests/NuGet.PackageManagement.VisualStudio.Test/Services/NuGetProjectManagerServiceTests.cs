@@ -25,7 +25,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -622,7 +621,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_WithTransitivePackage_NotRestored_NoTransitivePackageInfoAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_WithTransitivePackageNotRestored_NoTransitivePackageInfoAsync()
         {
             var projectSystemCache = new ProjectSystemCache();
             var projectAdapter = Mock.Of<IVsProjectAdapter>();

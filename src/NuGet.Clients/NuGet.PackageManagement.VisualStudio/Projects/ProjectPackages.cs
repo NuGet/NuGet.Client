@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Packaging;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

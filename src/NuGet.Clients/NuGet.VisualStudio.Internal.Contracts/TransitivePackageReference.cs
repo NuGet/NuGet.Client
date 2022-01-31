@@ -3,16 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using NuGet.Frameworks;
-using NuGet.Packaging.Core;
+using NuGet.Packaging;
 
-namespace NuGet.Packaging
+namespace NuGet.VisualStudio.Internal.Contracts
 {
     public class TransitivePackageReference : PackageReference
     {
         public TransitivePackageReference(PackageReference pr)
             : base(pr?.PackageIdentity ?? throw new ArgumentNullException(nameof(pr)), pr.TargetFramework, pr.IsUserInstalled, pr.IsDevelopmentDependency, pr.RequireReinstallation, pr.AllowedVersions)
         {
+            TransitiveOrigins = new List<PackageReference>();
         }
 
         public IEnumerable<PackageReference> TransitiveOrigins { get; set; }
