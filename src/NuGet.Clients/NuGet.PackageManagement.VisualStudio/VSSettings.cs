@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
+    // TODO NK - Create a VS Settings
     [Export(typeof(ISettings))]
     [PartCreationPolicy(CreationPolicy.Shared)]
     public sealed class VSSettings : ISettings, IDisposable

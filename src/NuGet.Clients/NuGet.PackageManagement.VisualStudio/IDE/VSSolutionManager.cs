@@ -823,6 +823,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<NuGetProject> CreateNuGetProjectAsync(IVsProjectAdapter project, INuGetProjectContext projectContext = null)
         {
+            // Should this initialized different?
             var context = new ProjectProviderContext(
                 projectContext ?? EmptyNuGetProjectContext,
                 () => PackagesFolderPathUtility.GetPackagesFolderPath(this, _settings.Value));
@@ -1000,12 +1001,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             RemoveVsProjectAdapterFromCache(projectName);
 
-            var context = new ProjectProviderContext(
-                EmptyNuGetProjectContext,
-                () => PackagesFolderPathUtility.GetPackagesFolderPath(this, _settings.Value));
-
             var nuGetProject = await _projectSystemFactory.CreateNuGetProjectAsync<LegacyPackageReferenceProject>(
-                vsProjectAdapter, context);
+                vsProjectAdapter);
 
             var added = _projectSystemCache.AddProject(projectNames, vsProjectAdapter, nuGetProject);
 
