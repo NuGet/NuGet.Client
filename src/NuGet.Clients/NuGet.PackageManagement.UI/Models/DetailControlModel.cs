@@ -654,7 +654,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Calculate the version to select among _versions and select it
-        protected void SelectVersion()
+        protected void SelectVersion(NuGetVersion latestVersion)
         {
             if (_versions.Count == 0)
             {
@@ -677,17 +677,26 @@ namespace NuGet.PackageManagement.UI
                     // Select the installed version by default.
                     // Otherwise, select the first version in the version list.
                     IEnumerable<DisplayVersion> possibleVersions = _versions.Where(v => v != null);
-                    SelectedVersion =
-                        possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage?.AllowedVersions?.OriginalString))
-                        ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+                    if (_filter.Equals(ItemFilter.UpdatesAvailable) || _filter.Equals(ItemFilter.All))
+                    {
+                        // If the latest version is not the installed version, we need to
+                        SelectedVersion = possibleVersions.FirstOrDefault(v => v.Range.OriginalString.Equals(latestVersion.ToString(), StringComparison.OrdinalIgnoreCase));
+                        UserInput = SelectedVersion.ToString();
+                    }
+                    else
+                    {
+                        SelectedVersion =
+                            possibleVersions.FirstOrDefault(v => StringComparer.OrdinalIgnoreCase.Equals(v.Range?.OriginalString, _searchResultPackage?.AllowedVersions?.OriginalString))
+                            ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+                        // Set the text of the combobox
+                        UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
+                    }
 
                     if (FirstDisplayedVersion == null)
                     {
                         FirstDisplayedVersion = SelectedVersion;
                     }
 
-                    // Set the text of the combobox
-                    UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
                 }
                 else
                 {

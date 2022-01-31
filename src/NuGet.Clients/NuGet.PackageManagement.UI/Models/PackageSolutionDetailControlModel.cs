@@ -254,7 +254,7 @@ namespace NuGet.PackageManagement.UI
             // Add disabled versions
             AddBlockedVersions(blockedVersions);
 
-            SelectVersion();
+            SelectVersion(latestPrerelease.version ?? latestStableVersion.version);
 
             OnPropertyChanged(nameof(Versions));
         }

@@ -228,10 +228,18 @@ namespace NuGet.PackageManagement.UI
                 VersionsView.Filter += VersionsFilter;
             }
 
-            SelectVersion();
+            SelectVersion(latestPrerelease.version ?? latestStableVersion.version);
 
             OnPropertyChanged(nameof(Versions));
             OnPropertyChanged(nameof(VersionsView));
+
+            if (_nugetProjects.Any() &&
+                IsProjectPackageReference &&
+                SelectedVersion != FirstDisplayedVersion)
+            {
+                SelectedVersion = FirstDisplayedVersion;
+                UserInput = SelectedVersion?.ToString();
+            }
 
             return Task.CompletedTask;
         }
