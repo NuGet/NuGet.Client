@@ -268,6 +268,41 @@ namespace Test.Utility
                 dependencies: false);
         }
 
+        public static FileInfo GetLargePackage(string path,
+            string packageId,
+            string packageVersion)
+        {
+            string[] packageFiles = new[]
+            {
+                "tools/file1",
+                "tools/file2"
+            };
+
+
+            StringBuilder sb = new();
+            for (int i = 0; i < 10000; i++)
+            {
+                sb.AppendLine(i.ToString());
+            }
+            string contents = sb.ToString();
+
+            string[] fileContents = new string[packageFiles.Length];
+
+            for (int i = 0; i < fileContents.Length; i++)
+            {
+                fileContents[i] = contents;
+            }
+
+            return GeneratePackage(path,
+                packageId,
+                packageVersion,
+                packageFiles,
+                fileContents,
+                frameworkAssemblies: false,
+                minClientVersion: null,
+                dependencies: false);
+        }
+
         private static FileInfo GeneratePackage(
             string path,
             string packageId,

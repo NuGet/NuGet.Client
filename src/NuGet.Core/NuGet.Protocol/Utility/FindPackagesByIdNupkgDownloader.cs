@@ -121,8 +121,17 @@ namespace NuGet.Protocol
                 url,
                 async stream =>
                 {
-                    await stream.CopyToAsync(destination, token);
-                    ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                    try
+                    {
+                        await stream.CopyToAsync(destination, token);
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                    }
+                    catch
+                    {
+                        destination.Position = 0;
+                        destination.SetLength(0);
+                        throw;
+                    }
                 },
                 cacheContext,
                 logger,
