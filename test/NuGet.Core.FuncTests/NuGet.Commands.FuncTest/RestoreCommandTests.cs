@@ -3362,6 +3362,269 @@ namespace NuGet.Commands.FuncTest
             Assert.Equal(packageSource2, packageASource);
         }
 
+        // Project1(net5.0) -> A(net472) -> B(net472)
+        [Fact]
+        public async Task Restore_WhenPackageSelectedWithATF_ItsDependenciesAreIncluded_AndATFWarningsAreRaised()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            packageB.AddFile("lib/net472/b.dll");
+            packageA.PerFrameworkDependencies.Add(NuGetFramework.Parse("net472"), new List<SimpleTestPackageContext>() { packageB });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
+            result.GetAllInstalled().Should().HaveCount(2);
+            result.LockFile.LogMessages.Should().HaveCount(2);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "b");
+        }
+
+        // Project1(net5.0) -> A(net472) -> B(net472, netstandard2.0)
+        [Fact]
+        public async Task Restore_WhenPackageSelectedWithATF_DependenciesAreIncludedAnd_AndWarningsAreRaisedForATFPackagesOnly()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            packageB.AddFile("lib/net472/b.dll");
+            packageB.AddFile("lib/netstandard2.0/b.dll");
+            packageA.PerFrameworkDependencies.Add(NuGetFramework.Parse("net472"), new List<SimpleTestPackageContext>() { packageB });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
+            result.GetAllInstalled().Should().HaveCount(2);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+        }
+
+        // Project1(net5.0) -> A(net472,netstandard2.0) -> B(net472,netstandard2.0)
+        [Fact]
+        public async Task Restore_WhenPackageDependenciesAreSelectedWithATF_AndPackageAssetsAreNot_DoesNotRaiseATFWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
+            packageA.AddFile("lib/netstandard2.0/b.dll");
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            packageB.AddFile("lib/net472/b.dll");
+            packageB.AddFile("lib/netstandard2.0/b.dll");
+            packageA.PerFrameworkDependencies.Add(NuGetFramework.Parse("net472"), new List<SimpleTestPackageContext>() { packageB });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var spec = ProjectTestHelpers.GetPackageSpec("TestProject", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
+            result.GetAllInstalled().Should().HaveCount(2);
+            result.LockFile.LogMessages.Should().HaveCount(0);
+        }
+
+        // Project1(net5.0) -> Project2(net472) -> A(net472) -> B(net472)
+        [Fact]
+        public async Task Restore_WithProjectReference_WhenTransitivePackagesAreSelectedWithPackagesWithATF_DependenciesAreIncluded_AndRaisesATFWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            packageB.AddFile("lib/net472/b.dll");
+            packageA.PerFrameworkDependencies.Add(NuGetFramework.Parse("net472"), new List<SimpleTestPackageContext>() { packageB });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var project2spec = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net472", dependencyName: "a");
+            project1spec = project1spec.WithTestProjectReference(project2spec);
+            CreateFakeProjectFile(project2spec);
+
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec }, pathContext, new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
+            result.GetAllInstalled().Should().HaveCount(2);
+            result.LockFile.Libraries.Should().HaveCount(3);
+            result.LockFile.LogMessages.Should().HaveCount(2);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "b");
+        }
+
+
+        // Project1(net5.0) -> Project2(net472) -> Project3(net472)
+        [Fact]
+        public async Task Restore_WithProjectReference_WhenTransitiveProjectsAreSelectedWithATF_AllProjectsAreIncluded()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var project2spec = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net472");
+            var project3spec = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net472");
+            project2spec = project2spec.WithTestProjectReference(project3spec);
+            project1spec = project1spec.WithTestProjectReference(project2spec);
+            CreateFakeProjectFile(project2spec);
+            CreateFakeProjectFile(project3spec);
+
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec, project3spec }, pathContext, new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
+            result.GetAllInstalled().Should().HaveCount(0);
+            result.LockFile.Libraries.Should().HaveCount(2);
+        }
+
+        // Project1(net5) -> Project2(net472) -> A (ATF)
+        // Project1(net5) -> Project2(net472) -> B (non-ATF)
+        [Fact]
+        public async Task Restore_WithProjectReference_WhenProjectIsSelectedWithATF_AllDependenciesAreIncluded_AndRaisesATFWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            packageB.AddFile("lib/net472/b.dll");
+            packageB.AddFile("lib/netstandard2.0/b.dll");
+            packageA.PerFrameworkDependencies.Add(NuGetFramework.Parse("net472"), new List<SimpleTestPackageContext>() { packageB });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var project2spec = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net472", dependencyName: "a");
+            project1spec = project1spec.WithTestProjectReference(project2spec);
+            CreateFakeProjectFile(project2spec);
+
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec }, pathContext, new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
+            result.GetAllInstalled().Should().HaveCount(2);
+            result.LockFile.Libraries.Should().HaveCount(3);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+        }
+
+        // Project1(net5) -> Project2(net472) -> Project3(net472) -> A (ATF)
+        // Project1(net5) -> Project2(net472) -> Project3(net472) -> B (non-ATF)
+        [Fact]
+        public async Task Restore_WithTransitiveProjectReference_WhenTransitiveProjectReferenceIsSelectedWithATF_AllDependenciesAreIncluded_AndRaisesATFWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            packageB.AddFile("lib/net472/b.dll");
+            packageB.AddFile("lib/netstandard2.0/b.dll");
+            packageA.PerFrameworkDependencies.Add(NuGetFramework.Parse("net472"), new List<SimpleTestPackageContext>() { packageB });
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
+            var project2spec = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net472");
+            var project3spec = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net472", dependencyName: "a");
+            project2spec = project2spec.WithTestProjectReference(project3spec);
+            project1spec = project1spec.WithTestProjectReference(project2spec);
+            CreateFakeProjectFile(project2spec);
+
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec, project3spec }, pathContext, new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count).Should().Be(0);
+            result.GetAllInstalled().Should().HaveCount(2);
+            result.LockFile.Libraries.Should().HaveCount(4);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+        }
+
+        private static void CreateFakeProjectFile(PackageSpec project2spec)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(project2spec.RestoreMetadata.ProjectUniqueName));
+            File.WriteAllText(project2spec.RestoreMetadata.ProjectUniqueName, "<Project/>");
+        }
+
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
