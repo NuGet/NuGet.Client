@@ -6,8 +6,7 @@
     <Description>NuGet's configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
     <TargetFramework />
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>

@@ -71,7 +71,7 @@
   </PropertyGroup>
 
   <!-- Projects we pack become public APIs that others can use -->
-  <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">
+  <PropertyGroup Condition=" '$(DotNetBuildFromSource)' != 'true' and '$(PackProject)' == 'true' ">
     <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >true</UsePublicApiAnalyzer>
   </PropertyGroup>
 

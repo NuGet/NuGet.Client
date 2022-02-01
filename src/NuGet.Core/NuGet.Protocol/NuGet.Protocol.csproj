@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksLibraryForSigning)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1573;CS0012</NoWarn>
     <PackageTags>nuget protocol</PackageTags>

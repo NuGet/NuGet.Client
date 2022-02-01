@@ -24,7 +24,7 @@
   <Target
     Name="PublishAndMergePackNupkg"
     AfterTargets="AfterBuild"
-    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(IsBuildOnlyXPLATProjects)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNPE" />
   </Target>
 
