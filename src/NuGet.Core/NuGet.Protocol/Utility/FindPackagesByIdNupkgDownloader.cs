@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -116,26 +117,41 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            return await ProcessNupkgStreamAsync(
-                identity,
-                url,
-                async stream =>
-                {
-                    try
+            if (!destination.CanSeek)
+            {
+                // In order to handle retries, we need to write to a temporary file, then copy to destination in one pass.
+                string tempFilePath = Path.GetTempFileName();
+                using Stream tempFile = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, bufferSize: 4096, FileOptions.DeleteOnClose);
+                bool result = await CopyNupkgToStreamAsync(identity, url, tempFile, cacheContext, logger, token);
+
+                tempFile.Position = 0;
+                await tempFile.CopyToAsync(destination, token);
+
+                return result;
+            }
+            else
+            {
+                return await ProcessNupkgStreamAsync(
+                    identity,
+                    url,
+                    async stream =>
                     {
-                        await stream.CopyToAsync(destination, token);
-                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
-                    }
-                    catch when (!token.IsCancellationRequested)
-                    {
-                        destination.Position = 0;
-                        destination.SetLength(0);
-                        throw;
-                    }
-                },
-                cacheContext,
-                logger,
-                token);
+                        try
+                        {
+                            await stream.CopyToAsync(destination, token);
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                        }
+                        catch when (!token.IsCancellationRequested)
+                        {
+                            destination.Position = 0;
+                            destination.SetLength(0);
+                            throw;
+                        }
+                    },
+                    cacheContext,
+                    logger,
+                    token);
+            }
         }
 
         /// <summary>
