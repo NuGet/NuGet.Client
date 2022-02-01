@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
             IsDeprecated = isDeprecated;
 
             // Display a single version if the range is locked
-            if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
+            if (range.OriginalString == null && range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
                 var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
 

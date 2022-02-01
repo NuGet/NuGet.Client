@@ -31,6 +31,11 @@ namespace NuGet.PackageManagement.UI
             _solutionManager.ProjectUpdated += ProjectChanged;
 
             VersionsView = new CollectionViewSource() { Source = Versions }.View;
+
+            if (IsProjectPackageReference)
+            {
+                VersionsView.Filter += VersionsFilter;
+            }
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -70,14 +75,21 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateInstalledVersion()
         {
-            var installed = InstalledPackageDependencies.Where(p =>
+            IOrderedEnumerable<PackageDependency> installed = InstalledPackageDependencies.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id)).OrderByDescending(p => p.VersionRange?.MinVersion, VersionComparer.Default);
 
-            var dependency = installed.FirstOrDefault(package => package.VersionRange != null && package.VersionRange.HasLowerBound);
+            PackageDependency dependency = installed.FirstOrDefault(package => package.VersionRange != null && package.VersionRange.HasLowerBound);
 
             if (dependency != null)
             {
-                InstalledVersion = dependency.VersionRange.MinVersion;
+                if (dependency.Id == _searchResultPackage.Id && _searchResultPackage.InstalledVersion != null)
+                {
+                    InstalledVersion = _searchResultPackage.InstalledVersion;
+                }
+                else
+                {
+                    InstalledVersion = dependency.VersionRange.MinVersion;
+                }
                 InstalledVersionRange = dependency.VersionRange;
             }
             else
@@ -111,7 +123,8 @@ namespace NuGet.PackageManagement.UI
                 return Task.CompletedTask;
             }
 
-            _versions = new ItemsChangeObservableCollection<DisplayVersion>();
+            Versions.Clear();
+
             var installedDependency = InstalledPackageDependencies.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id) && p.VersionRange != null && p.VersionRange.HasLowerBound)
                 .OrderByDescending(p => p.VersionRange.MinVersion)
@@ -169,15 +182,20 @@ namespace NuGet.PackageManagement.UI
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
                 !latestPrerelease.version.Equals(installedVersion))
             {
-                _versions.Add(new DisplayVersion(latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
+                VersionRange latestPrereleaseVersionRange = VersionRange.Parse(latestPrerelease.version.ToString(), allowFloating: false);
+                _versions.Add(new DisplayVersion(latestPrereleaseVersionRange, latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
             }
 
             // Add latest stable if needed
             if (latestStableVersion.version != null &&
                 !latestStableVersion.version.Equals(installedVersion))
             {
-                _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
+                VersionRange latestStableVersionRange = VersionRange.Parse(latestStableVersion.version.ToString(), allowFloating: false);
+                _versions.Add(new DisplayVersion(latestStableVersionRange, latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
+
+            // Only the current installed version is displayed, we update the separator so its not removed from the list when filtering.
+            IsBeforeNullSeparator = _versions.Count == 1;
 
             // add a separator
             if (_versions.Count > 1)
@@ -199,7 +217,8 @@ namespace NuGet.PackageManagement.UI
 
                 if (!installed)
                 {
-                    _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
+                    VersionRange versionRange = VersionRange.Parse(version.version.ToString(), allowFloating: false);
+                    _versions.Add(new DisplayVersion(versionRange, version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
                 }
             }
 
@@ -209,27 +228,7 @@ namespace NuGet.PackageManagement.UI
             // Add disabled versions
             AddBlockedVersions(blockedVersions);
 
-            // Update the view and add the filter
-            VersionsView = new CollectionViewSource() { Source = Versions }.View;
-
-            if (IsProjectPackageReference)
-            {
-                VersionsView.Filter += VersionsFilter;
-            }
-
-            SelectVersion();
-
-            OnPropertyChanged(nameof(Versions));
-            OnPropertyChanged(nameof(VersionsView)); // This can change the selected version if a version is added after SelectedVersion is set
-
-            // If the selected version changed, reset it to the correct one
-            if (_nugetProjects.Any() &&
-                IsProjectPackageReference &&
-                SelectedVersion != FirstDisplayedVersion)
-            {
-                SelectedVersion = FirstDisplayedVersion;
-                UserInput = SelectedVersion?.ToString();
-            }
+            SelectVersion(latestPrerelease.version ?? latestStableVersion.version);
 
             return Task.CompletedTask;
         }
@@ -240,9 +239,10 @@ namespace NuGet.PackageManagement.UI
         {
             var version = o as DisplayVersion;
             // If the text is empty or is the insalled version we should show all the versions like if there where no filtering
-            if (string.IsNullOrEmpty(UserInput) || UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(UserInput) ||
+                UserInput.Equals(FirstDisplayedVersion?.Range.OriginalString, StringComparison.OrdinalIgnoreCase) ||
+                UserInput.Equals(FirstDisplayedVersion?.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                if (IsBeforeNullSeparator) IsBeforeNullSeparator = false;
                 return true;
             }
 
@@ -288,7 +288,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersion = value;
                 OnPropertyChanged(nameof(InstalledVersion));
-                OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             }
         }
 
@@ -300,15 +299,13 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersionRange = value;
                 OnPropertyChanged(nameof(InstalledVersionRange));
-                OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             }
         }
 
         public override void OnSelectedVersionChanged()
         {
             base.OnSelectedVersionChanged();
-            OnPropertyChanged(nameof(IsSelectedVersionInstalled));
-            OnPropertyChanged(nameof(IsInstallButtonEnabled));
+            OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
         }
 
         public bool IsSelectedVersionInstalled
@@ -322,7 +319,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsInstallButtonEnabled
+        public bool IsInstallorUpdateButtonEnabled
         {
             get
             {
