@@ -607,7 +607,7 @@ namespace NuGet.CommandLine.XPlat
             using var sourceCacheContext = new SourceCacheContext();
             var packages = await packageMetadataResource.GetMetadataAsync(
                 package,
-                includePrerelease: true,
+                includePrerelease: listPackageArgs.Prerelease,
                 includeUnlisted: false,
                 sourceCacheContext: sourceCacheContext,
                 log: listPackageArgs.Logger,

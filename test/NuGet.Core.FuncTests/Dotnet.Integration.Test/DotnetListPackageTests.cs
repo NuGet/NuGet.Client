@@ -267,7 +267,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("1.0.0", "", "2.1.0")]
         [InlineData("1.0.0", "--include-prerelease", "2.2.0-beta")]
-        [InlineData("1.0.0-beta", "", "2.2.0-beta")]
+        [InlineData("1.0.0-beta", "", "2.1.0")]
         [InlineData("1.0.0", "--highest-patch", "1.0.9")]
         [InlineData("1.0.0", "--highest-minor", "1.9.0")]
         [InlineData("1.0.0", "--highest-patch --include-prerelease", "1.0.10-beta")]
