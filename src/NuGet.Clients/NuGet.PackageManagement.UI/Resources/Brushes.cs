@@ -3,7 +3,6 @@
 
 using System;
 using System.Windows;
-using System.Windows.Forms;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
@@ -275,7 +274,7 @@ namespace NuGet.PackageManagement.UI
             ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;
             ListItemTextSelectedColorKey = CommonDocumentColors.ListItemTextSelectedColorKey;
 
-            // ComboBox
+            // Brushes/Colors for ComboBox to match VS Common controls.
             ComboBoxListItemBackgroundHoverBrushKey = CommonControlsColors.ComboBoxListItemBackgroundHoverBrushKey;
             ComboBoxListItemTextBrushKey = CommonControlsColors.ComboBoxListItemTextBrushKey;
             ComboBoxListItemTextHoverBrushKey = CommonControlsColors.ComboBoxListItemTextHoverBrushKey;
