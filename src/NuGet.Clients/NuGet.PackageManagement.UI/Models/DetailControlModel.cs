@@ -25,6 +25,9 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public abstract class DetailControlModel : INotifyPropertyChanged, IDisposable
     {
+        private static readonly string StarAll = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*"), VersionRangeFormatter.Instance);
+        private static readonly string StarAllFloating = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*-*"), VersionRangeFormatter.Instance);
+
         private CancellationTokenSource _selectedVersionCancellationTokenSource = new CancellationTokenSource();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
@@ -523,12 +526,14 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            if (!VersionRange.All.Equals(alternatePackageMetadata.VersionRange))
+            // pretty print
+            string versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.VersionRange, VersionRangeFormatter.Instance);
+
+            if (StarAll.Equals(versionString, StringComparison.InvariantCultureIgnoreCase) || StarAllFloating.Equals(versionString, StringComparison.InvariantCultureIgnoreCase))
             {
                 return alternatePackageMetadata.PackageId;
             }
 
-            var versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.VersionRange, VersionRangeFormatter.Instance);
             return $"{alternatePackageMetadata.PackageId} {versionString}";
         }
 

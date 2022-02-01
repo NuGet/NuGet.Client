@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,7 +10,6 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.PackageManagement.UI.Utility;
-using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -175,32 +173,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.NotNull(model.SelectedVersion);
             Assert.NotNull(model.InstalledVersion);
             Assert.True(model.IsSelectedVersionInstalled);
-        }
-
-        [Theory]
-        [InlineData("*")]
-        [InlineData("*-*")]
-        [InlineData("0.0.0")]
-        [InlineData("[0.0.0,)")]
-        public void DeprecationAlternativePackage_WithAsterisk_ShowsNoVersionInfo(string versionRange)
-        {
-            var model = new PackageDetailControlModel(
-                Mock.Of<IServiceBroker>(),
-                Mock.Of<INuGetSolutionManagerService>(),
-                Enumerable.Empty<IProjectContextInfo>());
-
-            var metadata = new DetailedPackageMetadata()
-            {
-                DeprecationMetadata = new PackageDeprecationMetadataContextInfo(
-                    message: "package deprecated",
-                    reasons: new[] { "package deprecated", "legacy" },
-                    new AlternatePackageMetadataContextInfo("ANewPackage", VersionRange.Parse(versionRange))
-                    )
-            };
-            model.PackageMetadata = metadata;
-
-            Assert.NotNull(model.PackageDeprecationAlternatePackageText);
-            Assert.Equal("ANewPackage", model.PackageDeprecationAlternatePackageText);
         }
     }
 
