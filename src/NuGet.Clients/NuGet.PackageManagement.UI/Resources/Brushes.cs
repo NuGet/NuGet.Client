@@ -3,6 +3,7 @@
 
 using System;
 using System.Windows;
+using System.Windows.Forms;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
@@ -174,6 +175,14 @@ namespace NuGet.PackageManagement.UI
 
         public static object ListItemTextSelectedColorKey { get; private set; } = SystemColors.HighlightTextColorKey;
 
+        public static object ComboBoxListItemBackgroundHoverBrushKey { get; private set; } = SystemColors.HighlightBrushKey;
+
+        public static object ComboBoxListItemTextBrushKey { get; private set; } = SystemColors.ControlTextBrush;
+
+        public static object ComboBoxListItemTextHoverBrushKey { get; private set; } = SystemColors.ControlTextBrush;
+
+        public static object ComboBoxListItemBorderHoverBrushKey { get; private set; } = SystemColors.ActiveBorderBrushKey;
+
         public static void LoadVsBrushes(INuGetExperimentationService nuGetExperimentationService)
         {
             if (nuGetExperimentationService == null)
@@ -265,6 +274,12 @@ namespace NuGet.PackageManagement.UI
             // Mapping color keys directly for use to create brushes using these colors
             ListItemBackgroundSelectedColorKey = CommonDocumentColors.ListItemBackgroundSelectedColorKey;
             ListItemTextSelectedColorKey = CommonDocumentColors.ListItemTextSelectedColorKey;
+
+            // ComboBox
+            ComboBoxListItemBackgroundHoverBrushKey = CommonControlsColors.ComboBoxListItemBackgroundHoverBrushKey;
+            ComboBoxListItemTextBrushKey = CommonControlsColors.ComboBoxListItemTextBrushKey;
+            ComboBoxListItemTextHoverBrushKey = CommonControlsColors.ComboBoxListItemTextHoverBrushKey;
+            ComboBoxListItemBorderHoverBrushKey = CommonControlsColors.ComboBoxListItemBorderHoverBrushKey;
         }
 
         private static bool IsBackgroundColorFlightEnabled(INuGetExperimentationService nuGetExperimentationService) =>
