@@ -690,16 +690,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         var dte = await _asyncServiceProvider.GetDTEAsync();
 
-                        var supportedProjects = new List<Project>();
-                        foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
-                        {
-                            if (await EnvDTEProjectUtility.IsSupportedAsync(project))
-                            {
-                                supportedProjects.Add(project);
-                            }
-                        }
-
-                        foreach (var project in supportedProjects)
+                        foreach (var project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
                         {
                             try
                             {
