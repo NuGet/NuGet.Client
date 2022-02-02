@@ -310,7 +310,7 @@
         <Grid>
           <TextBlock
             Text="{x:Static nuget:Resources.Text_NuGetUpgradeNoIssuesFound}"
-            Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+            Visibility="{Binding HasIssues, Mode=OneTime, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"
             AutomationProperties.Name="{x:Static nuget:Resources.Text_NuGetUpgradeNoIssuesFound}"
             AutomationProperties.LabeledBy="{Binding ElementName=_packageCompatibilityIssuesLabel}"/>
           <ItemsControl
