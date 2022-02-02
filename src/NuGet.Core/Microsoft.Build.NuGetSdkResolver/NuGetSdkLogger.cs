@@ -15,7 +15,7 @@ namespace Microsoft.Build.NuGetSdkResolver
     /// An implementation of <see cref="ILogger" /> that logs messages to an <see cref="SdkLogger" />.
     /// </summary>
     /// <inheritdoc />
-    internal class NuGetSdkLogger : ILogger
+    internal sealed class NuGetSdkLogger : ILogger
     {
         /// <summary>
         /// A collection of errors that have been logged.

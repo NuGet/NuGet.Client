@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using Microsoft.Build.Framework;
+using Moq;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -85,7 +86,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         [Fact]
         public void TryGetNuGetVersionForSdk_WhenGlobalJsonExists_UsesVersionsFromGlobalJson()
         {
-            var expectedVersions = new Dictionary<string, string>
+            var allVersions = new Dictionary<string, string>
             {
                 [PackageA] = "5.11.77",
                 [PackageB] = "2.0.0"
@@ -93,13 +94,12 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
             using (var testDirectory = TestDirectory.Create())
             {
-                GlobalJsonReaderTests.WriteGlobalJson(testDirectory, expectedVersions);
-
                 var sdkResolverContext = new MockSdkResolverContext(testDirectory);
 
                 VerifyTryGetNuGetVersionForSdk(
+                    allVersions,
                     version: null,
-                    expectedVersion: NuGetVersion.Parse(expectedVersions[PackageA]),
+                    expectedVersion: NuGetVersion.Parse(allVersions[PackageA]),
                     sdkResolverContext);
             }
         }
@@ -110,15 +110,15 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         [Fact]
         public void TryGetNuGetVersionForSdk_WhenInvalidVersionInGlobalJson_ReturnsNull()
         {
-            var sdkResolverContext = new MockSdkResolverContext(ProjectName)
+            var allVersions = new Dictionary<string, string>
             {
-                State = new Dictionary<string, string>
-                {
-                    [PackageA] = "InvalidVersion"
-                }
+                [PackageA] = "InvalidVersion"
             };
 
+            var sdkResolverContext = new MockSdkResolverContext(ProjectName);
+
             VerifyTryGetNuGetVersionForSdk(
+                allVersions,
                 version: null,
                 expectedVersion: null,
                 sdkResolverContext);
@@ -133,6 +133,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             var sdkResolverContext = new MockSdkResolverContext(ProjectName);
 
             VerifyTryGetNuGetVersionForSdk(
+                allVersions: null,
                 version: "InvalidVersion",
                 expectedVersion: null,
                 sdkResolverContext);
@@ -147,6 +148,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             var sdkResolverContext = new MockSdkResolverContext(projectPath: null);
 
             VerifyTryGetNuGetVersionForSdk(
+                allVersions: null,
                 version: "1.0.0",
                 expectedVersion: NuGetVersion.Parse("1.0.0"),
                 sdkResolverContext);
@@ -161,6 +163,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             var sdkResolverContext = new MockSdkResolverContext(projectPath: null);
 
             VerifyTryGetNuGetVersionForSdk(
+                allVersions: null,
                 version: null,
                 expectedVersion: null,
                 sdkResolverContext);
@@ -178,34 +181,19 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             };
 
             VerifyTryGetNuGetVersionForSdk(
+                allVersions: null,
                 version: null,
                 expectedVersion: null,
                 sdkResolverContext);
         }
 
-        /// <summary>
-        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContextBase, out object)" /> uses the saved state from a previous call when passed in via the <see cref="SdkResolverContext" />.
-        /// </summary>
-        [Fact]
-        public void TryGetNuGetVersionForSdk_WhenStateIsNotNull_StateIsUsed()
+        private void VerifyTryGetNuGetVersionForSdk(Dictionary<string, string> allVersions, string version, NuGetVersion expectedVersion, SdkResolverContext context)
         {
-            var sdkResolverContext = new MockSdkResolverContext(ProjectName)
-            {
-                State = new Dictionary<string, string>
-                {
-                    [PackageA] = "1.2.3"
-                }
-            };
+            var globalJsonReader = new MockGlobalJsonReader(allVersions);
 
-            VerifyTryGetNuGetVersionForSdk(
-                version: null,
-                expectedVersion: NuGetVersion.Parse("1.2.3"),
-                sdkResolverContext);
-        }
+            var sdkResolver = new NuGetSdkResolver(globalJsonReader);
 
-        private void VerifyTryGetNuGetVersionForSdk(string version, NuGetVersion expectedVersion, SdkResolverContext context)
-        {
-            var result = NuGetSdkResolver.TryGetNuGetVersionForSdk(PackageA, version, context, out var parsedVersion);
+            var result = sdkResolver.TryGetNuGetVersionForSdk(PackageA, version, context, out var parsedVersion);
 
             if (expectedVersion != null)
             {
