@@ -1384,6 +1384,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} license.
+        /// </summary>
+        public static string LicenseTerm_LinkName {
+            get {
+                return ResourceManager.GetString("LicenseTerm_LinkName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don&apos;t show again.
         /// </summary>
         public static string Link_DoNotShowAgain {
