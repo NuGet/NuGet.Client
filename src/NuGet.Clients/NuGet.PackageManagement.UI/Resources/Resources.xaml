@@ -5,7 +5,8 @@
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
-  xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0">
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+  xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0">
   <nuget:StyleKeyConverter
     x:Key="StyleKeyConverter" />
 
@@ -29,14 +30,14 @@
   <nuget:BooleanToGridRowHeightConverter
     Inverted="True"
     x:Key="InvertedBooleanToGridRowHeightConverter"/>
-  <nuget:BooleanToVisibilityConverter
+  <BooleanToVisibilityConverter
     x:Key="BooleanToVisibilityConverter" />
-  <nuget:BooleanToVisibilityConverter
-    Inverted="True"
-    x:Key="InvertedBooleanToVisibilityConverter" />
-  <nuget:BooleanToVisibilityConverter
-    NonVisualState="Hidden"
-    x:Key="NonVisualStateHiddenBooleanToVisibilityConverter" />
+  <vsui:BooleanToCustomVisibilityConverter
+    x:Key="NegatedBooleanToVisibilityConverter"
+    VisibilityIfTrue="Collapsed"
+    VisibilityIfFalse="Visible" />
+  <vsui:BooleanToHiddenVisibilityConverter
+    x:Key="BooleanToHiddenVisibilityConverter" />
   <nuget:DownloadCountToVisibilityConverter
     x:Key="DownloadCountToVisibilityConverter" />
   <nuget:FontSizeConverter

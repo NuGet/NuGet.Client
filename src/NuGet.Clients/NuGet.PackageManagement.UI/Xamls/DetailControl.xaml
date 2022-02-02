@@ -134,7 +134,7 @@
         Grid.Row="1"
         Margin="0,8"
         x:Name="_projectView"
-        Visibility="{Binding Path=IsSolution, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" />
+        Visibility="{Binding Path=IsSolution, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" />
 
       <!-- solution view when in solution package manager -->
       <nuget:SolutionView
