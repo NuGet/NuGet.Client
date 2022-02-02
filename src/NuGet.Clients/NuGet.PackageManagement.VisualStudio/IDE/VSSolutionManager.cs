@@ -396,11 +396,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
             {
-                if (await EnvDTEProjectUtility.IsSupportedAsync(project))
-                {
-                    isSupported = true;
-                    break;
-                }
+                isSupported = true;
+                break;
             }
 
             return isSupported;
