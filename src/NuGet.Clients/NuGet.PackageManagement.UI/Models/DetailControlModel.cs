@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
@@ -28,6 +25,9 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public abstract class DetailControlModel : INotifyPropertyChanged, IDisposable
     {
+        private static readonly string StarAll = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*"), VersionRangeFormatter.Instance);
+        private static readonly string StarAllFloating = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*-*"), VersionRangeFormatter.Instance);
+
         private CancellationTokenSource _selectedVersionCancellationTokenSource = new CancellationTokenSource();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
@@ -526,7 +526,14 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.VersionRange, VersionRangeFormatter.Instance);
+            // pretty print
+            string versionString = VersionRangeFormatter.Instance.Format("p", alternatePackageMetadata.VersionRange, VersionRangeFormatter.Instance);
+
+            if (StarAll.Equals(versionString, StringComparison.InvariantCultureIgnoreCase) || StarAllFloating.Equals(versionString, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return alternatePackageMetadata.PackageId;
+            }
+
             return $"{alternatePackageMetadata.PackageId} {versionString}";
         }
 
