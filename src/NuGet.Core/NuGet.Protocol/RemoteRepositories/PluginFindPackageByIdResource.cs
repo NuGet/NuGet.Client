@@ -387,7 +387,6 @@ namespace NuGet.Protocol.Core.Types
                 (keyId) => new AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>(
                     () => FindPackagesByIdAsync(
                         keyId,
-                        cacheContext,
                         logger,
                         cancellationToken));
 
@@ -407,7 +406,6 @@ namespace NuGet.Protocol.Core.Types
 
         private async Task<SortedDictionary<NuGetVersion, PackageInfo>> FindPackagesByIdAsync(
             string id,
-            SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -453,6 +451,8 @@ namespace NuGet.Protocol.Core.Types
                     Strings.Log_FailedToRetrievePackage,
                     id,
                     uri);
+
+                logger.LogError(message);
 
                 throw new FatalProtocolException(message, ex);
             }

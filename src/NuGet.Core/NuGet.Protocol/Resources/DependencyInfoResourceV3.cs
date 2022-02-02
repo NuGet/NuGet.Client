@@ -165,6 +165,8 @@ namespace NuGet.Protocol
             RegistrationInfo registration,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             foreach (var pkgInfo in registration.Packages)
             {
                 var dependencies = pkgInfo.Dependencies.Select(dep => new PackageDependency(dep.Id, dep.Range));

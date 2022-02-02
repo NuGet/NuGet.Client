@@ -467,7 +467,7 @@ namespace NuGet.Protocol.Plugins
         {
             var message = CreateMessage(type, method, payload);
             var timeout = GetRequestTimeout(connection, type, method);
-            var isKeepAlive = GetIsKeepAlive(connection, type, method);
+            var isKeepAlive = GetIsKeepAlive(type, method);
             var requestContext = CreateOutboundRequestContext<TIncoming>(
                 message,
                 timeout,
@@ -568,15 +568,15 @@ namespace NuGet.Protocol.Plugins
             switch (e.Message.Type)
             {
                 case MessageType.Cancel:
-                    HandleInboundCancel(connection, e.Message);
+                    HandleInboundCancel(e.Message);
                     break;
 
                 case MessageType.Request:
-                    HandleInboundRequest(connection, e.Message);
+                    HandleInboundRequest(e.Message);
                     break;
 
                 case MessageType.Fault:
-                    HandleInboundFault(connection, e.Message);
+                    HandleInboundFault(e.Message);
                     break;
 
                 default:
@@ -588,7 +588,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        private void HandleInboundCancel(IConnection connection, Message message)
+        private void HandleInboundCancel(Message message)
         {
             InboundRequestContext requestContext;
 
@@ -598,7 +598,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        private void HandleInboundFault(IConnection connection, Message fault)
+        private void HandleInboundFault(Message fault)
         {
             if (fault == null)
             {
@@ -610,7 +610,7 @@ namespace NuGet.Protocol.Plugins
             throw new ProtocolException(payload.Message);
         }
 
-        private void HandleInboundRequest(IConnection connection, Message message)
+        private void HandleInboundRequest(Message message)
         {
             var cancellationToken = CancellationToken.None;
             IRequestHandler requestHandler = null;
@@ -713,7 +713,7 @@ namespace NuGet.Protocol.Plugins
                 _logger);
         }
 
-        private static bool GetIsKeepAlive(IConnection connection, MessageType type, MessageMethod method)
+        private static bool GetIsKeepAlive(MessageType type, MessageMethod method)
         {
             if (type == MessageType.Request && method == MessageMethod.Handshake)
             {
