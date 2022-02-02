@@ -36,7 +36,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <summary>
         /// Occurs when a file is read.
         /// </summary>
-        public event EventHandler FileRead;
+        public event EventHandler<string> FileRead;
 
         /// <inheritdoc cref="IGlobalJsonReader.GetMSBuildSdkVersions(SdkResolverContext, string)" />
         public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, string fileName = GlobalJsonFileName)
@@ -181,9 +181,9 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="filePath">The full path to file that was read.</param>
         private void OnFileRead(string filePath)
         {
-            EventHandler fileReadEventHandler = FileRead;
+            EventHandler<string> fileReadEventHandler = FileRead;
 
-            fileReadEventHandler?.Invoke(filePath, EventArgs.Empty);
+            fileReadEventHandler?.Invoke(this, filePath);
         }
 
         /// <summary>
