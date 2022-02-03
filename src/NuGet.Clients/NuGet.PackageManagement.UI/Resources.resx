@@ -1031,4 +1031,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>{0:G3}T</value>
     <comment>American trillions in short format notation</comment>
   </data>
+  <data name="LicenseTerm_LinkName" xml:space="preserve">
+    <value>{0} license</value>
+    <comment>{0} = license name. Examples: MIT, Apache</comment>
+  </data>
 </root>

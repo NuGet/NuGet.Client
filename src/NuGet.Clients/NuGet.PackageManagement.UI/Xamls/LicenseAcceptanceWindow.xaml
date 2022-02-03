@@ -34,6 +34,7 @@
             >
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
+                    AutomationProperties.Name="{Binding Text, Mode=OneWay, StringFormat={x:Static nuget:Resources.LicenseTerm_LinkName}}"
                     Style="{StaticResource HyperlinkStyle}"
                     ToolTip="{Binding Link}"
                     RequestNavigate="OnViewLicenseTermsRequestNavigate"
