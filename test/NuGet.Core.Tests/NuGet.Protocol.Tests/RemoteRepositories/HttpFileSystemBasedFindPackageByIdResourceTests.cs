@@ -575,9 +575,9 @@ namespace NuGet.Protocol.Tests
             TestEnvironmentVariableReader testEnvironmentVariableReader = new TestEnvironmentVariableReader(
             new Dictionary<string, string>()
             {
-                            { "NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY" , "true"},
-                            { "NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT" , $"{testTryCount}"},
-                            { "NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS" , "0"}
+                [EnhancedHttpRetryHelper.IsEnabledEnvironmentVariableName] = bool.TrueString,
+                [EnhancedHttpRetryHelper.RetryCountEnvironmentVariableName] = testTryCount.ToString(),
+                [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = "0"
             });
             using (var test = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync(testEnvironmentVariableReader))
             {
