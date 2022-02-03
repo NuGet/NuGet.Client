@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio.Common;
@@ -18,11 +19,6 @@ namespace NuGet.VisualStudio
     public static class VsHierarchyUtility
     {
         private const string VsWindowKindSolutionExplorer = "3AE79031-E1BC-11D0-8F78-00A0C9110057";
-
-        private static readonly string[] UnsupportedProjectCapabilities = new string[]
-        {
-            "SharedAssetsProject", // This is true for shared projects in universal apps
-        };
 
         public static string GetProjectPath(IVsHierarchy project)
         {
@@ -59,7 +55,10 @@ namespace NuGet.VisualStudio
 
         public static bool HasUnsupportedProjectCapability(IVsHierarchy hierarchy)
         {
-            return UnsupportedProjectCapabilities.Any(c => hierarchy.IsCapabilityMatch(c));
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // This is true for shared projects in universal apps
+            return hierarchy.IsCapabilityMatch(ProjectCapabilities.SharedAssetsProject);
         }
 
         public static string[] GetProjectTypeGuids(IVsHierarchy hierarchy, string defaultType = "")
