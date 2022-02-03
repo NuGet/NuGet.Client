@@ -32,9 +32,11 @@ namespace NuGet.VisualStudio
             return projectPath;
         }
 
-        public static async Task<bool> IsSupportedAsync(IVsHierarchy hierarchy, string projectTypeGuid)
+        public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
         {
-            if (await IsProjectCapabilityCompliantAsync(hierarchy))
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (IsProjectCapabilityCompliant(hierarchy))
             {
                 return true;
             }
@@ -46,9 +48,9 @@ namespace NuGet.VisualStudio
         /// <param name="hierarchy">IVsHierarchy representing the project in the solution.</param>
         /// <returns>True if NuGet should enable this project, false if NuGet should ignore the project.</returns>
         /// <remarks>The project may be packages.config or PackageReference. This method does not tell you which.</remarks>
-        public static async Task<bool> IsProjectCapabilityCompliantAsync(IVsHierarchy hierarchy)
+        public static bool IsProjectCapabilityCompliant(IVsHierarchy hierarchy)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             // NOTE: (AssemblyReferences + DeclaredSourceItems + UserSourceItems) exists solely for compatibility reasons
             // with existing custom CPS-based projects that existed before "PackageReferences" capability was introduced.

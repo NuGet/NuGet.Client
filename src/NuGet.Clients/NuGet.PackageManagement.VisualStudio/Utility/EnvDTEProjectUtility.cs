@@ -405,8 +405,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private static async Task<bool> IsProjectCapabilityCompliantAsync(EnvDTE.Project envDTEProject)
         {
             Debug.Assert(envDTEProject != null);
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var hierarchy = await envDTEProject.ToVsHierarchyAsync();
-            return await VsHierarchyUtility.IsProjectCapabilityCompliantAsync(hierarchy);
+            return VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy);
         }
 
         public async static Task<NuGetProject> GetNuGetProjectAsync(EnvDTE.Project project, ISolutionManager solutionManager)
