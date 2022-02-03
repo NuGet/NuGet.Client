@@ -45,9 +45,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Get Project Information
 
-        internal static async Task<bool> IsSolutionFolderAsync(EnvDTE.Project envDTEProject)
+        internal static bool IsSolutionFolder(EnvDTE.Project envDTEProject)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(VsProjectTypes.VsProjectItemKindSolutionFolder, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -442,7 +443,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!await IsSolutionFolderAsync(envDTEProject))
+            if (!IsSolutionFolder(envDTEProject))
             {
                 return Array.Empty<EnvDTE.Project>();
             }
@@ -464,7 +465,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         supportedChildProjects.Add(nestedProject);
                     }
-                    else if (await IsSolutionFolderAsync(nestedProject))
+                    else if (IsSolutionFolder(nestedProject))
                     {
                         containerProjects.Enqueue(nestedProject);
                     }
