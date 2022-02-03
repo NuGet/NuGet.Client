@@ -24,10 +24,9 @@ steps:
     inlineScript: |
       try {
         $FullBuildNumber = "$(SemanticVersion).$(BuildRevision)"
-        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
-        $targetChannel = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetChannel
+        $targetChannel = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetChannel
         $targetChannel = $targetChannel.Trim()
-        $targetMajorVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetMajorVersion
+        $targetMajorVersion = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetMajorVersion
         $targetMajorVersion = $targetMajorVersion.Trim()
         Write-Host "##vso[task.setvariable variable=VsTargetChannel;isOutput=true]$targetChannel"
         Write-Host "##vso[task.setvariable variable=VsTargetMajorVersion;isOutput=true]$targetMajorVersion"
