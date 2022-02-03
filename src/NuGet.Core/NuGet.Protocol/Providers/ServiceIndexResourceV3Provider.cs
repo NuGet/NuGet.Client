@@ -126,7 +126,7 @@ namespace NuGet.Protocol
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            int maxRetries = _enhancedHttpRetryHelper.EnhancedHttpRetryEnabled ? _enhancedHttpRetryHelper.ExperimentalMaxNetworkTryCount : 3;
+            int maxRetries = _enhancedHttpRetryHelper.IsEnabled ? _enhancedHttpRetryHelper.RetryCount : 3;
 
             for (var retry = 1; retry <= maxRetries; retry++)
             {
@@ -169,7 +169,7 @@ namespace NuGet.Protocol
                             + ExceptionUtilities.DisplayMessage(ex);
                         log.LogMinimal(message);
 
-                        if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled &&
+                        if (_enhancedHttpRetryHelper.IsEnabled &&
                             ex.InnerException != null &&
                             ex.InnerException is IOException &&
                             ex.InnerException.InnerException != null &&
@@ -179,7 +179,7 @@ namespace NuGet.Protocol
                             // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
                             // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
                             log.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
-                            await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.ExperimentalRetryDelayMilliseconds));
+                            await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.DelayInMilliseconds), token);
                         }
                     }
                     catch (Exception ex) when (retry == maxRetries)

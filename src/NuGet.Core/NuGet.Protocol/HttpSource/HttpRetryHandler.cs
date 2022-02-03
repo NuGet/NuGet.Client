@@ -65,9 +65,9 @@ namespace NuGet.Protocol
             }
 
             // If specified via environment, override the default retry delay with the values provided
-            if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled)
+            if (_enhancedHttpRetryHelper.IsEnabled)
             {
-                request.RetryDelay = TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.ExperimentalRetryDelayMilliseconds);
+                request.RetryDelay = TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.DelayInMilliseconds);
             }
 
             var tries = 0;
@@ -80,17 +80,17 @@ namespace NuGet.Protocol
                 // so the Delay() never actually occurs.
                 // When opted in to "enhanced retry", do the delay and have it increase exponentially where applicable
                 // (i.e. when "tries" is allowed to be > 1)
-                if (tries > 0 || (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled && request.IsRetry))
+                if (tries > 0 || (_enhancedHttpRetryHelper.IsEnabled && request.IsRetry))
                 {
                     // "Enhanced" retry: In the case where this is actually a 2nd-Nth try, back off exponentially with some random.
                     // In many cases due to the external retry loop, this will be always be 1 * request.RetryDelay.TotalMilliseconds + 0-200 ms
-                    if (_enhancedHttpRetryHelper.EnhancedHttpRetryEnabled)
+                    if (_enhancedHttpRetryHelper.IsEnabled)
                     {
                         if (tries >= 3 || (tries == 0 && request.IsRetry))
                         {
                             log.LogVerbose("Enhanced retry: HttpRetryHandler is in a state that retry would have been abandoned or not waited if it were not enabled.");
                         }
-                        await Task.Delay(TimeSpan.FromMilliseconds((Math.Pow(2, tries) * request.RetryDelay.TotalMilliseconds) + new Random().Next(200)));
+                        await Task.Delay(TimeSpan.FromMilliseconds((Math.Pow(2, tries) * request.RetryDelay.TotalMilliseconds) + new Random().Next(200)), cancellationToken);
                     }
                     // Old behavior; always delay a constant amount
                     else

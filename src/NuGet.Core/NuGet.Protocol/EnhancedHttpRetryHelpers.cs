@@ -2,103 +2,118 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Common;
 
 namespace NuGet.Protocol
 {
+    /// <summary>
+    /// Represents a helper class for determining if enhanced retry is enabled and what settings to use.
+    /// </summary>
     internal class EnhancedHttpRetryHelper
     {
-        private readonly IEnvironmentVariableReader _environmentVariableReader;
-        internal const string ExperimentalRetryEnabledEnvVarName = "NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY";
-        internal const string ExperimentalRetryTryCountEnvVarName = "NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT";
-        internal const string ExperimentalRetryDelayMsEnvVarName = "NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS";
+        /// <summary>
+        /// The default delay in milliseconds between retries.
+        /// </summary>
+        public const int DefaultDelayMilliseconds = 1000;
 
+        /// <summary>
+        /// The default value indicating whether or not enhanced HTTP retry is enabled.
+        /// </summary>
+        public const bool DefaultEnabled = false;
+
+        /// <summary>
+        /// The default number of times to retry.
+        /// </summary>
+        public const int DefaultRetryCount = 6;
+
+        /// <summary>
+        /// The environment variable used to change the delay value.
+        /// </summary>
+        public const string DelayInMillisecondsEnvironmentVariableName = "NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS";
+
+        /// <summary>
+        /// The environment variable used to enable or disable the enhanced HTTP retry.
+        /// </summary>
+        public const string IsEnabledEnvironmentVariableName = "NUGET_ENABLE_ENHANCED_HTTP_RETRY";
+
+        /// <summary>
+        /// The environment variable used to change the retry value.
+        /// </summary>
+        public const string RetryCountEnvironmentVariableName = "NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT";
+
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
+
+        private bool? _isEnabled = null;
+
+        private int? _retryCount = null;
+
+        private int? _delayInMilliseconds = null;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnhancedHttpRetryHelper" /> class.
+        /// </summary>
+        /// <param name="environmentVariableReader">A <see cref="IEnvironmentVariableReader" /> to use when reading environment variables.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="environmentVariableReader" /> is <c>null</c>.</exception>
         public EnhancedHttpRetryHelper(IEnvironmentVariableReader environmentVariableReader)
         {
             _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
         }
 
-        private bool? _enhancedHttpRetryIsEnabled = null;
-        internal bool EnhancedHttpRetryEnabled
+        /// <summary>
+        /// Gets a value indicating whether or not enhanced HTTP retry should be enabled.  The default value is <c>true</c>.
+        /// </summary>
+        internal bool IsEnabled => _isEnabled ??= GetBoolFromEnvironmentVariable(IsEnabledEnvironmentVariableName, defaultValue: DefaultEnabled, _environmentVariableReader);
+
+        /// <summary>
+        /// Gets a value indicating the maximum number of times to retry.  The default value is 6.
+        /// </summary>
+        internal int RetryCount => _retryCount ??= GetIntFromEnvironmentVariable(RetryCountEnvironmentVariableName, defaultValue: DefaultRetryCount, _environmentVariableReader);
+
+        /// <summary>
+        /// Gets a value indicating the delay in milliseconds to wait before retrying a connection.  The default value is 1000.
+        /// </summary>
+        internal int DelayInMilliseconds => _delayInMilliseconds ??= GetIntFromEnvironmentVariable(DelayInMillisecondsEnvironmentVariableName, defaultValue: DefaultDelayMilliseconds, _environmentVariableReader);
+
+        /// <summary>
+        /// Gets a <see cref="bool" /> value from the specified environment variable.
+        /// </summary>
+        /// <param name="variableName">The name of the environment variable to get the value.</param>
+        /// <param name="defaultValue">The default value to return if the environment variable is not defined or is not a valid <see cref="bool" />.</param>
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> to use when reading the environment variable.</param>
+        /// <returns>The value of the specified as a <see cref="bool" /> if the specified environment variable is defined and is a valid value for <see cref="bool" />.</returns>
+        private static bool GetBoolFromEnvironmentVariable(string variableName, bool defaultValue, IEnvironmentVariableReader environmentVariableReader)
         {
-            get
+            try
             {
-                if (_enhancedHttpRetryIsEnabled == null)
+                if (bool.TryParse(environmentVariableReader.GetEnvironmentVariable(variableName), out bool parsedValue))
                 {
-                    _enhancedHttpRetryIsEnabled = GetBooleanFromEnvironmentVariable(ExperimentalRetryEnabledEnvVarName, false, _environmentVariableReader);
+                    return parsedValue;
                 }
-                return (bool)_enhancedHttpRetryIsEnabled;
             }
+            catch (Exception) { }
+
+            return defaultValue;
         }
 
-        private int? _experimentalMaxNetworkTryCountValue = null;
-        internal int ExperimentalMaxNetworkTryCount
-        {
-            get
-            {
-                if (_experimentalMaxNetworkTryCountValue == null)
-                {
-                    try
-                    {
-                        _experimentalMaxNetworkTryCountValue = GetIntFromEnvironmentVariable(ExperimentalRetryTryCountEnvVarName, 6, _environmentVariableReader);
-                    }
-                    catch (Exception) { }
-                }
-                return (int)_experimentalMaxNetworkTryCountValue;
-            }
-        }
-
-        private int? _experimentalRetryDelayMillisecondsValue = null;
-        internal int ExperimentalRetryDelayMilliseconds
-        {
-            get
-            {
-                if (_experimentalRetryDelayMillisecondsValue == null)
-                {
-                    _experimentalRetryDelayMillisecondsValue = GetIntFromEnvironmentVariable(ExperimentalRetryDelayMsEnvVarName, 1000, _environmentVariableReader);
-                }
-                return (int)_experimentalRetryDelayMillisecondsValue;
-            }
-        }
-
+        /// <summary>
+        /// Gets an <see cref="int" /> value from the specified environment variable.
+        /// </summary>
+        /// <param name="variableName">The name of the environment variable to get the value.</param>
+        /// <param name="defaultValue">The default value to return if the environment variable is not defined or is not a valid <see cref="int" />.</param>
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> to use when reading the environment variable.</param>
+        /// <returns>The value of the specified as a <see cref="int" /> if the specified environment variable is defined and is a valid value for <see cref="int" />.</returns>
         private static int GetIntFromEnvironmentVariable(string variableName, int defaultValue, IEnvironmentVariableReader environmentVariableReader)
         {
-            int retrievedValue = defaultValue;
             try
             {
-                var variableValue = environmentVariableReader.GetEnvironmentVariable(variableName);
-                if (!string.IsNullOrEmpty(variableValue))
+                if (int.TryParse(environmentVariableReader.GetEnvironmentVariable(variableName), out int parsedValue))
                 {
-                    if (int.TryParse(variableValue, out int parsed))
-                    {
-                        retrievedValue = parsed;
-                    }
+                    return parsedValue;
                 }
             }
             catch (Exception) { }
-            return retrievedValue;
-        }
 
-        private static bool GetBooleanFromEnvironmentVariable(string variableName, bool defaultValue, IEnvironmentVariableReader environmentVariableReader)
-        {
-            bool retrievedValue = defaultValue;
-            try
-            {
-                var variableValue = environmentVariableReader.GetEnvironmentVariable(variableName);
-                if (!string.IsNullOrEmpty(variableValue))
-                {
-                    if (bool.TryParse(variableValue, out bool parsed))
-                    {
-                        retrievedValue = parsed;
-                    }
-                }
-            }
-            catch (Exception) { }
-            return retrievedValue;
+            return defaultValue;
         }
     }
 }
