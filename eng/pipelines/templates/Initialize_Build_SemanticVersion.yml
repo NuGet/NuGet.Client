@@ -12,11 +12,11 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       try {
-        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
-        $version = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
+        $version = & dotnet msbuild $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
+        if ($LASTEXITCODE -ne 0) { throw $version }
         $version = $version.Trim()
         Write-Host "##vso[task.setvariable variable=SemanticVersion;isOutput=true]$version"
-        } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set product version"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set product version: $_"
         exit 1
       }
