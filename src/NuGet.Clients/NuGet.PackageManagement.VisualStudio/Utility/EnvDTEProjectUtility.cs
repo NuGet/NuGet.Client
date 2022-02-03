@@ -75,7 +75,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsProject = (IVsProject)(await envDTEProject.ToVsHierarchyAsync());
+            var hierarchy = await envDTEProject.ToVsHierarchyAsync();
+            var vsProject = hierarchy as IVsProject;
             if (vsProject == null)
             {
                 return false;
@@ -84,7 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
             int pFound;
             uint itemId;
 
-            if (await IsProjectCapabilityCompliantAsync(envDTEProject))
+            if (await VsHierarchyUtility.IsProjectCapabilityCompliantAsync(hierarchy))
             {
                 // REVIEW: We want to revisit this after RTM - the code in this if statement should be applied to every project type.
                 // We're checking for VSDOCUMENTPRIORITY.DP_Standard here to see if the file is included in the project.
