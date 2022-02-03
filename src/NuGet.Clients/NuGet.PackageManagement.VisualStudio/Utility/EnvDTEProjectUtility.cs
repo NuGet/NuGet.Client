@@ -83,7 +83,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             int pFound;
-            uint itemId;
 
             if (await VsHierarchyUtility.IsProjectCapabilityCompliantAsync(hierarchy))
             {
@@ -91,11 +90,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 // We're checking for VSDOCUMENTPRIORITY.DP_Standard here to see if the file is included in the project.
                 // Original check (outside of if) did not have this.
                 var priority = new VSDOCUMENTPRIORITY[1];
-                var hr = vsProject.IsDocumentInProject(path, out pFound, priority, out itemId);
+                var hr = vsProject.IsDocumentInProject(path, out pFound, priority, out _);
                 return ErrorHandler.Succeeded(hr) && pFound == 1 && priority[0] >= VSDOCUMENTPRIORITY.DP_Standard;
             }
 
-            var hres = vsProject.IsDocumentInProject(path, out pFound, Array.Empty<VSDOCUMENTPRIORITY>(), out itemId);
+            var hres = vsProject.IsDocumentInProject(path, out pFound, Array.Empty<VSDOCUMENTPRIORITY>(), out _);
             return ErrorHandler.Succeeded(hres) && pFound == 1;
         }
 
