@@ -223,7 +223,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             DTE dte = await _asyncServiceprovider.GetDTEAsync();
-            IEnumerable<Project> supportedProjects = await GetProjectsInSolutionAsync(dte);
+            IEnumerable<Project> supportedProjects = await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte);
 
             foreach (Project solutionProject in supportedProjects)
             {
@@ -367,21 +367,6 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 pathContext.FallbackPackageFolders.Cast<string>(),
                 trie,
                 _telemetryProvider);
-        }
-
-        private async Task<IEnumerable<Project>> GetProjectsInSolutionAsync(DTE dte)
-        {
-            IEnumerable<Project> allProjects = await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte);
-            var supportedProjects = new List<Project>();
-            foreach (Project project in allProjects)
-            {
-                if (await EnvDTEProjectUtility.IsSupportedAsync(project))
-                {
-                    supportedProjects.Add(project);
-                }
-            }
-
-            return supportedProjects;
         }
 
         public bool TryCreateNoSolutionContext(out IVsPathContext vsPathContext)
