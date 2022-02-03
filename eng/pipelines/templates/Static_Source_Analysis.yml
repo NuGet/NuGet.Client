@@ -64,19 +64,10 @@ steps:
   condition: succeededOrFailed()
 
 - task: PowerShell@1
-  displayName: "Restore dotnet tools"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      dotnet tool restore
-  continueOnError: ${{ parameters.isOfficialBuild }}
-  condition: succeededOrFailed()
-
-- task: PowerShell@1
   displayName: "Check source file format"
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
-      dotnet format --check --exclude submodules --verbosity diagnostic
+      dotnet format whitespace NuGet.sln --verify-no-changes --exclude submodules --verbosity diagnostic
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
