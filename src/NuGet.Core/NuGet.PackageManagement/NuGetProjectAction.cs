@@ -6,7 +6,6 @@ using System.Diagnostics;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 
 namespace NuGet.PackageManagement
 {
@@ -37,8 +36,6 @@ namespace NuGet.PackageManagement
         /// </summary>
         public PackageIdentity PackageIdentity { get; private set; }
 
-        public VersionRange VersionRange { get; private set; }
-
         /// <summary>
         /// Type of NuGetProjectAction. Install/Uninstall
         /// </summary>
@@ -56,11 +53,6 @@ namespace NuGet.PackageManagement
         public NuGetProject Project { get; private set; }
 
         protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository = null)
-            : this(packageIdentity, nuGetProjectActionType, project, sourceRepository, versionRange: null)
-        {
-        }
-
-        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository, VersionRange versionRange)
         {
             if (packageIdentity == null)
             {
@@ -71,17 +63,11 @@ namespace NuGet.PackageManagement
             NuGetProjectActionType = nuGetProjectActionType;
             SourceRepository = sourceRepository;
             Project = project;
-            VersionRange = versionRange;
         }
 
         public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project)
         {
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository);
-        }
-
-        public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project, VersionRange versionRange)
-        {
-            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository, versionRange);
         }
 
         public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity, NuGetProject project)

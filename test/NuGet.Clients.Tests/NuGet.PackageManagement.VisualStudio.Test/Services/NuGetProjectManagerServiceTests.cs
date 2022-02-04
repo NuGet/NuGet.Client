@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectIds,
                         packageIdentity,
                         VersionConstraints.None,
-                        includePrerelease: true,
+                        includePrelease: true,
                         DependencyBehavior.Lowest,
                         packageSourceNames,
                         CancellationToken.None).AsTask());
@@ -192,7 +192,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectIds,
                         packageV1.Identity,
                         VersionConstraints.None,
-                        includePrerelease: true,
+                        includePrelease: true,
                         DependencyBehavior.Lowest,
                         packageSourceNames,
                         CancellationToken.None);
@@ -224,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectIds,
                         packageV2.Identity,
                         VersionConstraints.None,
-                        includePrerelease: true,
+                        includePrelease: true,
                         DependencyBehavior.Lowest,
                         packageSourceNames,
                         CancellationToken.None);
@@ -292,7 +292,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectIds,
                         packageV1.Identity,
                         VersionConstraints.None,
-                        includePrerelease: true,
+                        includePrelease: true,
                         DependencyBehavior.Lowest,
                         packageSourceNames,
                         CancellationToken.None);
@@ -317,7 +317,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectIds,
                         packageV2.Identity,
                         VersionConstraints.None,
-                        includePrerelease: true,
+                        includePrelease: true,
                         DependencyBehavior.Lowest,
                         packageSourceNames,
                         CancellationToken.None);
@@ -474,7 +474,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectIds,
                         packageV1.Identity,
                         VersionConstraints.None,
-                        includePrerelease: true,
+                        includePrelease: true,
                         DependencyBehavior.Lowest,
                         packageSourceNames,
                         CancellationToken.None);

@@ -112,8 +112,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version,
-                    model.SelectedVersion.Range);
+                    model.SelectedVersion.Version);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -138,8 +137,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
-                    model.SelectedVersion.Version,
-                    model.SelectedVersion.Range);
+                    model.SelectedVersion.Version);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
