@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio.Utility;
 
@@ -11,7 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public class ProjectTuple : IEquatable<ProjectTuple>
     {
         public NuGetFramework TargetFramework { get; set; }
-        public Dictionary<string, ProjectInstalledPackage> Packages { get; set; }
+        public Dictionary<string, ProjectInstalledPackage> Packages { get; internal set; }
 
         public bool Equals(ProjectTuple other)
         {
@@ -20,7 +21,30 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
 
-            return TargetFramework.Equals(other.TargetFramework) && Packages.Equals(other.Packages);
+            bool equalsFramework;
+            if (TargetFramework != null)
+            {
+                equalsFramework = TargetFramework.Equals(other.TargetFramework);
+            }
+            else
+            {
+                equalsFramework = other.TargetFramework == null;
+            }
+
+            bool equalsDict = false;
+            if (Packages != null)
+            {
+                if (other.Packages != null)
+                {
+                    equalsDict = Packages.Count == other.Packages.Count && !Packages.Except(other.Packages).Any();
+                }
+            }
+            else
+            {
+                equalsDict = other.Packages == null;
+            }
+
+            return equalsFramework && equalsDict;
         }
 
         public override bool Equals(object obj)

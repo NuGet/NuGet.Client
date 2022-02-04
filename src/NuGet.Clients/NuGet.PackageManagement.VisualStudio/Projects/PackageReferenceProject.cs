@@ -150,13 +150,13 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectPackages(installedPackages, transitivePackagesWithOrigins);
         }
 
-        private protected abstract IEnumerable<PackageReference> GetPRs(
+        protected abstract IEnumerable<PackageReference> GetPRs(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             T installedPackages,
             IList<LockFileTarget> targets);
 
-        private protected abstract IReadOnlyList<PackageReference> GetTransPRs(
+        protected abstract IReadOnlyList<PackageReference> GetTransPRs(
             NuGetFramework targetFramework,
             T installedPackages,
             T transitivePackages,
@@ -424,7 +424,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="ct">Cancellation token</param>
         /// <returns>A <see cref="PackageSpec"/> filled from assets file on disk</returns>
         /// <remarks>Each project implementation is responsible of gathering <see cref="PackageSpec"/> info</remarks>
-        internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
+        protected abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
 
         /// <summary>
         /// Clears Cached Transitive package prigins, Installed packages and Transitive packages

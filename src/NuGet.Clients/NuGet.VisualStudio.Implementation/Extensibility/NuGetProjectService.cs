@@ -157,16 +157,22 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             IReadOnlyCollection<PackageReference> directPackages;
             IReadOnlyCollection<PackageReference> transitivePackages;
-            if (project is PackageReferenceProject packageReferenceProject)
+            switch (project)
             {
-                var installed = await packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken);
-                directPackages = installed.InstalledPackages;
-                transitivePackages = installed.TransitivePackages;
-            }
-            else
-            {
-                directPackages = (await project.GetInstalledPackagesAsync(cancellationToken)).ToList();
-                transitivePackages = Array.Empty<PackageReference>();
+                case CpsPackageReferenceProject cps:
+                    var installedCps = await cps.GetInstalledAndTransitivePackagesAsync(cancellationToken);
+                    directPackages = installedCps.InstalledPackages;
+                    transitivePackages = installedCps.TransitivePackages;
+                    break;
+                case LegacyPackageReferenceProject legacy:
+                    var installedLegacy = await legacy.GetInstalledAndTransitivePackagesAsync(cancellationToken);
+                    directPackages = installedLegacy.InstalledPackages;
+                    transitivePackages = installedLegacy.TransitivePackages;
+                    break;
+                default:
+                    directPackages = (await project.GetInstalledPackagesAsync(cancellationToken)).ToList();
+                    transitivePackages = Array.Empty<PackageReference>();
+                    break;
             }
 
             installedPackages = new List<NuGetInstalledPackage>(directPackages.Count + (transitivePackages?.Count ?? 0));

@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        internal override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+        protected override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -205,13 +205,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        private protected override IEnumerable<PackageReference> GetPRs(
+        protected override IEnumerable<PackageReference> GetPRs(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             List<ProjectTuple> installedPackages,
             IList<LockFileTarget> targets)
         {
             ProjectTuple targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+
+            if (targetFrameworkPackages == null)
+            {
+                targetFrameworkPackages = new ProjectTuple();
+            }
 
             if (targetFrameworkPackages.Packages == null)
             {
@@ -223,14 +228,23 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        private protected override IReadOnlyList<PackageReference> GetTransPRs(
+        protected override IReadOnlyList<PackageReference> GetTransPRs(
             NuGetFramework targetFramework,
             List<ProjectTuple> installedPackages,
             List<ProjectTuple> transitivePackages,
             IList<LockFileTarget> targets)
         {
             ProjectTuple targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            if (targetFrameworkInstalledPackages == null)
+            {
+                targetFrameworkInstalledPackages = new ProjectTuple();
+            }
+
             ProjectTuple targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            if (targetFrameworkTransitivePackages == null)
+            {
+                targetFrameworkTransitivePackages = new ProjectTuple();
+            }
 
             if (targetFrameworkInstalledPackages.Packages == null)
             {
