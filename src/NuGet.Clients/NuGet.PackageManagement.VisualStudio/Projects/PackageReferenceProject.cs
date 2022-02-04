@@ -162,12 +162,12 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Returns <see cref="PackageSpec"/> found in assets file (project.assets.json)
+        /// Returns <see cref="PackageSpec"/> from project-system
         /// </summary>
         /// <param name="token">Cancellation token</param>
         /// <returns>An <see cref="PackageSpec"/> object</returns>
         /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
-        internal async Task<PackageSpec> GetCachedPackageSpecAsync(CancellationToken token)
+        internal async Task<PackageSpec> GetCachedPackageSpecAndAssetsFilePathAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             bool cacheMissAssets = (assets.Exists && assets.LastWriteTimeUtc > _lastTimeAssetsModified);
 
-            if (cacheMissAssets || IsPackageSpecDifferent(currentPackageSpec, cachedPackageSpec))
+            if (cacheMissAssets || (this is CpsPackageReferenceProject && !ReferenceEquals(currentPackageSpec, cachedPackageSpec)))
             {
                 _lastTimeAssetsModified = assets.LastWriteTimeUtc;
                 _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
@@ -345,14 +345,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>A <see cref="PackageSpec"/> filled from assets file on disk</returns>
         /// <remarks>Each project implementation is responsible of gathering <see cref="PackageSpec"/> info</remarks>
         internal abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
-
-        /// <summary>
-        /// Decides wether cached <see cref="PackageSpec"/> differs from assets file on disk
-        /// </summary>
-        /// <param name="actual">A <see cref="PackageSpec"/> read from disk</param>
-        /// <param name="cached">Cached <see cref="PackageSpec"/></param>
-        /// <returns><c>true</c> if current <see cref="PackageSpec"/> differs from cached objects</returns>
-        internal abstract bool IsPackageSpecDifferent(PackageSpec actual, PackageSpec cached);
 
         /// <summary>
         /// Clears Cached Transitive package prigins, Installed packages and Transitive packages

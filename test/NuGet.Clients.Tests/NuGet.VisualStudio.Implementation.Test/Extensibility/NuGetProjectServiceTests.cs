@@ -189,6 +189,21 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             {
                 throw new NotImplementedException();
             }
+
+            internal override void ClearCache()
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override bool IsPackageSpecDifferent(PackageSpec actual, PackageSpec cached)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

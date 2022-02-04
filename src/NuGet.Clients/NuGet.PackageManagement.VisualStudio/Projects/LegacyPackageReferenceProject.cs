@@ -184,8 +184,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc/>
         public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
-            PackageSpec packageSpec = await GetCachedPackageSpecAsync(token);
-            if (packageSpec == null)
+            PackageSpec packageSpec = await GetCachedPackageSpecAndAssetsFilePathAsync(token);
+            if (packageSpec == null) // null means project is not nominated
             {
                 IsInstalledAndTransitiveComputationNeeded = true;
 
@@ -518,12 +518,6 @@ namespace NuGet.PackageManagement.VisualStudio
             ct.ThrowIfCancellationRequested();
 
             return new ValueTask<PackageSpec>(GetPackageSpecAsync(NullSettings.Instance));
-        }
-
-        /// <inheritdoc/>
-        internal override bool IsPackageSpecDifferent(PackageSpec actual, PackageSpec cached)
-        {
-            return false; // PackageSpec is always created in LegacyPackageReference implementation
         }
 
         /// <inheritdoc/>
