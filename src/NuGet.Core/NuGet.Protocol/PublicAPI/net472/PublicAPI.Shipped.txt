@@ -1494,7 +1494,7 @@ NuGet.Repositories.NuGetv3LocalRepository.Exists(string packageId, NuGet.Version
 NuGet.Repositories.NuGetv3LocalRepository.FindPackage(string packageId, NuGet.Versioning.NuGetVersion version) -> NuGet.Repositories.LocalPackageInfo
 NuGet.Repositories.NuGetv3LocalRepository.FindPackagesById(string packageId) -> System.Collections.Generic.IEnumerable<NuGet.Repositories.LocalPackageInfo>
 NuGet.Repositories.NuGetv3LocalRepository.NuGetv3LocalRepository(string path) -> void
-NuGet.Repositories.NuGetv3LocalRepository.NuGetv3LocalRepository(string path, NuGet.Protocol.LocalPackageFileCache packageFileCache, bool isFallbackFolder) -> void
+NuGet.Repositories.NuGetv3LocalRepository.NuGetv3LocalRepository(string path, NuGet.Protocol.LocalPackageFileCache packageFileCache, bool isFallbackFolder, bool updateLastAccessTime) -> void
 NuGet.Repositories.NuGetv3LocalRepository.PathResolver.get -> NuGet.Packaging.VersionFolderPathResolver
 NuGet.Repositories.NuGetv3LocalRepository.RepositoryRoot.get -> string
 NuGet.Repositories.NuGetv3LocalRepositoryUtility

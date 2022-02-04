@@ -62,7 +62,9 @@ namespace NuGet.Commands
             ILogger log)
         {
             var isFallbackFolder = false;
-            var globalPackages = new NuGetv3LocalRepository(globalFolderPath, packageFileCache, isFallbackFolder);
+            var updateLastAccess = true; // make configurable
+
+            var globalPackages = new NuGetv3LocalRepository(globalFolderPath, packageFileCache, isFallbackFolder, updateLastAccess);
             var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
             var localProviders = new List<IRemoteDependencyProvider>()
@@ -82,10 +84,11 @@ namespace NuGet.Commands
             var fallbackPackageFolders = new List<NuGetv3LocalRepository>();
 
             isFallbackFolder = true;
+            updateLastAccess = false;
 
             foreach (var path in fallbackPackageFolderPaths)
             {
-                var fallbackRepository = new NuGetv3LocalRepository(path, packageFileCache, isFallbackFolder);
+                var fallbackRepository = new NuGetv3LocalRepository(path, packageFileCache, isFallbackFolder, updateLastAccess);
                 var fallbackSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                 var provider = new SourceRepositoryDependencyProvider(

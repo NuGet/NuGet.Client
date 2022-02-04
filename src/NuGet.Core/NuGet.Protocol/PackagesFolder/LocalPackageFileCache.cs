@@ -95,6 +95,20 @@ namespace NuGet.Protocol
             return exists;
         }
 
+        internal void UpdateLastAccessTime(string nupkgMetadataPath)
+        {
+            try
+            {
+                File.SetLastAccessTimeUtc(nupkgMetadataPath, DateTime.UtcNow);
+            }
+            catch// (Exception ex)
+            {
+                //await request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1504,
+                //    string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotUpdateMetadataLastAccessTime,
+                //    nupkgMetadataPath, ex.Message)));
+            }
+        }
+
         /// <summary>
         /// Read runtime.json from a package.
         /// Returns null if runtime.json does not exist.

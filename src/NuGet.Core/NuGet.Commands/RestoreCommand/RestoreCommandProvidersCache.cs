@@ -33,10 +33,12 @@ namespace NuGet.Commands
             IReadOnlyList<string> fallbackPackagesPaths,
             IReadOnlyList<SourceRepository> sources,
             SourceCacheContext cacheContext,
-            ILogger log)
+            ILogger log,
+            bool updateLastAccess)
         {
             var isFallbackFolder = false;
-            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder));
+
+            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder, updateLastAccess));
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
@@ -58,10 +60,11 @@ namespace NuGet.Commands
             var fallbackFolders = new List<NuGetv3LocalRepository>();
 
             isFallbackFolder = true;
+            updateLastAccess = false;
 
             foreach (var fallbackPath in fallbackPackagesPaths)
             {
-                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder));
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder, updateLastAccess));
                 fallbackFolders.Add(cache);
 
                 var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>

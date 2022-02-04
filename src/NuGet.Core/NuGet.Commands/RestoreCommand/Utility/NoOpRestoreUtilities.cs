@@ -1,10 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -118,7 +121,7 @@ namespace NuGet.Commands
         /// When the project has opted into packages lock file, it also verified that the lock file is present on disk.
         /// This does not account if the files were manually modified since the last restore
         /// </summary>
-        internal static bool VerifyRestoreOutput(RestoreRequest request, CacheFile cacheFile)
+        internal static async Task<bool> VerifyRestoreOutput(RestoreRequest request, CacheFile cacheFile)
         {
             if (!string.IsNullOrWhiteSpace(request.LockFilePath) && !File.Exists(request.LockFilePath))
             {
@@ -156,6 +159,31 @@ namespace NuGet.Commands
             {
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
                 return false;
+            }
+
+            if (request.ForceUpdatePackageLastAccessTime)
+            {
+                foreach (var package in cacheFile.ExpectedPackageFilePaths)
+                {
+                    var packageFolder = new DirectoryInfo(Directory.GetParent(package).FullName).Parent.Parent.FullName;
+
+                    // we avoid fallback folders as they are readonly
+                    if (request.Project.RestoreMetadata.FallbackFolders.Any(fallbackFolder => fallbackFolder.Equals(packageFolder, StringComparison.OrdinalIgnoreCase)))
+                        continue;
+
+                    var packageRoot = Directory.GetParent(package).FullName;
+                    var metadataFile = Path.Combine(packageRoot, ".nupkg.metadata");
+                    try
+                    {
+                        File.SetLastAccessTimeUtc(metadataFile, DateTime.UtcNow);
+                    }
+                    catch(Exception ex)
+                    {
+                        await request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1504,
+                            string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotUpdateMetadataLastAccessTime,
+                            metadataFile, ex.Message)));
+                    }
+                }
             }
 
             return true;

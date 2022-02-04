@@ -600,6 +600,7 @@ NuGet.Commands.RestoreArgs.FallbackRuntimes.get -> System.Collections.Generic.Ha
 NuGet.Commands.RestoreArgs.FallbackRuntimes.set -> void
 NuGet.Commands.RestoreArgs.GetEffectiveFallbackPackageFolders(NuGet.Configuration.ISettings settings) -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.Commands.RestoreArgs.GetEffectiveGlobalPackagesFolder(string rootDirectory, NuGet.Configuration.ISettings settings) -> string
+NuGet.Commands.RestoreArgs.GetForceUpdateLastAccessTime(NuGet.Configuration.ISettings settings) -> bool
 NuGet.Commands.RestoreArgs.GetSettings(string projectDirectory) -> NuGet.Configuration.ISettings
 NuGet.Commands.RestoreArgs.GlobalPackagesFolder.get -> string
 NuGet.Commands.RestoreArgs.GlobalPackagesFolder.set -> void
@@ -666,7 +667,7 @@ NuGet.Commands.RestoreCommandProviders.PackageFileCache.get -> NuGet.Protocol.Lo
 NuGet.Commands.RestoreCommandProviders.RemoteProviders.get -> System.Collections.Generic.IReadOnlyList<NuGet.DependencyResolver.IRemoteDependencyProvider>
 NuGet.Commands.RestoreCommandProviders.RestoreCommandProviders(NuGet.Repositories.NuGetv3LocalRepository globalPackages, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> fallbackPackageFolders, System.Collections.Generic.IReadOnlyList<NuGet.DependencyResolver.IRemoteDependencyProvider> localProviders, System.Collections.Generic.IReadOnlyList<NuGet.DependencyResolver.IRemoteDependencyProvider> remoteProviders, NuGet.Protocol.LocalPackageFileCache packageFileCache) -> void
 NuGet.Commands.RestoreCommandProvidersCache
-NuGet.Commands.RestoreCommandProvidersCache.GetOrCreate(string globalPackagesPath, System.Collections.Generic.IReadOnlyList<string> fallbackPackagesPaths, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository> sources, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log) -> NuGet.Commands.RestoreCommandProviders
+NuGet.Commands.RestoreCommandProvidersCache.GetOrCreate(string globalPackagesPath, System.Collections.Generic.IReadOnlyList<string> fallbackPackagesPaths, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository> sources, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log, bool updateLastAccess) -> NuGet.Commands.RestoreCommandProviders
 NuGet.Commands.RestoreCommandProvidersCache.RestoreCommandProvidersCache() -> void
 NuGet.Commands.RestoreRequest
 NuGet.Commands.RestoreRequest.AdditionalMessages.get -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.IAssetsLogMessage>
@@ -686,6 +687,8 @@ NuGet.Commands.RestoreRequest.ExistingLockFile.set -> void
 NuGet.Commands.RestoreRequest.ExternalProjects.get -> System.Collections.Generic.IList<NuGet.ProjectModel.ExternalProjectReference>
 NuGet.Commands.RestoreRequest.ExternalProjects.set -> void
 NuGet.Commands.RestoreRequest.FallbackRuntimes.get -> System.Collections.Generic.ISet<string>
+NuGet.Commands.RestoreRequest.ForceUpdatePackageLastAccessTime.get -> bool
+NuGet.Commands.RestoreRequest.ForceUpdatePackageLastAccessTime.set -> void
 NuGet.Commands.RestoreRequest.HideWarningsAndErrors.get -> bool
 NuGet.Commands.RestoreRequest.HideWarningsAndErrors.set -> void
 NuGet.Commands.RestoreRequest.IsLowercasePackagesDirectory.get -> bool

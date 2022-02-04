@@ -37,21 +37,24 @@ namespace NuGet.Repositories
 
         private readonly bool _isFallbackFolder;
 
+        private readonly bool _updateLastAccessTime;
+
         public VersionFolderPathResolver PathResolver { get; }
 
         public string RepositoryRoot { get; }
 
         public NuGetv3LocalRepository(string path)
-            : this(path, packageFileCache: null, isFallbackFolder: false)
+            : this(path, packageFileCache: null, isFallbackFolder: false, updateLastAccessTime: false)
         {
         }
 
-        public NuGetv3LocalRepository(string path, LocalPackageFileCache packageFileCache, bool isFallbackFolder)
+        public NuGetv3LocalRepository(string path, LocalPackageFileCache packageFileCache, bool isFallbackFolder, bool updateLastAccessTime)
         {
             RepositoryRoot = path;
             PathResolver = new VersionFolderPathResolver(path);
             _packageFileCache = packageFileCache ?? new LocalPackageFileCache();
             _isFallbackFolder = isFallbackFolder;
+            _updateLastAccessTime = updateLastAccessTime;
         }
 
         /// <summary>
@@ -199,6 +202,11 @@ namespace NuGet.Repositories
                     // for the life of this restore.
                     // Locking is done at a higher level around the id
                     _packageCache.TryAdd(path, package);
+
+                    if (!_isFallbackFolder && _updateLastAccessTime)
+                    {
+                        _packageFileCache.UpdateLastAccessTime(nupkgMetadataPath);
+                    }
                 }
             }
 

@@ -124,6 +124,11 @@ namespace NuGet.Commands
             return SettingsUtility.GetFallbackPackageFolders(settings);
         }
 
+        public bool GetForceUpdateLastAccessTime(ISettings settings)
+        {
+            return SettingsUtility.GetForceUpdatePackageLastAccessTimeEnabledStatus(settings);
+        }
+
         /// <summary>
         /// Uses either Sources or Settings, and then adds Fallback sources.
         /// </summary>

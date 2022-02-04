@@ -160,13 +160,15 @@ namespace NuGet.Commands
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            var updateLastAccess = restoreArgs.GetForceUpdateLastAccessTime(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
                 fallbackPaths.AsList(),
                 sources,
                 restoreArgs.CacheContext,
-                restoreArgs.Log);
+                restoreArgs.Log,
+                updateLastAccess);
 
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
@@ -188,7 +190,8 @@ namespace NuGet.Commands
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
-                AdditionalMessages = projectAdditionalMessages
+                AdditionalMessages = projectAdditionalMessages,
+                ForceUpdatePackageLastAccessTime = updateLastAccess
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

@@ -204,5 +204,7 @@ namespace NuGet.Commands
         public bool RestoreForceEvaluate { get; set; }
 
         public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
+
+        public bool ForceUpdatePackageLastAccessTime { get; set; }
     }
 }
