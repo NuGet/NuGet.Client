@@ -104,7 +104,7 @@
       IsTextSearchEnabled="{Binding IsProjectPackageReference, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       IsReadOnly="{Binding IsProjectPackageReference, Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       StaysOpenOnEdit="{Binding IsProjectPackageReference, Converter={StaticResource InverseNullToVisibilityConverter}}"
-      ItemsSource="{Binding Path=VersionsView}"
+      ItemsSource="{Binding Path=VersionsView, Mode=TwoWay}"
       Text="{Binding Path=UserInput, Mode=TwoWay}"
       SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
       <ComboBox.ItemContainerStyle>
