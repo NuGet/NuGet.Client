@@ -403,6 +403,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Updating last access time on file {0} failed with {1}.
+        /// </summary>
+        internal static string Error_CouldNotUpdateMetadataLastAccessTime {
+            get {
+                return ResourceManager.GetString("Error_CouldNotUpdateMetadataLastAccessTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The repository with the service index &apos;{0}&apos; does not list any trusted certificates..
         /// </summary>
         internal static string Error_EmptyCertificateListInRepository {

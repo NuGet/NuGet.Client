@@ -194,6 +194,7 @@ NuGet.Common.NuGetLogCode.NU1500 = 1500 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1501 = 1501 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1502 = 1502 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1503 = 1503 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1504 = 1504 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1601 = 1601 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1602 = 1602 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1603 = 1603 -> NuGet.Common.NuGetLogCode
