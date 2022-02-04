@@ -2070,15 +2070,15 @@ namespace NuGet.SolutionRestoreManager.Test
             };
 
             // Act
-            var result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, CommonFrameworks.NetStandard20.ToString(), string.Empty);
+            PackageSpec result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, CommonFrameworks.NetStandard20.ToString(), string.Empty);
 
             // Assert
-            var tfm = result.TargetFrameworks.First();
+            TargetFrameworkInformation tfm = result.TargetFrameworks.First();
 
-            var packageVersion = Assert.Single(tfm.CentralPackageVersions);
+            KeyValuePair<string, CentralPackageVersion> packageVersion = Assert.Single(tfm.CentralPackageVersions);
             Assert.Equal("foo", packageVersion.Key);
             Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString());
-            var packageReference = Assert.Single(tfm.Dependencies);
+            LibraryDependency packageReference = Assert.Single(tfm.Dependencies);
             Assert.Equal("[2.0.0, )", packageReference.LibraryRange.VersionRange.ToNormalizedString());
 
             if (expected)
