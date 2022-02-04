@@ -67,6 +67,8 @@ namespace NuGet.Configuration
 
         public static readonly string FingerprintAlgorithm = "fingerprintAlgorithm";
 
+        public static readonly string ForceUpdatePackageLastAccessTime = "forceUpdatePackageLastAccessTime";
+
         public static readonly string GlobalPackagesFolder = "globalPackagesFolder";
 
         public static readonly string HashAlgorithm = "hashAlgorithm";

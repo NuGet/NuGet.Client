@@ -414,6 +414,7 @@ static NuGet.Configuration.Settings.LoadSettingsGivenConfigPaths(System.Collecti
 static NuGet.Configuration.Settings.LoadSpecificSettings(string root, string configFileName) -> NuGet.Configuration.ISettings
 static NuGet.Configuration.SettingsUtility.DeleteConfigValue(NuGet.Configuration.ISettings settings, string key) -> bool
 static NuGet.Configuration.SettingsUtility.DeleteValue(NuGet.Configuration.ISettings settings, string section, string attributeKey, string attributeValue) -> bool
+static NuGet.Configuration.SettingsUtility.GetForceUpdatePackageLastAccessTimeEnabledStatus(NuGet.Configuration.ISettings settings) -> bool
 static NuGet.Configuration.SettingsUtility.GetConfigValue(NuGet.Configuration.ISettings settings, string key, bool decrypt = false, bool isPath = false) -> string
 static NuGet.Configuration.SettingsUtility.GetDecryptedValueForAddItem(NuGet.Configuration.ISettings settings, string section, string key, bool isPath = false) -> string
 static NuGet.Configuration.SettingsUtility.GetDefaultPushSource(NuGet.Configuration.ISettings settings) -> string
@@ -439,6 +440,7 @@ static readonly NuGet.Configuration.ConfigurationConstants.ApiKeys -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Author -> string
 static readonly NuGet.Configuration.ConfigurationConstants.BeginIgnoreMarker -> string
 static readonly NuGet.Configuration.ConfigurationConstants.BindingRedirectsSection -> string
+static readonly NuGet.Configuration.ConfigurationConstants.ForceUpdatePackageLastAccessTime -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Certificate -> string
 static readonly NuGet.Configuration.ConfigurationConstants.Clear -> string
 static readonly NuGet.Configuration.ConfigurationConstants.ClearTextPasswordAttribute -> string
