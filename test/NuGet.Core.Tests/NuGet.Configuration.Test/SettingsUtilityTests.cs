@@ -316,5 +316,14 @@ namespace NuGet.Configuration.Test
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
         }
+
+        [Fact]
+        public void GetForceUpdatePackageLastAccessTimeEnabledStatus_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetForceUpdatePackageLastAccessTimeEnabledStatus(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
     }
 }

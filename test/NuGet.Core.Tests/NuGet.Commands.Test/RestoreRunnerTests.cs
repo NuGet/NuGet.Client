@@ -1751,6 +1751,97 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreRunner_UpdateTimestampOnce()
+        {
+            // Arrange
+            var project1 = "project1";
+            var packageSpec = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netcoreapp3.0"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            var project2 = "project2";
+            var packageSpec2 = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netcoreapp3.0"": {
+                    ""dependencies"": {
+                        ""x"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                // set up the folders
+                var globalPackagesFolder = new DirectoryInfo(Path.Combine(workingDir, "globalPackages")); globalPackagesFolder.Create();
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
+                var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
+                var project2Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project2)); project2Folder.Create();
+
+                // set up project1
+                var projectSpec1 = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
+                projectSpec1 = projectSpec1.EnsureRestoreMetadata();
+                var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
+                projectSpec1.RestoreMetadata.Sources = sources;
+                projectSpec1.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+
+                // set up project2
+                var projectSpec2 = JsonPackageSpecReader.GetPackageSpec(packageSpec2, project2, Path.Combine(project2Folder.FullName, "packageSpec.json"));
+                projectSpec2 = projectSpec2.EnsureRestoreMetadata();
+                projectSpec2.RestoreMetadata.Sources = sources;
+                projectSpec2.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
+
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(projectSpec1);
+                dgFile.AddProject(projectSpec2);
+                dgFile.AddRestore(projectSpec1.RestoreMetadata.ProjectUniqueName);
+                dgFile.AddRestore(projectSpec2.RestoreMetadata.ProjectUniqueName);
+
+                // set up the packages
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.UseDefaultRuntimeAssemblies = false;
+                packageX.AddFile("lib/netcoreapp3.0/packageX.dll");
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageX);
+                var logger = new TestLogger();
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = logger,
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        }
+                    };
+
+                    // Act
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    Assert.True(summaries.All(e => e.Success), string.Join(Environment.NewLine, logger.Messages));
+                }
+            }
+        }
+
+        [Fact]
         public async Task RestoreRunner_FrameworkReferenceIsProjectToProjectTransitive()
         {
             // Arrange

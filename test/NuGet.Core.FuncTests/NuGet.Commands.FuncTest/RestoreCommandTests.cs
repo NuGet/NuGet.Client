@@ -16,6 +16,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -1344,6 +1345,94 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, installed.Count);
                 Assert.Equal(0, unresolved.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_UpdatePackageMetadataLastAccessTimeAsync_Noop()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            using (var context = new SourceCacheContext())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0"": {
+                            ""dependencies"": {
+                                ""A"": {
+                                    ""version"" : ""1.0.0"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+                var configuration = SimpleTestSettingsContext.GetOrAddSection(pathContext.Settings.XML, "config");
+                SimpleTestSettingsContext.AddEntry(configuration, "cacheExpiration", "true");
+                pathContext.Settings.Save();
+
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net5.0/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+                var logger = new TestLogger();
+                var settings = new Settings(pathContext.WorkingDirectory.Path);
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(spec);
+                dgSpec.AddRestore(spec.Name);
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, ClientPolicyContext.GetClientPolicy(settings, logger), logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                    AllowNoOp = true,
+                    ForceUpdatePackageLastAccessTime = true
+                };
+                var command = new RestoreCommand(request);
+
+                // Preconditions
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+                var newRequest = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, ClientPolicyContext.GetClientPolicy(settings, logger), logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                    AllowNoOp = true,
+                    ForceUpdatePackageLastAccessTime = true
+                };
+
+                var metadataPath = Path.Combine(pathContext.UserPackagesFolder, @"a\1.0.0\.nupkg.metadata");
+                var metadataLastAccessTimeFirstRestore = File.GetLastAccessTimeUtc(metadataPath);
+
+                await Task.Delay(1000);
+
+                var newCommand = new RestoreCommand(newRequest);
+
+                // Act
+                result = await newCommand.ExecuteAsync();
+                // Assert
+
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+                result.Should().BeAssignableTo<NoOpRestoreResult>(because: "This should be a no-op restore.");
+                Assert.True(metadataLastAccessTimeFirstRestore < File.GetLastAccessTimeUtc(metadataPath));
             }
         }
 

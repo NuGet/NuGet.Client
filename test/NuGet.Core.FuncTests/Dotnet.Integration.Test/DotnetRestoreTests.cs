@@ -123,6 +123,78 @@ EndGlobal";
             }
         }
 
+        [Fact]
+        public async Task DotnetRestore_UpdateLastAccessTime()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "TestPackage",
+                    Version = "1.0.0"
+                };
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.0");
+
+                using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>() { { "Version", packageX.Version } };
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        packageX.Id,
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // set nuget.config properties
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var config = new XElement(XName.Get("config"));
+                configuration.Add(config);
+
+                var forceUpdatePackageLastAccessTime = new XElement(XName.Get("add"));
+                forceUpdatePackageLastAccessTime.Add(new XAttribute(XName.Get("key"), "forceUpdatePackageLastAccessTime"));
+                forceUpdatePackageLastAccessTime.Add(new XAttribute(XName.Get("value"), "true"));
+                config.Add(forceUpdatePackageLastAccessTime);
+
+                File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
+
+                // first restore
+                _msbuildFixture.RestoreProject(workingDirectory, projectName, args: string.Empty);
+
+                var testFolder = Path.GetDirectoryName(Path.GetDirectoryName(workingDirectory));
+                var metadataFile = Path.Combine(testFolder, "globalPackages", packageX.Id.ToLower(), packageX.Version, ".nupkg.metadata");
+
+                // reset time
+                var TenMinsAgo = DateTime.UtcNow.AddMinutes(-10);
+                File.SetLastAccessTimeUtc(metadataFile, TenMinsAgo);
+
+                _msbuildFixture.RestoreProject(workingDirectory, projectName, args: string.Empty);
+
+                var updatedAccessTime = File.GetLastAccessTimeUtc(metadataFile);
+
+                Assert.True(updatedAccessTime > TenMinsAgo);
+            }
+        }
+
 #if IS_SIGNING_SUPPORTED
         [PlatformFact(Platform.Windows)]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_FailsAsync()
