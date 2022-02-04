@@ -209,7 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined)),
                 GeneratePathProperty = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.GeneratePathProperty)),
                 Aliases = GetReferenceMetadataValue(reference, ProjectItemProperties.Aliases, defaultValue: null),
-                VersionOverride = GetVersionOVerride(reference),
+                VersionOverride = GetVersionOverride(reference),
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
                     versionRange: ToVersionRange(reference.Version, isCpvmEnabled),
@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return VersionRange.Parse(version);
         }
 
-        private static VersionRange GetVersionOVerride(PackageReference reference)
+        private static VersionRange GetVersionOverride(PackageReference reference)
         {
             string versionOverride = GetReferenceMetadataValue(reference, ProjectItemProperties.VersionOverride, defaultValue: null);
 

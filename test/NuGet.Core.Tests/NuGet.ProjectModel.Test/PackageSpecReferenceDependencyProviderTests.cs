@@ -30,7 +30,7 @@ namespace NuGet.ProjectModel.Test
                 versionCentrallyManaged: false,
                 LibraryDependencyReferenceType.Direct,
                 aliases: "stuff",
-               versionOverride: null);
+                versionOverride: null);
 
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));

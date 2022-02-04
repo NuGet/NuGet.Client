@@ -1015,7 +1015,7 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Determines the current settings for central package managent for the specified project.
+        /// Determines the current settings for central package management for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildProject" /> to get the central package management settings for.</param>
         /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <c>null</c> when the project does not define a restore style.</param>
