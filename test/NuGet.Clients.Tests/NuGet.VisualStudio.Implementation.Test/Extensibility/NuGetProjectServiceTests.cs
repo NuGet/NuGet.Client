@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.Packaging;
@@ -20,6 +21,7 @@ using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Contracts;
 using NuGet.VisualStudio.Implementation.Extensibility;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Test.Utility.ProjectManagement;
 using Xunit;
@@ -95,9 +97,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             {
                 new PackageReference(new PackageIdentity("a", new Versioning.NuGetVersion(1, 0, 0)), FrameworkConstants.CommonFrameworks.Net50)
             };
-            var transitivePackages = new List<PackageReference>()
+            var transitivePackages = new List<TransitivePackageReference>()
             {
-                new PackageReference(new PackageIdentity("b", new Versioning.NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)
+                new TransitivePackageReference(
+                    new PackageReference(new PackageIdentity("b", new Versioning.NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)
+                )
             };
             var projectPackages = new ProjectPackages(installedPackages, transitivePackages);
             var project = new TestPackageReferenceProject("ProjectA", @"src\ProjectA\Project.csproj", @"c:\path\to\src\ProjectA\ProjectA.csproj",
@@ -124,21 +128,18 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.False(package.DirectDependency);
         }
 
-        private class TestPackageReferenceProject : PackageReferenceProject
+        class TestPackageReferenceProject : PackageReferenceProject<IList<PackageReference>, PackageReference>
         {
-            IReadOnlyList<PackageReference> _installedPackages;
-            IReadOnlyList<PackageReference> _transitivePackages;
-
             public TestPackageReferenceProject(
                 string projectName,
                 string projectUniqueName,
                 string projectFullPath,
-                IReadOnlyList<PackageReference> installedPackages,
-                IReadOnlyList<PackageReference> transitivePackages)
+                IList<PackageReference> installedPackages,
+                IList<PackageReference> transitivePackages)
                 : base(projectName, projectUniqueName, projectFullPath)
             {
-                _installedPackages = installedPackages;
-                _transitivePackages = transitivePackages;
+                InstalledPackages = installedPackages;
+                TransitivePackages = transitivePackages;
             }
 
             public override string MSBuildProjectPath => ProjectFullPath;
@@ -155,7 +156,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             public override Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
             {
-                var projectPackages = new ProjectPackages(_installedPackages, _transitivePackages);
+                var transitivePackages = TransitivePackages.Select(p => new TransitivePackageReference(p));
+
+                var projectPackages = new ProjectPackages(InstalledPackages.ToList(), transitivePackages.ToList());
                 return Task.FromResult(projectPackages);
             }
 
@@ -190,17 +193,17 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
-            internal override void ClearCache()
-            {
-                throw new NotImplementedException();
-            }
-
             internal override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
             {
                 throw new NotImplementedException();
             }
 
-            internal override bool IsPackageSpecDifferent(PackageSpec actual, PackageSpec cached)
+            internal override IEnumerable<PackageReference> GetPRs(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<LockFileTarget> targets)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override IReadOnlyList<PackageReference> GetTransPRs(NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<PackageReference> transitivePackages, IList<LockFileTarget> targets)
             {
                 throw new NotImplementedException();
             }

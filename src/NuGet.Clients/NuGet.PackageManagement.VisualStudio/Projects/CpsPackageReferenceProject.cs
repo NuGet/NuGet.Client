@@ -36,16 +36,12 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Key feature/difference is the project restore info is pushed by nomination API and stored in 
     /// a cache. Factory method retrieving the info from the cache should be provided.
     /// </summary>
-    public class CpsPackageReferenceProject : PackageReferenceProject
+    public class CpsPackageReferenceProject : PackageReferenceProject<List<ProjectTuple>, ProjectTuple>
     {
         private const string TargetFrameworkCondition = "TargetFramework";
 
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly UnconfiguredProject _unconfiguredProject;
-
-        // key is packageId
-        private List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> _installedPackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
-        private List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> _transitivePackages = new List<(NuGetFramework, Dictionary<string, ProjectInstalledPackage>)>();
 
         public CpsPackageReferenceProject(
             string projectName,
@@ -73,6 +69,9 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, ProjectUniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
+
+            InstalledPackages = new();
+            TransitivePackages = new();
         }
 
         public override Task AddFileToProjectAsync(string filePath)
@@ -206,80 +205,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        /// <summary>
-        /// Gets the installed (top level) package references for this project. 
-        /// </summary>
-        public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
-        {
-            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(token);
-            return packages.InstalledPackages;
-        }
-
-        /// <inheritdoc/>
-        public override async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
-        {
-            PackageSpec packageSpec = await GetCachedPackageSpecAndAssetsFilePathAsync(token);
-            if (packageSpec == null) // null means project is not nominated
-            {
-                IsInstalledAndTransitiveComputationNeeded = true;
-
-                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
-            }
-
-            IList<LockFileTarget> targetsList = null;
-            if (IsInstalledAndTransitiveComputationNeeded)
-            {
-                // clear the transitive packages cache, since we don't know when a dependency has been removed
-                ClearCache();
-                targetsList = await GetTargetsListAsync(token);
-            }
-
-            var frameworkSorter = new NuGetFrameworkSorter();
-
-            List<PackageReference> installedPackages = packageSpec
-                .TargetFrameworks
-                .SelectMany(f => GetPackageReferencesForFramework(
-                    f.Dependencies,
-                    f.FrameworkName,
-                    _installedPackages,
-                    targetsList))
-                .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
-                .ToList();
-
-            // get the transitive packages, excluding any already contained in the installed packages
-            List<PackageReference> transitivePackages = packageSpec
-                .TargetFrameworks
-                .SelectMany(f => GetTransitivePackageReferencesForFramework(
-                    f.FrameworkName,
-                    _installedPackages,
-                    _transitivePackages,
-                    targetsList))
-                .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
-                .ToList();
-
-            List<TransitivePackageReference> transitivePackagesWithOrigins = transitivePackages
-                .Select(transitivePr => Tuple.Create(transitivePr, GetTransitivePackageOrigin(
-                    transitivePr,
-                    installedPackages,
-                    targetsList,
-                    token)))
-                .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
-                .ToList();
-
-            IsInstalledAndTransitiveComputationNeeded = false;
-
-            return new ProjectPackages(installedPackages, transitivePackagesWithOrigins);
-        }
-
-        private IEnumerable<PackageReference> GetPackageReferencesForFramework(
+        private protected override IEnumerable<PackageReference> GetPRs(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> installedPackages,
+            List<ProjectTuple> installedPackages,
             IList<LockFileTarget> targets)
         {
-            (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            ProjectTuple targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
             if (targetFrameworkPackages.Packages == null)
             {
@@ -291,14 +223,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        private IReadOnlyList<PackageReference> GetTransitivePackageReferencesForFramework(
+        private protected override IReadOnlyList<PackageReference> GetTransPRs(
             NuGetFramework targetFramework,
-            List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> installedPackages,
-            List<(NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages)> transitivePackages,
+            List<ProjectTuple> installedPackages,
+            List<ProjectTuple> transitivePackages,
             IList<LockFileTarget> targets)
         {
-            (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
-            (NuGetFramework TargetFramework, Dictionary<string, ProjectInstalledPackage> Packages) targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            ProjectTuple targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            ProjectTuple targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
             if (targetFrameworkInstalledPackages.Packages == null)
             {
@@ -438,13 +370,5 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         #endregion
-
-        /// <inheritdoc/>
-        internal override void ClearCache()
-        {
-            _installedPackages.Clear();
-            _transitivePackages.Clear();
-            IsInstalledAndTransitiveComputationNeeded = true;
-        }
     }
 }

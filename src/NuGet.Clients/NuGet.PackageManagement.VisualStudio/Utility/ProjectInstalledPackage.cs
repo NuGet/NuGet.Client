@@ -7,7 +7,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio.Utility
 {
-    internal class ProjectInstalledPackage
+    public class ProjectInstalledPackage
     {
         public VersionRange AllowedVersions { get; }
         public PackageIdentity InstalledPackage { get; }

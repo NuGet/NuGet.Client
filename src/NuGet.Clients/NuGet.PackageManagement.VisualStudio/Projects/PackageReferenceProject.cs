@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
     /// packages in a package reference style project.
     /// </summary>
-    public abstract class PackageReferenceProject : BuildIntegratedNuGetProject
+    public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject where T : ICollection<U>
     {
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
 
@@ -36,6 +36,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
         private readonly protected string _projectFullPath;
+
+        protected T InstalledPackages { get; set; }
+        protected T TransitivePackages { get; set; }
 
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
@@ -75,12 +78,89 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
+        /// Gets the installed (top level) package references for this project. 
+        /// </summary>
+        public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        {
+            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(token);
+            return packages.InstalledPackages;
+        }
+
+        /// <summary>
         /// Gets the both the installed (top level) and transitive package references for this project.
         /// Returns the package reference as two separate lists (installed and transitive).
         /// </summary>
         /// <param name="token">Cancellation token</param>
         /// <returns>A <see cref="ProjectPackages"/> object with two lists: Installed and transitive packages</returns>
-        public abstract Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token);
+        public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
+        {
+            PackageSpec packageSpec = await GetCachedPackageSpecAndAssetsFilePathAsync(token);
+            if (packageSpec == null) // null means project is not nominated
+            {
+                IsInstalledAndTransitiveComputationNeeded = true;
+
+                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
+            }
+
+            IList<LockFileTarget> targetsList = null;
+            if (IsInstalledAndTransitiveComputationNeeded)
+            {
+                // clear the transitive packages cache, since we don't know when a dependency has been removed
+                ClearCache();
+                targetsList = await GetTargetsListAsync(token);
+            }
+
+            var frameworkSorter = new NuGetFrameworkSorter();
+
+            // get installed packages
+            List<PackageReference> installedPackages = packageSpec
+                .TargetFrameworks
+                .SelectMany(f => GetPRs(
+                    f.Dependencies,
+                    f.FrameworkName,
+                    InstalledPackages,
+                    targetsList))
+                .GroupBy(p => p.PackageIdentity)
+                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
+                .ToList();
+
+            // get the transitive packages
+            List<PackageReference> transitivePackages = packageSpec
+                .TargetFrameworks
+                .SelectMany(f => GetTransPRs(
+                    f.FrameworkName,
+                    InstalledPackages,
+                    TransitivePackages,
+                    targetsList))
+                .GroupBy(p => p.PackageIdentity)
+                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
+                .ToList();
+
+            List<TransitivePackageReference> transitivePackagesWithOrigins = transitivePackages
+                .Select(transitivePr => Tuple.Create(transitivePr, GetTransitivePackageOrigin(
+                    transitivePr,
+                    installedPackages,
+                    targetsList,
+                    token)))
+                .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
+                .ToList();
+
+            IsInstalledAndTransitiveComputationNeeded = false;
+
+            return new ProjectPackages(installedPackages, transitivePackagesWithOrigins);
+        }
+
+        private protected abstract IEnumerable<PackageReference> GetPRs(
+            IEnumerable<LibraryDependency> libraries,
+            NuGetFramework targetFramework,
+            T installedPackages,
+            IList<LockFileTarget> targets);
+
+        private protected abstract IReadOnlyList<PackageReference> GetTransPRs(
+            NuGetFramework targetFramework,
+            T installedPackages,
+            T transitivePackages,
+            IList<LockFileTarget> targets);
 
         private protected IEnumerable<PackageReference> GetPackageReferences(
             IEnumerable<LibraryDependency> libraries,
@@ -349,6 +429,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Clears Cached Transitive package prigins, Installed packages and Transitive packages
         /// </summary>
-        internal abstract void ClearCache();
+        internal void ClearCache()
+        {
+            InstalledPackages.Clear();
+            TransitivePackages.Clear();
+            IsInstalledAndTransitiveComputationNeeded = true;
+        }
     }
 }
