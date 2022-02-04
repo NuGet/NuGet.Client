@@ -323,8 +323,7 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-                var length = new FileInfo(packageToPush).Length;
-                wasPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, length, noServiceEndpoint, skipDuplicate,
+                wasPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
                     requestTimeout, log, token);
             }
 
@@ -374,7 +373,6 @@ namespace NuGet.Protocol.Core.Types
         private async Task<bool> PushPackageToServer(string source,
             string apiKey,
             string pathToPackage,
-            long packageSize,
             bool noServiceEndpoint,
             bool skipDuplicate,
             TimeSpan requestTimeout,
@@ -678,7 +676,7 @@ namespace NuGet.Protocol.Core.Types
             var sourceUri = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             if (sourceUri.IsFile)
             {
-                DeletePackageFromFileSystem(source, packageId, packageVersion, logger);
+                DeletePackageFromFileSystem(source, packageId, packageVersion);
             }
             else
             {
@@ -731,7 +729,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
         // Deletes a package from a FileSystem.
-        private void DeletePackageFromFileSystem(string source, string packageId, string packageVersion, ILogger logger)
+        private void DeletePackageFromFileSystem(string source, string packageId, string packageVersion)
         {
             var sourceuri = UriUtility.CreateSourceUri(source);
             var root = sourceuri.LocalPath;

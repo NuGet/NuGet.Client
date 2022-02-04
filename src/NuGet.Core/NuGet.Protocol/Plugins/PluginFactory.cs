@@ -193,7 +193,7 @@ namespace NuGet.Protocol.Plugins
                 {
                     exitedProcess.Exited -= onExited;
 
-                    OnPluginProcessExited(eventSender, exitedProcess, pluginId);
+                    OnPluginProcessExited(exitedProcess, pluginId);
 
                     if (connection?.State == ConnectionState.Handshaking)
                     {
@@ -411,7 +411,7 @@ namespace NuGet.Protocol.Plugins
 
         // This is more reliable than OnPluginExited as this even handler is wired up before the process
         // has even started, while OnPluginExited is wired up after.
-        private void OnPluginProcessExited(object sender, IPluginProcess pluginProcess, string pluginId)
+        private void OnPluginProcessExited(IPluginProcess pluginProcess, string pluginId)
         {
             if (_logger.IsEnabled)
             {

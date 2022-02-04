@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using Xunit;
@@ -581,6 +582,19 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(1, packages.Count);
                 Assert.Equal("myPackage", package.Identity.Id);
                 Assert.Equal("1.0.0-alpha.1.2+5", package.Identity.Version.ToFullString());
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageSearch_SearchAsync_WithCancellationToken_ThrowsAsync()
+        {
+            using (var root = TestDirectory.Create())
+            {
+                var localResource = new FindLocalPackagesResourceV2(root);
+                LocalPackageSearchResource resource = new LocalPackageSearchResource(localResource);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    async () => await resource.SearchAsync("", null, 0, 1, NullLogger.Instance, new CancellationToken(canceled: true)));
             }
         }
     }
