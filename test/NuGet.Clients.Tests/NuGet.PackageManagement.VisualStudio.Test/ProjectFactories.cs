@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         internal static LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string projectId, IVsProjectThreadingService threadingService, LibraryDependency[] pkgDependencies)
         {
             var framework = NuGetFramework.Parse("netstandard13");
-            var projectAdapter = CreateProjectAdapter(testDirectory);
+            IVsProjectAdapter projectAdapter = CreateProjectAdapter(testDirectory);
 
             var projectServices = new TestProjectSystemServices();
             projectServices.SetupInstalledPackages(
@@ -51,6 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectId,
                 projectServices,
                 threadingService);
+
             return testProject;
         }
 
@@ -67,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }
             };
 
-            return CreateLegacyPackageReferenceProject(testDirectory, projectId, threadingService, onedep);
+            return CreateLegacyPackageReferenceProject(testDirectory: testDirectory, projectId: projectId, threadingService: threadingService, pkgDependencies: onedep);
         }
 
         internal static IVsProjectAdapter CreateProjectAdapter(string fullPath)

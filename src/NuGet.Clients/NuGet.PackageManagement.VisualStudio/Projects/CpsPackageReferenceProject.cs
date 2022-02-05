@@ -23,7 +23,6 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Internal.Contracts;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
 
@@ -205,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        protected override IEnumerable<PackageReference> ComputeInstalledPackages(
+        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             List<FrameworkInstalledPackages> installedPackages,
@@ -228,23 +227,15 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> ComputeTransitivePackages(
+        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(
             NuGetFramework targetFramework,
             List<FrameworkInstalledPackages> installedPackages,
             List<FrameworkInstalledPackages> transitivePackages,
             IList<LockFileTarget> targets)
         {
-            FrameworkInstalledPackages targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
-            if (targetFrameworkInstalledPackages == null)
-            {
-                targetFrameworkInstalledPackages = new FrameworkInstalledPackages();
-            }
+            FrameworkInstalledPackages targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
-            FrameworkInstalledPackages targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
-            if (targetFrameworkTransitivePackages == null)
-            {
-                targetFrameworkTransitivePackages = new FrameworkInstalledPackages();
-            }
+            FrameworkInstalledPackages targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
             if (targetFrameworkInstalledPackages.Packages == null)
             {

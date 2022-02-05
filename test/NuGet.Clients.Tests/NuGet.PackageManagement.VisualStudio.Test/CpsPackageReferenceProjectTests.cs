@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
@@ -27,6 +28,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Test;
 using Test.Utility;
 using Xunit;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
@@ -39,6 +41,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public CpsPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
+            var componentModel = new Mock<IComponentModel>();
+            AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
+
+            // Force Enable Transitive Origin experiment tests
+            var constant = ExperimentationConstants.TransitiveDependenciesInPMUI;
+            var flightsEnabled = new Dictionary<string, bool>()
+            {
+                { constant.FlightFlag, true },
+            };
+            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
+
+            service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
+            componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
         }
 
         [Fact]

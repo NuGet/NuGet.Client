@@ -21,6 +21,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
 
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             bool equalsFramework;
             if (TargetFramework != null)
             {

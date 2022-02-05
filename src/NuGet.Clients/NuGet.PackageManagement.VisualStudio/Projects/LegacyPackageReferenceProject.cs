@@ -36,7 +36,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
 
-        // Dictionary key type is packageId
         public NuGetFramework TargetFramework { get; }
 
         public LegacyPackageReferenceProject(
@@ -65,8 +64,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ProjectServices = projectServices;
 
-            InstalledPackages = new();
-            TransitivePackages = new();
+            InstalledPackages = new(); // This colleciton is a Dictionary whose key type is packageId
+            TransitivePackages = new(); // This colleciton is a Dictionary whose key type is packageId
         }
 
         public LegacyPackageReferenceProject(
@@ -452,12 +451,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override IEnumerable<PackageReference> ComputeInstalledPackages(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
+        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
         {
             return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> ComputeTransitivePackages(NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages, IList<LockFileTarget> targets)
+        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages, IList<LockFileTarget> targets)
         {
             return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }

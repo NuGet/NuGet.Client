@@ -99,7 +99,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             };
             var transitivePackages = new List<PackageReference>()
             {
-                new PackageReference(new PackageIdentity("b", new NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)  
+                new PackageReference(new PackageIdentity("b", new NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)
             };
             var transitiveProjectPackages = transitivePackages.Select(p => new TransitivePackageReference(p)).ToList();
             var projectPackages = new ProjectPackages(installedPackages, transitiveProjectPackages);
@@ -197,12 +197,12 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
-            protected override IEnumerable<PackageReference> ComputeInstalledPackages(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<LockFileTarget> targets)
+            protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<LockFileTarget> targets)
             {
                 throw new NotImplementedException();
             }
 
-            protected override IReadOnlyList<PackageReference> ComputeTransitivePackages(NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<PackageReference> transitivePackages, IList<LockFileTarget> targets)
+            protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<PackageReference> transitivePackages, IList<LockFileTarget> targets)
             {
                 throw new NotImplementedException();
             }

@@ -7,7 +7,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio.Utility
 {
-    public class ProjectInstalledPackage
+    public class ProjectInstalledPackage : IEquatable<ProjectInstalledPackage>
     {
         public VersionRange AllowedVersions { get; }
         public PackageIdentity InstalledPackage { get; }
@@ -26,6 +26,51 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 
             AllowedVersions = versionRange;
             InstalledPackage = installedPackage;
+        }
+
+        public bool Equals(ProjectInstalledPackage other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            bool equalAllowedVersions;
+            if (AllowedVersions != null)
+            {
+                equalAllowedVersions = AllowedVersions.Equals(other.AllowedVersions);
+            }
+            else
+            {
+                equalAllowedVersions = other.AllowedVersions != null;
+            }
+
+            bool equalInstalledPackage;
+            if (InstalledPackage != null)
+            {
+                equalInstalledPackage = InstalledPackage.Equals(other.InstalledPackage);
+            }
+            else
+            {
+                equalInstalledPackage = other.InstalledPackage != null;
+            }
+
+            return equalAllowedVersions && equalInstalledPackage;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ProjectInstalledPackage);
+        }
+
+        public override int GetHashCode()
+        {
+            return AllowedVersions.GetHashCode() + 37 * InstalledPackage.GetHashCode();
         }
     }
 }

@@ -70,14 +70,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
 
             // Force Enable Transitive Origin experiment tests
-            var constant = ExperimentationConstants.TransitiveDependenciesInPMUI;
+            ExperimentationConstants constant = ExperimentationConstants.TransitiveDependenciesInPMUI;
             var flightsEnabled = new Dictionary<string, bool>()
             {
                 { constant.FlightFlag, true },
             };
             var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
 
-            service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
+            service.IsExperimentEnabled(constant).Should().Be(true);
             componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
 
             _logger = new TestLogger(output);
@@ -563,7 +563,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
-                // Setup
+                // Arrange
                 LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, projectId, "[1.0.0, )", _threadingService);
 
                 NullSettings settings = NullSettings.Instance;
@@ -615,20 +615,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Act
                 var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
 
-                // packageB and packageC are transitive dependencies
+                // Assert
+                installedAndTransitive.InstalledPackages.Should().HaveCount(1);
                 installedAndTransitive.TransitivePackages.Should().HaveCount(2);
 
-                var transitivePackageB = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageB").First();
-                transitivePackageB.TransitiveOrigins.Should().HaveCount(1);
-                var transitiveOriginB = transitivePackageB.TransitiveOrigins.First();
-                Assert.Equal("packageA", transitiveOriginB.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginB.Identity.Version);
+                var transitiveOrigin = new PackageIdentity("packageA", new NuGetVersion("2.15.3"));
+                ITransitivePackageReferenceContextInfo transitivePackageB = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageB").Single();
+                IPackageReferenceContextInfo transitiveOriginB = transitivePackageB.TransitiveOrigins.Single();
+                Assert.Equal(transitiveOrigin, transitiveOriginB.Identity);
 
-                var transitivePackageC = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageC").First();
-                transitivePackageC.TransitiveOrigins.Should().HaveCount(1);
-                var transitiveOriginC = transitivePackageC.TransitiveOrigins.First();
-                Assert.Equal("packageA", transitiveOriginC.Identity.Id);
-                Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginC.Identity.Version);
+                ITransitivePackageReferenceContextInfo transitivePackageC = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageC").Single();
+                IPackageReferenceContextInfo transitiveOriginC = transitivePackageC.TransitiveOrigins.Single();
+                Assert.Equal(transitiveOrigin, transitiveOriginC.Identity);
             }
         }
 
@@ -698,8 +696,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
 
-        [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithLegacyPackageReferenceProject_MultipleOriginsAsync()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithLegacyPackageReferenceProject_MultipleOriginsAsync(bool useSameVersions)
         {
             string projectId = Guid.NewGuid().ToString();
 
@@ -743,13 +743,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 _solutionManager.NuGetProjects.Add(testProject);
 
-                var logger = new TestLogger();
+                var logger = _logger;
                 var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, logger)
                 {
                     LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
                 };
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageD", "0.1.1");
+                if (!useSameVersions)
+                {
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageD", "0.1.2");
+                }
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageC", "2.1.43");
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0",
                     new PackageDependency[]
@@ -765,7 +769,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageX", "3.0.0",
                     new PackageDependency[]
                     {
-                        new PackageDependency("packageD", VersionRange.Parse("0.1.1")),
+                        new PackageDependency("packageD", VersionRange.Parse(useSameVersions? "0.1.1" : "0.1.2")),
                     });
 
                 // Act
