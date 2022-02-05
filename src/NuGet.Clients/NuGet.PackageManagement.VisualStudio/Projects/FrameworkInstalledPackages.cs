@@ -9,12 +9,12 @@ using NuGet.PackageManagement.VisualStudio.Utility;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class ProjectTuple : IEquatable<ProjectTuple>
+    public class FrameworkInstalledPackages : IEquatable<FrameworkInstalledPackages>
     {
         public NuGetFramework TargetFramework { get; set; }
         public Dictionary<string, ProjectInstalledPackage> Packages { get; internal set; }
 
-        public bool Equals(ProjectTuple other)
+        public bool Equals(FrameworkInstalledPackages other)
         {
             if (other == null)
             {
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as ProjectTuple);
+            return Equals(obj as FrameworkInstalledPackages);
         }
 
         public override int GetHashCode()

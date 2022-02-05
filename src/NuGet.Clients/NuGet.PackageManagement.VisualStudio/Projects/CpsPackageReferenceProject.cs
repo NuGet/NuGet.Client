@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Key feature/difference is the project restore info is pushed by nomination API and stored in 
     /// a cache. Factory method retrieving the info from the cache should be provided.
     /// </summary>
-    public class CpsPackageReferenceProject : PackageReferenceProject<List<ProjectTuple>, ProjectTuple>
+    public class CpsPackageReferenceProject : PackageReferenceProject<List<FrameworkInstalledPackages>, FrameworkInstalledPackages>
     {
         private const string TargetFrameworkCondition = "TargetFramework";
 
@@ -208,14 +208,14 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override IEnumerable<PackageReference> ComputeInstalledPackages(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            List<ProjectTuple> installedPackages,
+            List<FrameworkInstalledPackages> installedPackages,
             IList<LockFileTarget> targets)
         {
-            ProjectTuple targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            FrameworkInstalledPackages targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
             if (targetFrameworkPackages == null)
             {
-                targetFrameworkPackages = new ProjectTuple();
+                targetFrameworkPackages = new FrameworkInstalledPackages();
             }
 
             if (targetFrameworkPackages.Packages == null)
@@ -230,20 +230,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override IReadOnlyList<PackageReference> ComputeTransitivePackages(
             NuGetFramework targetFramework,
-            List<ProjectTuple> installedPackages,
-            List<ProjectTuple> transitivePackages,
+            List<FrameworkInstalledPackages> installedPackages,
+            List<FrameworkInstalledPackages> transitivePackages,
             IList<LockFileTarget> targets)
         {
-            ProjectTuple targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            FrameworkInstalledPackages targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
             if (targetFrameworkInstalledPackages == null)
             {
-                targetFrameworkInstalledPackages = new ProjectTuple();
+                targetFrameworkInstalledPackages = new FrameworkInstalledPackages();
             }
 
-            ProjectTuple targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            FrameworkInstalledPackages targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
             if (targetFrameworkTransitivePackages == null)
             {
-                targetFrameworkTransitivePackages = new ProjectTuple();
+                targetFrameworkTransitivePackages = new FrameworkInstalledPackages();
             }
 
             if (targetFrameworkInstalledPackages.Packages == null)
