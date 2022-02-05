@@ -445,19 +445,19 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        protected override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+        protected override Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
-            return new ValueTask<PackageSpec>(GetPackageSpecAsync(NullSettings.Instance));
+            return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override IEnumerable<PackageReference> GetPRs(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
+        protected override IEnumerable<PackageReference> ComputeInstalledPackages(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
         {
             return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> GetTransPRs(NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages, IList<LockFileTarget> targets)
+        protected override IReadOnlyList<PackageReference> ComputeTransitivePackages(NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages, IList<LockFileTarget> targets)
         {
             return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }

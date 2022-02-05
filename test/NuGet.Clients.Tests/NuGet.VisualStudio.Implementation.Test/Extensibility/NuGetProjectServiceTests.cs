@@ -95,11 +95,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             var installedPackages = new List<PackageReference>()
             {
-                new PackageReference(new PackageIdentity("a", new Versioning.NuGetVersion(1, 0, 0)), FrameworkConstants.CommonFrameworks.Net50)
+                new PackageReference(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), FrameworkConstants.CommonFrameworks.Net50)
             };
             var transitivePackages = new List<PackageReference>()
             {
-                new PackageReference(new PackageIdentity("b", new Versioning.NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)  
+                new PackageReference(new PackageIdentity("b", new NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)  
             };
             var transitiveProjectPackages = transitivePackages.Select(p => new TransitivePackageReference(p)).ToList();
             var projectPackages = new ProjectPackages(installedPackages, transitiveProjectPackages);
@@ -192,17 +192,17 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
-            protected override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+            protected override Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
             {
                 throw new NotImplementedException();
             }
 
-            protected override IEnumerable<PackageReference> GetPRs(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<LockFileTarget> targets)
+            protected override IEnumerable<PackageReference> ComputeInstalledPackages(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<LockFileTarget> targets)
             {
                 throw new NotImplementedException();
             }
 
-            protected override IReadOnlyList<PackageReference> GetTransPRs(NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<PackageReference> transitivePackages, IList<LockFileTarget> targets)
+            protected override IReadOnlyList<PackageReference> ComputeTransitivePackages(NuGetFramework targetFramework, IList<PackageReference> installedPackages, IList<PackageReference> transitivePackages, IList<LockFileTarget> targets)
             {
                 throw new NotImplementedException();
             }

@@ -175,17 +175,13 @@ namespace NuGet.PackageManagement.VisualStudio
             var nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
             foreach (NuGetProject? project in projects)
             {
-                switch (project)
+                if (project is IPackageReferenceProject packageReferenceProject)
                 {
-                    case CpsPackageReferenceProject cpsPr:
-                        prStyleTasks.Add(cpsPr.GetInstalledAndTransitivePackagesAsync(cancellationToken));
-                        break;
-                    case LegacyPackageReferenceProject legacyPr:
-                        prStyleTasks.Add(legacyPr.GetInstalledAndTransitivePackagesAsync(cancellationToken));
-                        break;
-                    default:
-                        nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
-                        break;
+                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken));
+                }
+                else
+                {
+                    nonPrStyleTasks.Add(project.GetInstalledPackagesAsync(cancellationToken));
                 }
             }
             ProjectPackages[] prStyleReferences = await Task.WhenAll(prStyleTasks);

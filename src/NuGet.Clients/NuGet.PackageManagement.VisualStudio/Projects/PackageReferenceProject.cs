@@ -18,6 +18,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
@@ -27,8 +28,16 @@ namespace NuGet.PackageManagement.VisualStudio
     /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
     /// packages in a package reference style project.
     /// </summary>
-    public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject where T : ICollection<U>
+    /// <remarks>Each concrete implementation is responsible of initializing <see cref="InstalledPackages"/> and <see cref="TransitivePackages"/> collections</remarks>
+    /// <typeparam name="T">A collection type for Installed and Transtive packages</typeparam>
+    /// <typeparam name="U">Type of the collection elements for Installed and Transitive packages</typeparam>
+    public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>
     {
+        private static readonly Microsoft.VisualStudio.Threading.AsyncLazy<INuGetExperimentationService> NuGetExperimentationService = new(async () =>
+        {
+            return await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
+        }, NuGetUIThreadHelper.JoinableTaskFactory);
+
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
 
         private protected readonly Dictionary<PackageIdentity, TransitiveEntry> TransitiveOriginsCache = new();
@@ -86,15 +95,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return packages.InstalledPackages;
         }
 
-        /// <summary>
-        /// Gets the both the installed (top level) and transitive package references for this project.
-        /// Returns the package reference as two separate lists (installed and transitive).
-        /// </summary>
-        /// <param name="token">Cancellation token</param>
-        /// <returns>A <see cref="ProjectPackages"/> object with two lists: Installed and transitive packages</returns>
+        /// <inheritdoc/>
         public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
-            PackageSpec packageSpec = await GetCachedPackageSpecAndAssetsFilePathAsync(token);
+            (PackageSpec packageSpec, string assetsPath) = await GetCachedPackageSpecAndAssetsFilePathAsync(token);
             if (packageSpec == null) // null means project is not nominated
             {
                 IsInstalledAndTransitiveComputationNeeded = true;
@@ -106,8 +110,8 @@ namespace NuGet.PackageManagement.VisualStudio
             if (IsInstalledAndTransitiveComputationNeeded)
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
-                ClearCache();
-                targetsList = await GetTargetsListAsync(token);
+                ClearInstalledAndTransitivePackages();
+                targetsList = await GetTargetsListAsync(assetsPath, token);
             }
 
             var frameworkSorter = new NuGetFrameworkSorter();
@@ -115,52 +119,55 @@ namespace NuGet.PackageManagement.VisualStudio
             // get installed packages
             List<PackageReference> installedPackages = packageSpec
                 .TargetFrameworks
-                .SelectMany(f => GetPRs(
-                    f.Dependencies,
-                    f.FrameworkName,
-                    InstalledPackages,
-                    targetsList))
+                .SelectMany(f => ComputeInstalledPackages(f.Dependencies, f.FrameworkName, InstalledPackages, targetsList))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
 
-            // get the transitive packages
+            // get transitive packages
             List<PackageReference> transitivePackages = packageSpec
                 .TargetFrameworks
-                .SelectMany(f => GetTransPRs(
-                    f.FrameworkName,
-                    InstalledPackages,
-                    TransitivePackages,
-                    targetsList))
+                .SelectMany(f => ComputeTransitivePackages(f.FrameworkName, InstalledPackages, TransitivePackages, targetsList))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
 
-            List<TransitivePackageReference> transitivePackagesWithOrigins = transitivePackages
-                .Select(transitivePr => Tuple.Create(transitivePr, GetTransitivePackageOrigin(
-                    transitivePr,
-                    installedPackages,
-                    targetsList,
-                    token)))
-                .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
-                .ToList();
+            INuGetExperimentationService nuGetExp = await NuGetExperimentationService?.GetValueAsync(token);
+            bool experimentEnabled = nuGetExp?.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI) ?? false;
+            List<TransitivePackageReference> transitivePackagesWithOrigins;
+
+            if (experimentEnabled)
+            {
+                // Get Transitive Origins
+                transitivePackagesWithOrigins = transitivePackages
+                    .Select(transitivePr => Tuple.Create(transitivePr, GetTransitivePackageOrigin(transitivePr, installedPackages, targetsList, token)))
+                    .Select(te => MergeTransitiveOrigin(te.Item1, te.Item2))
+                    .ToList();
+            }
+            else
+            {
+                // Get Transitive packages without Transitive Origins
+                transitivePackagesWithOrigins = transitivePackages
+                    .Select(transitivePackages => new TransitivePackageReference(transitivePackages))
+                    .ToList();
+            }
 
             IsInstalledAndTransitiveComputationNeeded = false;
 
             return new ProjectPackages(installedPackages, transitivePackagesWithOrigins);
         }
 
-        protected abstract IEnumerable<PackageReference> GetPRs(
-            IEnumerable<LibraryDependency> libraries,
-            NuGetFramework targetFramework,
-            T installedPackages,
-            IList<LockFileTarget> targets);
+        protected abstract IEnumerable<PackageReference> ComputeInstalledPackages(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, T installedPackages, IList<LockFileTarget> targets);
 
-        protected abstract IReadOnlyList<PackageReference> GetTransPRs(
-            NuGetFramework targetFramework,
-            T installedPackages,
-            T transitivePackages,
-            IList<LockFileTarget> targets);
+        protected abstract IReadOnlyList<PackageReference> ComputeTransitivePackages(NuGetFramework targetFramework, T installedPackages, T transitivePackages, IList<LockFileTarget> targets);
+
+        /// <summary>
+        /// Obtains <see cref="PackageSpec"/> object from assets file from disk
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>A <see cref="PackageSpec"/> filled from assets file on disk</returns>
+        /// <remarks>Each project implementation is responsible of gathering <see cref="PackageSpec"/> info</remarks>
+        protected abstract Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
 
         private protected IEnumerable<PackageReference> GetPackageReferences(
             IEnumerable<LibraryDependency> libraries,
@@ -209,51 +216,52 @@ namespace NuGet.PackageManagement.VisualStudio
         internal TransitiveEntry GetTransitivePackageOrigin(PackageReference transitivePackage, IReadOnlyList<PackageReference> installedPackages, IList<LockFileTarget> targetsList, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
-
-            if (!IsInstalledAndTransitiveComputationNeeded)
+            if (IsInstalledAndTransitiveComputationNeeded)
             {
-                // Assets file has not changed, look at transtive origin cache
-                // 2.1 Look for a transitive cached entry and return that entry
-                TransitiveEntry cacheEntry = GetCachedTransitiveOrigin(transitivePackage.PackageIdentity);
-                return cacheEntry;
-            }
+                // Assets file has changed. Recompute Transitive Origins
+                TransitiveOriginsCache.Clear();
 
-            // Assets file changed, recompute transitive origins
-            TransitiveOriginsCache.Clear();
+                // Otherwise, find all Transitive origin and update cache
+                var memoryVisited = new HashSet<PackageIdentity>();
 
-            // Otherwise, find all Transitive origin and update cache
-            var memoryVisited = new HashSet<PackageIdentity>();
-
-            // 3. For each target framework graph (Framework, RID)-pair:
-            foreach (LockFileTarget targetFxGraph in targetsList)
-            {
-                var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-
-                foreach (var directPkg in installedPackages) // 3.1 For each direct dependency d:
+                // 3. For each target framework graph (Framework, RID)-pair:
+                foreach (LockFileTarget targetFxGraph in targetsList)
                 {
-                    memoryVisited.Clear();
-                    // 3.1.1 Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
-                    MarkTransitiveOrigin(directPkg, directPkg, targetFxGraph, memoryVisited, key, ct);
+                    var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
+
+                    foreach (var directPkg in installedPackages) // 3.1 For each direct dependency d:
+                    {
+                        memoryVisited.Clear();
+                        // 3.1.1 Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
+                        MarkTransitiveOrigin(directPkg, directPkg, targetFxGraph, memoryVisited, key, ct);
+                    }
                 }
             }
+            // Otherwise, assets file has not changed. Look at Transitive Origins Cache
+            TransitiveEntry cacheEntry;
+            TransitiveOriginsCache.TryGetValue(transitivePackage.PackageIdentity, out cacheEntry);
 
-            // 4. return cached result for specific transitive dependency
-            return GetCachedTransitiveOrigin(transitivePackage.PackageIdentity);
+            // 4. Return cached result for specific transitive dependency
+            return cacheEntry;
         }
 
         /// <summary>
-        /// Returns <see cref="PackageSpec"/> from project-system
+        /// Returns cached <see cref="PackageSpec"/> object from project-system
         /// </summary>
         /// <param name="token">Cancellation token</param>
         /// <returns>An <see cref="PackageSpec"/> object</returns>
         /// <remarks>Projects need to be NuGet-restored before calling this function</remarks>
-        internal async Task<PackageSpec> GetCachedPackageSpecAndAssetsFilePathAsync(CancellationToken token)
+        internal async Task<(PackageSpec, string)> GetCachedPackageSpecAndAssetsFilePathAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
             PackageSpec currentPackageSpec = await GetPackageSpecAsync(token);
             PackageSpec cachedPackageSpec = null;
-            _ = _lastPackageSpec != null && _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
+
+            if (_lastPackageSpec != null)
+            {
+                _lastPackageSpec.TryGetTarget(out cachedPackageSpec);
+            }
 
             string assetsFilePath = await GetAssetsFilePathAsync();
             var assets = new FileInfo(assetsFilePath);
@@ -267,7 +275,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 IsInstalledAndTransitiveComputationNeeded = true;
             }
 
-            return currentPackageSpec;
+            return (currentPackageSpec, assetsFilePath);
         }
 
         /// <summary>
@@ -277,13 +285,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>A list of dependencies, indexed by framework/RID</returns>
         /// <remarks>Assets file reading occurs in a background thread</remarks>
         /// <seealso cref="GetAssetsFilePathAsync"/>
-        protected async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(CancellationToken ct)
+        protected async ValueTask<IList<LockFileTarget>> GetTargetsListAsync(string assetsFilePath, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
             await TaskScheduler.Default;
 
-            string assetsFilePath = await GetAssetsFilePathAsync();
             LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
 
             return lockFile?.Targets;
@@ -320,10 +327,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 visited.Add(current.PackageIdentity); // visited
 
-                // Update cache
-                TransitiveEntry cachedEntry = GetCachedTransitiveOrigin(current.PackageIdentity);
-
-                if (cachedEntry == null)
+                // Lookup Transitive Origins Cache
+                TransitiveEntry cachedEntry;
+                if (!TransitiveOriginsCache.TryGetValue(current.PackageIdentity, out cachedEntry))
                 {
                     cachedEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
                     {
@@ -341,7 +347,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     cachedEntry[fxRidEntry].Add(top);
                 }
 
-                SetCachedTransitiveOrigin(current.PackageIdentity, cachedEntry);
+                // Upsert Transitive Origins Cache
+                TransitiveOriginsCache[current.PackageIdentity] = cachedEntry;
 
                 foreach (PackageDependency dep in node.Dependencies.ToList()) // Casting to list to prevent backing allocations
                 {
@@ -362,48 +369,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        /// <summary>
-        /// Generates a cache key for Transitive Originas cache
-        /// </summary>
-        /// <param name="transitivePackage"></param>
-        /// <returns>A string with given key</returns>
-        /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
-        /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
-        internal PackageIdentity GetTransitiveCacheKey(PackageIdentity transitivePackage)
-        {
-            return transitivePackage;
-        }
-
-        /// <summary>
-        /// Obtains cached entry for a given transitive package
-        /// </summary>
-        /// <param name="transitivePackage">Identity of transitive package</param>
-        /// <returns>A <see cref="TransitiveEntry"/> object, or <c>null</c> if not found</returns>
-        /// <seealso cref="SetCachedTransitiveOrigin(PackageIdentity, TransitiveEntry)"/>
-        internal TransitiveEntry GetCachedTransitiveOrigin(PackageIdentity transitivePackage)
-        {
-            var key = GetTransitiveCacheKey(transitivePackage);
-
-            if (TransitiveOriginsCache.ContainsKey(key))
-            {
-                return TransitiveOriginsCache[key];
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Replaces cached entry for a given transitive package with a <see cref="TransitiveEntry"/>
-        /// </summary>
-        /// <param name="transitivePackage">Identity of transitive package</param>
-        /// <param name="origins">Packages identified as package origins</param>
-        /// <seealso cref="GetCachedTransitiveOrigin(PackageIdentity)"/>
-        internal void SetCachedTransitiveOrigin(PackageIdentity transitivePackage, TransitiveEntry origins)
-        {
-            var key = GetTransitiveCacheKey(transitivePackage);
-            TransitiveOriginsCache[key] = origins;
-        }
-
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
         {
             var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
@@ -419,17 +384,9 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Obtains <see cref="PackageSpec"/> object from assets file from disk
-        /// </summary>
-        /// <param name="ct">Cancellation token</param>
-        /// <returns>A <see cref="PackageSpec"/> filled from assets file on disk</returns>
-        /// <remarks>Each project implementation is responsible of gathering <see cref="PackageSpec"/> info</remarks>
-        protected abstract ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
-
-        /// <summary>
         /// Clears Cached Transitive package prigins, Installed packages and Transitive packages
         /// </summary>
-        internal void ClearCache()
+        internal void ClearInstalledAndTransitivePackages()
         {
             InstalledPackages.Clear();
             TransitivePackages.Clear();

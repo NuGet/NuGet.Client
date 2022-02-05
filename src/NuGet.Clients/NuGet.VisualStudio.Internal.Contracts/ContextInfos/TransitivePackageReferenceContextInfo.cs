@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             return new TransitivePackageReferenceContextInfo(identity, framework);
         }
 
-        public static TransitivePackageReferenceContextInfo Create(IPackageReferenceContextInfo packageReference)
+        private static TransitivePackageReferenceContextInfo Create(IPackageReferenceContextInfo packageReference)
         {
             if (packageReference == null)
             {

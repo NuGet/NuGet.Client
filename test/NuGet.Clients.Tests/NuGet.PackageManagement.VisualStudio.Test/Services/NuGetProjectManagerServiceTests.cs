@@ -34,6 +34,7 @@ using NuGet.Resolver;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Test;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
 using Test.Utility;
@@ -67,6 +68,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var componentModel = new Mock<IComponentModel>();
             componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(_projectContext);
             AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
+
+            // Force Enable Transitive Origin experiment tests
+            var constant = ExperimentationConstants.TransitiveDependenciesInPMUI;
+            var flightsEnabled = new Dictionary<string, bool>()
+            {
+                { constant.FlightFlag, true },
+            };
+            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
+
+            service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
+            componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
 
             _logger = new TestLogger(output);
         }
@@ -545,7 +557,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithLegacyPackageReferenceProject_OneTransitiveOriginAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithLegacyPackageReferenceProject_OneTransitiveOriginAsync()
         {
             string projectId = Guid.NewGuid().ToString();
 
@@ -687,7 +699,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithLegacyPackageReferenceProject_MultipleOriginsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithLegacyPackageReferenceProject_MultipleOriginsAsync()
         {
             string projectId = Guid.NewGuid().ToString();
 
@@ -790,7 +802,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetTransitivePackageOriginAsync_WithCpsPackageReferenceProject_OneTransitiveReferenceAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_WithCpsPackageReferenceProject_OneTransitiveReferenceAsync()
         {
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -877,7 +889,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithCpsPackageReferenceProject_MultipleCalls_SucceedsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithCpsPackageReferenceProjectAndMultipleCalls_SucceedsAsync()
         {
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -1023,7 +1035,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithCpsPackageReferenceProject_Multitargeting_SucceedsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithCpsPackageReferenceProjectAndMultitargeting_SucceedsAsync()
         {
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -1203,7 +1215,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOrigins_WithCpsPackageReferenceProject_Multitargeting_MultipleCalls_MergedResults_SucceedsAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithCpsPackageReferenceProjectMultitargetingMultipleCalls_MergedResultsAsync()
         {
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;

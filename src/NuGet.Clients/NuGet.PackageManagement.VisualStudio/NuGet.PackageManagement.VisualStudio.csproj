@@ -44,6 +44,7 @@
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
     <Compile Include="ProjectServices\CpsProjectSystemReferenceReader.cs" />
+    <Compile Include="Projects\IPackageReferenceProject.cs" />
     <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Projects\ProjectPackages.cs" />
     <Compile Include="Projects\ProjectTuple.cs" />

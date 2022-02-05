@@ -116,11 +116,11 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        protected override ValueTask<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+        protected override Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
-            return new ValueTask<PackageSpec>(GetPackageSpec());
+            return Task.FromResult(GetPackageSpec());
         }
 
         #region IDependencyGraphProject
@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        protected override IEnumerable<PackageReference> GetPRs(
+        protected override IEnumerable<PackageReference> ComputeInstalledPackages(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             List<ProjectTuple> installedPackages,
@@ -228,7 +228,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> GetTransPRs(
+        protected override IReadOnlyList<PackageReference> ComputeTransitivePackages(
             NuGetFramework targetFramework,
             List<ProjectTuple> installedPackages,
             List<ProjectTuple> transitivePackages,
