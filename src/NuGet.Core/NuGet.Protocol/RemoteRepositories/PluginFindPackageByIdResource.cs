@@ -200,7 +200,7 @@ namespace NuGet.Protocol.Core.Types
                     () => SetLogLevelAsync(logger, cancellationToken),
                     cancellationToken);
 
-                var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+                var packageInfos = await EnsurePackagesAsync(id, cacheContext, cancellationToken);
 
                 return packageInfos.Keys;
             }
@@ -265,7 +265,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+                var packageInfos = await EnsurePackagesAsync(id, cacheContext, cancellationToken);
 
                 PackageInfo packageInfo;
 
@@ -360,7 +360,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+                var packageInfos = await EnsurePackagesAsync(id, cacheContext, cancellationToken);
 
                 return packageInfos.TryGetValue(version, out var packageInfo);
             }
@@ -378,7 +378,6 @@ namespace NuGet.Protocol.Core.Types
         private async Task<SortedDictionary<NuGetVersion, PackageInfo>> EnsurePackagesAsync(
             string id,
             SourceCacheContext cacheContext,
-            ILogger logger,
             CancellationToken cancellationToken)
         {
             AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>> result = null;
@@ -387,7 +386,6 @@ namespace NuGet.Protocol.Core.Types
                 (keyId) => new AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>(
                     () => FindPackagesByIdAsync(
                         keyId,
-                        logger,
                         cancellationToken));
 
             if (cacheContext.RefreshMemoryCache)
@@ -406,7 +404,6 @@ namespace NuGet.Protocol.Core.Types
 
         private async Task<SortedDictionary<NuGetVersion, PackageInfo>> FindPackagesByIdAsync(
             string id,
-            ILogger logger,
             CancellationToken cancellationToken)
         {
             var uri = _packageSource.Source;
@@ -451,8 +448,6 @@ namespace NuGet.Protocol.Core.Types
                     Strings.Log_FailedToRetrievePackage,
                     id,
                     uri);
-
-                logger.LogError(message);
 
                 throw new FatalProtocolException(message, ex);
             }

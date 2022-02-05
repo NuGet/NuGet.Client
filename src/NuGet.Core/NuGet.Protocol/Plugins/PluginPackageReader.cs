@@ -106,7 +106,7 @@ namespace NuGet.Protocol.Plugins
             var lazyCreator = _fileStreams.GetOrAdd(
                 path,
                 p => new Lazy<Task<FileStreamCreator>>(
-                    () => GetStreamInternalAsync(p, cancellationToken)));
+                    () => GetStreamInternalAsync(p)));
 
             await lazyCreator.Value;
 
@@ -1016,8 +1016,7 @@ namespace NuGet.Protocol.Plugins
         }
 
         private async Task<FileStreamCreator> GetStreamInternalAsync(
-            string pathInPackage,
-            CancellationToken cancellationToken)
+            string pathInPackage)
         {
             var packageId = _packageIdentity.Id;
             var packageVersion = _packageIdentity.Version.ToNormalizedString();
@@ -1032,7 +1031,7 @@ namespace NuGet.Protocol.Plugins
             var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<CopyFilesInPackageRequest, CopyFilesInPackageResponse>(
                 MessageMethod.CopyFilesInPackage,
                 payload,
-                cancellationToken);
+                CancellationToken.None);
 
             if (response != null)
             {
