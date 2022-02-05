@@ -54,6 +54,8 @@ namespace NuGet.Protocol.Tests
             var resource = await source.GetResourceAsync<AutoCompleteResource>();
             Assert.NotNull(resource);
 
+            var logger = new TestLogger();
+
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
             {
@@ -62,7 +64,7 @@ namespace NuGet.Protocol.Tests
                     "3.",
                     includePrerelease: true,
                     sourceCacheContext: sourceCacheContext,
-                    log: NullLogger.Instance,
+                    log: logger,
                     token: CancellationToken.None);
 
                 // Assert
@@ -70,6 +72,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(2, versions.Count());
                 Assert.Contains(new NuGetVersion("3.5.0-rc1-final"), versions);
                 Assert.Contains(new NuGetVersion("3.5.0"), versions);
+                Assert.NotEqual(0, logger.Messages.Count);
             }
         }
 
@@ -83,13 +86,16 @@ namespace NuGet.Protocol.Tests
             var resource = await source.GetResourceAsync<AutoCompleteResource>();
             Assert.NotNull(resource);
 
+            var logger = new TestLogger();
+
             // Act
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            IEnumerable<string> packages = await resource.IdStartsWith("elm", true, Common.NullLogger.Instance, cancellationTokenSource.Token);
+            IEnumerable<string> packages = await resource.IdStartsWith("elm", true, logger, cancellationTokenSource.Token);
 
             // Assert
             Assert.True(packages != null & packages.Any());
             Assert.Contains("elmah", packages);
+            Assert.NotEqual(0, logger.Messages.Count);
         }
 
         [Theory]
@@ -102,9 +108,11 @@ namespace NuGet.Protocol.Tests
             var resource = await source.GetResourceAsync<AutoCompleteResource>();
             Assert.NotNull(resource);
 
+            var logger = new TestLogger();
+
             // Act
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            Task<IEnumerable<string>> packagesTask = resource.IdStartsWith("elm", true, Common.NullLogger.Instance, cancellationTokenSource.Token);
+            Task<IEnumerable<string>> packagesTask = resource.IdStartsWith("elm", true, logger, cancellationTokenSource.Token);
             cancellationTokenSource.Cancel();
 
             // Assert
@@ -117,6 +125,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(e.InnerExceptions.Count(), 1);
                 Assert.True(e.InnerExceptions.Any(item => item.GetType().Equals(typeof(TaskCanceledException))));
             }
+            Assert.NotEqual(0, logger.Messages.Count);
         }
     }
 }
