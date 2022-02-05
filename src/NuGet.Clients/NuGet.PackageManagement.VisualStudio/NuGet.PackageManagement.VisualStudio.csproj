@@ -47,7 +47,7 @@
     <Compile Include="Projects\IPackageReferenceProject.cs" />
     <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Projects\ProjectPackages.cs" />
-    <Compile Include="Projects\ProjectTuple.cs" />
+    <Compile Include="Projects\FrameworkInstalledPackages.cs" />
     <Compile Include="Services\ISharedServiceState.cs" />
     <Compile Include="Services\NuGetPackageSearchService.cs" />
     <Compile Include="Services\NuGetProjectManagerService.cs" />
