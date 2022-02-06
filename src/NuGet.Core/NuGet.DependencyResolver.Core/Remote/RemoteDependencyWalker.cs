@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -170,7 +171,10 @@ namespace NuGet.DependencyResolver
                 if (outerEdge == null
                     || dependency.SuppressParent != LibraryIncludeFlags.All)
                 {
-                    (DependencyResult, LibraryDependency) result = WalkTreeCheckCycleAndNearestWins(outerEdge, dependency, predicate);
+                    // Dependency edge from the current node to the dependency
+                    var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, node.Item, dependency);
+
+                    (DependencyResult, LibraryDependency) result = WalkTreeCheckCycleAndNearestWins(innerEdge, dependency, predicate);
 
                     // Check for a cycle, this is needed for A (project) -> A (package)
                     // since the predicate will not be called for leaf nodes.
@@ -181,9 +185,6 @@ namespace NuGet.DependencyResolver
 
                     if (result.Item1 == DependencyResult.Acceptable)
                     {
-                        // Dependency edge from the current node to the dependency
-                        var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, node.Item, dependency);
-
                         if (tasks == null)
                         {
                             tasks = new List<Task<GraphNode<RemoteResolveResult>>>(1);
@@ -254,15 +255,15 @@ namespace NuGet.DependencyResolver
         /// A -> B -> C -> D 2.0 (downgrade)
         ///        -> D 1.0
         /// </summary>
-        /// <param name="node">Parent node to check for cycle or degrades</param>
+        /// <param name="graphEdge">Graph Edge node to check for cycle or potential degrades</param>
         /// <param name="dependency">Transitive package dependency</param>
         /// <param name="rootpredicate">Func delegate to invoke when processing direct package dependency</param>
-        private static (DependencyResult dependencyResult, LibraryDependency conflictingDependency) WalkTreeCheckCycleAndNearestWins(GraphEdge<RemoteResolveResult> node,
+        private static (DependencyResult dependencyResult, LibraryDependency conflictingDependency) WalkTreeCheckCycleAndNearestWins(GraphEdge<RemoteResolveResult> graphEdge,
                         LibraryDependency dependency, Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> rootpredicate)
         {
             (DependencyResult, LibraryDependency) result = default;
 
-            var edge = node;
+            var edge = graphEdge;
             bool exitFlag = false;
 
             while (edge != null && !exitFlag)
