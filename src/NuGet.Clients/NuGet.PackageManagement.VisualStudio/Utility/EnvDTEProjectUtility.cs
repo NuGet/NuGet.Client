@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             int pFound;
 
-            if (await VsHierarchyUtility.IsProjectCapabilityCompliantAsync(hierarchy))
+            if (VsHierarchyUtility.IsProjectCapabilityCompliant(hierarchy))
             {
                 // REVIEW: We want to revisit this after RTM - the code in this if statement should be applied to every project type.
                 // We're checking for VSDOCUMENTPRIORITY.DP_Standard here to see if the file is included in the project.
