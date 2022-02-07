@@ -61,8 +61,6 @@ namespace NuGet.PackageManagement.UI
 
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
-
-            _versions = new ItemsChangeObservableCollection<DisplayVersion>();
         }
 
         /// <summary>
@@ -71,8 +69,6 @@ namespace NuGet.PackageManagement.UI
         public virtual void CleanUp()
         {
         }
-
-        public ICollectionView VersionsView { get; set; }
 
         public void Dispose()
         {
@@ -540,38 +536,15 @@ namespace NuGet.PackageManagement.UI
         protected abstract Task CreateVersionsAsync(CancellationToken cancellationToken);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected ItemsChangeObservableCollection<DisplayVersion> _versions;
+        protected List<DisplayVersion> _versions;
 
         // The list of versions that can be installed
-        public ItemsChangeObservableCollection<DisplayVersion> Versions
+        public List<DisplayVersion> Versions
         {
             get { return _versions; }
         }
 
         public virtual void OnSelectedVersionChanged() { }
-
-        private string _userInput;
-        public string UserInput
-        {
-            get
-            {
-                return _userInput;
-            }
-            set
-            {
-                if (_userInput != value)
-                {
-                    _userInput = value;
-
-                    if (Versions != null)
-                    {
-                        Versions.Refresh();
-                    }
-
-                    OnPropertyChanged(nameof(UserInput));
-                }
-            }
-        }
 
         private DisplayVersion _selectedVersion;
 
@@ -663,7 +636,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Calculate the version to select among _versions and select it
-        protected void SelectVersion(NuGetVersion latestVersion = null)
+        protected void SelectVersion()
         {
             if (_versions.Count == 0)
             {
@@ -680,37 +653,12 @@ namespace NuGet.PackageManagement.UI
                 (_versions.Any(v => v != null && !v.IsValidVersion) &&
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
-                // The project level is the only one that has an editable combobox and we can only see one project.
-                if (!IsSolution && _nugetProjects.Count() == 1 && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
-                {
-                    // For the Updates and Browse tab we select the latest version, for the installed tab
-                    // select the installed version by default. Otherwise, select the first version in the version list.
-                    IEnumerable<DisplayVersion> possibleVersions = _versions.Where(v => v != null);
-                    if (_filter.Equals(ItemFilter.UpdatesAvailable) || _filter.Equals(ItemFilter.All))
-                    {
-                        SelectedVersion = possibleVersions.FirstOrDefault(v => v.Range.OriginalString.Equals(latestVersion.ToString(), StringComparison.OrdinalIgnoreCase));
-                        UserInput = SelectedVersion.ToString();
-                    }
-                    else
-                    {
-                        SelectedVersion =
-                            possibleVersions.FirstOrDefault(v => StringComparer.OrdinalIgnoreCase.Equals(v.Range?.OriginalString, _searchResultPackage?.AllowedVersions?.OriginalString))
-                            ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
-                        UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
-                    }
-
-                    if (FirstDisplayedVersion == null)
-                    {
-                        FirstDisplayedVersion = SelectedVersion;
-                    }
-                }
-                else
-                {
-                    var possibleVersions = _versions.Where(v => v != null);
-                    SelectedVersion =
-                        possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
-                        ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
-                }
+                // Select the installed version by default.
+                // Otherwise, select the first version in the version list.
+                var possibleVersions = _versions.Where(v => v != null);
+                SelectedVersion =
+                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
+                    ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
             }
         }
 
@@ -723,13 +671,9 @@ namespace NuGet.PackageManagement.UI
             if (_versions != null)
             {
                 _versions.Clear();
-                FirstDisplayedVersion = null;
                 OnPropertyChanged(nameof(Versions));
             }
         }
-
-        // Because filtering affects the versions list, we want to display every version when it's opened the first time.
-        public DisplayVersion FirstDisplayedVersion { get; set; }
 
         public abstract bool IsSolution { get; }
 
@@ -836,19 +780,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersionIsAutoReferenced = value;
                 OnPropertyChanged(nameof(InstalledVersionIsAutoReferenced));
-            }
-        }
-
-        private string _previousSelectedVersion;
-        public string PreviousSelectedVersion
-        {
-            get
-            {
-                return _previousSelectedVersion ?? string.Empty;
-            }
-            set
-            {
-                _previousSelectedVersion = value;
             }
         }
 
