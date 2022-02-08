@@ -634,7 +634,7 @@ namespace NuGet.Protocol.Tests
                         take: 30,
                         log: testLogger,
                         token: CancellationToken.None))
-                        .OrderBy(p => p.Identity.Id)
+                        .OrderBy(p => p.Identity)
                         .ToList();
 
                 var matchPackage = matchingPackages.First();
@@ -690,6 +690,7 @@ namespace NuGet.Protocol.Tests
                         take: 30,
                         log: testLogger,
                         token: CancellationToken.None))
+                        .OrderBy(p => p.Identity)
                         .ToList();
 
                 // Assert
