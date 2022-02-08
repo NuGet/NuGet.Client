@@ -799,17 +799,15 @@ namespace NuGet.Commands
                 }
                 else if (thisPackages != null && otherPackages != null)
                 {
-                    packages = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
+                    var sizeUpperBound = Math.Max(thisPackages.Count, otherPackages.Count);
+                    packages = new Dictionary<string, HashSet<NuGetLogCode>>(sizeUpperBound, StringComparer.OrdinalIgnoreCase);
 
-                    var allKeys = thisPackages.Keys.Concat(otherPackages.Keys)
-                        .Distinct(StringComparer.OrdinalIgnoreCase);
-
-                    foreach (var key in allKeys)
+                    foreach (var kv in thisPackages)
                     {
-                        thisPackages.TryGetValue(key, out var thisCodes);
-                        otherPackages.TryGetValue(key, out var otherCodes);
-
-                        packages.Add(key, Intersect(thisCodes, otherCodes));
+                        if (otherPackages.TryGetValue(kv.Key, out var otherCodes))
+                        {
+                            packages.Add(kv.Key, Intersect(kv.Value, otherCodes));
+                        }
                     }
                 }
 
