@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Windows.Documents;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -98,6 +99,146 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result.Item1);
                 var output = result.Item2;
                 Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
+            }
+        }
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, false, true)]
+        [InlineData(false, true, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, false)]
+        [InlineData(true, true, true)]
+        public void ListCommand_WithLocalSource_WithMatchText_ReturnLatestVersionOnlyPerPackageId(bool includeMatchingText, bool includeListed, bool preRelease)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageFolder");
+                var solutionFolder = Path.Combine(pathContext.SolutionRoot);
+                string prefix = "newBestPackage";
+                string packageAId = prefix + "A";
+                string packageBId = prefix + "B";
+                var packageFileNameABeta = Util.CreateTestPackage(packageAId, "1.0.0-beta.1.2", packageDirectory);
+                var packageFileNameA1 = Util.CreateTestPackage(packageAId, "1.0.1", packageDirectory);
+                var packageFileNameA2 = Util.CreateTestPackage(packageAId, "2.0.0", packageDirectory);
+                var packageFileNameB1 = Util.CreateTestPackage(packageBId, "1.1.0", packageDirectory);
+                var packageFileNameBPreview = Util.CreateTestPackage(packageBId, "9.2.0-Preview1", packageDirectory);
+
+                // Act
+                var args = $"list -source {packageDirectory} " +
+                            (includeMatchingText ? "best" : string.Empty) + // matching text
+                            (includeListed ? " -includedelisted" : string.Empty) +
+                            (preRelease ? " -prerelease " : string.Empty);
+
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    solutionFolder,
+                    args,
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r1.ExitCode);
+                var expectedOutput = $"{packageAId} 2.0.0" + Environment.NewLine +
+                                     $"{packageBId} " + (preRelease ? "9.2.0-Preview1" : "1.1.0") + Environment.NewLine;
+                r1.Output.Should().Be(expectedOutput);
+            }
+        }
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, false, true)]
+        [InlineData(false, true, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, false)]
+        [InlineData(true, true, true)]
+        public void ListCommand_WithLocalSource_WithNoMatchingText_ReturnEmpty(bool includeListed, bool preRelease, bool allVersions)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageFolder");
+                var solutionFolder = Path.Combine(pathContext.SolutionRoot);
+                string prefix = "newBestPackage";
+                string packageAId = prefix + "A";
+                string packageBId = prefix + "B";
+                var packageFileNameABeta = Util.CreateTestPackage(packageAId, "1.0.0-beta.1.2", packageDirectory);
+                var packageFileNameA1 = Util.CreateTestPackage(packageAId, "1.0.1", packageDirectory);
+                var packageFileNameA2 = Util.CreateTestPackage(packageAId, "2.0.0", packageDirectory);
+                var packageFileNameB1 = Util.CreateTestPackage(packageBId, "1.1.0", packageDirectory);
+                var packageFileNameBPreview = Util.CreateTestPackage(packageBId, "9.2.0-Preview1", packageDirectory);
+
+                // Act
+                var args = $"list -source {packageDirectory} " +
+                            "randomId" + // this Id not part of any package Id
+                            (includeListed ? " -includedelisted" : string.Empty) +
+                            (preRelease ? " -prerelease " : string.Empty) +
+                            (allVersions ? " -allversions " : string.Empty);
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    solutionFolder,
+                    args,
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r1.ExitCode);
+                r1.Output.Should().Be("No packages found." + Environment.NewLine);
+            }
+        }
+
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, false, true)]
+        [InlineData(false, true, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, false)]
+        [InlineData(true, true, true)]
+        public void ListCommand_WithLocalSource_WithMatchingTextAndAllVersionOption_ReturnAllVersions(bool includeMatchingText, bool includeListed, bool preRelease)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageDirectory = Path.Combine(pathContext.WorkingDirectory, "packageFolder");
+                var solutionFolder = Path.Combine(pathContext.SolutionRoot);
+                string prefix = "newBestPackage";
+                string packageAId = prefix + "A";
+                string packageBId = prefix + "B";
+                var packageFileNameABeta = Util.CreateTestPackage(packageAId, "1.0.0-beta.1.2", packageDirectory);
+                var packageFileNameA2 = Util.CreateTestPackage(packageAId, "2.0.0", packageDirectory);
+                var packageFileNameB1 = Util.CreateTestPackage(packageBId, "1.1.0", packageDirectory);
+
+                // Act
+                var args = $"list -source {packageDirectory} -allversions " +
+                            (includeMatchingText ? "best" : string.Empty) + //matching text
+                            (includeListed ? " -includedelisted" : string.Empty) +
+                            (preRelease ? " -prerelease " : string.Empty);
+
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    solutionFolder,
+                    args,
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r1.ExitCode);
+                var output = preRelease ? ($"{packageAId} 1.0.0-beta.1.2" + Environment.NewLine) : string.Empty;
+                var expectedOutput = output +
+                                     $"{packageAId} 2.0.0" + Environment.NewLine +
+                                     $"{packageBId} 1.1.0" + Environment.NewLine;
+                r1.Output.Should().Be(expectedOutput);
             }
         }
 
