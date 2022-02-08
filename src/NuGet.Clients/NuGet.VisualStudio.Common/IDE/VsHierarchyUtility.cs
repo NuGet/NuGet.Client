@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio.Common;
@@ -19,11 +20,6 @@ namespace NuGet.VisualStudio
     {
         private const string VsWindowKindSolutionExplorer = "3AE79031-E1BC-11D0-8F78-00A0C9110057";
 
-        private static readonly string[] UnsupportedProjectCapabilities = new string[]
-        {
-            "SharedAssetsProject", // This is true for shared projects in universal apps
-        };
-
         public static string GetProjectPath(IVsHierarchy project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -32,9 +28,11 @@ namespace NuGet.VisualStudio
             return projectPath;
         }
 
-        public static async Task<bool> IsSupportedAsync(IVsHierarchy hierarchy, string projectTypeGuid)
+        public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
         {
-            if (await IsProjectCapabilityCompliantAsync(hierarchy))
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (IsProjectCapabilityCompliant(hierarchy))
             {
                 return true;
             }
@@ -46,9 +44,9 @@ namespace NuGet.VisualStudio
         /// <param name="hierarchy">IVsHierarchy representing the project in the solution.</param>
         /// <returns>True if NuGet should enable this project, false if NuGet should ignore the project.</returns>
         /// <remarks>The project may be packages.config or PackageReference. This method does not tell you which.</remarks>
-        public static async Task<bool> IsProjectCapabilityCompliantAsync(IVsHierarchy hierarchy)
+        public static bool IsProjectCapabilityCompliant(IVsHierarchy hierarchy)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             // NOTE: (AssemblyReferences + DeclaredSourceItems + UserSourceItems) exists solely for compatibility reasons
             // with existing custom CPS-based projects that existed before "PackageReferences" capability was introduced.
@@ -57,7 +55,10 @@ namespace NuGet.VisualStudio
 
         public static bool HasUnsupportedProjectCapability(IVsHierarchy hierarchy)
         {
-            return UnsupportedProjectCapabilities.Any(c => hierarchy.IsCapabilityMatch(c));
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // This is true for shared projects in universal apps
+            return hierarchy.IsCapabilityMatch(ProjectCapabilities.SharedAssetsProject);
         }
 
         public static string[] GetProjectTypeGuids(IVsHierarchy hierarchy, string defaultType = "")

@@ -590,7 +590,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         AfterNuGetProjectRenamed?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
 
                     }
-                    else if (await EnvDTEProjectUtility.IsSolutionFolderAsync(envDTEProject))
+                    else if (EnvDTEProjectUtility.IsSolutionFolder(envDTEProject))
                     {
                         // In the case where a solution directory was changed, project FullNames are unchanged.
                         // We only need to invalidate the projects under the current tree so as to sync the CustomUniqueNames.
