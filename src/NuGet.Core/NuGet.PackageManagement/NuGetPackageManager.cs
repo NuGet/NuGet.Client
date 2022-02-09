@@ -115,28 +115,34 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
             bool excludeVersion)
+            : this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, reporter: null, excludeVersion: excludeVersion)
+        {
+        }
+
+        public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            ISolutionManager solutionManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+            IRestoreProgressReporter reporter) :
+            this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, reporter, excludeVersion: false)
+        {
+            _ = reporter ?? throw new ArgumentNullException(nameof(reporter));
+        }
+
+        public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            ISolutionManager solutionManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+            IRestoreProgressReporter reporter,
+            bool excludeVersion)
         {
             SourceRepositoryProvider = sourceRepositoryProvider ?? throw new ArgumentNullException(nameof(sourceRepositoryProvider));
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             InstallationCompatibility = PackageManagement.InstallationCompatibility.Instance;
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), excludeVersion);
-            DeleteOnRestartManager = deleteOnRestartManager ?? throw new ArgumentNullException(nameof(deleteOnRestartManager));
-        }
-
-        // TODO NK - Add a duplicate here.
-        public NuGetPackageManager(
-            ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings,
-            ISolutionManager solutionManager,
-            IDeleteOnRestartManager deleteOnRestartManager,
-            IRestoreProgressReporter reporter)
-        {
-            SourceRepositoryProvider = sourceRepositoryProvider ?? throw new ArgumentNullException(nameof(sourceRepositoryProvider));
-            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
-            InstallationCompatibility = PackageManagement.InstallationCompatibility.Instance;
-            InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), false);
             DeleteOnRestartManager = deleteOnRestartManager ?? throw new ArgumentNullException(nameof(deleteOnRestartManager));
             RestoreProgressReporter = reporter;
         }
@@ -1538,7 +1544,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources, CancellationToken token) // Test only
+            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             if (nuGetProject is INuGetIntegratedProject)
             {
@@ -2322,7 +2328,7 @@ namespace NuGet.PackageManagement
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
             INuGetProjectContext nuGetProjectContext,
             SourceCacheContext sourceCacheContext,
-            CancellationToken token) // Update - PMC, ProjectManagerService
+            CancellationToken token)
         {
             var projects = nuGetProjects.ToList();
 
@@ -2387,7 +2393,7 @@ namespace NuGet.PackageManagement
         {
             var logger = new LoggerAdapter(nuGetProjectContext);
 
-            var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
+            var downloadContext = new PackageDownloadContext(sourceCacheContext)
             {
                 ParentId = nuGetProjectContext.OperationId,
                 ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
@@ -2732,7 +2738,6 @@ namespace NuGet.PackageManagement
             }
 
         }
-
 
         /// <summary>
         /// Run project actions for a build integrated project.

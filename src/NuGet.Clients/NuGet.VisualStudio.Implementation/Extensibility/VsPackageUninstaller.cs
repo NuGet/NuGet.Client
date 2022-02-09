@@ -49,6 +49,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
             _deleteOnRestartManager = deleteOnRestartManager;
+            _restoreProgressReporter = restoreProgressReporter;
         }
 
         public void UninstallPackage(Project project, string packageId, bool removeDependencies)
