@@ -19,11 +19,28 @@ namespace NuGet.VisualStudio
         private readonly Stopwatch _intervalWatch = new Stopwatch();
         private readonly List<Tuple<string, TimeSpan>> _intervalList = new List<Tuple<string, TimeSpan>>();
         private readonly string _activityName;
+        private readonly bool _isPopulatingIntervalList;
 
-        public IntervalTracker(string activityName)
+        /// <summary>
+        /// A tracker which creates <see cref="Interval"/> objects and emits them as ETW events with or without keeping references
+        /// for future usages.
+        /// </summary>
+        /// <param name="activityName"></param>
+        /// <param name="isPopulatingIntervalList">True to keep references to all intervals</param>
+        public IntervalTracker(string activityName, bool isPopulatingIntervalList)
         {
             _activityName = activityName;
+            _isPopulatingIntervalList = isPopulatingIntervalList;
         }
+
+        /// <summary>
+        /// A tracker which creates <see cref="Interval"/> objects and emits them as ETW events. Keeps a reference to all
+        /// <see cref="Interval"/> objects to support future retrieval via <see cref="GetIntervals"/>.
+        /// </summary>
+        /// <param name="activityName">Name to be used for ETW and Telemetry events.</param>
+        public IntervalTracker(string activityName)
+            : this(activityName, isPopulatingIntervalList: true)
+        { }
 
         public IDisposable Start(string intervalName)
         {
@@ -55,7 +72,10 @@ namespace NuGet.VisualStudio
             void IDisposable.Dispose()
             {
                 _intervalTracker._intervalWatch.Stop();
-                _intervalTracker._intervalList.Add(new Tuple<string, TimeSpan>(_intervalName, _intervalTracker._intervalWatch.Elapsed));
+                if (_intervalTracker._isPopulatingIntervalList)
+                {
+                    _intervalTracker._intervalList.Add(new Tuple<string, TimeSpan>(_intervalName, _intervalTracker._intervalWatch.Elapsed));
+                }
                 ((IDisposable)_etwLogActivity).Dispose();
             }
         }
