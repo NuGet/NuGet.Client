@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows, Platform.Linux)] // MAC returns more than 1 version https://github.com/NuGet/Home/issues/11576
+        [PlatformTheory(Platform.Windows, Platform.Linux, SkipMono = true)] // MAC returns more than 1 version https://github.com/NuGet/Home/issues/11576
         [InlineData(false, false, false)]
         [InlineData(false, false, true)]
         [InlineData(false, true, false)]
