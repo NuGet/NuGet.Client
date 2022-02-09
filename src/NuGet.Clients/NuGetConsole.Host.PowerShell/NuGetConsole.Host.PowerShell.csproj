@@ -206,7 +206,6 @@
       <VSLanguage Include="TRK" Locale="tr" />
 
       <_AllLocalizedXmlFiles Include="$(OutputPath)Scripts\**\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
-
       <_XmlLocFiles Include="@(_AllLocalizedXmlFiles)">
         <TargetPath>Modules\NuGet\$([MSBuild]::MakeRelative($(OutputPath)Scripts, %(_AllLocalizedXmlFiles.Identity)))</TargetPath>
       </_XmlLocFiles>
@@ -214,6 +213,7 @@
       <_TxtLocFiles Include="$(LocalizationRootDirectory)\%(VSLanguage.Identity)\15\about_NuGet.Cmdlets.help.txt">
         <TargetPath>Modules\NuGet\%(VSLanguage.Locale)\about_NuGet.Cmdlets.help.txt</TargetPath>
       </_TxtLocFiles>
+
       <LocalizedFilesForVsix Include="@(_XmlLocFiles);@(_TxtLocFiles)" />
     </ItemGroup>
   </Target>

@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement.UI
                 settings,
                 solutionManager,
                 deleteOnRestartManager,
-                reporter: restoreProgressReporter
+                restoreProgressReporter
                 );
 
             var actionEngine = new UIActionEngine(
