@@ -1067,7 +1067,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async void LocalFolderUtility_ResolvePackageFromPath_EmptyWhenNotFound()
+        public async Task LocalFolderUtility_ResolvePackageFromPath_EmptyWhenNotFound()
         {
             using (var root = TestDirectory.Create())
             {

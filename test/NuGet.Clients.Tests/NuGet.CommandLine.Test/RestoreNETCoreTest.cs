@@ -8939,7 +8939,7 @@ namespace NuGet.CommandLine.Test
 
 
         [Fact]
-        public async void RestoreNetCore_PackagesLockFile_WithReorderedRuntimesInLockFile_PassRestore()
+        public async Task RestoreNetCore_PackagesLockFile_WithReorderedRuntimesInLockFile_PassRestore()
         {
             // A project with RestoreLockedMode should pass restore if the runtimes in the lock file have been reordered
             using (var pathContext = new SimpleTestPathContext())

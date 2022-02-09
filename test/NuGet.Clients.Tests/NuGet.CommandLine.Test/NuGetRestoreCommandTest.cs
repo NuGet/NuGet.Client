@@ -29,7 +29,8 @@ namespace NuGet.CommandLine.Test
     public class NuGetRestoreCommandTest
     {
         private const int _failureCode = 1;
-        private const int _successCode = 0;
+        private const int
+            _successCode = 0;
 
         [Fact]
         public void RestoreCommand_BadInputPath()
@@ -195,7 +196,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async void RestoreCommand_MissingNuspecFileInPackage_FailsWithNU5037()
+        public async Task RestoreCommand_MissingNuspecFileInPackage_FailsWithNU5037()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
