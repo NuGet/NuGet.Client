@@ -191,7 +191,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict).Object;
             }
 
-            return new VsPackageInstallerServices(vsSolutionManager, sourceRepositoryProvider, settings, deleteOnRestartManager, vsProjectThreadingService, telemetryProvider);
+            return new VsPackageInstallerServices(vsSolutionManager, sourceRepositoryProvider, settings, deleteOnRestartManager, vsProjectThreadingService, telemetryProvider, restoreProgressReporter: null);
         }
     }
 }

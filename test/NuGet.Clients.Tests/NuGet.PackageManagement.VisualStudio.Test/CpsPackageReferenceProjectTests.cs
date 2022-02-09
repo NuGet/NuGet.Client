@@ -3276,6 +3276,51 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             await Assert.ThrowsAnyAsync<ProjectNotNominatedException>(() => target.GetPackageSpecsAndAdditionalMessagesAsync(cacheContext));
         }
 
+        [Fact]
+        public async Task TestPackageManager_ExecuteNuGetProjectActionsAsync_WhenProgressReporterIsProvided_ReportsAssetsFileWrites()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager();
+
+            // Arrange - Setup project
+            var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var sources = new PackageSource[] { new PackageSource(pathContext.PackageSource) };
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var projectCache = new ProjectSystemCache();
+            var projectName = "project";
+            var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(ProjectTestHelpers.GetPackageSpec(settings, projectName, rootPath: pathContext.SolutionRoot));
+            var projectFullPath = dependencyGraphSpec.Projects[0].FilePath;
+            var netCorePackageReferenceProject = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+            testSolutionManager.NuGetProjects.Add(netCorePackageReferenceProject);
+            var projectNames = GetTestProjectNames(projectFullPath, projectName);
+            projectCache.AddProjectRestoreInfo(projectNames, dependencyGraphSpec, new List<IAssetsLogMessage>());
+            projectCache.AddProject(projectNames, vsProjectAdapter: (new Mock<IVsProjectAdapter>()).Object, netCorePackageReferenceProject).Should().BeTrue();
+
+            //  Setup expectations
+            var progressReporter = new Mock<IRestoreProgressReporter>(MockBehavior.Strict);
+            progressReporter.Setup(e => e.StartProjectUpdate(It.Is<string>(path => path == projectFullPath), It.IsAny<IReadOnlyList<string>>())).Verifiable();
+            progressReporter.Setup(e => e.EndProjectUpdate(It.Is<string>(path => path == projectFullPath), It.IsAny<IReadOnlyList<string>>())).Verifiable();
+
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, testSolutionManager, new TestDeleteOnRestartManager(), progressReporter.Object);
+            var actions = await nuGetPackageManager.PreviewInstallPackageAsync(netCorePackageReferenceProject, packageA.Id, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            // Precondintions
+            actions.Should().HaveCount(1);
+            // Act
+            await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                netCorePackageReferenceProject,
+                actions,
+                new TestNuGetProjectContext(),
+                new SourceCacheContext(),
+                CancellationToken.None);
+
+            // Assert 
+            progressReporter.VerifyAll();
+        }
+
         private TestCpsPackageReferenceProject CreateTestCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
         {
             projectServices = projectServices == null ? new TestProjectSystemServices() : projectServices;
