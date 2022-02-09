@@ -3305,7 +3305,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var actions = await nuGetPackageManager.PreviewInstallPackageAsync(cpsPackageReferenceProject, packageA.Id, new ResolutionContext(), new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
-            // Precondintions
+            // Preconditions
             actions.Should().HaveCount(1);
 
             // Act
@@ -3363,7 +3363,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var actions = await nuGetPackageManager.PreviewInstallPackageAsync(parentPackageReferenceProject, packageA.Id, new ResolutionContext(), new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
-            // Precondintions
+            // Preconditions
             actions.Should().HaveCount(1);
 
             // Act

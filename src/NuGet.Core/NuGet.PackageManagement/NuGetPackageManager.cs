@@ -2406,7 +2406,6 @@ namespace NuGet.PackageManagement
                 token);
         }
 
-        // Every action execution comes here right?
         /// <summary>
         /// Executes the list of <paramref name="nuGetProjectActions" /> on <paramref name="nuGetProject" /> , which is
         /// likely obtained by calling into
@@ -3202,12 +3201,16 @@ namespace NuGet.PackageManagement
                 {
                     RestoreProgressReporter?.StartProjectUpdate(projectAction.RestoreResultPair.SummaryRequest.Request.Project.FilePath, filesToBeUpdated);
                 }
-
-                await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
-
-                if (!isNoOp)
+                try
                 {
-                    RestoreProgressReporter?.EndProjectUpdate(projectAction.RestoreResultPair.SummaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                    await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
+                }
+                finally
+                {
+                    if (!isNoOp)
+                    {
+                        RestoreProgressReporter?.EndProjectUpdate(projectAction.RestoreResultPair.SummaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                    }
                 }
 
                 // add packages lock file into project
