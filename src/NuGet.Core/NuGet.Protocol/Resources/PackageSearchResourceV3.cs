@@ -255,9 +255,9 @@ namespace NuGet.Protocol
 
             var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
             _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
-
-            using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
-            using (var streamReader = new StreamReader(stream))
+            await Task.Delay(10);
+            //using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
+            using (var streamReader = new StreamReader(@"C:\Temp\advayPmuiPerfMockup_query.json"))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
                 return _newtonsoftConvertersSerializer.Deserialize<V3SearchResults>(jsonReader);
