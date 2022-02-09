@@ -261,7 +261,10 @@ namespace NuGet.Protocol
 #else
             using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
 #endif
-            using (var streamReader = new StreamReader(stream))
+            // using (var streamReader = new StreamReader(stream))
+            await Task.Delay(10);
+
+            using (var streamReader = new StreamReader(@"C:\Temp\advayPmuiPerfMockup_query.json"))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
                 return _newtonsoftConvertersSerializer.Deserialize<V3SearchResults>(jsonReader);
