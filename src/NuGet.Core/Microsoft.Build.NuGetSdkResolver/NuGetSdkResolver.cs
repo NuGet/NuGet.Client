@@ -52,7 +52,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         public override string Name => nameof(NuGetSdkResolver);
 
         /// <inheritdoc />
-        public override int Priority => 2500;
+        public override int Priority => 6000;
 
         /// <summary>Resolves the specified SDK reference from NuGet.</summary>
         /// <param name="sdkReference">A <see cref="T:Microsoft.Build.Framework.SdkReference" /> containing the referenced SDKs be resolved.</param>
