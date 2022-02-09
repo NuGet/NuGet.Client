@@ -48,5 +48,27 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(allTimings.Any(e => e.Item1.Equals("second")));
             Assert.True(allTimings.Any(e => e.Item1.Equals("third")));
         }
+
+        [Fact]
+        public void IntervalTracker_WhenNotPopulatingIntervalList_ListIsEmpty()
+        {
+            var tracker = new IntervalTracker("Activity", isPopulatingIntervalList: false);
+
+            using (tracker.Start("first"))
+            {
+            }
+
+            using (tracker.Start("second"))
+            {
+            }
+
+            using (tracker.Start("third"))
+            {
+            }
+
+            var allTimings = tracker.GetIntervals().ToList();
+
+            Assert.Empty(allTimings);
+        }
     }
 }
