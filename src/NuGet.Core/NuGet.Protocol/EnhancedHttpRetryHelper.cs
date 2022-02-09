@@ -19,7 +19,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// The default value indicating whether or not enhanced HTTP retry is enabled.
         /// </summary>
-        public const bool DefaultEnabled = false;
+        public const bool DefaultEnabled = true;
 
         /// <summary>
         /// The default number of times to retry.
@@ -60,7 +60,7 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Gets a value indicating whether or not enhanced HTTP retry should be enabled.  The default value is <c>false</c>.
+        /// Gets a value indicating whether or not enhanced HTTP retry should be enabled.  The default value is <c>true</c>.
         /// </summary>
         internal bool IsEnabled => _isEnabled ??= GetBoolFromEnvironmentVariable(IsEnabledEnvironmentVariableName, defaultValue: DefaultEnabled, _environmentVariableReader);
 
