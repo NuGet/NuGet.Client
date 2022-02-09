@@ -124,6 +124,7 @@ namespace NuGet.PackageManagement
             DeleteOnRestartManager = deleteOnRestartManager ?? throw new ArgumentNullException(nameof(deleteOnRestartManager));
         }
 
+        // TODO NK - Add a duplicate here.
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISettings settings,
@@ -196,7 +197,6 @@ namespace NuGet.PackageManagement
         /// <paramref name="nuGetProject" /> <paramref name="resolutionContext" /> and
         /// <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
-        [Obsolete("This is an unused method and may be removed in a future release. Please use other `InstallPackageAsync` methods.")]
         public Task InstallPackageAsync(
             NuGetProject nuGetProject,
             string packageId,
@@ -210,7 +210,13 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException(nameof(resolutionContext));
             }
-            PackageDownloadContext downloadContext = CreateDownloadContext(resolutionContext, nuGetProjectContext);
+            var logger = new LoggerAdapter(nuGetProjectContext);
+
+            var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
+            {
+                ParentId = nuGetProjectContext.OperationId,
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
+            };
 
             return InstallPackageAsync(
                 nuGetProject,
@@ -223,25 +229,12 @@ namespace NuGet.PackageManagement
                 token);
         }
 
-        private PackageDownloadContext CreateDownloadContext(ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext)
-        {
-            var logger = new LoggerAdapter(nuGetProjectContext);
-
-            var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
-            {
-                ParentId = nuGetProjectContext.OperationId,
-                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
-            };
-            return downloadContext;
-        }
-
         /// <summary>
         /// Installs the latest version of the given <paramref name="packageId" /> to NuGetProject
         /// <paramref name="nuGetProject" /> <paramref name="resolutionContext" /> and
         /// <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
-        [Obsolete("This is an unused method and may be removed in a future release. Please use other `InstallPackageAsync` methods.")]
-        public Task InstallPackageAsync( // no calls
+        public Task InstallPackageAsync(
             NuGetProject nuGetProject,
             string packageId,
             ResolutionContext resolutionContext,
@@ -276,7 +269,13 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(resolutionContext));
             }
 
-            var downloadContext = CreateDownloadContext(resolutionContext, nuGetProjectContext);
+            var logger = new LoggerAdapter(nuGetProjectContext);
+
+            var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
+            {
+                ParentId = nuGetProjectContext.OperationId,
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
+            };
 
             await InstallPackageAsync(
                 nuGetProject,
@@ -359,7 +358,6 @@ namespace NuGet.PackageManagement
         /// Installs given <paramref name="packageIdentity" /> to NuGetProject <paramref name="nuGetProject" />
         /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
-        [Obsolete("This is an unused method and will be removed in a future release.")]
         public Task InstallPackageAsync(
             NuGetProject nuGetProject,
             PackageIdentity packageIdentity,
@@ -399,7 +397,13 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(resolutionContext));
             }
 
-            var downloadContext = CreateDownloadContext(resolutionContext, nuGetProjectContext);
+            var logger = new LoggerAdapter(nuGetProjectContext);
+
+            var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
+            {
+                ParentId = nuGetProjectContext.OperationId,
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
+            };
 
             await InstallPackageAsync(
                 nuGetProject,
@@ -446,7 +450,7 @@ namespace NuGet.PackageManagement
         }
 
         public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token) // VS Package uninstaller
+            INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             ActivityCorrelationId.StartNew();
 
@@ -462,7 +466,7 @@ namespace NuGet.PackageManagement
         /// <paramref name="packageId" /> into <paramref name="nuGetProject" /> <paramref name="resolutionContext" />
         /// and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
-        public Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync( // Called internally only.
+        public Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
             NuGetProject nuGetProject,
             string packageId,
             ResolutionContext resolutionContext,
@@ -479,7 +483,7 @@ namespace NuGet.PackageManagement
         /// <paramref name="packageId" /> into <paramref name="nuGetProject" /> <paramref name="resolutionContext" />
         /// and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync( // Internal - Package Action base - PMC
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
             NuGetProject nuGetProject,
             string packageId,
             ResolutionContext resolutionContext,
@@ -537,7 +541,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext, primarySources, secondarySources, token);
         }
 
-        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync( // PMC Update command
+        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
@@ -556,7 +560,7 @@ namespace NuGet.PackageManagement
                 token: token);
         }
 
-        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync( // UPdate PMC
+        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             string packageId,
             IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
@@ -576,7 +580,7 @@ namespace NuGet.PackageManagement
                 token: token);
         }
 
-        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync( // Update PMC
+        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             PackageIdentity packageIdentity,
             IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
@@ -596,7 +600,7 @@ namespace NuGet.PackageManagement
                 token: token);
         }
 
-        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync( // Update NuGet.exe, ProjectManagerService
+        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
             List<PackageIdentity> packageIdentities,
             IEnumerable<NuGetProject> nuGetProjects,
             ResolutionContext resolutionContext,
@@ -616,7 +620,6 @@ namespace NuGet.PackageManagement
                 token: token);
         }
 
-        // Transitive Entry Point I care about.
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
                 string packageId,
                 List<PackageIdentity> packageIdentities,
@@ -1528,7 +1531,6 @@ namespace NuGet.PackageManagement
             }
         }
 
-        // Transitive Entry Point I care about.
         /// <summary>
         /// Gives the preview as a list of NuGetProjectActions that will be performed to install
         /// <paramref name="packageIdentity" /> into <paramref name="nuGetProject" />
@@ -1560,9 +1562,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext, primarySources, secondarySources, token);
         }
 
-        // Entry Point that I care about. (NuGetProjectManagerService)
-        // Preview and return ResolvedActions for many NuGetProjects.
-        public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync( // ProjectManagerService 
+        public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
             IReadOnlyCollection<NuGetProject> nuGetProjects,
             PackageIdentity packageIdentity,
             ResolutionContext resolutionContext,
@@ -1654,11 +1654,10 @@ namespace NuGet.PackageManagement
             return results;
         }
 
-        // Transitive Entry Point I care about.
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
             ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources, IEnumerable<SourceRepository> secondarySources,
-            CancellationToken token) // PMC - Base action - Internal
+            CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -2028,7 +2027,6 @@ namespace NuGet.PackageManagement
             return source;
         }
 
-        // Entry Point that I care about. (NuGetProjectManagerService)
         /// <summary>
         /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall for many NuGetProjects.
         /// </summary>
@@ -2038,7 +2036,7 @@ namespace NuGet.PackageManagement
         /// <param name="nuGetProjectContext"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewProjectsUninstallPackageAsync( // ProjectManagerService
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewProjectsUninstallPackageAsync(
             IReadOnlyCollection<NuGetProject> nuGetProjects,
             string packageId,
             UninstallationContext uninstallationContext,
@@ -2173,7 +2171,6 @@ namespace NuGet.PackageManagement
             return resolvedActions.Select(r => r.Action as BuildIntegratedProjectAction);
         }
 
-        // Transitive Entry Point I care about.
         /// <summary>
         /// Gives the preview as a list of NuGetProjectActions that will be performed to uninstall
         /// <paramref name="packageId" /> into <paramref name="nuGetProject" />
@@ -2181,7 +2178,7 @@ namespace NuGet.PackageManagement
         /// process.
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, string packageId,
-            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token) // Internal, uninstall - PMC
+            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -2215,7 +2212,6 @@ namespace NuGet.PackageManagement
             return await PreviewUninstallPackageInternalAsync(nuGetProject, packageReference, uninstallationContext, nuGetProjectContext, token);
         }
 
-        // Transitive Entry Point I care about.
         /// <summary>
         /// Gives the preview as a list of <see cref="NuGetProjectAction" /> that will be performed to uninstall
         /// <paramref name="packageIdentity" /> into <paramref name="nuGetProject" />
@@ -2223,7 +2219,7 @@ namespace NuGet.PackageManagement
         /// process.
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewUninstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity,
-            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token) // Test only
+            UninstallationContext uninstallationContext, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -2387,9 +2383,15 @@ namespace NuGet.PackageManagement
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
             INuGetProjectContext nuGetProjectContext,
             SourceCacheContext sourceCacheContext,
-            CancellationToken token) // Everywhere.
+            CancellationToken token)
         {
-            var downloadContext = CreateDownloadContext(resolutionContext, nuGetProjectContext);
+            var logger = new LoggerAdapter(nuGetProjectContext);
+
+            var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
+            {
+                ParentId = nuGetProjectContext.OperationId,
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
+            };
 
             await ExecuteNuGetProjectActionsAsync(nuGetProject,
                 nuGetProjectActions,
@@ -2410,7 +2412,7 @@ namespace NuGet.PackageManagement
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext,
-            CancellationToken token) // Internal only
+            CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -2731,7 +2733,7 @@ namespace NuGet.PackageManagement
 
         }
 
-        // Entry Point that I care about. - Internal only
+
         /// <summary>
         /// Run project actions for a build integrated project.
         /// </summary>
@@ -3077,7 +3079,6 @@ namespace NuGet.PackageManagement
             return result;
         }
 
-        // Transitive Entry Point I care about. - Is this the most/only important spot?
         /// <summary>
         /// Run project actions for build integrated projects.
         /// </summary>
@@ -3085,7 +3086,7 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject buildIntegratedProject,
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token) // Project Upgrader and Internal
+            CancellationToken token)
         {
             if (buildIntegratedProject == null)
             {
