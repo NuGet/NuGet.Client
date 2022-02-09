@@ -195,7 +195,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async void RestoreCommand_MissingNuspecFileInPackage_FailsWithNU5037()
+        public async Task RestoreCommand_MissingNuspecFileInPackage_FailsWithNU5037()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();

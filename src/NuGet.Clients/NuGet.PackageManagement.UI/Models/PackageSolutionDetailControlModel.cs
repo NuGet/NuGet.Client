@@ -474,8 +474,7 @@ namespace NuGet.PackageManagement.UI
             await BatchUpdateIsSelectedAsync(select);
         }
 
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD100", Justification = "NuGet/Home#4833 Baseline")]
-        protected override async void OnCurrentPackageChanged()
+        protected override async Task OnCurrentPackageChanged()
         {
             if (_searchResultPackage == null)
             {

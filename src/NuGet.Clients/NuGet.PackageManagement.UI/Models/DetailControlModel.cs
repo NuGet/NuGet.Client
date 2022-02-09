@@ -216,7 +216,8 @@ namespace NuGet.PackageManagement.UI
             };
 
             await CreateVersionsAsync(CancellationToken.None);
-            OnCurrentPackageChanged();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
+                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
 
             var versions = await getVersionsTask;
 
@@ -234,7 +235,8 @@ namespace NuGet.PackageManagement.UI
                 .ToList();
 
             await CreateVersionsAsync(CancellationToken.None);
-            OnCurrentPackageChanged();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
+                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
 
             (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
                 await searchResultPackage.GetDetailedPackageSearchMetadataAsync();
@@ -275,8 +277,9 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(DetailControlModel), nameof(DependencyBehavior_SelectedChanged));
         }
 
-        protected virtual void OnCurrentPackageChanged()
+        protected virtual Task OnCurrentPackageChanged()
         {
+            return Task.CompletedTask;
         }
 
         public virtual void OnFilterChanged(ItemFilter? previousFilter, ItemFilter currentFilter)

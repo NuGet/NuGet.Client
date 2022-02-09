@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void AddIconToCache_WhenAdded_IsFound()
+        public async Task AddIconToCache_WhenAdded_IsFound()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void GetPackageIconAsync_EmbeddedFromFallbackFolder_HasOnlyReadAccess()
+        public async Task GetPackageIconAsync_EmbeddedFromFallbackFolder_HasOnlyReadAccess()
         {
             // Arrange
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void GetPackageIconAsync_EmbeddedFromFallbackFolder_DoesNotLockFile()
+        public async Task GetPackageIconAsync_EmbeddedFromFallbackFolder_DoesNotLockFile()
         {
             //Arrange
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void GetPackageIconAsync_EmbeddedFromFallbackFolder_CanOpenReadOnlyFile()
+        public async Task GetPackageIconAsync_EmbeddedFromFallbackFolder_CanOpenReadOnlyFile()
         {
             // Arrange
             using (TestDirectory testDirectory = TestDirectory.Create())
@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void AddIconToCache_WhenAddedTwice_UsesSecond()
+        public async Task AddIconToCache_WhenAddedTwice_UsesSecond()
         {
             using (TestDirectory testDirectory = TestDirectory.Create())
             {
@@ -222,7 +222,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void AddIconToCache_WhenMissing_IsNotFound()
+        public async Task AddIconToCache_WhenMissing_IsNotFound()
         {
             _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetPackageIconAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
             var packageFileService = new NuGetPackageFileService(
@@ -240,7 +240,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         [Theory]
         [InlineData("icon.png", "icon.png", "icon.png", "")]
-        public async void AddLicenseToCache_WhenAdded_IsFound(
+        public async Task AddLicenseToCache_WhenAdded_IsFound(
             string iconElement,
             string iconFileLocation,
             string fileSourceElement,
@@ -280,7 +280,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         [Theory]
         [InlineData("icon.png", "icon.png", "icon.png", "")]
-        public async void AddLicenseToCache_WhenAddedTwice_UsesSecond(
+        public async Task AddLicenseToCache_WhenAddedTwice_UsesSecond(
             string iconElement,
             string iconFileLocation,
             string fileSourceElement,
@@ -320,7 +320,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void AddLicenseToCache_WhenMissing_IsNotFound()
+        public async Task AddLicenseToCache_WhenMissing_IsNotFound()
         {
             _telemetryProvider.Setup(t => t.PostFaultAsync(It.IsAny<CacheMissException>(), typeof(NuGetPackageFileService).FullName, nameof(NuGetPackageFileService.GetEmbeddedLicenseAsync), It.IsAny<IDictionary<string, object>>())).Returns(Task.CompletedTask);
             var packageFileService = new NuGetPackageFileService(
