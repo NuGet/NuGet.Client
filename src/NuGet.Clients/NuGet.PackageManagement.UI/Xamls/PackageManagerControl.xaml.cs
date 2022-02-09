@@ -64,6 +64,7 @@ namespace NuGet.PackageManagement.UI
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
         private bool _isTransitiveDependenciesExperimentEnabled;
+        internal IntervalTracker _pmuiGestureintervalTracker;
 
         private PackageManagerControl()
         {
@@ -83,6 +84,8 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
+
+            _pmuiGestureintervalTracker = new IntervalTracker("PMUIGesture", isPopulatingIntervalList: false);
 
             Model = model;
             _uiLogger = uiLogger;
@@ -250,7 +253,10 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectChanged)))
+                    {
+                        await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
+                    }
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
             }
             else
@@ -267,13 +273,16 @@ namespace NuGet.PackageManagement.UI
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    if (Model.IsSolution)
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnProjectActionsExecuted)))
                     {
-                        await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ActionsExecuted, timeSpan);
-                    }
-                    else
-                    {
-                        await RefreshProjectAfterActionAsync(timeSpan, projectIds);
+                        if (Model.IsSolution)
+                        {
+                            await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ActionsExecuted, timeSpan);
+                        }
+                        else
+                        {
+                            await RefreshProjectAfterActionAsync(timeSpan, projectIds);
+                        }
                     }
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectActionsExecuted));
             }
@@ -304,9 +313,13 @@ namespace NuGet.PackageManagement.UI
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(() => SolutionManager_CacheUpdatedAsync(timeSpan, e))
-                    .PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(OnNuGetCacheUpdated)))
+                    {
+                        await SolutionManager_CacheUpdatedAsync(timeSpan, e);
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(OnNuGetCacheUpdated));
             }
             else
             {
@@ -390,8 +403,13 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
-                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageManagerLoaded));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageManagerLoaded)))
+                {
+                    await PackageManagerLoadedAsync();
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageManagerLoaded));
         }
 
         private async Task PackageManagerLoadedAsync()
@@ -496,8 +514,13 @@ namespace NuGet.PackageManagement.UI
             _dontStartNewSearch = true;
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageSourcesChangedAsync(e, timeSpan))
-                .PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageSourcesChanged)))
+                {
+                    await PackageSourcesChangedAsync(e, timeSpan);
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageSourcesChanged));
         }
 
         private async Task PackageSourcesChangedAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, TimeSpan timeSpan)
@@ -1016,6 +1039,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(PackageList_SelectionChanged)))
                     try
                     {
                         await UpdateDetailPaneAsync(loadCts.Token);
@@ -1099,8 +1123,13 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.SourceToolTip.Visibility = Visibility.Visible;
                 _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => SourceRepoList_SelectionChangedAsync(timeSpan))
-                    .PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(SourceRepoList_SelectionChanged)))
+                    {
+                        await SourceRepoList_SelectionChangedAsync(timeSpan);
+                    }
+                }).PostOnFailure(nameof(PackageManagerControl), nameof(SourceRepoList_SelectionChanged));
             }
         }
 
@@ -1116,6 +1145,7 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
+
                 _packageList.ResetLoadingStatusIndicator();
 
                 // Collapse the Update controls when the current tab is not "Updates".
@@ -1137,9 +1167,13 @@ namespace NuGet.PackageManagement.UI
                         _packageList.ClearPackageLevelGrouping();
                     }
 
-                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
-                    _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+                    using (IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(Filter_SelectionChanged) + "-" + _topPanel.Filter))
+                    {
+                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                        EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
+                        _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+                    }
+
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
         }
@@ -1179,12 +1213,16 @@ namespace NuGet.PackageManagement.UI
             }
 
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
+
             RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
             EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                using (_pmuiGestureintervalTracker.Start(nameof(CheckboxPrerelease_CheckChanged)))
+                {
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                }
             }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
         }
 
@@ -1213,7 +1251,11 @@ namespace NuGet.PackageManagement.UI
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(ClearSearch));
+                using (activity)
+                {
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                }
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ClearSearch));
         }
 
@@ -1514,8 +1556,14 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
-                .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                IDisposable activity = _pmuiGestureintervalTracker.Start(nameof(ExecuteRestartSearchCommand));
+                using (activity)
+                {
+                    await ExecuteRestartSearchCommandAsync();
+                }
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
         private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
