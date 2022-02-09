@@ -103,15 +103,11 @@ namespace NuGet.CommandLine.Test
 
         // Skip: https://github.com/NuGet/Home/issues/11576
         [PlatformTheory(Platform.Windows, Platform.Linux, SkipMono = true)]
-        [InlineData(false, false, false)]
-        [InlineData(false, false, true)]
-        [InlineData(false, true, false)]
-        [InlineData(false, true, true)]
-        [InlineData(true, false, false)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, false)]
-        [InlineData(true, true, true)]
-        public void ListCommand_WithLocalSource_WithMatchText_ReturnLatestVersionOnlyPerPackageId(bool includeMatchingText, bool includeListed, bool preRelease)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void ListCommand_WithLocalSource_WithMatchText_ReturnLatestVersionOnlyPerPackageId(bool includeMatchingText, bool preRelease)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -132,7 +128,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = $"list -source {packageDirectory} " +
                             (includeMatchingText ? "best" : string.Empty) + // matching text
-                            (includeListed ? " -includedelisted" : string.Empty) +
                             (preRelease ? " -prerelease " : string.Empty);
 
                 var r1 = CommandRunner.Run(
@@ -150,15 +145,11 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData(false, false, false)]
-        [InlineData(false, false, true)]
-        [InlineData(false, true, false)]
-        [InlineData(false, true, true)]
-        [InlineData(true, false, false)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, false)]
-        [InlineData(true, true, true)]
-        public void ListCommand_WithLocalSource_WithNoMatchingText_ReturnEmpty(bool includeListed, bool preRelease, bool allVersions)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void ListCommand_WithLocalSource_WithNoMatchingText_ReturnEmpty(bool preRelease, bool allVersions)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -179,7 +170,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = $"list -source {packageDirectory} " +
                             "randomId" + // this Id not part of any package Id
-                            (includeListed ? " -includedelisted" : string.Empty) +
                             (preRelease ? " -prerelease " : string.Empty) +
                             (allVersions ? " -allversions " : string.Empty);
                 var r1 = CommandRunner.Run(
@@ -196,15 +186,11 @@ namespace NuGet.CommandLine.Test
 
 
         [Theory]
-        [InlineData(false, false, false)]
-        [InlineData(false, false, true)]
-        [InlineData(false, true, false)]
-        [InlineData(false, true, true)]
-        [InlineData(true, false, false)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, false)]
-        [InlineData(true, true, true)]
-        public void ListCommand_WithLocalSource_WithMatchingTextAndAllVersionOption_ReturnAllVersions(bool includeMatchingText, bool includeListed, bool preRelease)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void ListCommand_WithLocalSource_WithMatchingTextAndAllVersionOption_ReturnAllVersions(bool includeMatchingText, bool preRelease)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -223,7 +209,6 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = $"list -source {packageDirectory} -allversions " +
                             (includeMatchingText ? "best" : string.Empty) + //matching text
-                            (includeListed ? " -includedelisted" : string.Empty) +
                             (preRelease ? " -prerelease " : string.Empty);
 
                 var r1 = CommandRunner.Run(
