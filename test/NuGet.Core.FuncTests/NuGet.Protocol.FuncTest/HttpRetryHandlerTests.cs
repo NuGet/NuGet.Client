@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -48,6 +49,14 @@ namespace NuGet.Core.FuncTest
             // 20 requests that take 250ms each for a total of 5 seconds (plus noise).
             var requestDuration = TimeSpan.FromMilliseconds(250);
             var maxTries = 20;
+            var retryDelay = TimeSpan.Zero;
+
+            TestEnvironmentVariableReader testEnvironmentVariableReader = new TestEnvironmentVariableReader(
+                 new Dictionary<string, string>()
+                 {
+                     [EnhancedHttpRetryHelper.RetryCountEnvironmentVariableName] = maxTries.ToString(),
+                     [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = retryDelay.TotalMilliseconds.ToString()
+                 });
 
             // Make the request timeout longer than each request duration but less than the total
             // duration of all attempts.
@@ -61,14 +70,14 @@ namespace NuGet.Core.FuncTest
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             };
 
-            var retryHandler = new HttpRetryHandler();
+            var retryHandler = new HttpRetryHandler(testEnvironmentVariableReader);
             var testHandler = new HttpRetryTestHandler(handler);
             var httpClient = new HttpClient(testHandler);
             var request = new HttpRetryHandlerRequest(httpClient, () => new HttpRequestMessage(HttpMethod.Get, TestUrl))
             {
                 MaxTries = maxTries,
                 RequestTimeout = requestTimeout,
-                RetryDelay = TimeSpan.Zero
+                RetryDelay = retryDelay
             };
             var log = new TestLogger();
 
@@ -171,14 +180,24 @@ namespace NuGet.Core.FuncTest
         {
             return await server.ExecuteAsync(async address =>
             {
+                int maxTries = 2;
+                TimeSpan retryDelay = TimeSpan.Zero;
+
+                TestEnvironmentVariableReader testEnvironmentVariableReader = new TestEnvironmentVariableReader(
+                 new Dictionary<string, string>()
+                 {
+                     [EnhancedHttpRetryHelper.RetryCountEnvironmentVariableName] = maxTries.ToString(),
+                     [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = retryDelay.TotalMilliseconds.ToString()
+                 });
+
                 // Arrange
-                var retryHandler = new HttpRetryHandler();
+                var retryHandler = new HttpRetryHandler(testEnvironmentVariableReader);
                 var countingHandler = new CountingHandler { InnerHandler = new HttpClientHandler() };
                 var httpClient = new HttpClient(countingHandler);
                 var request = new HttpRetryHandlerRequest(httpClient, () => new HttpRequestMessage(HttpMethod.Get, address))
                 {
-                    MaxTries = 2,
-                    RetryDelay = TimeSpan.Zero
+                    MaxTries = maxTries,
+                    RetryDelay = retryDelay
                 };
 
                 // Act
