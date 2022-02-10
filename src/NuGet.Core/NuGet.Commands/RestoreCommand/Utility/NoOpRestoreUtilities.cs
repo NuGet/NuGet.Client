@@ -171,8 +171,11 @@ namespace NuGet.Commands
                     if (request.Project.RestoreMetadata.FallbackFolders.Any(fallbackFolder => PathUtility.GetStringComparerBasedOnOS().Equals(fallbackFolder, packageFolder)))
                         continue;
 
-                    var packageRoot = Directory.GetParent(package).FullName;
-                    var metadataFile = Path.Combine(packageRoot, ".nupkg.metadata");
+                    var packageId = new DirectoryInfo(Directory.GetParent(package).FullName).Parent.Name;
+                    var version = Directory.GetParent(package).Name;
+                    var resolver = new VersionFolderPathResolver(packageFolder);
+                    var metadataFile = resolver.GetNupkgMetadataPath(packageId, new NuGetVersion(version));
+
                     try
                     {
                         File.SetLastAccessTimeUtc(metadataFile, DateTime.UtcNow);
