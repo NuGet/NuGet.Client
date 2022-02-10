@@ -989,6 +989,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="Error_CouldNotUpdateMetadataLastAccessTime" xml:space="preserve">
     <value>Updating last access time on file {0} failed with {1}</value>
+    <comment>0 - file path
+    1 - reason</comment>
   </data>
   <data name="Error_CouldNotRemoveClientCertificate" xml:space="preserve">
     <value>Could not remove the client certificate: {0}</value>
