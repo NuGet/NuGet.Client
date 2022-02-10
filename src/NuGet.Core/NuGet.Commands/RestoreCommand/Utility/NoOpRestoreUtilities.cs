@@ -168,7 +168,7 @@ namespace NuGet.Commands
                     var packageFolder = new DirectoryInfo(Directory.GetParent(package).FullName).Parent.Parent.FullName;
 
                     // we avoid fallback folders as they are readonly
-                    if (request.Project.RestoreMetadata.FallbackFolders.Any(fallbackFolder => fallbackFolder.Equals(packageFolder, StringComparison.OrdinalIgnoreCase)))
+                    if (request.Project.RestoreMetadata.FallbackFolders.Any(fallbackFolder => PathUtility.GetStringComparerBasedOnOS().Equals(fallbackFolder, packageFolder)))
                         continue;
 
                     var packageRoot = Directory.GetParent(package).FullName;
