@@ -182,7 +182,6 @@ namespace NuGet.PackageManagement
             Guid parentId,
             CancellationToken token)
         {
-            // nothing here?
             token.ThrowIfCancellationRequested();
 
             // Add the new spec to the dg file and fill in the rest.
