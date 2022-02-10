@@ -182,7 +182,7 @@ namespace NuGet.Commands
                     }
                     catch(Exception ex)
                     {
-                        await request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1504,
+                        await request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1802,
                             string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotUpdateMetadataLastAccessTime,
                             metadataFile, ex.Message)));
                     }

@@ -307,6 +307,11 @@ namespace NuGet.Common
         NU1801 = 1801,
 
         /// <summary>
+        /// No metadata file found
+        /// </summary>
+        NU1802 = 1802,
+
+        /// <summary>
         /// Undefined signature error
         /// </summary>
         NU3000 = 3000,
