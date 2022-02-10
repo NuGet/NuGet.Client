@@ -83,7 +83,7 @@ namespace NuGetConsole
                 return;
             }
 
-            Start();
+            await StartAsync();
 
             var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
             await outputWindowTextWriter.WriteAsync(text);
@@ -106,7 +106,7 @@ namespace NuGetConsole
 
         public override async Task ClearAsync()
         {
-            Start();
+            await StartAsync();
 
             var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
             await outputWindowTextWriter.FlushAsync();
@@ -120,6 +120,11 @@ namespace NuGetConsole
         public override void StartConsoleDispatcher()
         {
             _ = VsOutputWindowPane;
+        }
+
+        public override async Task StartConsoleDispatcherAsync()
+        {
+            await _outputWindowPane.GetValueAsync();
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole
@@ -15,11 +16,24 @@ namespace NuGetConsole
     {
         public abstract void StartConsoleDispatcher();
 
+        public abstract Task StartConsoleDispatcherAsync();
+
         public void Start()
         {
             if (!IsStartCompleted)
             {
                 StartConsoleDispatcher();
+                StartCompleted?.Invoke(this, EventArgs.Empty);
+            }
+
+            IsStartCompleted = true;
+        }
+
+        public async Task StartAsync()
+        {
+            if (!IsStartCompleted)
+            {
+                await StartConsoleDispatcherAsync();
                 StartCompleted?.Invoke(this, EventArgs.Empty);
             }
 

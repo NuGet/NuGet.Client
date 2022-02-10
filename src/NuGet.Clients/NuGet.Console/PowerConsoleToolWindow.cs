@@ -634,11 +634,12 @@ namespace NuGetConsole.Implementation
             return false;
         }
 
-        public void StartDispatcher()
+        public async Task StartDispatcherAsync()
         {
+            // Called in tests.
             if (WpfConsole != null)
             {
-                WpfConsole.Dispatcher.Start();
+                await WpfConsole.Dispatcher.StartAsync();
             }
         }
 

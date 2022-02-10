@@ -191,7 +191,7 @@ namespace NuGetConsole
             var host = console.Host;
 
             // start the console 
-            console.Dispatcher.Start();
+            await console.Dispatcher.StartAsync();
 
             // gives the host a chance to do initialization works before dispatching commands to it
             // Host.Initialize calls powershell's pipeline.Invoke and blocks the calling thread
