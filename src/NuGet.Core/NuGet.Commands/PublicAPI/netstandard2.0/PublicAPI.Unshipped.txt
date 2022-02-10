@@ -6,6 +6,9 @@ NuGet.Commands.RestoreArgs.ProgressReporter.set -> void
 NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger innerLogger, NuGet.ProjectModel.WarningProperties warningProperties, NuGet.Commands.PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties) -> void
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 NuGet.Commands.PackCommand.PackageSpecificWarningProperties.PackageSpecificWarningProperties() -> void
+NuGet.Commands.RestoreCommandProvidersCache.GetOrCreate(string globalPackagesPath, System.Collections.Generic.IReadOnlyList<string> fallbackPackagesPaths, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository> sources, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log, bool updateLastAccess) -> NuGet.Commands.RestoreCommandProviders
+NuGet.Commands.RestoreRequest.ForceUpdatePackageLastAccessTime.get -> bool
+NuGet.Commands.RestoreRequest.ForceUpdatePackageLastAccessTime.set -> void
 static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 NuGet.Commands.VerifyArgs.Settings.get -> NuGet.Configuration.ISettings
 NuGet.Commands.VerifyArgs.Settings.set -> void

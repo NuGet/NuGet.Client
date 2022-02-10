@@ -48,6 +48,11 @@ namespace NuGet.Repositories
         {
         }
 
+        public NuGetv3LocalRepository(string path, LocalPackageFileCache packageFileCache, bool isFallbackFolder)
+            : this(path, packageFileCache, isFallbackFolder, updateLastAccessTime: false)
+        {
+        }
+
         public NuGetv3LocalRepository(string path, LocalPackageFileCache packageFileCache, bool isFallbackFolder, bool updateLastAccessTime)
         {
             RepositoryRoot = path;

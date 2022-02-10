@@ -160,7 +160,7 @@ namespace NuGet.Commands
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
-            var updateLastAccess = restoreArgs.GetForceUpdateLastAccessTime(settings);
+            var updateLastAccess = SettingsUtility.GetForceUpdatePackageLastAccessTimeEnabledStatus(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,

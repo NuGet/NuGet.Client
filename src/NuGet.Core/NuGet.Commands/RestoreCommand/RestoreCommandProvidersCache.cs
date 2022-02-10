@@ -33,6 +33,16 @@ namespace NuGet.Commands
             IReadOnlyList<string> fallbackPackagesPaths,
             IReadOnlyList<SourceRepository> sources,
             SourceCacheContext cacheContext,
+            ILogger log)
+        {
+            return GetOrCreate(globalPackagesPath, fallbackPackagesPaths, sources, cacheContext, log, updateLastAccess: false);
+        }
+
+        public RestoreCommandProviders GetOrCreate(
+            string globalPackagesPath,
+            IReadOnlyList<string> fallbackPackagesPaths,
+            IReadOnlyList<SourceRepository> sources,
+            SourceCacheContext cacheContext,
             ILogger log,
             bool updateLastAccess)
         {
