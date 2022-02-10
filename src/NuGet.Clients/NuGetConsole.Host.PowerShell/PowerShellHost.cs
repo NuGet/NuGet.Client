@@ -20,6 +20,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -55,6 +56,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ICommonOperations> _commonOperations;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
+        private readonly Lazy<IRestoreProgressReporter> _restoreProgressReporter;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
@@ -112,6 +114,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _settings = new Lazy<ISettings>(() => componentModel.GetService<ISettings>());
             _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => componentModel.GetService<IDeleteOnRestartManager>());
             _scriptExecutor = new Lazy<IScriptExecutor>(() => componentModel.GetService<IScriptExecutor>());
+            _restoreProgressReporter = new Lazy<IRestoreProgressReporter>(() => componentModel.GetService<IRestoreProgressReporter>());
 
             _dte = new Lazy<DTE>(() => ServiceLocator.GetInstance<DTE>());
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
@@ -458,7 +461,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _sourceRepositoryProvider,
                     _settings.Value,
                     _solutionManager.Value,
-                    _deleteOnRestartManager.Value);
+                    _deleteOnRestartManager.Value,
+                    _restoreProgressReporter.Value);
 
                 var enumerator = new InstalledPackageEnumerator(_solutionManager.Value, _settings.Value);
                 var installedPackages = await enumerator.EnumeratePackagesAsync(packageManager, CancellationToken.None);

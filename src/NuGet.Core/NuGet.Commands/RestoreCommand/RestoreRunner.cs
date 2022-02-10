@@ -231,17 +231,23 @@ namespace NuGet.Commands
             RestoreResultPair result = await ExecuteAsync(summaryRequest, token);
             bool isNoOp = result.Result is NoOpRestoreResult;
             IReadOnlyList<string> filesToBeUpdated = isNoOp ? null : GetFilesToBeUpdated(result);
-
-            if (!isNoOp)
+            RestoreSummary summary = null;
+            try
             {
-                progressReporter?.StartProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                if (!isNoOp)
+                {
+                    progressReporter?.StartProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                }
+
+                summary = await CommitAsync(result, token);
+
             }
-
-            RestoreSummary summary = await CommitAsync(result, token);
-
-            if (!isNoOp)
+            finally
             {
-                progressReporter?.EndProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                if (!isNoOp)
+                {
+                    progressReporter?.EndProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                }
             }
             return summary;
 

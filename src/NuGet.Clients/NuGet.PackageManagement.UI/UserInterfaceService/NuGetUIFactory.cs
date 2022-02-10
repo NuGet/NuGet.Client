@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Utilities;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -56,6 +57,9 @@ namespace NuGet.PackageManagement.UI
         [Import]
         private Lazy<ISourceRepositoryProvider> SourceRepositoryProvider { get; set; }
 
+        [Import]
+        private Lazy<IRestoreProgressReporter> RestoreProgressReporter { get; set; }
+
         [ImportingConstructor]
         public NuGetUIFactory(
             ICommonOperations commonOperations,
@@ -102,6 +106,7 @@ namespace NuGet.PackageManagement.UI
                 SolutionUserOptions,
                 LockService.Value,
                 OutputConsoleLogger,
+                RestoreProgressReporter.Value,
                 CancellationToken.None,
                 projects);
         }

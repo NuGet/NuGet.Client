@@ -10,6 +10,7 @@ using System.Windows;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -77,6 +78,7 @@ namespace NuGet.PackageManagement.UI
             SolutionUserOptions solutionUserOptions,
             INuGetLockService lockService,
             INuGetUILogger logger,
+            IRestoreProgressReporter restoreProgressReporter,
             CancellationToken cancellationToken,
             params IProjectContextInfo[] projects)
         {
@@ -92,6 +94,7 @@ namespace NuGet.PackageManagement.UI
             Assumes.NotNull(deleteOnRestartManager);
             Assumes.NotNull(solutionUserOptions);
             Assumes.NotNull(lockService);
+            Assumes.NotNull(restoreProgressReporter);
             Assumes.NotNull(logger);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -111,6 +114,7 @@ namespace NuGet.PackageManagement.UI
                     solutionUserOptions,
                     deleteOnRestartManager,
                     lockService,
+                    restoreProgressReporter,
                     cancellationToken)
             };
 

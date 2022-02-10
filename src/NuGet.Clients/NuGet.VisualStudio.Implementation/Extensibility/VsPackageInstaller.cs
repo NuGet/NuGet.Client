@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -38,6 +39,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         private readonly IVsSolutionManager _solutionManager;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly INuGetTelemetryProvider _telemetryProvider;
+        private readonly IRestoreProgressReporter _restoreProgressReporter;
 
         private JoinableTaskFactory PumpingJTF { get; set; }
 
@@ -47,13 +49,15 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             ISettings settings,
             IVsSolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-            INuGetTelemetryProvider telemetryProvider)
+            INuGetTelemetryProvider telemetryProvider,
+            IRestoreProgressReporter restoreProgressReporter)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
             _solutionManager = solutionManager;
             _deleteOnRestartManager = deleteOnRestartManager;
             _telemetryProvider = telemetryProvider;
+            _restoreProgressReporter = restoreProgressReporter;
 
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
         }
@@ -560,7 +564,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 repoProvider,
                 _settings,
                 _solutionManager,
-                _deleteOnRestartManager);
+                _deleteOnRestartManager,
+                _restoreProgressReporter);
         }
     }
 }

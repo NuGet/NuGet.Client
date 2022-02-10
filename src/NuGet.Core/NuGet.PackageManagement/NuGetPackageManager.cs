@@ -56,6 +56,8 @@ namespace NuGet.PackageManagement
 
         public IInstallationCompatibility InstallationCompatibility { get; set; }
 
+        private IRestoreProgressReporter RestoreProgressReporter { get; }
+
         /// <summary>
         /// Event to be raised when batch processing of install/ uninstall packages starts at a project level
         /// </summary>
@@ -113,6 +115,28 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
             bool excludeVersion)
+            : this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, reporter: null, excludeVersion: excludeVersion)
+        {
+        }
+
+        public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            ISolutionManager solutionManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+            IRestoreProgressReporter reporter) :
+            this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, reporter, excludeVersion: false)
+        {
+            _ = reporter ?? throw new ArgumentNullException(nameof(reporter));
+        }
+
+        public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            ISolutionManager solutionManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+            IRestoreProgressReporter reporter,
+            bool excludeVersion)
         {
             SourceRepositoryProvider = sourceRepositoryProvider ?? throw new ArgumentNullException(nameof(sourceRepositoryProvider));
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -120,6 +144,7 @@ namespace NuGet.PackageManagement
             InstallationCompatibility = PackageManagement.InstallationCompatibility.Instance;
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), excludeVersion);
             DeleteOnRestartManager = deleteOnRestartManager ?? throw new ArgumentNullException(nameof(deleteOnRestartManager));
+            RestoreProgressReporter = reporter;
         }
 
         /// <summary>
@@ -187,6 +212,10 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
+            if (resolutionContext == null)
+            {
+                throw new ArgumentNullException(nameof(resolutionContext));
+            }
             var logger = new LoggerAdapter(nuGetProjectContext);
 
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
@@ -241,6 +270,11 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
+            if (resolutionContext == null)
+            {
+                throw new ArgumentNullException(nameof(resolutionContext));
+            }
+
             var logger = new LoggerAdapter(nuGetProjectContext);
 
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
@@ -256,7 +290,8 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext,
                 downloadContext,
                 primarySources,
-                secondarySources, token);
+                secondarySources,
+                token);
         }
 
         /// <summary>
@@ -315,20 +350,11 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
-            var logger = new LoggerAdapter(nuGetProjectContext);
-
-            var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
-            {
-                ParentId = nuGetProjectContext.OperationId,
-                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, logger)
-            };
-
             return InstallPackageAsync(
                 nuGetProject,
                 packageIdentity,
                 resolutionContext,
                 nuGetProjectContext,
-                downloadContext,
                 new List<SourceRepository> { primarySourceRepository },
                 secondarySources,
                 token);
@@ -372,6 +398,11 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
+            if (resolutionContext == null)
+            {
+                throw new ArgumentNullException(nameof(resolutionContext));
+            }
+
             var logger = new LoggerAdapter(nuGetProjectContext);
 
             var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext)
@@ -1537,7 +1568,6 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext, primarySources, secondarySources, token);
         }
 
-        // Preview and return ResolvedActions for many NuGetProjects.
         public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
             IReadOnlyCollection<NuGetProject> nuGetProjects,
             PackageIdentity packageIdentity,
@@ -2753,7 +2783,6 @@ namespace NuGet.PackageManagement
             return resolvedAction.FirstOrDefault(r => r.Project == buildIntegratedProject)?.Action as BuildIntegratedProjectAction;
         }
 
-
         /// <summary>
         /// Run project actions for build integrated many projects.
         /// </summary>
@@ -3063,6 +3092,11 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
+            if (buildIntegratedProject == null)
+            {
+                throw new ArgumentNullException(nameof(buildIntegratedProject));
+            }
+
             BuildIntegratedProjectAction projectAction = null;
 
             if (nuGetProjectActions.Count() == 1
@@ -3160,7 +3194,24 @@ namespace NuGet.PackageManagement
 
                 // Write out the lock file, now no need bubbling re-evaluating of parent projects when you restore from PM UI.
                 // We already taken account of that concern in PreviewBuildIntegratedProjectsActionsAsync method.
-                await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
+
+                bool isNoOp = projectAction.RestoreResultPair.Result is NoOpRestoreResult;
+                IReadOnlyList<string> filesToBeUpdated = isNoOp ? null : GetFilesToBeUpdated(projectAction.RestoreResultPair);
+                if (!isNoOp)
+                {
+                    RestoreProgressReporter?.StartProjectUpdate(projectAction.RestoreResultPair.SummaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                }
+                try
+                {
+                    await RestoreRunner.CommitAsync(projectAction.RestoreResultPair, token);
+                }
+                finally
+                {
+                    if (!isNoOp)
+                    {
+                        RestoreProgressReporter?.EndProjectUpdate(projectAction.RestoreResultPair.SummaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                    }
+                }
 
                 // add packages lock file into project
                 if (PackagesLockFileUtilities.IsNuGetLockFileEnabled(projectAction.RestoreResult.LockFile.PackageSpec))
@@ -3252,7 +3303,7 @@ namespace NuGet.PackageManagement
                         forceRestore: false, // No need to force restore as the inputs would've changed here anyways
                         isRestoreOriginalAction: false, // not an explicit restore request instead being done as part of install or update
                         additionalMessages: null,
-                        progressReporter: null,
+                        progressReporter: RestoreProgressReporter,
                         log: logger,
                         token: token);
                 }
@@ -3277,6 +3328,19 @@ namespace NuGet.PackageManagement
             }
 
             await OpenReadmeFile(buildIntegratedProject, nuGetProjectContext, token);
+        }
+
+        private static IReadOnlyList<string> GetFilesToBeUpdated(RestoreResultPair result)
+        {
+            List<string> filesToBeUpdated = new(3); // We know that we have 3 files.
+            filesToBeUpdated.Add(result.Result.LockFilePath);
+
+            foreach (MSBuildOutputFile msbuildOutputFile in result.Result.MSBuildOutputFiles)
+            {
+                filesToBeUpdated.Add(msbuildOutputFile.Path);
+            }
+
+            return filesToBeUpdated.AsReadOnly();
         }
 
         private async Task RollbackAsync(

@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Threading;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -302,6 +303,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _componentModel.Setup(x => x.GetService<ISettings>()).Returns(settings.Object);
             _componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
             _componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(new Mock<INuGetProjectContext>().Object);
+            _componentModel.Setup(x => x.GetService<IRestoreProgressReporter>()).Returns(new Mock<IRestoreProgressReporter>().Object);
 
             var service = Package.GetGlobalService(typeof(SAsyncServiceProvider)) as IAsyncServiceProvider;
             ServiceLocator.InitializePackageServiceProvider(service);

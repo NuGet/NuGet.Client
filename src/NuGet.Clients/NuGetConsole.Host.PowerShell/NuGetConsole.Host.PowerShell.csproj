@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <PropertyGroup>
@@ -119,6 +119,10 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj">
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
+    </ProjectReference>
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj">
+      <Project>{567e8582-0e73-4a34-a7d3-ed9486415523}</Project>
+      <Name>NuGet.Commands</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>

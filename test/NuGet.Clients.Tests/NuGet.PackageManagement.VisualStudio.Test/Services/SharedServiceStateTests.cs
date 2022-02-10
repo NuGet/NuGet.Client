@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -34,6 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             componentModel.Setup(x => x.GetService<ISettings>()).Returns(Mock.Of<ISettings>());
             componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider);
             componentModel.Setup(x => x.GetService<IVsSolutionManager>()).Returns(solutionManager.Object);
+            componentModel.Setup(x => x.GetService<IRestoreProgressReporter>()).Returns(Mock.Of<IRestoreProgressReporter>());
 
             globalServiceProvider.AddService(typeof(SComponentModel), componentModel.Object);
             var service = Package.GetGlobalService(typeof(SAsyncServiceProvider)) as IAsyncServiceProvider;

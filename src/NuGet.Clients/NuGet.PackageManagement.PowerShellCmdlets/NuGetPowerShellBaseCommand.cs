@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
@@ -48,6 +49,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly IRestoreProgressReporter _nuGetProgressReporter;
         private Guid _operationId;
 
         protected int _packageCount;
@@ -76,6 +78,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             _commonOperations = componentModel.GetService<ICommonOperations>();
             PackageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
             _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
+            _nuGetProgressReporter = componentModel.GetService<IRestoreProgressReporter>();
             DTE = ServiceLocator.GetInstance<DTE>();
 
             var logger = new LoggerAdapter(this);
@@ -108,7 +111,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     _sourceRepositoryProvider,
                     ConfigSettings,
                     VsSolutionManager,
-                    _deleteOnRestartManager);
+                    _deleteOnRestartManager,
+                    _nuGetProgressReporter);
             }
         }
 
