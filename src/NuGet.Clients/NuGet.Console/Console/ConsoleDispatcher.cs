@@ -231,6 +231,7 @@ namespace NuGetConsole.Implementation.Console
             Start();
             return Task.CompletedTask;
         }
+
         public void ClearConsole()
         {
             Debug.Assert(_dispatcher != null);
