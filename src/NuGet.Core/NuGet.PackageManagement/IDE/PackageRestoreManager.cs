@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -52,6 +53,40 @@ namespace NuGet.PackageManagement
             {
                 var packages = await GetPackagesInSolutionAsync(solutionDirectory, token);
                 missing = packages.Any(p => p.IsMissing);
+            }
+
+            PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(missing));
+        }
+
+        public virtual async Task<bool> GetMissingAssetsFileStatusAsync()
+        {
+            foreach (var nuGetProject in (await SolutionManager.GetNuGetProjectsAsync()))
+            {
+                if (nuGetProject is BuildIntegratedNuGetProject)
+                {
+                    string assetsFilePath = await (nuGetProject as BuildIntegratedNuGetProject).GetAssetsFilePathAsync();
+                    var fileInfo = new FileInfo(assetsFilePath);
+
+                    if (!fileInfo.Exists)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public virtual async Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token)
+        {
+            // This method is called by different event handlers.
+            // If the solutionDirectory is null, there's no need to do needless work.
+            // Even though the solution closed even calls the synchronous ClearMissingEventForSolution
+            // there's no guarantee that some weird ordering of events won't make the solutionDirectory null.
+            var missing = false;
+            if (!string.IsNullOrEmpty(solutionDirectory))
+            {
+                missing = await GetMissingAssetsFileStatusAsync();
             }
 
             PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(missing));
@@ -186,6 +221,48 @@ namespace NuGet.PackageManagement
                     NullLogger.Instance,
                     token);
             }
+        }
+
+        public virtual async Task<PackageRestoreResult> RestoreMissingAssetsFileInSolutionAsync(
+            string solutionDirectory,
+            INuGetProjectContext nuGetProjectContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            var projects = (await SolutionManager.GetNuGetProjectsAsync()).Where(p => p is INuGetIntegratedProject);
+            var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
+            var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(projects.FirstOrDefault() as BuildIntegratedNuGetProject, dependencyGraphContext);
+            var providerCache = new Commands.RestoreCommandProvidersCache();
+            var now = DateTimeOffset.UtcNow;
+            void cacheModifier(SourceCacheContext cache) => cache.MaxAge = now;
+            var enabledSources = SourceRepositoryProvider.GetRepositories();
+            var allSources = new HashSet<SourceRepository>(enabledSources, new SourceRepositoryComparer());
+
+            var restoreResults = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                SolutionManager,
+                projects.FirstOrDefault() as BuildIntegratedNuGetProject,
+                originalPackageSpec,
+                dependencyGraphContext,
+                providerCache,
+                cacheModifier,
+                allSources,
+                nuGetProjectContext.OperationId,
+                cancellationToken);
+
+            // Throw before writing if this has been canceled
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Write out the lock file and msbuild files
+            await RestoreRunner.CommitAsync(restoreResults, cancellationToken);
+
+            // Write out the lock file and msbuild files
+            var summary = await RestoreRunner.CommitAsync(restoreResults, cancellationToken);
+
+            RestoreSummary.Log(logger, new[] { summary });
+
+            return new PackageRestoreResult(
+                summary.Success,
+                restoreResults.Result.GetAllInstalled().Select(p => new PackageIdentity(p.Name, p.Version)));
         }
 
         /// <summary>

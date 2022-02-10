@@ -47,6 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await TaskScheduler.Default;
                 await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                await RaiseAssetsFileMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
             })
             .PostOnFailure(nameof(VSPackageRestoreManager), nameof(OnSolutionOpened));
         }
@@ -70,6 +71,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 await TaskScheduler.Default;
 
                 await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                await RaiseAssetsFileMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
             })
             .PostOnFailure(nameof(VSPackageRestoreManager), nameof(OnNuGetProjectAdded));
         }

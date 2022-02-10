@@ -102,6 +102,7 @@ namespace NuGet.PackageManagement.UI
 
                         // when the control is first loaded, check for missing packages
                         await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+                        await _packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
                     }
                     catch (Exception ex)
                     {
@@ -158,15 +159,27 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
                 string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(token);
-                await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
-                    this,
-                    new LoggerAdapter(this),
-                    token);
+
+                if (await _packageRestoreManager.GetMissingAssetsFileStatusAsync())
+                {
+                    await _packageRestoreManager.RestoreMissingAssetsFileInSolutionAsync(solutionDirectory,
+                        this,
+                        new LoggerAdapter(this),
+                        token);
+                }
+                else
+                {
+                    await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
+                        this,
+                        new LoggerAdapter(this),
+                        token);
+                }
 
                 if (_restoreException == null)
                 {
-                    // when the control is first loaded, check for missing packages
+                    // when the control is first loaded, check for missing packages and missing assets files
                     await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
+                    await _packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
                 }
                 else
                 {

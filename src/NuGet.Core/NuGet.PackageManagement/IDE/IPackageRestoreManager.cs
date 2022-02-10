@@ -54,6 +54,14 @@ namespace NuGet.PackageManagement
         Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
+        /// Checks the current solution if there is a missing assets file.
+        /// </summary>
+        /// <param name="solutionDirectory"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
+
+        /// <summary>
         /// Restores the missing packages for the current solution.
         /// </summary>
         /// <remarks>
@@ -77,6 +85,21 @@ namespace NuGet.PackageManagement
         Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token);
+
+        /// <summary>
+        /// Restores the solution if the assets file is missing.
+        /// </summary>
+        /// <param name="solutionDirectory"></param>
+        /// <param name="nuGetProjectContext"></param>
+        /// <param name="logger"></param>
+        /// <param name="token"></param>
+        /// <returns>Returns true if the restore succeded</returns>
+        Task<PackageRestoreResult> RestoreMissingAssetsFileInSolutionAsync(string solutionDirectory,
+            INuGetProjectContext nuGetProjectContext,
+            ILogger logger,
+            CancellationToken token);
+
+        Task<bool> GetMissingAssetsFileStatusAsync();
 
         /// <summary>
         /// Restores the package references if they are missing
