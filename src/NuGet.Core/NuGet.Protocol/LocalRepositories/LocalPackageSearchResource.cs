@@ -57,8 +57,10 @@ namespace NuGet.Protocol
                     query = query.Where(package => ContainsAnyTerm(terms, package));
                 }
 
-                // Collapse to the highest version per id
-                var collapsedQuery = CollapseToHighestVersion(query);
+                // Collapse to the highest version per id, if necessary
+                var collapsedQuery = filters?.Filter == SearchFilterType.IsLatestVersion ||
+                                     filters?.Filter == SearchFilterType.IsAbsoluteLatestVersion
+                                     ? CollapseToHighestVersion(query) : query;
 
                 // execute the query
                 var packages = collapsedQuery
