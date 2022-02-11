@@ -39,6 +39,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string? PackagePath { get; internal set; }
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; internal set; }
         public IReadOnlyCollection<PackageIdentity>? TransitiveOrigins { get; internal set; }
+        public PackageDeprecationMetadataContextInfo? DeprecationMetadataContextInfo { get; internal set; }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
@@ -47,6 +48,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion)
         {
+            PackageDeprecationMetadataContextInfo? deprecationMetadataContextInfo = null;
+
+            if (packageSearchMetadata is PackageSearchMetadata packageSearchMetadataWithDeprecationMetadata)
+            {
+                deprecationMetadataContextInfo = PackageDeprecationMetadataContextInfo.Create(packageSearchMetadataWithDeprecationMetadata.DeprecationMetadata);
+            }
+
             return new PackageSearchMetadataContextInfo()
             {
                 Title = packageSearchMetadata.Title,
@@ -79,6 +87,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     .OrderByDescending(v => v.Severity).ToArray(),
                 TransitiveOrigins =
                     (packageSearchMetadata as TransitivePackageSearchMetadata)?.TransitiveOrigins,
+                DeprecationMetadataContextInfo = deprecationMetadataContextInfo
             };
         }
     }

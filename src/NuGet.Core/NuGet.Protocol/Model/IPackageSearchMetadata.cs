@@ -47,6 +47,8 @@ namespace NuGet.Protocol.Core.Types
         /// </remarks>
         Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync();
 
+        //PackageDeprecationMetadata DeprecationMetadata { get; }
+
         /// <summary>
         /// Lists the available versions of the package on the source.
         /// </summary>

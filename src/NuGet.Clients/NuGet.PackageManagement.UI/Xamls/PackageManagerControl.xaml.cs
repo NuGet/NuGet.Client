@@ -938,7 +938,7 @@ namespace NuGet.PackageManagement.UI
                 _loadCts = new CancellationTokenSource();
 
                 // start SearchAsync task for initial loading of packages
-                var searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
+                Task<SearchResultContextInfo> searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
@@ -979,6 +979,10 @@ namespace NuGet.PackageManagement.UI
                     && SelectedSource.PackageSources.Any(item => UriUtility.IsNuGetOrg(item.Source)));
         }
 
+        /// <summary>
+        /// Occurs after loading a collection of <see cref="PackageItemViewModel"/> and computes various Counts to be reflected in the UI.
+        /// </summary>
+        /// <returns></returns>
         private async ValueTask RefreshInstalledAndUpdatesTabsAsync()
         {
             // clear existing caches
@@ -1003,7 +1007,10 @@ namespace NuGet.PackageManagement.UI
             Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
             // Update installed tab warning icon
-            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
+            
+            //(int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
+            int vulnerablePackagesCount = PackageList.PackageItems.Count(vm => vm.IsPackageVulnerable);
+            int deprecatedPackagesCount = PackageList.PackageItems.Count(vm => vm.IsPackageDeprecated);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
             // Update updates tab count
@@ -1017,52 +1024,52 @@ namespace NuGet.PackageManagement.UI
             _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
         }
 
-        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken token)
-        {
-            // Switch off the UI thread before fetching installed packages and deprecation metadata.
-            await TaskScheduler.Default;
+        // private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken token)
+        // {
+        //     // Switch off the UI thread before fetching installed packages and deprecation metadata.
+        //     await TaskScheduler.Default;
 
-            int vulnerablePackagesCount = 0;
-            int deprecatedPackagesCount = 0;
-            PackageCollection installedPackageCollection = null;
+        //     int vulnerablePackagesCount = 0;
+        //     int deprecatedPackagesCount = 0;
+        //     PackageCollection installedPackageCollection = null;
 
-            // Transitive dependencies are only displayed in Project-level PM UI.
-            if (Model.IsSolution)
-            {
-                installedPackageCollection = await loadContext.GetInstalledPackagesAsync();
-            }
-            else
-            {
-                IInstalledAndTransitivePackages installedAndTransitivePackages = await PackageCollection.GetInstalledAndTransitivePackagesAsync(loadContext.ServiceBroker, loadContext.Projects, includeTransitiveOrigins: false, token);
-                installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
-                PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages);
-                IEnumerable<PackageVulnerabilityMetadataContextInfo>[] transitivePackageVulnerabilities = await Task.WhenAll(transitivePackageCollection.Select(p => _packageVulnerabilityService.GetVulnerabilityInfoAsync(p, token)));
+        //     // Transitive dependencies are only displayed in Project-level PM UI.
+        //     if (Model.IsSolution)
+        //     {
+        //         installedPackageCollection = await loadContext.GetInstalledPackagesAsync();
+        //     }
+        //     else
+        //     {
+        //         IInstalledAndTransitivePackages installedAndTransitivePackages = await PackageCollection.GetInstalledAndTransitivePackagesAsync(loadContext.ServiceBroker, loadContext.Projects, includeTransitiveOrigins: false, token);
+        //         installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
+        //         PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages);
+        //         IEnumerable<PackageVulnerabilityMetadataContextInfo>[] transitivePackageVulnerabilities = await Task.WhenAll(transitivePackageCollection.Select(p => _packageVulnerabilityService.GetVulnerabilityInfoAsync(p, token)));
 
-                foreach (IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo in transitivePackageVulnerabilities)
-                {
-                    if (vulnerabilityInfo != null && vulnerabilityInfo.Any())
-                    {
-                        vulnerablePackagesCount++;
-                    }
-                }
-            }
+        //         foreach (IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo in transitivePackageVulnerabilities)
+        //         {
+        //             if (vulnerabilityInfo != null && vulnerabilityInfo.Any())
+        //             {
+        //                 vulnerablePackagesCount++;
+        //             }
+        //         }
+        //     }
 
-            var installedPackageMetadata = await Task.WhenAll(installedPackageCollection.Select(p => GetPackageMetadataAsync(p, packageSources, token)));
+        //     var installedPackageMetadata = await Task.WhenAll(installedPackageCollection.Select(p => GetPackageMetadataAsync(p, packageSources, token)));
 
-            foreach ((PackageSearchMetadataContextInfo s, PackageDeprecationMetadataContextInfo d) in installedPackageMetadata)
-            {
-                if (s.Vulnerabilities != null && s.Vulnerabilities.Any())
-                {
-                    vulnerablePackagesCount++;
-                }
-                if (d != null)
-                {
-                    deprecatedPackagesCount++;
-                }
-            }
+        //     foreach ((PackageSearchMetadataContextInfo s, PackageDeprecationMetadataContextInfo d) in installedPackageMetadata)
+        //     {
+        //         if (s.Vulnerabilities != null && s.Vulnerabilities.Any())
+        //         {
+        //             vulnerablePackagesCount++;
+        //         }
+        //         if (d != null)
+        //         {
+        //             deprecatedPackagesCount++;
+        //         }
+        //     }
 
-            return (vulnerablePackagesCount, deprecatedPackagesCount);
-        }
+        //    return (vulnerablePackagesCount, deprecatedPackagesCount);
+        //}
 
         private async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetPackageMetadataAsync(PackageCollectionItem package, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
         {

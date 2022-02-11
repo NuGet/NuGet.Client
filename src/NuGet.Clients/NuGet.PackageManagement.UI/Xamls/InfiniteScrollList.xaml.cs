@@ -438,7 +438,7 @@ namespace NuGet.PackageManagement.UI
                 // update initial progress
                 await currentLoader.UpdateStateAndReportAsync(new SearchResultContextInfo(), progress, token);
 
-                var results = await _initialSearchResultTask;
+                SearchResultContextInfo results = await _initialSearchResultTask;
 
                 token.ThrowIfCancellationRequested();
 
