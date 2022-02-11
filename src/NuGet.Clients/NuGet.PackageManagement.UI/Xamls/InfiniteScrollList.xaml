@@ -10,8 +10,6 @@
   d:DesignHeight="200"
   d:DesignWidth="500">
   <UserControl.Resources>
-    <nuget:BooleanToVisibilityConverter
-      x:Key="BooleanToVisibilityConverter" />
     <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
 
@@ -252,6 +250,7 @@
       <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
       <Setter Property="VirtualizingPanel.CacheLength" Value="1,2" />
       <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Page" />
+      <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
       <Setter Property="BorderThickness" Value="0,0,0,0" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
