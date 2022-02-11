@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.UI
         private PackageFeedSearchState _state = new PackageFeedSearchState();
         private SearchFilter _searchFilter;
         private IReconnectingNuGetSearchService _searchService;
+        private INuGetUILogger _logger;
         public IItemLoaderState State => _state;
         private IServiceBroker _serviceBroker;
         private INuGetPackageFileService _packageFileService;
@@ -52,7 +53,8 @@ namespace NuGet.PackageManagement.UI
             ContractItemFilter itemFilter,
             string searchText,
             bool includePrerelease,
-            bool useRecommender)
+            bool useRecommender,
+            INuGetUILogger logger)
         {
             Assumes.NotNull(serviceBroker);
             Assumes.NotNull(context);
@@ -66,6 +68,7 @@ namespace NuGet.PackageManagement.UI
             _packageSources = packageSources;
             _itemFilter = itemFilter;
             _useRecommender = useRecommender;
+            _logger = logger;
         }
 
         public static async ValueTask<PackageItemLoader> CreateAsync(
@@ -76,7 +79,8 @@ namespace NuGet.PackageManagement.UI
             ContractItemFilter itemFilter,
             string searchText = null,
             bool includePrerelease = true,
-            bool useRecommender = false)
+            bool useRecommender = false,
+            INuGetUILogger logger = null)
         {
             var itemLoader = new PackageItemLoader(
                 serviceBroker,
@@ -86,7 +90,8 @@ namespace NuGet.PackageManagement.UI
                 itemFilter,
                 searchText,
                 includePrerelease,
-                useRecommender);
+                useRecommender,
+                logger);
 
             await itemLoader.InitializeAsync();
 
@@ -113,7 +118,8 @@ namespace NuGet.PackageManagement.UI
                 itemFilter,
                 searchText,
                 includePrerelease,
-                useRecommender);
+                useRecommender,
+                logger: null);
 
             await itemLoader.InitializeAsync(packageFileService);
 
@@ -276,7 +282,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                var listItem = new PackageItemViewModel(_searchService)
+                var listItem = new PackageItemViewModel(_searchService, _logger)
                 {
                     Id = metadata.Identity.Id,
                     Version = metadata.Identity.Version,
