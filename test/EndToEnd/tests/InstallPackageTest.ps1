@@ -1,5 +1,5 @@
-Verify Xunit 2.1.0 can be installed into a net45 project.
-https://github.com/NuGet/Home/issues/1711
+# Verify Xunit 2.1.0 can be installed into a net45 project.
+# https://github.com/NuGet/Home/issues/1711
 
 function Test-BindingRedirectComplex {
     param($context)
@@ -11,7 +11,6 @@ function Test-BindingRedirectComplex {
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
-
     $projects = @($a, $b)
 
     # Act
