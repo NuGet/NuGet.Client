@@ -307,7 +307,7 @@ namespace NuGet.Common
         NU1801 = 1801,
 
         /// <summary>
-        /// No metadata file found
+        /// Could not update package .nupkg.metadata timestamp
         /// </summary>
         NU1802 = 1802,
 
