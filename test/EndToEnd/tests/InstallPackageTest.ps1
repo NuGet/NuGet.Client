@@ -856,8 +856,8 @@ function Test-BindingRedirectComplex {
     $projects = @($a, $b)
 
     # Act
-    $c | Install-Package E -Source $testRepositoryPath
-    $c | Update-Package F -Safe -Source $testRepositoryPath
+    $c | Install-Package E -Source $context.RepositoryRoot
+    $c | Update-Package F -Safe -Source $context.RepositoryRoot
 
     Assert-Package $c E;
 
@@ -874,8 +874,8 @@ function Test-SimpleBindingRedirectsWebsite {
     $a = New-WebSite
 
     # Act
-    $a | Install-Package E -Source $testRepositoryPath
-    $a | Update-Package F -Safe -Source $testRepositoryPath
+    $a | Install-Package E -Source $context.RepositoryRoot
+    $a | Update-Package F -Safe -Source $context.RepositoryRoot
 
     # Assert
     Assert-Package $a E;
@@ -896,8 +896,8 @@ function Test-BindingRedirectInstallLargeProject {
 
     Add-ProjectReference $p $projects[0]
 
-    $projects[$projects.Length - 1] | Install-Package E -Source $testRepositoryPath
-    $projects[$projects.Length - 1] | Update-Package F -Safe -Source $testRepositoryPath
+    $projects[$projects.Length - 1] | Install-Package E -Source $context.RepositoryRoot
+    $projects[$projects.Length - 1] | Update-Package F -Safe -Source $context.RepositoryRoot
     Assert-BindingRedirect $p web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
@@ -909,14 +909,14 @@ function Test-BindingRedirectDuplicateReferences {
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
-    ($a, $b) | Install-Package A -Source $testRepositoryPath -IgnoreDependencies
+    ($a, $b) | Install-Package A -Source $context.RepositoryRoot -IgnoreDependencies
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $testRepositoryPath
-    $c | Update-Package F -Safe -Source $testRepositoryPath
+    $c | Install-Package E -Source $context.RepositoryRoot
+    $c | Update-Package F -Safe -Source $context.RepositoryRoot
 
     Assert-Package $c E
 
@@ -933,14 +933,14 @@ function Test-BindingRedirectClassLibraryWithDifferentDependents {
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
-    ($a, $b) | Install-Package A -Source $testRepositoryPath -IgnoreDependencies
+    ($a, $b) | Install-Package A -Source $context.RepositoryRoot -IgnoreDependencies
 
     Add-ProjectReference $a $c
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $testRepositoryPath
-    $c | Update-Package F -Safe -Source $testRepositoryPath
+    $c | Install-Package E -Source $context.RepositoryRoot
+    $c | Update-Package F -Safe -Source $context.RepositoryRoot
 
     Assert-Package $c E
 
@@ -956,8 +956,8 @@ function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocat
     $a = New-WebApplication
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
-    
-    $a | Install-Package A -Source $testRepositoryPath -IgnoreDependencies
+
+    $a | Install-Package A -Source $context.RepositoryRoot -IgnoreDependencies
     $aPath = ls (Get-SolutionDir) -Recurse -Filter A.dll
     cp $aPath.FullName (Get-SolutionDir)
     $aNewLocation = Join-Path (Get-SolutionDir) A.dll
@@ -968,8 +968,8 @@ function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocat
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $testRepositoryPath
-    $c | Update-Package F -Safe -Source $testRepositoryPath
+    $c | Install-Package E -Source $context.RepositoryRoot
+    $c | Update-Package F -Safe -Source $context.RepositoryRoot
 
     Assert-Package $c E
 
@@ -1008,15 +1008,15 @@ function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembl
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
 
-    $a | Install-Package A -Source $testRepositoryPath -IgnoreDependencies
-    $b | Install-Package A -Version 1.0 -Source $testRepositoryPath -IgnoreDependencies
+    $a | Install-Package A -Source $context.RepositoryRoot -IgnoreDependencies
+    $b | Install-Package A -Version 1.0 -Source $context.RepositoryRoot -IgnoreDependencies
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $testRepositoryPath
-    $c | Update-Package F -Safe -Source $testRepositoryPath
+    $c | Install-Package E -Source $context.RepositoryRoot
+    $c | Update-Package F -Safe -Source $context.RepositoryRoot
 
     Assert-Package $c E
 
