@@ -1,28 +1,13 @@
-# Verify Xunit 2.1.0 can be installed into a net45 project.
-# https://github.com/NuGet/Home/issues/1711
-
-function Test-SinglePackageInstallIntoSingleProject {
-    # Arrange
-    $project = New-ConsoleApplication
-
-    # Act
-    # $context.RepositoryPath = 'C:\NuGetProj\NuGet.Client\test\EndToEnd\Packages\'
-    Write-Host $context.RepositoryPath
-    Install-Package TestUpdatePackage -ProjectName $project.Name  -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Reference $project TestUpdatePackage
-    Assert-SolutionPackage TestUpdatePackage
-}
+Verify Xunit 2.1.0 can be installed into a net45 project.
+https://github.com/NuGet/Home/issues/1711
 
 function Test-BindingRedirectComplex {
-    param(
-        $context
-    )    
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
@@ -30,14 +15,12 @@ function Test-BindingRedirectComplex {
     $projects = @($a, $b)
 
     # Act
-    # $context.RepositoryPath = 'C:\NuGetProj\NuGet.Client\test\EndToEnd\Packages\BindingRedirectComplex'
-    Write-Host $context.RepositoryPath
-    $c | Install-Package E
-    $c | Update-Package F -Safe -Source $context.RepositoryPath
+    $c | Install-Package E -Source $testRepositoryPath
+    $c | Update-Package F -Safe -Source $testRepositoryPath
 
     Assert-Package $c E;
 
-    Assert
+    # Assert
     Assert-BindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
     Assert-BindingRedirect $b app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
@@ -50,8 +33,8 @@ function Test-SimpleBindingRedirectsWebsite {
     $a = New-WebSite
 
     # Act
-    $a | Install-Package E -Source $context.RepositoryPath
-    $a | Update-Package F -Safe -Source $context.RepositoryPath
+    $a | Install-Package E -Source $testRepositoryPath
+    $a | Update-Package F -Safe -Source $testRepositoryPath
 
     # Assert
     Assert-Package $a E;
@@ -63,7 +46,7 @@ function Test-BindingRedirectInstallLargeProject {
     param($context)
 
     $numProjects = 25
-    $projects = 0..$numProjects | %{ New-ClassLibrary $_ }
+    $projects = 0..$numProjects | %{ New-ClassLibraryNET46 $_ }
     $p = New-WebApplication
 
     for($i = 0; $i -lt $numProjects; $i++) {
@@ -72,8 +55,8 @@ function Test-BindingRedirectInstallLargeProject {
 
     Add-ProjectReference $p $projects[0]
 
-    $projects[$projects.Length - 1] | Install-Package E -Source $context.RepositoryPath
-    $projects[$projects.Length - 1] | Update-Package F -Safe -Source $context.RepositoryPath
+    $projects[$projects.Length - 1] | Install-Package E -Source $testRepositoryPath
+    $projects[$projects.Length - 1] | Update-Package F -Safe -Source $testRepositoryPath
     Assert-BindingRedirect $p web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
@@ -83,16 +66,16 @@ function Test-BindingRedirectDuplicateReferences {
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
-    ($a, $b) | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
+    ($a, $b) | Install-Package A -Source $testRepositoryPath -IgnoreDependencies
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $context.RepositoryPath
-    $c | Update-Package F -Safe -Source $context.RepositoryPath
+    $c | Install-Package E -Source $testRepositoryPath
+    $c | Update-Package F -Safe -Source $testRepositoryPath
 
     Assert-Package $c E
 
@@ -107,16 +90,16 @@ function Test-BindingRedirectClassLibraryWithDifferentDependents {
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
-    ($a, $b) | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
+    ($a, $b) | Install-Package A -Source $testRepositoryPath -IgnoreDependencies
 
     Add-ProjectReference $a $c
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $context.RepositoryPath
-    $c | Update-Package F -Safe -Source $context.RepositoryPath
+    $c | Install-Package E -Source $testRepositoryPath
+    $c | Update-Package F -Safe -Source $testRepositoryPath
 
     Assert-Package $c E
 
@@ -131,12 +114,12 @@ function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocat
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
-
-    $a | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
-    $aPath = ls (Get-SolutionDir) -Recurse -Filter A.dll
+    $c = New-ClassLibraryNET46
+####### Change to A
+    $a | Install-Package G -Source $testRepositoryPath -IgnoreDependencies
+    $aPath = ls (Get-SolutionDir) -Recurse -Filter G.dll
     cp $aPath.FullName (Get-SolutionDir)
-    $aNewLocation = Join-Path (Get-SolutionDir) A.dll
+    $aNewLocation = Join-Path (Get-SolutionDir) G.dll
 
     $b.Object.References.Add($aNewLocation)
 
@@ -144,8 +127,8 @@ function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocat
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $context.RepositoryPath
-    $c | Update-Package F -Safe -Source $context.RepositoryPath
+    $c | Install-Package E -Source $testRepositoryPath
+    $c | Update-Package F -Safe -Source $testRepositoryPath
 
     Assert-Package $c E
 
@@ -162,6 +145,7 @@ function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
     $a = New-ConsoleApplication
 
     # Act
+    Write-Host "-------------------"    $context.RepositoryRoot
     $a | Install-Package PackageWithNonStrongNamedLibA -Source $context.RepositoryRoot
     $a | Install-Package PackageWithNonStrongNamedLibB -Source $context.RepositoryRoot
 
@@ -182,17 +166,17 @@ function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembl
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
-    $a | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
-    $b | Install-Package A -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
+    $a | Install-Package A -Source $testRepositoryPath -IgnoreDependencies
+    $b | Install-Package A -Version 1.0 -Source $testRepositoryPath -IgnoreDependencies
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
 
     # Act
-    $c | Install-Package E -Source $context.RepositoryPath
-    $c | Update-Package F -Safe -Source $context.RepositoryPath
+    $c | Install-Package E -Source $testRepositoryPath
+    $c | Update-Package F -Safe -Source $testRepositoryPath
 
     Assert-Package $c E
 
