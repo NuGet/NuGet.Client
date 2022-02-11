@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -33,12 +35,14 @@ namespace NuGet.PackageManagement.UI
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
+        private INuGetUILogger _logger;
 
-        public PackageItemViewModel(INuGetSearchService searchService, IPackageVulnerabilityService vulnerabilityService = default)
+        public PackageItemViewModel(INuGetSearchService searchService, IPackageVulnerabilityService vulnerabilityService, INuGetUILogger logger = null)
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
+            _logger = logger ?? NullLogger.Instance;
         }
 
         // same URIs can reuse the bitmapImage that we've already used.
@@ -759,6 +763,7 @@ namespace NuGet.PackageManagement.UI
                     DeprecationMetadata = deprecationMetadata;
                     IsPackageDeprecated = deprecationMetadata != null;
                     VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+                    _logger.Log(new LogMessage(LogLevel.Information, $"{Id} loaded IsPackageDeprecated=({IsPackageDeprecated}) and IsPackageVulnerable={IsPackageVulnerable}"));
                 }
                 else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
                 {
