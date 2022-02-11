@@ -39,6 +39,10 @@ namespace NuGet.Protocol
         private readonly ConcurrentDictionary<string, Lazy<RuntimeGraph>> _runtimeCache
             = new ConcurrentDictionary<string, Lazy<RuntimeGraph>>(PathUtility.GetStringComparerBasedOnOS());
 
+        // Metadata file
+        private readonly ConcurrentDictionary<string, bool> _metadataFileCache
+            = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
+
         public LocalPackageFileCache()
         {
         }
@@ -97,9 +101,13 @@ namespace NuGet.Protocol
 
         internal void UpdateLastAccessTime(string nupkgMetadataPath)
         {
+            var exists = _metadataFileCache.ContainsKey(nupkgMetadataPath);
+            if (exists) return;
+
             try
             {
                 File.SetLastAccessTimeUtc(nupkgMetadataPath, DateTime.UtcNow);
+                _metadataFileCache.TryAdd(nupkgMetadataPath, true);
             }
             catch// (Exception ex)
             {
