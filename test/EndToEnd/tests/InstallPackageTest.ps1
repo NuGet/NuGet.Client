@@ -855,8 +855,8 @@ function Test-BindingRedirectComplex {
     $projects = @($a, $b)
 
     # Act
-    $c | Install-Package -Source $context.RepositoryRoot -Id E
-    $c | Update-Package -Source $context.RepositoryRoot -Id F -Safe
+    $c | Install-Package E -Source $context.RepositoryPath
+    $c | Update-Package F -Safe -Source $context.RepositoryPath
 
     Assert-Package $c E;
 
