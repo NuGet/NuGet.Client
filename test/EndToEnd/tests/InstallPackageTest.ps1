@@ -843,20 +843,20 @@ function Test-SimpleBindingRedirectsNonWeb {
 }
 
 function Test-BindingRedirectComplex {
-    param($context)
 
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
     $c = New-ClassLibraryNET46
+    $a | Install-Package PackageWithXmlTransformAndTokenReplacement -Source $context.RepositoryRoot
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
     $projects = @($a, $b)
 
     # Act
-    $c | Install-Package E -Source $context.RepositoryPath
-    $c | Update-Package F -Safe -Source $context.RepositoryPath
+    $c | Install-Package E -Source $context.RepositoryRoot
+    $c | Update-Package F -Safe -Source $context.RepositoryRoot
 
     Assert-Package $c E;
 
@@ -866,12 +866,10 @@ function Test-BindingRedirectComplex {
 }
 
 function Test-SimpleBindingRedirectsWebsite {
-    param(
-        $context
-    )
+
     # Arrange
     $a = New-WebSite
-
+    $a| Install-Package PackageWithFolder -source $context.RepositoryRoot
     # Act
     $a | Install-Package -Source $context.RepositoryRoot -Id E
     $a | Update-Package -Safe -Source $context.RepositoryRoot -Id F
@@ -883,8 +881,6 @@ function Test-SimpleBindingRedirectsWebsite {
 
 
 function Test-BindingRedirectInstallLargeProject {
-    param($context)
-
     $numProjects = 25
     $projects = 0..$numProjects | %{ New-ClassLibraryNET46 $_ }
     $p = New-WebApplication
