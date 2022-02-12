@@ -721,7 +721,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     {
                         LibraryRange = new LibraryRange(
                             "packageA",
-                            VersionRange.Parse("[2.15.3, )"),
+                            VersionRange.Parse("[2.0.0, )"),
                             LibraryDependencyTarget.Package)
                     },
                     new LibraryDependency
@@ -773,7 +773,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(1, transitivePackageB.TransitiveOrigins.Count());
             var transitiveOriginB = transitivePackageB.TransitiveOrigins.First();
             Assert.Equal("packageA", transitiveOriginB.Identity.Id);
-            Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginB.Identity.Version);
+            Assert.Equal(new NuGetVersion("2.0.0"), transitiveOriginB.Identity.Version);
 
             // Verify transitive package C
             var transitivePackageC = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageC").First();
@@ -781,14 +781,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(1, transitivePackageC.TransitiveOrigins.Count());
             var transitiveOriginC = transitivePackageC.TransitiveOrigins.First();
             Assert.Equal("packageA", transitiveOriginC.Identity.Id);
-            Assert.Equal(new NuGetVersion("2.15.3"), transitiveOriginC.Identity.Version);
+            Assert.Equal(new NuGetVersion("2.0.0"), transitiveOriginC.Identity.Version);
 
             // Verify transitive package D
             var transitivePackageD = installedAndTransitive.TransitivePackages.Where(pkg => pkg.Identity.Id == "packageD").First();
             Assert.NotNull(transitivePackageD);
             Assert.Equal(2, transitivePackageD.TransitiveOrigins.Count()); // Two top dependencies
             Assert.Collection(transitivePackageD.TransitiveOrigins,
-                x => Assert.Equal(x.Identity, new PackageIdentity("packageA", NuGetVersion.Parse("2.15.3"))),
+                x => Assert.Equal(x.Identity, new PackageIdentity("packageA", NuGetVersion.Parse("2.0.0"))),
                 x => Assert.Equal(x.Identity, new PackageIdentity("packageX", NuGetVersion.Parse("3.0.0"))));
         }
 
@@ -1022,7 +1022,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             //
             // net472:
             // packageX(3.0.0 or 4.0.0) -> packageD(0.1.1 or 0.1.2)
-            // case useSameversions = true
 
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -1136,10 +1135,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .First(pkg => pkg.Identity.Id == "packageD")
                 .TransitiveOrigins;
 
+
             // Verify II
+            Assert.Equal(2, topPackagesD.Count()); // multitargeting: 2 keys
             if (useSameVersions)
             {
-                Assert.Equal(2, topPackagesD.Count()); // multitargeting: 2 keys
                 Assert.Collection(topPackagesD,
                     x => AssertElement(x, "packageA", "2.0.0"),
                     x => AssertElement(x, "packageX", "3.0.0"));
@@ -1148,8 +1148,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 Assert.Collection(topPackagesD,
                     x => AssertElement(x, "packageA", "2.0.0"),
-                    x => AssertElement(x, "packageX", "3.0.0"),
-                    x => AssertElement(x, "packageX", "4.0.0")); // multitargeting brings this package
+                    x => AssertElement(x, "packageX", "4.0.0")); // multitargeting brings this version
             }
         }
 

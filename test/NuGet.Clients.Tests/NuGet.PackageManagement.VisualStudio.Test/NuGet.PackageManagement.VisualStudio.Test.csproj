@@ -39,6 +39,7 @@
     <Compile Include="ProjectSystems\ProjectSystemCacheTests.cs" />
     <Compile Include="ProjectSystems\TestVSProjectAdapter.cs" />
     <Compile Include="Projects\CpsPackageReferenceProjectProviderTests.cs" />
+    <Compile Include="Projects\PackageReferenceProjectTests.cs" />
     <Compile Include="Services\MockedVSCollectionTests.cs" />
     <Compile Include="Services\NuGetLockServiceTests.cs" />
     <Compile Include="Services\NuGetProjectManagerServiceTests.cs" />

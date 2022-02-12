@@ -398,9 +398,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             transitiveEntry?.Keys?.ForEach(key => transitiveOrigins.AddRange(transitiveEntry[key]));
 
+            List<PackageReference> merged = transitiveOrigins
+                .GroupBy(tr => tr.PackageIdentity.Id)
+                .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).First())
+                .ToList();
+
             var transitivePR = new TransitivePackageReference(currentPackage)
             {
-                TransitiveOrigins = transitiveOrigins,
+                TransitiveOrigins = merged,
             };
 
             return transitivePR;
