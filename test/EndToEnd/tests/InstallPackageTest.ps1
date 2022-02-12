@@ -799,7 +799,6 @@ function Test-SimpleBindingRedirectsClassLibraryReference {
 }
 
 function Test-SimpleBindingRedirectsIndirectReference {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     # Arrange
@@ -856,8 +855,8 @@ function Test-BindingRedirectComplex {
     $projects = @($a, $b)
 
     # Act
-    $c | Install-Package E -Source $context.RepositoryRoot
-    $c | Update-Package F -Safe -Source $context.RepositoryRoot
+    $c | Install-Package -Source $context.RepositoryRoot -Id E
+    $c | Update-Package -Source $context.RepositoryRoot -Id F -Safe
 
     Assert-Package $c E;
 
@@ -874,8 +873,8 @@ function Test-SimpleBindingRedirectsWebsite {
     $a = New-WebSite
 
     # Act
-    $a | Install-Package E -Source $context.RepositoryRoot
-    $a | Update-Package F -Safe -Source $context.RepositoryRoot
+    $a | Install-Package -Source $context.RepositoryRoot -Id E
+    $a | Update-Package -Safe -Source $context.RepositoryRoot -Id F
 
     # Assert
     Assert-Package $a E;
