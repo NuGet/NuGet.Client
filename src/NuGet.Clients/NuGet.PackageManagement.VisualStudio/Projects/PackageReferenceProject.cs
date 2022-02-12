@@ -365,7 +365,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     cachedEntry[fxRidEntry] = new List<PackageReference>();
                 }
 
-                if (!cachedEntry[fxRidEntry].Contains(top)) // Dictionary value is a List. If perf. is bad, change to Dict.
+                if (!cachedEntry[fxRidEntry].Contains(top)) // Dictionary value is a List. If perf. is bad, change to HashSet.
                 {
                     cachedEntry[fxRidEntry].Add(top);
                 }
