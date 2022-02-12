@@ -76,7 +76,10 @@ namespace NuGet.Commands
                 messages.AddRange(graph.ResolvedDependencies
                                             .Distinct()
                                             .Where(e => !ignoreIds.Contains(e.Child.Name, StringComparer.OrdinalIgnoreCase)
+                                                        && graph.Flattened.Any(f => f.Key.Name.Equals(e.Child.Name, StringComparison.OrdinalIgnoreCase) && e.Range.MinVersion.Equals(f.Key.Version))
                                                         && DependencyRangeHasMissingExactMatch(e))
+                                            // Instead of this check, it should be, don't raise a warning, *only if* there's a direct request for the version that got selected.
+                                            // So basically, if a package appears twice, it has to have a missing lower bound both times.
                                             .OrderBy(e => e.Child.Name, StringComparer.OrdinalIgnoreCase)
                                             .ThenBy(e => e.Child.Version)
                                             .ThenBy(e => e.Parent.Name, StringComparer.OrdinalIgnoreCase)

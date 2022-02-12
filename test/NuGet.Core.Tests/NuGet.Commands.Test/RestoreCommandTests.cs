@@ -2336,6 +2336,90 @@ namespace NuGet.Commands.Test
             result.LockFile.Libraries.Count.Should().Be(4);
         }
 
+        /// A 1.0.0 -> Common 2.0.0
+        /// B 1.0.0 -> Common 1.0.0
+        /// Only Common 2.0.0 exists on the source and is what gets selected, but no need to raise NU1603 for missing Common 1.0.0 that's not selected anyways.
+        [Fact]
+        public async Task ExecuteAsync_WhenMissingLowerBoundIsNotSelected_DoesNotRaiseNU1603()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var logger = new TestLogger();
+
+            var A = new SimpleTestPackageContext("a", "1.0.0");
+            var B = new SimpleTestPackageContext("b", "1.0.0");
+            var Common200 = new SimpleTestPackageContext("common", "2.0.0");
+            var Common100 = new SimpleTestPackageContext("common", "1.0.0");
+            A.Dependencies.Add(Common200);
+            B.Dependencies.Add(Common100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                A,
+                B,
+                Common200);
+
+            var pathToDelete = Path.Combine(pathContext.PackageSource, "common", "1.0.0");
+            Directory.Delete(pathToDelete, recursive: true);
+            // set up the project
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var spec = ProjectTestHelpers.GetPackageSpec(settings, projectName: "TestProject", dependencies: new string[] { "a", "b" }, pathContext.SolutionRoot, "net5.0");
+            var request = ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, logger);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowErrors());
+            result.LogMessages.Should().HaveCount(0);
+            result.LockFile.Libraries.Count.Should().Be(3);
+        }
+
+        /// A 1.0.0 -> Common 2.0.0
+        /// B 1.0.0 -> Common 1.0.0
+        /// Only Common 2.0.0 exists on the source and is what gets selected, but no need to raise NU1603 for missing Common 1.0.0 that's not selected anyways.
+        [Fact]
+        public async Task ExecuteAsync_WhenMissingLowerBoundMultipleTimes_RaiseNU1603()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var logger = new TestLogger();
+
+            var A = new SimpleTestPackageContext("a", "1.0.0");
+            var B = new SimpleTestPackageContext("b", "1.0.0");
+            var Common200 = new SimpleTestPackageContext("common", "2.0.0");
+            var Common100 = new SimpleTestPackageContext("common", "1.0.0");
+            var Common300 = new SimpleTestPackageContext("common", "3.0.0");
+            A.Dependencies.Add(Common200);
+            B.Dependencies.Add(Common100);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                A,
+                B,
+                Common200,
+                Common300);
+
+            Directory.Delete(Path.Combine(pathContext.PackageSource, "common", "1.0.0"), recursive: true);
+            Directory.Delete(Path.Combine(pathContext.PackageSource, "common", "2.0.0"), recursive: true);
+            // set up the project
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var spec = ProjectTestHelpers.GetPackageSpec(settings, projectName: "TestProject", dependencies: new string[] { "a", "b" }, pathContext.SolutionRoot, "net5.0");
+            var request = ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, logger);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowErrors());
+            result.LogMessages.Should().HaveCount(1);
+            result.LockFile.Libraries.Count.Should().Be(3);
+        }
+
         private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)
         {
             return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
