@@ -12,6 +12,9 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
+    /// <summary>
+    /// Inspired in <see cref="IPackageReferenceContextInfoFormatter"/>
+    /// </summary>
     internal class ITransitivePackageReferenceContextInfoFormatter : NuGetMessagePackFormatter<ITransitivePackageReferenceContextInfo>
     {
         private const string IdentityPropertyName = "identity";
@@ -38,9 +41,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             int propertyCount = reader.ReadMapHeader();
             for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             {
-                var serializedPropertyName = reader.ReadString();
-
-                switch (serializedPropertyName)
+                switch (reader.ReadString())
                 {
                     case IdentityPropertyName:
                         identity = PackageIdentityFormatter.Instance.Deserialize(ref reader, options);
