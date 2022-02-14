@@ -142,6 +142,11 @@ namespace NuGetConsole
             // Nothing to do here in Visual Studio Online Environments mode. We do not create the pane
         }
 
+        public override Task StartConsoleDispatcherAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposedValue)

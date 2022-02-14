@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -136,9 +137,9 @@ namespace NuGetConsole.Implementation.PowerConsole
             });
         }
 
-        public void Start()
+        public Task StartAsync()
         {
-            ActiveHostInfo.WpfConsole.Dispatcher.Start();
+            return ActiveHostInfo.WpfConsole.Dispatcher.StartAsync();
         }
 
         public void SetDefaultRunspace()

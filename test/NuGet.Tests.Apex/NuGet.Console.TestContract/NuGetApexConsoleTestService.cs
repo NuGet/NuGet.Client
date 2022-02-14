@@ -107,7 +107,7 @@ namespace NuGet.Console.TestContract
                     {
                         try
                         {
-                            powerConsole.StartDispatcher();
+                            await powerConsole.StartDispatcherAsync();
                             dispatcherStarted = true;
                         }
                         catch

@@ -48,7 +48,7 @@ namespace NuGetConsole
             if (initializer != null)
             {
                 await TaskScheduler.Default;
-                initializer.Start();
+                await initializer.StartAsync();
                 return initializer.SetDefaultRunspace;
             }
 

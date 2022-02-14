@@ -226,6 +226,12 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
+        public Task StartAsync()
+        {
+            Start();
+            return Task.CompletedTask;
+        }
+
         public void ClearConsole()
         {
             Debug.Assert(_dispatcher != null);
