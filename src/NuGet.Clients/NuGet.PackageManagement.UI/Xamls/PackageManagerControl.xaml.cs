@@ -927,11 +927,8 @@ namespace NuGet.PackageManagement.UI
                     searchText: searchText,
                     includePrerelease: IncludePrerelease,
                     useRecommender: useRecommender,
-<<<<<<< HEAD
-                    _packageVulnerabilityService);
-=======
+                    _packageVulnerabilityService,
                     logger: _uiLogger);
->>>>>>> 459afe289 (***NO_CI*** plumb Logger into PackageItemViewModel and log when vuldep loaded)
 
                 var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                     ? Resx.Resources.Text_Loading
