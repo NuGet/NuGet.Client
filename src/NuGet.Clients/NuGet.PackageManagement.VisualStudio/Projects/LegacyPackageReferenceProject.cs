@@ -64,8 +64,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ProjectServices = projectServices;
 
-            InstalledPackages = new(); // This colleciton is a Dictionary whose key type is packageId
-            TransitivePackages = new(); // This colleciton is a Dictionary whose key type is packageId
+            InstalledPackages = new Dictionary<string, ProjectInstalledPackage>(); // This colleciton is a Dictionary whose key type is packageId
+            TransitivePackages = new Dictionary<string, ProjectInstalledPackage>(); // This colleciton is a Dictionary whose key type is packageId
         }
 
         public LegacyPackageReferenceProject(
@@ -451,14 +451,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, IList<LockFileTarget> targets)
+        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets)
         {
-            return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
+            return GetPackageReferences(libraries, targetFramework, InstalledPackages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages, IList<LockFileTarget> targets)
+        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets)
         {
-            return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
+            return GetTransitivePackageReferences(targetFramework, InstalledPackages, TransitivePackages, targets);
         }
     }
 }

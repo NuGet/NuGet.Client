@@ -143,7 +143,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // get installed packages
             List<PackageReference> installedPackages = packageSpec
                 .TargetFrameworks
-                .SelectMany(f => FetchInstalledPackagesList(f.Dependencies, f.FrameworkName, InstalledPackages, targetsList))
+                .SelectMany(f => FetchInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // get transitive packages
             IEnumerable<PackageReference> transitivePackages = packageSpec
                 .TargetFrameworks
-                .SelectMany(f => FetchTransitivePackagesList(f.FrameworkName, InstalledPackages, TransitivePackages, targetsList))
+                .SelectMany(f => FetchTransitivePackagesList(f.FrameworkName, targetsList))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
@@ -180,9 +180,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectPackages(installedPackages, transitivePkgsResult);
         }
 
-        protected abstract IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, T installedPackages, IList<LockFileTarget> targets);
+        protected abstract IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets);
 
-        protected abstract IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, T installedPackages, T transitivePackages, IList<LockFileTarget> targets);
+        protected abstract IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets);
 
         /// <summary>
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk

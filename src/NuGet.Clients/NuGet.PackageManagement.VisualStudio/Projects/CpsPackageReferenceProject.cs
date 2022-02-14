@@ -69,8 +69,8 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
-            InstalledPackages = new();
-            TransitivePackages = new();
+            InstalledPackages = new List<FrameworkInstalledPackages>();
+            TransitivePackages = new List<FrameworkInstalledPackages>();
         }
 
         public override Task AddFileToProjectAsync(string filePath)
@@ -207,10 +207,9 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override IEnumerable<PackageReference> FetchInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            List<FrameworkInstalledPackages> installedPackages,
             IList<LockFileTarget> targets)
         {
-            FrameworkInstalledPackages targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            FrameworkInstalledPackages targetFrameworkPackages = InstalledPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
             if (targetFrameworkPackages == null)
             {
@@ -221,7 +220,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 targetFrameworkPackages.TargetFramework = targetFramework;
                 targetFrameworkPackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                installedPackages.Add(targetFrameworkPackages);
+                InstalledPackages.Add(targetFrameworkPackages);
             }
 
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
@@ -229,26 +228,24 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(
             NuGetFramework targetFramework,
-            List<FrameworkInstalledPackages> installedPackages,
-            List<FrameworkInstalledPackages> transitivePackages,
             IList<LockFileTarget> targets)
         {
-            FrameworkInstalledPackages targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
+            FrameworkInstalledPackages targetFrameworkInstalledPackages = InstalledPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
-            FrameworkInstalledPackages targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
+            FrameworkInstalledPackages targetFrameworkTransitivePackages = TransitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
             if (targetFrameworkInstalledPackages.Packages == null)
             {
                 targetFrameworkInstalledPackages.TargetFramework = targetFramework;
                 targetFrameworkInstalledPackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                installedPackages.Add(targetFrameworkInstalledPackages);
+                InstalledPackages.Add(targetFrameworkInstalledPackages);
             }
 
             if (targetFrameworkTransitivePackages.Packages == null)
             {
                 targetFrameworkTransitivePackages.TargetFramework = targetFramework;
                 targetFrameworkTransitivePackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                transitivePackages.Add(targetFrameworkTransitivePackages);
+                TransitivePackages.Add(targetFrameworkTransitivePackages);
             }
 
             return GetTransitivePackageReferences(targetFramework, targetFrameworkInstalledPackages.Packages, targetFrameworkTransitivePackages.Packages, targets);
