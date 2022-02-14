@@ -956,6 +956,7 @@ namespace NuGet.PackageManagement.UI
 
             // Update installed tab warning icon
             (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, refreshCts.Token);
+            _uiLogger.Log(new LogMessage(LogLevel.Information, $"Tab Counts updated: CountVulnerable: {vulnerablePackages} CountDeprecated: {deprecatedPackages}"));
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
             // Update updates tab count
