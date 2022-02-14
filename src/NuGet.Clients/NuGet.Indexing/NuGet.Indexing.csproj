@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lucene.Net" />
-    <PackageReference Include="SharpZipLib" /> <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
+    <PackageReference Include="SharpZipLib" ExcludeAssets="all" /> <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
