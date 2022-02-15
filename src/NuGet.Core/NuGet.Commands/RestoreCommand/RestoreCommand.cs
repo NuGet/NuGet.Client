@@ -49,8 +49,9 @@ namespace NuGet.Commands
         private const string IsCentralVersionManagementEnabled = nameof(IsCentralVersionManagementEnabled);
         private const string TotalUniquePackagesCount = nameof(TotalUniquePackagesCount);
         private const string NewPackagesInstalledCount = nameof(NewPackagesInstalledCount);
-        private const string RemoteProvidersCount = nameof(RemoteProvidersCount);
-        private const string LocalProvidersCount = nameof(LocalProvidersCount);
+        private const string SourcesCount = nameof(SourcesCount);
+        private const string HttpSourcesCount = nameof(HttpSourcesCount);
+        private const string LocalSourcesCount = nameof(LocalSourcesCount);
         private const string FallbackFoldersCount = nameof(FallbackFoldersCount);
 
         // no-op data names
@@ -122,10 +123,11 @@ namespace NuGet.Commands
 
                 bool isPackageSourceMappingEnabled = _request?.PackageSourceMapping.IsEnabled ?? false;
                 telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
-                telemetry.TelemetryEvent[RemoteProvidersCount] = _request.DependencyProviders.RemoteProviders.Count;
-                telemetry.TelemetryEvent[LocalProvidersCount] = _request.DependencyProviders.LocalProviders.Count;
+                telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
+                var httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
+                telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
+                telemetry.TelemetryEvent[LocalSourcesCount] = _request.DependencyProviders.RemoteProviders.Count - httpSourcesCount;
                 telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
-
 
                 _operationId = telemetry.OperationId;
 
