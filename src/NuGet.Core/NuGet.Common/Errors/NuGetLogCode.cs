@@ -908,6 +908,11 @@ namespace NuGet.Common
         NU5132 = 5132,
 
         /// <summary>
+        /// NuGet.exe needs to be unblocked after downloading
+        /// </summary>
+        NU5133 = 5133,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,

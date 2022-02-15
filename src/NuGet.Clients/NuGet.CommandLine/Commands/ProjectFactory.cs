@@ -242,6 +242,11 @@ namespace NuGet.CommandLine
             {
                 ExtractMetadata(builder);
             }
+            catch (PackagingException packex) when (packex.AsLogMessage().Code.Equals(NuGetLogCode.NU5133))
+            {
+                Logger.Log(PackagingLogMessage.CreateError(packex.Message, NuGetLogCode.NU5133));
+                return null;
+            }
             catch (Exception ex)
             {
                 Logger.Log(PackagingLogMessage.CreateError(string.Format(
@@ -796,6 +801,15 @@ namespace NuGet.CommandLine
                 try
                 {
                     new AssemblyMetadataExtractor(Logger).ExtractMetadata(builder, TargetPath);
+                }
+                catch (FileLoadException flex) when (flex.FileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    var exceptionMessage = string.Format(
+                        CultureInfo.InvariantCulture,
+                        LocalizedResourceManager.GetString("Error_NuGetExeNeedsToBeUnblockedAfterDownloading"),
+                        UriUtility.GetLocalPath(flex.FileName),
+                        flex.Message);
+                    throw new PackagingException(NuGetLogCode.NU5133, exceptionMessage, flex);
                 }
                 catch (Exception ex)
                 {

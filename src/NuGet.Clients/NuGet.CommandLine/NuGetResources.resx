@@ -5433,4 +5433,7 @@ Please consider migrating '{0}' to `PackageReference` and using the pack targets
 You can set the '{1}' environment variable to 'true' to temporarily reenable this functionality.</value>
     <comment>Please do not localize `project.json` pack and `PackageReference`. 0 - path, 1 - env var name</comment>
   </data>
+  <data name="Error_NuGetExeNeedsToBeUnblockedAfterDownloading" xml:space="preserve">
+    <value>NuGet.exe file on path {0} needs to be unblocked after downloading : {1}</value>
+  </data>
 </root>

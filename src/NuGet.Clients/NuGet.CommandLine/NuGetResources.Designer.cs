@@ -2977,6 +2977,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet.exe file on path {0} needs to be unblocked after downloading : {1}.
+        /// </summary>
+        public static string Error_NuGetExeNeedsToBeUnblockedAfterDownloading {
+            get {
+                return ResourceManager.GetString("Error_NuGetExeNeedsToBeUnblockedAfterDownloading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error parsing packages.config file at {0}: {1}.
         /// </summary>
         public static string Error_PackagesConfigParseError {
