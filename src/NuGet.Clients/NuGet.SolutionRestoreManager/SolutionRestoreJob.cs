@@ -241,6 +241,10 @@ namespace NuGet.SolutionRestoreManager
                         intervalTracker,
                         token);
 
+                    await _packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(
+                            solutionDirectory,
+                            token);
+
                     // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
                     // project in the solution. Extending this behavior to all solutions is tracked here:
                     // NuGet/Home#4478
@@ -671,9 +675,12 @@ namespace NuGet.SolutionRestoreManager
                     token);
             }
 
-            await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
-                solutionDirectory,
-                token);
+            if (!await _packageRestoreManager.GetMissingAssetsFileStatusAsync())
+            {
+                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
+                    solutionDirectory,
+                    token);
+            }
         }
 
         private void ValidatePackagesConfigLockFiles(IEnumerable<NuGetProject> allProjects, CancellationToken token)

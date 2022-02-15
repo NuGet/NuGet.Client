@@ -21,6 +21,11 @@ namespace NuGet.PackageManagement
         event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
 
         /// <summary>
+        /// Occurs when it is detected that the assets file is missing.
+        /// </summary>
+        event EventHandler<AssetsFileMissingStatusEventsArgs> AssetsFileMissingStatusChanged;
+
+        /// <summary>
         /// PackageRestoredEvent which is raised after a package is restored.
         /// </summary>
         event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
@@ -84,19 +89,6 @@ namespace NuGet.PackageManagement
         /// <returns>Returns true if atleast one package was restored.</returns>
         Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
-            CancellationToken token);
-
-        /// <summary>
-        /// Restores the solution if the assets file is missing.
-        /// </summary>
-        /// <param name="solutionDirectory"></param>
-        /// <param name="nuGetProjectContext"></param>
-        /// <param name="logger"></param>
-        /// <param name="token"></param>
-        /// <returns>Returns true if the restore succeded</returns>
-        Task<PackageRestoreResult> RestoreMissingAssetsFileInSolutionAsync(string solutionDirectory,
-            INuGetProjectContext nuGetProjectContext,
-            ILogger logger,
             CancellationToken token);
 
         Task<bool> GetMissingAssetsFileStatusAsync();
@@ -175,6 +167,16 @@ namespace NuGet.PackageManagement
         public PackagesMissingStatusEventArgs(bool packagesMissing)
         {
             PackagesMissing = packagesMissing;
+        }
+    }
+
+    public class AssetsFileMissingStatusEventsArgs : EventArgs
+    {
+        public bool AssetsFileMissing { get; private set; }
+
+        public AssetsFileMissingStatusEventsArgs(bool assetsFileMissing)
+        {
+            AssetsFileMissing = assetsFileMissing;
         }
     }
 }

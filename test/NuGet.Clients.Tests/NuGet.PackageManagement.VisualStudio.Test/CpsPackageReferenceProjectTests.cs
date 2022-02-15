@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Sdk.TestFramework;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
 using NuGet.Commands.Test;
@@ -3300,7 +3301,83 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPackageManager_ExecuteNuGetProjectActionsAsync_WithProgressReporter_WhenPackageIsInstalled_AssetsFileWritesAreReported()
+        public async Task TestCheckForMissingAssetsFile()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            using (var testSolutionManager = new TestSolutionManager())
+            {
+                // Project
+                var projectName = "a";
+                var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
+
+                var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                testSolutionManager.NuGetProjects.Add(project);
+
+                var projectNames = GetTestProjectNames(projectFullPath, projectName);
+                var packageSpec = GetPackageSpec(projectName, projectFullPath, "[1.0.0, )");
+
+                // Restore info
+                var projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+
+                // Restore Manager setup
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+                var testSettings = Configuration.NullSettings.Instance;
+                var packageRestoreManager = new PackageRestoreManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager);
+
+                var token = CancellationToken.None;
+
+                var assetsFileMissingEventCount = 0;
+                var assetsFileMissing = false;
+
+                packageRestoreManager.AssetsFileMissingStatusChanged += delegate (object sender, AssetsFileMissingStatusEventsArgs args)
+                {
+                    assetsFileMissingEventCount++;
+                    assetsFileMissing = args.AssetsFileMissing;
+                };
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(testDirectory, projectName, "project.assets.json")
+                };
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                await packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
+
+                Assert.Equal(1, assetsFileMissingEventCount);
+                Assert.False(assetsFileMissing);
+
+                // Act
+                // Delete assets file
+                File.Delete(Path.Combine(testDirectory, projectName, "project.assets.json"));
+                await packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
+
+                Assert.Equal(2, assetsFileMissingEventCount);
+                Assert.True(assetsFileMissing);
+            }
+        }
+
+        private TestCpsPackageReferenceProject CreateTestCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
         {
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager();
