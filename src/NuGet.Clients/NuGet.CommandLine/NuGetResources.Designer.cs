@@ -2977,7 +2977,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet.exe file on path {0} needs to be unblocked after downloading : {1}.
+        ///   Looks up a localized string similar to NuGet.exe file on path {0} needs to be unblocked after downloading..
         /// </summary>
         public static string Error_NuGetExeNeedsToBeUnblockedAfterDownloading {
             get {

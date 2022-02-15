@@ -807,8 +807,7 @@ namespace NuGet.CommandLine
                     var exceptionMessage = string.Format(
                         CultureInfo.InvariantCulture,
                         LocalizedResourceManager.GetString("Error_NuGetExeNeedsToBeUnblockedAfterDownloading"),
-                        UriUtility.GetLocalPath(flex.FileName),
-                        flex.Message);
+                        UriUtility.GetLocalPath(flex.FileName));
                     throw new PackagingException(NuGetLogCode.NU5133, exceptionMessage, flex);
                 }
                 catch (Exception ex)
