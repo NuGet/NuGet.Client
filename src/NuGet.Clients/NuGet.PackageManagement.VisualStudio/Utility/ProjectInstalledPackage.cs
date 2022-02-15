@@ -3,6 +3,7 @@
 
 using System;
 using NuGet.Packaging.Core;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio.Utility
@@ -70,7 +71,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 
         public override int GetHashCode()
         {
-            return AllowedVersions.GetHashCode() + 37 * InstalledPackage.GetHashCode();
+            return HashCodeCombiner.GetHashCode(AllowedVersions, InstalledPackage);
         }
     }
 }

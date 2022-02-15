@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio.Utility;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -59,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override int GetHashCode()
         {
-            return TargetFramework.GetHashCode() + 37 * Packages.GetHashCode();
+            return HashCodeCombiner.GetHashCode(TargetFramework, Packages);
         }
     }
 }
