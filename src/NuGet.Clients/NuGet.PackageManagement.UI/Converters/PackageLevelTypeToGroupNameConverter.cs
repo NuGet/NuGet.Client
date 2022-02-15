@@ -29,19 +29,7 @@ namespace NuGet.PackageManagement.UI
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string pkgLevelTypeString)
-            {
-                if (pkgLevelTypeString == Resources.PackageLevelType_TopLevelPackageHeaderText)
-                {
-                    return PackageLevelType.TopLevel;
-                }
-                else if (pkgLevelTypeString == Resources.PackageLevelType_TransitivePackageHeaderText)
-                {
-                    return PackageLevelType.Transitive;
-                }
-            }
-
-            return null;
+            throw new NotImplementedException();
         }
     }
 }

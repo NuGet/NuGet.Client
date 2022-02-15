@@ -720,12 +720,15 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusIndicator.Reset(string.Empty);
         }
 
-        internal void OnFilterChanged(ItemFilter filter)
+        internal void ClearPackageLevelTypeGrouping()
         {
             ItemsView.GroupDescriptions.Clear();
+        }
 
-            if (filter == ItemFilter.Installed
-                && ItemsView.OfType<PackageItemViewModel>()?
+        internal void AddPackageLevelTypeGrouping()
+        {
+            ItemsView.Refresh();
+            if (ItemsView.OfType<PackageItemViewModel>()?
                     .Where(p => p.PackageLevelType == PackageLevelType.Transitive)
                     .Any() == true)
             {

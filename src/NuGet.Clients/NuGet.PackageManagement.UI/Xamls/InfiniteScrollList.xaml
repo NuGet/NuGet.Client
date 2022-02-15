@@ -370,6 +370,7 @@
       VirtualizingPanel.VirtualizationMode="Recycling"
       VirtualizingPanel.CacheLength="1,2"
       VirtualizingPanel.CacheLengthUnit="Page"
+      VirtualizingPanel.IsVirtualizingWhenGrouping="True"
       BorderThickness="0,0,0,0"
       HorizontalContentAlignment="Stretch"
       SelectionChanged="List_SelectionChanged"

@@ -20,17 +20,6 @@ namespace NuGet.PackageManagement.UI.Test.Converters
             yield return new object[] { null, null };
         }
 
-        public static IEnumerable<object[]> GetConvertBackData()
-        {
-            yield return new object[] { Resources.PackageLevelType_TopLevelPackageHeaderText, PackageLevelType.TopLevel };
-            yield return new object[] { Resources.PackageLevelType_TransitivePackageHeaderText, PackageLevelType.Transitive };
-            yield return new object[] { PackageLevelType.TopLevel, null };
-            yield return new object[] { "some string", null };
-            yield return new object[] { new object(), null };
-            yield return new object[] { 12345, null };
-            yield return new object[] { null, null };
-        }
-
         [Theory]
         [MemberData(nameof(GetConvertData))]
         public void Convert_MultipleInputs_Succeeds(object input, object expected)
@@ -38,17 +27,6 @@ namespace NuGet.PackageManagement.UI.Test.Converters
             var converterToTest = new PackageLevelTypeToGroupNameConverter();
 
             object value = converterToTest.Convert(input, targetType: null, parameter: null, culture: null);
-
-            Assert.Equal(expected, value);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetConvertBackData))]
-        public void ConvertBack_MultipleInputs_Succeeds(object input, object expected)
-        {
-            var converterToTest = new PackageLevelTypeToGroupNameConverter();
-
-            object value = converterToTest.ConvertBack(input, targetType: null, parameter: null, culture: null);
 
             Assert.Equal(expected, value);
         }
