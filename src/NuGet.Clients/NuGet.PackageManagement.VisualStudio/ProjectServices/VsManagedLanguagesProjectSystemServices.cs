@@ -252,6 +252,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static VersionRange GetVersionOverride(PackageReference reference)
         {
+            Assumes.Present(reference);
+
             string versionOverride = GetReferenceMetadataValue(reference, ProjectItemProperties.VersionOverride, defaultValue: null);
 
             if (string.IsNullOrWhiteSpace(versionOverride))

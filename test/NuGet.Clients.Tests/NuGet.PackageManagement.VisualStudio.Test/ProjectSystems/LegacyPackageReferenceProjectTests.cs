@@ -874,6 +874,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData("invalid", true)]
         [InlineData("false", false)]
         [InlineData("           false    ", false)]
+        [InlineData("FaLsE", false)]
         public async Task GetPackageSpecAsync_CentralPackageVersionOverride_DisabedWhenSpecified(string isCentralPackageVersionOverrideEnabled, bool expected)
         {
             // Arrange
