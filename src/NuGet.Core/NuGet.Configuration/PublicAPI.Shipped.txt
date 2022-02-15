@@ -135,6 +135,7 @@ NuGet.Configuration.PackageSource.Equals(NuGet.Configuration.PackageSource other
 NuGet.Configuration.PackageSource.IsEnabled.get -> bool
 NuGet.Configuration.PackageSource.IsEnabled.set -> void
 NuGet.Configuration.PackageSource.IsHttp.get -> bool
+NuGet.Configuration.PackageSource.IsHttps.get -> bool
 NuGet.Configuration.PackageSource.IsLocal.get -> bool
 NuGet.Configuration.PackageSource.IsMachineWide.get -> bool
 NuGet.Configuration.PackageSource.IsMachineWide.set -> void
