@@ -20,7 +20,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
@@ -35,23 +34,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <typeparam name="U">Type of the collection elements for Installed and Transitive packages</typeparam>
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>
     {
-        private static readonly Microsoft.VisualStudio.Threading.AsyncLazy<bool> IsTransitiveOriginExpEnabled = new(async () =>
-        {
-            bool isExpEnabled;
-            try
-            {
-                var svc = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
-                isExpEnabled = svc?.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI) ?? false;
-            }
-            catch (ServiceUnavailableException)
-            {
-                isExpEnabled = false;
-            }
-
-            return isExpEnabled;
-
-        }, NuGetUIThreadHelper.JoinableTaskFactory);
-
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
 
         private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
@@ -156,7 +138,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            if (await IsTransitiveOriginExpEnabled.GetValueAsync())
+            if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
                 // Get Transitive Origins
                 transitivePackagesWithOrigins = transitivePackages

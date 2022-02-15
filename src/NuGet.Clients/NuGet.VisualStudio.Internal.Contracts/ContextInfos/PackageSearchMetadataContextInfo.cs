@@ -38,6 +38,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public LicenseMetadata? LicenseMetadata { get; internal set; }
         public string? PackagePath { get; internal set; }
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; internal set; }
+        public IReadOnlyCollection<PackageIdentity>? TransitiveOrigins { get; internal set; }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
@@ -76,6 +77,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Vulnerabilities = packageSearchMetadata.Vulnerabilities?
                     .Select(vulnerability => new PackageVulnerabilityMetadataContextInfo(vulnerability.AdvisoryUrl, vulnerability.Severity))
                     .OrderByDescending(v => v.Severity).ToArray(),
+                TransitiveOrigins =
+                    (packageSearchMetadata as TransitivePackageSearchMetadata)?.TransitiveOrigins,
             };
         }
     }

@@ -292,15 +292,20 @@ namespace NuGet.PackageManagement.UI
                     Sources = _packageSources,
                     PackagePath = metadata.PackagePath,
                     PackageFileService = _packageFileService,
-                    IncludePrerelease = _includePrerelease
+                    IncludePrerelease = _includePrerelease,
                 };
+
+                if (metadata.TransitiveOrigins != null)
+                {
+                    listItem.PackageLevel = metadata.TransitiveOrigins.Any() ? PackageLevel.Transitive : PackageLevel.TopLevel;
+                }
 
                 listItem.UpdatePackageStatus(_installedPackages);
 
                 listItemViewModels.Add(listItem);
             }
 
-            return listItemViewModels.ToArray();
+            return listItemViewModels.OrderBy(vm => vm.PackageLevel).ThenBy(vm => vm.Id).ToArray();
         }
 
         private async Task<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity)

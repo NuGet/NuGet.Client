@@ -4,6 +4,7 @@ NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo
 NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo.TransitiveOrigins.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>!
 NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.InstalledAndTransitivePackages(System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>? installedPackages, System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo!>? transitivePackages) -> void
 NuGet.VisualStudio.Internal.Contracts.InstalledAndTransitivePackages.TransitivePackages.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.VisualStudio.Internal.Contracts.ITransitivePackageReferenceContextInfo!>!
+NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo.TransitiveOrigins.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Core.PackageIdentity!>?
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReference
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReference.TransitiveOrigins.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageReference!>!
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReference.TransitiveOrigins.set -> void
@@ -17,4 +18,30 @@ NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.IsDe
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.IsUserInstalled.get -> bool
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.TransitiveOrigins.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo!>!
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.TransitivePackageReferenceContextInfo(NuGet.Packaging.Core.PackageIdentity! identity, NuGet.Frameworks.NuGetFramework? framework) -> void
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Authors.get -> string!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.DependencySets.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.PackageDependencyGroup!>!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Description.get -> string!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.DownloadCount.get -> long?
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.GetDeprecationMetadataAsync() -> System.Threading.Tasks.Task<NuGet.Protocol.PackageDeprecationMetadata!>!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.GetVersionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.VersionInfo!>!>!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.IconUrl.get -> System.Uri!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Identity.get -> NuGet.Packaging.Core.PackageIdentity!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.IsListed.get -> bool
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.LicenseUrl.get -> System.Uri!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Owners.get -> string!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.PackageDetailsUrl.get -> System.Uri!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.PrefixReserved.get -> bool
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.ProjectUrl.get -> System.Uri!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Published.get -> System.DateTimeOffset?
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.ReadmeUrl.get -> System.Uri!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.ReportAbuseUrl.get -> System.Uri!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.RequireLicenseAcceptance.get -> bool
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Summary.get -> string!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Tags.get -> string!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Title.get -> string!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.TransitiveOrigins.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Core.PackageIdentity!>!
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.TransitivePackageSearchMetadata(NuGet.Protocol.Core.Types.IPackageSearchMetadata! package, System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Core.PackageIdentity!>! transitiveOrigins) -> void
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Vulnerabilities.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata!>!
 static NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.Create(NuGet.VisualStudio.Internal.Contracts.TransitivePackageReference! transitivePackageReference) -> NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo!
