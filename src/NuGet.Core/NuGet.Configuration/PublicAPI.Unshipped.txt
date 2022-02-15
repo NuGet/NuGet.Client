@@ -1,1 +1,0 @@
-NuGet.Configuration.PackageSource.IsHttps.get -> bool
