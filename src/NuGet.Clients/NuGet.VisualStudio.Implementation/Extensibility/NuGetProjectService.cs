@@ -157,7 +157,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             IReadOnlyCollection<PackageReference> directPackages;
             IReadOnlyCollection<PackageReference> transitivePackages;
-            if (project is PackageReferenceProject packageReferenceProject)
+
+            if (project is IPackageReferenceProject packageReferenceProject)
             {
                 var installed = await packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken);
                 directPackages = installed.InstalledPackages;

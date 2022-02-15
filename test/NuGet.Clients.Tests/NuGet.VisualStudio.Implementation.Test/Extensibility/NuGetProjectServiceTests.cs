@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.Packaging;
@@ -20,6 +21,7 @@ using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Contracts;
 using NuGet.VisualStudio.Implementation.Extensibility;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Test.Utility.ProjectManagement;
 using Xunit;
@@ -56,7 +58,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
-        public async Task GetInstalledPackagesAsync_LegacyProjectInvalidDataException_ReturnsProjectInvalidResult()
+        public async Task GetInstalledPackagesAsync_LegacyProjectInvalidDataException_ReturnsProjectInvalidResultAsync()
         {
             // Arrange
             var projectGuid = Guid.NewGuid();
@@ -83,7 +85,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
-        public async Task GetInstalledPackagesAsync_PackageReferenceProject_ReturnsTransitive()
+        public async Task GetInstalledPackagesAsync_PackageReferenceProject_ReturnsTransitiveAsync()
         {
             // Arrange
             var projectGuid = Guid.NewGuid();
@@ -93,13 +95,14 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             var installedPackages = new List<PackageReference>()
             {
-                new PackageReference(new PackageIdentity("a", new Versioning.NuGetVersion(1, 0, 0)), FrameworkConstants.CommonFrameworks.Net50)
+                new PackageReference(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), FrameworkConstants.CommonFrameworks.Net50)
             };
             var transitivePackages = new List<PackageReference>()
             {
-                new PackageReference(new PackageIdentity("b", new Versioning.NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)
+                new PackageReference(new PackageIdentity("b", new NuGetVersion(1, 2, 3)), FrameworkConstants.CommonFrameworks.Net50)
             };
-            var projectPackages = new ProjectPackages(installedPackages, transitivePackages);
+            var transitiveProjectPackages = transitivePackages.Select(p => new TransitivePackageReference(p)).ToList();
+            var projectPackages = new ProjectPackages(installedPackages, transitiveProjectPackages);
             var project = new TestPackageReferenceProject("ProjectA", @"src\ProjectA\Project.csproj", @"c:\path\to\src\ProjectA\ProjectA.csproj",
                 installedPackages, transitivePackages);
 
@@ -124,21 +127,18 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.False(package.DirectDependency);
         }
 
-        private class TestPackageReferenceProject : PackageReferenceProject
+        class TestPackageReferenceProject : PackageReferenceProject<IList<PackageReference>, PackageReference>
         {
-            IReadOnlyList<PackageReference> _installedPackages;
-            IReadOnlyList<PackageReference> _transitivePackages;
-
             public TestPackageReferenceProject(
                 string projectName,
                 string projectUniqueName,
                 string projectFullPath,
-                IReadOnlyList<PackageReference> installedPackages,
-                IReadOnlyList<PackageReference> transitivePackages)
+                IList<PackageReference> installedPackages,
+                IList<PackageReference> transitivePackages)
                 : base(projectName, projectUniqueName, projectFullPath)
             {
-                _installedPackages = installedPackages;
-                _transitivePackages = transitivePackages;
+                InstalledPackages = installedPackages;
+                TransitivePackages = transitivePackages;
             }
 
             public override string MSBuildProjectPath => ProjectFullPath;
@@ -155,7 +155,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             public override Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
             {
-                var projectPackages = new ProjectPackages(_installedPackages, _transitivePackages);
+                var transitivePackages = TransitivePackages.Select(p => new TransitivePackageReference(p));
+
+                var projectPackages = new ProjectPackages(InstalledPackages.ToList(), transitivePackages.ToList());
                 return Task.FromResult(projectPackages);
             }
 
@@ -186,6 +188,21 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             }
 
             protected override Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets)
             {
                 throw new NotImplementedException();
             }

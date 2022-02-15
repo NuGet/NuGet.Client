@@ -8,13 +8,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public sealed class InstalledAndTransitivePackages : IInstalledAndTransitivePackages
     {
-        public InstalledAndTransitivePackages(IReadOnlyCollection<IPackageReferenceContextInfo>? installedPackages, IReadOnlyCollection<IPackageReferenceContextInfo>? transitivePackages)
+        public InstalledAndTransitivePackages(IReadOnlyCollection<IPackageReferenceContextInfo>? installedPackages, IReadOnlyCollection<ITransitivePackageReferenceContextInfo>? transitivePackages)
         {
             InstalledPackages = installedPackages ?? Array.Empty<IPackageReferenceContextInfo>();
-            TransitivePackages = transitivePackages ?? Array.Empty<IPackageReferenceContextInfo>();
+            TransitivePackages = transitivePackages ?? Array.Empty<ITransitivePackageReferenceContextInfo>();
         }
 
         public IReadOnlyCollection<IPackageReferenceContextInfo> InstalledPackages { get; }
-        public IReadOnlyCollection<IPackageReferenceContextInfo> TransitivePackages { get; }
+        public IReadOnlyCollection<ITransitivePackageReferenceContextInfo> TransitivePackages { get; }
     }
 }

@@ -311,7 +311,7 @@ namespace NuGet.PackageManagement.VisualStudio
             else if (installedAndTransitivePackagesArray.Length > 1)
             {
                 List<IPackageReferenceContextInfo> installedPackages = new List<IPackageReferenceContextInfo>();
-                List<IPackageReferenceContextInfo> transitivePackages = new List<IPackageReferenceContextInfo>();
+                List<ITransitivePackageReferenceContextInfo> transitivePackages = new List<ITransitivePackageReferenceContextInfo>();
                 foreach (var installedAndTransitivePackages in installedAndTransitivePackagesArray)
                 {
                     installedPackages.AddRange(installedAndTransitivePackages.InstalledPackages);
@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                return new InstalledAndTransitivePackages(new List<IPackageReferenceContextInfo>(), new List<IPackageReferenceContextInfo>());
+                return new InstalledAndTransitivePackages(new List<IPackageReferenceContextInfo>(), new List<ITransitivePackageReferenceContextInfo>());
             }
         }
 

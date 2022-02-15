@@ -175,7 +175,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
             foreach (NuGetProject? project in projects)
             {
-                if (project is PackageReferenceProject packageReferenceProject)
+                if (project is IPackageReferenceProject packageReferenceProject)
                 {
                     prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken));
                 }
@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     .Select(p => p.InstalledPackages));
 
             PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
-            PackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
+            TransitivePackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => TransitivePackageReferenceContextInfo.Create(pr)).ToArray();
             return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 

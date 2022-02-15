@@ -6,11 +6,10 @@ using System.Collections.Generic;
 namespace NuGet.VisualStudio.Internal.Contracts
 {
     /// <summary>
-    /// Contains information about installed and transitive packages
+    /// Represents a Package Reference with Transitive Origin information
     /// </summary>
-    public interface IInstalledAndTransitivePackages
+    public interface ITransitivePackageReferenceContextInfo : IPackageReferenceContextInfo
     {
-        IReadOnlyCollection<IPackageReferenceContextInfo> InstalledPackages { get; }
-        IReadOnlyCollection<ITransitivePackageReferenceContextInfo> TransitivePackages { get; }
+        IEnumerable<IPackageReferenceContextInfo> TransitiveOrigins { get; }
     }
 }

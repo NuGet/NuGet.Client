@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
 using MessagePack.Formatters;
 using Microsoft;
@@ -10,7 +12,10 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    internal sealed class IPackageReferenceContextInfoFormatter : NuGetMessagePackFormatter<IPackageReferenceContextInfo>
+    /// <summary>
+    /// Inspired in <see cref="IPackageReferenceContextInfoFormatter"/>
+    /// </summary>
+    internal class ITransitivePackageReferenceContextInfoFormatter : NuGetMessagePackFormatter<ITransitivePackageReferenceContextInfo>
     {
         private const string IdentityPropertyName = "identity";
         private const string FrameworkPropertyName = "framework";
@@ -18,14 +23,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
         private const string IsAutoReferencedPropertyName = "isautoreferenced";
         private const string IsDevelopmentDependencyPropertyName = "isdevelopmentdependency";
         private const string AllowedVersionsPropertyName = "allowedversions";
+        private const string TransitiveOriginsPropertyName = "transitiveorigins";
 
-        internal static readonly IMessagePackFormatter<IPackageReferenceContextInfo?> Instance = new IPackageReferenceContextInfoFormatter();
+        internal static readonly IMessagePackFormatter<ITransitivePackageReferenceContextInfo?> Instance = new ITransitivePackageReferenceContextInfoFormatter();
 
-        private IPackageReferenceContextInfoFormatter()
-        {
-        }
-
-        protected override IPackageReferenceContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        protected override ITransitivePackageReferenceContextInfo? DeserializeCore(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             PackageIdentity? identity = null;
             NuGetFramework? framework = null;
@@ -33,6 +35,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool isAutoReferenced = false;
             bool isDevelopmentDependency = false;
             string? allowedVersions = null;
+
+            var transitiveOrigins = new List<IPackageReferenceContextInfo>();
 
             int propertyCount = reader.ReadMapHeader();
             for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
@@ -60,6 +64,17 @@ namespace NuGet.VisualStudio.Internal.Contracts
                             allowedVersions = reader.ReadString();
                         }
                         break;
+                    case TransitiveOriginsPropertyName:
+                        var elems = reader.ReadArrayHeader();
+                        for (int i = 0; i < elems; i++)
+                        {
+                            var result = IPackageReferenceContextInfoFormatter.Instance.Deserialize(ref reader, options);
+                            if (result != null)
+                            {
+                                transitiveOrigins.Add(result);
+                            }
+                        }
+                        break;
                     default:
                         reader.Skip();
                         break;
@@ -68,7 +83,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             Assumes.NotNull(identity);
 
-            var packageReferenceContextInfo = new PackageReferenceContextInfo(identity, framework)
+            var packageReferenceContextInfo = new TransitivePackageReferenceContextInfo(identity, framework)
             {
                 IsUserInstalled = isUserInstalled,
                 IsAutoReferenced = isAutoReferenced,
@@ -79,37 +94,22 @@ namespace NuGet.VisualStudio.Internal.Contracts
             {
                 packageReferenceContextInfo.AllowedVersions = versionRange;
             }
+            packageReferenceContextInfo.TransitiveOrigins = transitiveOrigins;
 
             return packageReferenceContextInfo;
         }
 
-        protected override void SerializeCore(ref MessagePackWriter writer, IPackageReferenceContextInfo value, MessagePackSerializerOptions options)
+        protected override void SerializeCore(ref MessagePackWriter writer, ITransitivePackageReferenceContextInfo value, MessagePackSerializerOptions options)
         {
-            writer.WriteMapHeader(count: 6);
+            writer.WriteMapHeader(count: 7);
 
-            WriteSerialize(ref writer, value, options);
-        }
+            IPackageReferenceContextInfoFormatter.WriteSerialize(ref writer, value, options);
 
-        internal static void WriteSerialize(ref MessagePackWriter writer, IPackageReferenceContextInfo value, MessagePackSerializerOptions options)
-        {
-            writer.Write(IdentityPropertyName);
-            PackageIdentityFormatter.Instance.Serialize(ref writer, value.Identity, options);
-            writer.Write(FrameworkPropertyName);
-            NuGetFrameworkFormatter.Instance.Serialize(ref writer, value.Framework, options);
-            writer.Write(IsUserInstalledPropertyName);
-            writer.Write(value.IsUserInstalled);
-            writer.Write(IsAutoReferencedPropertyName);
-            writer.Write(value.IsAutoReferenced);
-            writer.Write(IsDevelopmentDependencyPropertyName);
-            writer.Write(value.IsDevelopmentDependency);
-            writer.Write(AllowedVersionsPropertyName);
-            if (value.AllowedVersions == null)
+            writer.Write(TransitiveOriginsPropertyName);
+            writer.WriteArrayHeader(value.TransitiveOrigins.Count());
+            foreach (IPackageReferenceContextInfo val in value.TransitiveOrigins)
             {
-                writer.WriteNil();
-            }
-            else
-            {
-                writer.Write(value.AllowedVersions.ToString());
+                IPackageReferenceContextInfoFormatter.Instance.Serialize(ref writer, val, options);
             }
         }
     }

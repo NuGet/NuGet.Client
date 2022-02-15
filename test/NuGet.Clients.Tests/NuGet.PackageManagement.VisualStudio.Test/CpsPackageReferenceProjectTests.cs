@@ -9,7 +9,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Commands;
 using NuGet.Commands.Test;
@@ -26,13 +28,34 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Test;
 using Test.Utility;
 using Xunit;
+using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    public class CpsPackageReferenceProjectTests
+    [Collection(MockedVS.Collection)]
+    public class CpsPackageReferenceProjectTests : MockedVSCollectionTests
     {
+        public CpsPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
+        {
+            var componentModel = new Mock<IComponentModel>();
+            AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
+
+            // Force Enable Transitive Origin experiment tests
+            var constant = ExperimentationConstants.TransitiveDependenciesInPMUI;
+            var flightsEnabled = new Dictionary<string, bool>()
+            {
+                { constant.FlightFlag, true },
+            };
+            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
+
+            service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
+            componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
+        }
+
         [Fact]
         public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
         {
@@ -3396,53 +3419,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     unconfiguredProject: null,
                     projectServices: projectServices,
                     projectId: projectName);
-        }
-
-        private CpsPackageReferenceProject CreateCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache)
-        {
-            var projectServices = new TestProjectSystemServices();
-
-            return new CpsPackageReferenceProject(
-                    projectName: projectName,
-                    projectUniqueName: projectName,
-                    projectFullPath: projectFullPath,
-                    projectSystemCache: projectSystemCache,
-                    unconfiguredProject: null,
-                    projectServices: projectServices,
-                    projectId: projectName);
-        }
-
-        private ProjectNames GetTestProjectNames(string projectPath, string projectUniqueName)
-        {
-            var projectNames = new ProjectNames(
-            fullName: projectPath,
-            uniqueName: projectUniqueName,
-            shortName: projectUniqueName,
-            customUniqueName: projectUniqueName,
-            projectId: Guid.NewGuid().ToString());
-            return projectNames;
-        }
-
-        private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string version)
-        {
-            string referenceSpec = $@"
-                {{
-                    ""frameworks"":
-                    {{
-                        ""net5.0"":
-                        {{
-                            ""dependencies"":
-                            {{
-                                ""packageA"":
-                                {{
-                                    ""version"": ""{version}"",
-                                    ""target"": ""Package""
-                                }},
-                            }}
-                        }}
-                    }}
-                }}";
-            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
 
         private static PackageSpec GetPackageSpecNoPackages(string projectName, string testDirectory)

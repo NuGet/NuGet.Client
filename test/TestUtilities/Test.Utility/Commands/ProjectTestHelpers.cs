@@ -12,7 +12,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
-using NuGet.Shared;
 using NuGet.Test.Utility;
 
 namespace NuGet.Commands.Test
