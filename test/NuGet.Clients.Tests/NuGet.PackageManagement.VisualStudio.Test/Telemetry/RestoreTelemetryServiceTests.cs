@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
@@ -69,7 +68,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
                 new IntervalTracker("Activity"),
-                isPackageSourceMappingEnabled: false);
+                isPackageSourceMappingEnabled: false,
+                httpFeedsCount: 1,
+                localFeedsCount: 2,
+                hasNuGetOrg: true,
+                hasVSOfflineFeed: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -131,7 +134,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
                 },
                 tracker,
-                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled,
+                httpFeedsCount: 1,
+                localFeedsCount: 2,
+                hasNuGetOrg: true,
+                hasVSOfflineFeed: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -141,7 +148,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(23, lastTelemetryEvent.Count);
+            Assert.Equal(27, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -154,7 +161,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(21, actual.Count);
+            Assert.Equal(25, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
@@ -169,6 +176,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expected.UnknownProjectsCount, (int)actual["UnknownProjectsCount"]);
             Assert.Equal(expected.LegacyPackageReferenceProjectsCount, (int)actual["LegacyPackageReferenceProjectsCount"]);
             Assert.Equal(expected.CpsPackageReferenceProjectsCount, (int)actual["CpsPackageReferenceProjectsCount"]);
+            Assert.Equal(expected[RestoreTelemetryEvent.NumHTTPFeeds], (int)actual["NumHTTPFeeds"]);
+            Assert.Equal(expected[RestoreTelemetryEvent.NumLocalFeeds], (int)actual["NumLocalFeeds"]);
+            Assert.Equal(expected[RestoreTelemetryEvent.NuGetOrg], (bool)actual["NuGetOrg"]);
+            Assert.Equal(expected[RestoreTelemetryEvent.VsOfflinePackages], (bool)actual["VsOfflinePackages"]);
+            Assert.Equal(1, (int)actual["NumHTTPFeeds"]);
+            Assert.Equal(2, (int)actual["NumLocalFeeds"]);
+            Assert.Equal(true, (bool)actual["NuGetOrg"]);
+            Assert.Equal(false, (bool)actual["VsOfflinePackages"]);
             AssertProjectsCount(expected);
 
             TestTelemetryUtility.VerifyTelemetryEventData(operationId, expected, actual);

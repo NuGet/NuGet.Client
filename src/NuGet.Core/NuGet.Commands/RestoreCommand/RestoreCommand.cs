@@ -49,6 +49,10 @@ namespace NuGet.Commands
         private const string IsCentralVersionManagementEnabled = nameof(IsCentralVersionManagementEnabled);
         private const string TotalUniquePackagesCount = nameof(TotalUniquePackagesCount);
         private const string NewPackagesInstalledCount = nameof(NewPackagesInstalledCount);
+        private const string SourcesCount = nameof(SourcesCount);
+        private const string HttpSourcesCount = nameof(HttpSourcesCount);
+        private const string LocalSourcesCount = nameof(LocalSourcesCount);
+        private const string FallbackFoldersCount = nameof(FallbackFoldersCount);
 
         // no-op data names
         private const string NoOpDuration = nameof(NoOpDuration);
@@ -119,6 +123,11 @@ namespace NuGet.Commands
 
                 bool isPackageSourceMappingEnabled = _request?.PackageSourceMapping.IsEnabled ?? false;
                 telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
+                telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
+                var httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
+                telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
+                telemetry.TelemetryEvent[LocalSourcesCount] = _request.DependencyProviders.RemoteProviders.Count - httpSourcesCount;
+                telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
 
                 _operationId = telemetry.OperationId;
 
@@ -155,7 +164,6 @@ namespace NuGet.Commands
                         (cacheFile, noOp) = EvaluateCacheFile();
                         telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
                         telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
-
                         if (noOp)
                         {
                             telemetry.StartIntervalMeasure();

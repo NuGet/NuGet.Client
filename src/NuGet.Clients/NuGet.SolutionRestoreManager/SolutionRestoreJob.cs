@@ -312,6 +312,29 @@ namespace NuGet.SolutionRestoreManager
 
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(_settings);
             bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
+            var packageSources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
+
+            int NumHTTPFeeds = 0;
+            int NumLocalFeeds = 0;
+            bool hasVSOfflineFeed = false;
+            bool hasNuGetOrg = false;
+
+            foreach (var packageSource in packageSources)
+            {
+                if (packageSource.IsEnabled)
+                {
+                    if (packageSource.IsHttp)
+                    {
+                        NumHTTPFeeds++;
+                        hasNuGetOrg |= TelemetryUtility.IsNuGetOrg(packageSource.Source);
+                    }
+                    else
+                    {
+                        hasVSOfflineFeed |= TelemetryUtility.IsVsOfflineFeed(packageSource);
+                        NumLocalFeeds++;
+                    }
+                }
+            }
 
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
@@ -334,12 +357,15 @@ namespace NuGet.SolutionRestoreManager
                 duration,
                 _trackingData,
                 intervalTimingTracker,
-                isPackageSourceMappingEnabled);
+                isPackageSourceMappingEnabled,
+                NumHTTPFeeds,
+                NumLocalFeeds,
+                hasNuGetOrg,
+                hasVSOfflineFeed);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
-            var sources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
-            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources, protocolDiagnosticTotals);
+            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, packageSources, protocolDiagnosticTotals);
 
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }
