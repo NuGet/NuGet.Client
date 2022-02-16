@@ -62,7 +62,6 @@ namespace NuGet.Commands
             ILogger log)
         {
             var isFallbackFolder = false;
-
             var globalPackages = new NuGetv3LocalRepository(globalFolderPath, packageFileCache, isFallbackFolder);
             var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
