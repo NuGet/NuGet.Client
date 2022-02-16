@@ -1539,18 +1539,18 @@ namespace NuGet.PackageManagement.UI {
         /// <summary>
         ///   Looks up a localized string similar to Top-level packages.
         /// </summary>
-        public static string PackageLevelType_TopLevelPackageHeaderText {
+        public static string PackageLevel_TopLevelPackageHeaderText {
             get {
-                return ResourceManager.GetString("PackageLevelType_TopLevelPackageHeaderText", resourceCulture);
+                return ResourceManager.GetString("PackageLevel_TopLevelPackageHeaderText", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Transitive packages.
         /// </summary>
-        public static string PackageLevelType_TransitivePackageHeaderText {
+        public static string PackageLevel_TransitivePackageHeaderText {
             get {
-                return ResourceManager.GetString("PackageLevelType_TransitivePackageHeaderText", resourceCulture);
+                return ResourceManager.GetString("PackageLevel_TransitivePackageHeaderText", resourceCulture);
             }
         }
         

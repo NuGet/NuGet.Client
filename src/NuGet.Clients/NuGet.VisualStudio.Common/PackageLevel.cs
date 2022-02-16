@@ -3,7 +3,7 @@
 
 namespace NuGet.VisualStudio
 {
-    public enum PackageLevelType
+    public enum PackageLevel
     {
         TopLevel,
         Transitive

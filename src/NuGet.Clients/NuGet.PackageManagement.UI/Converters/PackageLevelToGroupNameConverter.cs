@@ -8,19 +8,19 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageLevelTypeToGroupNameConverter : IValueConverter
+    internal class PackageLevelToGroupNameConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is PackageLevelType pkgLevelType)
+            if (value is PackageLevel pkgLevel)
             {
-                if (pkgLevelType == PackageLevelType.TopLevel)
+                if (pkgLevel == PackageLevel.TopLevel)
                 {
-                    return Resources.PackageLevelType_TopLevelPackageHeaderText;
+                    return Resources.PackageLevel_TopLevelPackageHeaderText;
                 }
-                else if (pkgLevelType == PackageLevelType.Transitive)
+                else if (pkgLevel == PackageLevel.Transitive)
                 {
-                    return Resources.PackageLevelType_TransitivePackageHeaderText;
+                    return Resources.PackageLevel_TransitivePackageHeaderText;
                 }
             }
 

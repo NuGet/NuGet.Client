@@ -720,19 +720,19 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusIndicator.Reset(string.Empty);
         }
 
-        internal void ClearPackageLevelTypeGrouping()
+        internal void ClearPackageLevelGrouping()
         {
             ItemsView.GroupDescriptions.Clear();
         }
 
-        internal void AddPackageLevelTypeGrouping()
+        internal void AddPackageLevelGrouping()
         {
             ItemsView.Refresh();
-            if (ItemsView.OfType<PackageItemViewModel>()?
-                    .Where(p => p.PackageLevelType == PackageLevelType.Transitive)
+            if (ItemsView.OfType<PackageItemViewModel>()
+                    .Where(p => p.PackageLevel == PackageLevel.Transitive)
                     .Any() == true)
             {
-                ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevelType)));
+                ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
             }
         }
     }

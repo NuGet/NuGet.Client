@@ -455,16 +455,16 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private PackageLevelType _packageLevelType;
-        public PackageLevelType PackageLevelType
+        private PackageLevel _packageLevel;
+        public PackageLevel PackageLevel
         {
-            get => _packageLevelType;
+            get => _packageLevel;
             set
             {
-                if (_packageLevelType != value)
+                if (_packageLevel != value)
                 {
-                    _packageLevelType = value;
-                    OnPropertyChanged(nameof(PackageLevelType));
+                    _packageLevel = value;
+                    OnPropertyChanged(nameof(PackageLevel));
                 }
             }
         }

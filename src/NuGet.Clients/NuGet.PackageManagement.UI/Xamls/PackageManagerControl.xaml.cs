@@ -828,7 +828,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (_isTransitiveDependenciesExperimentEnabled)
                 {
-                    _packageList.ClearPackageLevelTypeGrouping();
+                    _packageList.ClearPackageLevelGrouping();
                 }
 
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
@@ -857,7 +857,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (_isTransitiveDependenciesExperimentEnabled && ActiveFilter == ItemFilter.Installed)
                 {
-                    _packageList.AddPackageLevelTypeGrouping();
+                    _packageList.AddPackageLevelGrouping();
                 }
 
                 if (pSearchCallback != null && searchTask != null)
@@ -1134,7 +1134,7 @@ namespace NuGet.PackageManagement.UI
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     if (_isTransitiveDependenciesExperimentEnabled)
                     {
-                        _packageList.ClearPackageLevelTypeGrouping();
+                        _packageList.ClearPackageLevelGrouping();
                     }
 
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);

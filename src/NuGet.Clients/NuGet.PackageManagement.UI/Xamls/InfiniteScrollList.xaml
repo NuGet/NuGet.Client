@@ -14,8 +14,8 @@
     <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
 
-    <nuget:PackageLevelTypeToGroupNameConverter
-      x:Key="PackageLevelTypeToGroupNameConverter" />
+    <nuget:PackageLevelToGroupNameConverter
+      x:Key="PackageLevelToGroupNameConverter" />
 
     <DataTemplate
       DataType="{x:Type nuget:PackageDependencyMetadata}">
@@ -277,10 +277,10 @@
       x:Key="ExpanderStyle"
       TargetType="{x:Type Expander}">
       <Style.Triggers>
-        <DataTrigger Binding="{Binding Name}" Value="{x:Static common:PackageLevelType.Transitive}">
+        <DataTrigger Binding="{Binding Name}" Value="{x:Static common:PackageLevel.Transitive}">
           <Setter Property="IsExpanded" Value="False" />
         </DataTrigger>
-        <DataTrigger Binding="{Binding Name}" Value="{x:Static common:PackageLevelType.TopLevel}">
+        <DataTrigger Binding="{Binding Name}" Value="{x:Static common:PackageLevel.TopLevel}">
           <Setter Property="IsExpanded" Value="True" />
         </DataTrigger>
       </Style.Triggers>
@@ -289,7 +289,7 @@
     <ControlTemplate
       x:Key="GroupedListItemControlTemplate"
       TargetType="{x:Type GroupItem}">
-      <Expander Header="{Binding Name, Converter={StaticResource PackageLevelTypeToGroupNameConverter}}" Style="{StaticResource ExpanderStyle}">
+      <Expander Header="{Binding Name, Converter={StaticResource PackageLevelToGroupNameConverter}}" Style="{StaticResource ExpanderStyle}">
         <ItemsPresenter />
       </Expander>
     </ControlTemplate>
