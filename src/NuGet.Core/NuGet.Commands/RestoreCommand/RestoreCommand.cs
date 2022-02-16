@@ -174,7 +174,7 @@ namespace NuGet.Commands
                         {
                             telemetry.StartIntervalMeasure();
 
-                            var noOpSuccess = await NoOpRestoreUtilities.VerifyRestoreOutput(_request, cacheFile);
+                            var noOpSuccess = NoOpRestoreUtilities.VerifyRestoreOutput(_request, cacheFile);
 
                             telemetry.EndIntervalMeasure(NoOpRestoreOutputEvaluationDuration);
                             telemetry.TelemetryEvent[NoOpRestoreOutputEvaluationResult] = noOpSuccess;

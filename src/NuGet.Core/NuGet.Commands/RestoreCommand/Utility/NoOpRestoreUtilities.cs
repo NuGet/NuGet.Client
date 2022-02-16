@@ -121,7 +121,7 @@ namespace NuGet.Commands
         /// When the project has opted into packages lock file, it also verified that the lock file is present on disk.
         /// This does not account if the files were manually modified since the last restore
         /// </summary>
-        internal static async Task<bool> VerifyRestoreOutput(RestoreRequest request, CacheFile cacheFile)
+        internal static bool VerifyRestoreOutput(RestoreRequest request, CacheFile cacheFile)
         {
             if (!string.IsNullOrWhiteSpace(request.LockFilePath) && !File.Exists(request.LockFilePath))
             {
@@ -182,7 +182,7 @@ namespace NuGet.Commands
                     }
                     catch(Exception ex)
                     {
-                        await request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1802,
+                        request.Log.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1802,
                             string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotUpdateMetadataLastAccessTime,
                             metadataFile, ex.Message)));
                     }
