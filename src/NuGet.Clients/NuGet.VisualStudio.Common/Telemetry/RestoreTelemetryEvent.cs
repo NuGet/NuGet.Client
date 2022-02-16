@@ -27,6 +27,10 @@ namespace NuGet.VisualStudio
         public const string ProjectRestoreInfoSourcesCount = nameof(ProjectRestoreInfoSourcesCount);
         public const string TimeSinceLastRestoreCompleted = nameof(TimeSinceLastRestoreCompleted);
         public const string LastRestoreOperationSource = nameof(LastRestoreOperationSource);
+        public const string NumHTTPFeeds = nameof(NumHTTPFeeds);
+        public const string NumLocalFeeds = nameof(NumLocalFeeds);
+        public const string NuGetOrg = nameof(NuGetOrg);
+        public const string VsOfflinePackages = nameof(VsOfflinePackages);
 
         public RestoreTelemetryEvent(
             string operationId,
@@ -49,7 +53,12 @@ namespace NuGet.VisualStudio
             double duration,
             IDictionary<string, object> additionalTrackingData,
             IntervalTracker intervalTimingTracker,
-            bool isPackageSourceMappingEnabled) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
+            bool isPackageSourceMappingEnabled,
+            int httpFeedsCount,
+            int localFeedsCount,
+            bool hasNuGetOrg,
+            bool hasVSOfflineFeed
+            ) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
@@ -63,6 +72,10 @@ namespace NuGet.VisualStudio
             base[nameof(PackagesConfigProjectsCount)] = packagesConfigProjectsCount;
             base[nameof(ForceRestore)] = forceRestore;
             base[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
+            base[NumHTTPFeeds] = httpFeedsCount;
+            base[NumLocalFeeds] = localFeedsCount;
+            base[NuGetOrg] = hasNuGetOrg;
+            base[VsOfflinePackages] = hasVSOfflineFeed;
 
             foreach (KeyValuePair<string, object> data in additionalTrackingData)
             {
