@@ -120,6 +120,8 @@ function Test-UninstallPackageWithNestedContentFiles {
 }
 
 function Test-SimpleFSharpUninstall {
+    param($context)
+
     # Arrange
     $p = New-FSharpLibrary
     Build-Solution # wait for project nomination
