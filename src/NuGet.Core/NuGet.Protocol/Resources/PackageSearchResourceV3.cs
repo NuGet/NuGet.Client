@@ -67,7 +67,7 @@ namespace NuGet.Protocol
             else
             {
 #pragma warning disable CS0618
-                var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
+                var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, log, cancellationToken);
 #pragma warning restore CS0618
                 searchResultMetadata = searchResultJsonObjects
                     .Select(s => s.FromJToken<PackageSearchMetadata>());
@@ -224,9 +224,9 @@ namespace NuGet.Protocol
         {
             return await Search(
                 (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
-                    new HttpSourceRequest(uri, Common.NullLogger.Instance),
+                    new HttpSourceRequest(uri, log),
                     s => ProcessHttpStreamTakeCountedItemAsync(s, take, cancellationToken),
-                    Common.NullLogger.Instance,
+                    log,
                     cancellationToken),
                 searchTerm,
                 filters,

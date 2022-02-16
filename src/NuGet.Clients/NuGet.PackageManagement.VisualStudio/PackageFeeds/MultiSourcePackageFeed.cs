@@ -27,6 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly SourceRepository[] _sourceRepositories;
         private readonly INuGetUILogger _logger;
+        private readonly ILogger _iLogger;
         private readonly INuGetTelemetryService _telemetryService;
 
         public bool IsMultiSource => _sourceRepositories.Length > 1;
@@ -98,6 +99,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _sourceRepositories = sourceRepositories.ToArray();
             _telemetryService = telemetryService;
             _logger = logger;
+            _iLogger = new UILogger(_logger);
         }
 
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(string searchText, SearchFilter filter, CancellationToken cancellationToken)
@@ -117,7 +119,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var searchTasks = TaskCombinators.ObserveErrorsAsync(
                     _sourceRepositories,
                     r => r.PackageSource.Name,
-                    (r, t) => r.SearchAsync(searchText, filter, PageSize, t),
+                    (r, t) => r.SearchAsync(searchText, filter, PageSize, t, logger: _iLogger),
                     LogError,
                     cancellationToken);
 
@@ -159,7 +161,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchTasks = TaskCombinators.ObserveErrorsAsync(
                 searchTokens,
                 j => j.Repository.PackageSource.Name,
-                (j, t) => j.Repository.SearchAsync(j.NextToken, PageSize, t),
+                (j, t) => j.Repository.SearchAsync(continuationToken: j.NextToken, pageSize: PageSize, cancellationToken: t, _iLogger),
                 LogError,
                 cancellationToken);
 
@@ -378,6 +380,98 @@ namespace NuGet.PackageManagement.VisualStudio
                         LogLevel.Error,
                         $"[{state.ToString()}] {errorMessage}"));
             }).PostOnFailure(nameof(MultiSourcePackageFeed));
+        }
+
+        private void Log(LogMessage logMessage, Task task, object state)
+        {
+            if (_logger == null)
+            {
+                // observe the task exception when no UI logger provided.
+                Trace.WriteLine(ExceptionUtilities.DisplayMessage(task.Exception));
+                return;
+            }
+
+            // UI logger only can be engaged from the main thread
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _logger.Log(logMessage);
+
+            }).PostOnFailure(nameof(MultiSourcePackageFeed));
+        }
+    }
+
+    public class UILogger : Common.ILogger
+    {
+        INuGetUILogger _nugetUiLogger;
+
+        private UILogger()
+        { }
+
+        public UILogger(INuGetUILogger nugetUiLogger)
+        {
+            if (nugetUiLogger == null)
+            {
+                throw new ArgumentNullException(nameof(nugetUiLogger));
+            }
+            _nugetUiLogger = nugetUiLogger;
+        }
+
+        public void Log(LogLevel level, string data)
+        {
+            _nugetUiLogger.Log(new LogMessage(level, data));
+        }
+
+        public void Log(ILogMessage message)
+        {
+            _nugetUiLogger.Log(message);
+        }
+
+        public Task LogAsync(LogLevel level, string data)
+        {
+            Log(level, data);
+            return Task.CompletedTask;
+        }
+
+        public async Task LogAsync(ILogMessage message)
+        {
+            await Task.Delay(1);
+            Log(message);
+        }
+
+        public void LogDebug(string data)
+        {
+            Log(LogLevel.Debug, data);
+        }
+
+        public void LogError(string data)
+        {
+            Log(LogLevel.Error, data);
+        }
+
+        public void LogInformation(string data)
+        {
+            Log(LogLevel.Information, data);
+        }
+
+        public void LogInformationSummary(string data)
+        {
+            Log(LogLevel.Information, data);
+        }
+
+        public void LogMinimal(string data)
+        {
+            Log(LogLevel.Minimal, data);
+        }
+
+        public void LogVerbose(string data)
+        {
+            Log(LogLevel.Verbose, data);
+        }
+
+        public void LogWarning(string data)
+        {
+            Log(LogLevel.Warning, data);
         }
     }
 }
