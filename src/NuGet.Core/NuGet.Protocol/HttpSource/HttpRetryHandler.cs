@@ -168,7 +168,11 @@ namespace NuGet.Protocol
                             {
                                 bodyStopwatch.Start();
                                 headerStopwatch?.Start();
+                                log.Log(new LogMessage(LogLevel.Information, $"HTTP Begin {source}"));
+                                await Task.Delay(4000);
                                 var responseMessage = await request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken);
+                                await Task.Delay(4000);
+                                log.Log(new LogMessage(LogLevel.Information, $"HTTP Completed {source}"));
                                 headerStopwatch?.Stop();
                                 return responseMessage;
                             },

@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Build.Framework;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -21,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     internal static class SourceRepositoryExtensions
     {
-        public static Task<SearchResult<IPackageSearchMetadata>> SearchAsync(this SourceRepository sourceRepository, string searchText, SearchFilter searchFilter, int pageSize, CancellationToken cancellationToken)
+        public static Task<SearchResult<IPackageSearchMetadata>> SearchAsync(this SourceRepository sourceRepository, string searchText, SearchFilter searchFilter, int pageSize, CancellationToken cancellationToken, Common.ILogger logger)
         {
             var searchToken = new FeedSearchContinuationToken
             {
@@ -30,11 +32,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 StartIndex = 0
             };
 
-            return sourceRepository.SearchAsync(searchToken, pageSize, cancellationToken);
+            return sourceRepository.SearchAsync(searchToken, pageSize, cancellationToken, logger);
         }
 
         public static async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(
-            this SourceRepository sourceRepository, ContinuationToken continuationToken, int pageSize, CancellationToken cancellationToken)
+            this SourceRepository sourceRepository, ContinuationToken continuationToken, int pageSize, CancellationToken cancellationToken, Common.ILogger logger)
         {
             var stopWatch = Stopwatch.StartNew();
 
@@ -47,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 searchToken.SearchFilter,
                 searchToken.StartIndex,
                 pageSize + 1,
-                Common.NullLogger.Instance,
+                logger,
                 cancellationToken);
 
             var items = searchResults?.ToArray() ?? Array.Empty<IPackageSearchMetadata>();
@@ -88,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Get the package metadata for the given identity
         /// </summary>
-        public static async Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(this SourceRepository sourceRepository, PackageIdentity identity, CancellationToken cancellationToken)
+        public static async Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(this SourceRepository sourceRepository, PackageIdentity identity, CancellationToken cancellationToken, Common.ILogger logger)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
@@ -103,7 +105,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Update http source cache context MaxAge so that it can always go online to fetch latest version of packages.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
 
-                return await metadataResource.GetMetadataAsync(identity, sourceCacheContext, Common.NullLogger.Instance, cancellationToken);
+                return await metadataResource.GetMetadataAsync(identity, sourceCacheContext, logger, cancellationToken);
             }
         }
 
@@ -111,7 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Get the package metadata for the given identity.Id
         /// </summary>
         public static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
-            this SourceRepository sourceRepository, PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+            this SourceRepository sourceRepository, PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken, Common.ILogger logger)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
@@ -132,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     includePrerelease: true,
                     includeUnlisted: false,
                     sourceCacheContext: sourceCacheContext,
-                    log: Common.NullLogger.Instance,
+                    log: logger,
                     token: cancellationToken);
 
                 if (packages?.FirstOrDefault() == null)
@@ -175,7 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public static async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
-            this SourceRepository sourceRepository, string packageId, bool includePrerelease, CancellationToken cancellationToken, VersionRange allowedVersions)
+            this SourceRepository sourceRepository, string packageId, bool includePrerelease, CancellationToken cancellationToken, VersionRange allowedVersions, Common.ILogger logger)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
@@ -191,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     includePrerelease,
                     false,
                     sourceCacheContext,
-                    Common.NullLogger.Instance,
+                    logger,
                     cancellationToken);
 
                 // filter packages based on allowed versions
@@ -206,7 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public static async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(
-            this SourceRepository sourceRepository, string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
+            this SourceRepository sourceRepository, string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken, Common.ILogger logger)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
@@ -222,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     includePrerelease,
                     includeUnlisted,
                     sourceCacheContext,
-                    Common.NullLogger.Instance,
+                    logger,
                     cancellationToken);
 
                 return packages;

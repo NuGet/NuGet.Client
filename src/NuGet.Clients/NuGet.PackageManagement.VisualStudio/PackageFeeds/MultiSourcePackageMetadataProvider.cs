@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(PackageIdentity identity, CancellationToken cancellationToken)
         {
             List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataForIdentityAsync(identity, cancellationToken)))
+                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataForIdentityAsync(identity, cancellationToken, _logger)))
                 .ToList();
 
             return await GetPackageMetadataAsync(identity, tasks, cancellationToken);
@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken, _logger)))
                 .ToList();
 
             return await GetPackageMetadataAsync(identity, tasks, cancellationToken);
@@ -90,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .FirstOrDefault(v => v != null) ?? VersionRange.All;
 
             var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(() => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions)))
+                .Select(r => GetMetadataTaskSafeAsync(() => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions, _logger)))
                 .ToArray();
 
             var completed = (await Task.WhenAll(tasks))
@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             cancellationToken.ThrowIfCancellationRequested();
             var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken)))
+                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken, _logger)))
                 .ToArray();
 
             var completed = (await Task.WhenAll(tasks))
@@ -255,7 +255,7 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
             var tasks = _sourceRepositories
                 .Select(r => GetMetadataTaskSafeAsync(
-                    () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+                    () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken, _logger)))
                 .ToList();
 
             if (_localRepository != null)

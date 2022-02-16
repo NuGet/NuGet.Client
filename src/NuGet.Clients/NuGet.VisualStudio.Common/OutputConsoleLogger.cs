@@ -113,7 +113,7 @@ namespace NuGet.VisualStudio.Common
                         message = string.Format(CultureInfo.CurrentCulture, message, args);
                     }
 
-                    await _outputConsole.WriteLineAsync(message);
+                    await _outputConsole.WriteLineAsync(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": " + message);
                 }
             });
         }
@@ -129,7 +129,7 @@ namespace NuGet.VisualStudio.Common
                     || message.Level == LogLevel.Warning
                     || verbosityLevel > DefaultVerbosityLevel)
                 {
-                    await _outputConsole.WriteLineAsync(message.FormatWithCode());
+                    await _outputConsole.WriteLineAsync(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": " + message.FormatWithCode());
 
                     if (message.Level == LogLevel.Error ||
                         message.Level == LogLevel.Warning)

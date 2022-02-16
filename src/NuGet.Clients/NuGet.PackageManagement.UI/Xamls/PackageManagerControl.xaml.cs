@@ -1013,6 +1013,7 @@ namespace NuGet.PackageManagement.UI
             //(int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
             int vulnerablePackagesCount = PackageList.PackageItems.Count(vm => vm.IsPackageVulnerable);
             int deprecatedPackagesCount = PackageList.PackageItems.Count(vm => vm.IsPackageDeprecated);
+            _uiLogger.Log(new LogMessage(LogLevel.Information, $"Tab Counts updated: CountVulnerable: {vulnerablePackagesCount} CountDeprecated: {deprecatedPackagesCount}"));
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
             // Update updates tab count

@@ -90,13 +90,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Assumes.NotNull(packageFeeds.mainFeed);
 
+            var uiLogger = await ServiceLocator.GetComponentModelServiceAsync<INuGetUILogger>();
+            var iLogger = new UILogger(uiLogger);
+
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
                 globalPackageFolderRepositories,
-                new VisualStudioActivityLogger());
+                iLogger
+                );
 
             var searchObject = new SearchObject(packageFeeds.mainFeed, packageFeeds.recommenderFeed, metadataProvider, packageSources, PackageSearchMetadataMemoryCache);
             return await searchObject.GetAllPackagesAsync(searchFilter, cancellationToken);
@@ -301,13 +305,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 cancellationToken);
             Assumes.NotNull(mainFeed);
 
+            var uiLogger = await ServiceLocator.GetComponentModelServiceAsync<INuGetUILogger>();
+            var iLogger = new UILogger(uiLogger);
+
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
                 globalPackageFolderRepositories,
-                new VisualStudioActivityLogger());
+                iLogger);
 
             _searchObject = new SearchObject(mainFeed, recommenderFeed, metadataProvider, packageSources, PackageSearchMetadataMemoryCache);
             return await _searchObject.SearchAsync(searchText, searchFilter, useRecommender, cancellationToken);
@@ -333,11 +340,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
+            var uiLogger = await ServiceLocator.GetComponentModelServiceAsync<INuGetUILogger>();
+            var iLogger = new UILogger(uiLogger);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
                 globalPackageFolderRepositories,
-                new VisualStudioActivityLogger());
+                iLogger);
 
             var searchObject = new SearchObject(mainFeed, recommenderFeed, metadataProvider, packageSources, searchCache: null);
             return await searchObject.GetTotalCountAsync(maxCount, searchFilter, cancellationToken);
@@ -362,6 +371,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             SourceRepository localRepo = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
+<<<<<<< HEAD
             IEnumerable<SourceRepository> globalRepo;
             if (projects != null)
             {
@@ -373,6 +383,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, new VisualStudioActivityLogger());
+=======
+            IEnumerable<SourceRepository> globalRepo = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            var uiLogger = await ServiceLocator.GetComponentModelServiceAsync<INuGetUILogger>();
+            var iLogger = new UILogger(uiLogger);
+            return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, iLogger);
+>>>>>>> 99ce45335 (***NO_CI*** add http Output Console logging)
         }
 
         private async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetAllInstalledPackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
@@ -419,8 +435,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<SourceRepository> sourceRepositories,
             CancellationToken cancellationToken)
         {
-            var logger = new VisualStudioActivityLogger();
             var uiLogger = await ServiceLocator.GetComponentModelServiceAsync<INuGetUILogger>();
+            var iLogger = new UILogger(uiLogger);
             var packageFeeds = (mainFeed: (IPackageFeed?)null, recommenderFeed: (IPackageFeed?)null);
 
             if (itemFilter == ItemFilter.All && recommendPackages == false)
@@ -435,7 +451,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 sourceRepositories,
                 packagesFolderSourceRepository,
                 globalPackageFolderRepositories,
-                logger);
+                iLogger);
 
             if (itemFilter == ItemFilter.All)
             {
@@ -446,6 +462,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // if we get here, recommendPackages == true
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
+<<<<<<< HEAD
                 try
                 {
                     // Recommender needs installed and transitive package lists, but it does not need transitive origins data.
@@ -462,11 +479,21 @@ namespace NuGet.PackageManagement.VisualStudio
                     // This could happen if the user disables the recommender extension. Catching this
                     // exception allows the package manager to continue without recommendations.
                 }
+=======
+                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
+                    sourceRepositories,
+                    installedPackageCollection,
+                    transitivePackageCollection,
+                    targetFrameworks,
+                    metadataProvider,
+                    iLogger);
+>>>>>>> 99ce45335 (***NO_CI*** add http Output Console logging)
                 return packageFeeds;
             }
 
             if (itemFilter == ItemFilter.Installed)
             {
+<<<<<<< HEAD
                 if (isSolution)
                 {
                     // Installed Tab, Solution View: only needs installed packages.
@@ -484,16 +511,23 @@ namespace NuGet.PackageManagement.VisualStudio
                     packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
                 }
 
+=======
+                packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider, iLogger);
+>>>>>>> 99ce45335 (***NO_CI*** add http Output Console logging)
                 return packageFeeds;
             }
 
             if (itemFilter == ItemFilter.Consolidate)
             {
+<<<<<<< HEAD
                 // Consolidate tab, Solution View only: only needs installed packages
                 IReadOnlyCollection<IPackageReferenceContextInfo> installedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
                 PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabPackages);
 
                 packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackageCollection, metadataProvider, logger);
+=======
+                packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackageCollection, metadataProvider, iLogger);
+>>>>>>> 99ce45335 (***NO_CI*** add http Output Console logging)
                 return packageFeeds;
             }
 
