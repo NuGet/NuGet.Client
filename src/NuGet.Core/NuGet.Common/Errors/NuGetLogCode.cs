@@ -743,11 +743,6 @@ namespace NuGet.Common
         NU5048 = 5048,
 
         /// <summary>
-        /// IconUrlAndIconWarning
-        /// </summary>
-        NU5049 = 5049,
-
-        /// <summary>
         /// Attempted to write files from multiple sources into the same location
         /// </summary>
         NU5050 = 5050,
