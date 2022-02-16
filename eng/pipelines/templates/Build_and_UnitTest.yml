@@ -1,3 +1,7 @@
+parameters:
+- name: isOfficialBuild
+  type: boolean
+
 steps:
 - task: PowerShell@1
   inputs:
@@ -35,7 +39,7 @@ steps:
     esrpSigning: "true"
   displayName: "Install Signing Plugin"
 
-- task: ms-vseng.MicroBuildTasks.32f78468-e895-4f47-962c-58a699361df8.MicroBuildSwixPlugin@1
+- task: MicroBuildSwixPlugin@4
   displayName: "Install Swix Plugin"
 
 - task: MicroBuildOptProfPlugin@6
@@ -199,6 +203,12 @@ steps:
     msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
     maximumCpuCount: true
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
+- task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+  displayName: 'Generate SBOM For Insertion'
+  inputs:
+    BuildDropPath: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
