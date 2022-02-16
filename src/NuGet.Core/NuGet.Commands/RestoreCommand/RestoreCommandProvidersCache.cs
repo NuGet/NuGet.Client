@@ -48,7 +48,8 @@ namespace NuGet.Commands
         {
             var isFallbackFolder = false;
 
-            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder, updateLastAccess));
+            NuGetv3LocalRepository globalCache = _globalCache.GetOrAdd(globalPackagesPath,
+                                                    (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder, updateLastAccess));
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
