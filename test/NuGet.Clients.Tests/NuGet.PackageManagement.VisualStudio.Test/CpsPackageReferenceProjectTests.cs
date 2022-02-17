@@ -3362,7 +3362,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                await packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
+                await packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, projectName, token);
 
                 Assert.Equal(1, assetsFileMissingEventCount);
                 Assert.False(assetsFileMissing);
@@ -3370,7 +3370,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Act
                 // Delete assets file
                 File.Delete(Path.Combine(testDirectory, projectName, "project.assets.json"));
-                await packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
+                await packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, projectName, token);
 
                 Assert.Equal(2, assetsFileMissingEventCount);
                 Assert.True(assetsFileMissing);
