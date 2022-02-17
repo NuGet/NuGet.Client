@@ -244,7 +244,7 @@ namespace NuGet.CommandLine
             }
             catch (PackagingException packex) when (packex.AsLogMessage().Code.Equals(NuGetLogCode.NU5133))
             {
-                Logger.Log(PackagingLogMessage.CreateError(packex.Message, NuGetLogCode.NU5133));
+                ExceptionUtilities.LogException(packex, Logger);
                 return null;
             }
             catch (Exception ex)

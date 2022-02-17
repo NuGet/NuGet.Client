@@ -23,11 +23,13 @@ namespace NuGet.CommandLine
 
         private static T CreateInstance<T>(AppDomain domain)
         {
+            string assemblyLocation = Assembly.GetExecutingAssembly().Location;
+
             try
             {
-                return (T)domain.CreateInstanceFromAndUnwrap(Assembly.GetExecutingAssembly().Location, typeof(T).FullName);
+                return (T)domain.CreateInstanceFromAndUnwrap(assemblyLocation, typeof(T).FullName);
             }
-            catch (FileLoadException flex) when (flex.FileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            catch (FileLoadException flex) when (UriUtility.GetLocalPath(flex.FileName).Equals(assemblyLocation, StringComparison.Ordinal))
             {
                 // Reflection loading error for sandboxed assembly
                 var exceptionMessage = string.Format(
