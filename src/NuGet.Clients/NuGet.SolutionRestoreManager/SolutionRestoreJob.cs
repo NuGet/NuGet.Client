@@ -241,10 +241,6 @@ namespace NuGet.SolutionRestoreManager
                         intervalTracker,
                         token);
 
-                    await _packageRestoreManager.RaiseAssetsFileMissingEventForSolutionAsync(
-                            solutionDirectory,
-                            token);
-
                     // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
                     // project in the solution. Extending this behavior to all solutions is tracked here:
                     // NuGet/Home#4478
@@ -672,13 +668,6 @@ namespace NuGet.SolutionRestoreManager
                 // So, we just check for them, and report them as warning(s) on the error list window
                 await _logger.RunWithProgressAsync(
                     (_, __, ___) => CheckForMissingPackagesAsync(packages),
-                    token);
-            }
-
-            if (!await _packageRestoreManager.GetMissingAssetsFileStatusAsync())
-            {
-                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
-                    solutionDirectory,
                     token);
             }
         }

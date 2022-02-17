@@ -61,10 +61,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Checks the current solution if there is a missing assets file.
         /// </summary>
-        /// <param name="solutionDirectory"></param>
+        /// <param name="solutionDirectory">Current solution directory</param>
+        /// <param name="nuGetProjectContext"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
+        Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, string nuGetProjectContext, CancellationToken token);
 
         /// <summary>
         /// Restores the missing packages for the current solution.
@@ -91,7 +92,12 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token);
 
-        Task<bool> GetMissingAssetsFileStatusAsync();
+        /// <summary>
+        /// Cheks if the current project is missing an assets file
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns>Return true if the assets file is missing</returns>
+        Task<bool> GetMissingAssetsFileStatusAsync(string projectId);
 
         /// <summary>
         /// Restores the package references if they are missing

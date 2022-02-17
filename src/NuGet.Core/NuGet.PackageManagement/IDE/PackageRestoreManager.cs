@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -61,31 +60,32 @@ namespace NuGet.PackageManagement
             PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(missing));
         }
 
-        public virtual async Task<bool> GetMissingAssetsFileStatusAsync()
+        public virtual async Task<bool> GetMissingAssetsFileStatusAsync(string projectId)
         {
-            foreach (var nuGetProject in await SolutionManager.GetNuGetProjectsAsync())
-            {
-                if (nuGetProject.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && nuGetProject is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
-                {
-                    string assetsFilePath = await buildIntegratedNuGetProject.GetAssetsFilePathAsync();
-                    var fileInfo = new FileInfo(assetsFilePath);
+            var nuGetProject = await SolutionManager.GetNuGetProjectAsync(projectId);
 
-                    if (!fileInfo.Exists)
-                    {
-                        return true;
-                    }
+            if (nuGetProject != null &&
+                nuGetProject.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
+                nuGetProject is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
+            {
+                string assetsFilePath = await buildIntegratedNuGetProject.GetAssetsFilePathAsync();
+                var fileInfo = new FileInfo(assetsFilePath);
+
+                if (!fileInfo.Exists)
+                {
+                    return true;
                 }
             }
 
             return false;
         }
 
-        public virtual async Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token)
+        public virtual async Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, string projectId, CancellationToken token)
         {
-            var missing = false;
-            if (!string.IsNullOrEmpty(solutionDirectory))
+            var isMissing = false;
+            if (!string.IsNullOrEmpty(solutionDirectory) && !string.IsNullOrEmpty(projectId))
             {
-                missing = await GetMissingAssetsFileStatusAsync();
+                isMissing = await GetMissingAssetsFileStatusAsync(projectId);
             }
 
             AssetsFileMissingStatusChanged?.Invoke(this, new AssetsFileMissingStatusEventsArgs(missing));
