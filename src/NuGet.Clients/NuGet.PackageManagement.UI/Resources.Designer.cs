@@ -1537,6 +1537,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Top-level packages.
+        /// </summary>
+        public static string PackageLevel_TopLevelPackageHeaderText {
+            get {
+                return ResourceManager.GetString("PackageLevel_TopLevelPackageHeaderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitive packages.
+        /// </summary>
+        public static string PackageLevel_TransitivePackageHeaderText {
+            get {
+                return ResourceManager.GetString("PackageLevel_TransitivePackageHeaderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Finished configuring this solution to restore NuGet packages on build..
         /// </summary>
         public static string PackageRestoreCompleted {

@@ -455,6 +455,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private PackageLevel _packageLevel;
+        public PackageLevel PackageLevel
+        {
+            get => _packageLevel;
+            set
+            {
+                if (_packageLevel != value)
+                {
+                    _packageLevel = value;
+                    OnPropertyChanged(nameof(PackageLevel));
+                }
+            }
+        }
+
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
         {
             var identity = new PackageIdentity(Id, Version);

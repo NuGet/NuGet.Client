@@ -63,6 +63,7 @@ namespace NuGet.PackageManagement.UI
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
+        private bool _isTransitiveDependenciesExperimentEnabled;
 
         private PackageManagerControl()
         {
@@ -134,6 +135,9 @@ namespace NuGet.PackageManagement.UI
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
+
+            NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
+            _isTransitiveDependenciesExperimentEnabled = NuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI);
 
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
@@ -822,7 +826,12 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                bool useRecommender = await GetUseRecommendedPackagesAsync(loadContext, searchText);
+                if (_isTransitiveDependenciesExperimentEnabled)
+                {
+                    _packageList.ClearPackageLevelGrouping();
+                }
+
+                bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
                     Model.Context.ReconnectingSearchService,
@@ -846,6 +855,11 @@ namespace NuGet.PackageManagement.UI
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
+                if (_isTransitiveDependenciesExperimentEnabled && ActiveFilter == ItemFilter.Installed)
+                {
+                    _packageList.AddPackageLevelGrouping();
+                }
+
                 if (pSearchCallback != null && searchTask != null)
                 {
                     var searchResult = await searchResultTask;
@@ -865,7 +879,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<bool> GetUseRecommendedPackagesAsync(PackageLoadContext loadContext, string searchText)
+        private bool GetUseRecommendedPackages(PackageLoadContext loadContext, string searchText)
         {
             // only make recommendations when
             //   the single source repository is nuget.org,
@@ -881,7 +895,6 @@ namespace NuGet.PackageManagement.UI
                 _recommendPackages = true;
             }
 
-            NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             // Check for A/B experiment here. For control group, return false instead of _recommendPackages
             if (IsRecommenderFlightEnabled(NuGetExperimentationService))
             {
@@ -1119,6 +1132,10 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    if (_isTransitiveDependenciesExperimentEnabled)
+                    {
+                        _packageList.ClearPackageLevelGrouping();
+                    }
 
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
                     EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
