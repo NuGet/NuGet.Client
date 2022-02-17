@@ -3377,7 +3377,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        private TestCpsPackageReferenceProject CreateTestCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
+        [Fact]
+        public async Task TestPackageManager_ExecuteNuGetProjectActionsAsync_WithProgressReporter_WhenPackageIsInstalled_AssetsFileWritesAreReported()
         {
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager();
