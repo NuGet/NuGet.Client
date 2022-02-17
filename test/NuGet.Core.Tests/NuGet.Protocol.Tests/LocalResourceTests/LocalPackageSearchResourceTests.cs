@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -597,6 +598,39 @@ namespace NuGet.Protocol.Tests
                 // Act & Assert
                 await Assert.ThrowsAsync<TaskCanceledException>(
                     async () => await resource.SearchAsync("", null, 0, 1, NullLogger.Instance, new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageSearch_SearchAsync_SlowLocalRepository_WithCancellationToken_ThrowsAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                using CancellationTokenSource cts = new();
+                var localRepository = new Mock<FindLocalPackagesResourceV2>(pathContext.PackageSource);
+                localRepository.Setup(f => f.GetPackages(It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+                       .Callback((ILogger _, CancellationToken cancellationToken) =>
+                       {
+                           Thread.Sleep(5000);
+                           cancellationToken.ThrowIfCancellationRequested();
+                       }
+                       ).Returns(Enumerable.Empty<LocalPackageInfo>);
+                LocalPackageSearchResource resource = new LocalPackageSearchResource(localRepository.Object);
+
+                // Act
+                Task delay = Task.Delay(TimeSpan.FromMilliseconds(500), cts.Token);
+                Task searchTask = resource.SearchAsync("", null, 0, 1, NullLogger.Instance, cts.Token);
+
+                // Assert
+                var completed = await Task.WhenAny(searchTask, delay);
+                if (completed != delay)
+                {
+                    throw new TimeoutException();
+                }
+                cts.Cancel();
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    async () => await searchTask);
             }
         }
 
