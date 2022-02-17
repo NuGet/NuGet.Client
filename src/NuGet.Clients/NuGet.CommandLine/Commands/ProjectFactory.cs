@@ -802,13 +802,10 @@ namespace NuGet.CommandLine
                 {
                     new AssemblyMetadataExtractor(Logger).ExtractMetadata(builder, TargetPath);
                 }
-                catch (FileLoadException flex) when (flex.FileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                catch (PackagingException packex) when (packex.AsLogMessage().Code.Equals(NuGetLogCode.NU5133))
                 {
-                    var exceptionMessage = string.Format(
-                        CultureInfo.InvariantCulture,
-                        LocalizedResourceManager.GetString("Error_NuGetExeNeedsToBeUnblockedAfterDownloading"),
-                        UriUtility.GetLocalPath(flex.FileName));
-                    throw new PackagingException(NuGetLogCode.NU5133, exceptionMessage, flex);
+                    // Reflection loading error for sandboxed assembly, rethrow it to fail packing.
+                    throw;
                 }
                 catch (Exception ex)
                 {
