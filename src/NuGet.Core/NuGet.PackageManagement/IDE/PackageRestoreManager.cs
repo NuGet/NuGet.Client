@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement
                 isMissing = await GetMissingAssetsFileStatusAsync(projectId);
             }
 
-            AssetsFileMissingStatusChanged?.Invoke(this, new AssetsFileMissingStatusEventsArgs(missing));
+            AssetsFileMissingStatusChanged?.Invoke(this, new AssetsFileMissingStatusEventsArgs(isMissing));
         }
 
         // A synchronous method called during the solution closed event. This is done to avoid needless thread switching
