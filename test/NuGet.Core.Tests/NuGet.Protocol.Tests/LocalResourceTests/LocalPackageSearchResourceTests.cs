@@ -604,34 +604,38 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task LocalPackageSearch_SearchAsync_SlowLocalRepository_WithCancellationToken_ThrowsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using var pathContext = new SimpleTestPathContext();
+
+            // Arrange
+            using CancellationTokenSource cts = new();
+            var localRepository = new Mock<FindLocalPackagesResourceV2>(pathContext.PackageSource);
+            localRepository.Setup(f => f.GetPackages(It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+                   .Callback((ILogger _, CancellationToken cancellationToken) =>
+                   {
+                       Thread.Sleep(5000);
+                       cancellationToken.ThrowIfCancellationRequested();
+                   }
+                   ).Returns(Enumerable.Empty<LocalPackageInfo>);
+            LocalPackageSearchResource resource = new LocalPackageSearchResource(localRepository.Object);
+
+            // Act
+            Task delayTask = Task.Delay(TimeSpan.FromMilliseconds(500), cts.Token);
+            Task searchTask = resource.SearchAsync(searchTerm: "", filters: null, skip: 0, take: 1, log: NullLogger.Instance, token: cts.Token);
+
+            // Assert
+            // To simulate real world scenario I added delayed cancellation logic.
+            // We're expecting delay Task finish before search Task since 5000 > 500.
+            Task completed = await Task.WhenAny(searchTask, delayTask);
+            if (completed != delayTask)
             {
-                // Arrange
-                using CancellationTokenSource cts = new();
-                var localRepository = new Mock<FindLocalPackagesResourceV2>(pathContext.PackageSource);
-                localRepository.Setup(f => f.GetPackages(It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
-                       .Callback((ILogger _, CancellationToken cancellationToken) =>
-                       {
-                           Thread.Sleep(5000);
-                           cancellationToken.ThrowIfCancellationRequested();
-                       }
-                       ).Returns(Enumerable.Empty<LocalPackageInfo>);
-                LocalPackageSearchResource resource = new LocalPackageSearchResource(localRepository.Object);
-
-                // Act
-                Task delay = Task.Delay(TimeSpan.FromMilliseconds(500), cts.Token);
-                Task searchTask = resource.SearchAsync("", null, 0, 1, NullLogger.Instance, cts.Token);
-
-                // Assert
-                var completed = await Task.WhenAny(searchTask, delay);
-                if (completed != delay)
-                {
-                    throw new TimeoutException();
-                }
-                cts.Cancel();
-                await Assert.ThrowsAsync<OperationCanceledException>(
-                    async () => await searchTask);
+                // Search task completed before shorter delay Task which is unexpected.
+                throw new TimeoutException();
             }
+            // Trigger cancellation after 500 milsec.
+            cts.Cancel();
+            // During execution of long search task cancellation is triggered from calling logic.
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                async () => await searchTask);
         }
 
         [Theory]
