@@ -92,11 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var provider = Mock.Of<IPackageMetadataProvider>();
             Mock.Get(provider)
                 .Setup(x => x.GetLocalPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-                .Returns(() =>
-                {
-                    return Task.FromResult(PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"))).Build());
-                });
-
+                .Returns(() => Task.FromResult(FromIdentity(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"))).Build()));
 
             var feed = new InstalledAndTransitivePackageFeed(installedPackages, transitivePackages, provider);
 
@@ -155,7 +151,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 })
             };
 
-            var feed = new InstalledAndTransitivePackageFeed(installedPackages, transitivePackages, _packageMetadataProvider);
+            var metadataProvider = Mock.Of<IPackageMetadataProvider>();
+            Mock.Get(metadataProvider)
+                .Setup(x => x.GetLocalPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(FromIdentity(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"))).Build()));
+            Mock.Get(metadataProvider)
+                .Setup(m => m.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(FromIdentity(new PackageIdentity("transitivePackageA", NuGetVersion.Parse("0.0.1"))).Build()));
+
+            var feed = new InstalledAndTransitivePackageFeed(installedPackages, transitivePackages, metadataProvider);
 
             // Act
             SearchResult<IPackageSearchMetadata> result = await feed.SearchAsync("", new SearchFilter(false), CancellationToken.None);
