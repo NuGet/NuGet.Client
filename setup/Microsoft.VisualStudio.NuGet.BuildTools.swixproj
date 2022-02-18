@@ -35,7 +35,6 @@
   <Target Name="CopyToDropFolder" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(VsixPublishDestination)" />
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(VsixPublishDestination)" />
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsman" DestinationFolder="$(VsixPublishDestination)" />
   </Target>
 
   <!-- MicroBuild plugin fails if GetNativeManifest is not found for some reason -->

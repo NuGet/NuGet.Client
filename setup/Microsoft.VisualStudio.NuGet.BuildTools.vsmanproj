@@ -9,6 +9,7 @@
     <FinalizeSkipLayout>true</FinalizeSkipLayout>
     <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
     <TargetName>$(MSBuildProjectName)</TargetName>
+    <OutputPath>$(VsixPublishDestination)</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
