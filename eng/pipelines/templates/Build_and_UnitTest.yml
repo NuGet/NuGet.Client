@@ -204,7 +204,7 @@ steps:
     maximumCpuCount: true
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
-- ${{ if not(parameters.BuildRTM)}}
+- ${{ if not(parameters.BuildRTM)}}:
   - template: eng\common\templates\steps\generate-sbom.yml
     parameters:
       PackageName: 'NuGet.Client'
