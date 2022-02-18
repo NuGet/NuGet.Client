@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// SourceRepositoryProvider is the high level source for repository objects representing package sources.
     /// </summary>
-    [Export(typeof(ISourceRepositoryProvider))]
+    [Export(typeof(ISourceRepositoryProvider))] // This one is tricky
     public sealed class ExtensibleSourceRepositoryProvider : ISourceRepositoryProvider, IDisposable
     {
 

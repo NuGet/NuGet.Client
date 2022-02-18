@@ -29,7 +29,7 @@ namespace NuGetConsole
         private AsyncLazy<IHost> Host { get; }
 
         [Import]
-        private Lazy<ISettings> Settings { get; set; }
+        private Lazy<IVSSettings> Settings { get; set; }
 
         [Import]
         private ISolutionManager SolutionManager { get; set; }
@@ -129,7 +129,7 @@ namespace NuGetConsole
             // Reserve the key. We can remove if the package has not been restored.
             if (TryMarkVisited(identity, PackageInitPS1State.NotFound))
             {
-                var nugetPaths = NuGetPathContext.Create(Settings.Value);
+                var nugetPaths = NuGetPathContext.Create(await Settings.Value.GetSettings());
                 var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
                 var installPath = fallbackResolver.GetPackageDirectory(identity.Id, identity.Version);
 

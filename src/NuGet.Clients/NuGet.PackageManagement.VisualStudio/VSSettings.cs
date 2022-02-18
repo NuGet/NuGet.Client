@@ -5,17 +5,23 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    // TODO NK - Create a VS Settings
     [Export(typeof(ISettings))]
+    [Export(typeof(IVSSettings))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSettings : ISettings, IDisposable
+    public sealed class VSSettings : IVSSettings, ISettings, IDisposable
     {
+        public Task<ISettings> GetSettings()
+        {
+            return _solutionSettings.Item2.GetValueAsync();
+        }
+
         private const string NuGetSolutionSettingsFolder = ".nuget";
 
         // to initialize SolutionSettings first time outside MEF constructor
@@ -84,6 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             ISettings settings = null;
                             try
                             {
+                                // Do we need toc are about the machine wide settings
                                 settings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
                             }
                             catch (NuGetConfigurationException ex)

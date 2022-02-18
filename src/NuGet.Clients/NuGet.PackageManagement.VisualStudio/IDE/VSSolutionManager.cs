@@ -827,6 +827,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var context = new ProjectProviderContext(
                 projectContext ?? EmptyNuGetProjectContext,
                 () => PackagesFolderPathUtility.GetPackagesFolderPath(this, _settings.Value));
+            // HOw can we make this async?
 
             return await _projectSystemFactory.TryCreateNuGetProjectAsync(project, context);
         }

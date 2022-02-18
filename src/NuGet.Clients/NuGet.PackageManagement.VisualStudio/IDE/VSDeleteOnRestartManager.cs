@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </param>
         [ImportingConstructor]
         public VsDeleteOnRestartManager(
-            Configuration.ISettings settings,
+            IVSSettings settings,
             ISolutionManager solutionManager)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -53,25 +53,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private ISolutionManager SolutionManager { get; }
 
-        private Configuration.ISettings Settings { get; }
+        private IVSSettings Settings { get; }
 
-        public string PackagesFolderPath
+        public async Task<string> PackagesFolderPath()
         {
-            get
+            if (SolutionManager.SolutionDirectory != null)
             {
-                if (SolutionManager.SolutionDirectory != null)
-                {
-                    _packagesFolderPath =
-                        PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
-                }
-
-                return _packagesFolderPath;
+                var settings = await Settings.GetSettings();
+                _packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, settings);
             }
 
-            set
-            {
-                _packagesFolderPath = value;
-            }
+            return _packagesFolderPath;
         }
 
         /// <summary>
@@ -80,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion()
         {
             // PackagesFolderPath reads the configs, reference the local variable to avoid reading the configs continously
-            var packagesFolderPath = PackagesFolderPath;
+            var packagesFolderPath = await PackagesFolderPath();
             if (packagesFolderPath == null)
             {
                 return Array.Empty<string>();

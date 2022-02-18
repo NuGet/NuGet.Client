@@ -414,8 +414,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<SourceRepository> GetPackagesFolderSourceRepositoryAsync()
         {
             IVsSolutionManager solutionManager = await _sharedServiceState.SolutionManager.GetValueAsync();
-            ISettings settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
-
+            var ivsSettings = await ServiceLocator.GetComponentModelServiceAsync<IVSSettings>();
+            ISettings settings = await ivsSettings.GetSettings();
             return _sharedServiceState.SourceRepositoryProvider.CreateRepository(
                 new PackageSource(PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings)),
                 FeedType.FileSystemPackagesConfig);
