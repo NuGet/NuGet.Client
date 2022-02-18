@@ -95,12 +95,13 @@ stages:
       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
       LocalizedLanguageCount: "13"
       BuildRTM: "false"
+      SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
     pool:
       name: VSEngSS-MicroBuild2019-1ES
     steps:
     - template: Build_and_UnitTest.yml
       parameters:
-        isOfficialBuild: ${{ parameters.isOfficialBuild }}
+        BuildRTM: false
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
@@ -121,7 +122,7 @@ stages:
     steps:
     - template: Build_and_UnitTest.yml
       parameters:
-        isOfficialBuild: ${{ parameters.isOfficialBuild }}
+        BuildRTM: true
 
 - stage: Source_Build
   dependsOn: Initialize
