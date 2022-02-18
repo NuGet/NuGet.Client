@@ -1,3 +1,28 @@
-NuGet does not use Arcade, but this is the folder that Arcade normally maintains. See: https://github.com/dotnet/arcade/blob/main/eng/common/README.md
+# Don't touch this folder
 
-This is us dipping our toe into Arcade, and reusing small bits and pieces without going all-in.
+                uuuuuuuuuuuuuuuuuuuu
+              u" uuuuuuuuuuuuuuuuuu "u
+            u" u$$$$$$$$$$$$$$$$$$$$u "u
+          u" u$$$$$$$$$$$$$$$$$$$$$$$$u "u
+        u" u$$$$$$$$$$$$$$$$$$$$$$$$$$$$u "u
+      u" u$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$u "u
+    u" u$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$u "u
+    $ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ $
+    $ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ $
+    $ $$$" ... "$...  ...$" ... "$$$  ... "$$$ $
+    $ $$$u `"$$$$$$$  $$$  $$$$$  $$  $$$  $$$ $
+    $ $$$$$$uu "$$$$  $$$  $$$$$  $$  """ u$$$ $
+    $ $$$""$$$  $$$$  $$$u "$$$" u$$  $$$$$$$$ $
+    $ $$$$....,$$$$$..$$$$$....,$$$$..$$$$$$$$ $
+    $ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ $
+    "u "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" u"
+      "u "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" u"
+        "u "$$$$$$$$$$$$$$$$$$$$$$$$$$$$" u"
+          "u "$$$$$$$$$$$$$$$$$$$$$$$$" u"
+            "u "$$$$$$$$$$$$$$$$$$$$" u"
+              "u """""""""""""""""" u"
+                """"""""""""""""""""
+
+!!! Changes made in this directory are subject to being overwritten by automation !!!
+
+The files in this directory are shared by all Arcade repos and managed by automation. If you need to make changes to these files, open an issue or submit a pull request to https://github.com/dotnet/arcade first.
