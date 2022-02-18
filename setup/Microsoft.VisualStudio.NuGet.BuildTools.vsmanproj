@@ -9,8 +9,6 @@
     <FinalizeSkipLayout>true</FinalizeSkipLayout>
     <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
     <TargetName>$(MSBuildProjectName)</TargetName>
-    <DropFolder>$(VsixPublishDestination)</DropFolder>
-    <OutputPath>$(DropFolder)</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,15 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <MergeManifest Include="$(OutputPath)$(MSBuildProjectName).json"
+    <MergeManifest Include="$(VsixPublishDestination)$(MSBuildProjectName).json"
       SBOMFileLocation="$(VsixPublishDestination)_manifest\spdx_2.2\manifest.spdx.json"
       />
   </ItemGroup>
-
-  <Target Name="CopyToDropFolder" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(DropFolder)" />
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(DropFolder)" />
-  </Target>
 
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
 
