@@ -24,7 +24,7 @@
     <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);netcoreapp5.0</TargetFrameworksExeForSigning>
     <TargetFrameworksExeForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksExe);net6.0</TargetFrameworksExeForSigning>
     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
-    <TargetFrameworksLibrary Condition="'$(DotNetBuildFromSource)' == 'true'">$(NetStandardVersion);$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksLibrary Condition="'$(DotNetBuildFromSource)' == 'true'">$(NETCoreTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
     <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);netcoreapp5.0</TargetFrameworksLibraryForSigning>
     <TargetFrameworksLibraryForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksLibrary);net6.0</TargetFrameworksLibraryForSigning>
     <TargetFrameworksLibraryForCrossVerificationTests>$(NETFXTargetFramework);netcoreapp5.0</TargetFrameworksLibraryForCrossVerificationTests>
