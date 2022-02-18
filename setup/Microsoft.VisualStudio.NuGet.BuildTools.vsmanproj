@@ -10,10 +10,10 @@
     <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
     <TargetName>$(MSBuildProjectName)</TargetName>
     <DropFolder>$(VsixPublishDestination)</DropFolder>
-    <OutputPath Condition="'$(IsVsixBuild)' != 'true'">$(DropFolder)</OutputPath>
+    <OutputPath>$(DropFolder)</OutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsVsixBuild)' == 'true'">
+  <PropertyGroup>
     <IsPackage>true</IsPackage>
     <FinalizeValidate>false</FinalizeValidate>
     <ValidateManifest>false</ValidateManifest>
@@ -21,7 +21,7 @@
     <MicroBuild_SigningEnabled>false</MicroBuild_SigningEnabled>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsVsixBuild)' == 'true'">
+  <ItemGroup>
     <ProjectReference Include="Microsoft.VisualStudio.NuGet.BuildTools.swixproj" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
@@ -31,7 +31,7 @@
       />
   </ItemGroup>
 
-  <Target Name="CopyToDropFolder" AfterTargets="Build" Condition="'$(IsVsixBuild)' == 'true'">
+  <Target Name="CopyToDropFolder" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(DropFolder)" />
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(DropFolder)" />
   </Target>
