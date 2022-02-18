@@ -61,18 +61,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public TransitivePackageSearchMetadata(IPackageSearchMetadata package, IReadOnlyCollection<PackageIdentity> transitiveOrigins)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            if (transitiveOrigins == null)
-            {
-                throw new ArgumentNullException(nameof(transitiveOrigins));
-            }
-
-            _packageSearchMetadata = package;
-            TransitiveOrigins = transitiveOrigins;
+            _packageSearchMetadata = package ?? throw new ArgumentNullException(nameof(package));
+            TransitiveOrigins = transitiveOrigins ?? throw new ArgumentNullException(nameof(transitiveOrigins));
         }
 
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync()

@@ -293,12 +293,8 @@ namespace NuGet.PackageManagement.UI
                     PackagePath = metadata.PackagePath,
                     PackageFileService = _packageFileService,
                     IncludePrerelease = _includePrerelease,
+                    PackageLevel = metadata.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel,
                 };
-
-                if (metadata.TransitiveOrigins != null)
-                {
-                    listItem.PackageLevel = metadata.TransitiveOrigins.Any() ? PackageLevel.Transitive : PackageLevel.TopLevel;
-                }
 
                 listItem.UpdatePackageStatus(_installedPackages);
 
