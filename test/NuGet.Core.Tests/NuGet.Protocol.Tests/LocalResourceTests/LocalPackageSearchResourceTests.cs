@@ -586,14 +586,16 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalPackageSearch_SearchAsync_WithCancellationToken_ThrowsAsync()
+        public async Task LocalPackageSearch_SearchAsync_WithCancellationToken_ImmediatelyThrowsAsync()
         {
             using (var root = TestDirectory.Create())
             {
+                // Arrange
                 var localResource = new FindLocalPackagesResourceV2(root);
                 LocalPackageSearchResource resource = new LocalPackageSearchResource(localResource);
 
-                await Assert.ThrowsAsync<OperationCanceledException>(
+                // Act & Assert
+                await Assert.ThrowsAsync<TaskCanceledException>(
                     async () => await resource.SearchAsync("", null, 0, 1, NullLogger.Instance, new CancellationToken(canceled: true)));
             }
         }

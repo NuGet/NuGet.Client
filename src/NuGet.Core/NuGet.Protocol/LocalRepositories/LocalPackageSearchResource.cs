@@ -35,7 +35,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            return await Task.Run(() =>
+            return await Task.Factory.StartNew(() =>
             {
                 // Check if source is available.
                 if (!IsLocalOrUNC(_localResource.Root))
@@ -72,7 +72,7 @@ namespace NuGet.Protocol
                 return packages
                     .Select(package => CreatePackageSearchResult(package, filters, log, token))
                     .ToArray();
-            });
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
