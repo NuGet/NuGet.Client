@@ -261,13 +261,6 @@ steps:
     configuration: "$(BuildConfiguration)"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
-- task: MSBuild@1
-  displayName: "Generate VSMAN file for Build Tools VSIX"
-  inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    configuration: "$(BuildConfiguration)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
 - task: PowerShell@1
   displayName: "Create EndToEnd Test Package"
   inputs:
