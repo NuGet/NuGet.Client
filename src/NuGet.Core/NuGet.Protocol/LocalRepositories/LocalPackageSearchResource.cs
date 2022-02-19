@@ -110,8 +110,6 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var metadata = new LocalPackageSearchMetadata(package);
 
             return metadata

@@ -20,7 +20,7 @@ namespace NuGet.Protocol
         {
             token.ThrowIfCancellationRequested();
 
-            var packages = LocalFolderUtility.GetPackagesV2(Root, id, logger);
+            var packages = LocalFolderUtility.GetPackagesV2(Root, id, logger, token);
 
             // Filter out any duplicates that may appear in the folder multiple times.
             return LocalFolderUtility.GetDistinctPackages(packages);
@@ -37,14 +37,14 @@ namespace NuGet.Protocol
         {
             token.ThrowIfCancellationRequested();
 
-            return LocalFolderUtility.GetPackageV2(Root, identity, logger);
+            return LocalFolderUtility.GetPackageV2(Root, identity, logger, token);
         }
 
         public override IEnumerable<LocalPackageInfo> GetPackages(ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
-            var packages = LocalFolderUtility.GetPackagesV2(Root, logger);
+            var packages = LocalFolderUtility.GetPackagesV2(Root, logger, token);
 
             // Filter out any duplicates that may appear in the folder multiple times.
             return LocalFolderUtility.GetDistinctPackages(packages);

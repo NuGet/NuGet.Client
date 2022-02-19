@@ -50,13 +50,13 @@ namespace NuGet.CommandLine
                 if (_packagePathResolver.UseSideBySidePaths)
                 {
                     // Id.Version
-                    packages = LocalFolderUtility.GetPackagesConfigFolderPackages(Root, NullLogger.Instance);
+                    packages = LocalFolderUtility.GetPackagesConfigFolderPackages(Root, NullLogger.Instance, token);
                 }
                 else
                 {
                     // Id
                     // Ignore packages that are in SxS or a different format.
-                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance)
+                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance, token)
                         .Where(PackageIsValidForPathResolver);
                 }
             }

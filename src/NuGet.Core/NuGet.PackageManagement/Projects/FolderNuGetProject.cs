@@ -454,7 +454,8 @@ namespace NuGet.ProjectManagement
                 package = LocalFolderUtility.GetPackageV2(
                     Root,
                     packageIdentity,
-                    NullLogger.Instance);
+                    NullLogger.Instance,
+                    CancellationToken.None);
             }
 
             if (package != null && packageIdentity.Equals(package.Identity))

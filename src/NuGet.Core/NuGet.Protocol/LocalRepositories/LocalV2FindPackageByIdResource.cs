@@ -58,7 +58,7 @@ namespace NuGet.Protocol
         /// <param name="id">A package ID.</param>
         /// <param name="cacheContext">A source cache context.</param>
         /// <param name="logger">A logger.</param>
-        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <param name="ct">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
@@ -66,13 +66,13 @@ namespace NuGet.Protocol
         /// is either <c>null</c> or an empty string.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="ct" />
         /// is cancelled.</exception>
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken ct)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -92,9 +92,9 @@ namespace NuGet.Protocol
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                ct.ThrowIfCancellationRequested();
 
-                var infos = GetPackageInfos(id, cacheContext, logger);
+                var infos = GetPackageInfos(id, cacheContext, logger, ct);
 
                 return Task.FromResult(infos.Select(p => p.Identity.Version));
             }
@@ -167,7 +167,7 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var info = GetPackageInfo(id, version, cacheContext, logger);
+                var info = GetPackageInfo(id, version, cacheContext, logger, cancellationToken);
 
                 if (info != null)
                 {
@@ -244,7 +244,7 @@ namespace NuGet.Protocol
                 cancellationToken.ThrowIfCancellationRequested();
 
                 FindPackageByIdDependencyInfo dependencyInfo = null;
-                var info = GetPackageInfo(id, version, cacheContext, logger);
+                var info = GetPackageInfo(id, version, cacheContext, logger, cancellationToken);
                 if (info != null)
                 {
                     dependencyInfo = GetDependencyInfo(info.Nuspec);
@@ -267,9 +267,10 @@ namespace NuGet.Protocol
             string id,
             NuGetVersion version,
             SourceCacheContext cacheContext,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken ct)
         {
-            return GetPackageInfos(id, cacheContext, logger)
+            return GetPackageInfos(id, cacheContext, logger, ct)
                 .FirstOrDefault(package => package.Identity.Version == version);
         }
 
@@ -313,7 +314,7 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var packageInfo = GetPackageInfo(packageIdentity.Id, packageIdentity.Version, cacheContext, logger);
+                var packageInfo = GetPackageInfo(packageIdentity.Id, packageIdentity.Version, cacheContext, logger, cancellationToken);
                 IPackageDownloader packageDownloader = null;
 
                 if (packageInfo != null)
@@ -384,7 +385,7 @@ namespace NuGet.Protocol
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                return Task.FromResult(GetPackageInfo(id, version, cacheContext, logger) != null);
+                return Task.FromResult(GetPackageInfo(id, version, cacheContext, logger, cancellationToken) != null);
             }
             finally
             {
@@ -400,11 +401,12 @@ namespace NuGet.Protocol
         private IReadOnlyList<LocalPackageInfo> GetPackageInfos(
             string id,
             SourceCacheContext cacheContext,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken ct)
         {
             IReadOnlyList<LocalPackageInfo> results = null;
 
-            Func<string, IReadOnlyList<LocalPackageInfo>> findPackages = (packageId) => GetPackageInfosCore(packageId, logger);
+            Func<string, IReadOnlyList<LocalPackageInfo>> findPackages = (packageId) => GetPackageInfosCore(packageId, logger, ct);
 
             if (cacheContext.RefreshMemoryCache)
             {
@@ -418,12 +420,12 @@ namespace NuGet.Protocol
             return results;
         }
 
-        private IReadOnlyList<LocalPackageInfo> GetPackageInfosCore(string id, ILogger logger)
+        private IReadOnlyList<LocalPackageInfo> GetPackageInfosCore(string id, ILogger logger, CancellationToken ct)
         {
             var result = new List<LocalPackageInfo>();
 
             // packages\{packageId}.{version}.nupkg
-            var nupkgFiles = LocalFolderUtility.GetNupkgsFromFlatFolder(_source, logger)
+            var nupkgFiles = LocalFolderUtility.GetNupkgsFromFlatFolder(_source, logger, ct)
                 .Where(path => LocalFolderUtility.IsPossiblePackageMatch(path, id));
 
             foreach (var nupkgInfo in nupkgFiles)

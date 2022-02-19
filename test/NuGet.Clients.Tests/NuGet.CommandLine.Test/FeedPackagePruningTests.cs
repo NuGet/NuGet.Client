@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -70,7 +71,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.Restore(pathContext, projectA.ProjectPath, 0, "-Source", feedUrl);
 
                 // Delete x 1.0.0
-                File.Delete(LocalFolderUtility.GetPackageV2(serverRepoPath, packageX100.Identity, testLogger).Path);
+                File.Delete(LocalFolderUtility.GetPackageV2(serverRepoPath, packageX100.Identity, testLogger, CancellationToken.None).Path);
 
                 // Act
                 // Restore x 1.0.0
@@ -114,7 +115,7 @@ namespace NuGet.CommandLine.Test
 
                         var id = parts[parts.Length - 2];
 
-                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(repositoryPath, id, new TestLogger()))
+                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(repositoryPath, id, new TestLogger(), CancellationToken.None))
                         {
                             array.Add(pkg.Identity.Version.ToNormalizedString());
                         }

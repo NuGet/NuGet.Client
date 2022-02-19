@@ -1816,7 +1816,7 @@ namespace NuGet.CommandLine.Test
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);
                 var msBuildProject2 = new MSBuildNuGetProject(projectSystem2, packagesDirectory, projectDirectory2);
 
-                var packagesInSource = LocalFolderUtility.GetPackagesV2(pathContext.PackageSource, Common.NullLogger.Instance);
+                var packagesInSource = LocalFolderUtility.GetPackagesV2(pathContext.PackageSource, Common.NullLogger.Instance, CancellationToken.None);
                 var a1File = packagesInSource.Single(e => e.Identity.Equals(a1Package.Identity));
                 var b1File = packagesInSource.Single(e => e.Identity.Equals(b1Package.Identity));
 
