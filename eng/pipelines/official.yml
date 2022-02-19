@@ -4,7 +4,10 @@ trigger:
   branches:
     include:
       - dev
-      - release-*
+      - release-*-MSRC
+    exclude:
+      - dev-*
+
 
 # Weekly builds for supported branches, to maintain CI build health + keep OptProf training data fresh
 # Generally this means LTS versions + current GA version
@@ -15,9 +18,9 @@ schedules:
   displayName: Weekly branch build
   branches:
     include:
-      - release-5.11.x # VS 16.11 and .NET 5 SDK 5.0.4xx
-      - release-6.0.x # VS 17.0 and .NET 6 SDK 6.0.1xx
-      - release-6.1.x # VS 17.1 and .NET 6 SDK 6.0.2xx
+      - release-5.11.x-MSRC # VS 16.11 and .NET 5 SDK 5.0.4xx
+      - release-6.0.x-MSRC # VS 17.0 and .NET 6 SDK 6.0.1xx
+      - release-6.1.x-MSRC # VS 17.1 and .NET 6 SDK 6.0.2xx
   always: true
 
 parameters:
