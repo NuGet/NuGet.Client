@@ -170,10 +170,7 @@ namespace NuGet.DependencyResolver
                 if (outerEdge == null
                     || dependency.SuppressParent != LibraryIncludeFlags.All)
                 {
-                    // Dependency edge from the current node to the dependency
-                    var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, node.Item, dependency);
-
-                    var result = WalkTreeCheckCycleAndNearestWins(innerEdge, dependency, predicate);
+                    var result = WalkTreeCheckCycleAndNearestWins(outerEdge, dependency, predicate);
 
                     // Check for a cycle, this is needed for A (project) -> A (package)
                     // since the predicate will not be called for leaf nodes.
@@ -184,6 +181,9 @@ namespace NuGet.DependencyResolver
 
                     if (result.dependencyResult == DependencyResult.Acceptable)
                     {
+                        // Dependency edge from the current node to the dependency
+                        var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, node.Item, dependency);
+
                         if (tasks == null)
                         {
                             tasks = new List<Task<GraphNode<RemoteResolveResult>>>(1);
