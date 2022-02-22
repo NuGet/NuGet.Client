@@ -356,10 +356,24 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false)
+        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false, double? duration = null)
         {
             TelemetryActivity.EmitTelemetryEvent(
                 new PackageManagerUIRefreshEvent(
+                    _sessionGuid,
+                    Model.IsSolution,
+                    refreshOperationSource,
+                    status,
+                    _topPanel.Filter.ToString(),
+                    isUIFiltering,
+                    timeSpan,
+                    duration));
+        }
+
+        private void EmitLoadedEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false)
+        {
+            TelemetryActivity.EmitTelemetryEvent(
+                new PackageManagerLoadedEvent(
                     _sessionGuid,
                     Model.IsSolution,
                     refreshOperationSource,
@@ -826,6 +840,7 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
+                var sw = Stopwatch.StartNew();
                 if (_isTransitiveDependenciesExperimentEnabled)
                 {
                     _packageList.ClearPackageLevelGrouping();
@@ -865,6 +880,13 @@ namespace NuGet.PackageManagement.UI
                     var searchResult = await searchResultTask;
                     pSearchCallback.ReportComplete(searchTask, (uint)searchResult.PackageSearchItems.Count);
                 }
+                sw.Stop();
+                // Needed for browse tab, before updating other tabs.
+                //if (_topPanel.Filter == ItemFilter.All)
+                //{
+                //    EmitLoadedEvent(sw.Elapsed, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NotApplicable);
+                //}
+                EmitLoadedEvent(sw.Elapsed, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NotApplicable);
 
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
@@ -910,7 +932,6 @@ namespace NuGet.PackageManagement.UI
         {
             // clear existing caches
             Model.CachedUpdates = null;
-
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             _topPanel.UpdateWarningStatusOnInstalledTab(installedVulnerablePackagesCount: 0, installedDeprecatedPackagesCount: 0);
@@ -1132,13 +1153,15 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var sw = Stopwatch.StartNew();
                     if (_isTransitiveDependenciesExperimentEnabled)
                     {
                         _packageList.ClearPackageLevelGrouping();
                     }
 
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
+                    sw.Stop();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
@@ -1552,8 +1575,11 @@ namespace NuGet.PackageManagement.UI
 
         private async Task ExecuteRestartSearchCommandAsync()
         {
+            var sw = Stopwatch.StartNew();
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
             await RefreshConsolidatablePackagesCountAsync();
+            sw.Stop();
+            //EmitLoadedEvent(sw.Elapsed, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable);
         }
 
         /// <summary>

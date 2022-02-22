@@ -103,7 +103,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var expectedIsSolutionLevel = true;
             var expectedTab = "All";
             var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
-            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh);
+            var expectedDuration = TimeSpan.FromSeconds(1);
+            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration);
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -149,6 +150,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(timeSinceLastRefresh);
             Assert.IsType<double>(timeSinceLastRefresh);
             Assert.Equal(expectedTimeSinceLastRefresh.TotalMilliseconds, timeSinceLastRefresh);
+            var duration = lastTelemetryEvent["Duration"];
+            Assert.NotNull(duration);
+            Assert.IsType<double>(duration);
+            Assert.Equal(expectedDuration.TotalMilliseconds, timeSinceLastRefresh);
         }
     }
 }

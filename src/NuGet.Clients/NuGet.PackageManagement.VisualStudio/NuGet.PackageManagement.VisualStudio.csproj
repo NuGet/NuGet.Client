@@ -145,6 +145,7 @@
     <Compile Include="Telemetry\HyperlinkClickedTelemetryEvent.cs" />
     <Compile Include="Telemetry\HyperlinkType.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
+    <Compile Include="Telemetry\PackageManagerLoadedEvent .cs" />
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
     <Compile Include="Telemetry\DiagnosticTelemetryEvent.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
