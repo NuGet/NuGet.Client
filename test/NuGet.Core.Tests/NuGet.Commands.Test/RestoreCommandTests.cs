@@ -2211,9 +2211,9 @@ namespace NuGet.Commands.Test
 
                 logger.WarningMessages.TryDequeue(out string warningMessage);
 
-                Assert.True(warningMessage.Contains(NuGetLogCode.NU1014.ToString()));
+                Assert.True(warningMessage.Contains(NuGetLogCode.NU1504.ToString()));
 
-                Assert.True(result.LockFile.LogMessages.Any(m => m.Code == NuGetLogCode.NU1014), "Lockfile should contain a warning with code NU1014");
+                Assert.True(result.LockFile.LogMessages.Any(m => m.Code == NuGetLogCode.NU1504), "Lockfile should contain a warning with code NU1504");
             }
         }
 

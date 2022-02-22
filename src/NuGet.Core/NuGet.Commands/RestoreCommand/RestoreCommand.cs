@@ -453,7 +453,7 @@ namespace NuGet.Commands
                 // Emit a warning for any package references that specified a VersionOverride since the value was ignored
                 foreach (var item in dependenciesWithVersionOverride)
                 {
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1014, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_VersionOverrideIgnored, item.Name)));
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1504, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_VersionOverrideIgnored, item.Name)));
                 }
 
                 return true;

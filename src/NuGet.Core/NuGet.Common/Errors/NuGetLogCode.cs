@@ -122,11 +122,6 @@ namespace NuGet.Common
         NU1013 = 1013,
 
         /// <summary>
-        /// A VersionOverride was specified for a PackageReference but central package management is not enabled so the value was ignored.
-        /// </summary>
-        NU1014 = 1014,
-
-        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -251,6 +246,11 @@ namespace NuGet.Common
         /// Skipping project that does not support restore.
         /// </summary>
         NU1503 = 1503,
+
+        /// <summary>
+        /// A VersionOverride was specified for a PackageReference but central package management is not enabled so the value was ignored.
+        /// </summary>
+        NU1504 = 1504,
 
         /// <summary>
         /// Dependency bumped up
