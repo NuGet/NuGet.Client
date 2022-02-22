@@ -2086,8 +2086,7 @@ namespace NuGet.Commands.Test
                 string projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 string outputPath = Path.Combine(projectPath, "obj");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, new SimpleTestPackageContext(packageName, "1.0.0"));
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, new SimpleTestPackageContext(packageName, "2.0.0"));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, new SimpleTestPackageContext(packageName, "1.0.0"), new SimpleTestPackageContext(packageName, "2.0.0"));
 
                 var packageRefDependecyFoo = new LibraryDependency()
                 {
@@ -2164,8 +2163,7 @@ namespace NuGet.Commands.Test
                 string projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 string outputPath = Path.Combine(projectPath, "obj");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, new SimpleTestPackageContext(packageName, "1.0.0"));
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, new SimpleTestPackageContext(packageName, "2.0.0"));
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, new SimpleTestPackageContext(packageName, "1.0.0"), new SimpleTestPackageContext(packageName, "2.0.0"));
 
                 var packageRefDependecyFoo = new LibraryDependency()
                 {
