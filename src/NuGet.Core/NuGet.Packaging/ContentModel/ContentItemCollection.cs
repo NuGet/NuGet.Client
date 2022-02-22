@@ -268,6 +268,15 @@ namespace NuGet.ContentModel
                     var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
+                        //If the item is assembly, populate the "related files extentions property".
+                        if (contentItem.Properties.ContainsKey("assembly"))
+                        {
+                            string relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem, assets);
+                            if (relatedFileExtensionsProperty is not null)
+                            {
+                                contentItem.Properties.Add("related", relatedFileExtensionsProperty);
+                            }
+                        }
                         itemsList.Add(contentItem);
                         break;
                     }
@@ -275,6 +284,39 @@ namespace NuGet.ContentModel
             }
 
             return itemsList;
+        }
+
+        private string GetRelatedFileExtensionProperty(ContentItem contentItem, IEnumerable<Asset> assets)
+        {
+            //E.g. if path is "lib/net472/A.B.C.dll", the prefix will be "lib/net472/A.B.C."
+            string assemblyPrefix = contentItem.Path.Substring(0, contentItem.Path.LastIndexOf('.') + 1);
+
+            List<string> relatedFileExtensionList = null;
+            foreach (var asset in assets)
+            {
+                if (asset.Path is not null &&
+                    asset.Path != contentItem.Path &&
+                    asset.Path.StartsWith(assemblyPrefix, StringComparison.Ordinal))
+                {
+                    if (relatedFileExtensionList is null)
+                    {
+                        relatedFileExtensionList = new List<string>();
+                    }
+                    relatedFileExtensionList.Add(asset.Path.Substring(assemblyPrefix.Length - 1));
+                }
+            }
+
+            // If no related files found.
+            if (relatedFileExtensionList is null || !relatedFileExtensionList.Any())
+            {
+                return null;
+            }
+            else
+            {
+                relatedFileExtensionList.Sort();
+                string relatedFileExtensionsProperty = String.Join(";", relatedFileExtensionList.ToArray());
+                return relatedFileExtensionsProperty;
+            }
         }
 
         /// <summary>
