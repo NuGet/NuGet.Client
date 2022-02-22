@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var expectedTab = "All";
             var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
             var expectedDuration = TimeSpan.FromSeconds(1);
-            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration);
+            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration.TotalMilliseconds);
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -114,7 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("PMUIRefresh", lastTelemetryEvent.Name);
-            Assert.Equal(7, lastTelemetryEvent.Count);
+            Assert.Equal(8, lastTelemetryEvent.Count);
 
             var parentIdGuid = lastTelemetryEvent["ParentId"];
             Assert.NotNull(parentIdGuid);

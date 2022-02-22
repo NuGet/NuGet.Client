@@ -59,6 +59,7 @@ namespace NuGet.PackageManagement.UI
         private PRMigratorBar _migratorBar;
         private bool _missingPackageStatus;
         private bool _loadedAndInitialized = false;
+        private bool _browseTabInitialized = false;
         private bool _recommendPackages = false;
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
@@ -368,19 +369,6 @@ namespace NuGet.PackageManagement.UI
                     isUIFiltering,
                     timeSpan,
                     duration));
-        }
-
-        private void EmitLoadedEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false)
-        {
-            TelemetryActivity.EmitTelemetryEvent(
-                new PackageManagerLoadedEvent(
-                    _sessionGuid,
-                    Model.IsSolution,
-                    refreshOperationSource,
-                    status,
-                    _topPanel.Filter.ToString(),
-                    isUIFiltering,
-                    timeSpan));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
@@ -826,7 +814,7 @@ namespace NuGet.PackageManagement.UI
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             ItemFilter filterToRender = _topPanel.Filter;
-
+            var sw = Stopwatch.StartNew();
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
 
             if (useCachedPackageMetadata)
@@ -840,7 +828,6 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                var sw = Stopwatch.StartNew();
                 if (_isTransitiveDependenciesExperimentEnabled)
                 {
                     _packageList.ClearPackageLevelGrouping();
@@ -880,13 +867,16 @@ namespace NuGet.PackageManagement.UI
                     var searchResult = await searchResultTask;
                     pSearchCallback.ReportComplete(searchTask, (uint)searchResult.PackageSearchItems.Count);
                 }
+
                 sw.Stop();
-                // Needed for browse tab, before updating other tabs.
-                //if (_topPanel.Filter == ItemFilter.All)
-                //{
-                //    EmitLoadedEvent(sw.Elapsed, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NotApplicable);
-                //}
-                EmitLoadedEvent(sw.Elapsed, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NotApplicable);
+
+                //Needed for browse tab only once, at initialization event emitted before it's done loading without load duration.
+                if (_topPanel.Filter == ItemFilter.All && !_browseTabInitialized)
+                {
+                    _browseTabInitialized = true;
+                    var timeSpan = GetTimeSinceLastRefreshAndRestart();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+                }
 
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
@@ -1575,11 +1565,8 @@ namespace NuGet.PackageManagement.UI
 
         private async Task ExecuteRestartSearchCommandAsync()
         {
-            var sw = Stopwatch.StartNew();
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
             await RefreshConsolidatablePackagesCountAsync();
-            sw.Stop();
-            //EmitLoadedEvent(sw.Elapsed, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable);
         }
 
         /// <summary>
