@@ -550,7 +550,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 new FileInfo(projectA.NuGetLockFileOutputPath).Exists.Should().BeFalse();
 
                 // Write expected lock file
-                var packagePath = LocalFolderUtility.GetPackagesV3(pathContext.PackageSource, NullLogger.Instance).Single().Path;
+                var packagePath = LocalFolderUtility.GetPackagesV3(pathContext.PackageSource, NullLogger.Instance, CancellationToken.None).Single().Path;
 
                 string contentHash = null;
                 using (var reader = new PackageArchiveReader(packagePath))

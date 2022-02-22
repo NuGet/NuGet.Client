@@ -50,7 +50,7 @@ namespace NuGet.CommandLine
                 if (_packagePathResolver.UseSideBySidePaths)
                 {
                     // Id.Version
-                    packages = LocalFolderUtility.GetPackagesConfigFolderPackages(Root, NullLogger.Instance, token);
+                    packages = LocalFolderUtility.GetPackagesConfigFolderPackages(Root, NullLogger.Instance);
                 }
                 else
                 {

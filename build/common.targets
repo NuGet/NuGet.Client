@@ -72,7 +72,7 @@
 
   <!-- Projects we pack become public APIs that others can use -->
   <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">
-    <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >false</UsePublicApiAnalyzer>
+    <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >true</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">

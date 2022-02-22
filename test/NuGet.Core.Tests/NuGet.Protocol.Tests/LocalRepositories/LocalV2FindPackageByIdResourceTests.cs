@@ -55,7 +55,7 @@ namespace NuGet.Protocol.Tests
                         test.PackageIdentity.Id,
                         cacheContext: null,
                         logger: NullLogger.Instance,
-                        ct: CancellationToken.None));
+                        cancellationToken: CancellationToken.None));
 
                 Assert.Equal("cacheContext", exception.ParamName);
             }
@@ -71,7 +71,7 @@ namespace NuGet.Protocol.Tests
                         test.PackageIdentity.Id,
                         test.SourceCacheContext,
                         logger: null,
-                        ct: CancellationToken.None));
+                        cancellationToken: CancellationToken.None));
 
                 Assert.Equal("logger", exception.ParamName);
             }
@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Tests
                     id: "b",
                     cacheContext: test.SourceCacheContext,
                     logger: NullLogger.Instance,
-                    ct: CancellationToken.None);
+                    cancellationToken: CancellationToken.None);
 
                 Assert.Empty(versions);
             }
