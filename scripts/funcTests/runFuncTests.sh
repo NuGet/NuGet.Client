@@ -79,8 +79,8 @@ do
 	fi
 	unset IFS
 
-	echo "cli/dotnet-install.sh --install-dir cli --channel $Channel --quality daily --version $Version -nopath"
-    cli/dotnet-install.sh --install-dir cli --channel $Channel --quality daily --version $Version -nopath
+	echo "cli/dotnet-install.sh --install-dir cli --channel $Channel --quality validated --version $Version -nopath"
+    cli/dotnet-install.sh --install-dir cli --channel $Channel --quality validated --version $Version -nopath
 
 	if (( $? )); then
 		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
