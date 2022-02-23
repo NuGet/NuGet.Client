@@ -223,9 +223,17 @@ namespace NuGet.Commands
                     };
                 }
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e)
             {
-                await LogWarningAsync(libraryRange.Name, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, libraryRange.Name, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, libraryRange.Name, e);
+                    throw;
+                }
             }
             return null;
         }
@@ -324,9 +332,17 @@ namespace NuGet.Commands
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources && !(e is InvalidCacheProtocolException))
+            catch (FatalProtocolException e) when (e is not InvalidCacheProtocolException)
             {
-                await LogWarningAsync(match.Name, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, match.Name, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, match.Name, e);
+                    throw;
+                }
             }
             finally
             {
@@ -413,9 +429,16 @@ namespace NuGet.Commands
                 packageDownloader.SetThrottle(_throttle);
                 packageDownloader.SetExceptionHandler(async exception =>
                 {
-                    if (exception is FatalProtocolException e && _ignoreFailedSources)
+                    if (exception is FatalProtocolException e)
                     {
-                        await LogWarningAsync(packageIdentity.Id, e);
+                        if (_ignoreFailedSources)
+                        {
+                            await LogWarningAsync(logger, packageIdentity.Id, e);
+                        }
+                        else
+                        {
+                            await LogErrorAsync(logger, packageIdentity.Id, e);
+                        }
                         return true;
                     }
 
@@ -424,9 +447,17 @@ namespace NuGet.Commands
 
                 return packageDownloader;
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e)
             {
-                await LogWarningAsync(packageIdentity.Id, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, packageIdentity.Id, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, packageIdentity.Id, e);
+                    throw;
+                }
             }
             finally
             {
@@ -554,8 +585,16 @@ namespace NuGet.Commands
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
-                await LogWarningAsync(id, e);
-                return null;
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, id, e);
+                    return null;
+                }
+                else
+                {
+                    await LogErrorAsync(logger, id, e);
+                    throw;
+                }
             }
             finally
             {
@@ -565,11 +604,19 @@ namespace NuGet.Commands
             return packageVersions;
         }
 
-        private async Task LogWarningAsync(string id, FatalProtocolException e)
+        private async Task LogWarningAsync(ILogger logger, string id, FatalProtocolException e)
         {
             if (!_ignoreWarning)
             {
-                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
+                await logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
+            }
+        }
+
+        private async Task LogErrorAsync(ILogger logger, string id, FatalProtocolException e)
+        {
+            if (!_ignoreWarning)
+            {
+                await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1301, e.Message, id));
             }
         }
     }

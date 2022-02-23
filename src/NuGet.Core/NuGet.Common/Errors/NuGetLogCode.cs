@@ -208,6 +208,11 @@ namespace NuGet.Common
         NU1213 = 1213,
 
         /// <summary>
+        /// Package Source is unreachable.
+        /// </summary>
+        NU1301 = 1301,
+
+        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,
