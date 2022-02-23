@@ -198,6 +198,7 @@ namespace NuGet.PackageManagement.UI
                     case Key.Down:
                     case Key.Up:
                     case Key.Space:
+                    case Key.Tab:
                         e.Handled = true;
                         break;
                     default:
