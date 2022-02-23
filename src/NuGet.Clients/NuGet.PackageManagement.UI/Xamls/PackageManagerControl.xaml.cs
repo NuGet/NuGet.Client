@@ -59,7 +59,6 @@ namespace NuGet.PackageManagement.UI
         private PRMigratorBar _migratorBar;
         private bool _missingPackageStatus;
         private bool _loadedAndInitialized = false;
-        private bool _browseTabInitialized = false;
         private bool _recommendPackages = false;
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
@@ -812,9 +811,9 @@ namespace NuGet.PackageManagement.UI
         internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            ItemFilter filterToRender = _topPanel.Filter;
             var sw = Stopwatch.StartNew();
+            ItemFilter filterToRender = _topPanel.Filter;
+
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
 
             if (useCachedPackageMetadata)
@@ -869,14 +868,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 sw.Stop();
-
-                //Needed for browse tab only once, at initialization event emitted before it's done loading without load duration.
-                if (_topPanel.Filter == ItemFilter.All && !_browseTabInitialized)
-                {
-                    _browseTabInitialized = true;
-                    var timeSpan = GetTimeSinceLastRefreshAndRestart();
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
-                }
+                EmitRefreshEvent(TimeSpan.Zero, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
 
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
@@ -922,6 +914,7 @@ namespace NuGet.PackageManagement.UI
         {
             // clear existing caches
             Model.CachedUpdates = null;
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             _topPanel.UpdateWarningStatusOnInstalledTab(installedVulnerablePackagesCount: 0, installedDeprecatedPackagesCount: 0);
@@ -1143,15 +1136,13 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    var sw = Stopwatch.StartNew();
                     if (_isTransitiveDependenciesExperimentEnabled)
                     {
                         _packageList.ClearPackageLevelGrouping();
                     }
 
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                    sw.Stop();
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
