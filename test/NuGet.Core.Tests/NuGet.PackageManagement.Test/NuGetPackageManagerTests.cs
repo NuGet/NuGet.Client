@@ -7101,6 +7101,7 @@ namespace NuGet.Test
                         packageIdentity: null,
                         primarySources,
                         nugetProjectContext,
+                        versionRange: null,
                         CancellationToken.None);
                 });
 

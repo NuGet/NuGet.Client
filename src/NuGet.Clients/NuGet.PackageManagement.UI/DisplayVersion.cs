@@ -36,6 +36,19 @@ namespace NuGet.PackageManagement.UI
             bool autoReferenced = false,
             bool isDeprecated = false,
             string versionFormat = "N")
+            : this(range, version: null, additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, isDeprecated, versionFormat)
+        {
+        }
+
+        public DisplayVersion(
+            VersionRange range,
+            NuGetVersion version,
+            string additionalInfo,
+            bool isValidVersion = true,
+            bool isCurrentInstalled = false,
+            bool autoReferenced = false,
+            bool isDeprecated = false,
+            string versionFormat = "N")
         {
             if (versionFormat == null)
             {
@@ -48,13 +61,13 @@ namespace NuGet.PackageManagement.UI
 
             IsValidVersion = isValidVersion;
 
-            Version = range.MinVersion;
+            Version = version ?? range.MinVersion;
             IsCurrentInstalled = isCurrentInstalled;
             AutoReferenced = autoReferenced;
             IsDeprecated = isDeprecated;
 
             // Display a single version if the range is locked
-            if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
+            if (range.OriginalString == null && range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
                 var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
 

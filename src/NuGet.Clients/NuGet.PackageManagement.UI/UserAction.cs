@@ -24,6 +24,12 @@ namespace NuGet.PackageManagement.UI
             ActiveTab = activeTab;
         }
 
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, VersionRange versionRange)
+            : this(action, packageId, packageVersion)
+        {
+            VersionRange = versionRange;
+        }
+
         public NuGetProjectActionType Action { get; private set; }
         public bool IsSolutionLevel { get; private set; }
         public ContractsItemFilter ActiveTab { get; private set; }
@@ -40,6 +46,16 @@ namespace NuGet.PackageManagement.UI
             return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel, activeTab);
         }
 
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange)
+        {
+            if (packageVersion == null && versionRange == null)
+            {
+                throw new ArgumentNullException(nameof(packageVersion));
+            }
+
+            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, versionRange);
+        }
+        
         public static UserAction CreateUnInstallAction(string packageId, bool isSolutionLevel, ContractsItemFilter activeTab)
         {
             return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, isSolutionLevel, activeTab);
