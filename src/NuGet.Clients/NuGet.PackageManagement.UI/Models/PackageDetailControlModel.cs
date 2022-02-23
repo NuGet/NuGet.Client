@@ -29,13 +29,6 @@ namespace NuGet.PackageManagement.UI
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
-
-            VersionsView = new CollectionViewSource() { Source = Versions }.View;
-
-            if (IsProjectPackageReference)
-            {
-                VersionsView.Filter += VersionsFilter;
-            }
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -46,6 +39,15 @@ namespace NuGet.PackageManagement.UI
             // Set InstalledVersion before fetching versions list.
             InstalledVersion = searchResultPackage.InstalledVersion;
             InstalledVersionRange = searchResultPackage.AllowedVersions;
+
+            VersionsView = new CollectionViewSource() { Source = Versions }.View;
+
+            if (IsProjectPackageReference)
+            {
+                VersionsView.Filter += VersionsFilter;
+            }
+
+            OnPropertyChanged(nameof(VersionsView));
 
             await base.SetCurrentPackageAsync(searchResultPackage, filter, getPackageItemViewModel);
 
@@ -161,13 +163,16 @@ namespace NuGet.PackageManagement.UI
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
+            // Add installed version
             if (_nugetProjects.Any() && installedDependency != null && installedDependency.VersionRange != null)
             {
                 if (_nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
                     VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
                     NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
-                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+                    var deprecationInfo = allVersionsAllowed.FirstOrDefault(v => v.version == bestVersion).isDeprecated;
+                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null, isDeprecated: deprecationInfo);
+
                     _versions.Add(displayVersion);
                 }
                 else
@@ -198,7 +203,7 @@ namespace NuGet.PackageManagement.UI
             IsBeforeNullSeparator = _versions.Count == 1;
 
             // add a separator
-            if (_versions.Count > 1)
+            if (_versions.Count > 0)
             {
                 _versions.Add(null);
             }
