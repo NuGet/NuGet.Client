@@ -608,12 +608,12 @@ namespace NuGet.Protocol.Tests
 
             // Arrange
             using CancellationTokenSource cts = new();
-            var localRepository = new DelayedFindLocalPackagesResourceV2(pathContext.PackageSource, 2000);
+            var slowLocalRepository = new DelayedFindLocalPackagesResourceV2(pathContext.PackageSource, 2000);
 
             // Act
             Task delayTask = Task.Delay(TimeSpan.FromMilliseconds(200), cts.Token);
-            LocalPackageSearchResource resource = new LocalPackageSearchResource(localRepository);
-            Task searchTask = resource.SearchAsync(searchTerm: "", filters: null, skip: 0, take: 1, log: NullLogger.Instance, token: cts.Token);
+            LocalPackageSearchResource slowResource = new LocalPackageSearchResource(slowLocalRepository);
+            Task searchTask = slowResource.SearchAsync(searchTerm: "", filters: null, skip: 0, take: 1, log: NullLogger.Instance, token: cts.Token);
 
             // Assert
             // To simulate real world scenario I added delayed cancellation logic check in DelayedFindLocalPackagesResourceV2 localRepository.

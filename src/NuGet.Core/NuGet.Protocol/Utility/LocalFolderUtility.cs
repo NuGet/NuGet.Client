@@ -70,7 +70,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            return GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, log, ct));
+            return GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, log, ct), ct);
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            foreach (var package in GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, id, log, ct)))
+            foreach (var package in GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, id, log, ct), ct))
             {
                 // Filter out any packages that were incorrectly identified
                 // Ex: id: packageA.1 version: 1.0 -> packageA.1.1.0 -> packageA 1.1.0
@@ -1180,8 +1180,9 @@ namespace NuGet.Protocol
         /// <summary>
         /// Path -> LocalPackageInfo
         /// </summary>
-        private static IEnumerable<LocalPackageInfo> GetPackagesFromNupkgs(IEnumerable<FileInfo> files)
+        private static IEnumerable<LocalPackageInfo> GetPackagesFromNupkgs(IEnumerable<FileInfo> files, CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
             return files.Select(file => GetPackageFromNupkg(file));
         }
 
