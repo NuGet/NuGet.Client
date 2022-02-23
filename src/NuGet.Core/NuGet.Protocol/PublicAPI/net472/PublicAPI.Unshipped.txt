@@ -1,1 +1,8 @@
-static NuGet.Protocol.LocalFolderUtility.GetPackagesConfigFolderPackages(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetNupkgsFromFlatFolder(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> System.Collections.Generic.IEnumerable<System.IO.FileInfo>
+static NuGet.Protocol.LocalFolderUtility.GetNupkgsFromFlatFolder(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> System.Collections.Generic.IEnumerable<System.IO.FileInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackageV2(string root, NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> NuGet.Protocol.LocalPackageInfo
+static NuGet.Protocol.LocalFolderUtility.GetPackageV2(string root, string id, NuGet.Versioning.NuGetVersion version, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> NuGet.Protocol.LocalPackageInfo
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken ct) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>

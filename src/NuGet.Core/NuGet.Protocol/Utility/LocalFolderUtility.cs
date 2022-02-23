@@ -47,6 +47,17 @@ namespace NuGet.Protocol
         /// Retrieve all packages from a folder and one level deep.
         /// </summary>
         /// <param name="root">Nupkg folder directory path.</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, ILogger log)
+        {
+            return GetPackagesV2(root, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Retrieve all packages from a folder and one level deep.
+        /// </summary>
+        /// <param name="root">Folder path</param>
+        /// <param name="log">Logger</param>
+        /// <param name="ct">Cancellation token</param>
         public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, ILogger log, CancellationToken ct)
         {
             if (root == null)
@@ -67,6 +78,17 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Nupkg folder directory path.</param>
         /// <param name="id">Package id.</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, string id, ILogger log)
+        {
+            return GetPackagesV2(root, id, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Retrieve all packages of an id from a v2 folder.
+        /// </summary>
+        /// <param name="root">Nupkg folder directory path.</param>
+        /// <param name="id">Package id.</param>
+        /// <param name="ct">Cancellation token</param>
         public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, string id, ILogger log, CancellationToken ct)
         {
             if (root == null)
@@ -103,6 +125,18 @@ namespace NuGet.Protocol
         /// <param name="root">Nupkg folder directory path.</param>
         /// <param name="id">Package id.</param>
         /// <param name="version">Package version.</param>
+        public static LocalPackageInfo GetPackageV2(string root, string id, NuGetVersion version, ILogger log)
+        {
+            return GetPackageV2(root, id, version, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Retrieve all packages of an id from a v2 folder.
+        /// </summary>
+        /// <param name="root">Nupkg folder directory path.</param>
+        /// <param name="id">Package id.</param>
+        /// <param name="version">Package version.</param>
+        /// <param name="ct">Cancellation token</param>
         public static LocalPackageInfo GetPackageV2(string root, string id, NuGetVersion version, ILogger log, CancellationToken ct)
         {
             if (root == null)
@@ -133,6 +167,17 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Nupkg folder directory path.</param>
         /// <param name="identity">Package id and version.</param>
+        public static LocalPackageInfo GetPackageV2(string root, PackageIdentity identity, ILogger log)
+        {
+            return GetPackageV2(root, identity, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Retrieve all packages of an id from a v2 folder.
+        /// </summary>
+        /// <param name="root">Nupkg folder directory path.</param>
+        /// <param name="identity">Package id and version.</param>
+        /// /// <param name="ct">Cancellation token</param>
         public static LocalPackageInfo GetPackageV2(string root, PackageIdentity identity, ILogger log, CancellationToken ct)
         {
             if (root == null)
@@ -641,6 +686,16 @@ namespace NuGet.Protocol
         /// Discover all nupkgs from a v2 local folder.
         /// </summary>
         /// <param name="root">Folder root.</param>
+        public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, ILogger log)
+        {
+            return GetNupkgsFromFlatFolder(root, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Discover all nupkgs from a v2 local folder.
+        /// </summary>
+        /// <param name="root">Folder root.</param>
+        /// <param name="ct">Cancellation token</param>
         public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, ILogger log, CancellationToken ct)
         {
             if (root == null)
@@ -841,6 +896,16 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Folder root.</param>
         /// <param name="id">Package id file name prefix.</param>
+        public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, string id, ILogger log)
+        {
+            return GetNupkgsFromFlatFolder(root, id, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Discover nupkgs from a v2 local folder.
+        /// </summary>
+        /// <param name="root">Folder root.</param>
+        /// <param name="ct">Cancellation token</param>
         public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, string id, ILogger log, CancellationToken ct)
         {
             if (root == null)
@@ -873,6 +938,16 @@ namespace NuGet.Protocol
         /// Discover all nupkgs from a v3 folder.
         /// </summary>
         /// <param name="root">Folder root.</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, ILogger log)
+        {
+            return GetPackagesV3(root, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Discover all nupkgs from a v3 folder.
+        /// </summary>
+        /// <param name="root">Folder root.</param>
+        /// <param name="ct">Cancellation token</param>
         public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, ILogger log, CancellationToken ct)
         {
             if (root == null)
@@ -913,6 +988,17 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Folder root.</param>
         /// <param name="id">Package id or package id prefix.</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, string id, ILogger log)
+        {
+            return GetPackagesV3(root, id, log, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Discover nupkgs from a v3 local folder.
+        /// </summary>
+        /// <param name="root">Folder root.</param>
+        /// <param name="id">Package id or package id prefix.</param>
+        /// <param name="ct">Cancellation token</param>
         public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, string id, ILogger log, CancellationToken ct)
         {
             if (root == null)
