@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -67,7 +66,7 @@ namespace NuGet.CommandLine.Test
 
                         var id = parts[parts.Length - 2];
 
-                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance, CancellationToken.None))
+                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance))
                         {
                             array.Add(pkg.Identity.Version.ToNormalizedString());
                         }
@@ -109,7 +108,7 @@ namespace NuGet.CommandLine.Test
                 else if (path.StartsWith("/reg/") && path.EndsWith("/index.json"))
                 {
                     var id = parts[parts.Length - 2];
-                    var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance, CancellationToken.None);
+                    var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance);
 
                     if (packages.Any())
                     {
