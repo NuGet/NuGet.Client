@@ -265,6 +265,8 @@ namespace NuGet.SolutionRestoreManager
                     _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                     _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
 
+                    _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(false);
+
                     await packageSourceTelemetry.SendTelemetryAsync();
 
                     stopWatch.Stop();
@@ -668,6 +670,10 @@ namespace NuGet.SolutionRestoreManager
                 // So, we just check for them, and report them as warning(s) on the error list window
                 await _logger.RunWithProgressAsync(
                     (_, __, ___) => CheckForMissingPackagesAsync(packages),
+                    token);
+
+                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
+                    solutionDirectory,
                     token);
             }
         }

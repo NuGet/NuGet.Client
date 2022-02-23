@@ -32,7 +32,18 @@ namespace NuGet.PackageManagement
         public event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
         public event EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent;
 
-        public event EventHandler<AssetsFileMissingStatusEventsArgs> AssetsFileMissingStatusChanged;
+        private event AssetsFileMissingStatusChanged _assetsFileMissingStatusChanged;
+        public event AssetsFileMissingStatusChanged AssetsFileMissingStatusChanged
+        {
+            add
+            {
+                _assetsFileMissingStatusChanged += value;
+            }
+            remove
+            {
+                _assetsFileMissingStatusChanged -= value;
+            }
+        }
 
         public PackageRestoreManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
@@ -80,22 +91,25 @@ namespace NuGet.PackageManagement
             return false;
         }
 
-        public virtual async Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, string projectId, CancellationToken token)
+        public virtual void RaiseAssetsFileMissingEventForProjectAsync(bool isMissing)
         {
-            var isMissing = false;
-            if (!string.IsNullOrEmpty(solutionDirectory) && !string.IsNullOrEmpty(projectId))
+            if (_assetsFileMissingStatusChanged != null)
             {
-                isMissing = await GetMissingAssetsFileStatusAsync(projectId);
+                foreach (var handler in _assetsFileMissingStatusChanged.GetInvocationList())
+                {
+                    try
+                    {
+                        handler.DynamicInvoke(isMissing);
+                    }
+                    catch { }
+                }
             }
-
-            AssetsFileMissingStatusChanged?.Invoke(this, new AssetsFileMissingStatusEventsArgs(isMissing));
         }
 
         // A synchronous method called during the solution closed event. This is done to avoid needless thread switching
         protected void ClearMissingEventForSolution()
         {
             PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(packagesMissing: false));
-            AssetsFileMissingStatusChanged?.Invoke(this, new AssetsFileMissingStatusEventsArgs(assetsFileMissing: false));
         }
 
         /// <summary>

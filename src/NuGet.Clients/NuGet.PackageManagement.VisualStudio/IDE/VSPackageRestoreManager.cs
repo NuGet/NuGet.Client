@@ -70,7 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 await TaskScheduler.Default;
 
                 await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                await RaiseAssetsFileMissingEventForSolutionAsync(solutionDirectory, e.NuGetProject.ToString(), CancellationToken.None);
             })
             .PostOnFailure(nameof(VSPackageRestoreManager), nameof(OnNuGetProjectAdded));
         }

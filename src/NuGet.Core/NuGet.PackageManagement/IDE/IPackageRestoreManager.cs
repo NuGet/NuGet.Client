@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Occurs when it is detected that the assets file is missing.
         /// </summary>
-        event EventHandler<AssetsFileMissingStatusEventsArgs> AssetsFileMissingStatusChanged;
+        event AssetsFileMissingStatusChanged AssetsFileMissingStatusChanged;
 
         /// <summary>
         /// PackageRestoredEvent which is raised after a package is restored.
@@ -59,13 +59,17 @@ namespace NuGet.PackageManagement
         Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
-        /// Checks the current solution if there is a missing assets file.
+        /// Checks if something is listening to the event of missing assets and change the status
         /// </summary>
-        /// <param name="solutionDirectory">Current solution directory</param>
-        /// <param name="nuGetProjectContext"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        Task RaiseAssetsFileMissingEventForSolutionAsync(string solutionDirectory, string nuGetProjectContext, CancellationToken token);
+        /// <param name="isMissing"></param>
+        void RaiseAssetsFileMissingEventForProjectAsync(bool isMissing);
+
+        /// <summary>
+        /// Checks if the project is missing an assets file
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns>True if it the assets file is missing</returns>
+        Task<bool> GetMissingAssetsFileStatusAsync(string projectId);
 
         /// <summary>
         /// Restores the missing packages for the current solution.
@@ -91,13 +95,6 @@ namespace NuGet.PackageManagement
         Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token);
-
-        /// <summary>
-        /// Cheks if the current project is missing an assets file
-        /// </summary>
-        /// <param name="projectId"></param>
-        /// <returns>Return true if the assets file is missing</returns>
-        Task<bool> GetMissingAssetsFileStatusAsync(string projectId);
 
         /// <summary>
         /// Restores the package references if they are missing
@@ -144,6 +141,8 @@ namespace NuGet.PackageManagement
             PackageDownloadContext downloadContext,
             CancellationToken token);
     }
+
+    public delegate void AssetsFileMissingStatusChanged(bool isMissing);
 
     /// <summary>
     /// If 'Restored' is false, it means that the package was already restored
@@ -173,16 +172,6 @@ namespace NuGet.PackageManagement
         public PackagesMissingStatusEventArgs(bool packagesMissing)
         {
             PackagesMissing = packagesMissing;
-        }
-    }
-
-    public class AssetsFileMissingStatusEventsArgs : EventArgs
-    {
-        public bool AssetsFileMissing { get; private set; }
-
-        public AssetsFileMissingStatusEventsArgs(bool assetsFileMissing)
-        {
-            AssetsFileMissing = assetsFileMissing;
         }
     }
 }
