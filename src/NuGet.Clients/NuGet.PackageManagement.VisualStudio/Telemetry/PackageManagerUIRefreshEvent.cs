@@ -57,11 +57,4 @@ namespace NuGet.PackageManagement.Telemetry
         NotApplicable,
         NoOp,
     }
-
-    public enum OperationCompletion
-    {
-        NotApplicable,
-        Started,
-        Finished
-    }
 }

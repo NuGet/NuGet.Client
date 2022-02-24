@@ -796,7 +796,7 @@ namespace NuGet.PackageManagement.UI
             await PopulatePackageSourcesAsync(packageSourceMonikers, optionalSelectSourceName, cancellationToken);
         }
 
-        private async ValueTask SearchPackagesAndRefreshUpdateCountAsync(bool useCacheForUpdates, string completionTracker = null)
+        private async ValueTask SearchPackagesAndRefreshUpdateCountAsync(bool useCacheForUpdates)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -811,8 +811,7 @@ namespace NuGet.PackageManagement.UI
                 searchText: _windowSearchHost.SearchQuery.SearchString,
                 useCachedPackageMetadata: useCacheForUpdates,
                 pSearchCallback: null,
-                searchTask: null,
-                completionTracker);
+                searchTask: null);
         }
 
         public static bool IsRecommenderFlightEnabled(INuGetExperimentationService nuGetExperimentationService)
@@ -823,7 +822,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask, string completionTracker = null)
+        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var sw = Stopwatch.StartNew();
@@ -880,11 +879,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     var searchResult = await searchResultTask;
                     pSearchCallback.ReportComplete(searchTask, (uint)searchResult.PackageSearchItems.Count);
-                }
-
-                if (!string.IsNullOrEmpty(completionTracker))
-                {
-                    completionTracker = OperationCompletion.Finished.ToString();
                 }
 
                 // When not using Cache, refresh all Counts.
@@ -1159,18 +1153,9 @@ namespace NuGet.PackageManagement.UI
                         _packageList.ClearPackageLevelGrouping();
                     }
 
-                    string completionTracker = OperationCompletion.Started.ToString();
-                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true, completionTracker: completionTracker);
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
                     sw.Stop();
-
-                    if (completionTracker == OperationCompletion.Finished.ToString())
-                    {
-                        EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
-                    }
-                    else
-                    {
-                        EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
-                    }
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
 
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
