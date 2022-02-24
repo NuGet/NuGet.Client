@@ -532,8 +532,8 @@ namespace NuGet.CommandLine
                         files,
                         new[]
                         {
-                            @"lib/net45/A.dll",
-                            @"lib/net45/Link.dll"
+                            @"lib/net48/A.dll",
+                            @"lib/net48/Link.dll"
                         });
                 }
             }
