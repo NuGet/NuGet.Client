@@ -5571,7 +5571,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
    <PropertyGroup>
      <OutputType>library</OutputType>
      <OutputPath>out</OutputPath>
-     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
    </PropertyGroup>
    <ItemGroup>
      <Compile Include='B.cs' />
@@ -5662,15 +5662,15 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                         {
 
                          $"{packageName}.nuspec",
-                         $"lib/net40/{packageName}.dll",
-                         $"lib/net40/{packageName}.pdb",
+                         $"lib/net48/{packageName}.dll",
+                         $"lib/net48/{packageName}.pdb",
                          "LICENSE.txt",
                          "src/B.cs"
                         }
                         : new string[]
                         {
                          $"{packageName}.nuspec",
-                         $"lib/net40/{packageName}.pdb",
+                         $"lib/net48/{packageName}.pdb",
                          "LICENSE.txt"
                         };
                     actual = actual.Select(t => Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
