@@ -1291,8 +1291,8 @@ namespace NuGet.Protocol
             catch (Exception e) when (e is not OperationCanceledException)
             {
                 // On cancellation we bubble up exception to call stack.
-                // Otherwise return all or nothing. Break on first exception with logging in order to keep previous experience.
-                // When fails return empty array, but don't throw.
+                // Otherwise return all or nothing. If no exception return all.
+                // Break on first exception with logging in order to keep previous experience, return empty array, but don't throw.
                 log.LogWarning(e.Message);
             }
 
