@@ -860,7 +860,7 @@ namespace NuGet.Protocol
         /// Retrieve files in chunks, this helps maintain the legacy behavior of searching for
         /// certain non-normalized file names.
         /// </summary>
-        private static IEnumerable<FileInfo[]> GetNupkgsFromFlatFolderChunked(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
+        private static IEnumerable<List<FileInfo>> GetNupkgsFromFlatFolderChunked(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -883,7 +883,7 @@ namespace NuGet.Protocol
             // Search the top level directory
             var topLevel = GetNupkgsFromDirectory(root, log, cancellationToken);
 
-            if (topLevel.Length > 0)
+            if (topLevel.Count > 0)
             {
                 yield return topLevel;
             }
@@ -893,7 +893,7 @@ namespace NuGet.Protocol
             {
                 var files = GetNupkgsFromDirectory(subDirectory, log, cancellationToken);
 
-                if (files.Length > 0)
+                if (files.Count > 0)
                 {
                     yield return files;
                 }
@@ -1140,22 +1140,22 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieve directories and log exceptions that occur.
         /// </summary>
-        private static DirectoryInfo[] GetDirectoriesSafe(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
+        private static List<DirectoryInfo> GetDirectoriesSafe(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
         {
-            return CancellableEnumaration(root.EnumerateDirectories(), log, cancellationToken);
+            return CancellableEnumeration(root.EnumerateDirectories(), log, cancellationToken);
         }
 
-        private static DirectoryInfo[] GetDirectoriesSafe(DirectoryInfo root, string filter, SearchOption searchOption, ILogger log, CancellationToken cancellationToken)
+        private static List<DirectoryInfo> GetDirectoriesSafe(DirectoryInfo root, string filter, SearchOption searchOption, ILogger log, CancellationToken cancellationToken)
         {
-            return CancellableEnumaration(root.EnumerateDirectories(filter, searchOption), log, cancellationToken);
+            return CancellableEnumeration(root.EnumerateDirectories(filter, searchOption), log, cancellationToken);
         }
 
         /// <summary>
         /// Retrieve files and log exceptions that occur.
         /// </summary>
-        private static FileInfo[] GetFilesSafe(DirectoryInfo root, string filter, ILogger log, CancellationToken cancellationToken)
+        private static List<FileInfo> GetFilesSafe(DirectoryInfo root, string filter, ILogger log, CancellationToken cancellationToken)
         {
-            return CancellableEnumaration(root.EnumerateFiles(filter), log, cancellationToken);
+            return CancellableEnumeration(root.EnumerateFiles(filter), log, cancellationToken);
         }
 
         /// <summary>
@@ -1204,7 +1204,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Find all nupkgs in the top level of a directory.
         /// </summary>
-        private static FileInfo[] GetNupkgsFromDirectory(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
+        private static List<FileInfo> GetNupkgsFromDirectory(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
         {
             return GetFilesSafe(root, NupkgFilter, log, cancellationToken);
         }
@@ -1280,51 +1280,33 @@ namespace NuGet.Protocol
                 });
         }
 
-        private static T[] CancellableEnumaration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
+        private static List<T> CancellableEnumeration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
         {
             try
             {
-                // .ToArray is necessary because previously it returns Array
+                // .ToList necessary for perf concern.
                 // If enumaration happen several times then same I/O calls repeatedly called on same input, I/O calls are more expensive then memory.
-                return CancellableYieldEnumeration(enumerable, log, cancellationToken).ToArray();
+                return CancellableYieldEnumeration(enumerable, log, cancellationToken).ToList();
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
                 // On cancellation we bubble up exception to call stack.
                 // Otherwise return all or nothing. If no exception return all.
-                // Break on first exception with logging in order to keep previous experience, return empty array, but don't throw.
+                // Break on first exception with logging in order to keep previous experience, return empty List, but don't throw.
                 log.LogWarning(e.Message);
             }
 
-            return Array.Empty<T>();
+            return new List<T>();
         }
 
-        private static IEnumerable<T> CancellableYieldEnumeration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
+        static IEnumerable<T> CancellableYieldEnumeration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
         {
-            using (var enumerator = enumerable.GetEnumerator())
+            cancellationToken.ThrowIfCancellationRequested();
+
+            foreach (T item in enumerable)
             {
-                while (true)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    T ret = default;
-                    try
-                    {
-                        if (!enumerator.MoveNext())
-                        {
-                            break;
-                        }
-
-                        ret = enumerator.Current;
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
-                    yield return ret;
-                }
-
-                yield break;
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return item;
             }
         }
     }
