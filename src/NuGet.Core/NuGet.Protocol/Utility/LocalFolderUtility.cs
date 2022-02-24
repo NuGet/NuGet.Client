@@ -1286,7 +1286,7 @@ namespace NuGet.Protocol
             {
                 // .ToArray is necessary because previously it returns Array
                 // If enumaration happen several times then same I/O calls repeatedly called on same input, I/O calls are more expensive then memory.
-                return CancellableYieldEnumaration(enumerable, log, cancellationToken).ToArray();
+                return CancellableYieldEnumeration(enumerable, log, cancellationToken).ToArray();
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
@@ -1299,7 +1299,7 @@ namespace NuGet.Protocol
             return Array.Empty<T>();
         }
 
-        private static IEnumerable<T> CancellableYieldEnumaration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
+        private static IEnumerable<T> CancellableYieldEnumeration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
         {
             using (var enumerator = enumerable.GetEnumerator())
             {
