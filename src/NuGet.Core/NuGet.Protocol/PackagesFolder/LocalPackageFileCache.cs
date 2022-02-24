@@ -108,7 +108,12 @@ namespace NuGet.Protocol
             return exists;
         }
 
-        internal void UpdateLastAccessTime(string nupkgMetadataPath)
+        /// <summary>
+        /// Update the last access time of the metadata package file. This also uses
+        /// the metadata file cache for already accessed files.
+        /// </summary>
+        /// <param name="nupkgMetadataPath">metadata file path to update</param>
+        public void UpdateLastAccessTime(string nupkgMetadataPath)
         {
             var exists = _metadataFileCache.ContainsKey(nupkgMetadataPath);
             if (exists) return;

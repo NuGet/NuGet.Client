@@ -178,7 +178,7 @@ namespace NuGet.Commands
 
                     try
                     {
-                        File.SetLastAccessTimeUtc(metadataFile, DateTime.UtcNow);
+                        request.DependencyProviders.PackageFileCache.UpdateLastAccessTime(metadataFile);
                     }
                     catch(Exception ex)
                     {
