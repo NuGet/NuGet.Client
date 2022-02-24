@@ -11248,7 +11248,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 xml.Save(projectA.ProjectPath);
 
                 var directoryPackagesPropsContent =
-                   @"<Project>                    
+                   @"<Project>
                         <ItemGroup>
                             <PackageVersion Include=""X"" Version=""[1.0.0]"" />
                             <PackageVersion Include=""X"" Version=""[2.0.0]"" />
