@@ -40,8 +40,6 @@ namespace NuGet.Configuration
 
         public static readonly string FeedName = "nuget.org";
 
-        internal const string V3TrackFile = "nugetorgadd.trk";
-
         public static readonly string DefaultConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>

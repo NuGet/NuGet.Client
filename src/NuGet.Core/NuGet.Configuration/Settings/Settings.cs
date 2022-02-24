@@ -344,7 +344,7 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Loads Specific NuGet.Config file. The method only loads specific config file
+        /// Loads Specific NuGet.Config file. The method only loads specific config file 
         /// which is file <paramref name="configFileName"/>from <paramref name="root"/>.
         /// </summary>
         public static ISettings LoadSpecificSettings(string root, string configFileName)
@@ -545,41 +545,10 @@ namespace NuGet.Configuration
                     yield break;
                 }
 
-                string defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
-                bool settingsFileExists = File.Exists(defaultSettingsFilePath);
+                var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
 
-                // If the default user config NuGet.Config does not exist, we need to create it.
-                if (!settingsFileExists)
-                {
-                    if (!Directory.Exists(userSettingsDir))
-                    {
-                        Directory.CreateDirectory(userSettingsDir);
-                    }
-
-                    // Write tracking file, so that if the customer removes nuget.org as a package source
-                    // it does not come back one more time.
-                    File.WriteAllText(defaultSettingsFilePath, NuGetConstants.DefaultConfigContent);
-                    string trackFilePath = Path.Combine(userSettingsDir, NuGetConstants.V3TrackFile);
-                    File.Create(trackFilePath).Dispose();
-                }
-
+                // ReadSettings will try to create the default config file if it doesn't exist
                 SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
-
-                // Handle when some other product created nuget.config using an old version of NuGet.Core.dll or NuGet.Configuration.dll that did not
-                // automatically add nuget.org as a package source.
-                if (settingsFileExists && userSpecificSettings.IsEmpty())
-                {
-                    string trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.V3TrackFile);
-
-                    if (!File.Exists(trackFilePath))
-                    {
-                        File.Create(trackFilePath).Dispose();
-
-                        SourceItem defaultSource = new(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: "3");
-                        userSpecificSettings.AddOrUpdate(ConfigurationConstants.PackageSources, defaultSource);
-                        userSpecificSettings.SaveToDisk();
-                    }
-                }
 
                 yield return userSpecificSettings;
 
