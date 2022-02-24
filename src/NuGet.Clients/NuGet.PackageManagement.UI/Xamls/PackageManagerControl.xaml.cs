@@ -255,7 +255,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
             }
         }
 
@@ -347,12 +347,13 @@ namespace NuGet.PackageManagement.UI
             if (_isExecutingAction)
             {
                 _isRefreshRequired = true;
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp);
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
             }
             else
             {
                 await RefreshAsync();
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success);
+                TimeSpan pmuiDuration = GetPmuiDuration();
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
             }
         }
 
@@ -381,6 +382,16 @@ namespace NuGet.PackageManagement.UI
             return elapsed;
         }
 
+        private TimeSpan GetPmuiDuration()
+        {
+            TimeSpan elapsed;
+            lock (_sinceLastRefresh)
+            {
+                elapsed = _sinceLastRefresh.Elapsed;
+            }
+            return elapsed;
+        }
+
         private void InitializeFilterList(UserSettings settings)
         {
             if (settings != null)
@@ -404,11 +415,12 @@ namespace NuGet.PackageManagement.UI
             {
                 _loadedAndInitialized = true;
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success);
+                TimeSpan pmuiDuration = GetPmuiDuration();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false, 0);
             }
             await RefreshConsolidatablePackagesCountAsync();
         }
@@ -516,13 +528,15 @@ namespace NuGet.PackageManagement.UI
                 // force a new search explicitly only if active source has changed
                 if (prevSelectedItem == SelectedSource)
                 {
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable);
+                    TimeSpan pmuiDuration = GetPmuiDuration();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
                 }
                 else
                 {
                     SaveSettings();
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success);
+                    TimeSpan pmuiDuration = GetPmuiDuration();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
                 }
             }
             finally
@@ -782,7 +796,7 @@ namespace NuGet.PackageManagement.UI
             await PopulatePackageSourcesAsync(packageSourceMonikers, optionalSelectSourceName, cancellationToken);
         }
 
-        private async ValueTask SearchPackagesAndRefreshUpdateCountAsync(bool useCacheForUpdates)
+        private async ValueTask SearchPackagesAndRefreshUpdateCountAsync(bool useCacheForUpdates, string completionTracker = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -797,7 +811,8 @@ namespace NuGet.PackageManagement.UI
                 searchText: _windowSearchHost.SearchQuery.SearchString,
                 useCachedPackageMetadata: useCacheForUpdates,
                 pSearchCallback: null,
-                searchTask: null);
+                searchTask: null,
+                completionTracker);
         }
 
         public static bool IsRecommenderFlightEnabled(INuGetExperimentationService nuGetExperimentationService)
@@ -808,7 +823,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
+        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask, string completionTracker = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var sw = Stopwatch.StartNew();
@@ -867,8 +882,10 @@ namespace NuGet.PackageManagement.UI
                     pSearchCallback.ReportComplete(searchTask, (uint)searchResult.PackageSearchItems.Count);
                 }
 
-                sw.Stop();
-                EmitRefreshEvent(TimeSpan.Zero, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+                if (!string.IsNullOrEmpty(completionTracker))
+                {
+                    completionTracker = OperationCompletion.Finished.ToString();
+                }
 
                 // When not using Cache, refresh all Counts.
                 if (!useCachedPackageMetadata)
@@ -1112,7 +1129,8 @@ namespace NuGet.PackageManagement.UI
         {
             SaveSettings();
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
+            TimeSpan pmuiDuration = GetPmuiDuration();
+            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
         }
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
@@ -1121,7 +1139,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.ResetLoadingStatusIndicator();
-
+                var sw = Stopwatch.StartNew();
                 // Collapse the Update controls when the current tab is not "Updates".
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
@@ -1141,8 +1159,19 @@ namespace NuGet.PackageManagement.UI
                         _packageList.ClearPackageLevelGrouping();
                     }
 
-                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false);
+                    string completionTracker = OperationCompletion.Started.ToString();
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true, completionTracker: completionTracker);
+                    sw.Stop();
+
+                    if (completionTracker == OperationCompletion.Finished.ToString())
+                    {
+                        EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+                    }
+                    else
+                    {
+                        EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
+                    }
+
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(Filter_SelectionChanged));
             }
@@ -1184,11 +1213,11 @@ namespace NuGet.PackageManagement.UI
 
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
-            EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success);
-
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                TimeSpan pmuiDuration = GetPmuiDuration();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
             }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
         }
 
@@ -1214,10 +1243,12 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
-            EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success);
+            TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
+                TimeSpan pmuiDuration = GetPmuiDuration();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ClearSearch));
         }
 
@@ -1450,7 +1481,8 @@ namespace NuGet.PackageManagement.UI
                     {
                         var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
                         await RefreshAsync();
-                        EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success);
+                        TimeSpan pmuiDuration = GetPmuiDuration();
+                        EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
                         _isRefreshRequired = false;
                     }
 
