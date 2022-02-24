@@ -9,6 +9,7 @@
       <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
       <TargetName>$(MSBuildProjectName)</TargetName>
       <OutputPath>$(VsixPublishDestination)</OutputPath>
+      <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
