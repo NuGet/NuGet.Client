@@ -57,8 +57,8 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Folder path</param>
         /// <param name="log">Logger</param>
-        /// <param name="ct">Cancellation token</param>
-        public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, ILogger log, CancellationToken ct)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -70,7 +70,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            return GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, log, ct), ct);
+            return GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, log, cancellationToken), cancellationToken);
         }
 
         /// <summary>
@@ -88,8 +88,8 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Nupkg folder directory path.</param>
         /// <param name="id">Package id.</param>
-        /// <param name="ct">Cancellation token</param>
-        public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, string id, ILogger log, CancellationToken ct)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV2(string root, string id, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -106,7 +106,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            foreach (var package in GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, id, log, ct), ct))
+            foreach (var package in GetPackagesFromNupkgs(GetNupkgsFromFlatFolder(root, id, log, cancellationToken), cancellationToken))
             {
                 // Filter out any packages that were incorrectly identified
                 // Ex: id: packageA.1 version: 1.0 -> packageA.1.1.0 -> packageA 1.1.0
@@ -136,8 +136,8 @@ namespace NuGet.Protocol
         /// <param name="root">Nupkg folder directory path.</param>
         /// <param name="id">Package id.</param>
         /// <param name="version">Package version.</param>
-        /// <param name="ct">Cancellation token</param>
-        public static LocalPackageInfo GetPackageV2(string root, string id, NuGetVersion version, ILogger log, CancellationToken ct)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static LocalPackageInfo GetPackageV2(string root, string id, NuGetVersion version, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -159,7 +159,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            return GetPackageV2(root, new PackageIdentity(id, version), log, ct);
+            return GetPackageV2(root, new PackageIdentity(id, version), log, cancellationToken);
         }
 
         /// <summary>
@@ -177,8 +177,8 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Nupkg folder directory path.</param>
         /// <param name="identity">Package id and version.</param>
-        /// /// <param name="ct">Cancellation token</param>
-        public static LocalPackageInfo GetPackageV2(string root, PackageIdentity identity, ILogger log, CancellationToken ct)
+        /// /// <param name="cancellationToken">Cancellation token</param>
+        public static LocalPackageInfo GetPackageV2(string root, PackageIdentity identity, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -202,7 +202,7 @@ namespace NuGet.Protocol
             // If multiple packages are found in the same directory that match (ex: 1.0, 1.0.0.0)
             // then favor the exact non-normalized match. If no exact match is found take the first
             // using the file system sort order. This is to match the legacy nuget 2.8.x behavior.
-            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirInfo, log, ct))
+            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirInfo, log, cancellationToken))
             {
                 LocalPackageInfo fallbackMatch = null;
 
@@ -262,7 +262,7 @@ namespace NuGet.Protocol
             // Find the matching nupkg for each sub directory.
             if (rootDirInfo.Exists)
             {
-                foreach (var dir in GetDirectoriesSafe(rootDirInfo, log))
+                foreach (var dir in GetDirectoriesSafe(rootDirInfo, log, CancellationToken.None))
                 {
                     var package = GetPackagesConfigFolderPackage(dir, log);
 
@@ -307,7 +307,7 @@ namespace NuGet.Protocol
             {
                 var searchPattern = GetPackagesConfigFolderSearchPattern(id);
 
-                foreach (var dir in GetDirectoriesSafe(rootDirInfo, searchPattern, SearchOption.TopDirectoryOnly, log))
+                foreach (var dir in GetDirectoriesSafe(rootDirInfo, searchPattern, SearchOption.TopDirectoryOnly, log, CancellationToken.None))
                 {
                     // Check the id and version of the path, if the id matches and the version
                     // is valid this will be non-null;
@@ -374,7 +374,7 @@ namespace NuGet.Protocol
             {
                 var searchPattern = GetPackagesConfigFolderSearchPattern(identity.Id);
 
-                foreach (var dir in GetDirectoriesSafe(rootDirInfo, searchPattern, SearchOption.TopDirectoryOnly, log))
+                foreach (var dir in GetDirectoriesSafe(rootDirInfo, searchPattern, SearchOption.TopDirectoryOnly, log, CancellationToken.None))
                 {
                     // Check the id and version of the path, if the id matches and the version
                     // is valid this will be non-null;
@@ -695,8 +695,8 @@ namespace NuGet.Protocol
         /// Discover all nupkgs from a v2 local folder.
         /// </summary>
         /// <param name="root">Folder root.</param>
-        /// <param name="ct">Cancellation token</param>
-        public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, ILogger log, CancellationToken ct)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -712,7 +712,7 @@ namespace NuGet.Protocol
             DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
             // Return all directory file list chunks in a flat list
-            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirectoryInfo, log, ct))
+            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirectoryInfo, log, cancellationToken))
             {
                 foreach (var file in directoryList)
                 {
@@ -847,7 +847,7 @@ namespace NuGet.Protocol
         /// Retrieve files in chunks, this helps maintain the legacy behavior of searching for
         /// certain non-normalized file names.
         /// </summary>
-        private static IEnumerable<FileInfo[]> GetNupkgsFromFlatFolderChunked(DirectoryInfo root, ILogger log, CancellationToken token)
+        private static IEnumerable<FileInfo[]> GetNupkgsFromFlatFolderChunked(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -865,10 +865,10 @@ namespace NuGet.Protocol
                 yield break;
             }
 
-            token.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Search the top level directory
-            var topLevel = GetNupkgsFromDirectory(root, log);
+            var topLevel = GetNupkgsFromDirectory(root, log, cancellationToken).ToArray();
 
             if (topLevel.Length > 0)
             {
@@ -876,11 +876,9 @@ namespace NuGet.Protocol
             }
 
             // Search all sub directories
-            foreach (var subDirectory in GetDirectoriesSafe(root, log))
+            foreach (var subDirectory in GetDirectoriesSafe(root, log, cancellationToken))
             {
-                token.ThrowIfCancellationRequested();
-
-                var files = GetNupkgsFromDirectory(subDirectory, log);
+                var files = GetNupkgsFromDirectory(subDirectory, log, cancellationToken).ToArray();
 
                 if (files.Length > 0)
                 {
@@ -905,8 +903,8 @@ namespace NuGet.Protocol
         /// Discover nupkgs from a v2 local folder.
         /// </summary>
         /// <param name="root">Folder root.</param>
-        /// <param name="ct">Cancellation token</param>
-        public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, string id, ILogger log, CancellationToken ct)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static IEnumerable<FileInfo> GetNupkgsFromFlatFolder(string root, string id, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -923,7 +921,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            foreach (var path in GetNupkgsFromFlatFolder(root, log, ct))
+            foreach (var path in GetNupkgsFromFlatFolder(root, log, cancellationToken))
             {
                 if (IsPossiblePackageMatch(path, id))
                 {
@@ -947,8 +945,8 @@ namespace NuGet.Protocol
         /// Discover all nupkgs from a v3 folder.
         /// </summary>
         /// <param name="root">Folder root.</param>
-        /// <param name="ct">Cancellation token</param>
-        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, ILogger log, CancellationToken ct)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -960,7 +958,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             // Validate teh root path
             DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
@@ -971,10 +969,9 @@ namespace NuGet.Protocol
             }
 
             // Match all nupkgs in the folder
-            foreach (var idPath in GetDirectoriesSafe(rootDirectoryInfo, log))
+            foreach (var idPath in GetDirectoriesSafe(rootDirectoryInfo, log, cancellationToken))
             {
-                ct.ThrowIfCancellationRequested();
-                foreach (var nupkg in GetPackagesV3(root, id: idPath.Name, log: log, ct: ct))
+                foreach (var nupkg in GetPackagesV3(root, id: idPath.Name, log: log, cancellationToken: cancellationToken))
                 {
                     yield return nupkg;
                 }
@@ -998,8 +995,8 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="root">Folder root.</param>
         /// <param name="id">Package id or package id prefix.</param>
-        /// <param name="ct">Cancellation token</param>
-        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, string id, ILogger log, CancellationToken ct)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesV3(string root, string id, ILogger log, CancellationToken cancellationToken)
         {
             if (root == null)
             {
@@ -1016,7 +1013,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             // Check for package files one level deep.
             DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
@@ -1028,10 +1025,8 @@ namespace NuGet.Protocol
                 yield break;
             }
 
-            foreach (var versionDir in GetDirectoriesSafe(idRoot, log))
+            foreach (var versionDir in GetDirectoriesSafe(idRoot, log, cancellationToken))
             {
-                ct.ThrowIfCancellationRequested();
-
                 var package = GetPackageV3(root, id, versionDir.Name, log);
 
                 if (package != null)
@@ -1132,57 +1127,33 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieve directories and log exceptions that occur.
         /// </summary>
-        private static DirectoryInfo[] GetDirectoriesSafe(DirectoryInfo root, ILogger log)
+        private static IEnumerable<DirectoryInfo> GetDirectoriesSafe(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
         {
-            try
-            {
-                return root.GetDirectories();
-            }
-            catch (Exception e)
-            {
-                log.LogWarning(e.Message);
-            }
-
-            return Array.Empty<DirectoryInfo>();
+            IEnumerator<DirectoryInfo> directoryEnumerator = root.EnumerateDirectories().GetEnumerator();
+            return CancellableYieldEnumaration(directoryEnumerator, log, cancellationToken);
         }
 
-        private static DirectoryInfo[] GetDirectoriesSafe(DirectoryInfo root, string filter, SearchOption searchOption, ILogger log)
+        private static IEnumerable<DirectoryInfo> GetDirectoriesSafe(DirectoryInfo root, string filter, SearchOption searchOption, ILogger log, CancellationToken cancellationToken)
         {
-            try
-            {
-                return root.GetDirectories(filter, searchOption);
-            }
-            catch (Exception e)
-            {
-                log.LogWarning(e.Message);
-            }
-
-            return Array.Empty<DirectoryInfo>();
+            IEnumerator<DirectoryInfo> directoryEnumerator = root.EnumerateDirectories(filter, searchOption).GetEnumerator();
+            return CancellableYieldEnumaration(directoryEnumerator, log, cancellationToken);
         }
 
         /// <summary>
         /// Retrieve files and log exceptions that occur.
         /// </summary>
-        private static FileInfo[] GetFilesSafe(DirectoryInfo root, string filter, ILogger log)
+        private static IEnumerable<FileInfo> GetFilesSafe(DirectoryInfo root, string filter, ILogger log, CancellationToken cancellationToken)
         {
-            try
-            {
-                return root.GetFiles(filter);
-            }
-            catch (Exception e)
-            {
-                log.LogWarning(e.Message);
-            }
-
-            return Array.Empty<FileInfo>();
+            IEnumerator<FileInfo> fileEnumerator = root.EnumerateFiles(filter).GetEnumerator();
+            return CancellableYieldEnumaration(fileEnumerator, log, cancellationToken);
         }
 
         /// <summary>
         /// Path -> LocalPackageInfo
         /// </summary>
-        private static IEnumerable<LocalPackageInfo> GetPackagesFromNupkgs(IEnumerable<FileInfo> files, CancellationToken ct)
+        private static IEnumerable<LocalPackageInfo> GetPackagesFromNupkgs(IEnumerable<FileInfo> files, CancellationToken cancellationToken)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             return files.Select(file => GetPackageFromNupkg(file));
         }
 
@@ -1223,9 +1194,9 @@ namespace NuGet.Protocol
         /// <summary>
         /// Find all nupkgs in the top level of a directory.
         /// </summary>
-        private static FileInfo[] GetNupkgsFromDirectory(DirectoryInfo root, ILogger log)
+        private static IEnumerable<FileInfo> GetNupkgsFromDirectory(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
         {
-            return GetFilesSafe(root, NupkgFilter, log);
+            return GetFilesSafe(root, NupkgFilter, log, cancellationToken);
         }
 
         private static LocalPackageInfo GetPackageV3(string root, string id, string version, ILogger log)
@@ -1297,6 +1268,34 @@ namespace NuGet.Protocol
                         }
                     }
                 });
+        }
+
+        private static IEnumerable<T> CancellableYieldEnumaration<T>(IEnumerator<T> enumerator, ILogger log, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                T ret = default;
+                try
+                {
+                    if (!enumerator.MoveNext())
+                    {
+                        break;
+                    }
+
+                    ret = enumerator.Current;
+                }
+                catch (Exception e)
+                {
+                    // Break on first exception with logging without rethrowing in order to keep previous experience.
+                    log.LogWarning(e.Message);
+                    break;
+                }
+                yield return ret;
+            }
+
+            yield break;
         }
     }
 }

@@ -22,18 +22,15 @@ namespace NuGet.Protocol.Tests.Plugins.Helpers
             : this(root: root, delay: null)
         { }
 
-        public override IEnumerable<LocalPackageInfo> GetPackages(ILogger logger, CancellationToken token)
+        public override IEnumerable<LocalPackageInfo> GetPackages(ILogger logger, CancellationToken cancellationToken)
         {
-            token.ThrowIfCancellationRequested();
-
-            var packages = LocalFolderUtility.GetPackagesV2(Root, logger, token);
-
-            if(_delay.HasValue)
+            if (_delay.HasValue)
             {
                 // intentional delay
                 Thread.Sleep(_delay.Value);
-                token.ThrowIfCancellationRequested();
             }
+
+            var packages = LocalFolderUtility.GetPackagesV2(Root, logger, cancellationToken);
 
             // Filter out any duplicates that may appear in the folder multiple times.
             return LocalFolderUtility.GetDistinctPackages(packages);
