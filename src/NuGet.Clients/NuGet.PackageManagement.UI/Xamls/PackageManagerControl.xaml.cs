@@ -343,6 +343,7 @@ namespace NuGet.PackageManagement.UI
 
         private async ValueTask RefreshWhenNotExecutingActionAsync(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
         {
+            var sw = Stopwatch.StartNew();
             // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
             if (_isExecutingAction)
             {
@@ -352,8 +353,8 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 await RefreshAsync();
-                TimeSpan pmuiDuration = GetPmuiDuration();
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
+                sw.Stop();
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
             }
         }
 
@@ -382,16 +383,6 @@ namespace NuGet.PackageManagement.UI
             return elapsed;
         }
 
-        private TimeSpan GetPmuiDuration()
-        {
-            TimeSpan elapsed;
-            lock (_sinceLastRefresh)
-            {
-                elapsed = _sinceLastRefresh.Elapsed;
-            }
-            return elapsed;
-        }
-
         private void InitializeFilterList(UserSettings settings)
         {
             if (settings != null)
@@ -409,14 +400,15 @@ namespace NuGet.PackageManagement.UI
         private async Task PackageManagerLoadedAsync()
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            var sw = Stopwatch.StartNew();
             // Do not trigger a refresh if this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
             if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                TimeSpan pmuiDuration = GetPmuiDuration();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
+                sw.Stop();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
             }
             else
             {
@@ -517,6 +509,7 @@ namespace NuGet.PackageManagement.UI
         {
             try
             {
+                var sw = Stopwatch.StartNew();
                 IReadOnlyCollection<PackageSourceMoniker> list = await PackageSourceMoniker.PopulateListAsync(packageSources, CancellationToken.None);
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -528,15 +521,15 @@ namespace NuGet.PackageManagement.UI
                 // force a new search explicitly only if active source has changed
                 if (prevSelectedItem == SelectedSource)
                 {
-                    TimeSpan pmuiDuration = GetPmuiDuration();
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
+                    sw.Stop();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
                 }
                 else
                 {
                     SaveSettings();
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                    TimeSpan pmuiDuration = GetPmuiDuration();
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
+                    sw.Stop();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
                 }
             }
             finally
@@ -1121,10 +1114,11 @@ namespace NuGet.PackageManagement.UI
 
         private async Task SourceRepoList_SelectionChangedAsync(TimeSpan timeSpan)
         {
+            var sw = Stopwatch.StartNew();
             SaveSettings();
             await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-            TimeSpan pmuiDuration = GetPmuiDuration();
-            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
+            sw.Stop();
+            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
         }
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
@@ -1196,13 +1190,14 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
+            var sw = Stopwatch.StartNew();
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
             RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                TimeSpan pmuiDuration = GetPmuiDuration();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
+                sw.Stop();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
             }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
         }
 
@@ -1228,12 +1223,13 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
+            var sw = Stopwatch.StartNew();
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                TimeSpan pmuiDuration = GetPmuiDuration();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success, isUIFiltering: false, pmuiDuration.TotalMilliseconds);
+                sw.Stop();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ClearSearch));
         }
 
@@ -1435,6 +1431,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
+                var sw = Stopwatch.StartNew();
                 IsEnabled = false;
                 _isExecutingAction = true;
 
@@ -1466,8 +1463,8 @@ namespace NuGet.PackageManagement.UI
                     {
                         var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
                         await RefreshAsync();
-                        TimeSpan pmuiDuration = GetPmuiDuration();
-                        EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success, isUIFiltering: false, duration: pmuiDuration.TotalMilliseconds);
+                        sw.Stop();
+                        EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
                         _isRefreshRequired = false;
                     }
 
