@@ -227,6 +227,11 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:AfterBuild /p:SignPackages=true /bl:$(Build.StagingDirectory)\\binlog\\12.SignPackages.binlog"
 
+- task: NuGetToolInstaller@1
+  displayName: Use NuGet 5.x
+  inputs:
+    versionSpec: 5.x
+
 - task: NuGetCommand@2
   displayName: "Verify Nupkg Signatures"
   inputs:
