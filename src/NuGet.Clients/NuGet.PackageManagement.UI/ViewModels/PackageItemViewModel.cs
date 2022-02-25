@@ -455,6 +455,21 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private string _transitiveToolTipMessage;
+
+        public string TransitiveToolTipMessage
+        {
+            get => _transitiveToolTipMessage;
+            set
+            {
+                if (_transitiveToolTipMessage != value)
+                {
+                    _transitiveToolTipMessage = value;
+                    OnPropertyChanged(nameof(TransitiveToolTipMessage));
+                }
+            }
+        }
+
         private PackageLevel _packageLevel;
         public PackageLevel PackageLevel
         {

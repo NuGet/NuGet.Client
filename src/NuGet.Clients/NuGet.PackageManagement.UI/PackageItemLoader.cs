@@ -276,6 +276,14 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
+                var packageLevel = metadata.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
+
+                var transitiveToolTipMessage = string.Empty;
+                if (packageLevel == PackageLevel.Transitive)
+                {
+                    transitiveToolTipMessage = metadata.Identity.Version + " by " + string.Join(", ", metadata.TransitiveOrigins);
+                }
+
                 var listItem = new PackageItemViewModel(_searchService)
                 {
                     Id = metadata.Identity.Id,
@@ -293,7 +301,8 @@ namespace NuGet.PackageManagement.UI
                     PackagePath = metadata.PackagePath,
                     PackageFileService = _packageFileService,
                     IncludePrerelease = _includePrerelease,
-                    PackageLevel = metadata.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel,
+                    PackageLevel = packageLevel,
+                    TransitiveToolTipMessage = transitiveToolTipMessage,
                 };
 
                 listItem.UpdatePackageStatus(_installedPackages);

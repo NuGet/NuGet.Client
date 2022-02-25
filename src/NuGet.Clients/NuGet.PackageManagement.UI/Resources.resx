@@ -1041,4 +1041,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="PackageLevel_TransitivePackageHeaderText" xml:space="preserve">
     <value>Transitive packages</value>
   </data>
+  <data name="ToolTip_TransitiveDependency" xml:space="preserve">
+    <value>Transitively referenced version </value>
+  </data>
 </root>

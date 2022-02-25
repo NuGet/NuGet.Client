@@ -2441,6 +2441,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Transitively referenced version .
+        /// </summary>
+        public static string ToolTip_TransitiveDependency {
+            get {
+                return ResourceManager.GetString("ToolTip_TransitiveDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall this package..
         /// </summary>
         public static string ToolTip_UninstallButton {
