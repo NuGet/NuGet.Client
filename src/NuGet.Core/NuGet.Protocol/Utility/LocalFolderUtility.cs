@@ -1142,12 +1142,42 @@ namespace NuGet.Protocol
         /// </summary>
         private static List<DirectoryInfo> GetDirectoriesSafe(DirectoryInfo root, ILogger log, CancellationToken cancellationToken)
         {
-            return CancellableEnumeration(root.EnumerateDirectories(), log, cancellationToken);
+            try
+            {
+                var enumerable = root.EnumerateDirectories();
+                // .ToList necessary for perf concern.
+                // If enumaration happen several times then same I/O calls repeatedly called on same input, I/O calls are more expensive then memory.
+                return CancellableYieldEnumeration(enumerable, cancellationToken).ToList();
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                // On cancellation we bubble up exception to call stack.
+                // Otherwise return all or nothing. If no exception return all.
+                // Break on first exception with logging in order to keep previous experience, return empty List, but don't throw.
+                log.LogWarning(e.Message);
+            }
+
+            return new List<DirectoryInfo>();
         }
 
         private static List<DirectoryInfo> GetDirectoriesSafe(DirectoryInfo root, string filter, SearchOption searchOption, ILogger log, CancellationToken cancellationToken)
         {
-            return CancellableEnumeration(root.EnumerateDirectories(filter, searchOption), log, cancellationToken);
+            try
+            {
+                var enumerable = root.EnumerateDirectories(filter, searchOption);
+                // .ToList necessary for perf concern.
+                // If enumaration happen several times then same I/O calls repeatedly called on same input, I/O calls are more expensive then memory.
+                return CancellableYieldEnumeration(enumerable, cancellationToken).ToList();
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                // On cancellation we bubble up exception to call stack.
+                // Otherwise return all or nothing. If no exception return all.
+                // Break on first exception with logging in order to keep previous experience, return empty List, but don't throw.
+                log.LogWarning(e.Message);
+            }
+
+            return new List<DirectoryInfo>();
         }
 
         /// <summary>
@@ -1155,7 +1185,22 @@ namespace NuGet.Protocol
         /// </summary>
         private static List<FileInfo> GetFilesSafe(DirectoryInfo root, string filter, ILogger log, CancellationToken cancellationToken)
         {
-            return CancellableEnumeration(root.EnumerateFiles(filter), log, cancellationToken);
+            try
+            {
+                var enumerable = root.EnumerateFiles(filter);
+                // .ToList necessary for perf concern.
+                // If enumaration happen several times then same I/O calls repeatedly called on same input, I/O calls are more expensive then memory.
+                return CancellableYieldEnumeration(enumerable, cancellationToken).ToList();
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                // On cancellation we bubble up exception to call stack.
+                // Otherwise return all or nothing. If no exception return all.
+                // Break on first exception with logging in order to keep previous experience, return empty List, but don't throw.
+                log.LogWarning(e.Message);
+            }
+
+            return new List<FileInfo>();
         }
 
         /// <summary>
@@ -1280,26 +1325,7 @@ namespace NuGet.Protocol
                 });
         }
 
-        private static List<T> CancellableEnumeration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
-        {
-            try
-            {
-                // .ToList necessary for perf concern.
-                // If enumaration happen several times then same I/O calls repeatedly called on same input, I/O calls are more expensive then memory.
-                return CancellableYieldEnumeration(enumerable, log, cancellationToken).ToList();
-            }
-            catch (Exception e) when (e is not OperationCanceledException)
-            {
-                // On cancellation we bubble up exception to call stack.
-                // Otherwise return all or nothing. If no exception return all.
-                // Break on first exception with logging in order to keep previous experience, return empty List, but don't throw.
-                log.LogWarning(e.Message);
-            }
-
-            return new List<T>();
-        }
-
-        static IEnumerable<T> CancellableYieldEnumeration<T>(IEnumerable<T> enumerable, ILogger log, CancellationToken cancellationToken)
+        static IEnumerable<T> CancellableYieldEnumeration<T>(IEnumerable<T> enumerable, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
