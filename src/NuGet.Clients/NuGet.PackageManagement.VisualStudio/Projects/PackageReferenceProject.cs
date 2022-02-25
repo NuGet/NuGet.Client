@@ -285,7 +285,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Obtains targets section from project assets file (project.assets.json)
+        /// Obtains targets (and packageFolders) section from project assets file (project.assets.json)
         /// </summary>
         /// <param name="ct">Cancellation token for async operation</param>
         /// <returns>A list of dependencies, indexed by framework/RID</returns>
@@ -299,7 +299,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
 
-            _packageFolders = lockFile.PackageFolders;
+            _packageFolders = lockFile?.PackageFolders ?? Array.Empty<LockFileItem>();
 
             return lockFile?.Targets;
         }
@@ -396,6 +396,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return transitivePR;
         }
 
+        /// <inheritdoc />
         public async Task<IReadOnlyCollection<string>> GetPackageSourcesAsync(CancellationToken ct)
         {
             PackageSpec packageSpec = null;

@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Gets packageFolders section from assets file
         /// </summary>
         /// <param name="ct">Cancellation token</param>
-        /// <returns>A collection of strings representing all packageFolders</returns>
+        /// <returns>A collection of strings representing all packageFolders found in assets file, or empty if not found</returns>
         public Task<IReadOnlyCollection<string>> GetPackageSourcesAsync(CancellationToken ct);
     }
 }
