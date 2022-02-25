@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -91,7 +90,7 @@ namespace NuGet.PackageManagement
             return false;
         }
 
-        public virtual void RaiseAssetsFileMissingEventForProjectAsync(bool isMissing)
+        public virtual void RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing)
         {
             if (_assetsFileMissingStatusChanged != null)
             {
@@ -99,7 +98,7 @@ namespace NuGet.PackageManagement
                 {
                     try
                     {
-                        handler.DynamicInvoke(isMissing);
+                        handler.DynamicInvoke(isAssetsFileMissing);
                     }
                     catch { }
                 }

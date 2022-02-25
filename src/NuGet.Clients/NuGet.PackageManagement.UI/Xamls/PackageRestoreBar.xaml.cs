@@ -35,7 +35,6 @@ namespace NuGet.PackageManagement.UI
         private Storyboard _hideRestoreBar;
 
         private ISolutionRestoreWorker _solutionRestoreWorker;
-
         private IProjectContextInfo _projectContextInfo;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
@@ -71,7 +70,10 @@ namespace NuGet.PackageManagement.UI
             if (_packageRestoreManager != null)
             {
                 _packageRestoreManager.PackagesMissingStatusChanged += OnPackagesMissingStatusChanged;
-                _packageRestoreManager.AssetsFileMissingStatusChanged += OnAssetsFileMissingStatusChanged;
+                if (_projectContextInfo.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
+                {
+                    _packageRestoreManager.AssetsFileMissingStatusChanged += OnAssetsFileMissingStatusChanged;
+                }
             }
 
             // Set DynamicResource binding in code
@@ -108,8 +110,7 @@ namespace NuGet.PackageManagement.UI
 
                         // when the control is first loaded, check for missing packages
                         if (_projectContextInfo != null &&
-                            _projectContextInfo.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
-                            await _packageRestoreManager.GetMissingAssetsFileStatusAsync(_projectContextInfo.ProjectId))
+                            _projectContextInfo.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                         {
                             _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(true);
                         }

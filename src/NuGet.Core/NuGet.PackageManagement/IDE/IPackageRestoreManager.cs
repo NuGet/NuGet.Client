@@ -61,8 +61,8 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Checks if something is listening to the event of missing assets and change the status
         /// </summary>
-        /// <param name="isMissing"></param>
-        void RaiseAssetsFileMissingEventForProjectAsync(bool isMissing);
+        /// <param name="isAssetsFileMissing"></param>
+        void RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing);
 
         /// <summary>
         /// Checks if the project is missing an assets file
@@ -142,7 +142,7 @@ namespace NuGet.PackageManagement
             CancellationToken token);
     }
 
-    public delegate void AssetsFileMissingStatusChanged(bool isMissing);
+    public delegate void AssetsFileMissingStatusChanged(bool isAssetsFileMissing);
 
     /// <summary>
     /// If 'Restored' is false, it means that the package was already restored

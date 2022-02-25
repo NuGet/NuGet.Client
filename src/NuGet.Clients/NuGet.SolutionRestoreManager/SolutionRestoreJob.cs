@@ -671,11 +671,11 @@ namespace NuGet.SolutionRestoreManager
                 await _logger.RunWithProgressAsync(
                     (_, __, ___) => CheckForMissingPackagesAsync(packages),
                     token);
-
-                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
-                    solutionDirectory,
-                    token);
             }
+
+            await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
+                solutionDirectory,
+                token);
         }
 
         private void ValidatePackagesConfigLockFiles(IEnumerable<NuGetProject> allProjects, CancellationToken token)
