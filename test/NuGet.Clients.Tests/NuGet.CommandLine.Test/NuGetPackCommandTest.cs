@@ -1296,7 +1296,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>exe</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>V4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
