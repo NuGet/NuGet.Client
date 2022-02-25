@@ -883,7 +883,7 @@ namespace NuGet.Commands
 
                 if (other.Count <= parent.Count)
                 {
-                    return parent.IsSubsetOf(other);
+                    return other.IsSubsetOf(parent);
                 }
 
                 return false;
