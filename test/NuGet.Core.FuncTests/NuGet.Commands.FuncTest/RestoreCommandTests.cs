@@ -1421,7 +1421,7 @@ namespace NuGet.Commands.FuncTest
                 var metadataPath = Path.Combine(pathContext.UserPackagesFolder, @"a\1.0.0\.nupkg.metadata");
                 var metadataLastAccessTimeFirstRestore = File.GetLastAccessTimeUtc(metadataPath);
 
-                await Task.Delay(1000);
+                File.SetLastAccessTimeUtc(metadataPath, DateTime.UtcNow.AddMinutes(-10));
 
                 var newCommand = new RestoreCommand(newRequest);
 
