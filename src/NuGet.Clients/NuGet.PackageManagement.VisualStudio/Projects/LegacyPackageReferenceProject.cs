@@ -21,6 +21,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -126,12 +127,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
         {
-            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
+            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally);
+
+            return MSBuildStringUtility.IsTrue(value);
         }
 
         private async Task<bool> IsCentralPackageVersionOverrideDisabledAsync()
         {
-            return MSBuildStringUtility.IsFalse(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.EnablePackageVersionOverride));
+            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.EnablePackageVersionOverride);
+
+            return value.EqualsFalse();
         }
 
         private async Task<string> GetSpecifiedAssemblyNameAsync()

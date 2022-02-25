@@ -8,5 +8,4 @@ NuGet.Common.PackagingLogMessage.Framework.get -> NuGet.Frameworks.NuGetFramewor
 NuGet.Common.PackagingLogMessage.Framework.set -> void
 NuGet.Common.PackagingLogMessage.LibraryId.get -> string
 NuGet.Common.PackagingLogMessage.LibraryId.set -> void
-static NuGet.Common.MSBuildStringUtility.IsFalse(string value) -> bool
 static NuGet.Common.PackagingLogMessage.CreateWarning(string message, NuGet.Common.NuGetLogCode code, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> NuGet.Common.PackagingLogMessage

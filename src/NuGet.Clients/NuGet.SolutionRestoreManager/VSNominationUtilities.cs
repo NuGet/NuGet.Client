@@ -290,7 +290,7 @@ namespace NuGet.SolutionRestoreManager
 
         internal static bool IsCentralPackageVersionOverrideDisabled(IEnumerable tfms)
         {
-            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.EnablePackageVersionOverride, MSBuildStringUtility.IsFalse);
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.EnablePackageVersionOverride, (value) => value.EqualsFalse());
         }
 
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)
