@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine
@@ -22,7 +23,21 @@ namespace NuGet.CommandLine
 
         private static T CreateInstance<T>(AppDomain domain)
         {
-            return (T)domain.CreateInstanceFromAndUnwrap(Assembly.GetExecutingAssembly().Location, typeof(T).FullName);
+            string assemblyLocation = Assembly.GetExecutingAssembly().Location;
+
+            try
+            {
+                return (T)domain.CreateInstanceFromAndUnwrap(assemblyLocation, typeof(T).FullName);
+            }
+            catch (FileLoadException flex) when (UriUtility.GetLocalPath(flex.FileName).Equals(assemblyLocation, StringComparison.Ordinal))
+            {
+                // Reflection loading error for sandboxed assembly
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    LocalizedResourceManager.GetString("Error_NuGetExeNeedsToBeUnblockedAfterDownloading"),
+                    UriUtility.GetLocalPath(flex.FileName));
+                throw new PackagingException(NuGetLogCode.NU5133, exceptionMessage, flex);
+            }
         }
 
         public AssemblyMetadata GetMetadata(string assemblyPath)

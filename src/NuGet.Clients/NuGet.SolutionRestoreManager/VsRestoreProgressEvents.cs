@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using NuGet.Commands;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Etw;
-using NuGet.Commands;
 
 namespace NuGet.SolutionRestoreManager
 {

@@ -242,6 +242,11 @@ namespace NuGet.CommandLine
             {
                 ExtractMetadata(builder);
             }
+            catch (PackagingException packex) when (packex.AsLogMessage().Code.Equals(NuGetLogCode.NU5133))
+            {
+                ExceptionUtilities.LogException(packex, Logger);
+                return null;
+            }
             catch (Exception ex)
             {
                 Logger.Log(PackagingLogMessage.CreateError(string.Format(
@@ -796,6 +801,11 @@ namespace NuGet.CommandLine
                 try
                 {
                     new AssemblyMetadataExtractor(Logger).ExtractMetadata(builder, TargetPath);
+                }
+                catch (PackagingException packex) when (packex.AsLogMessage().Code.Equals(NuGetLogCode.NU5133))
+                {
+                    // Reflection loading error for sandboxed assembly, rethrow it to fail packing.
+                    throw;
                 }
                 catch (Exception ex)
                 {
