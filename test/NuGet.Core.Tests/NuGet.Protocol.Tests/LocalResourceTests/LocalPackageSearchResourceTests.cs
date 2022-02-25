@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Tests.Plugins.Helpers;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -598,6 +599,36 @@ namespace NuGet.Protocol.Tests
                 await Assert.ThrowsAsync<TaskCanceledException>(
                     async () => await resource.SearchAsync("", null, 0, 1, NullLogger.Instance, new CancellationToken(canceled: true)));
             }
+        }
+
+        [Fact]
+        public async Task LocalPackageSearch_SearchAsync_SlowLocalRepository_WithCancellationToken_ThrowsAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Arrange
+            using CancellationTokenSource cts = new();
+            var slowLocalRepository = new DelayedFindLocalPackagesResourceV2(pathContext.PackageSource, 2000);
+
+            // Act
+            Task delayTask = Task.Delay(TimeSpan.FromMilliseconds(200), cts.Token);
+            LocalPackageSearchResource slowResource = new LocalPackageSearchResource(slowLocalRepository);
+            Task searchTask = slowResource.SearchAsync(searchTerm: "", filters: null, skip: 0, take: 1, log: NullLogger.Instance, token: cts.Token);
+
+            // Assert
+            // To simulate real world scenario I added delayed cancellation logic check in DelayedFindLocalPackagesResourceV2 localRepository.
+            // We're expecting delay Task finish before search Task since 2000 > 200.
+            Task completed = await Task.WhenAny(searchTask, delayTask);
+            if (completed != delayTask)
+            {
+                // Search task completed before shorter delay Task which is unexpected.
+                throw new TimeoutException();
+            }
+            // Trigger cancellation after 200 milsec.
+            cts.Cancel();
+            // During execution of long search task cancellation is triggered from localRepository.
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                async () => await searchTask);
         }
 
         [Theory]

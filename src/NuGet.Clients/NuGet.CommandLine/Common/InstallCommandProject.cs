@@ -56,7 +56,7 @@ namespace NuGet.CommandLine
                 {
                     // Id
                     // Ignore packages that are in SxS or a different format.
-                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance)
+                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance, token)
                         .Where(PackageIsValidForPathResolver);
                 }
             }
