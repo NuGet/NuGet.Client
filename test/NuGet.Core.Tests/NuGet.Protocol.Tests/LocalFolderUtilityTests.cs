@@ -633,31 +633,6 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task LocalFolderUtility_GetPackagesV2WithCancellationToken_NotCancelled_Succeed()
-        {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-            var testLogger = new TestLogger();
-            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
-            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
-            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
-            var source = new CancellationTokenSource();
-            CancellationToken token = source.Token;
-
-            // Act
-            var packages = LocalFolderUtility.GetPackagesV2(pathContext.PackageSource, testLogger, token)
-                .OrderBy(p => p.Identity.Id, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(p => p.Identity.Version)
-                .ToList();
-
-            // Assert
-            Assert.Equal(3, packages.Count);
-            Assert.Equal(new PackageIdentity("a", NuGetVersion.Parse("1.0.0")), packages[0].Identity);
-            Assert.Equal(new PackageIdentity("b", NuGetVersion.Parse("1.0.0")), packages[1].Identity);
-            Assert.Equal(new PackageIdentity("c", NuGetVersion.Parse("1.0.0")), packages[2].Identity);
-        }
-
-        [Fact]
         public async Task LocalFolderUtility_GetPackagesV2WithCancellationToken_Cancelled_Fails()
         {
             // Arrange
