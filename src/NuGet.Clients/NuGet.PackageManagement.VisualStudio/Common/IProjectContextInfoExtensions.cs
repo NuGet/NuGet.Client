@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,6 +68,31 @@ namespace NuGet.PackageManagement.VisualStudio
                 return await projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
             }
         }
+
+        public static async ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
+            this IProjectContextInfo projectContextInfo,
+            IServiceBroker serviceBroker,
+            CancellationToken cancellationToken)
+        {
+            if (projectContextInfo == null)
+            {
+                throw new ArgumentNullException(nameof(projectContextInfo));
+            }
+
+            if (serviceBroker == null)
+            {
+                throw new ArgumentNullException(nameof(serviceBroker));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken);
+
+            IReadOnlyCollection<string> packageFolders = await projectManager.GetPackageFoldersAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
+
+            return packageFolders;
+        }
+
 
         public static async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             this IProjectContextInfo projectContextInfo,

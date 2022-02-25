@@ -47,6 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
+        private protected IList<LockFileItem> _packageFolders;
 
         protected bool IsInstalledAndTransitiveComputationNeeded { get; set; } = true;
 
@@ -298,6 +299,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
 
+            _packageFolders = lockFile.PackageFolders;
+
             return lockFile?.Targets;
         }
 
@@ -391,6 +394,31 @@ namespace NuGet.PackageManagement.VisualStudio
             };
 
             return transitivePR;
+        }
+
+        public async Task<IReadOnlyCollection<string>> GetPackageSourcesAsync(CancellationToken ct)
+        {
+            PackageSpec packageSpec = null;
+            string assetsFilePath = null;
+            try
+            {
+                (packageSpec, assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathAsync(ct);
+            }
+            catch (ProjectNotNominatedException)
+            {
+            }
+
+            if (packageSpec == null)
+            {
+                return Array.Empty<string>();
+            }
+
+            if (IsInstalledAndTransitiveComputationNeeded)
+            {
+                await GetTargetsListAsync(assetsFilePath, ct);
+            }
+
+            return _packageFolders.Select(pf => pf.Path).ToList();
         }
     }
 }

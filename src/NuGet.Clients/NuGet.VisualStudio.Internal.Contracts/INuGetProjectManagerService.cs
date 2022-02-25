@@ -65,5 +65,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken);
+
+        ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken);
     }
 }

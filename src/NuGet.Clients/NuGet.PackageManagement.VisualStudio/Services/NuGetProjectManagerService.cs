@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -576,6 +577,31 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 return projectActions;
             });
+        }
+
+        public async ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+            var prStyleTasks = new List<Task<IReadOnlyCollection<string>>>();
+            foreach (NuGetProject? project in projects)
+            {
+                if (project is IPackageReferenceProject packageReferenceProject)
+                {
+                    prStyleTasks.Add(packageReferenceProject.GetPackageSourcesAsync(cancellationToken));
+                }
+            }
+
+            IReadOnlyCollection<string>[] packageFolders = await Task.WhenAll(prStyleTasks);
+
+            HashSet<string> packageFoldersUnique = new HashSet<string>();
+            packageFolders.ForEach(folders => packageFoldersUnique.AddRange(folders));
+
+            return packageFoldersUnique.ToList();
         }
 
         public async ValueTask<IReadOnlyCollection<IProjectContextInfo>> GetProjectsWithDeprecatedDotnetFrameworkAsync(CancellationToken cancellationToken)
