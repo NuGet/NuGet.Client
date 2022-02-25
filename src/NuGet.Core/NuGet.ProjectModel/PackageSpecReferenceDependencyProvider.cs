@@ -170,7 +170,7 @@ namespace NuGet.ProjectModel
             }
 
             // Avoid adding these properties for class libraries
-            // and other projects which are not fully able to 
+            // and other projects which are not fully able to
             // participate in restore.
             if (packageSpec.RestoreMetadata == null
                 || (projectStyle != ProjectStyle.Unknown
@@ -339,8 +339,8 @@ namespace NuGet.ProjectModel
 
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
-#if enableCPVMTransitivePinning
-                if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true)
+                if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true &&
+                    packageSpec.RestoreMetadata?.TransitiveDependencyPinningEnabled == true)
                 {
                     var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
                     dependencies.AddRange(targetFrameworkInfo.CentralPackageVersions
@@ -352,7 +352,7 @@ namespace NuGet.ProjectModel
                             ReferenceType = LibraryDependencyReferenceType.None,
                         }));
                 }
-#endif
+
                 // Remove all framework assemblies
                 dependencies.RemoveAll(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference);
 

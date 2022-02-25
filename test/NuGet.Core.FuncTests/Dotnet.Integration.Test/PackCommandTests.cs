@@ -5230,8 +5230,11 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/10133")]
-        public void PackCommand_PackProjectWithCentralTransitiveDependencies()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("false")]
+        [InlineData("true")]
+        [InlineData(null)]
+        public void PackCommand_PackProjectWithCentralTransitiveDependencies(string transitiveDependencyPinningEnabled)
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
@@ -5259,6 +5262,14 @@ namespace ClassLibrary
                         "ManagePackageVersionsCentrally",
                         "true");
 
+                    if (transitiveDependencyPinningEnabled != null)
+                    {
+                        ProjectFileUtils.AddProperty(
+                            xml,
+                            "TransitiveDependencyPinningEnabled",
+                            transitiveDependencyPinningEnabled);
+                    }
+
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
@@ -5277,7 +5288,7 @@ namespace ClassLibrary
                 File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", "obj", false);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5293,13 +5304,23 @@ namespace ClassLibrary
                     Assert.Equal(1, dependencyGroups.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
                     var packages = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(2, packages.Count);
-                    var moqPackage = packages.Where(p => p.Id.Equals("Moq", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                    var castleCorePackage = packages.Where(p => p.Id.Equals("Castle.Core", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                    Assert.NotNull(moqPackage);
-                    Assert.NotNull(castleCorePackage);
-                    Assert.Equal("[4.10.0, )", moqPackage.VersionRange.ToNormalizedString());
-                    Assert.Equal("[4.4.0, )", castleCorePackage.VersionRange.ToNormalizedString());
+                    if (transitiveDependencyPinningEnabled == "true")
+                    {
+                        Assert.Equal(2, packages.Count);
+                        var moqPackage = packages.Where(p => p.Id.Equals("Moq", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                        var castleCorePackage = packages.Where(p => p.Id.Equals("Castle.Core", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                        Assert.NotNull(moqPackage);
+                        Assert.NotNull(castleCorePackage);
+                        Assert.Equal("4.10.0", moqPackage.VersionRange.ToShortString());
+                        Assert.Equal("4.4.0", castleCorePackage.VersionRange.ToShortString());
+                    }
+                    else
+                    {
+                        Assert.Equal(1, packages.Count);
+                        var moqPackage = packages.Single();
+                        Assert.Equal(moqPackage.Id, "Moq");
+                        Assert.Equal("4.10.0", moqPackage.VersionRange.ToShortString());
+                    }
                 }
             }
         }
@@ -5864,7 +5885,7 @@ namespace ClassLibrary
   <ItemGroup>
     <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" NoWarn = ""NU5104""/>
     <!-- Below pre-release doesn't have no warn -->
-    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}""/> 
+    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}""/>
   </ItemGroup>
 </Project>";
                 File.WriteAllText(projectFile, projectXml);

@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -9796,7 +9797,7 @@ namespace NuGet.CommandLine.Test
         ///  P will be accepted (because its parent B is Accepted)
         ///  S will be accepted (because its parent O 300 is Accepted)
         /// </summary>
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
+        [Fact]
         public async Task RestoreNetCore_CPVMProject_MultipleLinkedCentralTransitiveDepenencies()
         {
             // Arrange
@@ -9829,6 +9830,7 @@ namespace NuGet.CommandLine.Test
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("netcoreapp2.0"));
                 projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectA.Properties.Add("TransitiveDependencyPinningEnabled", "true");
 
                 // the package references defined in the project should not have version
                 var packageBNoVersion = createTestPackage("B", null, packagesForProject);
@@ -10224,8 +10226,8 @@ namespace NuGet.CommandLine.Test
 
                 var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
 
-                projectA.Properties.Add("ManagePackageVersionsCentrally", bool.TrueString);
-                projectA.Properties.Add("EnablePackageVersionOverride", bool.FalseString);
+                projectA.Properties.Add(ProjectBuildProperties.ManagePackageVersionsCentrally, bool.TrueString);
+                projectA.Properties.Add(ProjectBuildProperties.CentralPackageVersionOverrideEnabled, bool.FalseString);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                    pathContext.PackageSource,

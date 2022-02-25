@@ -616,7 +616,7 @@ namespace NuGet.Build.Tasks.Console
 
                 targetFrameworkInformation.FrameworkReferences.AddRange(GetFrameworkReferences(msBuildProjectInstance));
 
-                if (isCpvmEnabled && targetFrameworkInformation.Dependencies.Any())
+                if (isCpvmEnabled)
                 {
                     targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
                     LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
@@ -792,7 +792,7 @@ namespace NuGet.Build.Tasks.Console
 
             ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
 
-            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
+            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isTransitiveDependencyPinningEnabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
 
             List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
 
@@ -836,7 +836,8 @@ namespace NuGet.Build.Tasks.Console
                     SkipContentFileWrite = IsLegacyProject(project),
                     ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
                     CentralPackageVersionsEnabled = isCentralPackageManagementEnabled && projectStyle == ProjectStyle.PackageReference,
-                    CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled
+                    CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
+                    TransitiveDependencyPinningEnabled = isTransitiveDependencyPinningEnabled,
                 };
             }
 
@@ -1020,14 +1021,14 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="project">The <see cref="IMSBuildProject" /> to get the central package management settings for.</param>
         /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <c>null</c> when the project does not define a restore style.</param>
         /// <returns>A <see cref="Tuple{T1, T2}" /> containing values indicating whether or not central package management is enabled and if the ability to override a package version is disabled.</returns>
-        internal static (bool IsEnabled, bool IsVersionOverrideDisabled) GetCentralPackageManagementSettings(IMSBuildProject project, ProjectStyle? projectStyle)
+        internal static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsTransitiveDependencyPinningEnabled) GetCentralPackageManagementSettings(IMSBuildProject project, ProjectStyle? projectStyle)
         {
             if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
             {
-                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("EnablePackageVersionOverride"));
+                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("EnablePackageVersionOverride"), project.IsPropertyTrue("TransitiveDependencyPinningEnabled"));
             }
 
-            return (false, false);
+            return (false, false, false);
         }
 
         /// <summary>

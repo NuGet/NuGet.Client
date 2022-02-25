@@ -732,7 +732,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
         <_CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</_CentralPackageVersionsEnabled>
-        <CentralPackageVersionOverrideEnabled>$(EnablePackageVersionOverride)</CentralPackageVersionOverrideEnabled>
+        <CentralPackageVersionOverrideEnabled>$(CentralPackageVersionOverrideEnabled)</CentralPackageVersionOverrideEnabled>
+        <TransitiveDependencyPinningEnabled>$(TransitiveDependencyPinningEnabled)</TransitiveDependencyPinningEnabled>
       </_RestoreGraphEntry>
     </ItemGroup>
 

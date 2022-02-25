@@ -51,7 +51,8 @@ namespace NuGet.ProjectManagement
         public const string Clear = nameof(Clear);
         public const string RuntimeIdentifierGraphPath = nameof(RuntimeIdentifierGraphPath);
         public const string ManagePackageVersionsCentrally = nameof(ManagePackageVersionsCentrally);
-        public const string EnablePackageVersionOverride = nameof(EnablePackageVersionOverride);
+        public const string CentralPackageVersionOverrideEnabled = nameof(CentralPackageVersionOverrideEnabled);
         public const string AssemblyName = nameof(AssemblyName);
+        public const string TransitiveDependencyPinningEnabled = nameof(TransitiveDependencyPinningEnabled);
     }
 }

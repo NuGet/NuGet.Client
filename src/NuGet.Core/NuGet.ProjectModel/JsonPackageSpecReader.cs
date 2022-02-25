@@ -902,6 +902,7 @@ namespace NuGet.ProjectModel
         {
             var centralPackageVersionsManagementEnabled = false;
             var centralPackageVersionOverrideDisabled = false;
+            var transitiveDependencyPinningEnabled = false;
             List<string> configFilePaths = null;
             var crossTargeting = false;
             List<string> fallbackFolders = null;
@@ -934,6 +935,10 @@ namespace NuGet.ProjectModel
 
                     case "centralPackageVersionOverrideDisabled":
                         centralPackageVersionOverrideDisabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "transitiveDependencyPinningEnabled":
+                        transitiveDependencyPinningEnabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
 
                     case "configFilePaths":
@@ -1092,6 +1097,7 @@ namespace NuGet.ProjectModel
 
             msbuildMetadata.CentralPackageVersionsEnabled = centralPackageVersionsManagementEnabled;
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
+            msbuildMetadata.TransitiveDependencyPinningEnabled = transitiveDependencyPinningEnabled;
 
             if (configFilePaths != null)
             {

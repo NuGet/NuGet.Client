@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 case ProjectBuildProperties.ManagePackageVersionsCentrally:
                     return Task.FromResult(_isCPVMEnabled.ToString());
 
-                case ProjectBuildProperties.EnablePackageVersionOverride:
+                case ProjectBuildProperties.CentralPackageVersionOverrideEnabled:
                     return Task.FromResult(_isCentralPackageVersionOverrideEnabled ?? string.Empty);
 
                 default:

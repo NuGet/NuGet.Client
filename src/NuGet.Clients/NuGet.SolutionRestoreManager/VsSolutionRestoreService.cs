@@ -169,7 +169,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         /// <summary>
-        /// This is where the nominate calls for the IVs1 and IVS3 APIs combine. The reason for this method is to avoid duplication and potential issues 
+        /// This is where the nominate calls for the IVs1 and IVS3 APIs combine. The reason for this method is to avoid duplication and potential issues
         /// The issue with this method is that it has some weird custom logging to ensure backward compatibility. It's on the implementer to ensure these calls are correct.
         /// <param name="projectUniqueName">projectUniqueName</param>
         /// <param name="projectRestoreInfo">projectRestoreInfo. Can be null</param>
@@ -347,7 +347,8 @@ namespace NuGet.SolutionRestoreManager
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath),
                     RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks),
                     CentralPackageVersionsEnabled = cpvmEnabled,
-                    CentralPackageVersionOverrideDisabled = VSNominationUtilities.IsCentralPackageVersionOverrideDisabled(TargetFrameworks)
+                    CentralPackageVersionOverrideDisabled = VSNominationUtilities.IsCentralPackageVersionOverrideDisabled(TargetFrameworks),
+                    TransitiveDependencyPinningEnabled = VSNominationUtilities.IsTransitiveDependencyPinningEnabled(TargetFrameworks),
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(TargetFrameworks),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
@@ -473,7 +474,7 @@ namespace NuGet.SolutionRestoreManager
                 _projectSystemCache.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
             }
 
-            // If the solution is not yet fully initialized, failed inits are *acceptable*. 
+            // If the solution is not yet fully initialized, failed inits are *acceptable*.
             foreach (var source in failedInits)
             {
                 _projectRestoreInfoSources.Enqueue(source);
