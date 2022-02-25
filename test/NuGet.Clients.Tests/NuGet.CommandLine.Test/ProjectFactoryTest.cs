@@ -488,8 +488,8 @@ namespace NuGet.CommandLine
                         files,
                         new[]
                         {
-                            @"lib/net45/Assembly.dll",
-                            @"lib/net45/Assembly.xml"
+                            @"lib/net48/Assembly.dll",
+                            @"lib/net48/Assembly.xml"
                         });
                 }
             }
@@ -586,9 +586,9 @@ namespace NuGet.CommandLine
                         files,
                         new[]
                         {
-                            @"lib/net45/A.dll",
-                            @"lib/net45/C.dll",
-                            @"lib/net45/Link.dll"
+                            @"lib/net48/A.dll",
+                            @"lib/net48/C.dll",
+                            @"lib/net48/Link.dll"
                         });
                 }
             }
@@ -608,8 +608,8 @@ namespace NuGet.CommandLine
         <description>Description for Assembly.</description>
     </metadata>
     <files>
-        <file src=""bin\Debug\Assembly.dll"" target=""lib\net45\Assembly.dll"" />
-        <file src=""bin\Debug\Assembly.xml"" target=""lib\net45\Assembly.xml"" />
+        <file src=""bin\Debug\Assembly.dll"" target=""lib\net48\Assembly.dll"" />
+        <file src=""bin\Debug\Assembly.xml"" target=""lib\net48\Assembly.xml"" />
     </files>
 </package>";
         }
@@ -627,7 +627,7 @@ namespace NuGet.CommandLine
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Assembly</RootNamespace>
     <AssemblyName>Assembly</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
@@ -639,7 +639,7 @@ namespace NuGet.CommandLine
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
     <DebugType>pdbonly</DebugType>
