@@ -2053,7 +2053,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20).Concat(new VsProjectProperty[]
                 {
                     new VsProjectProperty(ProjectBuildProperties.ManagePackageVersionsCentrally, "true"),
-                    new VsProjectProperty(ProjectBuildProperties.EnablePackageVersionOverride, isCentralPackageVersionOverrideEnabled)
+                    new VsProjectProperty(ProjectBuildProperties.CentralPackageVersionOverrideEnabled, isCentralPackageVersionOverrideEnabled)
                 }),
                 centralPackageVersions: new[]
                         {

@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -10224,8 +10225,8 @@ namespace NuGet.CommandLine.Test
 
                 var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
 
-                projectA.Properties.Add("ManagePackageVersionsCentrally", bool.TrueString);
-                projectA.Properties.Add("EnablePackageVersionOverride", bool.FalseString);
+                projectA.Properties.Add(ProjectBuildProperties.ManagePackageVersionsCentrally, bool.TrueString);
+                projectA.Properties.Add(ProjectBuildProperties.CentralPackageVersionOverrideEnabled, bool.FalseString);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                    pathContext.PackageSource,

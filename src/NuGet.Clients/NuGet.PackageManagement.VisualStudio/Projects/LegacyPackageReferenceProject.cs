@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<bool> IsCentralPackageVersionOverrideDisabledAsync()
         {
-            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.EnablePackageVersionOverride);
+            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.CentralPackageVersionOverrideEnabled);
 
             return value.EqualsFalse();
         }

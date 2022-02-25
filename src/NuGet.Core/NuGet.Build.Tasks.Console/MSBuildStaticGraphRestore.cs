@@ -1024,7 +1024,7 @@ namespace NuGet.Build.Tasks.Console
         {
             if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
             {
-                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("EnablePackageVersionOverride"));
+                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("CentralPackageVersionOverrideEnabled"));
             }
 
             return (false, false);

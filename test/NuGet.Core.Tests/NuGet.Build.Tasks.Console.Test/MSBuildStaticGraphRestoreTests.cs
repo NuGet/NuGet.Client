@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -755,7 +756,7 @@ namespace NuGet.Build.Tasks.Console.Test
             var project = new MockMSBuildProject(
                 new Dictionary<string, string>
                 {
-                    ["EnablePackageVersionOverride"] = value,
+                    [ProjectBuildProperties.CentralPackageVersionOverrideEnabled] = value,
                 });
 
             // Act
