@@ -39,7 +39,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f net5.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "hello world");
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.props"), "<project />");
@@ -446,7 +446,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console -f netcoreapp2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " console");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -508,7 +508,7 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net472");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -548,7 +548,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencyGroups[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
                     var packagesB = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packagesB.Count);
                     Assert.Equal("Newtonsoft.Json", packagesB[0].Id);
@@ -581,7 +581,7 @@ namespace Dotnet.Integration.Test
                     };
 
                     package.Files.Clear();
-                    package.AddFile($"lib/net472/a.dll");
+                    package.AddFile($"lib/net45/a.dll");
 
                     await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                          pathContext.PackageSource,
@@ -592,7 +592,7 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net472");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -632,7 +632,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencyGroups[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
                     var packagesB = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packagesB.Count);
                     Assert.Equal("x", packagesB[0].Id);
@@ -661,7 +661,7 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netcoreapp1.0;net472");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netcoreapp1.0;net45");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -670,7 +670,7 @@ namespace Dotnet.Integration.Test
                         xml,
                         "PackageReference",
                         "Newtonsoft.Json",
-                        "net472",
+                        "net45",
                         new Dictionary<string, string>(),
                         attributes);
 
@@ -711,7 +711,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[0].Exclude);
                     Assert.Empty(packagesA[0].Include);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencyGroups[1].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[1].TargetFramework);
                     var packagesB = dependencyGroups[1].Packages.ToList();
                     Assert.Equal(1, packagesB.Count);
                     Assert.Equal("Newtonsoft.Json", packagesB[0].Id);
@@ -723,12 +723,12 @@ namespace Dotnet.Integration.Test
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(2, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, libItems[0].TargetFramework);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, libItems[1].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[1].TargetFramework);
                     Assert.Equal(
                         new[]
                         {"lib/netcoreapp1.0/ClassLibrary1.dll", "lib/netcoreapp1.0/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
-                    Assert.Equal(new[] { "lib/net472/ClassLibrary1.exe" },
+                    Assert.Equal(new[] { "lib/net45/ClassLibrary1.exe" },
                         libItems[1].Items);
                 }
             }
@@ -841,12 +841,12 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard2.1");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
 
                     var attributes = new Dictionary<string, string>();
                     attributes["Version"] = "9.0.1";
@@ -1081,7 +1081,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NET5_0_OR_GREATER
+#if NETCOREAPP5_0
         [InlineData("TargetFramework", "net5.0")]
         [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
 #endif
@@ -1096,8 +1096,8 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib -f netstandard2.0");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 using (var refStream = new FileStream(refProjectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -1160,7 +1160,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NET5_0_OR_GREATER
+#if NETCOREAPP5_0
         [InlineData("TargetFramework", "net5.0")]
         [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
 #endif
@@ -1601,12 +1601,12 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard2.1/folderA/abc.txt")]
+        [InlineData("abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
         [InlineData("folderA/folderB/abc.txt", null,
-            "content/folderA/folderB/abc.txt;contentFiles/any/netstandard2.1/folderA/folderB/abc.txt")]
-        [InlineData("../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
+            "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
+        [InlineData("../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("abc.txt", "folderA/", "folderA/abc.txt")]
         [InlineData("abc.txt", "folderA/xyz.txt", "folderA/xyz.txt")]
         [InlineData("abc.txt", "", "abc.txt")]
@@ -1644,9 +1644,9 @@ namespace Dotnet.Integration.Test
         [InlineData("../abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/abc.txt")]
         [InlineData("../abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         // ## is a special syntax specifically for this test which means that ## should be replaced by the absolute path to the project directory.
-        [InlineData("##/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
+        [InlineData("##/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("##/folderA/abc.txt", null,
-            "content/folderA/abc.txt;contentFiles/any/netstandard2.1/folderA/abc.txt")]
+            "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
         [InlineData("##/../abc.txt", null, "content/abc.txt")]
         [InlineData("##/abc.txt", "", "abc.txt")]
         [InlineData("##/abc.txt", "folderX;folderY", "folderX/abc.txt;folderY/abc.txt")]
@@ -1677,12 +1677,12 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard2.1");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -1756,12 +1756,12 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard2.1");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -1792,13 +1792,13 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("abc.txt", null, "any/netstandard2.1/abc.txt")]
-        [InlineData("folderA/abc.txt", null, "any/netstandard2.1/folderA/abc.txt")]
-        [InlineData("folderA/folderB/abc.txt", null, "any/netstandard2.1/folderA/folderB/abc.txt")]
-        [InlineData("../abc.txt", null, "any/netstandard2.1/abc.txt")]
-        [InlineData("##/abc.txt", null, "any/netstandard2.1/abc.txt")]
-        [InlineData("##/folderA/abc.txt", null, "any/netstandard2.1/folderA/abc.txt")]
-        [InlineData("##/../abc.txt", null, "any/netstandard2.1/abc.txt")]
+        [InlineData("abc.txt", null, "any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt", null, "any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/folderB/abc.txt", null, "any/netstandard1.4/folderA/folderB/abc.txt")]
+        [InlineData("../abc.txt", null, "any/netstandard1.4/abc.txt")]
+        [InlineData("##/abc.txt", null, "any/netstandard1.4/abc.txt")]
+        [InlineData("##/folderA/abc.txt", null, "any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("##/../abc.txt", null, "any/netstandard1.4/abc.txt")]
         [InlineData("abc.txt", "contentFiles", "abc.txt")]
         [InlineData("folderA/abc.txt", "contentFiles", "abc.txt")]
         [InlineData("folderA/folderB/abc.txt", "contentFiles", "abc.txt")]
@@ -1867,12 +1867,12 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard2.1");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -1927,14 +1927,14 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("abc.txt", "any/net472/abc.txt;any/netstandard2.0/abc.txt")]
-        [InlineData("folderA/abc.txt", "any/net472/folderA/abc.txt;any/netstandard2.0/folderA/abc.txt")]
+        [InlineData("abc.txt", "any/net45/abc.txt;any/netstandard1.3/abc.txt")]
+        [InlineData("folderA/abc.txt", "any/net45/folderA/abc.txt;any/netstandard1.3/folderA/abc.txt")]
         [InlineData("folderA/folderB/abc.txt",
-            "any/net472/folderA/folderB/abc.txt;any/netstandard2.0/folderA/folderB/abc.txt")]
-        [InlineData("../abc.txt", "any/net472/abc.txt;any/netstandard2.0/abc.txt")]
-        [InlineData("##/abc.txt", "any/net472/abc.txt;any/netstandard2.0/abc.txt")]
-        [InlineData("##/folderA/abc.txt", "any/net472/folderA/abc.txt;any/netstandard2.0/folderA/abc.txt")]
-        [InlineData("##/../abc.txt", "any/net472/abc.txt;any/netstandard2.0/abc.txt")]
+            "any/net45/folderA/folderB/abc.txt;any/netstandard1.3/folderA/folderB/abc.txt")]
+        [InlineData("../abc.txt", "any/net45/abc.txt;any/netstandard1.3/abc.txt")]
+        [InlineData("##/abc.txt", "any/net45/abc.txt;any/netstandard1.3/abc.txt")]
+        [InlineData("##/folderA/abc.txt", "any/net45/folderA/abc.txt;any/netstandard1.3/folderA/abc.txt")]
+        [InlineData("##/../abc.txt", "any/net45/abc.txt;any/netstandard1.3/abc.txt")]
         public void PackCommand_PackProject_OutputsContentFilesInNuspecForMultipleFrameworks(string sourcePath,
             string expectedIncludeString)
         {
@@ -1963,12 +1963,12 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472;netstandard2.0");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net45;netstandard1.3");
 
                     var attributes = new Dictionary<string, string>();
                     var properties = new Dictionary<string, string>();
@@ -2020,7 +2020,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-#if NET5_0_OR_GREATER
+#if NETCOREAPP5_0
         [PlatformFact(Platform.Windows)]
         public void PackCommand_SingleFramework_GeneratesPackageOnBuildUsingNet5()
         {
@@ -2103,12 +2103,12 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard2.1");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
                     ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj\\Debug");
 
@@ -2150,16 +2150,16 @@ namespace Dotnet.Integration.Test
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
-                    Assert.Equal(new[] { "lib/netstandard2.1/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/netstandard1.4/ClassLibrary1.dll" }, libItems[0].Items);
                 }
 
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("netstandard2.0")]
-        [InlineData("netstandard2.0;net472")]
-        [InlineData("netstandard2.0;net472;netcoreapp2.0")]
+        [InlineData("netstandard1.4")]
+        [InlineData("netstandard1.4;net451")]
+        [InlineData("netstandard1.4;net451;netcoreapp1.0")]
         public void PackCommand_MultipleFrameworks_GeneratesPackageOnBuild(string frameworks)
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -2172,7 +2172,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, " classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2407,43 +2407,43 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard2.1/folderA/abc.txt")]
-        [InlineData("folderA/folderB/abc.txt", null, "content/folderA/folderB/abc.txt;contentFiles/any/netstandard2.1/folderA/folderB/abc.txt")]
-        [InlineData("../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
+        [InlineData("abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/folderB/abc.txt", null, "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
+        [InlineData("../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("abc.txt", "folderA/", "folderA/abc.txt")]
         [InlineData("abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/abc.txt")]
         [InlineData("abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
+        [InlineData("abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         [InlineData("folderA/abc.txt", "folderA/", "folderA/folderA/abc.txt")]
         [InlineData("folderA/abc.txt", "folderA;folderB", "folderA/folderA/abc.txt;folderB/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;contentFiles", "folderA/folderA/abc.txt;contentFiles/any/netstandard2.1/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;contentFiles\\", "folderA/folderA/abc.txt;contentFiles/any/netstandard2.1/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;contentFiles/", "folderA/folderA/abc.txt;contentFiles/any/netstandard2.1/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt", "folderA;contentFiles", "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt", "folderA;contentFiles\\", "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt", "folderA;contentFiles/", "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
         [InlineData("folderA/abc.txt", "folderA;contentFiles/folderA", "folderA/folderA/abc.txt;contentFiles/folderA/folderA/abc.txt")]
         [InlineData("folderA/abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/folderA/abc.txt")]
         [InlineData("{AbsolutePath}/abc.txt", "folderA/", "folderA/abc.txt")]
         [InlineData("{AbsolutePath}/abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/abc.txt")]
         [InlineData("{AbsolutePath}/abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         [InlineData("../abc.txt", "folderA/", "folderA/abc.txt")]
         [InlineData("../abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/abc.txt")]
         [InlineData("../abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("../abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("../abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("../abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
+        [InlineData("../abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("../abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         // ## is a special syntax specifically for this test which means that ## should be replaced by the absolute path to the project directory.
-        [InlineData("##/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
-        [InlineData("##/folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard2.1/folderA/abc.txt")]
-        [InlineData("##/../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard2.1/abc.txt")]
+        [InlineData("##/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("##/folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("##/../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
         [InlineData("##/abc.txt", "folderX;folderY", "folderX/abc.txt;folderY/abc.txt")]
         [InlineData("##/folderA/abc.txt", "folderX;folderY", "folderX/folderA/abc.txt;folderY/folderA/abc.txt")]
         [InlineData("##/../abc.txt", "folderX;folderY", "folderX/abc.txt;folderY/abc.txt")]
@@ -2472,12 +2472,12 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard2.1");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
                     ProjectFileUtils.AddProperty(xml, "ContentTargetFolders", contentTargetFolders);
 
                     var attributes = new Dictionary<string, string>();
@@ -2537,12 +2537,12 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard2.1");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
                     ProjectFileUtils.AddProperty(xml, "Title", "MyPackageTitle");
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
@@ -2589,8 +2589,8 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("TargetFramework", "netstandard2.0")]
-        [InlineData("TargetFrameworks", "netstandard2.0;net46")]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_IncludeSource_AddsSourceFiles(string tfmProperty, string tfmValue)
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
@@ -2618,7 +2618,7 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "Extensions", "ExtensionMethods.cs"),
                     extensionSrcFileContent);
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2972,8 +2972,8 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("TargetFramework", "netstandard2.0")]
-        [InlineData("TargetFrameworks", "netstandard2.0;net46")]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_BuildOutputInnerTargetExtension_AddsTfmSpecificBuildOuput(string tfmProperty,
     string tfmValue)
         {
@@ -2987,7 +2987,7 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.pdb"), "hello world");
                 var pathToDll = Path.Combine(workingDirectory, "abc.dll");
                 var pathToPdb = Path.Combine(workingDirectory, "abc.pdb");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3034,22 +3034,22 @@ namespace ClassLibrary
                         Assert.Equal(new[] { "lib/net46/abc.dll", "lib/net46/ClassLibrary1.dll" },
                             libItems[0].Items);
                         Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[1].TargetFramework);
-                        Assert.Equal(new[] { "lib/netstandard2.0/abc.dll", "lib/netstandard2.0/ClassLibrary1.dll" },
+                        Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/ClassLibrary1.dll" },
                             libItems[1].Items);
                         Assert.Equal(FrameworkConstants.CommonFrameworks.Net46, symbolLibItems[0].TargetFramework);
                         Assert.Equal(new[] { "lib/net46/abc.dll", "lib/net46/abc.pdb", "lib/net46/ClassLibrary1.dll", "lib/net46/ClassLibrary1.pdb" },
                             symbolLibItems[0].Items);
                         Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, symbolLibItems[1].TargetFramework);
-                        Assert.Equal(new[] { "lib/netstandard2.0/abc.dll", "lib/netstandard2.0/abc.pdb", "lib/netstandard2.0/ClassLibrary1.dll", "lib/netstandard2.0/ClassLibrary1.pdb" },
+                        Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/abc.pdb", "lib/netstandard1.4/ClassLibrary1.dll", "lib/netstandard1.4/ClassLibrary1.pdb" },
                             symbolLibItems[1].Items);
                     }
                     else
                     {
                         Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
-                        Assert.Equal(new[] { "lib/netstandard2.0/abc.dll", "lib/netstandard2.0/ClassLibrary1.dll" },
+                        Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/ClassLibrary1.dll" },
                             libItems[0].Items);
                         Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, symbolLibItems[0].TargetFramework);
-                        Assert.Equal(new[] { "lib/netstandard2.0/abc.dll", "lib/netstandard2.0/abc.pdb", "lib/netstandard2.0/ClassLibrary1.dll", "lib/netstandard2.0/ClassLibrary1.pdb" },
+                        Assert.Equal(new[] { "lib/netstandard1.4/abc.dll", "lib/netstandard1.4/abc.pdb", "lib/netstandard1.4/ClassLibrary1.dll", "lib/netstandard1.4/ClassLibrary1.pdb" },
                             symbolLibItems[0].Items);
                     }
                 }
@@ -3147,7 +3147,7 @@ namespace ClassLibrary
                 // Create the subdirectory structure for testing possible source paths for the content file
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3384,7 +3384,7 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NET5_0_OR_GREATER
+#if NETCOREAPP5_0
         [InlineData("TargetFramework", "net5.0")]
         [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
 #endif
@@ -3429,7 +3429,7 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NET5_0_OR_GREATER
+#if NETCOREAPP5_0
         [InlineData("TargetFramework", "net5.0")]
         [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
 #endif
@@ -3901,12 +3901,12 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, " classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net472");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -3915,7 +3915,7 @@ namespace ClassLibrary
                         xml,
                         "PackageReference",
                         "StyleCop.Analyzers",
-                        "net472",
+                        "net45",
                         new Dictionary<string, string>(),
                         attributes);
 
@@ -3946,15 +3946,15 @@ namespace ClassLibrary
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencyGroups[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
                     Assert.Equal(1, dependencyGroups[0].Packages.Count());
                 }
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("net472", "netstandard1.3")]
-        [InlineData("netstandard1.3", "net472")]
+        [InlineData("net45", "netstandard1.3")]
+        [InlineData("netstandard1.3", "net45")]
         [InlineData("", "")]
         public void PackCommand_SuppressDependencies_DoesNotContainAnyDependency(string frameworkToSuppress, string expectedInFramework)
         {
@@ -3969,7 +3969,7 @@ namespace ClassLibrary
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472;netstandard1.3");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net45;netstandard1.3");
                     if (!string.IsNullOrEmpty(frameworkToSuppress))
                     {
                         ProjectFileUtils.AddProperty(xml, "SuppressDependenciesWhenPacking", "true", $"'$(TargetFramework)'=='{frameworkToSuppress}'");
@@ -4026,8 +4026,8 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("net472", ".NETStandard,Version=v1.3")]
-        [InlineData("netstandard1.3", ".NETFramework,Version=v4.72")]
+        [InlineData("net45", ".NETStandard,Version=v1.3")]
+        [InlineData("netstandard1.3", ".NETFramework,Version=v4.5")]
         public void PackCommand_BuildOutput_DoesNotContainForSpecificFramework(string frameworkToExclude, string frameworkInPackage)
         {
             // Arrange
@@ -4041,7 +4041,7 @@ namespace ClassLibrary
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472;netstandard1.3");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net45;netstandard1.3");
                     ProjectFileUtils.AddProperty(xml, "IncludeBuildOutput", "false", $"'$(TargetFramework)'=='{frameworkToExclude}'");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -4863,7 +4863,7 @@ namespace ClassLibrary
                     frameworkReftoPack.Add(frameworkRefs[i], pack[i]);
                 }
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -6002,7 +6002,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;net45</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -6011,7 +6011,7 @@ namespace ClassLibrary
     <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" NoWarn = ""NU5104""/>
   </ItemGroup>
 
-  <ItemGroup Condition="" '$(TargetFramework)' == 'net472'"">
+  <ItemGroup Condition="" '$(TargetFramework)' == 'net45'"">
     <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}""/>
   </ItemGroup>
 </Project>";
@@ -6062,7 +6062,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;net45</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -6071,7 +6071,7 @@ namespace ClassLibrary
     <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" NoWarn = ""NU5104""/>
   </ItemGroup>
 
-  <ItemGroup Condition="" '$(TargetFramework)' == 'net472'"">
+  <ItemGroup Condition="" '$(TargetFramework)' == 'net45'"">
     <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}"" NoWarn = ""NU5104""/>
   </ItemGroup>
 </Project>";
