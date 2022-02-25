@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -19,6 +20,9 @@ namespace NuGet.Protocol.Tests
 {
     public class LocalFolderUtilityTests
     {
+        // *.nupkg
+        private static readonly string NupkgFilter = $"*{NuGetConstants.PackageExtension}";
+
         [Fact]
         public void LocalFolderUtility_GetAndVerifyRootDirectory_WithAbsoluteFileUri()
         {
@@ -1367,6 +1371,51 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public async Task LocalFolderUtility_GetFilesSafeCancellationToken_NotCancelled_Succeed()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var testLogger = new TestLogger();
+            var source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+            var packageRoot = new DirectoryInfo(pathContext.PackageSource);
+
+            // Act
+            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("b", NuGetVersion.Parse("1.0.0")));
+            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("c", NuGetVersion.Parse("1.0.0")));
+
+            // Act
+            var packageFiles = LocalFolderUtility.GetFilesSafe(packageRoot, NupkgFilter, testLogger, token)
+                .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // Assert
+            Assert.Equal(3, packageFiles.Count);
+            Assert.Equal("a.1.0.0.nupkg", packageFiles[0].Name);
+            Assert.Equal("b.1.0.0.nupkg", packageFiles[1].Name);
+            Assert.Equal("c.1.0.0.nupkg", packageFiles[2].Name);
+        }
+
+        [Fact]
+        public async Task LocalFolderUtility_GetFilesSafeWithCancellationToken_Cancelled_Fails()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var testLogger = new TestLogger();
+            var packageRoot = new DirectoryInfo(pathContext.PackageSource);
+            var source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+            source.Cancel();
+
+            // Act
+            await SimpleTestPackageUtility.CreateFolderFeedV2Async(pathContext.PackageSource, new PackageIdentity("a", NuGetVersion.Parse("1.0.0")));
+
+            // Assert
+            Assert.Throws<OperationCanceledException>(() => LocalFolderUtility.GetFilesSafe(packageRoot, NupkgFilter, testLogger, token));
         }
     }
 }

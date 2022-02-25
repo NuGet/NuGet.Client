@@ -1183,7 +1183,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieve files and log exceptions that occur.
         /// </summary>
-        private static List<FileInfo> GetFilesSafe(DirectoryInfo root, string filter, ILogger log, CancellationToken cancellationToken)
+        internal static List<FileInfo> GetFilesSafe(DirectoryInfo root, string filter, ILogger log, CancellationToken cancellationToken)
         {
             try
             {
