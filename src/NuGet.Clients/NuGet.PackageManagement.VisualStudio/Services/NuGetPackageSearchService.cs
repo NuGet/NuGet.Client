@@ -328,6 +328,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        /// <summary>
+        /// Combines package Folders from PackageReferenceProject with global package folders
+        /// </summary>
+        /// <param name="projectContextInfos">A collection of projects</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private async Task<IReadOnlyList<SourceRepository>> GetAllPackageFoldersAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             CancellationToken cancellationToken)
@@ -342,13 +348,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IEnumerable<SourceRepository> assetsPackageFolders = pkgFoldersUnique.Select(folder => _sharedServiceState.SourceRepositoryProvider.CreateRepository(new PackageSource(folder)));
 
-            SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-
             IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
 
             List<SourceRepository> allLocalFolders = globalPackageFolderRepositories
                 .Concat(assetsPackageFolders)
-                .GroupBy(source => source.PackageSource.Source) // remove duplicates
+                .GroupBy(source => source?.PackageSource?.Source) // remove duplicates
                 .Select(group => group.First())
                 .ToList();
 
@@ -378,14 +382,12 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
             PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages);
 
-            IEnumerable<SourceRepository> allLocalFolders = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
-
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
-                allLocalFolders,
+                globalPackageFolderRepositories,
                 logger);
 
             if (itemFilter == ItemFilter.All)

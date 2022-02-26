@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (transitiveOrigins.Any())
                 {
                     // Get only local metadata. We don't want Deprecation and Vulnerabilities Metadata on Transitive packages
-                    IPackageSearchMetadata packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    IPackageSearchMetadata packageMetadata = await _metadataProvider.GetOnlyLocalPackageMetadataAsync(identity, cancellationToken);
 
                     if (packageMetadata == null) // Edge case: local metadata not found
                     {

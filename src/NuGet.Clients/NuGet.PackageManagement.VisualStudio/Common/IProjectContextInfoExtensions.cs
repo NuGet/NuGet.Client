@@ -69,6 +69,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        /// <summary>
+        /// Get packageFolders section from assets file in a PackageReference project
+        /// </summary>
+        /// <param name="projectContextInfo">A project</param>
+        /// <param name="serviceBroker">Service Broker to gather data</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A collection with all package folders listed in assets file or empty collection if none</returns>
+        /// <exception cref="ArgumentNullException">If any argument is null</exception>
+        /// <remarks><see cref="NuGetProjectManagerService.GetPackageFoldersAsync(IReadOnlyCollection{string}, CancellationToken)"/></remarks>
         public static async ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
             this IProjectContextInfo projectContextInfo,
             IServiceBroker serviceBroker,

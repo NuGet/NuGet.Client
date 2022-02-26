@@ -579,20 +579,27 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
+        /// <inheritdoc />
         public async ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
         {
+            if (projectIds == null)
+            {
+                throw new ArgumentNullException(nameof(projectIds));
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
 
             var prStyleTasks = new List<Task<IReadOnlyCollection<string>>>();
+
             foreach (NuGetProject? project in projects)
             {
                 if (project is IPackageReferenceProject packageReferenceProject)
                 {
-                    prStyleTasks.Add(packageReferenceProject.GetPackageSourcesAsync(cancellationToken));
+                    prStyleTasks.Add(packageReferenceProject.GetPackageFoldersAsync(cancellationToken));
                 }
             }
 

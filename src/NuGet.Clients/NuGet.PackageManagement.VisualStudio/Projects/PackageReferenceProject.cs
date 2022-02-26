@@ -397,7 +397,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc />
-        public async Task<IReadOnlyCollection<string>> GetPackageSourcesAsync(CancellationToken ct)
+        public async Task<IReadOnlyCollection<string>> GetPackageFoldersAsync(CancellationToken ct)
         {
             PackageSpec packageSpec = null;
             string assetsFilePath = null;
