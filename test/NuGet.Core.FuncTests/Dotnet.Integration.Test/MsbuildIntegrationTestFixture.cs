@@ -85,10 +85,10 @@ namespace Dotnet.Integration.Test
                 // According to https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
                 // The latest C# compiler will set default language version based on the TFM.
                 // When the version of testing dotnet changed from 5.x to 6.x, the default TFM is changed to net6.0.
-                // so the default C# language version for project targeting net6.0 will be set to 10, and it's not compaitble with other TFMs.
+                // so the default C# language version for project targeting net6.0 will be set to 10, and it's not compatible with other TFMs.
                 // We manually set the langVersion to the lowest 7.3, to make it compatible with other TFMs.
                 string templateArgs = args;
-                if (!templateArgs.Contains("langVersion"))
+                if (!templateArgs.Contains("langVersion") && (templateArgs.Equals("console") || templateArgs.Equals("classlib")))
                 {
                     templateArgs = templateArgs + " --langVersion 7.3";
                 }
