@@ -192,6 +192,13 @@ namespace NuGet.Test.Utility
             Save();
         }
 
+        public void AddSource(string sourceName, string sourceUri)
+        {
+            var section = GetOrAddSection(XML, "packageSources");
+            AddEntry(section, sourceName, sourceUri);
+            Save();
+        }
+
         // Simply add any text as section into nuget.config file, adding large child node into nuget.config via api is tedious.
         public static void AddSectionIntoNuGetConfig(string path, string content, string parentNode)
         {

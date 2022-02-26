@@ -3618,6 +3618,65 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
         }
 
+        [Fact]
+        public async Task Restore_WhenSourceDoesNotExist_ReportsNU1301InAssetsFile()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Don't create the package
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            var logger = new TestLogger();
+            Directory.Delete(pathContext.PackageSource);
+            // Set-up command.
+            var command = new RestoreCommand(
+                ProjectTestHelpers.CreateRestoreRequest(
+                    ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.PackageName),
+                    pathContext,
+                    new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeFalse(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(0);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
+        }
+
+        [Fact]
+        public async Task Restore_WhenSourceDoesNotExist_AndIgnoreFailedSourcesIsTrue_ReportsNU1801InAssetsFile()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.AddSource("extraSource", Path.Combine(pathContext.WorkingDirectory, "Source2"));
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+              pathContext.PackageSource,
+              PackageSaveMode.Defaultv3,
+              packageA
+              );
+            var logger = new TestLogger();
+            // Set-up command.
+            //The cache context is created when the restore request is created.
+            var request = ProjectTestHelpers.CreateRestoreRequest(
+                    ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.PackageName),
+                    pathContext,
+                    new TestLogger());
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeFalse(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(1);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
+        }
+
         private static void CreateFakeProjectFile(PackageSpec project2spec)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(project2spec.RestoreMetadata.ProjectUniqueName));
