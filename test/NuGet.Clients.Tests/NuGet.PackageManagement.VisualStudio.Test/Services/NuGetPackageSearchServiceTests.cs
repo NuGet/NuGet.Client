@@ -22,6 +22,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -291,6 +292,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             packageSourceProvider.Setup(x => x.LoadPackageSources()).Returns(new List<PackageSource> { _sourceRepository.PackageSource });
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
             sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>())).Returns(_sourceRepository);
+            sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>(), It.IsAny<FeedType>())).Returns(_sourceRepository);
             sourceRepositoryProvider.SetupGet(x => x.PackageSourceProvider).Returns(packageSourceProvider.Object);
             var solutionManager = new Mock<IVsSolutionManager>();
             solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
@@ -320,6 +322,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IInstalledAndTransitivePackages>(new InstalledAndTransitivePackages(_installedPackages.ToList(), _transitivePackages.ToList())));
+            projectManagerService.Setup(x => x.GetPackageFoldersAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<string>>(Array.Empty<string>()));
 
 #pragma warning disable ISB001 // Dispose of proxies
             serviceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(
