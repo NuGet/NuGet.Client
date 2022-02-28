@@ -152,6 +152,16 @@ namespace NuGet.Shared
             return self.Equals(other);
         }
 
+        /// <summary>
+        /// Determines if the current string contains a value equal "false".  Leading and trailing whitespace are trimmed and the comparision is case-insensitive
+        /// </summary>
+        /// <param name="value">The string to compare.</param>
+        /// <returns><c>true</c> if the current string is equal to a value of "false", otherwise <c>false></c>.</returns>
+        internal static bool EqualsFalse(this string value)
+        {
+            return !string.IsNullOrWhiteSpace(value) && bool.FalseString.Equals(value.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
         private static bool TryIdentityEquals<T>(T self, T other, out bool equals)
         {
             // Are they the same instance? This handles the case where both are null.

@@ -291,7 +291,7 @@ namespace NuGet.Packaging
             CancellationToken token)
         {
             var filesCopied = new List<string>();
-            var pacakgeIdentity = GetIdentity();
+            var packageIdentity = GetIdentity();
 
             foreach (var packageFile in packageFiles)
             {
@@ -312,7 +312,7 @@ namespace NuGet.Packaging
                 var normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
 
                 destination = NormalizeDirectoryPath(destination);
-                ValidatePackageEntry(destination, normalizedPath, pacakgeIdentity);
+                ValidatePackageEntry(destination, normalizedPath, packageIdentity);
 
                 var targetFilePath = Path.Combine(destination, normalizedPath);
 

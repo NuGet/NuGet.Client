@@ -540,6 +540,10 @@ namespace NuGet.Test.Utility
                                 props.Add("Version", package.Version.ToString());
                             }
                         }
+                        if (!string.IsNullOrEmpty(package.VersionOverride))
+                        {
+                            props.Add("VersionOverride", package.VersionOverride);
+                        }
 
                         if (!string.IsNullOrEmpty(package.Include))
                         {

@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Xunit;
 
 namespace NuGet.Build.Tasks.Test
@@ -15,28 +13,23 @@ namespace NuGet.Build.Tasks.Test
         public void Execute_CheckMetadata()
         {
             // Arrange
-            var buildEngine = new TestBuildEngine();
-
-            var packageX = new TaskItem();
-            packageX.ItemSpec = "x";
-            packageX.SetMetadata("Version", "[1.0.0]");
-
-            var packageY = new TaskItem();
-            packageY.ItemSpec = "y";
-            packageY.SetMetadata("Version", "2.0.0");
-            packageY.SetMetadata("Dummy", "someDummyValue");
-
-            var centralPackageVersions = new List<ITaskItem>()
-            {
-                packageX, packageY
-            };
-
             var task = new GetCentralPackageVersionsTask()
             {
-                BuildEngine = buildEngine,
+                BuildEngine = new TestBuildEngine(),
                 ProjectUniqueName = "MyProj",
                 TargetFrameworks = "netstandard2.0",
-                CentralPackageVersions = centralPackageVersions.ToArray()
+                CentralPackageVersions = new ITaskItem[]
+                {
+                    new MockTaskItem("x")
+                    {
+                        ["Version"] = "[1.0.0]"
+                    },
+                    new MockTaskItem("y")
+                    {
+                        ["Version"] = "2.0.0",
+                        ["Dummy"] = "someDummyValue"
+                    }
+                }
             };
 
             // Act
@@ -65,27 +58,22 @@ namespace NuGet.Build.Tasks.Test
         public void Execute_RemoveDuplicates()
         {
             // Arrange
-            var buildEngine = new TestBuildEngine();
-
-            var packageX = new TaskItem();
-            packageX.ItemSpec = "x";
-            packageX.SetMetadata("Version", "[1.0.0]");
-
-            var packageY = new TaskItem();
-            packageY.ItemSpec = "x";
-            packageY.SetMetadata("Version", "2.0.0");
-
-            var centralPackageVersions = new List<ITaskItem>()
-            {
-                packageX, packageY
-            };
-
             var task = new GetCentralPackageVersionsTask()
             {
-                BuildEngine = buildEngine,
+                BuildEngine = new TestBuildEngine(),
                 ProjectUniqueName = "MyProj",
                 TargetFrameworks = "netstandard2.0",
-                CentralPackageVersions = centralPackageVersions.ToArray()
+                CentralPackageVersions = new ITaskItem[]
+                {
+                    new MockTaskItem("x")
+                    {
+                        ["Version"] = "[1.0.0]"
+                    },
+                    new MockTaskItem("X")
+                    {
+                        ["Version"] = "2.0.0",
+                    }
+                }
             };
 
             // Act

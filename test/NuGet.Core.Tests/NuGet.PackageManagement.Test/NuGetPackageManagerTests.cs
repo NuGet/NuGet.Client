@@ -393,7 +393,7 @@ namespace NuGet.Test
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var packageIdentity = _noDependencyLibPackages[0];
 
-                // Create pacakges.config that is an invalid xml
+                // Create packages.config that is an invalid xml
                 using (var w = new StreamWriter(File.Create(packagesConfigPath)))
                 {
                     w.Write("abc");

@@ -21,6 +21,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -126,7 +127,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
         {
-            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
+            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally);
+
+            return MSBuildStringUtility.IsTrue(value);
+        }
+
+        private async Task<bool> IsCentralPackageVersionOverrideDisabledAsync()
+        {
+            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.CentralPackageVersionOverrideEnabled);
+
+            return value.EqualsFalse();
         }
 
         private async Task<string> GetSpecifiedAssemblyNameAsync()
@@ -438,7 +448,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         await _vsProjectAdapter.GetRestorePackagesWithLockFileAsync(),
                         await _vsProjectAdapter.GetNuGetLockFilePathAsync(),
                         await _vsProjectAdapter.IsRestoreLockedAsync()),
-                    CentralPackageVersionsEnabled = isCpvmEnabled
+                    CentralPackageVersionsEnabled = isCpvmEnabled,
+                    CentralPackageVersionOverrideDisabled = await IsCentralPackageVersionOverrideDisabledAsync()
                 }
             };
         }

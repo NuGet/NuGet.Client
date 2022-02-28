@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using NuGet.Common;
 using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
 {
@@ -41,6 +42,11 @@ namespace NuGet.LibraryModel
 
         public string Aliases { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating a version override for any centrally defined version.
+        /// </summary>
+        public VersionRange VersionOverride { get; set; }
+
         public LibraryDependency() { }
 
         internal LibraryDependency(
@@ -52,7 +58,8 @@ namespace NuGet.LibraryModel
             bool generatePathProperty,
             bool versionCentrallyManaged,
             LibraryDependencyReferenceType libraryDependencyReferenceType,
-            string aliases)
+            string aliases,
+            VersionRange versionOverride)
         {
             LibraryRange = libraryRange;
             IncludeType = includeType;
@@ -63,6 +70,7 @@ namespace NuGet.LibraryModel
             VersionCentrallyManaged = versionCentrallyManaged;
             ReferenceType = libraryDependencyReferenceType;
             Aliases = aliases;
+            VersionOverride = versionOverride;
         }
 
         public override string ToString()
@@ -116,6 +124,7 @@ namespace NuGet.LibraryModel
                    GeneratePathProperty == other.GeneratePathProperty &&
                    VersionCentrallyManaged == other.VersionCentrallyManaged &&
                    Aliases == other.Aliases &&
+                   VersionOverride == other.VersionOverride &&
                    ReferenceType == other.ReferenceType;
         }
 
@@ -124,7 +133,7 @@ namespace NuGet.LibraryModel
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases);
+            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride);
         }
 
         /// <summary>
@@ -144,6 +153,13 @@ namespace NuGet.LibraryModel
             {
                 foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
                 {
+                    if (d.VersionOverride != null)
+                    {
+                        d.LibraryRange.VersionRange = d.VersionOverride;
+
+                        continue;
+                    }
+
                     if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
                     {
                         d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
