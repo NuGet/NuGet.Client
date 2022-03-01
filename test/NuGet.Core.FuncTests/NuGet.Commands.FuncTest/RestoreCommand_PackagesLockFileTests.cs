@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Commands.Test;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Test.Utility.Commands;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
@@ -645,6 +647,72 @@ namespace NuGet.Commands.FuncTest
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
                 logger.ErrorMessages.Single().Should().Contain($"The project LeafProject has no compatible target framework.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WithFloatingVersions_WhenNoChangesInProjectReferenceDependencies_Success()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageA);
+
+                var targetFramework = CommonFrameworks.Net46;
+                var allPackageSpecs = new List<PackageSpec>();
+
+                var projectName = "RootProject";
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var rootPackageSpec = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                    .WithTargetFrameworks(new string[] { "net46" })
+                    .WithPackagesLockFile()
+                    .Build();
+                allPackageSpecs.Add(rootPackageSpec);
+
+                // Add the dependency
+                var dependency = new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange(packageA.Id, VersionRange.Parse("*"), LibraryDependencyTarget.Package)
+                };
+
+                rootPackageSpec.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
+
+                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(rootPackageSpec, pathContext, logger)).ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue();
+
+                projectName = "IntermediateProject";
+                projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var transitiveReferenceSpec = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                    .WithTargetFrameworks(new string[] { targetFramework.GetShortFolderName() })
+                    .WithPackagesLockFile()
+                    .Build();
+                allPackageSpecs.Add(transitiveReferenceSpec);
+
+                PackageSpecOperationsUtility.AddProjectReference(transitiveReferenceSpec, rootPackageSpec, targetFramework);
+
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(transitiveReferenceSpec, allPackageSpecs, pathContext, logger)).ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue();
+
+                // Enable locked mode
+                transitiveReferenceSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                    restorePackagesWithLockFile: "true",
+                    transitiveReferenceSpec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                    restoreLockedMode: true);
+                logger.Clear();
+
+                // Act.
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(transitiveReferenceSpec, allPackageSpecs, pathContext, logger)).ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert.
+                result.Success.Should().BeTrue();
             }
         }
 
