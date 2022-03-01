@@ -55,7 +55,7 @@ namespace NuGet.ProjectModel
         {
             return new JProperty(
                 item.Id,
-                WriteString(item.VersionRange?.ToLegacyShortString()));
+                WriteString(item.VersionRange?.ToString()));
         }
 
         internal static TItem ReadProperty<TItem>(JObject jObject, string propertyName)
