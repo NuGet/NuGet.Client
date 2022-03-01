@@ -170,7 +170,7 @@ namespace NuGet.DependencyResolver
                 if (outerEdge == null
                     || dependency.SuppressParent != LibraryIncludeFlags.All)
                 {
-                    var result = WalkTreeCheckCycleAndNearestWins(outerEdge, dependency, predicate);
+                    var result = WalkParentsAndCalculateDependencyResult(outerEdge, dependency, predicate);
 
                     // Check for a cycle, this is needed for A (project) -> A (package)
                     // since the predicate will not be called for leaf nodes.
@@ -256,77 +256,67 @@ namespace NuGet.DependencyResolver
         /// </summary>
         /// <param name="graphEdge">Graph Edge node to check for cycle or potential degrades</param>
         /// <param name="dependency">Transitive package dependency</param>
-        /// <param name="rootpredicate">Func delegate to invoke when processing direct package dependency</param>
-        private static (DependencyResult dependencyResult, LibraryDependency conflictingDependency) WalkTreeCheckCycleAndNearestWins(GraphEdge<RemoteResolveResult> graphEdge,
-                        LibraryDependency dependency, Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> rootpredicate)
+        /// <param name="rootPredicate">Func delegate to invoke when processing direct package dependency</param>
+        private static (DependencyResult dependencyResult, LibraryDependency conflictingDependency) WalkParentsAndCalculateDependencyResult(
+            GraphEdge<RemoteResolveResult> graphEdge,
+            LibraryDependency dependency,
+            Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> rootPredicate)
         {
-            (DependencyResult, LibraryDependency) result = default;
-
             var edge = graphEdge;
-            bool exitFlag = false;
 
-            while (edge != null && !exitFlag)
+            //Walk up the tree starting from the grand parent upto root
+            while (edge != null)
             {
-                if (StringComparer.OrdinalIgnoreCase.Equals(edge.Item.Data.Match.Library.Name, dependency.Name))
-                {
-                    result = (DependencyResult.Cycle, null);
-                    exitFlag = true;
-                    break;
-                }
+                var result = CalculateDependencyResult(edge.Item, edge.Edge, dependency.LibraryRange);
 
-                foreach (var d in edge.Item.Data.Dependencies)
-                {
-                    if (d != dependency && dependency.LibraryRange.IsEclipsedBy(d.LibraryRange))
-                    {
-                        if (d.LibraryRange.VersionRange != null &&
-                            dependency.LibraryRange.VersionRange != null &&
-                            !IsGreaterThanOrEqualTo(d.LibraryRange.VersionRange, dependency.LibraryRange.VersionRange))
-                        {
-                            result = (DependencyResult.PotentiallyDowngraded, d);
-                            exitFlag = true;
-                            break;
-                        }
-
-                        result = (DependencyResult.Eclipsed, d);
-                        exitFlag = true;
-                        break;
-                    }
-                }
+                if (result.dependencyResult != DependencyResult.Unknown)
+                    return result;
 
                 edge = edge.OuterEdge;
             }
 
-            return exitFlag ? result : rootpredicate(dependency.LibraryRange);
+            return rootPredicate(dependency.LibraryRange);
         }
 
-        private Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> ChainPredicate(Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
+        private static Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> ChainPredicate(Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
         {
             var item = node.Item;
 
             return library =>
             {
-                if (StringComparer.OrdinalIgnoreCase.Equals(item.Data.Match.Library.Name, library.Name))
-                {
-                    return (DependencyResult.Cycle, null);
-                }
+                var result = CalculateDependencyResult(item, dependency, library);
 
-                foreach (var d in item.Data.Dependencies)
-                {
-                    if (d != dependency && library.IsEclipsedBy(d.LibraryRange))
-                    {
-                        if (d.LibraryRange.VersionRange != null &&
-                            library.VersionRange != null &&
-                            !IsGreaterThanOrEqualTo(d.LibraryRange.VersionRange, library.VersionRange))
-                        {
-                            return (DependencyResult.PotentiallyDowngraded, d);
-                        }
-
-                        return (DependencyResult.Eclipsed, d);
-                    }
-                }
+                if (result.dependencyResult != DependencyResult.Unknown)
+                    return result;
 
                 return predicate(library);
             };
+        }
+
+        private static (DependencyResult dependencyResult, LibraryDependency conflictingDependency) CalculateDependencyResult(
+            GraphItem<RemoteResolveResult> item, LibraryDependency parentDependency, LibraryRange childDependencyLibrary)
+        {
+            if (StringComparer.OrdinalIgnoreCase.Equals(item.Data.Match.Library.Name, childDependencyLibrary.Name))
+            {
+                return (DependencyResult.Cycle, null);
+            }
+
+            foreach (var d in item.Data.Dependencies)
+            {
+                if (d != parentDependency && childDependencyLibrary.IsEclipsedBy(d.LibraryRange))
+                {
+                    if (d.LibraryRange.VersionRange != null &&
+                        childDependencyLibrary.VersionRange != null &&
+                        !IsGreaterThanOrEqualTo(d.LibraryRange.VersionRange, childDependencyLibrary.VersionRange))
+                    {
+                        return (DependencyResult.PotentiallyDowngraded, d);
+                    }
+
+                    return (DependencyResult.Eclipsed, d);
+                }
+            }
+
+            return (DependencyResult.Unknown, null);
         }
 
         // Verifies if minimum version specification for nearVersion is greater than the
@@ -446,6 +436,7 @@ namespace NuGet.DependencyResolver
 
         private enum DependencyResult
         {
+            Unknown,
             Acceptable,
             Eclipsed,
             PotentiallyDowngraded,
