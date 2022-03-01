@@ -139,7 +139,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return value.EqualsFalse();
         }
 
-
         private async Task<bool> IsTransitiveDependencyPinningEnabledAsync()
         {
             string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.TransitiveDependencyPinningEnabled);

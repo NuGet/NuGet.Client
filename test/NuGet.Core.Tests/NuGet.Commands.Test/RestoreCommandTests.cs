@@ -1652,8 +1652,10 @@ namespace NuGet.Commands.Test
             Assert.Equal(NuGetLogCode.NU1109, logMessage.Code);
         }
 
-        [Fact]
-        public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency(bool transitiveDependencyPinningEnabled)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1662,14 +1664,14 @@ namespace NuGet.Commands.Test
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
-
+                var tdpString = transitiveDependencyPinningEnabled ? "true" : "false";
                 var project1Json = @"
                 {
                   ""version"": ""1.0.0"",
                     ""restore"": {
                                     ""projectUniqueName"": ""TestProject"",
                                     ""centralPackageVersionsManagementEnabled"": true,
-                                    ""transitiveDependencyPinningEnabled"": true,
+                                    ""transitiveDependencyPinningEnabled"": " + tdpString + @",
                     },
                   ""frameworks"": {
                     ""net472"": {
@@ -1694,7 +1696,6 @@ namespace NuGet.Commands.Test
 
                 packageA_Version200.Dependencies.Add(packageB_Version200);
 
-
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
@@ -1718,9 +1719,16 @@ namespace NuGet.Commands.Test
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.False(result.Success);
-                var downgradeErrorMessages = logger.Messages.Where(s => s.Contains("Detected package downgrade: packageB from 2.0.0 to centrally defined 1.0.0.")).ToList();
-                Assert.Equal(1, downgradeErrorMessages.Count);
+                if (transitiveDependencyPinningEnabled)
+                {
+                    Assert.False(result.Success);
+                    var downgradeErrorMessages = logger.Messages.Where(s => s.Contains("Detected package downgrade: packageB from 2.0.0 to centrally defined 1.0.0.")).ToList();
+                    Assert.Equal(1, downgradeErrorMessages.Count);
+                }
+                else
+                {
+                    Assert.True(result.Success);
+                }
             }
         }
 
@@ -2506,6 +2514,7 @@ namespace NuGet.Commands.Test
         {
             return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
+
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)
         {
             NuGetFramework nugetFramework = framework ?? new NuGetFramework("net40");
@@ -2533,7 +2542,6 @@ namespace NuGet.Commands.Test
             {
                 ProjectUniqueName = projectName,
                 CentralPackageVersionsEnabled = cpvmEnabled,
-                TransitiveDependencyPinningEnabled = false,
                 ProjectStyle = ProjectStyle.PackageReference,
                 TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>() { new ProjectRestoreMetadataFrameworkInfo(framework) },
                 OutputPath = Path.Combine(projectPath, "obj"),

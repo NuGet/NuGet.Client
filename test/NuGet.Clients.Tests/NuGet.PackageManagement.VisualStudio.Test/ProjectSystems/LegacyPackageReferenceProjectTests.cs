@@ -922,6 +922,60 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("  ", false)]
+        [InlineData("invalid", false)]
+        [InlineData("false", false)]
+        [InlineData("           false    ", false)]
+        [InlineData("FaLsE", false)]
+        [InlineData("true", true)]
+        [InlineData("  true  ", true)]
+        public async Task GetPackageSpecAsync_TransitiveDependencyPinning_CanBeEnabled(string transitiveDependencyPinning, bool expected)
+        {
+            // Arrange
+
+            var projectNames = new ProjectNames(
+                        fullName: "projectName",
+                        uniqueName: "projectName",
+                        shortName: "projectName",
+                        customUniqueName: "projectName",
+                        projectId: Guid.NewGuid().ToString());
+
+            var vsProjectAdapter = new TestVSProjectAdapter(
+                        "projectPath",
+                        projectNames,
+                        "framework",
+                        restorePackagesWithLockFile: null,
+                        nuGetLockFilePath: null,
+                        restoreLockedMode: false,
+                        projectPackageVersions: new List<(string Id, string Version)>() {  },
+                        transitiveDependencyPinningEnabled: transitiveDependencyPinning);
+
+            var legacyPRProject = new LegacyPackageReferenceProject(
+                       vsProjectAdapter,
+                       Guid.NewGuid().ToString(),
+                       new TestProjectSystemServices(),
+                       _threadingService);
+
+            var settings = NullSettings.Instance;
+            var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+            var packageSpecs = await legacyPRProject.GetPackageSpecsAsync(context);
+
+            Assert.Equal(1, packageSpecs.Count);
+
+            if (expected)
+            {
+                Assert.True(packageSpecs.First().RestoreMetadata.TransitiveDependencyPinningEnabled);
+            }
+            else
+            {
+                Assert.False(packageSpecs.First().RestoreMetadata.TransitiveDependencyPinningEnabled);
+            }
+        }
+
         [Fact]
         public async Task GetInstalledVersion_WithAssetsFile_ReturnsVersionsFromAssetsSpecs()
         {

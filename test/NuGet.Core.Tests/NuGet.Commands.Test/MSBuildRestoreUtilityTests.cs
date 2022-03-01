@@ -3449,7 +3449,7 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 });
 
-                // Package reference with version 
+                // Package reference with version
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "Dependency" },
@@ -3934,6 +3934,40 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Theory]
+        [InlineData("false", false)]
+        [InlineData("true", true)]
+        public void MSBuildRestoreUtility_GetPackageSpec_CPVM_TransitiveDependencyPinning(string value, bool expected)
+        {
+            var projectName = "ccpvm2";
+            var projectStyle = ProjectStyle.PackageReference;
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectUniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var projectSpec = CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "bcpvm" },
+                    { "ProjectStyle", projectStyle.ToString() },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "CrossTargeting", "true" },
+                    { "_CentralPackageVersionsEnabled", "true"},
+                    { "TransitiveDependencyPinningEnabled", value},
+                });
+
+                // Act
+                var settings = MSBuildRestoreUtility.GetCentralPackageManagementSettings(projectSpec, projectStyle);
+
+                // Assert
+                Assert.Equal(expected, settings.IsTransitiveDependencyPinningEnabled);
+            }
+        }
+
         /// <summary>
         /// Verifies that <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> applies version overrides correctly depending on whether or not central package management is enabled.
         /// </summary>
@@ -4002,7 +4036,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworks", "netcoreapp3.0" },
                 });
 
-                // Package reference with version 
+                // Package reference with version
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "Dependency" },

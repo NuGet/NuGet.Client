@@ -27,6 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly bool _isCPVMEnabled;
         private readonly IEnumerable<(string PackageId, string Version)> _projectPackageVersions;
         private readonly string _isCentralPackageVersionOverrideEnabled;
+        private readonly string _transitiveDependencyPinningEnabled;
 
         public TestVSProjectAdapter(
             string fullProjectPath,
@@ -36,7 +37,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             string nuGetLockFilePath = null,
             bool restoreLockedMode = false,
             IEnumerable<(string PackageId, string Version)> projectPackageVersions = null,
-            string isCentralPackageVersionOverrideEnabled = null)
+            string isCentralPackageVersionOverrideEnabled = null,
+            string transitiveDependencyPinningEnabled = null
+            )
         {
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
@@ -47,6 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _isCPVMEnabled = projectPackageVersions?.Any() == true;
             _projectPackageVersions = projectPackageVersions;
             _isCentralPackageVersionOverrideEnabled = isCentralPackageVersionOverrideEnabled;
+            _transitiveDependencyPinningEnabled = transitiveDependencyPinningEnabled;
         }
 
         public string AssetTargetFallback
@@ -240,6 +244,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 case ProjectBuildProperties.CentralPackageVersionOverrideEnabled:
                     return Task.FromResult(_isCentralPackageVersionOverrideEnabled ?? string.Empty);
+
+                case ProjectBuildProperties.TransitiveDependencyPinningEnabled:
+                    return Task.FromResult(_transitiveDependencyPinningEnabled ?? string.Empty);
 
                 default:
                     return Task.FromResult(string.Empty);

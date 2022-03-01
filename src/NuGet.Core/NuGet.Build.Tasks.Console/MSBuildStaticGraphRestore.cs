@@ -1025,7 +1025,7 @@ namespace NuGet.Build.Tasks.Console
         {
             if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
             {
-                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("EnablePackageVersionOverride"), project.IsPropertyTrue("TransitiveDependencyPinningEnabled"));
+                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("CentralPackageVersionOverrideEnabled"), project.IsPropertyTrue("TransitiveDependencyPinningEnabled"));
             }
 
             return (false, false, false);

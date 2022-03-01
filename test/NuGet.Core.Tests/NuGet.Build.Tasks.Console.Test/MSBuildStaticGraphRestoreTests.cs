@@ -766,6 +766,30 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal(disabled, result);
         }
 
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("                     ", false)]
+        [InlineData("true", true)]
+        [InlineData("invalid", false)]
+        [InlineData("false", false)]
+        [InlineData("           true    ", true)]
+        public void TransitiveDependencyPinning_CanBeEnabled(string value, bool enabled)
+        {
+            // Arrange
+            var project = new MockMSBuildProject(
+                new Dictionary<string, string>
+                {
+                    [ProjectBuildProperties.TransitiveDependencyPinningEnabled] = value,
+                });
+
+            // Act
+            var result = MSBuildStaticGraphRestore.GetCentralPackageManagementSettings(project, ProjectStyle.PackageReference).IsTransitiveDependencyPinningEnabled;
+
+            // Assert
+            Assert.Equal(enabled, result);
+        }
+
         [Fact]
         public void GetTargetFrameworkInfos_TheCentralVersionInformationIsAdded()
         {

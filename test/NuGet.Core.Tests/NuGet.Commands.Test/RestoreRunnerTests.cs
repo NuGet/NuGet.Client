@@ -1760,7 +1760,7 @@ namespace NuGet.Commands.Test
               ""version"": ""1.0.0"",
               ""frameworks"": {
                 ""netcoreapp3.0"": {
-
+                    
                 }
               }
             }";
