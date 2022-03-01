@@ -12,12 +12,17 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
     <TargetFrameworks />
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+      <None Include="docs\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="NuGet.RestoreEx.targets">
