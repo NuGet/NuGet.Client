@@ -11,6 +11,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <LocalizationOutputDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationOutputDirectory>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,6 +24,10 @@
       PackageIconPath=$([System.IO.Path]::Combine($(RepositoryRootDirectory),$(PackageIcon)))
     </NuspecProperties>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <!--
     ============================================================
