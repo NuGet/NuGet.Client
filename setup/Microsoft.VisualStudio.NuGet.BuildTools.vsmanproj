@@ -9,11 +9,10 @@
     <FinalizeSkipLayout>true</FinalizeSkipLayout>
     <BuildNumber>$(SemanticVersion).$(BuildNumber)</BuildNumber>
     <TargetName>$(MSBuildProjectName)</TargetName>
-    <DropFolder>$(VsixPublishDestination)</DropFolder>
-    <OutputPath Condition="'$(IsVsixBuild)' != 'true'">$(DropFolder)</OutputPath>
+    <OutputPath>$(VsixPublishDestination)</OutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsVsixBuild)' == 'true'">
+  <PropertyGroup>
     <IsPackage>true</IsPackage>
     <FinalizeValidate>false</FinalizeValidate>
     <ValidateManifest>false</ValidateManifest>
@@ -21,18 +20,15 @@
     <MicroBuild_SigningEnabled>false</MicroBuild_SigningEnabled>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsVsixBuild)' == 'true'">
+  <ItemGroup>
     <ProjectReference Include="Microsoft.VisualStudio.NuGet.BuildTools.swixproj" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>
-    <MergeManifest Include="$(OutputPath)$(MSBuildProjectName).json" />
+    <MergeManifest Include="$(VsixPublishDestination)$(MSBuildProjectName).json"
+      SBOMFileLocation="$(ManifestDirPath)_manifest\spdx_2.2\manifest.spdx.json"
+      />
   </ItemGroup>
-
-  <Target Name="CopyToDropFolder" AfterTargets="Build" Condition="'$(IsVsixBuild)' == 'true'">
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(DropFolder)" />
-    <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(DropFolder)" />
-  </Target>
 
   <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
 

@@ -1,3 +1,7 @@
+parameters:
+- name: BuildRTM
+  type: boolean
+
 steps:
 - task: PowerShell@1
   inputs:
@@ -35,7 +39,7 @@ steps:
     esrpSigning: "true"
   displayName: "Install Signing Plugin"
 
-- task: ms-vseng.MicroBuildTasks.32f78468-e895-4f47-962c-58a699361df8.MicroBuildSwixPlugin@1
+- task: MicroBuildSwixPlugin@4
   displayName: "Install Swix Plugin"
 
 - task: MicroBuildOptProfPlugin@6
@@ -200,12 +204,18 @@ steps:
     maximumCpuCount: true
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
+- ${{ if not(parameters.BuildRTM)}}:
+  - template: \eng\common\templates\steps\generate-sbom.yml
+    parameters:
+      PackageName: 'NuGet.Client'
+      PackageVersion: "$(SemanticVersion)"
+
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
     solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
+    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -249,13 +259,7 @@ steps:
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     configuration: "$(BuildConfiguration)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
-- task: MSBuild@1
-  displayName: "Generate VSMAN file for Build Tools VSIX"
-  inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/p:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1

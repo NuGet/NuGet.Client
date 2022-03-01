@@ -3935,9 +3935,9 @@ namespace NuGet.Commands.Test
         }
 
         /// <summary>
-        /// Verifies taht <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> applies version overrides correctly depending on whether or not central package management is enabled.
+        /// Verifies that <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> applies version overrides correctly depending on whether or not central package management is enabled.
         /// </summary>
-        /// <param name="isCentralPackageManagementEnabled"><c>true</c> if central pacakge management is enabled, otherwise <c>false</c>.</param>
+        /// <param name="isCentralPackageManagementEnabled"><c>true</c> if central package management is enabled, otherwise <c>false</c>.</param>
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -4099,7 +4099,7 @@ namespace NuGet.Commands.Test
         }
 
         /// <summary>
-        /// Verifies taht <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> throws a <see cref="ArgumentException" /> if PackageReference contains a value for VersionOverride is not a valid <see cref="VersionRange" />.
+        /// Verifies that <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> throws a <see cref="ArgumentException" /> if PackageReference contains a value for VersionOverride is not a valid <see cref="VersionRange" />.
         /// </summary>
         [Fact]
         public void MSBuildRestoreUtility_GetDependencySpec_ThrowsArgumentExceptionWhenVersionOverrideIsInvalid()

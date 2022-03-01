@@ -2153,7 +2153,7 @@ EndProject");
                 Assert.True(File.Exists(packageFilePath));
                 Assert.Contains(" from source ", r.Item2); // source logging present in verbose log
 
-                //verify source logging reported the globalPacakges folder
+                //verify source logging reported the globalPackages folder
                 var match = Regex.Match(r.Item2, @" from source '(.*)'");
                 Assert.True(match.Success);
                 Assert.Contains(globalPackagesFolder, match.Groups[1].Value);

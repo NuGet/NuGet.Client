@@ -17,7 +17,8 @@ namespace NuGet.PackageManagement.Telemetry
             RefreshOperationStatus refreshStatus,
             string tab,
             bool isUIFiltering,
-            TimeSpan timeSinceLastRefresh) : base(EventName)
+            TimeSpan timeSinceLastRefresh,
+            double? duration) : base(EventName)
         {
             base["ParentId"] = parentId.ToString();
             base["IsSolutionLevel"] = isSolutionLevel;
@@ -26,6 +27,11 @@ namespace NuGet.PackageManagement.Telemetry
             base["Tab"] = tab;
             base["IsUIFiltering"] = isUIFiltering;
             base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalMilliseconds;
+
+            if (duration.HasValue)
+            {
+                base["Duration"] = duration;
+            }
         }
     }
 

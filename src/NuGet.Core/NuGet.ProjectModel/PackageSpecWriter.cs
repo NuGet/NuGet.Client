@@ -440,6 +440,11 @@ namespace NuGet.ProjectModel
                         SetValue(writer, "versionOverride", dependency.VersionOverride.ToNormalizedString());
                     }
 
+                    if (dependency.VersionOverride != null)
+                    {
+                        SetValue(writer, "versionOverride", dependency.VersionOverride.ToNormalizedString());
+                    }
+
                     SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
 
                     if (dependency.NoWarn.Count > 0)

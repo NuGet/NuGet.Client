@@ -423,7 +423,7 @@ namespace NuGet.Protocol
             var result = new List<LocalPackageInfo>();
 
             // packages\{packageId}.{version}.nupkg
-            var nupkgFiles = LocalFolderUtility.GetNupkgsFromFlatFolder(_source, logger)
+            var nupkgFiles = LocalFolderUtility.GetNupkgsFromFlatFolder(_source, logger, CancellationToken.None)
                 .Where(path => LocalFolderUtility.IsPossiblePackageMatch(path, id));
 
             foreach (var nupkgInfo in nupkgFiles)
