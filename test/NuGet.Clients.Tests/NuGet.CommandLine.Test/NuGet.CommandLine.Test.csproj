@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -41,6 +41,7 @@
   <ItemGroup>
     <PackageDownload Include="NuGet.Core" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.TestPlatform.Portable" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,6 +59,7 @@
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\bin\$(Configuration)\$(TargetFramework)\*.dll $(OutputPath)TestableCredentialProvider\
       xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)NuGet\
       if exist $(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe xcopy /diy $(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe $(OutputPath)NuGet\
+      xcopy /diys &quot;$(PkgMicrosoft_TestPlatform_Portable)\tools\net451&quot; $(OutputPath)vstest\
     </PostBuildEvent>
   </PropertyGroup>
 
