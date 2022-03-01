@@ -931,20 +931,19 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData(null, null, true)]
-        [InlineData(null, "", true)]
-        [InlineData(null, "NU1605", false)]
-        [InlineData("", null, true)]
-        [InlineData("", "", true)]
-        [InlineData("", "NU1605", false)]
-        [InlineData("NU1605", null, true)]
-        [InlineData("NU1605", "", true)]
-        [InlineData("NU1605", "NU1605", true)]
-        [InlineData("NU1605", "NU1604", false)]
-        public void NodeWarningPropertiesIsSubSetOf_ProjectWideNoWarns(
+        // null and "" are both considered empty sets.
+        [InlineData(null, null)]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData("", null)]
+        [InlineData("NU1605", "NU1605")]
+        [InlineData("NU1604", "NU1604")]
+        [InlineData("NU1605, NU1604", "NU1605, NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1604, NU1701")]
+        // TODO
+        public void NodeWarningPropertiesIsSubSetOf_SecondProjectWideNoWarnIsEqualToFirst_Succeeds(
             string firstNoWarn,
-            string secondNoWarn,
-            bool expected)
+            string secondNoWarn)
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
@@ -958,7 +957,71 @@ namespace NuGet.Commands.Test
             var result = first.IsSubSetOf(second);
 
             // Assert
-            result.Should().Be(expected);
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData("NU1605", null)]
+        [InlineData("NU1605", "")]
+        [InlineData("NU1605, NU1604", null)]
+        [InlineData("NU1605, NU1604", "")]
+        [InlineData("NU1605, NU1604", "NU1605")]
+        [InlineData("NU1605, NU1604", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", null)]
+        [InlineData("NU1605, NU1604, NU1701", "")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1701")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1701")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1604, NU1701")]
+        // TODO
+        public void NodeWarningPropertiesIsSubSetOf_SecondProjectWideNoWarnIsProperSubsetOfFirst_Succeeds(
+            string firstNoWarn,
+            string secondNoWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                firstNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
+                null);
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                secondNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData(null, "NU1605")]
+        [InlineData("", "NU1605")]
+        [InlineData(null, "NU1605, NU1604")]
+        [InlineData("", "NU1605, NU1604")]
+        [InlineData("NU1605", "NU1604")]
+        [InlineData("NU1605, NU1604", "NU1701")]
+        [InlineData("NU1605, NU1604", "NU1604, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1605, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1605, NU1604, NU1701")]
+        public void NodeWarningPropertiesIsSubSetOf_SecondProjectWideNoWarnIsNotSubsetOfFirst_Fails(
+            string firstNoWarn,
+            string secondNoWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                firstNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
+                null);
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                secondNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
         }
 
         [Theory]
@@ -971,7 +1034,7 @@ namespace NuGet.Commands.Test
         [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet, PackageSpecificNoWarn.Null)]
         [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet, PackageSpecificNoWarn.EmptyDictionary)]
         [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet, PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
-        public void NodeWarningPropertiesIsSubSetOfSucceeds_EmptyPackageSpecificNoWarns(
+        public void NodeWarningPropertiesIsSubSetOf_EmptyPackageSpecificNoWarns_Succeeds(
             PackageSpecificNoWarn firstNoWarn,
             PackageSpecificNoWarn secondNoWarn)
         {
@@ -994,7 +1057,7 @@ namespace NuGet.Commands.Test
         [InlineData(PackageSpecificNoWarn.Null)]
         [InlineData(PackageSpecificNoWarn.EmptyDictionary)]
         [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
-        public void NodeWarningPropertiesIsSubSetOfFails_FirstPackageSpecificNoWarnIsEmptySecondPackageSpecificNoWarnIsNotEmpty(
+        public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsEmptySecondPackageSpecificNoWarnIsNotEmpty_Fails(
             PackageSpecificNoWarn firstNoWarn)
         {
             // Arrange
@@ -1016,7 +1079,7 @@ namespace NuGet.Commands.Test
         [InlineData(PackageSpecificNoWarn.Null)]
         [InlineData(PackageSpecificNoWarn.EmptyDictionary)]
         [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
-        public void NodeWarningPropertiesIsSubSetOfSucceeds_FirstPackageSpecificNoWarnIsNotEmptySecondPackageSpecificNoWarnIsEmpty(
+        public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsNotEmptySecondPackageSpecificNoWarnIsEmpty_Succeeds(
             PackageSpecificNoWarn secondNoWarn)
         {
             // Arrange
@@ -1035,7 +1098,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void NodeWarningPropertiesIsSubSetOfSucceeds_PackageSpecificNoWarnsHaveSameKeySameValue()
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeySameValue_Succeeds()
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
@@ -1053,7 +1116,8 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void NodeWarningPropertiesIsSubSetOfFails_PackageSpecificNoWarnsHaveSameKeyDifferentValue()
+        // TODO
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeyDifferentValue_Fails()
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
@@ -1071,7 +1135,8 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void NodeWarningPropertiesIsSubSetOfFails_PackageSpecificNoWarnsHaveDifferentKeySameValue()
+        // TODO
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveDifferentKeySameValue_Fails()
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
