@@ -167,46 +167,7 @@
 
   <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ComboBoxStyleKey}}"/>
 
-  <!--Copied from CommonControlsComboBoxStyle-->
-  <ControlTemplate x:Uid="ControlTemplate_1" x:Key="ComboBoxItemTemplate" TargetType="{x:Type ComboBoxItem}">
-    <Border x:Uid="Bd" Name="Bd"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                Padding="{TemplateBinding Padding}"
-                SnapsToDevicePixels="true">
-      <ContentPresenter x:Uid="ContentPresenter_1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-    </Border>
-    <ControlTemplate.Triggers>
-      <Trigger x:Uid="Trigger_1" Property="IsHighlighted" Value="true">
-        <Setter x:Uid="Setter_1" TargetName="Bd"
-                        Property="Background"
-                        Value="{DynamicResource {x:Static nuget:Brushes.ComboBoxListItemBackgroundHoverBrushKey}}"/>
-        <Setter x:Uid="Setter_2" TargetName="Bd"
-                        Property="BorderBrush"
-                        Value="{StaticResource {x:Static nuget:Brushes.ComboBoxListItemBorderHoverBrushKey}}" />
-        <Setter x:Uid="Setter_3" TargetName="Bd"
-                        Property="TextElement.Foreground"
-                        Value="{StaticResource {x:Static nuget:Brushes.ComboBoxListItemTextHoverBrushKey}}" />
-      </Trigger>
-    </ControlTemplate.Triggers>
-  </ControlTemplate>
-
-  <!--Copied from CommonControlsComboBoxStyle-->
-  <Style x:Key="CommonControlsComboBoxItem" TargetType="{x:Type ComboBoxItem}">
-    <Setter x:Uid="Setter_54" Property="BorderThickness" Value="1" />
-    <Setter x:Uid="Setter_55" Property="BorderBrush" Value="Transparent" />
-    <Setter x:Uid="Setter_56" Property="Background" Value="Transparent" />
-    <Setter x:Uid="Setter_57" Property="Foreground" Value="{StaticResource {x:Static nuget:Brushes.ComboBoxListItemTextBrushKey}}" />
-    <Setter x:Uid="Setter_58" Property="AutomationProperties.Name" Value="{Binding Text}" />
-    <Setter x:Uid="Setter_59" Property="AutomationProperties.AutomationId" Value="{Binding Text}"/>
-    <Setter x:Uid="Setter_60" Property="Template" Value="{StaticResource ComboBoxItemTemplate}" />
-    <Setter x:Uid="Setter_61" Property="Margin" Value="2,0,2,0" />
-    <Setter x:Uid="Setter_62" Property="InputMethod.IsInputMethodSuspended" Value="True"/>
-    <Setter x:Uid="Setter_63" Property="FocusVisualStyle" Value="{x:Null}"/>
-  </Style>
+  <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ComboBoxItemStyleKey}}" />
 
   <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Static nuget:Styles.ScrollBarStyleKey}}"/>
 
