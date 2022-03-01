@@ -932,16 +932,38 @@ namespace NuGet.Commands.Test
 
         [Theory]
         // null and "" are both considered empty sets.
-        [InlineData(null, null)]
-        [InlineData(null, "")]
-        [InlineData("", "")]
-        [InlineData("", null)]
-        [InlineData("NU1605", "NU1605")]
-        [InlineData("NU1604", "NU1604")]
-        [InlineData("NU1605, NU1604", "NU1605, NU1604")]
-        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1604, NU1701")]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("NU1605")]
+        [InlineData("NU1605, NU1604")]
+        [InlineData("NU1605, NU1604, NU1701")]
         // TODO
-        public void NodeWarningPropertiesIsSubSetOf_SecondProjectWideNoWarnIsEqualToFirst_Succeeds(
+        //public void NodeWarningPropertiesIsSubSetOf_SecondProjectWideNoWarnIsEqualToFirst_Succeeds(
+        public void NodeWarningPropertiesIsSubSetOf_EqualProjectWideNoWarns_Succeeds(
+            string noWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
+                null);
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        // null and "" are both considered empty sets.
+        [InlineData(null, "")]
+        [InlineData("", null)]
+        // TODO
+        //public void NodeWarningPropertiesIsSubSetOf_SecondProjectWideNoWarnIsEqualToFirst_Succeeds(
+        public void NodeWarningPropertiesIsSubSetOf_NullAndEmptyProjectWideNoWarns_Succeeds(
             string firstNoWarn,
             string secondNoWarn)
         {
@@ -1001,6 +1023,7 @@ namespace NuGet.Commands.Test
         [InlineData(null, "NU1605, NU1604")]
         [InlineData("", "NU1605, NU1604")]
         [InlineData("NU1605", "NU1604")]
+        [InlineData("NU1605", "NU1605, NU1604")]
         [InlineData("NU1605, NU1604", "NU1701")]
         [InlineData("NU1605, NU1604", "NU1604, NU1701")]
         [InlineData("NU1605, NU1604", "NU1605, NU1701")]
