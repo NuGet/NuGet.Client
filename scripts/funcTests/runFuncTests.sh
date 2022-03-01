@@ -146,17 +146,6 @@ if [ $? -ne 0 ]; then
 	RESULTCODE=1
 fi
 
-RESULTFILE="build/TestResults/TestResults.xml"
-
-echo "Checking if result file exists at $DIR/$RESULTFILE"
-if [ -f  "$DIR/$RESULTFILE" ]
-then
-	echo "Renaming $DIR/$RESULTFILE"
-	mv "$RESULTFILE" "$DIR/build/TestResults/TestResults.$(date +%H%M%S).xml"
-else
-	echo "$DIR/$RESULTFILE not found."
-fi
-
 echo "Core tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 # Func tests
@@ -168,15 +157,6 @@ if [ $? -ne 0 ]; then
 	echo "CoreFuncTests failed!!"
 fi
 
-echo "Checking if result file exists at $DIR/$RESULTFILE"
-if [ -f  "$DIR/$RESULTFILE" ]
-then
-	echo "Renaming $DIR/$RESULTFILE"
-	mv "$RESULTFILE" "$DIR/build/TestResults/TestResults.$(date +%H%M%S).xml"
-else
-	echo "$DIR/$RESULTFILE not found."
-fi
-
 if [ -z "$CI" ]; then
 	popd
 	exit $RESULTCODE
@@ -184,7 +164,13 @@ fi
 
 #run mono test
 TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
-XunitConsole="$DIR/packages/xunit.runner.console/2.4.1/tools/net472/xunit.console.exe"
+VsTestConsole="$DIR/artifacts/NuGet.CommandLine.Test/vstest/vstest.console.exe"
+TestResultsTrx="$DIR/build/TestResults/monoonmac.trx"
+VsTestVerbosity="minimal"
+
+if [ "$SYSTEM_DEBUG" == "true" ]; then
+	VsTestVerbosity="detailed"
+fi
 
 #Clean System dll
 rm -rf "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
@@ -194,8 +180,8 @@ rm -rf "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp
 case "$(uname -s)" in
 		Linux)
 			# We are not testing Mono on linux currently, so comment it out.
-			#echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin -xml build/TestResults/monoonlinux.xml -verbose"
-			#mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin -xml "build/TestResults/monoonlinux.xml" -verbose
+			#echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Darwin --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
+			#mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Darwin" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
 			if [ $RESULTCODE -ne '0' ]; then
 				RESULTCODE=$?
 				echo "Unit Tests or Core Func Tests failed on Linux"
@@ -203,8 +189,8 @@ case "$(uname -s)" in
 			fi
 			;;
 		Darwin)
-			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux -xml build/TestResults/monoomac.xml -verbose"
-			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux -xml "build/TestResults/monoonmac.xml" -verbose
+			echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Linux --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
+			mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Linux" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
 			if [ $? -ne '0' ]; then
 				RESULTCODE=$?
 				echo "Mono tests failed!"
