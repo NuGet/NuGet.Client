@@ -278,7 +278,10 @@ namespace NuGet.DependencyResolver
             return rootPredicate(dependency.LibraryRange);
         }
 
-        private static Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> ChainPredicate(Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate, GraphNode<RemoteResolveResult> node, LibraryDependency dependency)
+        private static Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> ChainPredicate(
+            Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
+            GraphNode<RemoteResolveResult> node,
+            LibraryDependency dependency)
         {
             var item = node.Item;
 
