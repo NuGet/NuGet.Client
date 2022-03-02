@@ -51,11 +51,18 @@ namespace NuGet.ProjectModel
                 versionStr == null ? null : VersionRange.Parse(versionStr));
         }
 
+        internal static JProperty WritePackageDependencyWithLegacyString(PackageDependency item)
+        {
+            return new JProperty(
+                item.Id,
+                WriteString(item.VersionRange?.ToLegacyShortString()));
+        }
+
         internal static JProperty WritePackageDependency(PackageDependency item)
         {
             return new JProperty(
                 item.Id,
-                WriteString(item.VersionRange?.ToString()));
+                WriteString(item.VersionRange?.OriginalString));
         }
 
         internal static TItem ReadProperty<TItem>(JObject jObject, string propertyName)

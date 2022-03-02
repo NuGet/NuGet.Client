@@ -1006,15 +1006,6 @@ namespace NuGet.Commands
                 // For csproj -> csproj type references where there is no range, use 1.0.0
                 range = VersionRange.Parse("1.0.0");
             }
-            else if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
-            {
-            }
-            else
-            {
-                // For project dependencies drop the snapshot version.
-                // Ex: 1.0.0-* -> 1.0.0
-                range = range.ToNonSnapshotRange();
-            }
 
             return new PackageDependency(dependency.Name, range);
         }

@@ -666,13 +666,13 @@ namespace NuGet.Commands.FuncTest
                 var targetFramework = CommonFrameworks.Net46;
                 var allPackageSpecs = new List<PackageSpec>();
 
-                var projectName = "RootProject";
+                var projectName = "childProject";
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
-                var rootPackageSpec = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                var childProject = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
                     .WithTargetFrameworks(new string[] { "net46" })
                     .WithPackagesLockFile()
                     .Build();
-                allPackageSpecs.Add(rootPackageSpec);
+                allPackageSpecs.Add(childProject);
 
                 // Add the dependency
                 var dependency = new LibraryDependency
@@ -680,35 +680,35 @@ namespace NuGet.Commands.FuncTest
                     LibraryRange = new LibraryRange(packageA.Id, VersionRange.Parse("*"), LibraryDependencyTarget.Package)
                 };
 
-                rootPackageSpec.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
+                childProject.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
 
-                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(rootPackageSpec, pathContext, logger)).ExecuteAsync();
+                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(childProject, pathContext, logger)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
-                projectName = "IntermediateProject";
+                projectName = "parentProject";
                 projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
-                var transitiveReferenceSpec = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                var parentProject = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
                     .WithTargetFrameworks(new string[] { targetFramework.GetShortFolderName() })
                     .WithPackagesLockFile()
                     .Build();
-                allPackageSpecs.Add(transitiveReferenceSpec);
+                allPackageSpecs.Add(parentProject);
 
-                PackageSpecOperationsUtility.AddProjectReference(transitiveReferenceSpec, rootPackageSpec, targetFramework);
+                PackageSpecOperationsUtility.AddProjectReference(parentProject, childProject, targetFramework);
 
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(transitiveReferenceSpec, allPackageSpecs, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(parentProject, allPackageSpecs, pathContext, logger)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
                 // Enable locked mode
-                transitiveReferenceSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                parentProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
                     restorePackagesWithLockFile: "true",
-                    transitiveReferenceSpec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                    parentProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
                     restoreLockedMode: true);
                 logger.Clear();
 
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(transitiveReferenceSpec, allPackageSpecs, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(parentProject, allPackageSpecs, pathContext, logger)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert.
