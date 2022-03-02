@@ -1047,18 +1047,18 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData(PackageSpecificNoWarn.Null, PackageSpecificNoWarn.Null)]
-        [InlineData(PackageSpecificNoWarn.Null, PackageSpecificNoWarn.EmptyDictionary)]
-        [InlineData(PackageSpecificNoWarn.Null, PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
-        [InlineData(PackageSpecificNoWarn.EmptyDictionary, PackageSpecificNoWarn.Null)]
-        [InlineData(PackageSpecificNoWarn.EmptyDictionary, PackageSpecificNoWarn.EmptyDictionary)]
-        [InlineData(PackageSpecificNoWarn.EmptyDictionary, PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
-        [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet, PackageSpecificNoWarn.Null)]
-        [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet, PackageSpecificNoWarn.EmptyDictionary)]
-        [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet, PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
+        [InlineData(null, null)]
+        [InlineData(null, new string[0])]
+        [InlineData(null, new[] { "test_id1:" })]
+        [InlineData(new string[0], null)]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new string[0], new[] { "test_id1:" })]
+        [InlineData(new[] { "test_id1:" }, null)]
+        [InlineData(new[] { "test_id1:" }, new string[0])]
+        [InlineData(new[] { "test_id1:" }, new[] { "test_id1:" })]
         public void NodeWarningPropertiesIsSubSetOf_EmptyPackageSpecificNoWarns_Succeeds(
-            PackageSpecificNoWarn firstNoWarn,
-            PackageSpecificNoWarn secondNoWarn)
+            string[] firstNoWarn,
+            string[] secondNoWarn)
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
@@ -1076,11 +1076,11 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData(PackageSpecificNoWarn.Null)]
-        [InlineData(PackageSpecificNoWarn.EmptyDictionary)]
-        [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
+        [InlineData(null)]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
         public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsEmptySecondPackageSpecificNoWarnIsNotEmpty_Fails(
-            PackageSpecificNoWarn firstNoWarn)
+            string[] firstNoWarn)
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
@@ -1088,7 +1088,7 @@ namespace NuGet.Commands.Test
                 GetPackageSpecificNoWarn(firstNoWarn));
             var second = new TransitiveNoWarnUtils.NodeWarningProperties(
                 null,
-                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+                GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
 
             // Act
             var result = first.IsSubSetOf(second);
@@ -1098,16 +1098,16 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData(PackageSpecificNoWarn.Null)]
-        [InlineData(PackageSpecificNoWarn.EmptyDictionary)]
-        [InlineData(PackageSpecificNoWarn.DictionaryWithEmptyHashSet)]
+        [InlineData(null)]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
         public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsNotEmptySecondPackageSpecificNoWarnIsEmpty_Succeeds(
-            PackageSpecificNoWarn secondNoWarn)
+            string[] secondNoWarn)
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
                 null,
-                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+                GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
             var second = new TransitiveNoWarnUtils.NodeWarningProperties(
                 null,
                 GetPackageSpecificNoWarn(secondNoWarn));
@@ -1138,7 +1138,6 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        // TODO
         public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeyDifferentValue_Fails()
         {
             // Arrange
@@ -1157,7 +1156,6 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        // TODO
         public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveDifferentKeySameValue_Fails()
         {
             // Arrange
@@ -1175,25 +1173,22 @@ namespace NuGet.Commands.Test
             result.Should().Be(false);
         }
 
-        public enum PackageSpecificNoWarn
+        private static Dictionary<string, HashSet<NuGetLogCode>> GetPackageSpecificNoWarn(IEnumerable<string> values)
         {
-            Null,
-            EmptyDictionary,
-            DictionaryWithEmptyHashSet
-        }
-
-        private static Dictionary<string, HashSet<NuGetLogCode>> GetPackageSpecificNoWarn(PackageSpecificNoWarn value)
-        {
-            return value switch
+            if (values == null)
             {
-                PackageSpecificNoWarn.Null => null,
-                PackageSpecificNoWarn.EmptyDictionary => new Dictionary<string, HashSet<NuGetLogCode>>(),
-                PackageSpecificNoWarn.DictionaryWithEmptyHashSet => new Dictionary<string, HashSet<NuGetLogCode>>
-                {
-                    ["test_id1"] = new()
-                },
-                _ => throw new ArgumentOutOfRangeException(nameof(value))
-            };
+                return null;
+            }
+
+            var result = new Dictionary<string, HashSet<NuGetLogCode>>();
+
+            foreach (var value in values)
+            {
+                var split = value.Split(':');
+                result.Add(split[0], MSBuildStringUtility.GetNuGetLogCodes(split[1]).ToHashSet());
+            }
+
+            return result;
         }
     }
 }
