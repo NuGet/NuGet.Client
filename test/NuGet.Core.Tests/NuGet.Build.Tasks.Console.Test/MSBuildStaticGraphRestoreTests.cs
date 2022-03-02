@@ -780,11 +780,11 @@ namespace NuGet.Build.Tasks.Console.Test
             var project = new MockMSBuildProject(
                 new Dictionary<string, string>
                 {
-                    [ProjectBuildProperties.TransitiveDependencyPinningEnabled] = value,
+                    [ProjectBuildProperties.CentralPackageTransitivePinningEnabled] = value,
                 });
 
             // Act
-            var result = MSBuildStaticGraphRestore.GetCentralPackageManagementSettings(project, ProjectStyle.PackageReference).IsTransitiveDependencyPinningEnabled;
+            var result = MSBuildStaticGraphRestore.GetCentralPackageManagementSettings(project, ProjectStyle.PackageReference).IsCentralPackageTransitivePinningEnabled;
 
             // Assert
             Assert.Equal(enabled, result);

@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
+using NuGet.ProjectManagement;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -5234,7 +5235,7 @@ namespace ClassLibrary
         [InlineData("false")]
         [InlineData("true")]
         [InlineData(null)]
-        public void PackCommand_PackProjectWithCentralTransitiveDependencies(string transitiveDependencyPinningEnabled)
+        public void PackCommand_PackProjectWithCentralTransitiveDependencies(string CentralPackageTransitivePinningEnabled)
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
@@ -5259,15 +5260,15 @@ namespace ClassLibrary
 
                     ProjectFileUtils.AddProperty(
                         xml,
-                        "ManagePackageVersionsCentrally",
+                        ProjectBuildProperties.ManagePackageVersionsCentrally,
                         "true");
 
-                    if (transitiveDependencyPinningEnabled != null)
+                    if (CentralPackageTransitivePinningEnabled != null)
                     {
                         ProjectFileUtils.AddProperty(
                             xml,
-                            "TransitiveDependencyPinningEnabled",
-                            transitiveDependencyPinningEnabled);
+                            ProjectBuildProperties.CentralPackageTransitivePinningEnabled,
+                            CentralPackageTransitivePinningEnabled);
                     }
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
@@ -5304,7 +5305,7 @@ namespace ClassLibrary
                     Assert.Equal(1, dependencyGroups.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
                     var packages = dependencyGroups[0].Packages.ToList();
-                    if (transitiveDependencyPinningEnabled == "true")
+                    if (CentralPackageTransitivePinningEnabled == "true")
                     {
                         Assert.Equal(2, packages.Count);
                         var moqPackage = packages.Where(p => p.Id.Equals("Moq", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();

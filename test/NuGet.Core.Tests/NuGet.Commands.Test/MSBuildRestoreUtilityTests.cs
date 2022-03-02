@@ -3957,14 +3957,14 @@ namespace NuGet.Commands.Test
                     { "ProjectPath", project1Path },
                     { "CrossTargeting", "true" },
                     { "_CentralPackageVersionsEnabled", "true"},
-                    { "TransitiveDependencyPinningEnabled", value},
+                    { ProjectBuildProperties.CentralPackageTransitivePinningEnabled, value},
                 });
 
                 // Act
                 var settings = MSBuildRestoreUtility.GetCentralPackageManagementSettings(projectSpec, projectStyle);
 
                 // Assert
-                Assert.Equal(expected, settings.IsTransitiveDependencyPinningEnabled);
+                Assert.Equal(expected, settings.IsCentralPackageTransitivePinningEnabled);
             }
         }
 

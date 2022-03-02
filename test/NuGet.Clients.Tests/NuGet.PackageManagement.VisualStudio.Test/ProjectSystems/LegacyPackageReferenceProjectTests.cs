@@ -951,7 +951,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         nuGetLockFilePath: null,
                         restoreLockedMode: false,
                         projectPackageVersions: new List<(string Id, string Version)>() {  },
-                        transitiveDependencyPinningEnabled: transitiveDependencyPinning);
+                        CentralPackageTransitivePinningEnabled: transitiveDependencyPinning);
 
             var legacyPRProject = new LegacyPackageReferenceProject(
                        vsProjectAdapter,
@@ -968,11 +968,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             if (expected)
             {
-                Assert.True(packageSpecs.First().RestoreMetadata.TransitiveDependencyPinningEnabled);
+                Assert.True(packageSpecs.First().RestoreMetadata.CentralPackageTransitivePinningEnabled);
             }
             else
             {
-                Assert.False(packageSpecs.First().RestoreMetadata.TransitiveDependencyPinningEnabled);
+                Assert.False(packageSpecs.First().RestoreMetadata.CentralPackageTransitivePinningEnabled);
             }
         }
 

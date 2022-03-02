@@ -123,7 +123,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool CentralPackageVersionOverrideDisabled { get; set; }
 
-        public bool TransitiveDependencyPinningEnabled { get; set; }
+        public bool CentralPackageTransitivePinningEnabled { get; set; }
 
         public override int GetHashCode()
         {
@@ -177,7 +177,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(RestoreLockProperties);
             hashCode.AddObject(CentralPackageVersionsEnabled);
             hashCode.AddObject(CentralPackageVersionOverrideDisabled);
-            hashCode.AddObject(TransitiveDependencyPinningEnabled);
+            hashCode.AddObject(CentralPackageTransitivePinningEnabled);
 
             return hashCode.CombinedHash;
         }
@@ -220,7 +220,7 @@ namespace NuGet.ProjectModel
                    EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties) &&
                    EqualityUtility.EqualsWithNullCheck(CentralPackageVersionsEnabled, other.CentralPackageVersionsEnabled) &&
                    EqualityUtility.EqualsWithNullCheck(CentralPackageVersionOverrideDisabled, other.CentralPackageVersionOverrideDisabled) &&
-                   EqualityUtility.EqualsWithNullCheck(TransitiveDependencyPinningEnabled, other.TransitiveDependencyPinningEnabled);
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageTransitivePinningEnabled, other.CentralPackageTransitivePinningEnabled);
         }
 
         public virtual ProjectRestoreMetadata Clone()
@@ -254,7 +254,7 @@ namespace NuGet.ProjectModel
             clone.RestoreLockProperties = RestoreLockProperties?.Clone();
             clone.CentralPackageVersionsEnabled = CentralPackageVersionsEnabled;
             clone.CentralPackageVersionOverrideDisabled = CentralPackageVersionOverrideDisabled;
-            clone.TransitiveDependencyPinningEnabled = TransitiveDependencyPinningEnabled;
+            clone.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
         }
     }
 }

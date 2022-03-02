@@ -139,9 +139,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return value.EqualsFalse();
         }
 
-        private async Task<bool> IsTransitiveDependencyPinningEnabledAsync()
+        private async Task<bool> IsCentralPackageTransitivePinningEnabledAsync()
         {
-            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.TransitiveDependencyPinningEnabled);
+            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.CentralPackageTransitivePinningEnabled);
 
             return MSBuildStringUtility.IsTrue(value);
         }
@@ -457,7 +457,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         await _vsProjectAdapter.IsRestoreLockedAsync()),
                     CentralPackageVersionsEnabled = isCpvmEnabled,
                     CentralPackageVersionOverrideDisabled = await IsCentralPackageVersionOverrideDisabledAsync(),
-                    TransitiveDependencyPinningEnabled = await IsTransitiveDependencyPinningEnabledAsync(),
+                    CentralPackageTransitivePinningEnabled = await IsCentralPackageTransitivePinningEnabledAsync(),
                 }
             };
         }

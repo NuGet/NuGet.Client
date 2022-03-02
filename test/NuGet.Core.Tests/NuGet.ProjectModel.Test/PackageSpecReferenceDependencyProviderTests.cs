@@ -18,7 +18,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData(false, true)]
         [InlineData(true, false)]
         [InlineData(true, true)]
-        public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled, bool transitiveDependencyPinningEnabled)
+        public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled, bool CentralPackageTransitivePinningEnabled)
         {
             // Arrange
             var dependencyFoo = new LibraryDependency(
@@ -37,14 +37,14 @@ namespace NuGet.ProjectModel.Test
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
             var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar }, cpvmEnabled);
-            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, transitiveDependencyPinningEnabled, tfi);
+            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, CentralPackageTransitivePinningEnabled, tfi);
             var packSpec = dependencyGraphSpec.Projects[0];
 
             // Act
             var dependencies = PackageSpecReferenceDependencyProvider.GetSpecDependencies(packSpec, tfi.FrameworkName);
 
             // Assert
-            if (cpvmEnabled && transitiveDependencyPinningEnabled)
+            if (cpvmEnabled && CentralPackageTransitivePinningEnabled)
             {
                 Assert.Equal(2, dependencies.Count);
                 var barDep = dependencies.Where(d => d.Name == "bar").First();
@@ -104,7 +104,7 @@ namespace NuGet.ProjectModel.Test
             {
                 ProjectUniqueName = "a",
                 CentralPackageVersionsEnabled = cpvmEnabled,
-                TransitiveDependencyPinningEnabled = tdpEnabled,
+                CentralPackageTransitivePinningEnabled = tdpEnabled,
             };
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");

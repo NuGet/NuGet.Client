@@ -1655,7 +1655,7 @@ namespace NuGet.Commands.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency(bool transitiveDependencyPinningEnabled)
+        public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency(bool CentralPackageTransitivePinningEnabled)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1664,14 +1664,14 @@ namespace NuGet.Commands.Test
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
-                var tdpString = transitiveDependencyPinningEnabled ? "true" : "false";
+                var tdpString = CentralPackageTransitivePinningEnabled ? "true" : "false";
                 var project1Json = @"
                 {
                   ""version"": ""1.0.0"",
                     ""restore"": {
                                     ""projectUniqueName"": ""TestProject"",
                                     ""centralPackageVersionsManagementEnabled"": true,
-                                    ""transitiveDependencyPinningEnabled"": " + tdpString + @",
+                                    ""CentralPackageTransitivePinningEnabled"": " + tdpString + @",
                     },
                   ""frameworks"": {
                     ""net472"": {
@@ -1719,7 +1719,7 @@ namespace NuGet.Commands.Test
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                if (transitiveDependencyPinningEnabled)
+                if (CentralPackageTransitivePinningEnabled)
                 {
                     Assert.False(result.Success);
                     var downgradeErrorMessages = logger.Messages.Where(s => s.Contains("Detected package downgrade: packageB from 2.0.0 to centrally defined 1.0.0.")).ToList();
@@ -2268,7 +2268,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(29);
+            projectInformationEvent.Count.Should().Be(28);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -2297,7 +2297,6 @@ namespace NuGet.Commands.Test
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
-            projectInformationEvent["IsTransitiveDependencyPinningEnabled"].Should().Be(false);
         }
 
         [Fact]
@@ -2353,7 +2352,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(21);
+            projectInformationEvent.Count.Should().Be(20);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -2374,10 +2373,9 @@ namespace NuGet.Commands.Test
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
-            projectInformationEvent["IsTransitiveDependencyPinningEnabled"].Should().Be(false);
-    }
+        }
 
-    [Fact]
+        [Fact]
         public async Task ExecuteAsync_WithPartiallyPopulatedGlobalPackagesFolder_PopulatesNewlyInstalledPackagesTelemetry()
         {
             // Arrange
@@ -2432,7 +2430,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(29);
+            projectInformationEvent.Count.Should().Be(28);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);

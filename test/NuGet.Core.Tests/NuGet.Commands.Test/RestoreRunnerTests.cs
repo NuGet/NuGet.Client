@@ -1760,7 +1760,7 @@ namespace NuGet.Commands.Test
               ""version"": ""1.0.0"",
               ""frameworks"": {
                 ""netcoreapp3.0"": {
-                    
+
                 }
               }
             }";
@@ -1913,7 +1913,7 @@ namespace NuGet.Commands.Test
                     ""restore"": {
                                     ""projectUniqueName"": ""TestProject"",
                                     ""centralPackageVersionsManagementEnabled"": true,
-                                    ""transitiveDependencyPinningEnabled"": true
+                                    ""CentralPackageTransitivePinningEnabled"": true
                     },
                   ""frameworks"": {
                     ""net472"": {

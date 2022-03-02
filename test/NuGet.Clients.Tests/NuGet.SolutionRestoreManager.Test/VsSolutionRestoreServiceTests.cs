@@ -2099,7 +2099,7 @@ namespace NuGet.SolutionRestoreManager.Test
         [InlineData("false", false)]
         [InlineData("true", true)]
         [InlineData("           true    ", true)]
-        public void ToPackageSpec_TransitiveDependencyPinning_CanBeEnabled(string transitiveDependencyPinningEnabled, bool expected)
+        public void ToPackageSpec_TransitiveDependencyPinning_CanBeEnabled(string CentralPackageTransitivePinningEnabled, bool expected)
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC", Guid.NewGuid().ToString());
@@ -2114,7 +2114,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20).Concat(new VsProjectProperty[]
                 {
                     new VsProjectProperty(ProjectBuildProperties.ManagePackageVersionsCentrally, "true"),
-                    new VsProjectProperty(ProjectBuildProperties.TransitiveDependencyPinningEnabled, transitiveDependencyPinningEnabled),
+                    new VsProjectProperty(ProjectBuildProperties.CentralPackageTransitivePinningEnabled, CentralPackageTransitivePinningEnabled),
                 }),
                 centralPackageVersions: Array.Empty<IVsReferenceItem>())
             };
@@ -2126,11 +2126,11 @@ namespace NuGet.SolutionRestoreManager.Test
 
             if (expected)
             {
-                Assert.True(result.RestoreMetadata.TransitiveDependencyPinningEnabled);
+                Assert.True(result.RestoreMetadata.CentralPackageTransitivePinningEnabled);
             }
             else
             {
-                Assert.False(result.RestoreMetadata.TransitiveDependencyPinningEnabled);
+                Assert.False(result.RestoreMetadata.CentralPackageTransitivePinningEnabled);
             }
         }
 

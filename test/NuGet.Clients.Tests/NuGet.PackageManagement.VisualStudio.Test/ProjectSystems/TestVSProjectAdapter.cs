@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly bool _isCPVMEnabled;
         private readonly IEnumerable<(string PackageId, string Version)> _projectPackageVersions;
         private readonly string _isCentralPackageVersionOverrideEnabled;
-        private readonly string _transitiveDependencyPinningEnabled;
+        private readonly string _CentralPackageTransitivePinningEnabled;
 
         public TestVSProjectAdapter(
             string fullProjectPath,
@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             bool restoreLockedMode = false,
             IEnumerable<(string PackageId, string Version)> projectPackageVersions = null,
             string isCentralPackageVersionOverrideEnabled = null,
-            string transitiveDependencyPinningEnabled = null
+            string CentralPackageTransitivePinningEnabled = null
             )
         {
             FullProjectPath = fullProjectPath;
@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _isCPVMEnabled = projectPackageVersions?.Any() == true;
             _projectPackageVersions = projectPackageVersions;
             _isCentralPackageVersionOverrideEnabled = isCentralPackageVersionOverrideEnabled;
-            _transitiveDependencyPinningEnabled = transitiveDependencyPinningEnabled;
+            _CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
         }
 
         public string AssetTargetFallback
@@ -245,8 +245,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 case ProjectBuildProperties.CentralPackageVersionOverrideEnabled:
                     return Task.FromResult(_isCentralPackageVersionOverrideEnabled ?? string.Empty);
 
-                case ProjectBuildProperties.TransitiveDependencyPinningEnabled:
-                    return Task.FromResult(_transitiveDependencyPinningEnabled ?? string.Empty);
+                case ProjectBuildProperties.CentralPackageTransitivePinningEnabled:
+                    return Task.FromResult(_CentralPackageTransitivePinningEnabled ?? string.Empty);
 
                 default:
                     return Task.FromResult(string.Empty);
