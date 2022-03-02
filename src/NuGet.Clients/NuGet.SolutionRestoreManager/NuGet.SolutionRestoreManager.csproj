@@ -63,7 +63,7 @@
     <Compile Include="SolutionUpToDateChecker.cs" />
     <Compile Include="VerbosityLevel.cs" />
     <Compile Include="VSNominationUtilities.cs" />
-    <Compile Include="VsProjectReferenceComparer.cs" />
+    <Compile Include="ProjectRestoreReferenceComparer.cs" />
     <Compile Include="VsRestoreProgressEvents.cs" />
     <Compile Include="VsSolutionRestoreService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
