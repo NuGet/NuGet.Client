@@ -733,7 +733,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
         <_CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</_CentralPackageVersionsEnabled>
         <CentralPackageVersionOverrideEnabled>$(CentralPackageVersionOverrideEnabled)</CentralPackageVersionOverrideEnabled>
-        <TransitiveDependencyPinningEnabled>$(TransitiveDependencyPinningEnabled)</TransitiveDependencyPinningEnabled>
+        <CentralPackageTransitivePinningEnabled>$(CentralPackageTransitivePinningEnabled)</CentralPackageTransitivePinningEnabled>
       </_RestoreGraphEntry>
     </ItemGroup>
 
