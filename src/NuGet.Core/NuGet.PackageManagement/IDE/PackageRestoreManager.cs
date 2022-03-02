@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,26 +69,6 @@ namespace NuGet.PackageManagement
             PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(missing));
         }
 
-        public virtual async Task<bool> GetMissingAssetsFileStatusAsync(string projectId)
-        {
-            var nuGetProject = await SolutionManager.GetNuGetProjectAsync(projectId);
-
-            if (nuGetProject != null &&
-                nuGetProject.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
-                nuGetProject is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
-            {
-                string assetsFilePath = await buildIntegratedNuGetProject.GetAssetsFilePathAsync();
-                var fileInfo = new FileInfo(assetsFilePath);
-
-                if (!fileInfo.Exists)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public virtual void RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing)
         {
             if (_assetsFileMissingStatusChanged != null)
@@ -98,7 +77,7 @@ namespace NuGet.PackageManagement
                 {
                     try
                     {
-                        handler.DynamicInvoke(isAssetsFileMissing);
+                        handler.DynamicInvoke(this, isAssetsFileMissing);
                     }
                     catch { }
                 }

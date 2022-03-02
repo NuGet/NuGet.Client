@@ -1,7 +1,6 @@
 const NuGet.ProjectManagement.ProjectBuildProperties.CentralPackageTransitivePinningEnabled = "CentralPackageTransitivePinningEnabled" -> string
 NuGet.PackageManagement.AssetsFileMissingStatusChanged
 NuGet.PackageManagement.IPackageRestoreManager.AssetsFileMissingStatusChanged -> NuGet.PackageManagement.AssetsFileMissingStatusChanged
-NuGet.PackageManagement.IPackageRestoreManager.GetMissingAssetsFileStatusAsync(string projectId) -> System.Threading.Tasks.Task<bool>
 NuGet.PackageManagement.IPackageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing) -> void
 NuGet.PackageManagement.NuGetPackageManager.NuGetPackageManager(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceRepositoryProvider, NuGet.Configuration.ISettings settings, NuGet.PackageManagement.ISolutionManager solutionManager, NuGet.PackageManagement.IDeleteOnRestartManager deleteOnRestartManager, NuGet.Commands.IRestoreProgressReporter reporter) -> void
 NuGet.PackageManagement.NuGetPackageManager.NuGetPackageManager(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceRepositoryProvider, NuGet.Configuration.ISettings settings, NuGet.PackageManagement.ISolutionManager solutionManager, NuGet.PackageManagement.IDeleteOnRestartManager deleteOnRestartManager, NuGet.Commands.IRestoreProgressReporter reporter, bool excludeVersion) -> void
@@ -9,5 +8,4 @@ const NuGet.ProjectManagement.ProjectBuildProperties.CentralPackageVersionOverri
 const NuGet.ProjectManagement.ProjectItemProperties.VersionOverride = "VersionOverride" -> string
 NuGet.PackageManagement.PackageRestoreManager.AssetsFileMissingStatusChanged -> NuGet.PackageManagement.AssetsFileMissingStatusChanged
 static NuGet.PackageManagement.DependencyGraphRestoreUtility.RestoreAsync(NuGet.ProjectModel.DependencyGraphSpec dgSpec, NuGet.ProjectManagement.DependencyGraphCacheContext context, NuGet.Commands.RestoreCommandProvidersCache providerCache, System.Action<NuGet.Protocol.Core.Types.SourceCacheContext> cacheContextModifier, System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> sources, System.Guid parentId, bool forceRestore, bool isRestoreOriginalAction, System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.IAssetsLogMessage> additionalMessages, NuGet.Commands.IRestoreProgressReporter progressReporter, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<NuGet.Commands.RestoreSummary>>
-virtual NuGet.PackageManagement.PackageRestoreManager.GetMissingAssetsFileStatusAsync(string projectId) -> System.Threading.Tasks.Task<bool>
 virtual NuGet.PackageManagement.PackageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing) -> void
