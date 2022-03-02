@@ -186,6 +186,7 @@ namespace NuGet.SolutionRestoreManager
                 tfi.ProjectReferences.AddRange(
                     targetFrameworkInfo.ProjectReferences
                         .Cast<IVsReferenceItem>()
+                        .Distinct(VsProjectReferenceComparer.Default)
                         .Where(IsReferenceOutputAssemblyTrueOrEmpty)
                         .Select(item => ToProjectRestoreReference(item, projectDirectory)));
             }
