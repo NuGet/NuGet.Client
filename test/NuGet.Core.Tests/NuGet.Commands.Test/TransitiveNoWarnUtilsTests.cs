@@ -954,33 +954,17 @@ namespace NuGet.Commands.Test
             result.Should().Be(true);
         }
 
-        [Fact]
-        public void NodeWarningPropertiesIsSubSetOf_WithFirstProjectWideNoWarnNullAndSecondEmpty_Succeeds()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void NodeWarningPropertiesIsSubSetOf_WithNullAndEmptyProjectWideNoWarns_Succeeds(bool nullFirst)
         {
             // Arrange
             var first = new TransitiveNoWarnUtils.NodeWarningProperties(
-                null,
+                nullFirst ? null : new HashSet<NuGetLogCode>(),
                 null);
             var second = new TransitiveNoWarnUtils.NodeWarningProperties(
-                new HashSet<NuGetLogCode>(),
-                null);
-
-            // Act
-            var result = first.IsSubSetOf(second);
-
-            // Assert
-            result.Should().Be(true);
-        }
-
-        [Fact]
-        public void NodeWarningPropertiesIsSubSetOf_WithFirstProjectWideNoWarnEmptyAndSecondNull_Succeeds()
-        {
-            // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
-                new HashSet<NuGetLogCode>(),
-                null);
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
-                null,
+                nullFirst ? new HashSet<NuGetLogCode>() : null,
                 null);
 
             // Act
@@ -1031,10 +1015,18 @@ namespace NuGet.Commands.Test
         [InlineData("", "NU1605, NU1604")]
         [InlineData("NU1605", "NU1604")]
         [InlineData("NU1605", "NU1605, NU1604")]
+        [InlineData("NU1604", "NU1605, NU1604")]
+        [InlineData(null, "NU1605, NU1604, NU1701")]
+        [InlineData("", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1604", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1701", "NU1605, NU1604, NU1701")]
         [InlineData("NU1605, NU1604", "NU1701")]
         [InlineData("NU1605, NU1604", "NU1604, NU1701")]
         [InlineData("NU1605, NU1604", "NU1605, NU1701")]
         [InlineData("NU1605, NU1604", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605, NU1701", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1604, NU1701", "NU1605, NU1604, NU1701")]
         public void NodeWarningPropertiesIsSubSetOf_WithSecondProjectWideNoWarnNotASubsetOfFirst_Fails(
             string firstNoWarn,
             string secondNoWarn)
@@ -1044,7 +1036,7 @@ namespace NuGet.Commands.Test
                 firstNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
                 null);
             var second = new TransitiveNoWarnUtils.NodeWarningProperties(
-                secondNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
+                MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
                 null);
 
             // Act
