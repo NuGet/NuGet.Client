@@ -52,14 +52,14 @@ namespace NuGet.ProjectModel.Test
                 Assert.True(barDep.VersionCentrallyManaged);
                 Assert.False(barDep.AutoReferenced);
                 Assert.Equal(LibraryDependencyReferenceType.None, barDep.ReferenceType);
-                Assert.Equal("2.0.0", barDep.LibraryRange.VersionRange.ToShortString());
+                Assert.Equal("[2.0.0, )", barDep.LibraryRange.VersionRange.ToNormalizedString());
 
                 var fooDep = dependencies.Where(d => d.Name == "foo").First();
                 Assert.NotNull(fooDep);
                 Assert.False(fooDep.AutoReferenced);
                 Assert.True(fooDep.VersionCentrallyManaged);
                 Assert.Equal(LibraryDependencyReferenceType.Direct, fooDep.ReferenceType);
-                Assert.Equal("2.0.0", fooDep.LibraryRange.VersionRange.ToShortString());
+                Assert.Equal("[2.0.0, )", fooDep.LibraryRange.VersionRange.ToNormalizedString());
             }
             else
             {
