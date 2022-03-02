@@ -267,10 +267,10 @@ namespace NuGet.DependencyResolver
             //Walk up the tree starting from the grand parent upto root
             while (edge != null)
             {
-                var result = CalculateDependencyResult(edge.Item, edge.Edge, dependency.LibraryRange);
+                var (dependencyResult, conflictingDependency) = CalculateDependencyResult(edge.Item, edge.Edge, dependency.LibraryRange);
 
-                if (result.dependencyResult != DependencyResult.Unknown)
-                    return result;
+                if (dependencyResult.HasValue)
+                    return (dependencyResult.Value, conflictingDependency);
 
                 edge = edge.OuterEdge;
             }
@@ -287,16 +287,16 @@ namespace NuGet.DependencyResolver
 
             return library =>
             {
-                var result = CalculateDependencyResult(item, dependency, library);
+                var (dependencyResult, conflictingDependency) = CalculateDependencyResult(item, dependency, library);
 
-                if (result.dependencyResult != DependencyResult.Unknown)
-                    return result;
+                if (dependencyResult.HasValue)
+                    return (dependencyResult.Value, conflictingDependency);
 
                 return predicate(library);
             };
         }
 
-        private static (DependencyResult dependencyResult, LibraryDependency conflictingDependency) CalculateDependencyResult(
+        private static (DependencyResult? dependencyResult, LibraryDependency conflictingDependency) CalculateDependencyResult(
             GraphItem<RemoteResolveResult> item, LibraryDependency parentDependency, LibraryRange childDependencyLibrary)
         {
             if (StringComparer.OrdinalIgnoreCase.Equals(item.Data.Match.Library.Name, childDependencyLibrary.Name))
@@ -319,7 +319,7 @@ namespace NuGet.DependencyResolver
                 }
             }
 
-            return (DependencyResult.Unknown, null);
+            return (null, null);
         }
 
         // Verifies if minimum version specification for nearVersion is greater than the
@@ -439,7 +439,6 @@ namespace NuGet.DependencyResolver
 
         private enum DependencyResult
         {
-            Unknown,
             Acceptable,
             Eclipsed,
             PotentiallyDowngraded,
