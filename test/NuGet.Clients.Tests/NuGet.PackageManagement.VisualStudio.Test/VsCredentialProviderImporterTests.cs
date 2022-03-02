@@ -52,7 +52,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class VsCredentialProviderImporterTests
     {
         private readonly StringBuilder _testErrorOutput = new StringBuilder();
-        private static readonly VisualStudioAccountProvider _visualStudioAccountProvider = new VisualStudioAccountProvider(null, null);
         private readonly List<string> _errorMessages = new List<string>();
         private readonly Action<Exception, string> _errorDelegate;
 
