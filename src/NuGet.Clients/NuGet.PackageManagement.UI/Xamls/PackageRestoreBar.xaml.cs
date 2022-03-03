@@ -100,7 +100,10 @@ namespace NuGet.PackageManagement.UI
             if (_packageRestoreManager != null)
             {
                 _packageRestoreManager.PackagesMissingStatusChanged -= OnPackagesMissingStatusChanged;
-                _packageRestoreManager.AssetsFileMissingStatusChanged -= OnAssetsFileMissingStatusChanged;
+                if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
+                {
+                    _packageRestoreManager.AssetsFileMissingStatusChanged -= OnAssetsFileMissingStatusChanged;
+                }
             }
         }
 
@@ -114,13 +117,13 @@ namespace NuGet.PackageManagement.UI
                     {
                         string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(CancellationToken.None);
                         _componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
-                        _vsSolutionManager = _componentModel?.GetService<IVsSolutionManager>();
+                        _vsSolutionManager = _componentModel.GetService<IVsSolutionManager>();
 
                         // when the control is first loaded, check for missing packages
                         if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
                             await GetMissingAssetsFileStatusAsync(_projectContextInfo.ProjectId))
                         {
-                            _solutionRestoreWorker = _componentModel?.GetService<ISolutionRestoreWorker>();
+                            _solutionRestoreWorker = _componentModel.GetService<ISolutionRestoreWorker>();
                             _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(true);
                         }
                         else
