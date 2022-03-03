@@ -1418,7 +1418,7 @@ namespace NuGet.Commands.FuncTest
                     ForceUpdatePackageLastAccessTime = true
                 };
 
-                var metadataPath = Path.Combine(pathContext.UserPackagesFolder, @"a\1.0.0\.nupkg.metadata");
+                var metadataPath = Path.Combine(pathContext.UserPackagesFolder, "a", "1.0.0", ".nupkg.metadata");
                 var metadataLastAccessTimeFirstRestore = File.GetLastAccessTimeUtc(metadataPath);
 
                 File.SetLastAccessTimeUtc(metadataPath, DateTime.UtcNow.AddMinutes(-10));
