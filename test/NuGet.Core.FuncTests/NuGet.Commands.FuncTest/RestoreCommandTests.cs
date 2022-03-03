@@ -1989,8 +1989,9 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
-                Assert.NotNull(ex);
+                var result = await command.ExecuteAsync();
+                result.LogMessages.Count.Should().Be(1);
+                result.LogMessages[0].Code.Equals(NuGetLogCode.NU1301);
             }
         }
 
@@ -2029,8 +2030,9 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
-                Assert.NotNull(ex);
+                var result = await command.ExecuteAsync();
+                result.LogMessages.Count.Should().Be(1);
+                result.LogMessages[0].Code.Equals(NuGetLogCode.NU1301);
             }
         }
 
