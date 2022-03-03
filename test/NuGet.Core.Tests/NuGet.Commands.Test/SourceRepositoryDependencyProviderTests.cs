@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -653,6 +654,122 @@ namespace NuGet.Commands.Test
 
                 expectedPackageDownloader.VerifyAll();
             }
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenASourceIsInaccessible_AndFailuresAreNotIgnored_EveryCallLogsAnErrorMessage()
+        {
+            // Arrange
+            var cacheContext = new SourceCacheContext();
+            var expectedException = new FatalProtocolException("The source cannot be accessed");
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.DoesPackageExistAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NuGetVersion>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Throws(expectedException);
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>())
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+            var firstTestLogger = new TestLogger();
+            var secondTestLogger = new TestLogger();
+
+            var libraryRange = new LibraryRange("x", new VersionRange(new NuGetVersion(1, 0, 0)), LibraryDependencyTarget.Package);
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                firstTestLogger,
+                cacheContext,
+                ignoreFailedSources: false,
+                ignoreWarning: false);
+
+            var firstException = await Assert.ThrowsAsync<FatalProtocolException>(() => provider.FindLibraryAsync(
+                 new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package),
+                 NuGetFramework.Parse("net45"),
+                 cacheContext,
+                 firstTestLogger,
+                 CancellationToken.None));
+
+            // Pre-conditions - Assert
+            firstException.Should().Be(expectedException);
+            firstTestLogger.ErrorMessages.Should().HaveCount(1);
+            firstTestLogger.ShowErrors().Should().Contain("NU1301");
+
+            // Act
+            var secondException = await Assert.ThrowsAsync<FatalProtocolException>(() => provider.FindLibraryAsync(
+                 new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package),
+                 NuGetFramework.Parse("net45"),
+                 cacheContext,
+                 secondTestLogger,
+                 CancellationToken.None));
+
+            // Assert
+            secondException.Should().Be(expectedException);
+            secondTestLogger.ErrorMessages.Should().HaveCount(1);
+            secondTestLogger.ShowErrors().Should().Contain("NU1301");
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenASourceIsInaccessible_AndFailuresAreIgnored_EveryCallLogsAnErrorMessage()
+        {
+            // Arrange
+            var cacheContext = new SourceCacheContext();
+            var expectedException = new FatalProtocolException("The source cannot be accessed");
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.DoesPackageExistAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NuGetVersion>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Throws(expectedException);
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>())
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+            var firstTestLogger = new TestLogger();
+            var secondTestLogger = new TestLogger();
+
+            var libraryRange = new LibraryRange("x", new VersionRange(new NuGetVersion(1, 0, 0)), LibraryDependencyTarget.Package);
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                firstTestLogger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: false);
+
+            var results = await provider.FindLibraryAsync(
+                 new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package),
+                 NuGetFramework.Parse("net45"),
+                 cacheContext,
+                 firstTestLogger,
+                 CancellationToken.None);
+
+            // Pre-conditions - Assert
+            results.Should().Be(null);
+            firstTestLogger.WarningMessages.Should().HaveCount(1);
+            firstTestLogger.ShowWarnings().Should().Contain("NU1801");
+
+            // Act
+            results = await provider.FindLibraryAsync(
+                 new LibraryIdentity("x", NuGetVersion.Parse("1.0.0-beta"), LibraryType.Package),
+                 NuGetFramework.Parse("net45"),
+                 cacheContext,
+                 secondTestLogger,
+                 CancellationToken.None);
+
+            // Assert
+            results.Should().Be(null);
+            secondTestLogger.WarningMessages.Should().HaveCount(1);
+            secondTestLogger.ShowWarnings().Should().Contain("NU1801");
         }
 
         private sealed class SourceRepositoryDependencyProviderTest : IDisposable
