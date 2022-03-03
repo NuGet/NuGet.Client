@@ -170,8 +170,9 @@ namespace NuGet.Commands
                     if (request.Project.RestoreMetadata.FallbackFolders.Any(fallbackFolder => PathUtility.GetStringComparerBasedOnOS().Equals(fallbackFolder, packageFolder)))
                         continue;
 
-                    var packageId = new DirectoryInfo(Directory.GetParent(package).FullName).Parent.Name;
-                    var version = Directory.GetParent(package).Name;
+                    var packageParent = Directory.GetParent(package);
+                    var packageId = new DirectoryInfo(packageParent.FullName).Parent.Name;
+                    var version = packageParent.Name;
                     var resolver = new VersionFolderPathResolver(packageFolder);
                     var metadataFile = resolver.GetNupkgMetadataPath(packageId, new NuGetVersion(version));
 
