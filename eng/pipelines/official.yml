@@ -1,8 +1,9 @@
 pr: none
 trigger:
- branches:
+  batch: false
+  branches:
     include:
-      - main
+      - dev
       - release/release-*-MSRC
     exclude:
       - release/dev-*
