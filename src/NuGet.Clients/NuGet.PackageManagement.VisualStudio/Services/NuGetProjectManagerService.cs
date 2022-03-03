@@ -592,9 +592,7 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
 
             IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
-
             var prStyleTasks = new List<Task<IReadOnlyCollection<string>>>();
-
             foreach (NuGetProject? project in projects)
             {
                 if (project is IPackageReferenceProject packageReferenceProject)

@@ -36,7 +36,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
             IEnumerable<PackageCollectionItem> pkgs = _installedPackages.Concat(pkgsWithOrigins);
-
             PackageCollectionItem[] allPkgs = PerformLookup(pkgs, searchToken);
 
             IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(

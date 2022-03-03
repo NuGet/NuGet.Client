@@ -87,7 +87,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentNullException(nameof(projectContextInfo));
             }
-
             if (serviceBroker == null)
             {
                 throw new ArgumentNullException(nameof(serviceBroker));
@@ -96,12 +95,8 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
 
             using INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken);
-
-            IReadOnlyCollection<string> packageFolders = await projectManager.GetPackageFoldersAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
-
-            return packageFolders;
+            return await projectManager.GetPackageFoldersAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
         }
-
 
         public static async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             this IProjectContextInfo projectContextInfo,
