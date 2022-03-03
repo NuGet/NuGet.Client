@@ -179,49 +179,9 @@ namespace NuGet.Commands
                 result = _libraryMatchCache.GetOrAdd(libraryRange, action);
             }
 
-            return await result;
-        }
-
-        private async Task<LibraryIdentity> FindLibraryCoreAsync(
-            LibraryRange libraryRange,
-            SourceCacheContext cacheContext,
-            ILogger logger,
-            CancellationToken cancellationToken)
-        {
             try
             {
-                await EnsureResource();
-
-                if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
-                {
-                    // first check if the exact min version exist then simply return that
-                    if (await _findPackagesByIdResource.DoesPackageExistAsync(
-                        libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
-                    {
-                        return new LibraryIdentity
-                        {
-                            Name = libraryRange.Name,
-                            Version = libraryRange.VersionRange.MinVersion,
-                            Type = LibraryType.Package
-                        };
-                    }
-                }
-
-                // Discover all versions from the feed
-                var packageVersions = await GetAllVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
-
-                // Select the best match
-                var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
-
-                if (packageVersion != null)
-                {
-                    return new LibraryIdentity
-                    {
-                        Name = libraryRange.Name,
-                        Version = packageVersion,
-                        Type = LibraryType.Package
-                    };
-                }
+                return await result;
             }
             catch (FatalProtocolException e)
             {
@@ -235,6 +195,49 @@ namespace NuGet.Commands
                     throw;
                 }
             }
+            return null;
+        }
+
+        private async Task<LibraryIdentity> FindLibraryCoreAsync(
+            LibraryRange libraryRange,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+
+            await EnsureResource();
+
+            if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
+            {
+                // first check if the exact min version exist then simply return that
+                if (await _findPackagesByIdResource.DoesPackageExistAsync(
+                    libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
+                {
+                    return new LibraryIdentity
+                    {
+                        Name = libraryRange.Name,
+                        Version = libraryRange.VersionRange.MinVersion,
+                        Type = LibraryType.Package
+                    };
+                }
+            }
+
+            // Discover all versions from the feed
+            var packageVersions = await GetAllVersionsInternalAsync(libraryRange.Name, cacheContext, logger, false, cancellationToken);
+
+            // Select the best match
+            var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
+
+            if (packageVersion != null)
+            {
+                return new LibraryIdentity
+                {
+                    Name = libraryRange.Name,
+                    Version = packageVersion,
+                    Type = LibraryType.Package
+                };
+            }
+
             return null;
         }
 
@@ -566,7 +569,16 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            IEnumerable<NuGetVersion> packageVersions = null;
+            return await GetAllVersionsInternalAsync(id, cacheContext, logger, catchAndLogExceptions: true, cancellationToken: cancellationToken);
+        }
+
+        internal async Task<IEnumerable<NuGetVersion>> GetAllVersionsInternalAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            bool catchAndLogExceptions,
+            CancellationToken cancellationToken)
+        {
             try
             {
                 if (_throttle != null)
@@ -577,13 +589,13 @@ namespace NuGet.Commands
                 {
                     return null;
                 }
-                packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(
+                return await _findPackagesByIdResource.GetAllVersionsAsync(
                     id,
                     cacheContext,
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e) when (catchAndLogExceptions)
             {
                 if (_ignoreFailedSources)
                 {
@@ -600,8 +612,6 @@ namespace NuGet.Commands
             {
                 _throttle?.Release();
             }
-
-            return packageVersions;
         }
 
         private async Task LogWarningAsync(ILogger logger, string id, FatalProtocolException e)
