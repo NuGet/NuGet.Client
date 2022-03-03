@@ -3336,10 +3336,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var assetsFileMissingEventCount = 0;
                 var assetsFileMissing = false;
 
-                packageRestoreManager.AssetsFileMissingStatusChanged += delegate (bool isMissing)
+                packageRestoreManager.AssetsFileMissingStatusChanged += delegate (object sender, bool isAssetsFileMissing)
                 {
                     assetsFileMissingEventCount++;
-                    assetsFileMissing = isMissing;
+                    assetsFileMissing = isAssetsFileMissing;
                 };
 
                 // Package directories
@@ -3362,8 +3362,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                var isAssetsFileMissing = await packageRestoreManager.GetMissingAssetsFileStatusAsync(projectName);
-                packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(isAssetsFileMissing);
+                packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(false);
 
                 Assert.Equal(1, assetsFileMissingEventCount);
                 Assert.False(assetsFileMissing);
