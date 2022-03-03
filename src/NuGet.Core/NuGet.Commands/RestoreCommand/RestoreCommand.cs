@@ -1033,7 +1033,7 @@ namespace NuGet.Commands
             Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
             bool failed = false;
             using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
-            { // Catch the fatal protocol exception here and create a failure assets file.
+            {
                 try
                 {
                     result = await projectRestoreCommand.TryRestoreAsync(
