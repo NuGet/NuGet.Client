@@ -11,7 +11,6 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xaml;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
@@ -329,7 +328,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Combines package Folders from PackageReferenceProject with global package folders
+        /// Combines package folders from PackageReferenceProject with global package folders
         /// </summary>
         /// <param name="projectContextInfos">A collection of projects</param>
         /// <param name="cancellationToken">Cancellation Token</param>
