@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
+using Microsoft.VisualStudio.Services.Common;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -82,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(packageFeeds.mainFeed);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-            IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
@@ -236,7 +237,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(mainFeed);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-            IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
@@ -265,7 +266,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(mainFeed);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-            IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
@@ -326,6 +327,33 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        /// <summary>
+        /// Combines package folders from PackageReferenceProject with global package folders
+        /// </summary>
+        /// <param name="projectContextInfos">A collection of projects</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>A collection of Global package folder repositories combined with repositories found in packageFolders from PackageReference projects</returns>
+        private async Task<IReadOnlyList<SourceRepository>> GetAllPackageFoldersAsync(
+            IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
+            CancellationToken cancellationToken)
+        {
+            Task<IReadOnlyCollection<string>>[] tasks = projectContextInfos.Select(pctxi => pctxi.GetPackageFoldersAsync(_serviceBroker, cancellationToken).AsTask()).ToArray();
+            IReadOnlyCollection<string>[] packageFolders = await Task.WhenAll(tasks);
+
+            HashSet<string> pkgFoldersUnique = new HashSet<string>();
+            packageFolders.ForEach(folders => pkgFoldersUnique.AddRange(folders));
+
+            IEnumerable<SourceRepository> assetsPackageFolders = pkgFoldersUnique.Select(folder => _sharedServiceState.SourceRepositoryProvider.CreateRepository(new PackageSource(folder)));
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            List<SourceRepository> allLocalFolders = globalPackageFolderRepositories
+                .Concat(assetsPackageFolders)
+                .GroupBy(source => source?.PackageSource?.Source) // remove duplicates
+                .Select(group => group.First())
+                .ToList();
+
+            return allLocalFolders;
+        }
+
         private async Task<(IPackageFeed? mainFeed, IPackageFeed? recommenderFeed)> CreatePackageFeedAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<string> targetFrameworks,
@@ -349,8 +377,8 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
             PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages);
 
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-            IEnumerable<SourceRepository> globalPackageFolderRepositories = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
                 sourceRepositories,
                 packagesFolderSourceRepository,
@@ -373,7 +401,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.Installed)
             {
-                packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider, logger);
+                if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
+                {
+                    packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
+                }
+                else
+                {
+                    packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
+                }
+
                 return packageFeeds;
             }
 

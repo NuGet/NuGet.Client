@@ -292,7 +292,8 @@ namespace NuGet.PackageManagement.UI
                     Sources = _packageSources,
                     PackagePath = metadata.PackagePath,
                     PackageFileService = _packageFileService,
-                    IncludePrerelease = _includePrerelease
+                    IncludePrerelease = _includePrerelease,
+                    PackageLevel = metadata.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel,
                 };
 
                 listItem.UpdatePackageStatus(_installedPackages);
@@ -300,7 +301,7 @@ namespace NuGet.PackageManagement.UI
                 listItemViewModels.Add(listItem);
             }
 
-            return listItemViewModels.ToArray();
+            return listItemViewModels.OrderBy(vm => vm.PackageLevel).ThenBy(vm => vm.Id).ToArray();
         }
 
         private async Task<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity)

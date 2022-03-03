@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,6 +67,35 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return await projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
             }
+        }
+
+        /// <summary>
+        /// Get packageFolders section from assets file in a PackageReference project
+        /// </summary>
+        /// <param name="projectContextInfo">A project</param>
+        /// <param name="serviceBroker">Service Broker to gather data</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A collection with all package folders listed in assets file or empty collection if none</returns>
+        /// <exception cref="ArgumentNullException">If any argument is null</exception>
+        /// <remarks><see cref="NuGetProjectManagerService.GetPackageFoldersAsync(IReadOnlyCollection{string}, CancellationToken)"/></remarks>
+        public static async ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
+            this IProjectContextInfo projectContextInfo,
+            IServiceBroker serviceBroker,
+            CancellationToken cancellationToken)
+        {
+            if (projectContextInfo == null)
+            {
+                throw new ArgumentNullException(nameof(projectContextInfo));
+            }
+            if (serviceBroker == null)
+            {
+                throw new ArgumentNullException(nameof(serviceBroker));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken);
+            return await projectManager.GetPackageFoldersAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
         }
 
         public static async ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(

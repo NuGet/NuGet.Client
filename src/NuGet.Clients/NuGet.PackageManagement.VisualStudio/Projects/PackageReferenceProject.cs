@@ -20,7 +20,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
@@ -35,23 +34,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <typeparam name="U">Type of the collection elements for Installed and Transitive packages</typeparam>
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>
     {
-        private static readonly Microsoft.VisualStudio.Threading.AsyncLazy<bool> IsTransitiveOriginExpEnabled = new(async () =>
-        {
-            bool isExpEnabled;
-            try
-            {
-                var svc = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
-                isExpEnabled = svc?.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI) ?? false;
-            }
-            catch (ServiceUnavailableException)
-            {
-                isExpEnabled = false;
-            }
-
-            return isExpEnabled;
-
-        }, NuGetUIThreadHelper.JoinableTaskFactory);
-
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
 
         private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
@@ -65,6 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
+        private protected IList<LockFileItem> _packageFolders;
 
         protected bool IsInstalledAndTransitiveComputationNeeded { get; set; } = true;
 
@@ -156,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            if (await IsTransitiveOriginExpEnabled.GetValueAsync())
+            if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
                 // Get Transitive Origins
                 transitivePackagesWithOrigins = transitivePackages
@@ -302,7 +285,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Obtains targets section from project assets file (project.assets.json)
+        /// Obtains targets (and packageFolders) section from project assets file (project.assets.json)
         /// </summary>
         /// <param name="ct">Cancellation token for async operation</param>
         /// <returns>A list of dependencies, indexed by framework/RID</returns>
@@ -315,6 +298,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await TaskScheduler.Default;
 
             LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+            _packageFolders = lockFile?.PackageFolders ?? Array.Empty<LockFileItem>();
 
             return lockFile?.Targets;
         }
@@ -409,6 +393,32 @@ namespace NuGet.PackageManagement.VisualStudio
             };
 
             return transitivePR;
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyCollection<string>> GetPackageFoldersAsync(CancellationToken ct)
+        {
+            PackageSpec packageSpec = null;
+            string assetsFilePath = null;
+            try
+            {
+                (packageSpec, assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathAsync(ct);
+            }
+            catch (ProjectNotNominatedException)
+            {
+            }
+
+            if (packageSpec == null)
+            {
+                return Array.Empty<string>();
+            }
+
+            if (IsInstalledAndTransitiveComputationNeeded)
+            {
+                await GetTargetsListAsync(assetsFilePath, ct);
+            }
+
+            return _packageFolders.Select(pf => pf.Path).ToList();
         }
     }
 }

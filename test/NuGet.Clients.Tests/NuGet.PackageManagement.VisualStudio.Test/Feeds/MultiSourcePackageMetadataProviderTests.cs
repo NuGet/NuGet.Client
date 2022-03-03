@@ -213,6 +213,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(expectedVersionStrings, (await metadata.GetVersionsAsync()).Select(v => v.Version.ToString()).OrderBy(v => v));
                 Assert.Same(deprecationMetadata, await metadata.GetDeprecationMetadataAsync());
             }
+
+            [Fact]
+            public async Task GetOnlyLocalPackageMetadataAsync_WithLocalSource_SucceedsAsync()
+            {
+                Mock.Get(_localMetadataResource)
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { PackageSearchMetadataBuilder.FromIdentity(TestPackageIdentity).Build() });
+
+                IPackageSearchMetadata packageSearchMetadata = await _target.GetOnlyLocalPackageMetadataAsync(TestPackageIdentity, CancellationToken.None);
+
+                Assert.NotNull(packageSearchMetadata);
+            }
         }
 
         public class NoLocalProviderTests : SourceRepositoryCreator

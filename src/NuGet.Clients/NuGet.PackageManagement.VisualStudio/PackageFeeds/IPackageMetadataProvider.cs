@@ -64,5 +64,13 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Package metadata</returns>
         Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(PackageIdentity identity, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves package metadata only from local sources
+        /// </summary>
+        /// <param name="identity">Desired package id with version</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Package metadata, or <c>null</c> if not found in any local source</returns>
+        Task<IPackageSearchMetadata> GetOnlyLocalPackageMetadataAsync(PackageIdentity identity, CancellationToken cancellationToken);
     }
 }

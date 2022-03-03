@@ -2,15 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -58,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.0");
 
-            var _target = new InstalledPackageFeed(new[] { testPackageIdentity }, _metadataProvider, new TestLogger());
+            var _target = new InstalledPackageFeed(new[] { testPackageIdentity }, _metadataProvider);
 
             // Act
             var package = await _target.GetPackageMetadataAsync(

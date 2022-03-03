@@ -1002,7 +1002,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 x => AssertElement(x, "packageA", "2.0.0"),
                 x => AssertElement(x, "packageX", "3.0.0"));
 
-
             // Act III: Call to another APIs
             IReadOnlyCollection<IPackageReferenceContextInfo> installed = await _projectManager.GetInstalledPackagesAsync(new[] { projectId }, CancellationToken.None);
 
@@ -1329,6 +1328,244 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Collection(topPackagesD,
                 x => AssertElement(x, "packageA", "2.0.0"),
                 x => AssertElement(x, "packageX", "3.0.0"));
+        }
+
+        [Fact]
+        private async Task GetPackageFoldersAsync_InvalidInput_ThrowsAsync()
+        {
+            Initialize();
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await _projectManager.GetPackageFoldersAsync(null, CancellationToken.None);
+            });
+
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await _projectManager.GetPackageFoldersAsync(new[] { "unknownProject" } , CancellationToken.None);
+            });
+        }
+
+        [Fact]
+        private async Task GetPackageFoldersAsync_WithCancellationToken_ThowsAsync()
+        {
+            Initialize();
+
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+            {
+                using var cts = new CancellationTokenSource();
+                cts.Cancel();
+                await _projectManager.GetPackageFoldersAsync(new[] { "unknownProject" }, cts.Token);
+            });
+        }
+
+        [Fact]
+        private async Task GetPackageFoldersAsync_CpsProject_ReturnsPackageFolderAsync()
+        {
+            string projectName = Guid.NewGuid().ToString();
+            string projectId = projectName;
+            var projectSystemCache = new ProjectSystemCache();
+            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+
+            using var pathContext = new SimpleTestPathContext();
+            Initialize();
+
+            // Prepare: Create project
+            string projectFullPath = Path.Combine(pathContext.SolutionRoot, projectName, $"{projectName}.csproj");
+
+            CpsPackageReferenceProject prProject = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectSystemCache);
+
+            ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+            string referenceSpec = $@"
+                {{
+                    ""frameworks"":
+                    {{
+                        ""net6.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                            }}
+                        }}
+                    }}
+                }}";
+            PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, projectFullPath).WithTestRestoreMetadata();
+
+            // Restore info
+            DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+            projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+            projectSystemCache.AddProject(projectNames, projectAdapter, prProject).Should().BeTrue();
+
+            _solutionManager.NuGetProjects.Add(prProject);
+
+            // Perform NuGet restore
+            var pajFilepath = Path.Combine(Path.GetDirectoryName(projectFullPath), "project.assets.json");
+            TestRestoreRequest restoreRequest = ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, _logger); // Adds 1 source
+            restoreRequest.LockFilePath = pajFilepath;
+            restoreRequest.ProjectStyle = ProjectStyle.PackageReference;
+            var command = new RestoreCommand(restoreRequest);
+            var resultA = await command.ExecuteAsync();
+            await resultA.CommitAsync(_logger, CancellationToken.None);
+            Assert.True(resultA.Success);
+            Assert.True(File.Exists(pajFilepath));
+
+            // Act
+            IReadOnlyCollection<string> folders = await _projectManager.GetPackageFoldersAsync(new[] {projectId}, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, folders.Count); // only globalPackagesFolder is listed
+        }
+
+        [Fact]
+        private async Task GetPackageFoldersAsync_LegacyProject_ReturnsPackageFolderAsync()
+        {
+            string projectId = Guid.NewGuid().ToString();
+
+            using TestDirectory testDirectory = TestDirectory.Create();
+            // Arrange
+            LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, projectId, "[1.0.0, )", _threadingService);
+
+            NullSettings settings = NullSettings.Instance;
+            var context = new DependencyGraphCacheContext(_logger, settings);
+
+            var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+            // Package directories
+            var sources = new List<PackageSource>();
+            var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+            var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+            packagesDir.Create();
+            packageSource.Create();
+            sources.Add(new PackageSource(packageSource.FullName));
+
+            Initialize(sources);
+
+            _solutionManager.NuGetProjects.Add(testProject);
+
+            var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, _logger)
+            {
+                LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+            };
+
+            await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "1.0.0", new PackageDependency[]{});
+
+            var command = new RestoreCommand(request);
+            RestoreResult result = await command.ExecuteAsync();
+            await result.CommitAsync(_logger, CancellationToken.None);
+            Assert.True(result.Success);
+
+            // Act
+            var folders = await _projectManager.GetPackageFoldersAsync(new[] { projectId }, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, folders.Count);
+        }
+
+        [Fact]
+        private async Task GetPackageFoldersAsync_LegacyProjectWithFallbackFolder_ReturnsPackageFoldersAsync()
+        {
+            string projectId = Guid.NewGuid().ToString();
+
+            using TestDirectory testDirectory = TestDirectory.Create();
+            // Arrange
+            LegacyPackageReferenceProject testProject = CreateLegacyPackageReferenceProject(testDirectory, projectId, "[1.0.0, )", _threadingService);
+
+            NullSettings settings = NullSettings.Instance;
+            var context = new DependencyGraphCacheContext(_logger, settings);
+
+            var packageSpecs = await testProject.GetPackageSpecsAsync(context);
+
+            // Package directories
+            var sources = new List<PackageSource>();
+            var packagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+            var packageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+            var fallbackFolder = new DirectoryInfo(Path.Combine(testDirectory, "fallbackFolder"));
+            packagesDir.Create();
+            packageSource.Create();
+            fallbackFolder.Create();
+            sources.Add(new PackageSource(packageSource.FullName));
+
+            Initialize(sources);
+
+            await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageA", "1.0.0", new PackageDependency[] { });
+
+            _solutionManager.NuGetProjects.Add(testProject);
+
+            var request = new TestRestoreRequest(packageSpecs[0], sources, packagesDir.FullName, new[] { fallbackFolder.FullName }, _logger)
+            {
+                LockFilePath = Path.Combine(testDirectory, "obj", "project.assets.json")
+            };
+
+            var command = new RestoreCommand(request);
+            RestoreResult result = await command.ExecuteAsync();
+            await result.CommitAsync(_logger, CancellationToken.None);
+            Assert.True(result.Success);
+
+            // Act
+            var folders = await _projectManager.GetPackageFoldersAsync(new[] { projectId }, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(2, folders.Count);
+        }
+
+        [Fact]
+        private async Task GetPackageFoldersAsync_CpsProjectWithFallbackFolder_ReturnsPackageFoldersAsync()
+        {
+            string projectName = Guid.NewGuid().ToString();
+            string projectId = projectName;
+            var projectSystemCache = new ProjectSystemCache();
+            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+
+            using var pathContext = new SimpleTestPathContext();
+            Initialize();
+
+            // Prepare: Create project
+            string projectFullPath = Path.Combine(pathContext.SolutionRoot, projectName, $"{projectName}.csproj");
+
+            CpsPackageReferenceProject prProject = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectSystemCache);
+
+            ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+            string referenceSpec = $@"
+                {{
+                    ""frameworks"":
+                    {{
+                        ""net6.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                            }}
+                        }}
+                    }}
+                }}";
+            PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, projectFullPath).WithTestRestoreMetadata();
+
+            // Restore info
+            DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+            projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+            projectSystemCache.AddProject(projectNames, projectAdapter, prProject).Should().BeTrue();
+
+            _solutionManager.NuGetProjects.Add(prProject);
+
+            var sources = new List<PackageSource>();
+
+
+            // Perform NuGet restore
+            var pajFilepath = Path.Combine(Path.GetDirectoryName(projectFullPath), "project.assets.json");
+            var request = new TestRestoreRequest(packageSpec, sources, pathContext.PackageSource, new[] { pathContext.FallbackFolder }, _logger)
+            {
+                LockFilePath = pajFilepath,
+                ProjectStyle = ProjectStyle.PackageReference
+            };
+            var command = new RestoreCommand(request);
+            var resultA = await command.ExecuteAsync();
+            await resultA.CommitAsync(_logger, CancellationToken.None);
+            Assert.True(resultA.Success);
+            Assert.True(File.Exists(pajFilepath));
+
+            // Act
+            IReadOnlyCollection<string> folders = await _projectManager.GetPackageFoldersAsync(new[] { projectId }, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(2, folders.Count);
         }
 
         private void AssertElement(IPackageReferenceContextInfo pkg, string id, string version)

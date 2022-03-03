@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Moq;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
@@ -305,6 +304,33 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expectedResult, actualResult);
         }
 
+        [Theory]
+        [InlineData(new string[] {}, 0)]
+        [InlineData(new string[] { "folder1" }, 1)]
+        [InlineData(new string[] { "folder1", "folder2" }, 2)]
+        public async Task GetPackageFoldersAsync_OneProject_ReturnsPackageFolderAsync(IReadOnlyCollection<string> folderCollection, int expected)
+        {
+            var serviceBroker = Mock.Of<IServiceBroker>();
+            var projectManagerService = Mock.Of<INuGetProjectManagerService>();
+            var project = Mock.Of<IProjectContextInfo>();
+
+            _ = Mock.Get(serviceBroker)
+                .Setup(sb => sb.GetProxyAsync<INuGetProjectManagerService>(
+                    It.Is<ServiceRpcDescriptor>(descriptor => descriptor == NuGetServices.ProjectManagerService),
+                    It.IsAny<ServiceActivationOptions>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<INuGetProjectManagerService>(projectManagerService));
+
+            Mock.Get(projectManagerService)
+                .Setup(prj => prj.GetPackageFoldersAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<string>>(folderCollection));
+
+            IReadOnlyCollection<string> folders = await IProjectContextInfoExtensions.GetPackageFoldersAsync(project, serviceBroker, CancellationToken.None);
+
+            Assert.NotNull(folders);
+            Assert.Equal(expected, folders.Count);
+        }
+
         [Fact]
         public async Task TryGetInstalledPackageFilePathAsync_WhenProjectContextInfoIsNull_Throws()
         {
@@ -349,6 +375,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Mock.Of<IProjectContextInfo>(),
                     Mock.Of<IServiceBroker>(),
                     PackageIdentity,
+                    new CancellationToken(canceled: true))
+                .AsTask());
+        }
+
+        [Fact]
+        public async Task GetAllPackagesFolderAsync_WhenCancellationTokenIsCancelled_ThrowsAsync()
+        {
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => IProjectContextInfoExtensions.GetPackageFoldersAsync(
+                    Mock.Of<IProjectContextInfo>(),
+                    Mock.Of<IServiceBroker>(),
                     new CancellationToken(canceled: true))
                 .AsTask());
         }

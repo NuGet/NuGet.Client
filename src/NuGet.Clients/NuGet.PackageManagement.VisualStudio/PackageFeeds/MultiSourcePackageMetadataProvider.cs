@@ -169,6 +169,38 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        /// <inheritdoc />
+        public async Task<IPackageSearchMetadata> GetOnlyLocalPackageMetadataAsync(
+            PackageIdentity identity,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var sources = new List<SourceRepository>();
+
+            if (_localRepository != null)
+            {
+                sources.Add(_localRepository);
+            }
+
+            if (_globalLocalRepositories != null)
+            {
+                sources.AddRange(_globalLocalRepositories);
+            }
+
+            // Take the package from the first source it is found in
+            foreach (var source in sources)
+            {
+                var result = await source.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
+
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
         private async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, List<Task<IPackageSearchMetadata>> tasks, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

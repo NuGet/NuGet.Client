@@ -65,5 +65,17 @@ namespace NuGet.VisualStudio.Internal.Contracts
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get package folders section from assets file from a collection of projects
+        /// </summary>
+        /// <param name="projectIds">A collection of project ID's</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>A collection with all package folders found in each project assets file, deduplicated</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="projectIds"/> is <c>null</c></exception>
+        /// <remarks><see cref="PackageManagement.VisualStudio.IPackageReferenceProject.GetPackageFoldersAsync(CancellationToken)"/></remarks>
+        ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken);
     }
 }

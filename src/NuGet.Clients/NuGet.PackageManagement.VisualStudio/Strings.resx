@@ -304,4 +304,7 @@
     <value>'{0}' cannot be null.</value>
     <comment>0 - property name</comment>
   </data>
+  <data name="Exception_InvalidContinuationToken" xml:space="preserve">
+    <value>Invalid token</value>
+  </data>
 </root>
