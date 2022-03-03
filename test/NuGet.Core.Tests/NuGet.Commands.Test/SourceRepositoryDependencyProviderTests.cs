@@ -604,7 +604,7 @@ namespace NuGet.Commands.Test
                 await test.Provider.GetPackageDownloaderAsync(
                     new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),
                     test.SourceCacheContext,
-                    NullLogger.Instance,
+                    test.Logger,
                     CancellationToken.None);
 
                 var expectedWarningCount = ignoreWarning ? 0 : 1;

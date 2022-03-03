@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
@@ -451,7 +453,9 @@ namespace NuGet.Commands.Test
 
                 // Act & Assert
                 var command = new RestoreCommand(request);
-                await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
+                var result = await command.ExecuteAsync();
+                result.Success.Should().BeFalse();
+                result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
             }
         }
     }

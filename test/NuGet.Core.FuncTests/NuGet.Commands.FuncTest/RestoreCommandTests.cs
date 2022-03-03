@@ -3675,7 +3675,6 @@ namespace NuGet.Commands.FuncTest
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.Libraries.Should().HaveCount(1);
-            result.LockFile.LogMessages.Should().HaveCount(1);
             result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
         }
 
@@ -3756,8 +3755,6 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 result.Success.Should().BeTrue(because: logger.ShowMessages());
-                result.LockFile.Libraries.Should().HaveCount(1);
-                result.LockFile.LogMessages.Should().HaveCount(1);
                 result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
             }
         }
