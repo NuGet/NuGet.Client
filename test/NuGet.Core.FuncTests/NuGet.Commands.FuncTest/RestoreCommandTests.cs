@@ -1368,10 +1368,6 @@ namespace NuGet.Commands.FuncTest
                     }
                 }");
 
-                var configuration = SimpleTestSettingsContext.GetOrAddSection(pathContext.Settings.XML, "config");
-                SimpleTestSettingsContext.AddEntry(configuration, "cacheExpiration", "true");
-                pathContext.Settings.Save();
-
                 // Arrange
                 var packageA = new SimpleTestPackageContext("a", "1.0.0");
                 packageA.Files.Clear();
