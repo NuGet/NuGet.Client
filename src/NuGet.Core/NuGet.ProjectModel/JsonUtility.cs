@@ -55,7 +55,7 @@ namespace NuGet.ProjectModel
         {
             return new JProperty(
                 item.Id,
-                WriteString(item.VersionRange?.ToLegacyShortString()));
+                WriteString(item.VersionRange?.ToNonSnapshotRange().ToLegacyShortString()));
         }
 
         internal static JProperty WritePackageDependency(PackageDependency item)
