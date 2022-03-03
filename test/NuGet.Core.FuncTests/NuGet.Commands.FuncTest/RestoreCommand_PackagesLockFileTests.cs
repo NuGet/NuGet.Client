@@ -205,6 +205,40 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
+        public async Task RestoreCommand_PackagesLockFile_InLockedMode_And_InForceEvaluate_Fails()
+        {
+            // Arange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+
+                var projectName = "TestProject";
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var packageSpec = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                    .WithTargetFrameworks(new string[] { "net46" })
+                    .WithPackagesLockFile()
+                    .Build();
+
+                // Enable locked mode
+                packageSpec.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                    restorePackagesWithLockFile: "true",
+                    packageSpec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                    restoreLockedMode: true);
+
+                var request = ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger);
+                request.RestoreForceEvaluate = true;
+
+                var result = await new RestoreCommand(request).ExecuteAsync();
+
+                // Assert
+                result.Success.Should().BeFalse();
+                logger.ErrorMessages.Count.Should().Be(1);
+                logger.ErrorMessages.Single().Should().Contain("NU1004");
+                logger.ErrorMessages.Single().Should().Contain("The package reference a version has changed from [1.0.0, ) to [2.0.0, )");
+            }
+        }
+
+        [Fact]
         public async Task RestoreCommand_PackagesLockFile_InLockedMode_WhenADependecyIsUpdated_FailsWithNU1004()
         {
             // Arrange

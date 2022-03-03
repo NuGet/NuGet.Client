@@ -595,12 +595,12 @@ namespace NuGet.Commands
             {
                 success = false;
 
-                // invalid input since LockedMode and RestoreForce should not be used together.
+                // invalid input since LockedMode and RestoreForceEvaluate should not be used together.
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_RestoreLockedModeWithForceEvaluate, packagesLockFilePath);
 
                 // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
                 // be skipped for netcore projects.
-                await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, message));
+                await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
 
                 return (success, isLockFileValid, packagesLockFile);
             }
