@@ -128,7 +128,7 @@ namespace NuGet.Protocol
                 if (_logger != null)
                 {
                     _logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1802,
-                        string.Format(CultureInfo.CurrentCulture, "Updating last access time on file {0} failed with {1}",
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotUpdateMetadataLastAccessTime,
                         nupkgMetadataPath, ex.Message)));
                 }
             }

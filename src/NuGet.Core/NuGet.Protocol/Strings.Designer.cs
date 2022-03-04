@@ -205,6 +205,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Updating last access time on file {0} failed with {1}.
+        /// </summary>
+        internal static string Error_CouldNotUpdateMetadataLastAccessTime {
+            get {
+                return ResourceManager.GetString("Error_CouldNotUpdateMetadataLastAccessTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The download of &apos;{0}&apos; timed out because no data was received for {1}ms..
         /// </summary>
         internal static string Error_DownloadTimeout {
