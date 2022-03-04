@@ -463,7 +463,7 @@ namespace NuGet.SolutionRestoreManager
 
                                 var isRestoreOriginalAction = true;
                                 var isRestoreSucceeded = true;
-                                var projectList = dgSpec.Projects.Select(e => e.Name).ToList();
+                                var projectList = dgSpec.Projects.Select(e => e.FilePath).ToList();
                                 IReadOnlyList<RestoreSummary> restoreSummaries = null;
                                 try
                                 {
