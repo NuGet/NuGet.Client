@@ -104,18 +104,18 @@ namespace NuGet.Configuration
             return SignatureValidationMode.Accept;
         }
 
-        public static bool GetForceUpdatePackageLastAccessTimeEnabledStatus(ISettings settings)
+        public static bool GetUpdatePackageLastAccessTimeEnabledStatus(ISettings settings)
         {
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var forceUpdatePackageLastAccessTimeStatus = GetConfigValue(settings, ConfigurationConstants.ForceUpdatePackageLastAccessTime);
+            var updatePackageLastAccessTimeStatus = GetConfigValue(settings, ConfigurationConstants.UpdatePackageLastAccessTime);
 
-            if (!string.IsNullOrEmpty(forceUpdatePackageLastAccessTimeStatus) && bool.TryParse(forceUpdatePackageLastAccessTimeStatus, result: out bool forceUpdatePackageLastAccessTime))
+            if (!string.IsNullOrEmpty(updatePackageLastAccessTimeStatus) && bool.TryParse(updatePackageLastAccessTimeStatus, result: out bool updatePackageLastAccessTime))
             {
-                return forceUpdatePackageLastAccessTime;
+                return updatePackageLastAccessTime;
             }
 
             return false;

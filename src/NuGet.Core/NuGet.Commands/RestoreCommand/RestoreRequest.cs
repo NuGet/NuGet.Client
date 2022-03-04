@@ -205,6 +205,6 @@ namespace NuGet.Commands
 
         public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
 
-        public bool ForceUpdatePackageLastAccessTime { get; set; }
+        public bool UpdatePackageLastAccessTime { get; set; }
     }
 }

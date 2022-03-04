@@ -64,13 +64,13 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetForceUpdatePackageLastAccessTimeEnabledStatus_FromNuGetConfig()
+        public void GetUpdatePackageLastAccessTimeEnabledStatus_FromNuGetConfig()
         {
             // Arrange
             var config = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <config>
-        <add key='forceUpdatePackageLastAccessTime' value='true' />
+        <add key='updatePackageLastAccessTime' value='true' />
     </config>
 </configuration>";
 
@@ -81,10 +81,10 @@ namespace NuGet.Configuration.Test
                 var settings = new Settings(mockBaseDirectory);
 
                 // Act
-                var forceUpdatePackageLastAccessTimeEnabled = SettingsUtility.GetForceUpdatePackageLastAccessTimeEnabledStatus(settings);
+                var updatePackageLastAccessTimeEnabled = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
                 // Assert
-                forceUpdatePackageLastAccessTimeEnabled.Should().Be(true);
+                updatePackageLastAccessTimeEnabled.Should().Be(true);
             }
         }
 
@@ -343,9 +343,9 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetForceUpdatePackageLastAccessTimeEnabledStatus_WithNullSettings_Throws()
+        public void GetUpdatePackageLastAccessTimeEnabledStatus_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetForceUpdatePackageLastAccessTimeEnabledStatus(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings: null));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();

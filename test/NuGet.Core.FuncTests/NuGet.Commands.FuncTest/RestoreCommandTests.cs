@@ -1398,7 +1398,7 @@ namespace NuGet.Commands.FuncTest
                     ProjectStyle = ProjectStyle.PackageReference,
                     DependencyGraphSpec = dgSpec,
                     AllowNoOp = true,
-                    ForceUpdatePackageLastAccessTime = true
+                    UpdatePackageLastAccessTime = true
                 };
                 var command = new RestoreCommand(request);
 
@@ -1411,7 +1411,7 @@ namespace NuGet.Commands.FuncTest
                     ProjectStyle = ProjectStyle.PackageReference,
                     DependencyGraphSpec = dgSpec,
                     AllowNoOp = true,
-                    ForceUpdatePackageLastAccessTime = true
+                    UpdatePackageLastAccessTime = true
                 };
 
                 var metadataPath = Path.Combine(pathContext.UserPackagesFolder, "a", "1.0.0", ".nupkg.metadata");

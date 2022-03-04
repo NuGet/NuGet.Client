@@ -170,10 +170,10 @@ EndGlobal";
                 var config = new XElement(XName.Get("config"));
                 configuration.Add(config);
 
-                var forceUpdatePackageLastAccessTime = new XElement(XName.Get("add"));
-                forceUpdatePackageLastAccessTime.Add(new XAttribute(XName.Get("key"), "forceUpdatePackageLastAccessTime"));
-                forceUpdatePackageLastAccessTime.Add(new XAttribute(XName.Get("value"), "true"));
-                config.Add(forceUpdatePackageLastAccessTime);
+                var updatePackageLastAccessTime = new XElement(XName.Get("add"));
+                updatePackageLastAccessTime.Add(new XAttribute(XName.Get("key"), "updatePackageLastAccessTime"));
+                updatePackageLastAccessTime.Add(new XAttribute(XName.Get("value"), "true"));
+                config.Add(updatePackageLastAccessTime);
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 

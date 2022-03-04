@@ -160,7 +160,7 @@ namespace NuGet.Commands
                 return false;
             }
 
-            if (request.ForceUpdatePackageLastAccessTime)
+            if (request.UpdatePackageLastAccessTime)
             {
                 foreach (var package in cacheFile.ExpectedPackageFilePaths)
                 {
