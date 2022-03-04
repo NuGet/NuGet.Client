@@ -287,9 +287,9 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
                 DateTime ilMergedPackAssemblyCreationDate = File.GetCreationTimeUtc(Path.Combine(ilMergedPackDirectoryPath, packFileName));
                 if (ilMergedPackAssemblyCreationDate > packAssemblyCreationDate)
                 {
-                    FileUtility.Replace(
-                        sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
-                        destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName));
+                    File.Copy(sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
+                        destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName),
+                        overwrite:true);
                 }
             }
             else
