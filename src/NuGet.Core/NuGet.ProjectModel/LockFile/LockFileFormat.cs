@@ -249,7 +249,7 @@ namespace NuGet.ProjectModel
             library.Sha512 = JsonUtility.ReadProperty<string>(jObject, Sha512Property);
 
             library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
-            library.Files = ReadPathArray(json[FilesProperty] as JArray, ReadString);
+            library.Files = ReadPathArray(json[FilesProperty] as JArray);
 
             library.HasTools = ReadBool(json, HasToolsProperty, defaultValue: false);
             return library;
@@ -724,9 +724,9 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static IList<string> ReadPathArray(JArray json, Func<JToken, string> readItem)
+        private static IList<string> ReadPathArray(JArray json)
         {
-            return ReadArray(json, readItem).Select(f => GetPathWithForwardSlashes(f)).ToList();
+            return ReadArray(json, f => GetPathWithForwardSlashes(ReadString(f)));
         }
 
         private static void WriteArray<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
