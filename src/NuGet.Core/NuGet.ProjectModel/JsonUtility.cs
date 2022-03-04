@@ -76,9 +76,9 @@ namespace NuGet.ProjectModel
         {
             if (jObject == null)
             {
-                return new List<TItem>();
+                return new List<TItem>(0);
             }
-            var items = new List<TItem>();
+            var items = new List<TItem>(jObject.Count);
             foreach (var child in jObject)
             {
                 items.Add(readItem(child.Key, child.Value));

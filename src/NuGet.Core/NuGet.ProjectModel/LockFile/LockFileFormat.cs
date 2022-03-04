@@ -691,9 +691,9 @@ namespace NuGet.ProjectModel
         {
             if (json == null)
             {
-                return new List<TItem>();
+                return new List<TItem>(0);
             }
-            var items = new List<TItem>();
+            var items = new List<TItem>(json.Count);
             foreach (var child in json)
             {
                 var item = readItem(child);
@@ -712,7 +712,7 @@ namespace NuGet.ProjectModel
                 return new List<IAssetsLogMessage>();
             }
 
-            var items = new List<IAssetsLogMessage>();
+            var items = new List<IAssetsLogMessage>(json.Count);
             foreach (var child in json)
             {
                 var logMessage = ReadLogMessage(child as JObject, projectPath);
