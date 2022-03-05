@@ -187,7 +187,8 @@ namespace NuGet.SolutionRestoreManager
                     targetFrameworkInfo.ProjectReferences
                         .Cast<IVsReferenceItem>()
                         .Where(IsReferenceOutputAssemblyTrueOrEmpty)
-                        .Select(item => ToProjectRestoreReference(item, projectDirectory)));
+                        .Select(item => ToProjectRestoreReference(item, projectDirectory))
+                        .Distinct(ProjectRestoreReferenceComparer.Default));
             }
 
             return tfi;
@@ -524,7 +525,7 @@ namespace NuGet.SolutionRestoreManager
             return false;
         }
 
-        private static string GetPropertyValueOrNull(
+        internal static string GetPropertyValueOrNull(
             IVsReferenceItem item, string propertyName)
         {
             try

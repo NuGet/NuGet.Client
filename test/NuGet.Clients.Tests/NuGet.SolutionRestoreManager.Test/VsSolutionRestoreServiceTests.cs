@@ -2258,6 +2258,41 @@ namespace NuGet.SolutionRestoreManager.Test
             }
         }
 
+        [Fact]
+        public void ToPackageSpec_TwoProjectReferencesToSameProject_DeduplicatesProjectReference()
+        {
+            // Arrange
+            string currentProjectPath = @"n:\path\to\current\project.csproj";
+            string referencedProjectPath = @"n:\path\to\some\reference.csproj";
+            string relativePath = new Uri(currentProjectPath).MakeRelativeUri(new Uri(referencedProjectPath)).OriginalString;
+
+            ProjectNames projectName = new(currentProjectPath, "project", "project.csproj", "project", Guid.NewGuid().ToString());
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectReferenceProperties = new VsReferenceProperties();
+            VsReferenceItem[] projectReferences = new[]
+            {
+                new VsReferenceItem(referencedProjectPath, projectReferenceProperties),
+                new VsReferenceItem(relativePath, projectReferenceProperties)
+            };
+            var targetFrameworks = new VsTargetFrameworkInfo2[]
+            {
+                new VsTargetFrameworkInfo2("net5.0",
+                packageReferences: emptyReferenceItems,
+                projectReferences: projectReferences,
+                packageDownloads: emptyReferenceItems,
+                frameworkReferences: emptyReferenceItems,
+                projectProperties: Array.Empty<IVsProjectProperty>())
+            };
+
+            // Act
+            var actual = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, originalTargetFrameworkstr: string.Empty, msbuildProjectExtensionsPath: string.Empty);
+
+            // Assert
+            ProjectRestoreMetadataFrameworkInfo targetFramework = Assert.Single(actual.RestoreMetadata.TargetFrameworks);
+            var projectReference = Assert.Single(targetFramework.ProjectReferences);
+            Assert.Equal(referencedProjectPath, projectReference.ProjectUniqueName);
+        }
+
         private delegate void TryGetProjectNamesCallback(string projectPath, out ProjectNames projectNames);
         private delegate bool TryGetProjectNamesReturns(string projectPath, out ProjectNames projectNames);
 
