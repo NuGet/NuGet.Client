@@ -12,7 +12,6 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -71,10 +70,6 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

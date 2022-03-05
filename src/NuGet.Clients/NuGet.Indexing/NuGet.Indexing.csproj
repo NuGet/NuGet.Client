@@ -10,7 +10,6 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,10 +19,6 @@
   <ItemGroup>
     <PackageReference Include="Lucene.Net" />
     <PackageReference Include="SharpZipLib" ExcludeAssets="all" /> <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

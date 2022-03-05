@@ -13,7 +13,6 @@
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's implementation for interacting with feeds. Contains functionality for all feed types.</Description>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -46,10 +45,6 @@
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.IO.Compression" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

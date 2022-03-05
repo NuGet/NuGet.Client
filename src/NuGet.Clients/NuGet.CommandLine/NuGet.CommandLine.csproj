@@ -28,7 +28,6 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <Target Name="CreateCommandlineNupkg">
@@ -92,10 +91,6 @@
       <Link>NuGet.targets</Link>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <Target Name="DetermineILMergeNuGetExeInputsOutputs">

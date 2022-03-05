@@ -61,8 +61,14 @@
       <Import Project="$(NuGetBuildTasksPackTargets)" />
   </ImportGroup>
 
+  <!-- Readme file in shipping packages -->
+  <PropertyGroup Condition=" '$(PackProject)' == 'true' ">
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(PackProject)' == 'true' ">
     <None Include="$(MSBuildThisFileDirectory)..\icon.png" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildProjectDirectory)\docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
     <!-- Don't use PublicApiAnalyzer on source-build .NET -->

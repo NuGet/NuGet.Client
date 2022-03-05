@@ -12,15 +12,10 @@
     <XPLATProject>true</XPLATProject>
     <SkipShared>true</SkipShared>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer> <!-- This assembly only has type forwarding -->
-    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\NuGet.Packaging.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
