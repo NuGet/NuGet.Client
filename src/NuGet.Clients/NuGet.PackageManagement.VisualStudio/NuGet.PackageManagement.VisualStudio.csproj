@@ -173,7 +173,6 @@
     <Compile Include="Utility\TaskCombinators.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSRestoreSettingsUtilities.cs" />
-    <Compile Include="VisualStudioAccountProvider.cs" />
     <Compile Include="VisualStudioActivityLogger.cs" />
     <Compile Include="VisualStudioCredentialProvider.cs" />
     <Compile Include="VsCredentialProviderAdapter.cs" />
