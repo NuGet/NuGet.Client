@@ -23,7 +23,7 @@
     <TargetFrameworks />
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
   </ItemGroup>
