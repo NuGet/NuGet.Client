@@ -14,6 +14,7 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -76,6 +77,7 @@ namespace NuGet.PackageManagement.UI
             if (_packageRestoreManager != null)
             {
                 _packageRestoreManager.PackagesMissingStatusChanged += OnPackagesMissingStatusChanged;
+
                 if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                 {
                     _packageRestoreManager.AssetsFileMissingStatusChanged += OnAssetsFileMissingStatusChanged;
@@ -120,7 +122,8 @@ namespace NuGet.PackageManagement.UI
                         _vsSolutionManager = _componentModel.GetService<IVsSolutionManager>();
 
                         // when the control is first loaded, check for missing packages
-                        if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
+                        if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(CancellationToken.None) &&
+                            _projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
                             await GetMissingAssetsFileStatusAsync(_projectContextInfo.ProjectId))
                         {
                             _solutionRestoreWorker = _componentModel.GetService<ISolutionRestoreWorker>();
