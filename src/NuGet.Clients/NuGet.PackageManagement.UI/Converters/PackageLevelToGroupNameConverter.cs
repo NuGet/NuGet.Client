@@ -8,26 +8,30 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageLevelToGroupNameConverter : IValueConverter
+    internal class PackageLevelToGroupNameConverter : IMultiValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is PackageLevel pkgLevel)
+            if (values != null
+                && values.Length == 3
+                && values[0] is PackageLevel pkgLevel
+                && values[1] is int topLevelCount
+                && values[2] is int transitiveCount)
             {
                 if (pkgLevel == PackageLevel.TopLevel)
                 {
-                    return Resources.PackageLevel_TopLevelPackageHeaderText;
+                    return string.Format(Resources.PackageLevel_TopLevelPackageHeaderText, topLevelCount);
                 }
                 else if (pkgLevel == PackageLevel.Transitive)
                 {
-                    return Resources.PackageLevel_TransitivePackageHeaderText;
+                    return string.Format(Resources.PackageLevel_TransitivePackageHeaderText, transitiveCount);
                 }
             }
 
             return null;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

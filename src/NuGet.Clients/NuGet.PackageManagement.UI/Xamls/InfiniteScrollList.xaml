@@ -1,5 +1,6 @@
 <UserControl
   x:Class="NuGet.PackageManagement.UI.InfiniteScrollList"
+  x:Name="_infiniteScrollList"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
@@ -278,10 +279,17 @@
         </Grid>
       </ControlTemplate>
 
+      <MultiBinding x:Key="GroupHeaderMultiBinding" Converter="{StaticResource PackageLevelToGroupNameConverter}">
+        <Binding Path="Name" />
+        <Binding ElementName="_infiniteScrollList" Path="TopLevelPackageCount" />
+        <Binding ElementName="_infiniteScrollList" Path="TransitivePackageCount" />
+      </MultiBinding>
+
       <Style
         x:Key="ExpanderStyle"
         TargetType="{x:Type Expander}"
         BasedOn="{StaticResource {x:Type Expander}}">
+        <Setter Property="Header" Value="{StaticResource GroupHeaderMultiBinding}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
         <Style.Triggers>
           <DataTrigger Binding="{Binding Name}" Value="{x:Static common:PackageLevel.Transitive}">
@@ -297,16 +305,16 @@
         x:Key="GroupedListItemControlTemplate"
         TargetType="{x:Type GroupItem}">
         <Expander
-          Header="{Binding Name, Converter={StaticResource PackageLevelToGroupNameConverter}}"
           Style="{StaticResource ExpanderStyle}">
           <ItemsPresenter />
         </Expander>
       </ControlTemplate>
 
       <Style
-      x:Key="GroupedListContainerStyle"
-      TargetType="{x:Type GroupItem}">
+        x:Key="GroupedListContainerStyle"
+        TargetType="{x:Type GroupItem}">
         <Setter Property="Template" Value="{StaticResource GroupedListItemControlTemplate}" />
+        <Setter Property="AutomationProperties.Name" Value="{StaticResource GroupHeaderMultiBinding}" />
       </Style>
     </ResourceDictionary>
   </UserControl.Resources>
