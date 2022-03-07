@@ -373,7 +373,6 @@ namespace NuGet.Commands.Test
         private static PackageSpec GetPackageSpecWithProjectNameAndSpec(string projectName, string rootPath, string spec)
         {
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
-            packageSpec.RestoreSettings.HideWarningsAndErrors = true; // Pretend this is running in VS and this is a .NET Core project.
             return packageSpec;
         }
 

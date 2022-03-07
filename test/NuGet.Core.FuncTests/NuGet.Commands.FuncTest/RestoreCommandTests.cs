@@ -1989,8 +1989,9 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
-                Assert.NotNull(ex);
+                var result = await command.ExecuteAsync();
+                result.LogMessages.Count.Should().Be(1);
+                result.LogMessages[0].Code.Equals(NuGetLogCode.NU1301);
             }
         }
 
@@ -2029,8 +2030,9 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await command.ExecuteAsync());
-                Assert.NotNull(ex);
+                var result = await command.ExecuteAsync();
+                result.LogMessages.Count.Should().Be(1);
+                result.LogMessages[0].Code.Equals(NuGetLogCode.NU1301);
             }
         }
 
@@ -3616,6 +3618,160 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages.Should().HaveCount(1);
             result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
             result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+        }
+
+        [Fact]
+        public async Task Restore_WhenSourceDoesNotExist_ReportsNU1301InAssetsFile()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Don't create the package
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            var logger = new TestLogger();
+            Directory.Delete(pathContext.PackageSource);
+            // Set-up command.
+            var command = new RestoreCommand(
+                ProjectTestHelpers.CreateRestoreRequest(
+                    ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id),
+                    pathContext,
+                    new TestLogger()));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeFalse(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(0);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
+        }
+
+        [Fact]
+        public async Task Restore_WhenSourceDoesNotExist_AndIgnoreFailedSourcesIsTrue_ReportsNU1801InAssetsFile()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var extraSource = Path.Combine(pathContext.WorkingDirectory, "Source2");
+            pathContext.Settings.AddSource("extraSource", extraSource);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+              pathContext.PackageSource,
+              PackageSaveMode.Defaultv3,
+              packageA
+              );
+            var logger = new TestLogger();
+            // Set-up command.
+            var request = CreateRestoreRequest(
+                    ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id),
+                    pathContext.UserPackagesFolder,
+                    new List<PackageSource> { new PackageSource(pathContext.PackageSource), new PackageSource(extraSource) },
+                    new TestLogger());
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
+        }
+
+        [Fact]
+        public async Task Restore_WithMultipleProjects_WhenSourceDoesNotExist_ReportsNU1301InAssetsFileForAllProjects()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Don't create the package
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            var logger = new TestLogger();
+            Directory.Delete(pathContext.PackageSource);
+
+            var project1Spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id);
+            var project2Spec = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id);
+
+            var restoreContext = new RestoreArgs()
+            {
+                Sources = new List<string>() { pathContext.PackageSource },
+                GlobalPackagesFolder = pathContext.UserPackagesFolder,
+                Log = logger,
+                CacheContext = new SourceCacheContext()
+            };
+
+            var dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
+
+            foreach (var request in await dgProvider.CreateRequests(restoreContext))
+            {
+                var command = new RestoreCommand(request.Request);
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                result.Success.Should().BeFalse(because: logger.ShowMessages());
+                result.LockFile.Libraries.Should().HaveCount(0);
+                result.LockFile.LogMessages.Should().HaveCount(1);
+                result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
+            }
+        }
+
+        [Fact]
+        public async Task Restore_WithMultipleProjects_WhenSourceDoesNotExist_AndIgnoreFailedSourcesIsTrue_ReportsNU1801InAssetsFile()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var extraSource = Path.Combine(pathContext.WorkingDirectory, "Source2");
+            pathContext.Settings.AddSource("extraSource", extraSource);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+              pathContext.PackageSource,
+              PackageSaveMode.Defaultv3,
+              packageA
+              );
+            var logger = new TestLogger();
+            // Set-up command.
+            var project1Spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id);
+            var project2Spec = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id);
+
+            var cacheContext = new SourceCacheContext();
+            cacheContext.IgnoreFailedSources = true;
+            var restoreContext = new RestoreArgs()
+            {
+                Sources = new List<string>() { pathContext.PackageSource, extraSource },
+                GlobalPackagesFolder = pathContext.UserPackagesFolder,
+                Log = logger,
+                CacheContext = cacheContext,
+            };
+
+            var dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
+
+            foreach (var request in await dgProvider.CreateRequests(restoreContext))
+            {
+                var command = new RestoreCommand(request.Request);
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+                result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
+            }
+        }
+
+        static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource>  sources, ILogger logger)
+        {
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddProject(spec);
+            dgSpec.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+
+            var testSourceCacheContext = new TestSourceCacheContext();
+            testSourceCacheContext.IgnoreFailedSources = true;
+            return new TestRestoreRequest(spec, sources, userPackagesFolder, testSourceCacheContext, logger)
+            {
+                LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
+                DependencyGraphSpec = dgSpec,
+            };
         }
 
         private static void CreateFakeProjectFile(PackageSpec project2spec)

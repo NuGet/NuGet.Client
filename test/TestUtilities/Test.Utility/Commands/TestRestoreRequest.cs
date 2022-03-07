@@ -147,7 +147,7 @@ namespace NuGet.Commands.Test
             sources,
             packagesDirectory,
             fallbackPackageFolders,
-            new TestSourceCacheContext(),
+            cacheContext,
             clientPolicyContext,
             log,
             new LockFileBuilderCache())

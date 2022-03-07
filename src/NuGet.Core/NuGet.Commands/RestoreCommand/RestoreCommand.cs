@@ -16,6 +16,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -1030,24 +1031,39 @@ namespace NuGet.Commands
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
             Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
+            bool failed = false;
             using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
             {
-                result = await projectRestoreCommand.TryRestoreAsync(
-                    projectRange,
-                    projectFrameworkRuntimePairs,
-                    userPackageFolder,
-                    fallbackPackageFolders,
-                    remoteWalker,
-                    context,
-                    forceRuntimeGraphCreation: hasSupports,
-                    token: token,
-                    telemetryActivity: telemetryActivity,
-                    telemetryPrefix: string.Empty);
+                try
+                {
+                    result = await projectRestoreCommand.TryRestoreAsync(
+                        projectRange,
+                        projectFrameworkRuntimePairs,
+                        userPackageFolder,
+                        fallbackPackageFolders,
+                        remoteWalker,
+                        context,
+                        forceRuntimeGraphCreation: hasSupports,
+                        token: token,
+                        telemetryActivity: telemetryActivity,
+                        telemetryPrefix: string.Empty);
+                }
+                catch (FatalProtocolException)
+                {
+                    failed = true;
+                }
             }
 
-            var success = result.Item1;
-            allGraphs.AddRange(result.Item2);
-            _success = success;
+            if (!failed)
+            {
+                var success = result.Item1;
+                allGraphs.AddRange(result.Item2);
+                _success = success;
+            }
+            else
+            {
+                _success = false;
+            }
 
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
             foreach (var profile in _request.Project.RuntimeGraph.Supports)

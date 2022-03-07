@@ -179,7 +179,23 @@ namespace NuGet.Commands
                 result = _libraryMatchCache.GetOrAdd(libraryRange, action);
             }
 
-            return await result;
+            try
+            {
+                return await result;
+            }
+            catch (FatalProtocolException e)
+            {
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, libraryRange.Name, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, libraryRange.Name, e);
+                    throw;
+                }
+            }
+            return null;
         }
 
         private async Task<LibraryIdentity> FindLibraryCoreAsync(
@@ -188,45 +204,40 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            try
+
+            await EnsureResource();
+
+            if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
             {
-                await EnsureResource();
-
-                if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
-                {
-                    // first check if the exact min version exist then simply return that
-                    if (await _findPackagesByIdResource.DoesPackageExistAsync(
-                        libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
-                    {
-                        return new LibraryIdentity
-                        {
-                            Name = libraryRange.Name,
-                            Version = libraryRange.VersionRange.MinVersion,
-                            Type = LibraryType.Package
-                        };
-                    }
-                }
-
-                // Discover all versions from the feed
-                var packageVersions = await GetAllVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
-
-                // Select the best match
-                var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
-
-                if (packageVersion != null)
+                // first check if the exact min version exist then simply return that
+                if (await _findPackagesByIdResource.DoesPackageExistAsync(
+                    libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
                 {
                     return new LibraryIdentity
                     {
                         Name = libraryRange.Name,
-                        Version = packageVersion,
+                        Version = libraryRange.VersionRange.MinVersion,
                         Type = LibraryType.Package
                     };
                 }
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+
+            // Discover all versions from the feed
+            var packageVersions = await GetAllVersionsInternalAsync(libraryRange.Name, cacheContext, logger, false, cancellationToken);
+
+            // Select the best match
+            var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
+
+            if (packageVersion != null)
             {
-                await LogWarningAsync(libraryRange.Name, e);
+                return new LibraryIdentity
+                {
+                    Name = libraryRange.Name,
+                    Version = packageVersion,
+                    Type = LibraryType.Package
+                };
             }
+
             return null;
         }
 
@@ -324,9 +335,17 @@ namespace NuGet.Commands
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources && !(e is InvalidCacheProtocolException))
+            catch (FatalProtocolException e) when (e is not InvalidCacheProtocolException)
             {
-                await LogWarningAsync(match.Name, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, match.Name, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, match.Name, e);
+                    throw;
+                }
             }
             finally
             {
@@ -413,9 +432,16 @@ namespace NuGet.Commands
                 packageDownloader.SetThrottle(_throttle);
                 packageDownloader.SetExceptionHandler(async exception =>
                 {
-                    if (exception is FatalProtocolException e && _ignoreFailedSources)
+                    if (exception is FatalProtocolException e)
                     {
-                        await LogWarningAsync(packageIdentity.Id, e);
+                        if (_ignoreFailedSources)
+                        {
+                            await LogWarningAsync(logger, packageIdentity.Id, e);
+                        }
+                        else
+                        {
+                            await LogErrorAsync(logger, packageIdentity.Id, e);
+                        }
                         return true;
                     }
 
@@ -424,9 +450,17 @@ namespace NuGet.Commands
 
                 return packageDownloader;
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e)
             {
-                await LogWarningAsync(packageIdentity.Id, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, packageIdentity.Id, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, packageIdentity.Id, e);
+                    throw;
+                }
             }
             finally
             {
@@ -535,7 +569,16 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            IEnumerable<NuGetVersion> packageVersions = null;
+            return await GetAllVersionsInternalAsync(id, cacheContext, logger, catchAndLogExceptions: true, cancellationToken: cancellationToken);
+        }
+
+        internal async Task<IEnumerable<NuGetVersion>> GetAllVersionsInternalAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            bool catchAndLogExceptions,
+            CancellationToken cancellationToken)
+        {
             try
             {
                 if (_throttle != null)
@@ -546,30 +589,66 @@ namespace NuGet.Commands
                 {
                     return null;
                 }
-                packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(
+                return await _findPackagesByIdResource.GetAllVersionsAsync(
                     id,
                     cacheContext,
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e) when (catchAndLogExceptions)
             {
-                await LogWarningAsync(id, e);
-                return null;
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, id, e);
+                    return null;
+                }
+                else
+                {
+                    await LogErrorAsync(logger, id, e);
+                    throw;
+                }
             }
             finally
             {
                 _throttle?.Release();
             }
-
-            return packageVersions;
         }
 
-        private async Task LogWarningAsync(string id, FatalProtocolException e)
+        private async Task LogWarningAsync(ILogger logger, string id, FatalProtocolException e)
         {
             if (!_ignoreWarning)
             {
-                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
+                await logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
+            }
+        }
+
+        private async Task LogErrorAsync(ILogger logger, string id, FatalProtocolException e)
+        {
+            if (!_ignoreWarning)
+            {
+                // Sometimes, there's a better root cause for a source failures we log that instead of NU1301.
+                // We only do this for errors, and not warnings.
+                var unwrappedLogMessage = UnwrapToLogMessage(e);
+                if (unwrappedLogMessage != null)
+                {
+                    await logger.LogAsync(unwrappedLogMessage);
+                }
+                else
+                {
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1301, e.Message, id));
+                }
+            }
+
+            static ILogMessage UnwrapToLogMessage(Exception e)
+            {
+                var currentException = ExceptionUtilities.Unwrap(e);
+                while ((currentException is FatalProtocolException || currentException is not ILogMessageException) && currentException != null)
+                {
+                    currentException = currentException.InnerException;
+                }
+                var logMessageException = currentException as ILogMessageException;
+
+                return logMessageException?.AsLogMessage();
             }
         }
     }
