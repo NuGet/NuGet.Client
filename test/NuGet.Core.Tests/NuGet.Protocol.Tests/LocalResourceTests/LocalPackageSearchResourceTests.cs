@@ -601,7 +601,7 @@ namespace NuGet.Protocol.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11650")]
         public async Task LocalPackageSearch_SearchAsync_SlowLocalRepository_WithCancellationToken_ThrowsAsync()
         {
             using var pathContext = new SimpleTestPathContext();
