@@ -287,7 +287,7 @@ namespace NuGet.DependencyResolver
 
             return library =>
             {
-                var (dependencyResult, conflictingDependency) = CalculateDependencyResult(item, dependency, library);
+                (DependencyResult? dependencyResult, LibraryDependency conflictingDependency) = CalculateDependencyResult(item, dependency, library);
 
                 if (dependencyResult.HasValue)
                     return (dependencyResult.Value, conflictingDependency);
