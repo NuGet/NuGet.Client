@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Globalization;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
@@ -276,6 +277,14 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
+                var packageLevel = metadata.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
+
+                var transitiveToolTipMessage = string.Empty;
+                if (packageLevel == PackageLevel.Transitive)
+                {
+                    transitiveToolTipMessage = string.Format(Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins), CultureInfo.CurrentUICulture);
+                }
+
                 var listItem = new PackageItemViewModel(_searchService)
                 {
                     Id = metadata.Identity.Id,
@@ -293,7 +302,8 @@ namespace NuGet.PackageManagement.UI
                     PackagePath = metadata.PackagePath,
                     PackageFileService = _packageFileService,
                     IncludePrerelease = _includePrerelease,
-                    PackageLevel = metadata.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel,
+                    PackageLevel = packageLevel,
+                    TransitiveToolTipMessage = transitiveToolTipMessage,
                 };
 
                 listItem.UpdatePackageStatus(_installedPackages);

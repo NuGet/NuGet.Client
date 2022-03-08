@@ -214,8 +214,30 @@
                           Text="{Binding Id}"
                           FontWeight="Bold" /> <Run Text="{Binding ByAuthor, Mode=OneTime}"/>
                         <LineBreak />
-                        <Run
-                          Text="{Binding Summary}" />
+                        <Run FontWeight="Bold">
+                          <Run.Style>
+                            <Style TargetType="Run">
+                              <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_TransitiveDependency}"/>
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
+                                    <Setter Property="Text" Value=""/>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Run.Style>
+                        </Run>
+                        <Run>
+                          <Run.Style>
+                            <Style TargetType="Run">
+                              <Setter Property="Text" Value="{Binding TransitiveToolTipMessage}"/>
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
+                                  <Setter Property="Text" Value="{Binding Summary}"/>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Run.Style>
+                        </Run>
           </TextBlock>
         </Grid.ToolTip>
       </Grid>

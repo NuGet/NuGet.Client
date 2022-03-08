@@ -1638,6 +1638,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} by {1}.
+        /// </summary>
+        public static string PackageVersionWithTransitiveOrigins {
+            get {
+                return ResourceManager.GetString("PackageVersionWithTransitiveOrigins", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} version {1} to {2} version {3}.
         /// </summary>
         public static string Preview_PackageUpdate {
@@ -2437,6 +2446,15 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_Settings {
             get {
                 return ResourceManager.GetString("ToolTip_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitively referenced version.
+        /// </summary>
+        public static string ToolTip_TransitiveDependency {
+            get {
+                return ResourceManager.GetString("ToolTip_TransitiveDependency", resourceCulture);
             }
         }
         
