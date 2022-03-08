@@ -913,10 +913,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The package reference {0} specifies a VersionOverride but the ability to override a centrally defined version is currently disabled.</value>
     <comment>0 - The name of a package reference.</comment>
   </data>
-  <data name="Warning_CentralPackageVersions_VersionOverrideIgnored" xml:space="preserve">
-    <value>The package reference {0} specifies a VersionOverride but central package manageent is currently disabled so the value was ignored.</value>
-    <comment>0 - The name of a package reference.</comment>
-  </data>
   <data name="Error_SourceProviderIsNull" xml:space="preserve">
     <value>Property SourceProvider is null.</value>
   </data>
