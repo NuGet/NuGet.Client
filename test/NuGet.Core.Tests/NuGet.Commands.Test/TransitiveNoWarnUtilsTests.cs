@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -927,6 +928,267 @@ namespace NuGet.Commands.Test
 
             // Assert
             seen.Count.Should().Be(2);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("NU1605")]
+        [InlineData("NU1605, NU1604")]
+        [InlineData("NU1605, NU1604, NU1701")]
+        public void NodeWarningPropertiesIsSubSetOf_WithEqualProjectWideNoWarns_Succeeds(
+            string noWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
+                null);
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void NodeWarningPropertiesIsSubSetOf_WithNullAndEmptyProjectWideNoWarns_Succeeds(bool nullFirst)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                nullFirst ? null : new HashSet<NuGetLogCode>(),
+                null);
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                nullFirst ? new HashSet<NuGetLogCode>() : null,
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData("NU1605", null)]
+        [InlineData("NU1605", "")]
+        [InlineData("NU1605, NU1604", null)]
+        [InlineData("NU1605, NU1604", "")]
+        [InlineData("NU1605, NU1604", "NU1605")]
+        [InlineData("NU1605, NU1604", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", null)]
+        [InlineData("NU1605, NU1604, NU1701", "")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1701")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1701")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1604, NU1701")]
+        public void NodeWarningPropertiesIsSubSetOf_WithSecondProjectWideNoWarnAProperSubsetOfFirst_Succeeds(
+            string firstNoWarn,
+            string secondNoWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
+                null);
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                secondNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData(null, "NU1605")]
+        [InlineData("", "NU1605")]
+        [InlineData(null, "NU1605, NU1604")]
+        [InlineData("", "NU1605, NU1604")]
+        [InlineData("NU1605", "NU1604")]
+        [InlineData("NU1605", "NU1605, NU1604")]
+        [InlineData("NU1604", "NU1605, NU1604")]
+        [InlineData(null, "NU1605, NU1604, NU1701")]
+        [InlineData("", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1604", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1701", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1701")]
+        [InlineData("NU1605, NU1604", "NU1604, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1605, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605, NU1701", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1604, NU1701", "NU1605, NU1604, NU1701")]
+        public void NodeWarningPropertiesIsSubSetOf_WithSecondProjectWideNoWarnNotASubsetOfFirst_Fails(
+            string firstNoWarn,
+            string secondNoWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                firstNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
+                null);
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData(null, new string[0])]
+        [InlineData(null, new[] { "test_id1:" })]
+        [InlineData(new string[0], null)]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new string[0], new[] { "test_id1:" })]
+        [InlineData(new[] { "test_id1:" }, null)]
+        [InlineData(new[] { "test_id1:" }, new string[0])]
+        [InlineData(new[] { "test_id1:" }, new[] { "test_id1:" })]
+        public void NodeWarningPropertiesIsSubSetOf_EmptyPackageSpecificNoWarns_Succeeds(
+            string[] firstNoWarn,
+            string[] secondNoWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(firstNoWarn));
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(secondNoWarn));
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
+        public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsEmptySecondPackageSpecificNoWarnIsNotEmpty_Fails(
+            string[] firstNoWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(firstNoWarn));
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
+        public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsNotEmptySecondPackageSpecificNoWarnIsEmpty_Succeeds(
+            string[] secondNoWarn)
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(secondNoWarn));
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Fact]
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeySameValue_Succeeds()
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Fact]
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeyDifferentValue_Fails()
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1001 } });
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        [Fact]
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveDifferentKeySameValue_Fails()
+        {
+            // Arrange
+            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id2"] = new() { NuGetLogCode.NU1000 } });
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        private static Dictionary<string, HashSet<NuGetLogCode>> GetPackageSpecificNoWarn(IEnumerable<string> values)
+        {
+            if (values == null)
+            {
+                return null;
+            }
+
+            var result = new Dictionary<string, HashSet<NuGetLogCode>>();
+
+            foreach (var value in values)
+            {
+                var split = value.Split(':');
+                result.Add(split[0], MSBuildStringUtility.GetNuGetLogCodes(split[1]).ToHashSet());
+            }
+
+            return result;
         }
     }
 }

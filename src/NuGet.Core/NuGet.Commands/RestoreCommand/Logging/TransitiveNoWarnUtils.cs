@@ -837,27 +837,33 @@ namespace NuGet.Commands
                     var package = PackageSpecific;
                     var otherPackage = other.PackageSpecific;
 
-                    if (otherPackage == null || otherPackage.Count == 0)
+                    if (otherPackage == null)
                     {
                         return true;
                     }
 
-                    if (package == null || package.Count == 0)
+                    // To be a subset this set of package specific warnings must contain
+                    // every id and code found in other. A single miss will fail the check.
+                    foreach (var pair in otherPackage)
                     {
-                        return false;
-                    }
-
-                    if (otherPackage.Count <= package.Count)
-                    {
-                        // To be a subset this set of package specific warnings must contain
-                        // every id and code found in other. A single miss will fail the check.
-                        foreach (var pair in otherPackage)
+                        if (pair.Value == null || pair.Value.Count == 0)
                         {
-                            if (!package.TryGetValue(pair.Key, out var codes)
-                                || !codes.IsSubsetOf(pair.Value))
-                            {
-                                return false;
-                            }
+                            continue;
+                        }
+
+                        if (package == null)
+                        {
+                            return false;
+                        }
+
+                        if (!package.TryGetValue(pair.Key, out var codes))
+                        {
+                            return false;
+                        }
+
+                        if (codes == null || !pair.Value.IsSubsetOf(codes))
+                        {
+                            return false;
                         }
                     }
 
@@ -883,7 +889,7 @@ namespace NuGet.Commands
 
                 if (other.Count <= parent.Count)
                 {
-                    return parent.IsSubsetOf(other);
+                    return other.IsSubsetOf(parent);
                 }
 
                 return false;
