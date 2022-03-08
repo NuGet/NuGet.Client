@@ -83,6 +83,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 allVersions.Select(v => v.Version.ToString()).ToArray());
         }
 
+        [Fact]
+        public async Task GetPackageMetadataAsync_WithCancellationToken_ThrowsAsync()
+        {
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
+            var _target = new InstalledPackageFeed(new[] { testPackageIdentity }, _metadataProvider);
+
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            cts.Cancel();
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), cts.Token));
+        }
+
         private void SetupRemotePackageMetadata(string id, params string[] versions)
         {
             var metadata = versions

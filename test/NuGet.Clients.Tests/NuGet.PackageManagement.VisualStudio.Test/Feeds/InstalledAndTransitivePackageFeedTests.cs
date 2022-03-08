@@ -171,5 +171,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 elem => Assert.IsType<ClonedPackageSearchMetadata>(elem),
                 elem => Assert.IsType<TransitivePackageSearchMetadata>(elem));
         }
+
+        [Fact]
+        public async Task GetPackageMetadataAsync_WithCancellationToken_ThrowsAsync()
+        {
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
+            var testTransitiveIdentity = new PackageCollectionItem("TransitiveFakePackage", new NuGetVersion("1.0.0"), null);
+            var _target = new InstalledAndTransitivePackageFeed(new[] { testPackageIdentity }, new[] { testTransitiveIdentity }, _packageMetadataProvider);
+
+            using CancellationTokenSource cts = new CancellationTokenSource();
+            cts.Cancel();
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageCollectionItem>(), It.IsAny<bool>(), cts.Token));
+        }
     }
 }
