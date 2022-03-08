@@ -281,6 +281,7 @@ namespace NuGet.PackageManagement.UI
                 var transitiveToolTipMessage = string.Empty;
                 if (packageLevel == PackageLevel.Transitive)
                 {
+                    transitiveToolTipMessage = string.Format(Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins), Thread.CurrentThread.CurrentCulture);
                     transitiveToolTipMessage = metadata.Identity.Version + " by " + string.Join(", ", metadata.TransitiveOrigins);
                 }
 
