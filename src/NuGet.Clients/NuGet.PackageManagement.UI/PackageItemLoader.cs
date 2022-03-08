@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Globalization;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
@@ -281,7 +282,7 @@ namespace NuGet.PackageManagement.UI
                 var transitiveToolTipMessage = string.Empty;
                 if (packageLevel == PackageLevel.Transitive)
                 {
-                    transitiveToolTipMessage = string.Format(Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins), Thread.CurrentThread.CurrentCulture);
+                    transitiveToolTipMessage = string.Format(Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins), CultureInfo.CurrentUICulture);
                 }
 
                 var listItem = new PackageItemViewModel(_searchService)
