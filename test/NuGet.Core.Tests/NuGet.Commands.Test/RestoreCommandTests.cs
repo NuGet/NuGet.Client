@@ -21,9 +21,11 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
+using Test.Utility.Commands;
 using Test.Utility.ProjectManagement;
 using Test.Utility.Signing;
 using Xunit;
@@ -1600,9 +1602,9 @@ namespace NuGet.Commands.Test
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B
 
-            // Input 
+            // Input
             // A -> B (version = 3.0.0) -> C (version = 3.0.0) -> D (version = 3.0.0)
             // A ~> D (version = 2.0.0
             //         the dependency is not direct,
@@ -1650,8 +1652,10 @@ namespace NuGet.Commands.Test
             Assert.Equal(NuGetLogCode.NU1109, logMessage.Code);
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
-        public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency(bool CentralPackageTransitivePinningEnabled)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1660,26 +1664,27 @@ namespace NuGet.Commands.Test
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
-
+                var tdpString = CentralPackageTransitivePinningEnabled ? "true" : "false";
                 var project1Json = @"
                 {
                   ""version"": ""1.0.0"",
                     ""restore"": {
                                     ""projectUniqueName"": ""TestProject"",
-                                    ""centralPackageVersionsManagementEnabled"": true
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": " + tdpString + @",
                     },
                   ""frameworks"": {
                     ""net472"": {
                         ""dependencies"": {
                                 ""packageA"": {
-                                    ""version"": ""[2.0.0)"",
+                                    ""version"": ""[2.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionCentrallyManaged"": true
                                 }
                         },
                         ""centralPackageVersions"": {
-                            ""packageA"": ""[2.0.0)"",
-                            ""packageB"": ""[1.0.0)""
+                            ""packageA"": ""[2.0.0,)"",
+                            ""packageB"": ""[1.0.0,)""
                         }
                     }
                   }
@@ -1690,7 +1695,6 @@ namespace NuGet.Commands.Test
                 var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
 
                 packageA_Version200.Dependencies.Add(packageB_Version200);
-
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
@@ -1715,9 +1719,16 @@ namespace NuGet.Commands.Test
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.False(result.Success);
-                var downgradeErrorMessages = logger.Messages.Where(s => s.Contains("Detected package downgrade: packageB from 2.0.0 to centrally defined 1.0.0.")).ToList();
-                Assert.Equal(1, downgradeErrorMessages.Count);
+                if (CentralPackageTransitivePinningEnabled)
+                {
+                    Assert.False(result.Success);
+                    var downgradeErrorMessages = logger.Messages.Where(s => s.Contains("Detected package downgrade: packageB from 2.0.0 to centrally defined 1.0.0.")).ToList();
+                    Assert.Equal(1, downgradeErrorMessages.Count);
+                }
+                else
+                {
+                    Assert.True(result.Success);
+                }
             }
         }
 
@@ -1803,7 +1814,7 @@ namespace NuGet.Commands.Test
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var outputPath = Path.Combine(projectPath, "obj");
-                // Package Bar does not have a corresponding PackageVersion 
+                // Package Bar does not have a corresponding PackageVersion
                 var packageRefDependecyFoo = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange("foo", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
@@ -1861,7 +1872,7 @@ namespace NuGet.Commands.Test
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var outputPath = Path.Combine(projectPath, "obj");
-                // Package Bar does not have a corresponding PackageVersion 
+                // Package Bar does not have a corresponding PackageVersion
                 var packageRefDependecyBar = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange("bar", versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
@@ -1921,7 +1932,7 @@ namespace NuGet.Commands.Test
                 var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
 
                 // net472 will have packageA as direct dependency that has packageB as transitive
-                // netstandard1.1 will have packageB as direct dependency 
+                // netstandard1.1 will have packageB as direct dependency
                 var project1Json = @"
                 {
                   ""version"": ""1.0.0"",
@@ -2362,9 +2373,9 @@ namespace NuGet.Commands.Test
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
-    }
+        }
 
-    [Fact]
+        [Fact]
         public async Task ExecuteAsync_WithPartiallyPopulatedGlobalPackagesFolder_PopulatesNewlyInstalledPackagesTelemetry()
         {
             // Arrange

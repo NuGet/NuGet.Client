@@ -80,6 +80,7 @@ namespace NuGet.Commands
         private const string GenerateAssetsFileDuration = nameof(GenerateAssetsFileDuration);
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
+        private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
@@ -134,12 +135,16 @@ namespace NuGet.Commands
 
                 var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
                 telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
+
                 if (isCpvmEnabled)
                 {
                     _logger.LogMinimal(string.Format(
                           CultureInfo.CurrentCulture,
                           Strings.CentralPackageVersionManagementInPreview,
                           _request.Project.FilePath));
+
+                    var isCentralPackageTransitivePinningEnabled = _request.Project.RestoreMetadata?.CentralPackageTransitivePinningEnabled ?? false;
+                    telemetry.TelemetryEvent[IsCentralPackageTransitivePinningEnabled] = isCentralPackageTransitivePinningEnabled;
                 }
 
                 var restoreTime = Stopwatch.StartNew();

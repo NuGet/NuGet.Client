@@ -152,7 +152,7 @@ namespace NuGet.Commands
 
             PackageSpec result = null;
 
-            // There should only be one ProjectSpec per project in the item set, 
+            // There should only be one ProjectSpec per project in the item set,
             // but if multiple do appear take only the first one in an effort
             // to handle this gracefully.
             var specItem = GetItemByType(items, "projectSpec").FirstOrDefault();
@@ -161,7 +161,7 @@ namespace NuGet.Commands
             {
                 ProjectStyle restoreType = GetProjectStyle(specItem);
 
-                (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled) = GetCentralPackageManagementSettings(specItem, restoreType);
+                (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(specItem, restoreType);
 
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -199,7 +199,7 @@ namespace NuGet.Commands
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
-                        // Fix slashes incorrectly removed by MSBuild 
+                        // Fix slashes incorrectly removed by MSBuild
                         var pkgSource = new PackageSource(FixSourcePath(source));
                         result.RestoreMetadata.Sources.Add(pkgSource);
                     }
@@ -293,6 +293,7 @@ namespace NuGet.Commands
 
                 result.RestoreMetadata.CentralPackageVersionsEnabled = isCentralPackageManagementEnabled;
                 result.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
+                result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
             }
 
             return result;
@@ -889,7 +890,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Convert http:/url to http://url 
+        /// Convert http:/url to http://url
         /// If not needed the same path is returned. This is to work around
         /// issues with msbuild dropping slashes from paths on linux and osx.
         /// </summary>
@@ -1024,9 +1025,11 @@ namespace NuGet.Commands
             return restoreType;
         }
 
-        internal static (bool IsEnabled, bool IsVersionOverrideDisabled) GetCentralPackageManagementSettings(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
+        internal static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled) GetCentralPackageManagementSettings(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
         {
-            return (IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled") && projectStyle == ProjectStyle.PackageReference, IsPropertyFalse(projectSpecItem, "CentralPackageVersionOverrideEnabled"));
+            return (IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled") && projectStyle == ProjectStyle.PackageReference,
+                IsPropertyFalse(projectSpecItem, "CentralPackageVersionOverrideEnabled"),
+                IsPropertyTrue(projectSpecItem, "CentralPackageTransitivePinningEnabled"));
         }
 
         private static void AddCentralPackageVersions(PackageSpec spec, IEnumerable<IMSBuildItem> items)

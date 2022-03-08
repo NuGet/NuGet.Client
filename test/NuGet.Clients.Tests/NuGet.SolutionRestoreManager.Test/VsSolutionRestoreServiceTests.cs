@@ -2092,6 +2092,49 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData(" ", false)]
+        [InlineData("invalid", false)]
+        [InlineData("false", false)]
+        [InlineData("true", true)]
+        [InlineData("           true    ", true)]
+        public void ToPackageSpec_TransitiveDependencyPinning_CanBeEnabled(string CentralPackageTransitivePinningEnabled, bool expected)
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC", Guid.NewGuid().ToString());
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+
+            var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
+                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
+                packageReferences: new[] { new VsReferenceItem("foo", new VsReferenceProperties()) },
+                projectReferences: emptyReferenceItems,
+                packageDownloads: emptyReferenceItems,
+                frameworkReferences: emptyReferenceItems,
+                projectProperties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20).Concat(new VsProjectProperty[]
+                {
+                    new VsProjectProperty(ProjectBuildProperties.ManagePackageVersionsCentrally, "true"),
+                    new VsProjectProperty(ProjectBuildProperties.CentralPackageTransitivePinningEnabled, CentralPackageTransitivePinningEnabled),
+                }),
+                centralPackageVersions: Array.Empty<IVsReferenceItem>())
+            };
+
+            // Act
+            PackageSpec result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, CommonFrameworks.NetStandard20.ToString(), string.Empty);
+
+            // Assert
+
+            if (expected)
+            {
+                Assert.True(result.RestoreMetadata.CentralPackageTransitivePinningEnabled);
+            }
+            else
+            {
+                Assert.False(result.RestoreMetadata.CentralPackageTransitivePinningEnabled);
+            }
+        }
+
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task NominateProjectAsync_PackageReferenceWithAliases(bool isV2Nominate)

@@ -1760,7 +1760,7 @@ namespace NuGet.Commands.Test
               ""version"": ""1.0.0"",
               ""frameworks"": {
                 ""netcoreapp3.0"": {
-                    
+
                 }
               }
             }";
@@ -1896,8 +1896,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/10133")]
-        public async Task RestoreRunner_ExecuteAndCommit_ProjectAssetsIsNotCommitedIfNotChanged()
+        [Fact]
+        public async Task RestoreRunner_ExecuteAndCommit_ProjectAssetsIsNotCommittedIfNotChanged()
         {
             var assetsFileName = "project.assets.json";
             using (var pathContext = new SimpleTestPathContext())
@@ -1912,7 +1912,8 @@ namespace NuGet.Commands.Test
                   ""version"": ""1.0.0"",
                     ""restore"": {
                                     ""projectUniqueName"": ""TestProject"",
-                                    ""centralPackageVersionsManagementEnabled"": true
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true
                     },
                   ""frameworks"": {
                     ""net472"": {
@@ -1973,7 +1974,7 @@ namespace NuGet.Commands.Test
                     var summaries = await RestoreRunner.RunAsync(restoreContext);
                     var summary = summaries.Single();
 
-                    var assetsFilePath = Path.Combine(pathContext.SolutionRoot, projectName, assetsFileName);
+                    var assetsFilePath = Path.Combine(spec.BaseDirectory, assetsFileName);
 
                     Assert.True(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);

@@ -253,7 +253,7 @@ namespace NuGet.Build.Tasks.Console.Test
         [InlineData(null, null, "MyProject", "MyProject")]
         [InlineData(null, "", "MyProject", "MyProject")]
         [InlineData(null, null, null, null)]
-        public void GetProjectName_WhenPackageIdOrAssemblyNameSpecified_CorretValueIsDetermined(string packageId, string assemblyName, string msbuildProjectName, string expected)
+        public void GetProjectName_WhenPackageIdOrAssemblyNameSpecified_CorrectValueIsDetermined(string packageId, string assemblyName, string msbuildProjectName, string expected)
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
@@ -766,6 +766,30 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal(disabled, result);
         }
 
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("                     ", false)]
+        [InlineData("true", true)]
+        [InlineData("invalid", false)]
+        [InlineData("false", false)]
+        [InlineData("           true    ", true)]
+        public void TransitiveDependencyPinning_CanBeEnabled(string value, bool enabled)
+        {
+            // Arrange
+            var project = new MockMSBuildProject(
+                new Dictionary<string, string>
+                {
+                    [ProjectBuildProperties.CentralPackageTransitivePinningEnabled] = value,
+                });
+
+            // Act
+            var result = MSBuildStaticGraphRestore.GetCentralPackageManagementSettings(project, ProjectStyle.PackageReference).IsCentralPackageTransitivePinningEnabled;
+
+            // Assert
+            Assert.Equal(enabled, result);
+        }
+
         [Fact]
         public void GetTargetFrameworkInfos_TheCentralVersionInformationIsAdded()
         {
@@ -773,6 +797,7 @@ namespace NuGet.Build.Tasks.Console.Test
             string netstandard22 = "netstandard2.2";
             string netstandard20 = "netstandard2.0";
             string netstandard23 = "netstandard2.3";
+            string netstandard24 = "netstandard2.4";
 
             var innerNodes = new Dictionary<string, IMSBuildProject>
             {
@@ -818,15 +843,26 @@ namespace NuGet.Build.Tasks.Console.Test
                             new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
                         },
                     }),
+                [netstandard24] = new MockMSBuildProject("Project-netstandard2.4",
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageVersion"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
+                        },
+                    }),
             };
 
             var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true);
 
             // Assert
-            Assert.Equal(3, targetFrameworkInfos.Count);
+            Assert.Equal(4, targetFrameworkInfos.Count);
             var framework20 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard20);
             var framework22 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard22);
             var framework23 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard23);
+            var framework24 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard24);
 
             Assert.Equal(1, framework20.Dependencies.Count);
             Assert.Equal("PackageA", framework20.Dependencies.First().Name);
@@ -847,6 +883,13 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal(1, framework23.Dependencies.Count);
             Assert.Equal("PackageA", framework23.Dependencies.First().Name);
             Assert.Equal("2.0.0", framework23.Dependencies.First().LibraryRange.VersionRange.OriginalString);
+
+            // Information about central package versions is necessary for implementation of "transitive dependency pinning".
+            // thus even, when there are no explicit dependencies, information about central package versions still should be included.
+            Assert.Equal(0, framework24.Dependencies.Count);
+            Assert.Equal(2, framework24.CentralPackageVersions.Count);
+            Assert.Equal("2.0.0", framework24.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.0.0", framework24.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
         }
 
         [Fact]

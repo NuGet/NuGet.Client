@@ -13,13 +13,14 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecReferenceDependencyProviderTests
     {
-        [Theory(Skip = "https://github.com/NuGet/Home/issues/10133")]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled)
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled, bool CentralPackageTransitivePinningEnabled)
         {
             // Arrange
-            var logger = new TestLogger();
             var dependencyFoo = new LibraryDependency(
                 libraryRange: new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.All,
@@ -36,14 +37,14 @@ namespace NuGet.ProjectModel.Test
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
             var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar }, cpvmEnabled);
-            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, tfi);
+            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, CentralPackageTransitivePinningEnabled, tfi);
             var packSpec = dependencyGraphSpec.Projects[0];
 
             // Act
             var dependencies = PackageSpecReferenceDependencyProvider.GetSpecDependencies(packSpec, tfi.FrameworkName);
 
             // Assert
-            if (cpvmEnabled)
+            if (cpvmEnabled && CentralPackageTransitivePinningEnabled)
             {
                 Assert.Equal(2, dependencies.Count);
                 var barDep = dependencies.Where(d => d.Name == "bar").First();
@@ -65,8 +66,8 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(1, dependencies.Count);
                 var fooDep = dependencies.Where(d => d.Name == "foo").First();
                 Assert.NotNull(fooDep);
-                Assert.False(fooDep.VersionCentrallyManaged);
-                Assert.Null(fooDep.LibraryRange.VersionRange);
+                Assert.Equal(fooDep.VersionCentrallyManaged, cpvmEnabled);
+                Assert.Equal(fooDep.LibraryRange.VersionRange != null, cpvmEnabled);
                 Assert.Equal(LibraryDependencyReferenceType.Direct, fooDep.ReferenceType);
             }
         }
@@ -96,10 +97,15 @@ namespace NuGet.ProjectModel.Test
             return tfi;
         }
 
-        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(bool cpvmEnabled, params TargetFrameworkInformation[] tfis)
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(bool cpvmEnabled, bool tdpEnabled, params TargetFrameworkInformation[] tfis)
         {
             var packageSpec = new PackageSpec(tfis);
-            packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = cpvmEnabled };
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata
+            {
+                ProjectUniqueName = "a",
+                CentralPackageVersionsEnabled = cpvmEnabled,
+                CentralPackageTransitivePinningEnabled = tdpEnabled,
+            };
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
             dgSpec.AddProject(packageSpec);
