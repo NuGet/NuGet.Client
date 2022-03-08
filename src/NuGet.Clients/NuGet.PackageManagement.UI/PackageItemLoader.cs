@@ -311,7 +311,7 @@ namespace NuGet.PackageManagement.UI
                 listItemViewModels.Add(listItem);
             }
 
-            return listItemViewModels.OrderBy(vm => vm.PackageLevel).ThenBy(vm => vm.Id).ToArray();
+            return listItemViewModels.ToArray();
         }
 
         private async Task<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity)

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -43,5 +44,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public Task<SearchResult<IPackageSearchMetadata>> RefreshSearchAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
             => Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
+
+        internal static FeedSearchContinuationToken ThrowIfNotFeedSearchContinuationToken(ContinuationToken continuationToken)
+        {
+            var searchToken = continuationToken as FeedSearchContinuationToken;
+            if (searchToken == null)
+            {
+                throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
+            }
+
+            return searchToken;
+        }
     }
 }

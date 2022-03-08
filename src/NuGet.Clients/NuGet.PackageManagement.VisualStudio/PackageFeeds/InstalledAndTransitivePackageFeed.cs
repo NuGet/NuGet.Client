@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.7
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,58 +25,57 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc cref="IPackageFeed.ContinueSearchAsync(ContinuationToken, CancellationToken)" />
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
-            }
+            var searchToken = ThrowIfNotFeedSearchContinuationToken(continuationToken);
 
             // Remove transitive packages from project references
             IEnumerable<PackageCollectionItem> pkgsWithOrigins = _transitivePackages
                 .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
-            IEnumerable<PackageCollectionItem> pkgs = _installedPackages.Concat(pkgsWithOrigins);
-            PackageCollectionItem[] allPkgs = PerformLookup(pkgs, searchToken);
+            IPackageSearchMetadata[] intalledItems = await DoSearchAsync(_installedPackages, searchToken, cancellationToken);
+            IPackageSearchMetadata[] transitiveItems = await DoSearchAsync(pkgsWithOrigins, searchToken, cancellationToken);
+            IPackageSearchMetadata[] searchItems = intalledItems.Concat(transitiveItems).ToArray();
 
-            IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
-                allPkgs,
-                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
-                cancellationToken);
-
-            return CreateResult(items);
+            return CreateResult(searchItems);
         }
 
-        internal async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageCollectionItem identity, bool includePrerelease, CancellationToken cancellationToken)
+        internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T pkgIdentity, bool includePrerelease, CancellationToken cancellationToken)
         {
-            IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = identity.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
-
-            ITransitivePackageReferenceContextInfo transitivePR = transitivePRs.OrderByDescending(x => x.Identity.Version).FirstOrDefault();
-
-            if (transitivePR != null)
+            if (pkgIdentity is PackageCollectionItem identity)
             {
-                IReadOnlyCollection<PackageIdentity> transitiveOrigins = transitivePR.TransitiveOrigins?.Select(to => to.Identity).ToArray() ?? Array.Empty<PackageIdentity>();
+                IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = identity.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
 
-                if (transitiveOrigins.Any())
+                ITransitivePackageReferenceContextInfo transitivePR = transitivePRs.OrderByDescending(x => x.Identity.Version).FirstOrDefault();
+
+                if (transitivePR != null)
                 {
-                    // Get only local metadata. We don't want Deprecation and Vulnerabilities Metadata on Transitive packages
-                    IPackageSearchMetadata packageMetadata = await _metadataProvider.GetOnlyLocalPackageMetadataAsync(identity, cancellationToken);
+                    IReadOnlyCollection<PackageIdentity> transitiveOrigins = transitivePR.TransitiveOrigins?.Select(to => to.Identity).ToArray() ?? Array.Empty<PackageIdentity>();
 
-                    if (packageMetadata == null) // Edge case: local metadata not found
+                    if (transitiveOrigins.Any())
                     {
-                        packageMetadata = PackageSearchMetadataBuilder.FromIdentity(identity).Build(); // create metadata object only with ID
-                    }
+                        // Get only local metadata. We don't want Deprecation and Vulnerabilities Metadata on Transitive packages
+                        IPackageSearchMetadata packageMetadata = await _metadataProvider.GetOnlyLocalPackageMetadataAsync(identity, cancellationToken);
 
-                    var ts = new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
-                    return ts;
+                        if (packageMetadata == null) // Edge case: local metadata not found
+                        {
+                            packageMetadata = PackageSearchMetadataBuilder.FromIdentity(identity).Build(); // create metadata object only with ID
+                        }
+
+                        var ts = new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
+                        return ts;
+                    }
+                    else
+                    {
+                        return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    }
                 }
                 else
                 {
                     return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
                 }
             }
-            else
+            else // pkgIdentity is PackageIdentity
             {
-                return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                return await base.GetPackageMetadataAsync(pkgIdentity, includePrerelease, cancellationToken);
             }
         }
     }
