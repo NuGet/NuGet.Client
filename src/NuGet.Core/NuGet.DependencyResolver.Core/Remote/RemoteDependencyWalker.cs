@@ -267,7 +267,7 @@ namespace NuGet.DependencyResolver
             //Walk up the tree starting from the grand parent upto root
             while (edge != null)
             {
-                var (dependencyResult, conflictingDependency) = CalculateDependencyResult(edge.Item, edge.Edge, dependency.LibraryRange);
+                (DependencyResult? dependencyResult, LibraryDependency conflictingDependency) = CalculateDependencyResult(edge.Item, edge.Edge, dependency.LibraryRange);
 
                 if (dependencyResult.HasValue)
                     return (dependencyResult.Value, conflictingDependency);
@@ -304,7 +304,7 @@ namespace NuGet.DependencyResolver
                 return (DependencyResult.Cycle, null);
             }
 
-            foreach (var d in item.Data.Dependencies)
+            foreach (LibraryDependency d in item.Data.Dependencies)
             {
                 if (d != parentDependency && childDependencyLibrary.IsEclipsedBy(d.LibraryRange))
                 {
