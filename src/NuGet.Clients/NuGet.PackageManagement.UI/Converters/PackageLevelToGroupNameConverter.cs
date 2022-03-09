@@ -20,11 +20,11 @@ namespace NuGet.PackageManagement.UI
             {
                 if (pkgLevel == PackageLevel.TopLevel)
                 {
-                    return string.Format(Resources.PackageLevel_TopLevelPackageHeaderText, topLevelCount);
+                    return string.Format(CultureInfo.CurrentUICulture, Resources.PackageLevel_TopLevelPackageHeaderText, topLevelCount);
                 }
                 else if (pkgLevel == PackageLevel.Transitive)
                 {
-                    return string.Format(Resources.PackageLevel_TransitivePackageHeaderText, transitiveCount);
+                    return string.Format(CultureInfo.CurrentUICulture, Resources.PackageLevel_TransitivePackageHeaderText, transitiveCount);
                 }
             }
 
