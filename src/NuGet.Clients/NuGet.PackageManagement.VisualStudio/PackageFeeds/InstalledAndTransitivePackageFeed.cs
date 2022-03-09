@@ -26,6 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             var searchToken = ThrowIfNotFeedSearchContinuationToken(continuationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Remove transitive packages from project references
             IEnumerable<PackageCollectionItem> pkgsWithOrigins = _transitivePackages
@@ -40,6 +41,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T pkgIdentity, bool includePrerelease, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (pkgIdentity is PackageCollectionItem identity)
             {
                 IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = identity.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
@@ -63,20 +66,10 @@ namespace NuGet.PackageManagement.VisualStudio
                         var ts = new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
                         return ts;
                     }
-                    else
-                    {
-                        return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-                    }
-                }
-                else
-                {
-                    return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
                 }
             }
-            else // pkgIdentity is PackageIdentity
-            {
-                return await base.GetPackageMetadataAsync(pkgIdentity, includePrerelease, cancellationToken);
-            }
+
+            return await base.GetPackageMetadataAsync(pkgIdentity, includePrerelease, cancellationToken);
         }
     }
 }

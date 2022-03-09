@@ -40,6 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             var searchToken = ThrowIfNotFeedSearchContinuationToken(continuationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             PackageIdentity[] feedItems = _installedPackages.GetLatest();
             IPackageSearchMetadata[] searchItems = await DoSearchAsync(feedItems, searchToken, cancellationToken);
@@ -74,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToArray();
         }
 
-        internal SearchResult<IPackageSearchMetadata> CreateResult(IPackageSearchMetadata[] items)
+        internal static SearchResult<IPackageSearchMetadata> CreateResult(IPackageSearchMetadata[] items)
         {
             SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(items);
 
@@ -89,6 +90,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal virtual async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T identity, bool includePrerelease, CancellationToken cancellationToken) where T : PackageIdentity
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // first we try and load the metadata from a local package
             var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
             if (packageMetadata == null)
