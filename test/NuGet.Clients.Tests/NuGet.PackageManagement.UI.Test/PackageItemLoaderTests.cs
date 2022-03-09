@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI.Utility;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
