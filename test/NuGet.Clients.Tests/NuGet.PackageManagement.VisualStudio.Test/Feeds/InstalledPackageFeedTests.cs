@@ -94,6 +94,83 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), cts.Token));
         }
 
+        [Fact]
+        public async Task DoSearchAsync_WithTestData_AlwaysSortedByPackageIdAsync()
+        {
+            var feedCollection = new[] // un-sorted collection
+            {
+                new PackageCollectionItem("Z", new NuGetVersion("1.0.0"), null),
+                new PackageCollectionItem("A", new NuGetVersion("1.0.0"), null),
+                new PackageCollectionItem("mypkg", new NuGetVersion("1.0.0"), null),
+                new PackageCollectionItem("newpkg", new NuGetVersion("1.0.0"), null),
+            };
+            var token = new FeedSearchContinuationToken()
+            {
+                SearchString = "",
+                SearchFilter = new SearchFilter(includePrerelease: false)
+            };
+            var _target = new InstalledPackageFeed(feedCollection, _metadataProvider);
+
+            // Act
+            IPackageSearchMetadata[] result = await _target.DoSearchAsync(feedCollection, token, CancellationToken.None);
+
+            // Assert
+            IPackageSearchMetadata prev = null;
+            for (int i = 0; i < result.Length; i++)
+            {
+                if (prev != null)
+                {
+                    Assert.True(result[i].Identity.Id.CompareTo(prev.Identity.Id) > 0); // elems sorted asc
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("", 3)]
+        [InlineData("one", 1)]
+        [InlineData("largeQuery", 0)]
+        public void PerformLookup_WithSampleData_Succeeds(string query, int expectedResultsCount)
+        {
+            // Prepare
+            PackageIdentity[] ids = new[]
+            {
+                new PackageIdentity("one", new NuGetVersion("1.0.0")),
+                new PackageIdentity("two", new NuGetVersion("1.0.0")),
+                new PackageIdentity("three", new NuGetVersion("1.0.0")),
+            };
+            var token = new FeedSearchContinuationToken()
+            {
+                SearchString = query,
+            };
+
+            // Act
+            var result = InstalledPackageFeed.PerformLookup(ids, token);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(expectedResultsCount, result.Length);
+        }
+
+        [Fact]
+        public void CreateResults_WitSampleData_ResultAndCollectionAreEquals()
+        {
+            // Arrange
+            IPackageSearchMetadata[] meta = new[]
+            {
+                PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("id", new NuGetVersion("1.0.0"))).Build(),
+                PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("package", new NuGetVersion("1.0.0"))).Build(),
+                PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("nuget", new NuGetVersion("1.0.0"))).Build(),
+            };
+
+            // Act
+            SearchResult<IPackageSearchMetadata> result = InstalledPackageFeed.CreateResult(meta);
+
+            // Assert
+            Assert.Equal(result, meta);
+            Assert.NotNull(result.SourceSearchStatus);
+            Assert.NotNull(result.SourceSearchStatus["Installed"]);
+        }
+
         private void SetupRemotePackageMetadata(string id, params string[] versions)
         {
             var metadata = versions

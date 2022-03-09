@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -183,6 +184,73 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             cts.Cancel();
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), cts.Token));
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageCollectionItem>(), It.IsAny<bool>(), cts.Token));
+        }
+
+        [Theory]
+        [InlineData("", 4, 3)]
+        [InlineData("g", 1, 3)]
+        [InlineData("#@", 0, 0)]
+        [InlineData("alFA", 1, 0)]
+        [InlineData("pkg1", 0, 1)]
+        public async Task SearchAsync_WithInstalledAndTransitivePackages_AlwaysInstalledPackagesFirstThenTransitivePackagesAsync(string query, int expectedInstalled, int expectedTransitive)
+        {
+            // Arrange
+            (string id, string version)[] installedPkgs = new[] { ("Gamma", "3.0"), ("Beta", "2.0"), ("Alfa", "1.0"), ("Delta", "4.0") };
+            (string id, string version)[] transitivePkgs = new[] { ("pkg1", "1.0"), ("pkg2", "2.0"), ("pkg3", "3.0") };
+            Random rnd = new Random();
+            var randomComparer = Comparer<(string id, string version)>.Create((a, b) => rnd.Next(-1, 2));
+            Array.Sort(installedPkgs, randomComparer);
+            Array.Sort(transitivePkgs, randomComparer);
+            var installedCollection = installedPkgs
+                .Select(p => new PackageCollectionItem(p.id, new NuGetVersion(p.version), installedReferences: null));
+            var transitiveCollection = transitivePkgs
+                .Select(p => new PackageCollectionItem(p.id, new NuGetVersion(p.version), installedReferences: new[]
+                    {
+                        new TransitivePackageReferenceContextInfo(new PackageIdentity(p.id, new NuGetVersion(p.version)), NuGetFramework.AnyFramework)
+                        {
+                            TransitiveOrigins = new[]
+                            {
+                                new PackageReferenceContextInfo(new PackageIdentity("pkgOrigin", new NuGetVersion("0.0.1")), NuGetFramework.AnyFramework)
+                            }
+                        }
+                    }));
+
+            var _target = new InstalledAndTransitivePackageFeed(installedCollection, transitiveCollection, _packageMetadataProvider);
+
+            // Act
+            SearchResult<IPackageSearchMetadata> results = await _target.SearchAsync(query, new SearchFilter(includePrerelease: false), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(results.Items.Count, results.RawItemsCount);
+            Assert.Equal(expectedInstalled + expectedTransitive, results.Items.Count);
+
+            // First elements should be Installed/Top-level packaages
+            string prevId = null, currId;
+            int infoIdx = 0;
+            for (int i = 0; i < expectedInstalled; i++, infoIdx++)
+            {
+                IPackageSearchMetadata elem = results.ElementAt(infoIdx);
+                currId = elem.Identity.Id;
+                if (prevId != null)
+                {
+                    Assert.True(currId.CompareTo(prevId) > 0); // elements are sorted asc
+                }
+                Assert.False(elem is TransitivePackageSearchMetadata);
+                prevId = currId;
+            }
+            prevId = null;
+            // Then, last elements should be Transitive packaages
+            for (int i = 0; i < expectedTransitive; i++, infoIdx++)
+            {
+                IPackageSearchMetadata elem = results.ElementAt(infoIdx);
+                currId = elem.Identity.Id;
+                if (prevId != null)
+                {
+                    Assert.True(currId.CompareTo(prevId) > 0); // elements are sorted asc
+                }
+                Assert.True(elem is TransitivePackageSearchMetadata);
+                prevId = currId;
+            }
         }
     }
 }
