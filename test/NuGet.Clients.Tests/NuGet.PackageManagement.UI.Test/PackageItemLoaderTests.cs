@@ -184,6 +184,8 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             (string id, string version)[] packages = { ("A", "1.0"), ("B", "2.0"), ("C", "3.0"), ("D", "4.0") };
+            var rnd = new Random();
+            Array.Sort(packages, Comparer<(string id, string version)>.Create((a, b) => rnd.Next(-1,1))); // random sorting
             var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>();
             foreach (var (id, version) in packages)
             {
