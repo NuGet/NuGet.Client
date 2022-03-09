@@ -470,14 +470,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets)
+        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
-            return GetPackageReferences(libraries, targetFramework, InstalledPackages, targets);
+            return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets)
+        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
-            return GetTransitivePackageReferences(targetFramework, InstalledPackages, TransitivePackages, targets);
+            return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }
     }
 }

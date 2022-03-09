@@ -207,9 +207,10 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override IEnumerable<PackageReference> FetchInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            IList<LockFileTarget> targets)
+            IReadOnlyList<LockFileTarget> targets,
+            List<FrameworkInstalledPackages> installedPackages)
         {
-            FrameworkInstalledPackages targetFrameworkPackages = InstalledPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            FrameworkInstalledPackages targetFrameworkPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
             if (targetFrameworkPackages == null)
             {
@@ -228,11 +229,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(
             NuGetFramework targetFramework,
-            IList<LockFileTarget> targets)
+            IReadOnlyList<LockFileTarget> targets,
+            List<FrameworkInstalledPackages> installedPackages,
+            List<FrameworkInstalledPackages> transitivePackages)
         {
-            FrameworkInstalledPackages targetFrameworkInstalledPackages = InstalledPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
+            FrameworkInstalledPackages targetFrameworkInstalledPackages = installedPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
-            FrameworkInstalledPackages targetFrameworkTransitivePackages = TransitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
+            FrameworkInstalledPackages targetFrameworkTransitivePackages = transitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
             if (targetFrameworkInstalledPackages.Packages == null)
             {
@@ -370,7 +373,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
         }
-
         #endregion
     }
 }

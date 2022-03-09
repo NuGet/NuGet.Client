@@ -112,13 +112,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
             }
 
-            IList<LockFileTarget> targetsList = null;
+            IReadOnlyList<LockFileTarget> targetsList = null;
             if (IsInstalledAndTransitiveComputationNeeded)
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 InstalledPackages.Clear();
                 TransitivePackages.Clear();
-                targetsList = await GetTargetsListAsync(assetsPath, token);
+                targetsList = (await GetTargetsListAsync(assetsPath, token)).ToList();
             }
 
             var frameworkSorter = new NuGetFrameworkSorter();
@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // get installed packages
             List<PackageReference> installedPackages = packageSpec
                 .TargetFrameworks
-                .SelectMany(f => FetchInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList))
+                .SelectMany(f => FetchInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, InstalledPackages))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // get transitive packages
             IEnumerable<PackageReference> transitivePackages = packageSpec
                 .TargetFrameworks
-                .SelectMany(f => FetchTransitivePackagesList(f.FrameworkName, targetsList))
+                .SelectMany(f => FetchTransitivePackagesList(f.FrameworkName, targetsList, InstalledPackages, TransitivePackages))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
@@ -163,9 +163,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectPackages(installedPackages, transitivePkgsResult);
         }
 
-        protected abstract IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets);
+        protected abstract IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
 
-        protected abstract IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets);
+        protected abstract IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
 
         /// <summary>
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk
@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             Dictionary<string, ProjectInstalledPackage> installedPackages,
-            IList<LockFileTarget> targets)
+            IReadOnlyList<LockFileTarget> targets)
         {
             return libraries
                 .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
@@ -188,9 +188,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private protected IReadOnlyList<PackageReference> GetTransitivePackageReferences(
             NuGetFramework targetFramework,
-            Dictionary<string, ProjectInstalledPackage> installedPackages,
-            Dictionary<string, ProjectInstalledPackage> transitivePackages,
-            IList<LockFileTarget> targets)
+            IReadOnlyDictionary<string, ProjectInstalledPackage> installedPackages,
+            IReadOnlyDictionary<string, ProjectInstalledPackage> transitivePackages,
+            IReadOnlyList<LockFileTarget> targets)
         {
             // If the assets files has not been updated, return the cached transitive packages
             if (targets == null)
@@ -201,12 +201,17 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                return targets
+                Dictionary<string, ProjectInstalledPackage> newTransitivePackages = new();
+
+                IReadOnlyList<PackageReference> transitivePackageReferences = targets
                     .SelectMany(target => target.Libraries)
                     .Where(library => library.Type == LibraryType.Package)
-                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, installedPackages, transitivePackages))
+                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, installedPackages, newTransitivePackages))
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();
+
+                //transitivePackages
+                return transitivePackageReferences;
             }
         }
 
@@ -219,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// packages that depends on given transitive package, or <c>null</c> if none found</returns>
         /// <remarks>Computes all transitive origins for each Framework/Runtime-ID combiation. Runtime-ID can be <c>null</c>.
         /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
-        internal TransitiveEntry GetTransitivePackageOrigin(PackageReference transitivePackage, List<PackageReference> installedPackages, IList<LockFileTarget> targetsList, CancellationToken ct)
+        internal TransitiveEntry GetTransitivePackageOrigin(PackageReference transitivePackage, List<PackageReference> installedPackages, IReadOnlyList<LockFileTarget> targetsList, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             if (IsInstalledAndTransitiveComputationNeeded)

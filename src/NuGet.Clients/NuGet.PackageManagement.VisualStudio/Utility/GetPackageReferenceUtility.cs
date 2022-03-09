@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -23,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         /// <param name="targetFramework">Target framework from the project file.</param>
         /// <param name="targets">Target assets file with the package information.</param>
         /// <param name="installedPackages">Installed packages information from the project.</param>
-        internal static PackageIdentity UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
+        internal static PackageIdentity UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
             NuGetVersion resolvedVersion = default;
 
@@ -65,7 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         /// <param name="targets">Target assets file with the package information.</param>
         /// <param name="installedPackages">Cached installed package information</param>
         /// <param name="transitivePackages">Cached transitive package information</param>
-        internal static IReadOnlyList<PackageIdentity> UpdateTransitiveDependencies(LockFileTargetLibrary library, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
+        internal static IReadOnlyList<PackageIdentity> UpdateTransitiveDependencies(LockFileTargetLibrary library, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, IReadOnlyDictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> newTransitivePackages)
         {
             NuGetVersion resolvedVersion = default;
 
@@ -89,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                         }
 
                         var packageIdentity = new PackageIdentity(package.Id, resolvedVersion);
-                        transitivePackages[package.Id] = new ProjectInstalledPackage(package.VersionRange, packageIdentity);
+                        newTransitivePackages[package.Id] = new ProjectInstalledPackage(package.VersionRange, packageIdentity);
                         packageIdentities.Add(packageIdentity);
                     }
                 }
@@ -98,7 +99,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             return packageIdentities;
         }
 
-        private static NuGetVersion GetInstalledVersion(string libraryName, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)
+        private static NuGetVersion GetInstalledVersion(string libraryName, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets)
         {
             return targets
                 ?.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
@@ -107,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                 ?.Version;
         }
 
-        private static IReadOnlyList<PackageDependency> GetTransitivePackagesForLibrary(LockFileTargetLibrary library, NuGetFramework targetFramework, IEnumerable<LockFileTarget> targets)
+        private static IReadOnlyList<PackageDependency> GetTransitivePackagesForLibrary(LockFileTargetLibrary library, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets)
         {
             return targets
                 ?.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
