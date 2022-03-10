@@ -42,9 +42,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectUniqueName;
         private readonly protected string _projectFullPath;
 
-        // It's cache
+        // Cache
         protected T InstalledPackages { get; set; }
         protected T TransitivePackages { get; set; }
+
+        private readonly object _lockObj = new object();
 
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
@@ -121,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 installedPackages = new T();
                 transitivePackages = new T();
-                targetsList = (await GetTargetsListAsync(assetsPath, token)).ToList();
+                targetsList = (await GetTargetsListAsync(assetsPath, token))?.ToList();
             }
             else
             {
@@ -133,7 +135,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 else
                 {
                     // Don't mutate cache for threadsafety, instead we works on copy then replace cache when done.
-                    (installedPackages, transitivePackages) = GetCacheCopy();
+                    lock (_lockObj)
+                    {
+                        (installedPackages, transitivePackages) = GetCacheCopy();
+                    }
                 }
             }
 
@@ -187,8 +192,13 @@ namespace NuGet.PackageManagement.VisualStudio
             List<TransitivePackageReference> transitivePkgsResult = calculatedTransitivePackagesWithOrigins.ToList(); // Materialize results before setting IsInstalledAndTransitiveComputationNeeded flag to false
 
             IsInstalledAndTransitiveComputationNeeded = false;
-            InstalledPackages = installedPackages;
-            TransitivePackages = transitivePackages;
+
+            // Refresh cache
+            lock (_lockObj)
+            {
+                InstalledPackages = installedPackages;
+                TransitivePackages = transitivePackages;
+            }
 
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
         }

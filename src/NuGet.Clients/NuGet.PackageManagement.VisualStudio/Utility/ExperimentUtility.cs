@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 isExpEnabled = false;
             }
 
-            return isExpEnabled ? isExpEnabled : true;
+            return isExpEnabled;
 
         }, NuGetUIThreadHelper.JoinableTaskFactory);
     }

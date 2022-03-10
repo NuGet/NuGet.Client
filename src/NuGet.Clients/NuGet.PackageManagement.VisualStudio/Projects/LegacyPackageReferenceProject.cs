@@ -477,6 +477,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }
 
+        // To avoid race condition, we work on copy of cache.
         protected override (Dictionary<string, ProjectInstalledPackage> installedPackagesCopy, Dictionary<string, ProjectInstalledPackage> transitivePackagesCopy) GetCacheCopy()
         {
             return (new Dictionary<string, ProjectInstalledPackage>(InstalledPackages), new Dictionary<string, ProjectInstalledPackage>(TransitivePackages));
@@ -484,8 +485,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override void UpdatePackageListDetails(Dictionary<string, ProjectInstalledPackage> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges)
         {
+            if (installedPackages == null || detectedInstalledPackageChanges == null)
+                return;
+
             foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedInstalledPackageChanges)
             {
+                if (detectedInstalledPackageChange == null)
+                    continue;
+
                 foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedInstalledPackageChange.Packages)
                 {
                     if (installedPackages.TryGetValue(package.Key, out _))
