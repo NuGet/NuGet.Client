@@ -42,6 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectUniqueName;
         private readonly protected string _projectFullPath;
 
+        // It's cache
         protected T InstalledPackages { get; set; }
         protected T TransitivePackages { get; set; }
 
@@ -124,15 +125,26 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                // We don't want to mutate cache for threadsafety, instead we works on copy then replace cache when done.
-                (installedPackages, transitivePackages) = GetCacheCopy();
+                if (InstalledPackages == null || TransitivePackages == null)
+                {
+                    installedPackages = new T();
+                    transitivePackages = new T();
+                }
+                else
+                {
+                    // Don't mutate cache for threadsafety, instead we works on copy then replace cache when done.
+                    (installedPackages, transitivePackages) = GetCacheCopy();
+                }
             }
 
             var frameworkSorter = new NuGetFrameworkSorter();
             // get installed packages
-            List<(IReadOnlyList<PackageReference> packageReferences, Dictionary<string, ProjectInstalledPackage> detectedNewInstalledPackages)> fetchedInstalledPackagesList = packageSpec
+            List<(IReadOnlyList<PackageReference> packageReferences, FrameworkInstalledPackages detectedInstalledPackageChanges)> fetchedInstalledPackagesList = packageSpec
                 .TargetFrameworks
                 .Select(f => FetchInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages)).ToList();
+
+            // Update installedPackages only after fetching is done for thread-safety.
+            UpdatePackageListDetails(installedPackages, fetchedInstalledPackagesList.Select(f => f.detectedInstalledPackageChanges));
 
             List<PackageReference> calculatedInstalledPackages = fetchedInstalledPackagesList
                 .SelectMany(f => f.packageReferences)
@@ -141,9 +153,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
 
             // get transitive packages
-            List<(IReadOnlyList<PackageReference> packageReferences, Dictionary<string, ProjectInstalledPackage> detectedNewTransitivePackages)> fetchedTransitivePackagesList = packageSpec
+            List<(IReadOnlyList<PackageReference> packageReferences, FrameworkInstalledPackages detectedTransitivePackageChange)> fetchedTransitivePackagesList = packageSpec
                 .TargetFrameworks
                 .Select(f => FetchTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages)).ToList();
+
+            // Update transitivePackages only after fetching is done for thread-safety.
+            UpdatePackageListDetails(transitivePackages, fetchedTransitivePackagesList.Select(f => f.detectedTransitivePackageChange));
 
             IEnumerable<PackageReference> calculatedTransitivePackages = fetchedTransitivePackagesList
                 .SelectMany(f => f.packageReferences)
@@ -178,11 +193,13 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
         }
 
-        protected abstract (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
+        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
 
-        protected abstract (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
+        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
 
         protected abstract (T installedPackagesCopy, T transitivePackagesCopy) GetCacheCopy();
+
+        protected abstract void UpdatePackageListDetails(T installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges);
 
         /// <summary>
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk
@@ -192,32 +209,39 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Each project implementation is responsible of gathering <see cref="PackageSpec"/> info</remarks>
         protected abstract Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
 
-        private protected (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) GetPackageReferences(
+        private protected (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) GetPackageReferences(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             IReadOnlyDictionary<string, ProjectInstalledPackage> installedPackages,
             IReadOnlyList<LockFileTarget> targets)
         {
             var packageReferences = new List<PackageReference>();
-            var detectedInstalledPackages = new Dictionary<string, ProjectInstalledPackage>();
+            var detectedInstalledPackagesChanges = new Dictionary<string, ProjectInstalledPackage>();
             IEnumerable<LibraryDependency> libraryDependencies = libraries
                 .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
 
             foreach (LibraryDependency libraryDependency in libraryDependencies)
             {
-                (PackageIdentity installedPackage, Dictionary<string, ProjectInstalledPackage> newlyDetectedInstalledPackages) = GetPackageReferenceUtility.UpdateResolvedVersion(libraryDependency, targetFramework, targets, installedPackages);
-                foreach (KeyValuePair<string, ProjectInstalledPackage> newlyDetectedInstalledPackage in newlyDetectedInstalledPackages)
+                (PackageIdentity installedPackage, Dictionary<string, ProjectInstalledPackage> newlyDetectedInstalledPackageChanges) = GetPackageReferenceUtility.UpdateResolvedVersion(libraryDependency, targetFramework, targets, installedPackages);
+
+                if (newlyDetectedInstalledPackageChanges != null)
                 {
-                    detectedInstalledPackages[newlyDetectedInstalledPackage.Key] = newlyDetectedInstalledPackage.Value;
+                    foreach (KeyValuePair<string, ProjectInstalledPackage> newlyDetectedInstalledPackage in newlyDetectedInstalledPackageChanges)
+                    {
+                        detectedInstalledPackagesChanges[newlyDetectedInstalledPackage.Key] = newlyDetectedInstalledPackage.Value;
+                    }
                 }
 
                 packageReferences.Add(new BuildIntegratedPackageReference(libraryDependency, targetFramework, installedPackage));
             }
 
-            return (packageReferences, detectedInstalledPackages);
+            var targetFrameworkPackages = new FrameworkInstalledPackages();
+            targetFrameworkPackages.TargetFramework = targetFramework;
+            targetFrameworkPackages.Packages = detectedInstalledPackagesChanges;
+            return (packageReferences, targetFrameworkPackages);
         }
 
-        private protected (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) GetTransitivePackageReferences(
+        private protected (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) GetTransitivePackageReferences(
             NuGetFramework targetFramework,
             IReadOnlyDictionary<string, ProjectInstalledPackage> installedPackages,
             IReadOnlyDictionary<string, ProjectInstalledPackage> transitivePackages,
@@ -241,7 +265,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();
 
-                return (transitivePackageReferences, detectedNewTransitivePackages);
+                var targetFrameworkPackages = new FrameworkInstalledPackages();
+                targetFrameworkPackages.TargetFramework = targetFramework;
+                targetFrameworkPackages.Packages = detectedNewTransitivePackages;
+                return (transitivePackageReferences, targetFrameworkPackages);
             }
         }
 

@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        protected override (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchInstalledPackagesList(
+        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             IReadOnlyList<LockFileTarget> targets,
@@ -224,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        protected override (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchTransitivePackagesList(
+        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchTransitivePackagesList(
             NuGetFramework targetFramework,
             IReadOnlyList<LockFileTarget> targets,
             List<FrameworkInstalledPackages> installedPackages,
@@ -374,6 +374,43 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override (List<FrameworkInstalledPackages> installedPackagesCopy, List<FrameworkInstalledPackages> transitivePackagesCopy) GetCacheCopy()
         {
             return (new List<FrameworkInstalledPackages>(InstalledPackages), new List<FrameworkInstalledPackages>(TransitivePackages));
+        }
+
+        protected override void UpdatePackageListDetails(List<FrameworkInstalledPackages> packages, IEnumerable<FrameworkInstalledPackages> detectedNewPackages)
+        {
+            var dict = new Dictionary<NuGetFramework, FrameworkInstalledPackages>();
+
+            foreach (FrameworkInstalledPackages installedPackage in packages)
+            {
+                dict[installedPackage.TargetFramework] = installedPackage;
+            }
+
+            foreach (FrameworkInstalledPackages detectedNewInstalledPackage in detectedNewPackages)
+            {
+                if (detectedNewInstalledPackage == null)
+                    continue;
+
+                FrameworkInstalledPackages frameworkPackages;
+
+                if (dict.TryGetValue(detectedNewInstalledPackage.TargetFramework, out frameworkPackages))
+                {
+                    foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedNewInstalledPackage.Packages)
+                    {
+                        if (frameworkPackages.Packages.TryGetValue(package.Key, out _))
+                        {
+                            frameworkPackages.Packages[package.Key] = package.Value;
+                        }
+                        else
+                        {
+                            frameworkPackages.Packages.Add(package.Key, package.Value);
+                        }
+                    }
+                }
+                else
+                {
+                    packages.Add(detectedNewInstalledPackage);
+                }
+            }
         }
 
         #endregion

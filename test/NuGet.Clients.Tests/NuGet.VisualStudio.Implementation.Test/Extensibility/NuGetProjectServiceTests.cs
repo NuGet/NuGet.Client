@@ -13,6 +13,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
+using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -127,14 +128,14 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             Assert.False(package.DirectDependency);
         }
 
-        class TestPackageReferenceProject : PackageReferenceProject<IList<PackageReference>, PackageReference>
+        class TestPackageReferenceProject : PackageReferenceProject<List<PackageReference>, PackageReference>
         {
             public TestPackageReferenceProject(
                 string projectName,
                 string projectUniqueName,
                 string projectFullPath,
-                IList<PackageReference> installedPackages,
-                IList<PackageReference> transitivePackages)
+                List<PackageReference> installedPackages,
+                List<PackageReference> transitivePackages)
                 : base(projectName, projectUniqueName, projectFullPath)
             {
                 InstalledPackages = installedPackages;
@@ -197,14 +198,37 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
-            protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets)
+            protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages)
             {
                 throw new NotImplementedException();
             }
 
-            protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets)
+            protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages, List<PackageReference> transitivePackages)
             {
                 throw new NotImplementedException();
+            }
+
+            protected override (List<PackageReference> installedPackagesCopy, List<PackageReference> transitivePackagesCopy) GetCacheCopy()
+            {
+                return (new List<PackageReference>(InstalledPackages), new List<PackageReference>(TransitivePackages));
+            }
+
+            protected override void UpdatePackageListDetails(List<PackageReference> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges)
+            {
+                var dict = new Dictionary<NuGetFramework, PackageReference>();
+
+                foreach (PackageReference installedPackage in installedPackages)
+                {
+                    dict[installedPackage.TargetFramework] = installedPackage;
+                }
+
+                foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedInstalledPackageChanges)
+                {
+                    foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedInstalledPackageChange.Packages)
+                    {
+                        installedPackages.Add( new PackageReference(package.Value.InstalledPackage, detectedInstalledPackageChange.TargetFramework));
+                    }
+                }
             }
         }
     }

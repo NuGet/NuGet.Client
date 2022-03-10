@@ -467,12 +467,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
+        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
             return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
         }
 
-        protected override (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
+        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
             return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }
@@ -480,6 +480,24 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override (Dictionary<string, ProjectInstalledPackage> installedPackagesCopy, Dictionary<string, ProjectInstalledPackage> transitivePackagesCopy) GetCacheCopy()
         {
             return (new Dictionary<string, ProjectInstalledPackage>(InstalledPackages), new Dictionary<string, ProjectInstalledPackage>(TransitivePackages));
+        }
+
+        protected override void UpdatePackageListDetails(Dictionary<string, ProjectInstalledPackage> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges)
+        {
+            foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedInstalledPackageChanges)
+            {
+                foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedInstalledPackageChange.Packages)
+                {
+                    if (installedPackages.TryGetValue(package.Key, out _))
+                    {
+                        installedPackages[package.Key] = package.Value;
+                    }
+                    else
+                    {
+                        installedPackages.Add(package.Key, package.Value);
+                    }
+                }
+            }
         }
     }
 }
