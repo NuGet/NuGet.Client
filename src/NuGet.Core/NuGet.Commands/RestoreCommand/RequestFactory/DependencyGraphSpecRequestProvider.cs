@@ -191,7 +191,7 @@ namespace NuGet.Commands
                 DependencyGraphSpec = projectDgSpec,
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 AdditionalMessages = projectAdditionalMessages,
-                UpdatePackageLastAccessTime = updateLastAccess
+                UpdatePackageLastAccessTime = updateLastAccess,
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
