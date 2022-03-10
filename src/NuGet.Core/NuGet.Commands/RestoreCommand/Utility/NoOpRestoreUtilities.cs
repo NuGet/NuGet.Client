@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -164,17 +165,10 @@ namespace NuGet.Commands
             {
                 foreach (var package in cacheFile.ExpectedPackageFilePaths)
                 {
-                    var packageFolder = new DirectoryInfo(Directory.GetParent(package).FullName).Parent.Parent.FullName;
+                    if (!package.StartsWith(request.PackagesDirectory, StringComparison.OrdinalIgnoreCase)) { continue; }
 
-                    // we avoid fallback folders as they are readonly
-                    if (request.Project.RestoreMetadata.FallbackFolders.Any(fallbackFolder => PathUtility.GetStringComparerBasedOnOS().Equals(fallbackFolder, packageFolder)))
-                        continue;
-
-                    var packageParent = Directory.GetParent(package);
-                    var packageId = new DirectoryInfo(packageParent.FullName).Parent.Name;
-                    var version = packageParent.Name;
-                    var resolver = new VersionFolderPathResolver(packageFolder);
-                    var metadataFile = resolver.GetNupkgMetadataPath(packageId, new NuGetVersion(version));
+                    var packageDirectory = Path.GetDirectoryName(package);
+                    var metadataFile = Path.Combine(packageDirectory, PackagingCoreConstants.NupkgMetadataFileExtension);
 
                     try
                     {
