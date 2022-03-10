@@ -68,9 +68,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, ProjectUniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
-
-            InstalledPackages = new List<FrameworkInstalledPackages>();
-            TransitivePackages = new List<FrameworkInstalledPackages>();
         }
 
         public override Task AddFileToProjectAsync(string filePath)
@@ -204,7 +201,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(
+        protected override (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             IReadOnlyList<LockFileTarget> targets,
@@ -221,13 +218,13 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 targetFrameworkPackages.TargetFramework = targetFramework;
                 targetFrameworkPackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                InstalledPackages.Add(targetFrameworkPackages);
+                installedPackages.Add(targetFrameworkPackages);
             }
 
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(
+        protected override (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchTransitivePackagesList(
             NuGetFramework targetFramework,
             IReadOnlyList<LockFileTarget> targets,
             List<FrameworkInstalledPackages> installedPackages,
@@ -241,14 +238,14 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 targetFrameworkInstalledPackages.TargetFramework = targetFramework;
                 targetFrameworkInstalledPackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                InstalledPackages.Add(targetFrameworkInstalledPackages);
+                installedPackages.Add(targetFrameworkInstalledPackages);
             }
 
             if (targetFrameworkTransitivePackages.Packages == null)
             {
                 targetFrameworkTransitivePackages.TargetFramework = targetFramework;
                 targetFrameworkTransitivePackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                TransitivePackages.Add(targetFrameworkTransitivePackages);
+                transitivePackages.Add(targetFrameworkTransitivePackages);
             }
 
             return GetTransitivePackageReferences(targetFramework, targetFrameworkInstalledPackages.Packages, targetFrameworkTransitivePackages.Packages, targets);

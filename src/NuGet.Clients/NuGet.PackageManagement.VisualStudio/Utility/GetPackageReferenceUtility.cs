@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         /// <param name="targetFramework">Target framework from the project file.</param>
         /// <param name="targets">Target assets file with the package information.</param>
         /// <param name="installedPackages">Installed packages information from the project.</param>
-        internal static PackageIdentity UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
+        internal static (PackageIdentity, Dictionary<string, ProjectInstalledPackage>) UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, IReadOnlyDictionary<string, ProjectInstalledPackage> installedPackages)
         {
             NuGetVersion resolvedVersion = default;
 
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             // 3. There are no changes in the assets file
             if (installedPackages.TryGetValue(projectLibrary.Name, out ProjectInstalledPackage installedVersion) && installedVersion.AllowedVersions.Equals(projectLibrary.LibraryRange.VersionRange) && targets == null)
             {
-                return installedVersion.InstalledPackage;
+                return (installedVersion.InstalledPackage, null);
             }
 
             resolvedVersion = GetInstalledVersion(projectLibrary.Name, targetFramework, targets);
@@ -44,18 +44,20 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                 resolvedVersion = projectLibrary.LibraryRange?.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
             }
 
+            Dictionary<string, ProjectInstalledPackage> newlyDetectedInstalledPackages = new();
+
             // Add or update the the version of the package in the project
             if (installedPackages.TryGetValue(projectLibrary.Name, out ProjectInstalledPackage installedPackage))
             {
-                installedPackages[projectLibrary.Name] = new ProjectInstalledPackage(projectLibrary.LibraryRange.VersionRange, new PackageIdentity(projectLibrary.Name, resolvedVersion));
+                newlyDetectedInstalledPackages[projectLibrary.Name] = new ProjectInstalledPackage(projectLibrary.LibraryRange.VersionRange, new PackageIdentity(projectLibrary.Name, resolvedVersion));
             }
             else
             {
                 ProjectInstalledPackage newInstalledPackage = new ProjectInstalledPackage(projectLibrary.LibraryRange.VersionRange, new PackageIdentity(projectLibrary.Name, resolvedVersion));
-                installedPackages.Add(projectLibrary.Name, newInstalledPackage);
+                newlyDetectedInstalledPackages.Add(projectLibrary.Name, newInstalledPackage);
             }
 
-            return new PackageIdentity(projectLibrary.Name, resolvedVersion);
+            return (new PackageIdentity(projectLibrary.Name, resolvedVersion), newlyDetectedInstalledPackages);
         }
 
         /// <summary>
