@@ -7,6 +7,5 @@ static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, NuGet.Common
 static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
-NuGet.Protocol.LocalPackageFileCache.LocalPackageFileCache(NuGet.Common.ILogger logger) -> void
 NuGet.Protocol.LocalPackageFileCache.UpdateLastAccessTime(string nupkgMetadataPath) -> void
 NuGet.Repositories.NuGetv3LocalRepository.NuGetv3LocalRepository(string path, NuGet.Protocol.LocalPackageFileCache packageFileCache, bool isFallbackFolder, bool updateLastAccessTime) -> void

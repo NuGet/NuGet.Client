@@ -192,7 +192,7 @@ namespace NuGet.Commands.Test
                 fallbackPackageFolderPaths: fallbackPackageFolders,
                 sources: sources,
                 cacheContext: cacheContext,
-                packageFileCache: new LocalPackageFileCache(log),
+                packageFileCache: new LocalPackageFileCache(),
                 log: log),
             cacheContext,
             clientPolicyContext,

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.RuntimeModel;
@@ -45,15 +44,8 @@ namespace NuGet.Protocol
         private readonly ConcurrentDictionary<string, bool> _metadataFileCache
             = new ConcurrentDictionary<string, bool>(PathUtility.GetStringComparerBasedOnOS());
 
-        private readonly ILogger _logger;
-
         public LocalPackageFileCache()
         {
-        }
-
-        public LocalPackageFileCache(ILogger logger)
-        {
-            _logger = logger;
         }
 
         /// <summary>
@@ -123,14 +115,8 @@ namespace NuGet.Protocol
                 File.SetLastAccessTimeUtc(nupkgMetadataPath, DateTime.UtcNow);
                 _metadataFileCache.TryAdd(nupkgMetadataPath, true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                if (_logger != null)
-                {
-                    _logger.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1802,
-                        string.Format(CultureInfo.InvariantCulture, Strings.Error_CouldNotUpdateMetadataLastAccessTime,
-                        nupkgMetadataPath, ex.Message)));
-                }
             }
         }
 
