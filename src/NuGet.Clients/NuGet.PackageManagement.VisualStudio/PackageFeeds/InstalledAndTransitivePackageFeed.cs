@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc cref="IPackageFeed.ContinueSearchAsync(ContinuationToken, CancellationToken)" />
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = ThrowIfNotFeedSearchContinuationToken(continuationToken);
+            FeedSearchContinuationToken searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
             // Remove transitive packages from project references
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IPackageSearchMetadata[] installedItems = await DoSearchAsync(_installedPackages, searchToken, cancellationToken);
             IPackageSearchMetadata[] transitiveItems = await DoSearchAsync(pkgsWithOrigins, searchToken, cancellationToken);
-            IPackageSearchMetadata[] searchItems = intalledItems.Concat(transitiveItems).ToArray();
+            IPackageSearchMetadata[] searchItems = installedItems.Concat(transitiveItems).ToArray();
 
             return CreateResult(searchItems);
         }

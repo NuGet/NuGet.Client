@@ -36,11 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var stopWatch = Stopwatch.StartNew();
 
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException("Invalid token");
-            }
+            FeedSearchContinuationToken searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
 
             var searchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>(cancellationToken);
 

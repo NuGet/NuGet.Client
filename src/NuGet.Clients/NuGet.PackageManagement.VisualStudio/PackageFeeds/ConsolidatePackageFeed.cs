@@ -49,11 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException("Invalid token");
-            }
+            FeedSearchContinuationToken searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
 
             var packagesNeedingConsolidation = _installedPackages
                 .GroupById()

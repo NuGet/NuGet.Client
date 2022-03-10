@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = ThrowIfNotFeedSearchContinuationToken(continuationToken);
+            FeedSearchContinuationToken searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
             PackageIdentity[] feedItems = _installedPackages.GetLatest();
