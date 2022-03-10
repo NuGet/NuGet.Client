@@ -124,9 +124,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                // We don't want to mutate cache for threadsafety, instead we works on another instance then refresh cache once done.
-                installedPackages = InstalledPackages;
-                //transitivePackages = new T();
+                // We don't want to mutate cache for threadsafety, instead we works on copy then replace cache when done.
+                (installedPackages, transitivePackages) = GetCacheCopy();
             }
 
             var frameworkSorter = new NuGetFrameworkSorter();
@@ -182,6 +181,8 @@ namespace NuGet.PackageManagement.VisualStudio
         protected abstract (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
 
         protected abstract (IReadOnlyList<PackageReference>, Dictionary<string, ProjectInstalledPackage>) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
+
+        protected abstract (T installedPackagesCopy, T transitivePackagesCopy) GetCacheCopy();
 
         /// <summary>
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk
