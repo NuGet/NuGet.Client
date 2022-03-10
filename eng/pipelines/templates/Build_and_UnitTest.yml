@@ -215,7 +215,7 @@ steps:
   inputs:
     solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom"
+    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -260,6 +260,14 @@ steps:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/p:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom"
+  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+
+- task: MSBuild@1
+  displayName: "Generate VSMAN file for Build Tools VSIX"
+  inputs:
+    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/p:IsVsixBuild=false /p:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
