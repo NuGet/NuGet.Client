@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
             var token = new FeedSearchContinuationToken()
             {
-                SearchString = "",
+                SearchString = string.Empty,
                 SearchFilter = new SearchFilter(includePrerelease: false)
             };
             var _target = new InstalledPackageFeed(feedCollection, _metadataProvider);
@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void CreateResults_WitSampleData_ResultAndCollectionAreEquals()
+        public void CreateResults_WithSampleData_ResultAndCollectionAreEqual()
         {
             // Arrange
             IPackageSearchMetadata[] meta = new[]

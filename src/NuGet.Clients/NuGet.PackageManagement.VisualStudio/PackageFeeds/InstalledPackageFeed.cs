@@ -59,8 +59,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
-            //  The packages were originally sorted which is important because we Skip based on that sort
-            //  however the asynchronous execution has randomly reordered the set. So we need to resort. 
+            // The packages were originally sorted which is important because we skip based on that sort
+            // however, the asynchronous execution has randomly reordered the set. So, we need to resort.
             var itemsSorted = items.OrderBy(p => p.Identity.Id).ToArray();
 
             return itemsSorted;
