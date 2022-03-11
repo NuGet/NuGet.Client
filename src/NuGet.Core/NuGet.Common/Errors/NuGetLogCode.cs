@@ -253,11 +253,6 @@ namespace NuGet.Common
         NU1503 = 1503,
 
         /// <summary>
-        /// A VersionOverride was specified for a PackageReference but central package management is not enabled so the value was ignored.
-        /// </summary>
-        NU1504 = 1504,
-
-        /// <summary>
         /// Dependency bumped up
         /// </summary>
         NU1601 = 1601,

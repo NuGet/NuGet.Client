@@ -2636,15 +2636,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package reference {0} specifies a VersionOverride but central package manageent is currently disabled so the value was ignored..
-        /// </summary>
-        internal static string Warning_CentralPackageVersions_VersionOverrideIgnored {
-            get {
-                return ResourceManager.GetString("Warning_CentralPackageVersions_VersionOverrideIgnored", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; key already exists in Properties collection. Overriding value..
         /// </summary>
         internal static string Warning_DuplicatePropertyKey {

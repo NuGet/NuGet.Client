@@ -452,18 +452,12 @@ namespace NuGet.Commands
 
         private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync(ProjectRestoreMetadata projectRestoreMetadata)
         {
-            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
-
             if (projectRestoreMetadata == null || !projectRestoreMetadata.CentralPackageVersionsEnabled)
             {
-                // Emit a warning for any package references that specified a VersionOverride since the value was ignored
-                foreach (var item in dependenciesWithVersionOverride)
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1504, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_VersionOverrideIgnored, item.Name)));
-                }
-
                 return true;
             }
+
+            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
 
             if (projectRestoreMetadata.CentralPackageVersionOverrideDisabled)
             {
