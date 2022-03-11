@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -224,33 +225,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(results.Items.Count, results.RawItemsCount);
             Assert.Equal(expectedInstalled + expectedTransitive, results.Items.Count);
 
+            var idComparer = Comparer<IPackageSearchMetadata>.Create((a, b) => a.Identity.Id.CompareTo(b.Identity.Id));
+
             // First elements should be Installed/Top-level packaages
-            string prevId = null, currId;
-            int infoIdx = 0;
-            for (int i = 0; i < expectedInstalled; i++, infoIdx++)
-            {
-                IPackageSearchMetadata elem = results.ElementAt(infoIdx);
-                currId = elem.Identity.Id;
-                if (prevId != null)
-                {
-                    Assert.True(currId.CompareTo(prevId) > 0); // elements are sorted asc
-                }
-                Assert.False(elem is TransitivePackageSearchMetadata);
-                prevId = currId;
-            }
-            prevId = null;
+            IEnumerable<IPackageSearchMetadata> firstItems = results.Take(expectedInstalled);
+            firstItems.Should().HaveCount(expectedInstalled);
+            firstItems.Should().BeInAscendingOrder(idComparer);
+            firstItems.Should().NotBeAssignableTo<TransitivePackageSearchMetadata>();
+
             // Then, last elements should be Transitive packaages
-            for (int i = 0; i < expectedTransitive; i++, infoIdx++)
-            {
-                IPackageSearchMetadata elem = results.ElementAt(infoIdx);
-                currId = elem.Identity.Id;
-                if (prevId != null)
-                {
-                    Assert.True(currId.CompareTo(prevId) > 0); // elements are sorted asc
-                }
-                Assert.True(elem is TransitivePackageSearchMetadata);
-                prevId = currId;
-            }
+            IEnumerable<IPackageSearchMetadata> lastItems = results.Skip(expectedInstalled);
+            lastItems.Should().HaveCount(expectedTransitive);
+            lastItems.Should().BeInAscendingOrder(idComparer);
+            lastItems.Should().AllBeOfType<TransitivePackageSearchMetadata>();
         }
     }
 }

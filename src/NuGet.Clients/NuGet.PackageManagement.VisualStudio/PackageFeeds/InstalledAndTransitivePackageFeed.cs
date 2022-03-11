@@ -39,36 +39,29 @@ namespace NuGet.PackageManagement.VisualStudio
             return CreateResult(searchItems);
         }
 
-        internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T pkgIdentity, bool includePrerelease, CancellationToken cancellationToken)
+        internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (pkgIdentity is PackageCollectionItem identity)
+            if (identity is PackageCollectionItem pkgColItem)
             {
-                IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = identity.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
-
+                IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = pkgColItem.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
                 ITransitivePackageReferenceContextInfo transitivePR = transitivePRs.OrderByDescending(x => x.Identity.Version).FirstOrDefault();
-
-                if (transitivePR != null)
+                IReadOnlyCollection<PackageIdentity> transitiveOrigins = transitivePR?.TransitiveOrigins?.Select(to => to.Identity).ToArray() ?? Array.Empty<PackageIdentity>();
+                if (transitiveOrigins.Any())
                 {
-                    IReadOnlyCollection<PackageIdentity> transitiveOrigins = transitivePR.TransitiveOrigins?.Select(to => to.Identity).ToArray() ?? Array.Empty<PackageIdentity>();
-
-                    if (transitiveOrigins.Any())
+                    // Get only local metadata. We don't want Deprecation and Vulnerabilities Metadata on Transitive packages
+                    IPackageSearchMetadata packageMetadata = await _metadataProvider.GetOnlyLocalPackageMetadataAsync(pkgColItem, cancellationToken);
+                    if (packageMetadata == null) // Edge case: local metadata not found
                     {
-                        // Get only local metadata. We don't want Deprecation and Vulnerabilities Metadata on Transitive packages
-                        IPackageSearchMetadata packageMetadata = await _metadataProvider.GetOnlyLocalPackageMetadataAsync(identity, cancellationToken);
-
-                        if (packageMetadata == null) // Edge case: local metadata not found
-                        {
-                            packageMetadata = PackageSearchMetadataBuilder.FromIdentity(identity).Build(); // create metadata object only with ID
-                        }
-
-                        return new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
+                        packageMetadata = PackageSearchMetadataBuilder.FromIdentity(pkgColItem).Build(); // create metadata object only with ID
                     }
+
+                    return new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
                 }
             }
 
-            return await base.GetPackageMetadataAsync(pkgIdentity, includePrerelease, cancellationToken);
+            return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
         }
     }
 }

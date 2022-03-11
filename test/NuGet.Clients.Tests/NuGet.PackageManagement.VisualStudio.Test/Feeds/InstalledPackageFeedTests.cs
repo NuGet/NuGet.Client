@@ -86,17 +86,21 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetPackageMetadataAsync_WithCancellationToken_ThrowsAsync()
         {
+            // Arrange
             var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
             var _target = new InstalledPackageFeed(new[] { testPackageIdentity }, _metadataProvider);
 
             using CancellationTokenSource cts = new CancellationTokenSource();
             cts.Cancel();
+
+            // Act and Assert
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), cts.Token));
         }
 
         [Fact]
         public async Task DoSearchAsync_WithTestData_AlwaysSortedByPackageIdAsync()
         {
+            // Arrange
             var feedCollection = new[] // un-sorted collection
             {
                 new PackageCollectionItem("Z", new NuGetVersion("1.0.0"), null),
@@ -131,7 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData("largeQuery", 0)]
         public void PerformLookup_WithSampleData_Succeeds(string query, int expectedResultsCount)
         {
-            // Prepare
+            // Arrange
             PackageIdentity[] ids = new[]
             {
                 new PackageIdentity("one", new NuGetVersion("1.0.0")),
@@ -144,7 +148,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             // Act
-            var result = InstalledPackageFeed.PerformLookup(ids, token);
+            PackageIdentity[] result = InstalledPackageFeed.PerformLookup(ids, token);
 
             // Assert
             Assert.NotNull(result);
