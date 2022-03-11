@@ -486,12 +486,16 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override void UpdatePackageListDetails(Dictionary<string, ProjectInstalledPackage> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges)
         {
             if (installedPackages == null || detectedInstalledPackageChanges == null)
+            {
                 return;
+            }
 
             foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedInstalledPackageChanges)
             {
                 if (detectedInstalledPackageChange == null)
+                {
                     continue;
+                }
 
                 foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedInstalledPackageChange.Packages)
                 {

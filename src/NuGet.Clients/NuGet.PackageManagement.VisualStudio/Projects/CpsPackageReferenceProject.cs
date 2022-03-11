@@ -380,7 +380,9 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override void UpdatePackageListDetails(List<FrameworkInstalledPackages> packages, IEnumerable<FrameworkInstalledPackages> detectedNewPackages)
         {
             if (packages == null || detectedNewPackages == null)
+            {
                 return;
+            }
 
             var dict = new Dictionary<NuGetFramework, FrameworkInstalledPackages>();
 
@@ -392,7 +394,9 @@ namespace NuGet.PackageManagement.VisualStudio
             foreach (FrameworkInstalledPackages detectedNewInstalledPackage in detectedNewPackages)
             {
                 if (detectedNewInstalledPackage == null)
+                {
                     continue;
+                }
 
                 FrameworkInstalledPackages frameworkPackages;
 
