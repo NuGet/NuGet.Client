@@ -32,8 +32,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<PackageCollectionItem> pkgsWithOrigins = _transitivePackages
                 .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
-            IPackageSearchMetadata[] installedItems = await DoSearchAsync(_installedPackages, searchToken, cancellationToken);
-            IPackageSearchMetadata[] transitiveItems = await DoSearchAsync(pkgsWithOrigins, searchToken, cancellationToken);
+            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(pkgsWithOrigins, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
             IPackageSearchMetadata[] searchItems = installedItems.Concat(transitiveItems).ToArray();
 
             return CreateResult(searchItems);

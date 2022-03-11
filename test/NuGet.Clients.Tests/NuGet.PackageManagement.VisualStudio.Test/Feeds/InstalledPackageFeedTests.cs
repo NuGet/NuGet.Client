@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -97,36 +99,50 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await _target.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), cts.Token));
         }
 
-        [Fact]
-        public async Task DoSearchAsync_WithTestData_AlwaysSortedByPackageIdAsync()
+        [Theory]
+        [InlineData(new string[] { }, "", 0)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, "", 4)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, "g", 1)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, "#@", 0)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, "alFA", 1)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, "pkg1", 0)]
+        [InlineData(new[] { "Beta", "Alfa", "Delta", "Gamma" }, "ta", 2)]
+        [InlineData(new[] { "Beta", "Alfa", "Delta", "Gamma" }, "g", 1)]
+        [InlineData(new[] { "q", "z", "hi" }, "z", 1)]
+        public async Task SearchAsync_WithInstalledPackages_AlwaysSortedResultsAsync(string[] installedPkgs, string query, int expectedResultsCount)
         {
             // Arrange
-            var feedCollection = new[] // un-sorted collection
-            {
-                new PackageCollectionItem("Z", new NuGetVersion("1.0.0"), null),
-                new PackageCollectionItem("A", new NuGetVersion("1.0.0"), null),
-                new PackageCollectionItem("mypkg", new NuGetVersion("1.0.0"), null),
-                new PackageCollectionItem("newpkg", new NuGetVersion("1.0.0"), null),
-            };
-            var token = new FeedSearchContinuationToken()
-            {
-                SearchString = string.Empty,
-                SearchFilter = new SearchFilter(includePrerelease: false)
-            };
+            var installedCollection = installedPkgs
+                .Select(p => new PackageCollectionItem(p, new NuGetVersion("0.0.1"), installedReferences: null));
+            var _target = new InstalledPackageFeed(installedCollection, _metadataProvider);
+
+            // Act
+            SearchResult<IPackageSearchMetadata> results = await _target.SearchAsync(query, new SearchFilter(includePrerelease: false), CancellationToken.None);
+
+            // Assert
+            var idComparer = Comparer<IPackageSearchMetadata>.Create((a, b) => a.Identity.Id.CompareTo(b.Identity.Id));
+            Assert.Equal(results.Items.Count, results.RawItemsCount);
+            results.Should().BeInAscendingOrder(idComparer);
+            results.Should().HaveCount(expectedResultsCount);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new string[] { } })]
+        [InlineData(new object[] { new[] { "one", "zero", "four", "nine" } })]
+        [InlineData(new object[] { new[] { "Z", "A", "mypkg", "newpkg" } })]
+        [InlineData(new object[] { new[] { "triangle", "square" } })]
+        public async Task GetMetadataForPackagesAndSortAsync_WithTestData_AlwaysSortedByPackageIdAsync(string[] packageIds)
+        {
+            // Arrange
+            PackageCollectionItem[] feedCollection = packageIds.Select(pkgId => new PackageCollectionItem(pkgId, new NuGetVersion("0.0.1"), installedReferences: null)).ToArray();
             var _target = new InstalledPackageFeed(feedCollection, _metadataProvider);
 
             // Act
-            IPackageSearchMetadata[] result = await _target.DoSearchAsync(feedCollection, token, CancellationToken.None);
+            IPackageSearchMetadata[] result = await _target.GetMetadataForPackagesAndSortAsync(feedCollection, includePrerelease: It.IsAny<bool>(), CancellationToken.None);
 
             // Assert
-            IPackageSearchMetadata prev = null;
-            for (int i = 0; i < result.Length; i++)
-            {
-                if (prev != null)
-                {
-                    Assert.True(result[i].Identity.Id.CompareTo(prev.Identity.Id) > 0); // elems sorted asc
-                }
-            }
+            var idComparer = Comparer<IPackageSearchMetadata>.Create((a, b) => a.Identity.Id.CompareTo(b.Identity.Id));
+            result.Should().BeInAscendingOrder(idComparer);
         }
 
         [Theory]

@@ -43,20 +43,18 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
 
             PackageIdentity[] feedItems = _installedPackages.GetLatest();
-            IPackageSearchMetadata[] searchItems = await DoSearchAsync(feedItems, searchToken, cancellationToken);
+            IPackageSearchMetadata[] searchItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(feedItems, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
 
             return CreateResult(searchItems);
         }
 
-        internal async Task<IPackageSearchMetadata[]> DoSearchAsync<T>(IEnumerable<T> feedItems, FeedSearchContinuationToken searchToken, CancellationToken cancellationToken) where T : PackageIdentity
+        internal async Task<IPackageSearchMetadata[]> GetMetadataForPackagesAndSortAsync<T>(T[] packages, bool includePrerelease, CancellationToken cancellationToken) where T : PackageIdentity
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            T[] packages = PerformLookup(feedItems, searchToken);
-
             IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
                 packages,
-                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
+                (p, t) => GetPackageMetadataAsync(p, includePrerelease, t),
                 cancellationToken);
 
             // The packages were originally sorted which is important because we skip based on that sort
