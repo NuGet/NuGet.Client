@@ -181,7 +181,8 @@ function Test-GetPackageForProjectReturnsCorrectPackages2 {
 }
 
 function Test-GetPackageForFSharpProjectReturnsCorrectPackages {
-    param()     
+    [SkipTest('https://github.com/NuGet/Home/issues/11291')]
+    param()
     # Arrange
     $p = New-FSharpConsoleApplication
     Build-Solution # wait for project nomination
