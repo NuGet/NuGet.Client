@@ -432,7 +432,7 @@ namespace NuGet.SolutionRestoreManager
                 string projectUniqueName = source.Item1.Name;
                 CancellationToken token = source.Item2;
                 TaskCompletionSource<bool> taskCompletionSource = source.Item3;
-
+                bool shouldAddInfoSource = false;
                 if (!_projectSystemCache.TryGetProjectNames(projectUniqueName, out ProjectNames projectNames))
                 {
                     IVsSolution2 vsSolution2 = await _vsSolution2.GetValueAsync(token);
@@ -441,8 +441,7 @@ namespace NuGet.SolutionRestoreManager
                     {
                         token.ThrowIfCancellationRequested();
                         projectNames = await ProjectNames.FromIVsSolution2(projectUniqueName, vsSolution2, token);
-                        _projectSystemCache.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
-                        taskCompletionSource.SetResult(true);
+                        shouldAddInfoSource = true;
                     }
                     catch (OperationCanceledException oce)
                     {
@@ -470,8 +469,23 @@ namespace NuGet.SolutionRestoreManager
                         }
                     }
                 }
+                else
+                {
+                    shouldAddInfoSource = true;
+                }
 
-                _projectSystemCache.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+                if (shouldAddInfoSource)
+                {
+                    try
+                    {
+                        _projectSystemCache.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+                        taskCompletionSource.SetResult(true);
+                    }
+                    catch (Exception e)
+                    {
+                        taskCompletionSource.SetException(e);
+                    }
+                }
             }
 
             // If the solution is not yet fully initialized, failed inits are *acceptable*.
