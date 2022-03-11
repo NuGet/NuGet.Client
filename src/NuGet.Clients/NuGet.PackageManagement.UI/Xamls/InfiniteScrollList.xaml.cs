@@ -407,7 +407,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="state">Progress reported by the <c>Progress</c> callback</param>
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemViewModel> loader, IItemLoaderState state)
         {
-            _joinableTaskFactory.Value.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
@@ -435,7 +435,7 @@ namespace NuGet.PackageManagement.UI
                         });
                     }
                 }
-            });
+            }).PostOnFailure(nameof(InfiniteScrollList), nameof(HandleItemLoaderStateChange));
         }
 
         private Visibility EvaluateStatusBarVisibility(IItemLoader<PackageItemViewModel> loader, IItemLoaderState state)
