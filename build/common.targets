@@ -68,7 +68,7 @@
 
   <ItemGroup Condition=" '$(PackProject)' == 'true' ">
     <None Include="$(MSBuildThisFileDirectory)..\icon.png" Pack="true" PackagePath="\" Visible="false" />
-    <None Include="$(MSBuildProjectDirectory)\docs\README.md" Pack="true" PackagePath="\"/>
+    <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
     <!-- Don't use PublicApiAnalyzer on source-build .NET -->
