@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackageMetadataAsync_WithCancellationToken_ThrowsAsync()
         {
             // Arrange
-            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), null);
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", new NuGetVersion("1.0.0"), installedReferences: null);
             var _target = new InstalledPackageFeed(new[] { testPackageIdentity }, _metadataProvider);
 
             using CancellationTokenSource cts = new CancellationTokenSource();
@@ -146,18 +146,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData("", 3)]
+        [InlineData("", 5)]
         [InlineData("one", 1)]
         [InlineData("largeQuery", 0)]
         public void PerformLookup_WithSampleData_Succeeds(string query, int expectedResultsCount)
         {
             // Arrange
-            PackageIdentity[] ids = new[]
-            {
-                new PackageIdentity("one", new NuGetVersion("1.0.0")),
-                new PackageIdentity("two", new NuGetVersion("1.0.0")),
-                new PackageIdentity("three", new NuGetVersion("1.0.0")),
-            };
+            string[] packageIds = new string[] { "id", "package", "nuget", "sample", "one" };
+            PackageIdentity[] ids = packageIds.Select(id => new PackageIdentity(id, new NuGetVersion("1.0.0"))).ToArray();
             var token = new FeedSearchContinuationToken()
             {
                 SearchString = query,
@@ -171,16 +167,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expectedResultsCount, result.Length);
         }
 
-        [Fact]
-        public void CreateResults_WithSampleData_ResultAndCollectionAreEqual()
+        [Theory]
+        [InlineData(new object[] { new string[] { } })]
+        [InlineData(new object[] { new[] { "1", "2", "3" } })]
+        [InlineData(new object[] { new[] { "id", "package", "nuget", "sample", "test" } })]
+        public void CreateResults_WithSampleData_ResultAndCollectionAreEqual(string[] packageIds)
         {
             // Arrange
-            IPackageSearchMetadata[] meta = new[]
-            {
-                PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("id", new NuGetVersion("1.0.0"))).Build(),
-                PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("package", new NuGetVersion("1.0.0"))).Build(),
-                PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("nuget", new NuGetVersion("1.0.0"))).Build(),
-            };
+            IPackageSearchMetadata[] meta = packageIds
+                .Select(id => PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity(id, new NuGetVersion("1.0.0"))).Build())
+                .ToArray();
 
             // Act
             SearchResult<IPackageSearchMetadata> result = InstalledPackageFeed.CreateResult(meta);

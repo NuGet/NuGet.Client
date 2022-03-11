@@ -34,9 +34,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
             IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(pkgsWithOrigins, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
-            IPackageSearchMetadata[] searchItems = installedItems.Concat(transitiveItems).ToArray();
+            IPackageSearchMetadata[] items = installedItems.Concat(transitiveItems).ToArray();
 
-            return CreateResult(searchItems);
+            return CreateResult(items);
         }
 
         internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T identity, bool includePrerelease, CancellationToken cancellationToken)
