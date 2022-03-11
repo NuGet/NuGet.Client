@@ -180,6 +180,12 @@ namespace NuGet.PackageManagement.UI.Test
 
         [Theory]
         [InlineData(new object[] { new string[] { } })]
+        [InlineData(new object[] { new[] { "A", "B", "C" } })]
+        [InlineData(new object[] { new[] { "A", "C", "B" } })]
+        [InlineData(new object[] { new[] { "B", "A", "C" } })]
+        [InlineData(new object[] { new[] { "B", "C", "A" } })]
+        [InlineData(new object[] { new[] { "C", "A", "B" } })]
+        [InlineData(new object[] { new[] { "C", "B", "A" } })]
         [InlineData(new object[] { new[] { "A", "C", "B", "D" } })]
         [InlineData(new object[] { new[] { "A" } })]
         [InlineData(new object[] { new[] { "pkg2", "pkg3", "__pkg__" } })]

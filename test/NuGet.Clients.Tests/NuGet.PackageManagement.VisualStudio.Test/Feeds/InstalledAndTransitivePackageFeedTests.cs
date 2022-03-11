@@ -195,7 +195,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(new[] {"Beta", "Alfa", "Delta", "Gamma"}, new[] {"pkg2", "pkg3", "pkg1"}, "ta", 2, 0)]
         [InlineData(new[] {"Beta", "Alfa", "Delta", "Gamma"}, new[] {"pkg3", "pkg2", "pkg1"}, "g", 1, 3)]
         [InlineData(new[] {"q", "z", "hi"}, new[] { "t" }, "z", 1, 0)]
-        public async Task SearchAsync_WithInstalledAndTransitivePackages_AlwaysInstalledPackagesFirstThenTransitivePackagesAsync(string[] installedPkgs, string[] transitivePkgs, string query, int expectedInstalled, int expectedTransitive)
+        [InlineData(new[] { "apples", "cantaloupes", "dragonfruit" }, new[] { "bananas", "entawak", "grapes" }, "a", 3, 3)]
+        [InlineData(new[] { "dragonfruit", "cantaloupes", "apples" }, new[] { "entawak", "bananas", "grapes" }, "e", 2, 2)]
+        public async Task SearchAsync_WithInstalledAndTransitivePackages_AlwaysInstalledPackagesFirstThenTransitivePackagesAsync(string[] installedPkgs, string[] transitivePkgs, string query, int expectedInstalledCount, int expectedTransitiveCount)
         {
             // Arrange
             var installedCollection = installedPkgs
@@ -218,19 +220,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.Equal(results.Items.Count, results.RawItemsCount);
-            Assert.Equal(expectedInstalled + expectedTransitive, results.Items.Count);
+            Assert.Equal(expectedInstalledCount + expectedTransitiveCount, results.Items.Count);
 
             var idComparer = Comparer<IPackageSearchMetadata>.Create((a, b) => a.Identity.Id.CompareTo(b.Identity.Id));
 
             // First elements should be Installed/Top-level packaages
-            IEnumerable<IPackageSearchMetadata> firstItems = results.Take(expectedInstalled);
-            firstItems.Should().HaveCount(expectedInstalled);
+            IEnumerable<IPackageSearchMetadata> firstItems = results.Take(expectedInstalledCount);
+            firstItems.Should().HaveCount(expectedInstalledCount);
             firstItems.Should().BeInAscendingOrder(idComparer);
             firstItems.Should().NotBeAssignableTo<TransitivePackageSearchMetadata>();
 
             // Then, last elements should be Transitive packaages
-            IEnumerable<IPackageSearchMetadata> lastItems = results.Skip(expectedInstalled);
-            lastItems.Should().HaveCount(expectedTransitive);
+            IEnumerable<IPackageSearchMetadata> lastItems = results.Skip(expectedInstalledCount);
+            lastItems.Should().HaveCount(expectedTransitiveCount);
             lastItems.Should().BeInAscendingOrder(idComparer);
             lastItems.Should().AllBeOfType<TransitivePackageSearchMetadata>();
         }
