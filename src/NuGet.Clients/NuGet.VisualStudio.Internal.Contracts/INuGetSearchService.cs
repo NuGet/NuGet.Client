@@ -23,6 +23,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             string searchText,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
+            bool isSolution,
             bool useRecommender,
             CancellationToken cancellationToken);
 
@@ -32,6 +33,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
+            bool isSolution,
             CancellationToken cancellationToken);
 
         ValueTask<int> GetTotalCountAsync(
@@ -41,6 +43,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
+            bool isSolution,
             CancellationToken cancellationToken);
 
         ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(

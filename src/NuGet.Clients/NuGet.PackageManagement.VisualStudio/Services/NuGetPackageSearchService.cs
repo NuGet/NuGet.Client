@@ -64,6 +64,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
+            bool isSolution,
             CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectContextInfos);
@@ -76,6 +77,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectContextInfos,
                 targetFrameworks,
                 itemFilter,
+                isSolution,
                 recommendPackages,
                 sourceRepositories,
                 cancellationToken);
@@ -219,6 +221,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string searchText,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
+            bool isSolution,
             bool useRecommender,
             CancellationToken cancellationToken)
         {
@@ -231,6 +234,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectContextInfos,
                 targetFrameworks,
                 itemFilter,
+                isSolution,
                 useRecommender,
                 sourceRepositories,
                 cancellationToken);
@@ -255,6 +259,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<string> targetFrameworks,
             SearchFilter searchFilter,
             ItemFilter itemFilter,
+            bool isSolution,
             CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectContextInfos);
@@ -262,7 +267,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(searchFilter);
 
             IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(projectContextInfos, targetFrameworks, itemFilter, recommendPackages: false, sourceRepositories, cancellationToken);
+            (IPackageFeed? mainFeed, IPackageFeed? recommenderFeed) = await CreatePackageFeedAsync(projectContextInfos, targetFrameworks, itemFilter, isSolution, recommendPackages: false, sourceRepositories, cancellationToken);
             Assumes.NotNull(mainFeed);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
@@ -354,10 +359,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return allLocalFolders;
         }
 
-        private async Task<(IPackageFeed? mainFeed, IPackageFeed? recommenderFeed)> CreatePackageFeedAsync(
+        internal async Task<(IPackageFeed? mainFeed, IPackageFeed? recommenderFeed)> CreatePackageFeedAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<string> targetFrameworks,
             ItemFilter itemFilter,
+            bool isSolution,
             bool recommendPackages,
             IEnumerable<SourceRepository> sourceRepositories,
             CancellationToken cancellationToken)
@@ -401,7 +407,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.Installed)
             {
-                if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
+                if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken) && !isSolution)
                 {
                     packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
                 }

@@ -165,7 +165,7 @@ namespace NuGet.PackageManagement.UI
             await TaskScheduler.Default;
             IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
 
-            return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, cancellationToken);
+            return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, _context.IsSolution, cancellationToken);
         }
 
         public async Task<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetInstalledAndTransitivePackagesAsync(CancellationToken cancellationToken)
@@ -176,7 +176,7 @@ namespace NuGet.PackageManagement.UI
             ActivityCorrelationId.StartNew();
             IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
 
-            return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, cancellationToken);
+            return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, _context.IsSolution, cancellationToken);
         }
 
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -222,7 +222,7 @@ namespace NuGet.PackageManagement.UI
             }
             IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
 
-            return await _searchService.SearchAsync(_context.Projects, _packageSources, targetFrameworks, _searchText, _searchFilter, _itemFilter, _useRecommender, cancellationToken);
+            return await _searchService.SearchAsync(_context.Projects, _packageSources, targetFrameworks, _searchText, _searchFilter, _itemFilter, _context.IsSolution, _useRecommender, cancellationToken);
         }
 
         public async Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
