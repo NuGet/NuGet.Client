@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -25,6 +26,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Test;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
@@ -133,6 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    false,
                     CancellationToken.None);
 
                 Assert.Equal(MaxCount, totalCount);
@@ -151,6 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    false,
                     CancellationToken.None);
 
                 Assert.Equal(1, totalCount);
@@ -168,6 +172,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    It.IsAny<bool>(),
                     CancellationToken.None);
 
                 Assert.Equal(1, allPackages.Count);
@@ -243,6 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     searchText: "nuget",
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    isSolution: false,
                     useRecommender: false,
                     CancellationToken.None);
                 SearchResultContextInfo continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);
@@ -284,9 +290,45 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        private NuGetPackageSearchService SetupSearchService()
+        [Theory]
+        [InlineData(true, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
+        [InlineData(true, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
+        [InlineData(true, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
+        [InlineData(true, ItemFilter.Installed, false, typeof(InstalledAndTransitivePackageFeed))]
+        [InlineData(true, ItemFilter.UpdatesAvailable, true, typeof(UpdatePackageFeed))]
+        [InlineData(true, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
+        [InlineData(true, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
+        [InlineData(true, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
+        [InlineData(false, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
+        [InlineData(false, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
+        [InlineData(false, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
+        [InlineData(false, ItemFilter.Installed, false, typeof(InstalledPackageFeed))]
+        [InlineData(false, ItemFilter.UpdatesAvailable, true, typeof(UpdatePackageFeed))]
+        [InlineData(false, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
+        [InlineData(false, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
+        [InlineData(false, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
+        public async Task CreatePackageFeedAsync_WithTransitiveOriginsExpEnabled_OnlyInstalledFeedOnSolutionViewAsync(bool transitiveOriginsExperimentEnabled, ItemFilter itemFilter, bool isSolution, Type expectedFeedType)
+        {
+            using (NuGetPackageSearchService searchService = SetupSearchService(transitiveOriginsExperimentEnabled))
+            {
+                (IPackageFeed main, IPackageFeed recommender) = await searchService.CreatePackageFeedAsync(
+                    projectContextInfos: _projects,
+                    targetFrameworks: new List<string>() { "net45" },
+                    itemFilter: itemFilter,
+                    isSolution: isSolution,
+                    recommendPackages: false,
+                    sourceRepositories: new List<SourceRepository>() { _sourceRepository },
+                    cancellationToken: CancellationToken.None);
+
+                Assert.IsType(expectedFeedType, main);
+                Assert.Null(recommender);
+            }
+        }
+
+        private NuGetPackageSearchService SetupSearchService(bool transitiveDepsExpEnabled = false)
         {
             ClearSearchCache();
+            _componentModel.Reset();
 
             var packageSourceProvider = new Mock<IPackageSourceProvider>();
             packageSourceProvider.Setup(x => x.LoadPackageSources()).Returns(new List<PackageSource> { _sourceRepository.PackageSource });
@@ -306,6 +348,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
             _componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(new Mock<INuGetProjectContext>().Object);
             _componentModel.Setup(x => x.GetService<IRestoreProgressReporter>()).Returns(new Mock<IRestoreProgressReporter>().Object);
+
+            if (transitiveDepsExpEnabled)
+            {
+                var flightsEnabled = new Dictionary<string, bool>()
+                {
+                    {ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag, true},
+                };
+                var expService = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
+                _componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(expService);
+            }
 
             var service = Package.GetGlobalService(typeof(SAsyncServiceProvider)) as IAsyncServiceProvider;
             ServiceLocator.InitializePackageServiceProvider(service);
