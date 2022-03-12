@@ -43,6 +43,7 @@ namespace NuGet.PackageManagement.UI
         private IProjectContextInfo _projectContextInfo;
         private IVsSolutionManager _vsSolutionManager;
         private IComponentModel _componentModel;
+        private bool _isAssetsFileMissing;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
@@ -172,15 +173,12 @@ namespace NuGet.PackageManagement.UI
 
         private void OnPackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
-            if (_projectContextInfo?.ProjectStyle != ProjectModel.ProjectStyle.PackageReference)
+            // make sure update happens on the UI thread.
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                // make sure update happens on the UI thread.
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    UpdateRestoreBar(e.PackagesMissing);
-                });
-            }
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                UpdateRestoreBar(e.PackagesMissing);
+            });
         }
 
         private void OnAssetsFileMissingStatusChanged(object sender, bool isMissing)
@@ -189,6 +187,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _isAssetsFileMissing = isMissing;
                 UpdateRestoreBar(isMissing);
             });
         }
@@ -213,7 +212,51 @@ namespace NuGet.PackageManagement.UI
 
         private void OnRestoreLinkClick(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => UIRestorePackagesAsync(CancellationToken.None)).PostOnFailure(nameof(PackageRestoreBar));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
+            {
+                if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && _isAssetsFileMissing)
+                {
+                    return UIRestoreProjectAsync(CancellationToken.None);
+                }
+
+                return UIRestorePackagesAsync(CancellationToken.None);
+            }).PostOnFailure(nameof(PackageRestoreBar));
+        }
+
+        private async Task<bool> UIRestoreProjectAsync(CancellationToken token)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ShowProgressUI();
+            OperationId = Guid.NewGuid();
+
+            try
+            {
+                _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
+
+                string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(token);
+
+                await _solutionRestoreWorker.ScheduleRestoreAsync(
+                       SolutionRestoreRequest.ByMenu(),
+                       token);
+
+                if (_restoreException == null)
+                {
+                    await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ShowErrorUI(ex.Message);
+                return false;
+            }
+            finally
+            {
+                _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreFailedEvent;
+                _restoreException = null;
+            }
+
+            return true;
         }
 
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
@@ -226,29 +269,20 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
 
-                if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
+                string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(token);
+
+                await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
+                    this,
+                    new LoggerAdapter(this),
+                    token);
+
+                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
+                    solutionDirectory,
+                    token);
+
+                if (_restoreException == null)
                 {
-                    await _solutionRestoreWorker.ScheduleRestoreAsync(
-                        SolutionRestoreRequest.ByMenu(),
-                        token);
-                }
-                else
-                {
-                    string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(token);
-
-                    await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
-                        this,
-                        new LoggerAdapter(this),
-                        token);
-
-                    await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
-                        solutionDirectory,
-                        token);
-
-                    if (_restoreException == null)
-                    {
-                        await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
-                    }
+                    await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
                 }
             }
             catch (Exception ex)
