@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI.Utility;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -160,7 +159,6 @@ namespace NuGet.PackageManagement.UI.Test
 
                 var context = new PackageLoadContext(isSolution: false, uiContext.Object);
 
-                var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
                 var loader = await PackageItemLoader.CreateAsync(
                     Mock.Of<IServiceBroker>(),
                     context,
@@ -178,6 +176,67 @@ namespace NuGet.PackageManagement.UI.Test
                 Assert.Single(results);
                 Assert.NotNull(results.First().PackagePath);
             }
+        }
+
+        [Theory]
+        [InlineData(new object[] { new string[] { } })]
+        [InlineData(new object[] { new[] { "A", "B", "C" } })]
+        [InlineData(new object[] { new[] { "A", "C", "B" } })]
+        [InlineData(new object[] { new[] { "B", "A", "C" } })]
+        [InlineData(new object[] { new[] { "B", "C", "A" } })]
+        [InlineData(new object[] { new[] { "C", "A", "B" } })]
+        [InlineData(new object[] { new[] { "C", "B", "A" } })]
+        [InlineData(new object[] { new[] { "A", "C", "B", "D" } })]
+        [InlineData(new object[] { new[] { "A" } })]
+        [InlineData(new object[] { new[] { "pkg2", "pkg3", "__pkg__" } })]
+        public async Task GetCurrent_WithAnySearchResults_PreservesSearchResultsOrderAsync(string[] inputIds)
+        {
+            // Arrange
+            var psmContextInfos = new List<PackageSearchMetadataContextInfo>();
+            foreach (var id in inputIds)
+            {
+                psmContextInfos.Add(PackageSearchMetadataContextInfo.Create(new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
+                {
+                    Identity = new PackageIdentity(id, new NuGetVersion("1.0")),
+                }));
+            }
+            var searchResult = new SearchResultContextInfo(psmContextInfos, new Dictionary<string, LoadingStatus> { { "Search", LoadingStatus.Loading } }, hasMoreItems: false);
+
+            var serviceBroker = Mock.Of<IServiceBroker>();
+            var packageFileService = new Mock<INuGetPackageFileService>();
+            var searchService = new Mock<IReconnectingNuGetSearchService>(MockBehavior.Strict);
+            searchService.Setup(s => s.SearchAsync(It.IsAny<IReadOnlyCollection<IProjectContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<SearchFilter>(),
+                    It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
+            var uiContext = new Mock<INuGetUIContext>();
+            uiContext.Setup(ui => ui.ServiceBroker).Returns(serviceBroker);
+            var context = new PackageLoadContext(isSolution: false, uiContext.Object);
+            var mockProgress = Mock.Of<IProgress<IItemLoaderState>>();
+
+            using var localFeedDir = TestDirectory.Create(); // local feed
+            var localSource = new PackageSource(localFeedDir);
+            var loader = await PackageItemLoader.CreateAsync(
+                serviceBroker,
+                context,
+                new List<PackageSourceContextInfo>() { PackageSourceContextInfo.Create(localSource) },
+                NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                searchService.Object,
+                packageFileService.Object,
+                TestSearchTerm);
+
+            // Act
+            await loader.LoadNextAsync(progress: mockProgress, CancellationToken.None);
+            IEnumerable<PackageItemViewModel> items = loader.GetCurrent();
+
+            // Assert
+            string[] result = items.Select(pkg => pkg.Id).ToArray();
+            Assert.Equal(inputIds, result);
         }
     }
 }

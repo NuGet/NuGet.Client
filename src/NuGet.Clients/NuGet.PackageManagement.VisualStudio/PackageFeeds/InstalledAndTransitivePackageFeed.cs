@@ -25,59 +25,43 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc cref="IPackageFeed.ContinueSearchAsync(ContinuationToken, CancellationToken)" />
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
-            }
+            var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Remove transitive packages from project references
             IEnumerable<PackageCollectionItem> pkgsWithOrigins = _transitivePackages
                 .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
-            IEnumerable<PackageCollectionItem> pkgs = _installedPackages.Concat(pkgsWithOrigins);
-            PackageCollectionItem[] allPkgs = PerformLookup(pkgs, searchToken);
-
-            IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
-                allPkgs,
-                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
-                cancellationToken);
+            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(pkgsWithOrigins, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] items = installedItems.Concat(transitiveItems).ToArray();
 
             return CreateResult(items);
         }
 
-        internal async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageCollectionItem identity, bool includePrerelease, CancellationToken cancellationToken)
+        internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T identity, bool includePrerelease, CancellationToken cancellationToken)
         {
-            IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = identity.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
+            cancellationToken.ThrowIfCancellationRequested();
 
-            ITransitivePackageReferenceContextInfo transitivePR = transitivePRs.OrderByDescending(x => x.Identity.Version).FirstOrDefault();
-
-            if (transitivePR != null)
+            if (identity is PackageCollectionItem pkgColItem)
             {
-                IReadOnlyCollection<PackageIdentity> transitiveOrigins = transitivePR.TransitiveOrigins?.Select(to => to.Identity).ToArray() ?? Array.Empty<PackageIdentity>();
-
+                IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = pkgColItem.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
+                ITransitivePackageReferenceContextInfo transitivePR = transitivePRs.OrderByDescending(x => x.Identity.Version).FirstOrDefault();
+                IReadOnlyCollection<PackageIdentity> transitiveOrigins = transitivePR?.TransitiveOrigins?.Select(to => to.Identity).ToArray() ?? Array.Empty<PackageIdentity>();
                 if (transitiveOrigins.Any())
                 {
                     // Get only local metadata. We don't want Deprecation and Vulnerabilities Metadata on Transitive packages
-                    IPackageSearchMetadata packageMetadata = await _metadataProvider.GetOnlyLocalPackageMetadataAsync(identity, cancellationToken);
-
+                    IPackageSearchMetadata packageMetadata = await _metadataProvider.GetOnlyLocalPackageMetadataAsync(pkgColItem, cancellationToken);
                     if (packageMetadata == null) // Edge case: local metadata not found
                     {
-                        packageMetadata = PackageSearchMetadataBuilder.FromIdentity(identity).Build(); // create metadata object only with ID
+                        packageMetadata = PackageSearchMetadataBuilder.FromIdentity(pkgColItem).Build(); // create metadata object only with ID
                     }
 
-                    var ts = new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
-                    return ts;
-                }
-                else
-                {
-                    return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    return new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
                 }
             }
-            else
-            {
-                return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            }
+
+            return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
         }
     }
 }

@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Globalization;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
@@ -311,7 +311,7 @@ namespace NuGet.PackageManagement.UI
                 listItemViewModels.Add(listItem);
             }
 
-            return listItemViewModels.OrderBy(vm => vm.PackageLevel).ThenBy(vm => vm.Id).ToArray();
+            return listItemViewModels.ToArray();
         }
 
         private async Task<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity)
