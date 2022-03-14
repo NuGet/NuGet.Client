@@ -10,7 +10,7 @@
         <CryptographyPackagesVersion>5.0.0</CryptographyPackagesVersion>
         <NuGetCoreV2Version>2.14.0-rtm-832</NuGetCoreV2Version>
         <ProjectSystemManagedVersion>17.0.0-beta1-10402-05</ProjectSystemManagedVersion>
-        <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion Condition="'$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)' == ''">5.0.1-rtm.21063.7</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+        <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion Condition="'$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)' == ''">3.0.0-preview6.19253.5</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->
