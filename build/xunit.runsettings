@@ -1,7 +1,10 @@
 <RunSettings>
     <RunConfiguration>
+        <!-- Let the runtime decide how many cores to use -->
+        <MaxCpuCount>0</MaxCpuCount>
         <ReporterSwitch>verbose</ReporterSwitch>
-        <TargetFrameworkVersion>FrameworkCore10</TargetFrameworkVersion>
+        <!-- Consider it an error if no tests are discovered -->
+        <TreatNoTestsAsError>true</TreatNoTestsAsError>
     </RunConfiguration>
     <DataCollectionRunSettings>
         <DataCollectors>

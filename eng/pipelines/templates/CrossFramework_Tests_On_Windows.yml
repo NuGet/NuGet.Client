@@ -23,7 +23,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false"
 
 - task: MSBuild@1
   displayName: "BuildNoVSIX"
@@ -31,8 +31,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
-    maximumCpuCount: true
+    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:BuildNoVSIX /p:BuildRTM=false /p:BuildNumber=$(BuildNumber)"
 
 - task: PowerShell@1
   displayName: "Run Cross Verify Tests (continue on error)"
@@ -42,8 +41,7 @@ steps:
     inlineScript: |
       dotnet test --no-build --configuration Release `
       $(Build.Repository.LocalPath)\test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\NuGet.Signing.CrossFramework.Test.csproj `
-      --test-adapter-path:$(Build.Repository.LocalPath)\packages\xunitxml.testlogger\2.0.0\build\_common `
-      --logger:"xunit;LogFileName=CrossVerifyTests-vsts.xml" `
+      --logger:"trx;LogFileName=$(Build.Repository.LocalPath)\\build\\TestResults\CrossVerifyTests-vsts.trx" `
       --logger:"console;verbosity=detailed" `
       --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
@@ -56,8 +54,7 @@ steps:
     inlineScript: |
       dotnet test --no-build --configuration Release `
       $(Build.Repository.LocalPath)\test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\NuGet.Signing.CrossFramework.Test.csproj `
-      --test-adapter-path:$(Build.Repository.LocalPath)\packages\xunitxml.testlogger\2.0.0\build\_common `
-      --logger:"xunit;LogFileName=CrossVerifyTests-vsts.xml" `
+      --logger:"trx;LogFileName=$(Build.Repository.LocalPath)\\build\\TestResults\CrossVerifyTests-vsts.trx" `
       --logger:"console;verbosity=detailed" `
       --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
@@ -66,8 +63,8 @@ steps:
   displayName: "Publish Test Results"
   continueOnError: "true"
   inputs:
-    testRunner: "XUnit"
-    testResultsFiles: "*.xml"
+    testRunner: "VSTest"
+    testResultsFiles: "*.trx"
     searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
     mergeTestResults: "true"
     testRunTitle: "NuGet.Client Cross Verify Tests On Windows"

@@ -20,8 +20,8 @@ steps:
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
   inputs:
-    testRunner: "XUnit"
-    testResultsFiles: "*.xml"
+    testRunner: "VSTest"
+    testResultsFiles: "*.trx"
     testRunTitle: "NuGet.Client Tests On Linux"
     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
     mergeTestResults: "true"

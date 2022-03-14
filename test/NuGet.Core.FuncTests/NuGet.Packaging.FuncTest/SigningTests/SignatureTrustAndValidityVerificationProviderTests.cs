@@ -19,6 +19,7 @@ using Org.BouncyCastle.Crypto;
 using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
+using Xunit.Abstractions;
 using BcX509Certificate = Org.BouncyCastle.X509.X509Certificate;
 using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
@@ -31,11 +32,13 @@ namespace NuGet.Packaging.FuncTest
         private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SigningTestFixture _testFixture;
+        private readonly ITestOutputHelper _testOutputHelper;
         private readonly TrustedTestCert<TestCertificate> _trustedTestCert;
 
-        public SignatureTrustAndValidityVerificationProviderTests(SigningTestFixture fixture)
+        public SignatureTrustAndValidityVerificationProviderTests(SigningTestFixture fixture, ITestOutputHelper testOutputHelper)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            _testOutputHelper = testOutputHelper;
             _trustedTestCert = _testFixture.TrustedTestCertificate;
         }
 
@@ -353,7 +356,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Client.Engineering/issues/1484")] // https://github.com/NuGet/Home/issues/11178
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarnAsync()
         {
             // Arrange
@@ -363,12 +366,13 @@ namespace NuGet.Packaging.FuncTest
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                settings);
+                settings,
+                _testOutputHelper);
 
             Assert.Empty(matchingIssues);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Client.Engineering/issues/1484")] // https://github.com/NuGet/Home/issues/11178
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInRequireMode_WarnsAsync()
         {
             // Arrange
@@ -378,7 +382,8 @@ namespace NuGet.Packaging.FuncTest
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                settings);
+                settings,
+                _testOutputHelper);
 
             if (RuntimeEnvironmentHelper.IsMacOSX)
             {
@@ -393,14 +398,15 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Client.Engineering/issues/1484")] // https://github.com/NuGet/Home/issues/11178
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVerify_WarnsAsync()
         {
             // Act & Assert
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                _verifyCommandSettings);
+                _verifyCommandSettings,
+                _testOutputHelper);
 
             if (RuntimeEnvironmentHelper.IsMacOSX)
             {
@@ -415,7 +421,7 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Client.Engineering/issues/1484")] // https://github.com/NuGet/Home/issues/11178
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowIllegal_WarnsAsync()
         {
             // Arrange
@@ -437,12 +443,13 @@ namespace NuGet.Packaging.FuncTest
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                settings);
+                settings,
+                _testOutputHelper);
 
             Assert.Empty(matchingIssues);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Client.Engineering/issues/1484")] // https://github.com/NuGet/Home/issues/11178
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOnlineRevocationMode_WarnsAsync()
         {
             // Arrange
@@ -464,7 +471,8 @@ namespace NuGet.Packaging.FuncTest
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
-                settings);
+                settings,
+                _testOutputHelper);
 
             if (RuntimeEnvironmentHelper.IsMacOSX)
             {
@@ -479,7 +487,7 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/11178
+        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Client.Engineering/issues/1484")] // https://github.com/NuGet/Home/issues/11178
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOfflineRevocationMode_WarnsAsync()
         {
             // Arrange
@@ -501,7 +509,8 @@ namespace NuGet.Packaging.FuncTest
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Information,
-                settings);
+                settings,
+                _testOutputHelper);
 
             if (!RuntimeEnvironmentHelper.IsMacOSX)
             {
@@ -511,13 +520,14 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Information, NuGetLogCode.Undefined);
         }
 
-        [CIOnlyFact]
+        [CIOnlyFact(Skip = "https://github.com/NuGet/Client.Engineering/issues/1484")]
         public async Task GetTrustResultAsync_WithTrustedButExpiredPrimaryAndTimestampCertificates_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WarnsAsync()
         {
             List<SignatureLog> matchingIssues = await VerifyUnavailableRevocationInfoAsync(
                 SignatureVerificationStatus.Valid,
                 LogLevel.Warning,
                 _verifyCommandSettings,
+                _testOutputHelper,
                 "ExpiredPrimaryAndTimestampCertificatesWithUnavailableRevocationInfo.nupkg");
 
             if (RuntimeEnvironmentHelper.IsMacOSX)
@@ -1880,6 +1890,7 @@ namespace NuGet.Packaging.FuncTest
             SignatureVerificationStatus expectedStatus,
             LogLevel expectedLogLevel,
             SignedPackageVerifierSettings settings,
+            ITestOutputHelper testOutputHelper,
             string resourceName = "UnavailableCrlPackage.nupkg")
         {
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
@@ -1895,6 +1906,11 @@ namespace NuGet.Packaging.FuncTest
                 {
                     // Act
                     PackageVerificationResult result = await verificationProvider.GetTrustResultAsync(package, signature, settings, CancellationToken.None);
+
+                    foreach (SignatureLog item in result.Issues)
+                    {
+                        testOutputHelper?.WriteLine(item.FormatWithCode());
+                    }
 
                     // Assert
                     Assert.Equal(expectedStatus, result.Trust);
