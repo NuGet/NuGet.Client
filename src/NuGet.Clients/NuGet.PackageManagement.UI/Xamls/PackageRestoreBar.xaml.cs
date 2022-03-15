@@ -218,45 +218,27 @@ namespace NuGet.PackageManagement.UI
                 {
                     return UIRestoreProjectAsync(CancellationToken.None);
                 }
-
-                return UIRestorePackagesAsync(CancellationToken.None);
+                else
+                {
+                    return UIRestorePackagesAsync(CancellationToken.None);
+                }
             }).PostOnFailure(nameof(PackageRestoreBar));
         }
 
         private async Task<bool> UIRestoreProjectAsync(CancellationToken token)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            ShowProgressUI();
+            await ShowProgressUIAsync();
             OperationId = Guid.NewGuid();
 
-            try
-            {
-                _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
-
-                string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(token);
-
-                await _solutionRestoreWorker.ScheduleRestoreAsync(
+            return await _solutionRestoreWorker.ScheduleRestoreAsync(
                        SolutionRestoreRequest.ByMenu(),
                        token);
+        }
 
-                if (_restoreException == null)
-                {
-                    await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                ShowErrorUI(ex.Message);
-                return false;
-            }
-            finally
-            {
-                _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreFailedEvent;
-                _restoreException = null;
-            }
-
-            return true;
+        private async Task ShowProgressUIAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ShowProgressUI();
         }
 
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
