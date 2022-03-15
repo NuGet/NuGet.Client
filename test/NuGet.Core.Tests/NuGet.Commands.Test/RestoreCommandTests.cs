@@ -12,6 +12,7 @@ using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Configuration.Test;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -1584,6 +1585,118 @@ namespace NuGet.Commands.Test
                 Assert.True(errorMessage.Contains(autoreferencedpackageId));
                 var NU1009Messages = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1009);
                 Assert.Equal(1, NU1009Messages.Count());
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RestoreCommand_CentralVersion_WarningWhenPackageSourceMappingNotUsed(bool enablePackageSourceMapping)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext("foo", "1.0.0"));
+
+                using var context = new SourceCacheContext();
+
+                var packageSources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource),
+                    new PackageSource("https://feed1"),
+                    new PackageSource("https://feed2"),
+                };
+
+                var projectName = "TestProject";
+                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+                var outputPath = Path.Combine(projectPath, "obj");
+                var dependencyBar = new LibraryDependency(
+                    new LibraryRange(
+                        "foo",
+                        null,
+                        LibraryDependencyTarget.All),
+                    LibraryIncludeFlags.All,
+                    LibraryIncludeFlags.All,
+                    new List<NuGetLogCode>(),
+                    autoReferenced: false,
+                    generatePathProperty: false,
+                    versionCentrallyManaged: false,
+                    LibraryDependencyReferenceType.Direct,
+                    aliases: null,
+                    versionOverride: null);
+
+                var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+
+                var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo });
+                var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi })
+                {
+                    FilePath = projectPath,
+                    Name = projectName,
+                    RestoreMetadata = new ProjectRestoreMetadata()
+                    {
+                        ProjectName = projectName,
+                        ProjectUniqueName = projectName,
+                        CentralPackageVersionsEnabled = true,
+                        ProjectStyle = ProjectStyle.PackageReference,
+                        OutputPath = outputPath,
+                        Sources = packageSources
+                    }
+                };
+
+                var logger = new TestLogger();
+
+                PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance);
+
+                if (enablePackageSourceMapping)
+                {
+                    string testConfig = Path.Combine(pathContext.WorkingDirectory, "test.config");
+
+                    SettingsTestUtils.CreateConfigurationFile(testConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""{pathContext.PackageSource}"">
+            <package pattern=""foo"" />
+        </packageSource>
+        <packageSource key=""https://feed1"">
+            <package pattern=""bar"" />
+        </packageSource>
+        <packageSource key=""https://feed2"">
+            <package pattern=""baz"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+                    packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings.LoadSettingsGivenConfigPaths(new string[] { testConfig }));
+                }
+
+
+                var request = new TestRestoreRequest(packageSpec, packageSources, packagesDirectory: "", cacheContext: context, packageSourceMappingConfiguration: packageSourceMappingConfiguration, logger)
+                {
+                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    
+                };
+
+                var restoreCommand = new RestoreCommand(request);
+
+                var result = await restoreCommand.ExecuteAsync();
+
+                // Assert
+                Assert.True(result.Success);
+
+                logger.Errors.Should().Be(0);
+
+                if (enablePackageSourceMapping)
+                {
+                    logger.WarningMessages.Should().NotContain(i => i.Contains(NuGetLogCode.NU1504.ToString()));
+                }
+                else
+                {
+                    logger.WarningMessages.Should().Contain(i => i.Contains(NuGetLogCode.NU1504.ToString()));
+                }
             }
         }
 

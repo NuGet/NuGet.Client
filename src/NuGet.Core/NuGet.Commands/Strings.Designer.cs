@@ -2645,6 +2645,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are more than one package sources configured but package source mapping is not configured.  To use central package management, please configure package source mapping or use a single package source..
+        /// </summary>
+        internal static string Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping {
+            get {
+                return ResourceManager.GetString("Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; key already exists in Properties collection. Overriding value..
         /// </summary>
         internal static string Warning_DuplicatePropertyKey {

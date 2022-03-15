@@ -913,6 +913,9 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The package reference {0} specifies a VersionOverride but the ability to override a centrally defined version is currently disabled.</value>
     <comment>0 - The name of a package reference.</comment>
   </data>
+  <data name="Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping" xml:space="preserve">
+    <value>There are more than one package sources configured but package source mapping is not configured.  To use central package management, please configure package source mapping or use a single package source.</value>
+  </data>
   <data name="Error_SourceProviderIsNull" xml:space="preserve">
     <value>Property SourceProvider is null.</value>
   </data>
