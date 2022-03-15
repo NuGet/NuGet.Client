@@ -224,7 +224,7 @@ namespace NuGet.PackageManagement.UI
             }).PostOnFailure(nameof(PackageRestoreBar));
         }
 
-        private async Task<bool> UIRestoreProjectAsync(CancellationToken token)
+        private async Task<bool> RestoreProjectAsync(CancellationToken token)
         {
             await ShowProgressUIAsync();
             OperationId = Guid.NewGuid();
@@ -249,9 +249,7 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreFailedEvent;
-
                 string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(token);
-
                 await _packageRestoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
                     this,
                     new LoggerAdapter(this),
@@ -264,6 +262,11 @@ namespace NuGet.PackageManagement.UI
                 if (_restoreException == null)
                 {
                     await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
+                }
+                else
+                {
+                    ShowErrorUI(_restoreException.Message);
+                    return false;
                 }
             }
             catch (Exception ex)
