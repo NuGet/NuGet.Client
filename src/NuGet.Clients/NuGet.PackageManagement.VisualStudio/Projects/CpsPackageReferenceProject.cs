@@ -377,21 +377,21 @@ namespace NuGet.PackageManagement.VisualStudio
             return (new List<FrameworkInstalledPackages>(InstalledPackages), new List<FrameworkInstalledPackages>(TransitivePackages));
         }
 
-        protected override void UpdatePackageListDetails(List<FrameworkInstalledPackages> packages, IEnumerable<FrameworkInstalledPackages> detectedNewPackages)
+        protected override void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(List<FrameworkInstalledPackages> packages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges)
         {
-            if (packages == null || detectedNewPackages == null)
+            if (packages == null || detectedPackageChanges == null)
             {
                 return;
             }
 
-            var dict = new Dictionary<NuGetFramework, FrameworkInstalledPackages>();
+            var currentPackageLookupByTargetFramework = new Dictionary<NuGetFramework, FrameworkInstalledPackages>();
 
             foreach (FrameworkInstalledPackages installedPackage in packages)
             {
-                dict[installedPackage.TargetFramework] = installedPackage;
+                currentPackageLookupByTargetFramework[installedPackage.TargetFramework] = installedPackage;
             }
 
-            foreach (FrameworkInstalledPackages detectedNewInstalledPackage in detectedNewPackages)
+            foreach (FrameworkInstalledPackages detectedNewInstalledPackage in detectedPackageChanges)
             {
                 if (detectedNewInstalledPackage == null)
                 {
@@ -400,7 +400,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 FrameworkInstalledPackages frameworkPackages;
 
-                if (dict.TryGetValue(detectedNewInstalledPackage.TargetFramework, out frameworkPackages))
+                if (currentPackageLookupByTargetFramework.TryGetValue(detectedNewInstalledPackage.TargetFramework, out frameworkPackages))
                 {
                     foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedNewInstalledPackage.Packages)
                     {

@@ -213,20 +213,20 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 return (new List<PackageReference>(InstalledPackages), new List<PackageReference>(TransitivePackages));
             }
 
-            protected override void UpdatePackageListDetails(List<PackageReference> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges)
+            protected override void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(List<PackageReference> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges)
             {
-                var dict = new Dictionary<NuGetFramework, PackageReference>();
+                var currentPackageLookupByTargetFramework = new Dictionary<NuGetFramework, PackageReference>();
 
                 foreach (PackageReference installedPackage in installedPackages)
                 {
-                    dict[installedPackage.TargetFramework] = installedPackage;
+                    currentPackageLookupByTargetFramework[installedPackage.TargetFramework] = installedPackage;
                 }
 
-                foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedInstalledPackageChanges)
+                foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedPackageChanges)
                 {
                     foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedInstalledPackageChange.Packages)
                     {
-                        installedPackages.Add( new PackageReference(package.Value.InstalledPackage, detectedInstalledPackageChange.TargetFramework));
+                        installedPackages.Add(new PackageReference(package.Value.InstalledPackage, detectedInstalledPackageChange.TargetFramework));
                     }
                 }
             }

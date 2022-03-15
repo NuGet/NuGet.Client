@@ -483,14 +483,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return (new Dictionary<string, ProjectInstalledPackage>(InstalledPackages), new Dictionary<string, ProjectInstalledPackage>(TransitivePackages));
         }
 
-        protected override void UpdatePackageListDetails(Dictionary<string, ProjectInstalledPackage> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges)
+        protected override void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(Dictionary<string, ProjectInstalledPackage> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges)
         {
-            if (installedPackages == null || detectedInstalledPackageChanges == null)
+            if (installedPackages == null || detectedPackageChanges == null)
             {
                 return;
             }
 
-            foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedInstalledPackageChanges)
+            foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedPackageChanges)
             {
                 if (detectedInstalledPackageChange == null)
                 {

@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(f => FetchInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages)).ToList();
 
             // Update installedPackages only after fetching is done for thread-safety.
-            UpdatePackageListDetails(installedPackages, fetchedInstalledPackagesList.Select(f => f.detectedInstalledPackageChanges));
+            UpdatePackageListWithNewPackageIdsAndApplyNewVersions(installedPackages, fetchedInstalledPackagesList.Select(f => f.detectedInstalledPackageChanges));
 
             List<PackageReference> calculatedInstalledPackages = fetchedInstalledPackagesList
                 .SelectMany(f => f.packageReferences)
@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(f => FetchTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages)).ToList();
 
             // Update transitivePackages only after fetching is done for thread-safety.
-            UpdatePackageListDetails(transitivePackages, fetchedTransitivePackagesList.Select(f => f.detectedTransitivePackageChange));
+            UpdatePackageListWithNewPackageIdsAndApplyNewVersions(transitivePackages, fetchedTransitivePackagesList.Select(f => f.detectedTransitivePackageChange));
 
             IEnumerable<PackageReference> calculatedTransitivePackages = fetchedTransitivePackagesList
                 .SelectMany(f => f.packageReferences)
@@ -209,7 +209,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected abstract (T installedPackagesCopy, T transitivePackagesCopy) GetCacheCopy();
 
-        protected abstract void UpdatePackageListDetails(T installedPackages, IEnumerable<FrameworkInstalledPackages> detectedInstalledPackageChanges);
+        /// <summary>
+        /// Add newly discovered package Ids into installedPackages or if package already exist then update version with new version.
+        /// </summary>
+        /// <param name="installedPackages">Current discovered installed package list</param>
+        /// <param name="detectedPackageChanges">Newly discovered package Id or newly discovered package versions</param>
+        protected abstract void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(T installedPackages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges);
 
         /// <summary>
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk
