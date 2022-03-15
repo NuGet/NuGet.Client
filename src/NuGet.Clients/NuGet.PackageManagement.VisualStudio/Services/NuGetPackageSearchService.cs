@@ -407,7 +407,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.Installed)
             {
-                if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken) && !isSolution)
+                if (!isSolution && await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                 {
                     packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
                 }
