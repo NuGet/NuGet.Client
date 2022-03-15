@@ -467,18 +467,18 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
+        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
             return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
         }
 
-        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
+        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
             return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }
 
-        // To avoid race condition, we work on copy of cache.
-        protected override (Dictionary<string, ProjectInstalledPackage> installedPackagesCopy, Dictionary<string, ProjectInstalledPackage> transitivePackagesCopy) GetCacheCopy()
+        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
+        protected override (Dictionary<string, ProjectInstalledPackage> installedPackagesCopy, Dictionary<string, ProjectInstalledPackage> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
         {
             return (new Dictionary<string, ProjectInstalledPackage>(InstalledPackages), new Dictionary<string, ProjectInstalledPackage>(TransitivePackages));
         }

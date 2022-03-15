@@ -137,7 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Don't mutate cache for threadsafety, instead we works on copy then replace cache when done.
                     lock (_lockObj)
                     {
-                        (installedPackages, transitivePackages) = GetCacheCopy();
+                        (installedPackages, transitivePackages) = GetInstalledAndTransitivePackagesCacheCopy();
                     }
                 }
             }
@@ -146,9 +146,9 @@ namespace NuGet.PackageManagement.VisualStudio
             // get installed packages
             List<(IReadOnlyList<PackageReference> packageReferences, FrameworkInstalledPackages detectedInstalledPackageChanges)> fetchedInstalledPackagesList = packageSpec
                 .TargetFrameworks
-                .Select(f => FetchInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages)).ToList();
+                .Select(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages)).ToList();
 
-            // Update installedPackages only after fetching is done for thread-safety.
+            // Update installedPackages only detecting new package ids and new version for existing packages, it's for thread safety.
             UpdatePackageListWithNewPackageIdsAndApplyNewVersions(installedPackages, fetchedInstalledPackagesList.Select(f => f.detectedInstalledPackageChanges));
 
             List<PackageReference> calculatedInstalledPackages = fetchedInstalledPackagesList
@@ -160,9 +160,9 @@ namespace NuGet.PackageManagement.VisualStudio
             // get transitive packages
             List<(IReadOnlyList<PackageReference> packageReferences, FrameworkInstalledPackages detectedTransitivePackageChange)> fetchedTransitivePackagesList = packageSpec
                 .TargetFrameworks
-                .Select(f => FetchTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages)).ToList();
+                .Select(f => ResolvedTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages)).ToList();
 
-            // Update transitivePackages only after fetching is done for thread-safety.
+            // Update transitivePackages only detecting new package ids and new version for existing packages, it's for thread safety.
             UpdatePackageListWithNewPackageIdsAndApplyNewVersions(transitivePackages, fetchedTransitivePackagesList.Select(f => f.detectedTransitivePackageChange));
 
             IEnumerable<PackageReference> calculatedTransitivePackages = fetchedTransitivePackagesList
@@ -203,11 +203,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
         }
 
-        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
+        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
 
-        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) FetchTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
+        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
 
-        protected abstract (T installedPackagesCopy, T transitivePackagesCopy) GetCacheCopy();
+        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
+        protected abstract (T installedPackagesCopy, T transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy();
 
         /// <summary>
         /// Add newly discovered package Ids into installedPackages or if package already exist then update version with new version.
