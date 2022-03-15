@@ -255,10 +255,6 @@ namespace NuGet.PackageManagement.UI
                     new LoggerAdapter(this),
                     token);
 
-                await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
-                    solutionDirectory,
-                    token);
-
                 if (_restoreException == null)
                 {
                     await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(solutionDirectory, token);
