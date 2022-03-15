@@ -6,9 +6,9 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal class ExperimentUtility
+    public static class ExperimentUtility
     {
-        internal static readonly Microsoft.VisualStudio.Threading.AsyncLazy<bool> IsTransitiveOriginExpEnabled = new(async () =>
+        public static readonly Microsoft.VisualStudio.Threading.AsyncLazy<bool> IsTransitiveOriginExpEnabled = new(async () =>
         {
             bool isExpEnabled;
             try
