@@ -12,14 +12,15 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(MockedVS.Collection)]
     public abstract class MockedVSCollectionTests : IAsyncServiceProvider
     {
         private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>();
+        protected readonly Dictionary<string, bool> _experimentationFlags;
 
         public MockedVSCollectionTests(GlobalServiceProvider globalServiceProvider)
         {
             globalServiceProvider.Reset();
+            _experimentationFlags = new Dictionary<string, bool>();
 
             ServiceLocator.InitializePackageServiceProvider(this);
         }

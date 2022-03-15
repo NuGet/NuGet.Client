@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -67,6 +66,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
             };
             _componentModel = new Mock<IComponentModel>();
+            var expService = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(_experimentationFlags));
+            _componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(expService);
+
             globalServiceProvider.AddService(typeof(SComponentModel), _componentModel.Object);
 
             _sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
@@ -291,14 +293,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(true, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
-        [InlineData(true, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
-        [InlineData(true, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
-        [InlineData(true, ItemFilter.Installed, false, typeof(InstalledAndTransitivePackageFeed))]
-        [InlineData(true, ItemFilter.UpdatesAvailable, true, typeof(UpdatePackageFeed))]
-        [InlineData(true, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
-        [InlineData(true, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
-        [InlineData(true, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
         [InlineData(false, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
         [InlineData(false, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
         [InlineData(false, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
@@ -307,28 +301,40 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(false, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
         [InlineData(false, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
         [InlineData(false, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
-        public async Task CreatePackageFeedAsync_WithTransitiveOriginsExpEnabled_OnlyInstalledFeedOnSolutionViewAsync(bool transitiveOriginsExperimentEnabled, ItemFilter itemFilter, bool isSolution, Type expectedFeedType)
+        [InlineData(true, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
+        [InlineData(true, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
+        [InlineData(true, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
+        [InlineData(true, ItemFilter.Installed, false, typeof(InstalledAndTransitivePackageFeed))]
+        [InlineData(true, ItemFilter.UpdatesAvailable, true, typeof(UpdatePackageFeed))]
+        [InlineData(true, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
+        [InlineData(true, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
+        [InlineData(true, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
+        public async Task CreatePackageFeedAsync_WithTransitiveOriginsExpFlag_OnlyInstalledFeedOnSolutionViewAsync(bool transitiveDependenciesExperimentEnabled, ItemFilter itemFilter, bool isSolution, Type expectedFeedType)
         {
-            using (NuGetPackageSearchService searchService = SetupSearchService(transitiveOriginsExperimentEnabled))
-            {
-                (IPackageFeed main, IPackageFeed recommender) = await searchService.CreatePackageFeedAsync(
-                    projectContextInfos: _projects,
-                    targetFrameworks: new List<string>() { "net45" },
-                    itemFilter: itemFilter,
-                    isSolution: isSolution,
-                    recommendPackages: false,
-                    sourceRepositories: new List<SourceRepository>() { _sourceRepository },
-                    cancellationToken: CancellationToken.None);
+            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled;
+            // Recreate async lazy on each test
+            ExperimentUtility.ResetAsyncValues();
 
-                Assert.IsType(expectedFeedType, main);
-                Assert.Null(recommender);
-            }
+            using NuGetPackageSearchService searchService = SetupSearchService();
+            bool expValue = await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync();
+            Assert.Equal(expValue, transitiveDependenciesExperimentEnabled);
+
+            (IPackageFeed main, IPackageFeed recommender) = await searchService.CreatePackageFeedAsync(
+                projectContextInfos: _projects,
+                targetFrameworks: new List<string>() { "net45" },
+                itemFilter: itemFilter,
+                isSolution: isSolution,
+                recommendPackages: false,
+                sourceRepositories: new List<SourceRepository>() { _sourceRepository },
+                cancellationToken: CancellationToken.None);
+
+            Assert.IsType(expectedFeedType, main);
+            Assert.Null(recommender);
         }
 
-        private NuGetPackageSearchService SetupSearchService(bool transitiveDepsExpEnabled = false)
+        private NuGetPackageSearchService SetupSearchService()
         {
             ClearSearchCache();
-            _componentModel.Reset();
 
             var packageSourceProvider = new Mock<IPackageSourceProvider>();
             packageSourceProvider.Setup(x => x.LoadPackageSources()).Returns(new List<PackageSource> { _sourceRepository.PackageSource });
@@ -348,16 +354,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
             _componentModel.Setup(x => x.GetService<INuGetProjectContext>()).Returns(new Mock<INuGetProjectContext>().Object);
             _componentModel.Setup(x => x.GetService<IRestoreProgressReporter>()).Returns(new Mock<IRestoreProgressReporter>().Object);
-
-            if (transitiveDepsExpEnabled)
-            {
-                var flightsEnabled = new Dictionary<string, bool>()
-                {
-                    {ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag, true},
-                };
-                var expService = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
-                _componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(expService);
-            }
 
             var service = Package.GetGlobalService(typeof(SAsyncServiceProvider)) as IAsyncServiceProvider;
             ServiceLocator.InitializePackageServiceProvider(service);
