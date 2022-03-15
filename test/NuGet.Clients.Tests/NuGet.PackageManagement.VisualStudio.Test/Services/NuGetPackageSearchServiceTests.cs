@@ -304,7 +304,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(true, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
         [InlineData(true, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
         [InlineData(true, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
-        [InlineData(true, ItemFilter.Installed, false, typeof(InstalledAndTransitivePackageFeed))]
+        [InlineData(true, ItemFilter.Installed, false, typeof(InstalledAndTransitivePackageFeed))] // Only when transitive experiment is enabled, show Transitive Dependencies in Installed Tab
         [InlineData(true, ItemFilter.UpdatesAvailable, true, typeof(UpdatePackageFeed))]
         [InlineData(true, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
         [InlineData(true, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
