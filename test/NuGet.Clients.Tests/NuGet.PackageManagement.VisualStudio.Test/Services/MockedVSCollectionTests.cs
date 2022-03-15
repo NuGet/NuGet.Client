@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
-using Xunit;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
