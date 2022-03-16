@@ -255,7 +255,7 @@ namespace NuGet.Common
         /// <summary>
         /// Central package management is in use but there are multiple feeds configured without using package source mapping.
         /// </summary>
-        NU1504 = 1504,
+        NU1507 = 1507,
 
         /// <summary>
         /// Dependency bumped up

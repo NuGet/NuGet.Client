@@ -1691,11 +1691,11 @@ namespace NuGet.Commands.Test
 
                 if (enablePackageSourceMapping)
                 {
-                    logger.WarningMessages.Should().NotContain(i => i.Contains(NuGetLogCode.NU1504.ToString()));
+                    logger.WarningMessages.Should().NotContain(i => i.Contains(NuGetLogCode.NU1507.ToString()));
                 }
                 else
                 {
-                    logger.WarningMessages.Should().Contain(i => i.Contains(NuGetLogCode.NU1504.ToString()));
+                    logger.WarningMessages.Should().Contain(i => i.Contains(NuGetLogCode.NU1507.ToString()));
                 }
             }
         }
