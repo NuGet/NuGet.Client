@@ -938,12 +938,7 @@ namespace NuGet.Build.Tasks.Console
                             LoadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition,
                             ProjectCollection = collection
                         };
-
-                        // Create a Project object which does the evaluation
-                        var project = Project.FromFile(path, projectOptions);
-
-                        // Create a ProjectInstance object which is what this factory needs to return
-                        var projectInstance = project.CreateProjectInstance(ProjectInstanceSettings.None, evaluationContext);
+                        var projectInstance = ProjectInstance.FromFile(path, projectOptions);
 
                         if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || properties.TryGetValue("TargetFramework", out var targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
                         {
