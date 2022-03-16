@@ -143,38 +143,27 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var frameworkSorter = new NuGetFrameworkSorter();
+
             // get installed packages
-            List<(IReadOnlyList<PackageReference> packageReferences, FrameworkInstalledPackages detectedInstalledPackageChanges)> fetchedInstalledPackagesList = packageSpec
+            List<PackageReference> calculatedInstalledPackages = packageSpec
                 .TargetFrameworks
-                .Select(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages)).ToList();
-
-            // Update installedPackages only detecting new package ids and new version for existing packages, it's for thread safety.
-            UpdatePackageListWithNewPackageIdsAndApplyNewVersions(installedPackages, fetchedInstalledPackagesList.Select(f => f.detectedInstalledPackageChanges));
-
-            List<PackageReference> calculatedInstalledPackages = fetchedInstalledPackagesList
-                .SelectMany(f => f.packageReferences)
+                .SelectMany(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
                 .ToList();
 
             // get transitive packages
-            List<(IReadOnlyList<PackageReference> packageReferences, FrameworkInstalledPackages detectedTransitivePackageChange)> fetchedTransitivePackagesList = packageSpec
+            IEnumerable<PackageReference> calculatedTransitivePackages = packageSpec
                 .TargetFrameworks
-                .Select(f => ResolvedTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages)).ToList();
-
-            // Update transitivePackages only detecting new package ids and new version for existing packages, it's for thread safety.
-            UpdatePackageListWithNewPackageIdsAndApplyNewVersions(transitivePackages, fetchedTransitivePackagesList.Select(f => f.detectedTransitivePackageChange));
-
-            IEnumerable<PackageReference> calculatedTransitivePackages = fetchedTransitivePackagesList
-                .SelectMany(f => f.packageReferences)
+                .SelectMany(f => ResolvedTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages))
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
-            IEnumerable<TransitivePackageReference> calculatedTransitivePackagesWithOrigins;
+            IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
                 // Get Transitive Origins
-                calculatedTransitivePackagesWithOrigins = calculatedTransitivePackages
+                transitivePackagesWithOrigins = calculatedTransitivePackages
                     .Select(packageRef =>
                     {
                         (PackageReference pr, TransitiveEntry transitiveEntry) tupl = (packageRef, GetTransitivePackageOrigin(packageRef, calculatedInstalledPackages, targetsList, token));
@@ -185,12 +174,11 @@ namespace NuGet.PackageManagement.VisualStudio
             else
             {
                 // Get Transitive packages without Transitive Origins
-                calculatedTransitivePackagesWithOrigins = calculatedTransitivePackages
+                transitivePackagesWithOrigins = calculatedTransitivePackages
                     .Select(packageRef => new TransitivePackageReference(packageRef));
             }
 
-            List<TransitivePackageReference> transitivePkgsResult = calculatedTransitivePackagesWithOrigins.ToList(); // Materialize results before setting IsInstalledAndTransitiveComputationNeeded flag to false
-
+            List<TransitivePackageReference> transitivePkgsResult = transitivePackagesWithOrigins.ToList(); // Materialize results before setting IsInstalledAndTransitiveComputationNeeded flag to false
             IsInstalledAndTransitiveComputationNeeded = false;
 
             // Refresh cache
@@ -203,19 +191,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
         }
 
-        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
+        protected abstract IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
 
-        protected abstract (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
+        protected abstract IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
 
         // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
         protected abstract (T installedPackagesCopy, T transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy();
-
-        /// <summary>
-        /// Add newly discovered package Ids into installedPackages or if package already exist then update version with new version.
-        /// </summary>
-        /// <param name="installedPackages">Current discovered installed package list</param>
-        /// <param name="detectedPackageChanges">Newly discovered package Id or newly discovered package versions</param>
-        protected abstract void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(T installedPackages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges);
 
         /// <summary>
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk
@@ -225,66 +206,38 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>Each project implementation is responsible of gathering <see cref="PackageSpec"/> info</remarks>
         protected abstract Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct);
 
-        private protected (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) GetPackageReferences(
+        private protected IEnumerable<PackageReference> GetPackageReferences(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            IReadOnlyDictionary<string, ProjectInstalledPackage> installedPackages,
+            Dictionary<string, ProjectInstalledPackage> installedPackages,
             IReadOnlyList<LockFileTarget> targets)
         {
-            var packageReferences = new List<PackageReference>();
-            var detectedInstalledPackagesChanges = new Dictionary<string, ProjectInstalledPackage>();
-            IEnumerable<LibraryDependency> libraryDependencies = libraries
-                .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
-
-            foreach (LibraryDependency libraryDependency in libraryDependencies)
-            {
-                (PackageIdentity installedPackage, Dictionary<string, ProjectInstalledPackage> newlyDetectedInstalledPackageChanges) = GetPackageReferenceUtility.UpdateResolvedVersion(libraryDependency, targetFramework, targets, installedPackages);
-
-                if (newlyDetectedInstalledPackageChanges != null)
-                {
-                    foreach (KeyValuePair<string, ProjectInstalledPackage> newlyDetectedInstalledPackage in newlyDetectedInstalledPackageChanges)
-                    {
-                        detectedInstalledPackagesChanges[newlyDetectedInstalledPackage.Key] = newlyDetectedInstalledPackage.Value;
-                    }
-                }
-
-                packageReferences.Add(new BuildIntegratedPackageReference(libraryDependency, targetFramework, installedPackage));
-            }
-
-            var targetFrameworkPackages = new FrameworkInstalledPackages();
-            targetFrameworkPackages.TargetFramework = targetFramework;
-            targetFrameworkPackages.Packages = detectedInstalledPackagesChanges;
-            return (packageReferences, targetFrameworkPackages);
+            return libraries
+                .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
+                .Select(library => new BuildIntegratedPackageReference(library, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(library, targetFramework, targets, installedPackages)));
         }
 
-        private protected (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) GetTransitivePackageReferences(
+        private protected IReadOnlyList<PackageReference> GetTransitivePackageReferences(
             NuGetFramework targetFramework,
-            IReadOnlyDictionary<string, ProjectInstalledPackage> installedPackages,
-            IReadOnlyDictionary<string, ProjectInstalledPackage> transitivePackages,
+            Dictionary<string, ProjectInstalledPackage> installedPackages,
+            Dictionary<string, ProjectInstalledPackage> transitivePackages,
             IReadOnlyList<LockFileTarget> targets)
         {
             // If the assets files has not been updated, return the cached transitive packages
             if (targets == null)
             {
-                return (transitivePackages
+                return transitivePackages
                     .Select(package => new PackageReference(package.Value.InstalledPackage, targetFramework))
-                    .ToList(), null);
+                    .ToList();
             }
             else
             {
-                Dictionary<string, ProjectInstalledPackage> detectedNewTransitivePackages = new();
-
-                IReadOnlyList<PackageReference> transitivePackageReferences = targets
+                return targets
                     .SelectMany(target => target.Libraries)
                     .Where(library => library.Type == LibraryType.Package)
-                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, installedPackages, detectedNewTransitivePackages))
+                    .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, installedPackages, transitivePackages))
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();
-
-                var targetFrameworkPackages = new FrameworkInstalledPackages();
-                targetFrameworkPackages.TargetFramework = targetFramework;
-                targetFrameworkPackages.Packages = detectedNewTransitivePackages;
-                return (transitivePackageReferences, targetFrameworkPackages);
             }
         }
 

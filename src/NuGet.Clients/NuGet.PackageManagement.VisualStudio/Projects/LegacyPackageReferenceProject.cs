@@ -467,12 +467,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
+        protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
             return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
         }
 
-        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
+        protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
             return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }
@@ -481,34 +481,6 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override (Dictionary<string, ProjectInstalledPackage> installedPackagesCopy, Dictionary<string, ProjectInstalledPackage> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
         {
             return (new Dictionary<string, ProjectInstalledPackage>(InstalledPackages), new Dictionary<string, ProjectInstalledPackage>(TransitivePackages));
-        }
-
-        protected override void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(Dictionary<string, ProjectInstalledPackage> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges)
-        {
-            if (installedPackages == null || detectedPackageChanges == null)
-            {
-                return;
-            }
-
-            foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedPackageChanges)
-            {
-                if (detectedInstalledPackageChange == null)
-                {
-                    continue;
-                }
-
-                foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedInstalledPackageChange.Packages)
-                {
-                    if (installedPackages.TryGetValue(package.Key, out _))
-                    {
-                        installedPackages[package.Key] = package.Value;
-                    }
-                    else
-                    {
-                        installedPackages.Add(package.Key, package.Value);
-                    }
-                }
-            }
         }
     }
 }

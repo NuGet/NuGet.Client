@@ -13,7 +13,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
-using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -198,12 +197,12 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
-            protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages)
+            protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages)
             {
                 throw new NotImplementedException();
             }
 
-            protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages, List<PackageReference> transitivePackages)
+            protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages, List<PackageReference> transitivePackages)
             {
                 throw new NotImplementedException();
             }
@@ -211,24 +210,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             protected override (List<PackageReference> installedPackagesCopy, List<PackageReference> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
             {
                 return (new List<PackageReference>(InstalledPackages), new List<PackageReference>(TransitivePackages));
-            }
-
-            protected override void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(List<PackageReference> installedPackages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges)
-            {
-                var currentPackageLookupByTargetFramework = new Dictionary<NuGetFramework, PackageReference>();
-
-                foreach (PackageReference installedPackage in installedPackages)
-                {
-                    currentPackageLookupByTargetFramework[installedPackage.TargetFramework] = installedPackage;
-                }
-
-                foreach (FrameworkInstalledPackages detectedInstalledPackageChange in detectedPackageChanges)
-                {
-                    foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedInstalledPackageChange.Packages)
-                    {
-                        installedPackages.Add(new PackageReference(package.Value.InstalledPackage, detectedInstalledPackageChange.TargetFramework));
-                    }
-                }
             }
         }
     }

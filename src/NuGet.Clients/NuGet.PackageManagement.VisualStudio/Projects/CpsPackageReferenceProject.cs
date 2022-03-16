@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedInstalledPackagesList(
+        protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
             IReadOnlyList<LockFileTarget> targets,
@@ -224,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        protected override (IReadOnlyList<PackageReference>, FrameworkInstalledPackages) ResolvedTransitivePackagesList(
+        protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(
             NuGetFramework targetFramework,
             IReadOnlyList<LockFileTarget> targets,
             List<FrameworkInstalledPackages> installedPackagesInCache,
@@ -375,50 +375,6 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override (List<FrameworkInstalledPackages> installedPackagesCopy, List<FrameworkInstalledPackages> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
         {
             return (new List<FrameworkInstalledPackages>(InstalledPackages), new List<FrameworkInstalledPackages>(TransitivePackages));
-        }
-
-        protected override void UpdatePackageListWithNewPackageIdsAndApplyNewVersions(List<FrameworkInstalledPackages> packages, IEnumerable<FrameworkInstalledPackages> detectedPackageChanges)
-        {
-            if (packages == null || detectedPackageChanges == null)
-            {
-                return;
-            }
-
-            var currentPackageLookupByTargetFramework = new Dictionary<NuGetFramework, FrameworkInstalledPackages>();
-
-            foreach (FrameworkInstalledPackages installedPackage in packages)
-            {
-                currentPackageLookupByTargetFramework[installedPackage.TargetFramework] = installedPackage;
-            }
-
-            foreach (FrameworkInstalledPackages detectedNewInstalledPackage in detectedPackageChanges)
-            {
-                if (detectedNewInstalledPackage == null)
-                {
-                    continue;
-                }
-
-                FrameworkInstalledPackages frameworkPackages;
-
-                if (currentPackageLookupByTargetFramework.TryGetValue(detectedNewInstalledPackage.TargetFramework, out frameworkPackages))
-                {
-                    foreach (KeyValuePair<string, ProjectInstalledPackage> package in detectedNewInstalledPackage.Packages)
-                    {
-                        if (frameworkPackages.Packages.TryGetValue(package.Key, out _))
-                        {
-                            frameworkPackages.Packages[package.Key] = package.Value;
-                        }
-                        else
-                        {
-                            frameworkPackages.Packages.Add(package.Key, package.Value);
-                        }
-                    }
-                }
-                else
-                {
-                    packages.Add(detectedNewInstalledPackage);
-                }
-            }
         }
 
         #endregion
