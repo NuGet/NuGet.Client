@@ -42,7 +42,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, string fileName = GlobalJsonFileName)
         {
             // Prefer looking next to the solution file as its more likely to be closer to global.json
-            string startingPath = context?.SolutionFilePath ?? context?.ProjectFilePath;
+            string startingPath = GetStartingPath(context);
 
             // If the SolutionFilePath and ProjectFilePath are not set, an in-memory project is being evaluated and there's no way to know which directory to start looking for a global.json
             if (string.IsNullOrWhiteSpace(startingPath) || string.IsNullOrWhiteSpace(fileName))
@@ -88,6 +88,26 @@ namespace Microsoft.Build.NuGetSdkResolver
             Dictionary<string, string> sdkVersions = cacheEntry.Lazy.Value;
 
             return sdkVersions;
+        }
+
+        internal static string GetStartingPath(SdkResolverContext context)
+        {
+            if (context == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(context.SolutionFilePath))
+            {
+                return context.SolutionFilePath;
+            }
+
+            if (!string.IsNullOrWhiteSpace(context.ProjectFilePath))
+            {
+                return context.ProjectFilePath;
+            }
+
+            return null;
         }
 
         /// <summary>
