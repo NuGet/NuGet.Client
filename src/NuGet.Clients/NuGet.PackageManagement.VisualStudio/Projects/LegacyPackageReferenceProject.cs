@@ -64,9 +64,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
             ProjectServices = projectServices;
-
-            InstalledPackages = new Dictionary<string, ProjectInstalledPackage>(); // This colleciton is a Dictionary whose key type is packageId
-            TransitivePackages = new Dictionary<string, ProjectInstalledPackage>(); // This colleciton is a Dictionary whose key type is packageId
         }
 
         public LegacyPackageReferenceProject(
@@ -470,14 +467,20 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageSpecAsync(NullSettings.Instance);
         }
 
-        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets)
+        protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
-            return GetPackageReferences(libraries, targetFramework, InstalledPackages, targets);
+            return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets)
+        protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
-            return GetTransitivePackageReferences(targetFramework, InstalledPackages, TransitivePackages, targets);
+            return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
+        }
+
+        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
+        protected override (Dictionary<string, ProjectInstalledPackage> installedPackagesCopy, Dictionary<string, ProjectInstalledPackage> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
+        {
+            return (new Dictionary<string, ProjectInstalledPackage>(InstalledPackages), new Dictionary<string, ProjectInstalledPackage>(TransitivePackages));
         }
     }
 }

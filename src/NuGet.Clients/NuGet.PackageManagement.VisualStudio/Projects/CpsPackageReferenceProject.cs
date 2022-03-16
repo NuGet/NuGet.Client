@@ -68,9 +68,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, ProjectUniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
-
-            InstalledPackages = new List<FrameworkInstalledPackages>();
-            TransitivePackages = new List<FrameworkInstalledPackages>();
         }
 
         public override Task AddFileToProjectAsync(string filePath)
@@ -204,12 +201,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        protected override IEnumerable<PackageReference> FetchInstalledPackagesList(
+        protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            IList<LockFileTarget> targets)
+            IReadOnlyList<LockFileTarget> targets,
+            List<FrameworkInstalledPackages> installedPackagesInCache)
         {
-            FrameworkInstalledPackages targetFrameworkPackages = InstalledPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
+            FrameworkInstalledPackages targetFrameworkPackages = installedPackagesInCache.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
 
             if (targetFrameworkPackages == null)
             {
@@ -220,32 +218,34 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 targetFrameworkPackages.TargetFramework = targetFramework;
                 targetFrameworkPackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                InstalledPackages.Add(targetFrameworkPackages);
+                installedPackagesInCache.Add(targetFrameworkPackages);
             }
 
             return GetPackageReferences(libraries, targetFramework, targetFrameworkPackages.Packages, targets);
         }
 
-        protected override IReadOnlyList<PackageReference> FetchTransitivePackagesList(
+        protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(
             NuGetFramework targetFramework,
-            IList<LockFileTarget> targets)
+            IReadOnlyList<LockFileTarget> targets,
+            List<FrameworkInstalledPackages> installedPackagesInCache,
+            List<FrameworkInstalledPackages> transitivePackagesInCache)
         {
-            FrameworkInstalledPackages targetFrameworkInstalledPackages = InstalledPackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
+            FrameworkInstalledPackages targetFrameworkInstalledPackages = installedPackagesInCache.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
-            FrameworkInstalledPackages targetFrameworkTransitivePackages = TransitivePackages.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
+            FrameworkInstalledPackages targetFrameworkTransitivePackages = transitivePackagesInCache.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework)) ?? new FrameworkInstalledPackages();
 
             if (targetFrameworkInstalledPackages.Packages == null)
             {
                 targetFrameworkInstalledPackages.TargetFramework = targetFramework;
                 targetFrameworkInstalledPackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                InstalledPackages.Add(targetFrameworkInstalledPackages);
+                installedPackagesInCache.Add(targetFrameworkInstalledPackages);
             }
 
             if (targetFrameworkTransitivePackages.Packages == null)
             {
                 targetFrameworkTransitivePackages.TargetFramework = targetFramework;
                 targetFrameworkTransitivePackages.Packages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
-                TransitivePackages.Add(targetFrameworkTransitivePackages);
+                transitivePackagesInCache.Add(targetFrameworkTransitivePackages);
             }
 
             return GetTransitivePackageReferences(targetFramework, targetFrameworkInstalledPackages.Packages, targetFrameworkTransitivePackages.Packages, targets);
@@ -369,6 +369,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
+        }
+
+        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
+        protected override (List<FrameworkInstalledPackages> installedPackagesCopy, List<FrameworkInstalledPackages> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
+        {
+            return (new List<FrameworkInstalledPackages>(InstalledPackages), new List<FrameworkInstalledPackages>(TransitivePackages));
         }
 
         #endregion
