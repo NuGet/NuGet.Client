@@ -204,5 +204,11 @@ namespace NuGet.Commands
         public bool RestoreForceEvaluate { get; set; }
 
         public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
+
+        /// <summary>
+        /// This property is used to enable updating the package metadata timestamp
+        /// It can be set to true through the updatePackageLastAccessTime configuration flag
+        /// </summary>
+        public bool UpdatePackageLastAccessTime { get; set; }
     }
 }

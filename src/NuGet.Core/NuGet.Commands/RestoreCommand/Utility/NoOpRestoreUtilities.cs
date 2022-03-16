@@ -1,11 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -156,6 +159,28 @@ namespace NuGet.Commands
             {
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
                 return false;
+            }
+
+            if (request.UpdatePackageLastAccessTime)
+            {
+                foreach (var package in cacheFile.ExpectedPackageFilePaths)
+                {
+                    if (!package.StartsWith(request.PackagesDirectory, StringComparison.OrdinalIgnoreCase)) { continue; }
+
+                    var packageDirectory = Path.GetDirectoryName(package);
+                    var metadataFile = Path.Combine(packageDirectory, PackagingCoreConstants.NupkgMetadataFileExtension);
+
+                    try
+                    {
+                        request.DependencyProviders.PackageFileCache.UpdateLastAccessTime(metadataFile);
+                    }
+                    catch(Exception ex)
+                    {
+                        request.Log.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1802,
+                            string.Format(CultureInfo.InvariantCulture, Strings.Error_CouldNotUpdateMetadataLastAccessTime,
+                            metadataFile, ex.Message)));
+                    }
+                }
             }
 
             return true;

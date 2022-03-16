@@ -104,6 +104,23 @@ namespace NuGet.Configuration
             return SignatureValidationMode.Accept;
         }
 
+        public static bool GetUpdatePackageLastAccessTimeEnabledStatus(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var updatePackageLastAccessTimeStatus = GetConfigValue(settings, ConfigurationConstants.UpdatePackageLastAccessTime);
+
+            if (!string.IsNullOrEmpty(updatePackageLastAccessTimeStatus) && bool.TryParse(updatePackageLastAccessTimeStatus, result: out bool updatePackageLastAccessTime))
+            {
+                return updatePackageLastAccessTime;
+            }
+
+            return false;
+        }
+
         public static string GetDecryptedValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
         {
             if (settings == null)

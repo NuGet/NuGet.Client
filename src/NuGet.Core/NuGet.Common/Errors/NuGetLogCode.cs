@@ -307,6 +307,11 @@ namespace NuGet.Common
         NU1801 = 1801,
 
         /// <summary>
+        /// Could not update package .nupkg.metadata timestamp
+        /// </summary>
+        NU1802 = 1802,
+
+        /// <summary>
         /// Undefined signature error
         /// </summary>
         NU3000 = 3000,
