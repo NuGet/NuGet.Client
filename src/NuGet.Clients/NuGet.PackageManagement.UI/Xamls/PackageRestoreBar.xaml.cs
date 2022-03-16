@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && _isAssetsFileMissing)
                 {
-                    return UIRestoreProjectAsync(CancellationToken.None);
+                    return RestoreProjectAsync(CancellationToken.None);
                 }
                 else
                 {
