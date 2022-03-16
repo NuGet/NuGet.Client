@@ -265,6 +265,8 @@ namespace NuGet.SolutionRestoreManager
                     _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                     _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
 
+                    _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(false);
+
                     await packageSourceTelemetry.SendTelemetryAsync();
 
                     stopWatch.Stop();

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +30,19 @@ namespace NuGet.PackageManagement
         public event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
         public event EventHandler<PackageRestoreFailedEventArgs> PackageRestoreFailedEvent;
 
+        private event AssetsFileMissingStatusChanged _assetsFileMissingStatusChanged;
+        public event AssetsFileMissingStatusChanged AssetsFileMissingStatusChanged
+        {
+            add
+            {
+                _assetsFileMissingStatusChanged += value;
+            }
+            remove
+            {
+                _assetsFileMissingStatusChanged -= value;
+            }
+        }
+
         public PackageRestoreManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
             ISettings settings,
@@ -55,6 +67,21 @@ namespace NuGet.PackageManagement
             }
 
             PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(missing));
+        }
+
+        public virtual void RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing)
+        {
+            if (_assetsFileMissingStatusChanged != null)
+            {
+                foreach (var handler in _assetsFileMissingStatusChanged.GetInvocationList())
+                {
+                    try
+                    {
+                        handler.DynamicInvoke(this, isAssetsFileMissing);
+                    }
+                    catch { }
+                }
+            }
         }
 
         // A synchronous method called during the solution closed event. This is done to avoid needless thread switching

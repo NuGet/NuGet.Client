@@ -623,7 +623,8 @@ namespace NuGet.PackageManagement.UI
         {
             if (Model.Context.PackageRestoreManager != null)
             {
-                RestoreBar = new PackageRestoreBar(Model.Context.SolutionManagerService, Model.Context.PackageRestoreManager);
+                var projectContextInfo = Model.Context.Projects.Count() == 1 ? Model.Context.Projects.FirstOrDefault() : null;
+                RestoreBar = new PackageRestoreBar(Model.Context.SolutionManagerService, Model.Context.PackageRestoreManager, projectContextInfo);
                 DockPanel.SetDock(RestoreBar, Dock.Top);
 
                 _root.Children.Insert(0, RestoreBar);

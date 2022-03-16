@@ -58,7 +58,7 @@ namespace NuGetConsole
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                             RootLayout.Children.Add(new ProductUpdateBar(productUpdateService));
-                            RootLayout.Children.Add(new PackageRestoreBar(_solutionManager, packageRestoreManager));
+                            RootLayout.Children.Add(new PackageRestoreBar(_solutionManager, packageRestoreManager, projectContextInfo: null));
                             RootLayout.Children.Add(new RestartRequestBar(deleteOnRestartManager, shell));
                         });
                 }, VsTaskRunContext.UIThreadIdlePriority).PostOnFailure(nameof(ConsoleContainer));

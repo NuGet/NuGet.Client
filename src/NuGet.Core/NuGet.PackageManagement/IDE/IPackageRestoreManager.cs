@@ -21,6 +21,11 @@ namespace NuGet.PackageManagement
         event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
 
         /// <summary>
+        /// Occurs when it is detected that the assets file is missing.
+        /// </summary>
+        event AssetsFileMissingStatusChanged AssetsFileMissingStatusChanged;
+
+        /// <summary>
         /// PackageRestoredEvent which is raised after a package is restored.
         /// </summary>
         event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
@@ -52,6 +57,12 @@ namespace NuGet.PackageManagement
         /// Checks the current solution if there is any package missing.
         /// </summary>
         Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
+
+        /// <summary>
+        /// Checks if something is listening to the event of missing assets and change the status
+        /// </summary>
+        /// <param name="isAssetsFileMissing"></param>
+        void RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing);
 
         /// <summary>
         /// Restores the missing packages for the current solution.
@@ -123,6 +134,8 @@ namespace NuGet.PackageManagement
             PackageDownloadContext downloadContext,
             CancellationToken token);
     }
+
+    public delegate void AssetsFileMissingStatusChanged(object sender, bool isAssetsFileMissing);
 
     /// <summary>
     /// If 'Restored' is false, it means that the package was already restored
