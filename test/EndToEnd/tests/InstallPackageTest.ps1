@@ -458,7 +458,6 @@ function Test-AddBindingRedirectToWebsiteWithNonExistingOutputPath {
 }
 
 function Test-InstallCanPipeToFSharpProjects {
-    [SkipTest('https://github.com/dotnet/fsharp/issues/12835')]
     param($context)    
     # Arrange
     $p = New-FSharpLibrary
