@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class ExperimentUtility
     {
-        internal static AsyncLazy<bool> IsTransitiveOriginExpEnabled { get; private set; }
+        public static AsyncLazy<bool> IsTransitiveOriginExpEnabled { get; private set; }
 
         static ExperimentUtility()
         {
