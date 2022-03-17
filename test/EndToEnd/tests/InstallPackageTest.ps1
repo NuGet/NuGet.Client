@@ -802,7 +802,7 @@ function Test-SimpleBindingRedirectsIndirectReference {
 
     # Arrange
     $a = New-WebApplication
-    $b = New-ClassLibrary
+    $b = New-ClassLibraryNET46
     $c = New-ClassLibraryNET46
 
     Add-ProjectReference $a $b
