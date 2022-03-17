@@ -43,6 +43,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 { "pollingInterval", "00:02:00" }
             });
 
+        private readonly CacheItemPolicy _cacheItemPolicy = new CacheItemPolicy
+        {
+            SlidingExpiration = ObjectCache.NoSlidingExpiration,
+            AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
+        };
+
         public NuGetPackageSearchService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, ISharedServiceState state)
         {
             _options = options;
@@ -170,9 +176,47 @@ namespace NuGet.PackageManagement.VisualStudio
 
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
             IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            IEnumerable<VersionInfo> versions = await packageMetadata.GetVersionsAsync();
 
-            return await Task.WhenAll(versions.Select(v => VersionInfoContextInfo.CreateAsync(v).AsTask()));
+            var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
+            cacheEntry.UpdateSearchMetadata(packageMetadata);
+
+            object cacheObject = PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
+
+            return await ((PackageSearchMetadataCacheItem)cacheObject).AllVersionsContextInfo;
+        }
+
+        public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
+            PackageIdentity identity,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease,
+            bool isTransitive,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(identity);
+            Assumes.NotNullOrEmpty(packageSources);
+
+            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
+            if (backgroundDataCache != null)
+            {
+                if (isTransitive &&
+                    (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count == 1))
+                {
+                    IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
+                    IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    backgroundDataCache.UpdateSearchMetadata(transitivePackageMetadata);
+                }
+                return await backgroundDataCache.AllVersionsContextInfo;
+            }
+
+            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
+            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+
+            var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
+            cacheEntry.UpdateSearchMetadata(packageMetadata);
+            object cacheObject = PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
+
+            return await ((PackageSearchMetadataCacheItem)cacheObject).AllVersionsContextInfo;
         }
 
         public async ValueTask<PackageDeprecationMetadataContextInfo?> GetDeprecationMetadataAsync(

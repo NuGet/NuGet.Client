@@ -60,6 +60,7 @@
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Converters\AdditionConverter.cs" />
     <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DeprecationToDeprecationLabelStateConverter.cs" />
     <Compile Include="Converters\AccessibleConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />

@@ -270,6 +270,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(IsUninstallable));
                     OnPropertyChanged(nameof(IsNotInstalled));
+                    OnPropertyChanged(nameof(IsInstalledAndTransitive));
                 }
             }
         }
@@ -281,6 +282,14 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return (Status == PackageStatus.NotInstalled && LatestVersion != null);
+            }
+        }
+
+        public bool IsInstalledAndTransitive
+        {
+            get
+            {
+                return (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
             }
         }
 
@@ -480,6 +489,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _packageLevel = value;
                     OnPropertyChanged(nameof(PackageLevel));
+                    OnPropertyChanged(nameof(IsInstalledAndTransitive));
                 }
             }
         }
@@ -488,6 +498,12 @@ namespace NuGet.PackageManagement.UI
         {
             var identity = new PackageIdentity(Id, Version);
             return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
+        }
+
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(bool isTransitive)
+        {
+            var identity = new PackageIdentity(Id, Version);
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
         }
 
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
@@ -673,7 +689,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
+                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync(PackageLevel == PackageLevel.Transitive);
 
                 // filter package versions based on allowed versions in packages.config
                 packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
@@ -732,6 +748,17 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(ReloadPackageMetadataAsync)
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
+
+            OnPropertyChanged(nameof(Status));
+        }
+
+        public void UpdateTransitivePackageStatus(NuGetVersion installedVersion)
+        {
+            InstalledVersion = installedVersion;
+
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(ReloadPackageVersionsAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
 
             OnPropertyChanged(nameof(Status));
         }

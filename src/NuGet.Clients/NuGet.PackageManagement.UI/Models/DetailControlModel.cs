@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
 
-            var getVersionsTask = searchResultPackage.GetVersionsAsync();
+            var getVersionsTask = searchResultPackage.GetVersionsAsync(searchResultPackage.PackageLevel == PackageLevel.Transitive);
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 

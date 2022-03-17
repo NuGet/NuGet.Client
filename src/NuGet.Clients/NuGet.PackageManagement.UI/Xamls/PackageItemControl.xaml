@@ -344,6 +344,7 @@
                      * IsSolution is false;
                      * Status is Installed or UpdateAvailable;
                      * mouse hovers over the control;
+                     * PackageLevel is TopLevel
                      Since there is no OR condition in triggers, we need to use two triggers instead.
                 -->
                 <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}"
@@ -360,6 +361,11 @@
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="true">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding PackageLevel}" Value="Transitive">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
@@ -389,13 +395,14 @@
                      * mouse hovers over the control;
                      * IsNotInstalled;
                      * IsSolution is false;
+                     * IsInstalled and PackageLevel is Transitive
                 -->
                 <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsNotInstalled}" Value="false">
+                <DataTrigger Binding="{Binding IsInstalledAndTransitive}" Value="false">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
@@ -455,6 +462,7 @@
                      * mouse hovers over the control;
                      * IsUpdateAvailable;
                      * IsSolution is false;
+                     * PackageLevel is TopLevel
                 -->
                 <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
                   <DataTrigger.Setters>
@@ -462,6 +470,11 @@
                   </DataTrigger.Setters>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsUpdateAvailable}" Value="false">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding PackageLevel}" Value="Transitive">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>

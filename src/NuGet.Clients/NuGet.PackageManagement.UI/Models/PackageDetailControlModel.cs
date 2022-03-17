@@ -10,6 +10,7 @@ using System.Windows.Data;
 using Microsoft.ServiceHub.Framework;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 
@@ -37,6 +38,7 @@ namespace NuGet.PackageManagement.UI
             Func<PackageItemViewModel> getPackageItemViewModel)
         {
             // Set InstalledVersion before fetching versions list.
+            PackageLevel = searchResultPackage.PackageLevel;
             InstalledVersion = searchResultPackage.InstalledVersion;
             InstalledVersionRange = searchResultPackage.AllowedVersions;
 
@@ -58,6 +60,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
             PreviousSelectedVersion = null;
+            PackageLevel = searchResultPackage.PackageLevel;
             InstalledVersion = searchResultPackage.InstalledVersion;
             InstalledVersionRange = searchResultPackage.AllowedVersions;
             SelectedVersion.IsCurrentInstalled = InstalledVersion == SelectedVersion.Version && InstalledVersionRange == SelectedVersion.Range;
@@ -293,6 +296,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersion = value;
                 OnPropertyChanged(nameof(InstalledVersion));
+<<<<<<< HEAD
             }
         }
 
@@ -304,13 +308,34 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersionRange = value;
                 OnPropertyChanged(nameof(InstalledVersionRange));
+=======
+                OnPropertyChanged(nameof(IsSelectedVersionInstalled));
+                OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
+            }
+        }
+
+        private PackageLevel _packageLevel;
+
+        public PackageLevel PackageLevel
+        {
+            get { return _packageLevel; }
+            private set
+            {
+                _packageLevel = value;
+                OnPropertyChanged(nameof(PackageLevel));
+>>>>>>> 24f57648c (Updating cache versions for transitive dependencies)
             }
         }
 
         public override void OnSelectedVersionChanged()
         {
             base.OnSelectedVersionChanged();
+<<<<<<< HEAD
             OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
+=======
+            OnPropertyChanged(nameof(IsSelectedVersionInstalled));
+            OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
+>>>>>>> 24f57648c (Updating cache versions for transitive dependencies)
         }
 
         public bool IsSelectedVersionInstalled
@@ -324,6 +349,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+<<<<<<< HEAD
         public bool IsInstallorUpdateButtonEnabled
         {
             get
@@ -337,6 +363,13 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
+=======
+        public bool IsInstalledVersionTopLevel
+        {
+            get
+            {
+                return InstalledVersion != null && PackageLevel == PackageLevel.TopLevel;
+>>>>>>> 24f57648c (Updating cache versions for transitive dependencies)
             }
         }
 

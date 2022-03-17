@@ -53,7 +53,7 @@
       Grid.Column="0"
       FontWeight="Bold"
       VerticalAlignment="Center"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+      Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
       Text="{x:Static local:Resources.Label_InstalledColon}" />
 
     <Border
@@ -61,7 +61,7 @@
       Grid.Column="2"
       MinHeight="22"
       BorderBrush="{DynamicResource {x:Static local:Brushes.ComboBoxBorderKey}}"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+      Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
       BorderThickness="1"
       VerticalAlignment="Center">
       <TextBox
@@ -79,7 +79,7 @@
       MinHeight="24"
       AutomationProperties.AutomationId="Project_Button_Uninstall"
       HorizontalAlignment="Left"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
+      Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
       IsEnabled="{Binding InstalledVersionIsAutoReferenced,Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       Click="UninstallButton_Clicked"
       Content="{x:Static local:Resources.Button_Uninstall}" />

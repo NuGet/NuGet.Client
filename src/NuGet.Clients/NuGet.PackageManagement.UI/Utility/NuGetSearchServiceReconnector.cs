@@ -156,6 +156,11 @@ namespace NuGet.PackageManagement.UI.Utility
                 return _parent._service.GetPackageVersionsAsync(identity, packageSources, includePrerelease, cancellationToken);
             }
 
+            public ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, bool isTransitive, CancellationToken cancellationToken)
+            {
+                return _parent._service.GetPackageVersionsAsync(identity, packageSources, includePrerelease, isTransitive, cancellationToken);
+            }
+
             public ValueTask<int> GetTotalCountAsync(
                 int maxCount,
                 IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
