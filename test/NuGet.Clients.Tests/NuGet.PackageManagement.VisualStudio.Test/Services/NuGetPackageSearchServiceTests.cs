@@ -25,6 +25,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Test;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
@@ -65,6 +66,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
             };
             _componentModel = new Mock<IComponentModel>();
+            var expService = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(_experimentationFlags));
+            _componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(expService);
+
             globalServiceProvider.AddService(typeof(SComponentModel), _componentModel.Object);
 
             _sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
@@ -133,6 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    false,
                     CancellationToken.None);
 
                 Assert.Equal(MaxCount, totalCount);
@@ -151,6 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    false,
                     CancellationToken.None);
 
                 Assert.Equal(1, totalCount);
@@ -168,6 +174,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     targetFrameworks: new List<string>() { "net45", "net5.0" },
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    It.IsAny<bool>(),
                     CancellationToken.None);
 
                 Assert.Equal(1, allPackages.Count);
@@ -243,6 +250,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     searchText: "nuget",
                     new SearchFilter(includePrerelease: true),
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                    isSolution: false,
                     useRecommender: false,
                     CancellationToken.None);
                 SearchResultContextInfo continueSearchResult = await searchService.ContinueSearchAsync(CancellationToken.None);
@@ -282,6 +290,46 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.IsType<string>(page1["IndividualSourceDurations"]);
                 Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
             }
+        }
+
+        [Theory]
+        [InlineData(false, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
+        [InlineData(false, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
+        [InlineData(false, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
+        [InlineData(false, ItemFilter.Installed, false, typeof(InstalledPackageFeed))]
+        [InlineData(false, ItemFilter.UpdatesAvailable, true, typeof(UpdatePackageFeed))]
+        [InlineData(false, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
+        [InlineData(false, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
+        [InlineData(false, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
+        [InlineData(true, ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
+        [InlineData(true, ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
+        [InlineData(true, ItemFilter.Installed, true, typeof(InstalledPackageFeed))]
+        [InlineData(true, ItemFilter.Installed, false, typeof(InstalledAndTransitivePackageFeed))] // Only when transitive experiment is enabled, show Transitive Dependencies in Installed Tab
+        [InlineData(true, ItemFilter.UpdatesAvailable, true, typeof(UpdatePackageFeed))]
+        [InlineData(true, ItemFilter.UpdatesAvailable, false, typeof(UpdatePackageFeed))]
+        [InlineData(true, ItemFilter.Consolidate, true, typeof(ConsolidatePackageFeed))]
+        [InlineData(true, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
+        public async Task CreatePackageFeedAsync_WithTransitiveOriginsExpFlag_OnlyInstalledFeedOnSolutionViewAsync(bool transitiveDependenciesExperimentEnabled, ItemFilter itemFilter, bool isSolution, Type expectedFeedType)
+        {
+            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled;
+            // Recreate async lazy on each test
+            ExperimentUtility.ResetAsyncValues();
+
+            using NuGetPackageSearchService searchService = SetupSearchService();
+            bool expValue = await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync();
+            Assert.Equal(expValue, transitiveDependenciesExperimentEnabled);
+
+            (IPackageFeed main, IPackageFeed recommender) = await searchService.CreatePackageFeedAsync(
+                projectContextInfos: _projects,
+                targetFrameworks: new List<string>() { "net45" },
+                itemFilter: itemFilter,
+                isSolution: isSolution,
+                recommendPackages: false,
+                sourceRepositories: new List<SourceRepository>() { _sourceRepository },
+                cancellationToken: CancellationToken.None);
+
+            Assert.IsType(expectedFeedType, main);
+            Assert.Null(recommender);
         }
 
         private NuGetPackageSearchService SetupSearchService()

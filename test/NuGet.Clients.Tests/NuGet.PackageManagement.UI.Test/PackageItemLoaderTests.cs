@@ -61,6 +61,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<SearchFilter>(),
                     It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
                     It.IsAny<bool>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
 
@@ -134,6 +135,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<string>(),
                     It.IsAny<SearchFilter>(),
                     It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
@@ -211,6 +213,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<string>(),
                     It.IsAny<SearchFilter>(),
                     It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<SearchResultContextInfo>(searchResult));

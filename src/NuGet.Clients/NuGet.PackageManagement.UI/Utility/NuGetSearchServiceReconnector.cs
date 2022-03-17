@@ -130,9 +130,10 @@ namespace NuGet.PackageManagement.UI.Utility
                 IReadOnlyCollection<string> targetFrameworks,
                 SearchFilter searchFilter,
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter itemFilter,
+                bool isSolution,
                 CancellationToken cancellationToken)
             {
-                return _parent._service.GetAllPackagesAsync(projectContextInfos, packageSources, targetFrameworks, searchFilter, itemFilter, cancellationToken);
+                return _parent._service.GetAllPackagesAsync(projectContextInfos, packageSources, targetFrameworks, searchFilter, itemFilter, isSolution, cancellationToken);
             }
 
             public ValueTask<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
@@ -162,9 +163,10 @@ namespace NuGet.PackageManagement.UI.Utility
                 IReadOnlyCollection<string> targetFrameworks,
                 SearchFilter searchFilter,
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter itemFilter,
+                bool isSolution,
                 CancellationToken cancellationToken)
             {
-                return _parent._service.GetTotalCountAsync(maxCount, projectContextInfos, packageSources, targetFrameworks, searchFilter, itemFilter, cancellationToken);
+                return _parent._service.GetTotalCountAsync(maxCount, projectContextInfos, packageSources, targetFrameworks, searchFilter, itemFilter, isSolution, cancellationToken);
             }
 
             public ValueTask<SearchResultContextInfo> RefreshSearchAsync(CancellationToken cancellationToken)
@@ -179,10 +181,11 @@ namespace NuGet.PackageManagement.UI.Utility
                 string searchText,
                 SearchFilter searchFilter,
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter itemFilter,
+                bool isSolution,
                 bool useRecommender,
                 CancellationToken cancellationToken)
             {
-                return _parent._service.SearchAsync(projectContextInfos, packageSources, targetFrameworks, searchText, searchFilter, itemFilter, useRecommender, cancellationToken);
+                return _parent._service.SearchAsync(projectContextInfos, packageSources, targetFrameworks, searchText, searchFilter, itemFilter, isSolution, useRecommender, cancellationToken);
             }
         }
     }
