@@ -181,7 +181,6 @@ function Test-GetPackageForProjectReturnsCorrectPackages2 {
 }
 
 function Test-GetPackageForFSharpProjectReturnsCorrectPackages {
-    [SkipTest('https://github.com/dotnet/fsharp/issues/12835')]
     param()     
     # Arrange
     $p = New-FSharpConsoleApplication

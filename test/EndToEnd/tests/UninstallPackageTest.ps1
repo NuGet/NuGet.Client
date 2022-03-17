@@ -120,7 +120,6 @@ function Test-UninstallPackageWithNestedContentFiles {
 }
 
 function Test-SimpleFSharpUninstall {
-    [SkipTest('https://github.com/dotnet/fsharp/issues/12835')]
     param($context)
 
     # Arrange
