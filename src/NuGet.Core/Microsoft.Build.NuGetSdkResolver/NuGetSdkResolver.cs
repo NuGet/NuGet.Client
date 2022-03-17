@@ -29,6 +29,10 @@ namespace Microsoft.Build.NuGetSdkResolver
     {
         private static readonly Lazy<bool> DisableNuGetSdkResolver = new Lazy<bool>(() => Environment.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1");
 
+        private static readonly Lazy<object> SettingsLoadContext = new Lazy<object>(() => new SettingsLoadingContext());
+
+        private static readonly Lazy<object> MachineWideSettings = new Lazy<object>(() => new XPlatMachineWideSetting());
+
         private readonly IGlobalJsonReader _globalJsonReader;
 
         /// <summary>
@@ -127,7 +131,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
                 // Load NuGet settings and a path resolver
-                ISettings settings = Settings.LoadDefaultSettings(context.ProjectFilePath);
+                ISettings settings = Settings.LoadDefaultSettings(context.ProjectFilePath, configFileName: null, MachineWideSettings.Value as IMachineWideSettings, SettingsLoadContext.Value as SettingsLoadingContext);
 
                 var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
