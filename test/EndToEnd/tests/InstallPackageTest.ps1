@@ -798,13 +798,12 @@ function Test-SimpleBindingRedirectsClassLibraryReference {
 }
 
 function Test-SimpleBindingRedirectsIndirectReference {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     # Arrange
     $a = New-WebApplication
-    $b = New-ClassLibrary
-    $c = New-ClassLibrary
+    $b = New-ClassLibraryNET46
+    $c = New-ClassLibraryNET46
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
@@ -843,13 +842,12 @@ function Test-SimpleBindingRedirectsNonWeb {
 }
 
 function Test-BindingRedirectComplex {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
@@ -885,11 +883,10 @@ function Test-SimpleBindingRedirectsWebsite {
 
 
 function Test-BindingRedirectInstallLargeProject {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     $numProjects = 25
-    $projects = 0..$numProjects | %{ New-ClassLibrary $_ }
+    $projects = 0..$numProjects | %{ New-ClassLibraryNET46 $_ }
     $p = New-WebApplication
 
     for($i = 0; $i -lt $numProjects; $i++) {
@@ -904,13 +901,12 @@ function Test-BindingRedirectInstallLargeProject {
 }
 
 function Test-BindingRedirectDuplicateReferences {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     ($a, $b) | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
 
@@ -929,13 +925,12 @@ function Test-BindingRedirectDuplicateReferences {
 }
 
 function Test-BindingRedirectClassLibraryWithDifferentDependents {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     ($a, $b) | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
 
@@ -954,13 +949,12 @@ function Test-BindingRedirectClassLibraryWithDifferentDependents {
 }
 
 function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocations {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     $a | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
     $aPath = ls (Get-SolutionDir) -Recurse -Filter A.dll
@@ -1006,13 +1000,12 @@ function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
 }
 
 function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembly {
-    [SkipTest("https://github.com/NuGet/Home/issues/11223")]
     param($context)
 
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     $a | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
     $b | Install-Package A -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
