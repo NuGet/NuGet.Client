@@ -16,11 +16,12 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         /// Initializes a new instance of the <see cref="MockSdkResolverContext" /> class.
         /// </summary>
         /// <param name="projectPath">The path to the project.</param>
-        public MockSdkResolverContext(string projectPath)
+        public MockSdkResolverContext(string projectPath = null, string solutionPath = null)
         {
             Logger = MockSdkLogger;
 
             ProjectFilePath = projectPath;
+            SolutionFilePath = solutionPath;
         }
 
         /// <summary>

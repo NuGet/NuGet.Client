@@ -337,12 +337,12 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         /// <summary>
-        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns null when the <see cref="Framework.SdkResolverContext.ProjectFilePath" /> is null.
+        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns null when the <see cref="Framework.SdkResolverContext.SolutionFilePath" /> and <see cref="Framework.SdkResolverContext.ProjectFilePath" /> is null.
         /// </summary>
         [Fact]
-        public void GetMSBuildSdkVersions_ReturnsNull_WhenProjectPathIsNull()
+        public void GetMSBuildSdkVersions_ReturnsNull_WhenSolutionFilePathAndProjectFilePathIsNull()
         {
-            var context = new MockSdkResolverContext(projectPath: null);
+            var context = new MockSdkResolverContext(projectPath: null, solutionPath: null);
 
             var globalJsonReader = new GlobalJsonReader();
 
@@ -394,6 +394,54 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 wasGlobalJsonRead.Should().BeTrue();
             }
+        }
+
+        /// <summary>
+        /// Verifies that the <see cref="GlobalJsonReader.GetStartingPath(Framework.SdkResolverContext)" /> method returns the project path if the solution path is null or whitespace.
+        /// </summary>
+        /// <param name="solutionPath"></param>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("     ")]
+        public void GetStartingPath_ReturnsProjectPath_WhenSolutionPathIsNullOrWhitespace(string solutionPath)
+        {
+            const string projectPath = "PROJECT_PATH";
+
+            var context = new MockSdkResolverContext(projectPath, solutionPath);
+
+            GlobalJsonReader.GetStartingPath(context).Should().Be(projectPath);
+        }
+
+        /// <summary>
+        /// Verifies that the <see cref="GlobalJsonReader.GetStartingPath(Framework.SdkResolverContext)" /> method returns the solution path if it is not null or whitespace.
+        /// </summary>
+        /// <param name="solutionPath"></param>
+        [Fact]
+        public void GetStartingPath_ReturnsSolutionPath_WhenSolutionPathIsNotNullOrWhitespace()
+        {
+            const string solutionPath = "SOLUTION_PATH";
+
+            var context = new MockSdkResolverContext(projectPath: null, solutionPath);
+
+            GlobalJsonReader.GetStartingPath(context).Should().Be(solutionPath);
+        }
+
+        /// <summary>
+        /// Verifies that the <see cref="GlobalJsonReader.GetStartingPath(Framework.SdkResolverContext)" /> method returns the project path if the solution path is null or whitespace.
+        /// </summary>
+        /// <param name="solutionPath"></param>
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("", null)]
+        [InlineData("", "")]
+        [InlineData(null, "")]
+        [InlineData("     ", "     ")]
+        public void GetStartingPath_ReturnsNull_WhenSolutionPathAndProjectPathIsNullOrWhitespace(string solutionPath, string projectPath)
+        {
+            var context = new MockSdkResolverContext(projectPath, solutionPath);
+
+            GlobalJsonReader.GetStartingPath(context).Should().BeNull();
         }
 
         /// <summary>
