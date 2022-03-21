@@ -1648,30 +1648,14 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                PackageSourceMapping packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance);
-
-                if (enablePackageSourceMapping)
-                {
-                    string testConfig = Path.Combine(pathContext.WorkingDirectory, "test.config");
-
-                    SettingsTestUtils.CreateConfigurationFile(testConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSourceMapping>
-        <clear />
-        <packageSource key=""{pathContext.PackageSource}"">
-            <package pattern=""foo"" />
-        </packageSource>
-        <packageSource key=""https://feed1"">
-            <package pattern=""bar"" />
-        </packageSource>
-        <packageSource key=""https://feed2"">
-            <package pattern=""baz"" />
-        </packageSource>
-    </packageSourceMapping>
-</configuration>");
-                    packageSourceMappingConfiguration = PackageSourceMapping.GetPackageSourceMapping(Settings.LoadSettingsGivenConfigPaths(new string[] { testConfig }));
-                }
-
+                PackageSourceMapping packageSourceMappingConfiguration = enablePackageSourceMapping
+                    ? new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>
+                    {
+                        [pathContext.PackageSource] = new List<string> { "foo" },
+                        ["https://feed1"] = new List<string> { "bar" },
+                        ["https://feed2"] = new List<string> { "baz" },
+                    })
+                    : PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance);
 
                 var request = new TestRestoreRequest(packageSpec, packageSources, packagesDirectory: "", cacheContext: context, packageSourceMappingConfiguration: packageSourceMappingConfiguration, logger)
                 {
