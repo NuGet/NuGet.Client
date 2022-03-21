@@ -22,7 +22,8 @@ namespace NuGet.PackageManagement.Telemetry
             bool isPackageDeprecated,
             bool hasDeprecationAlternativePackage,
             ItemFilter currentTab,
-            PackageLevel packageLevel) : base("SearchSelection")
+            PackageLevel packageLevel,
+            bool isSolutionLevel) : base("SearchSelection")
         {
             if (packageId == null)
             {
@@ -41,6 +42,7 @@ namespace NuGet.PackageManagement.Telemetry
             base["HasDeprecationAlternativePackage"] = hasDeprecationAlternativePackage;
             base["Tab"] = currentTab;
             base["PackageLevel"] = packageLevel;
+            base["IsSolutionLevel"] = isSolutionLevel;
             AddPiiData("PackageId", VSTelemetryServiceUtility.NormalizePackageId(packageId));
             AddPiiData("PackageVersion", packageVersion.ToNormalizedString().ToLowerInvariant());
         }

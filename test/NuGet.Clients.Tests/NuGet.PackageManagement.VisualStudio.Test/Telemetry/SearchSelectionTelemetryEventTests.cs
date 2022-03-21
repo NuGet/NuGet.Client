@@ -14,13 +14,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class SearchSelectionTelemetryEventTests
     {
+        [Theory]
         [InlineData(false, true, true)]
         [InlineData(true, true, true)]
         [InlineData(false, true, false)]
         [InlineData(true, false, false)]
         [InlineData(true, true, false)]
         [InlineData(false, false, false)]
-        [Theory]
         public void SearchSelectionTelemetryEvent_VulnerableAndDeprecationInfo_Succeeds(bool isPackageVulnerable, bool isPackageDeprecated, bool hasDeprecationAlternative)
         {
             // Assert params
@@ -45,7 +45,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 isPackageDeprecated: isPackageDeprecated,
                 hasDeprecationAlternativePackage: hasDeprecationAlternative,
                 currentTab: It.IsAny<ContractsItemFilter>(),
-                packageLevel: It.IsAny<PackageLevel>());
+                packageLevel: It.IsAny<PackageLevel>(),
+                isSolutionLevel: It.IsAny<bool>());
 
             // Act
             service.EmitTelemetryEvent(evt);
@@ -87,7 +88,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 isPackageDeprecated: It.IsAny<bool>(),
                 hasDeprecationAlternativePackage: It.IsAny<bool>(),
                 currentTab: currentTab,
-                packageLevel: packageLevel);
+                packageLevel: packageLevel,
+                isSolutionLevel: It.IsAny<bool>());
 
             // Act
             service.EmitTelemetryEvent(evt);
@@ -116,8 +118,44 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     isPackageDeprecated: It.IsAny<bool>(),
                     hasDeprecationAlternativePackage: It.IsAny<bool>(),
                     currentTab: It.IsAny<ContractsItemFilter>(),
-                    packageLevel: It.IsAny<PackageLevel>());
+                    packageLevel: It.IsAny<PackageLevel>(),
+                    isSolutionLevel: It.IsAny<bool>());
             });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SearchSelectionTelemetryEvent_PackageIdOrPackageVersionAreNulls_Succeeds(bool isSolution)
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            _ = telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            var evt = new SearchSelectionTelemetryEvent(
+                parentId: It.IsAny<Guid>(),
+                recommendedCount: It.IsAny<int>(),
+                itemIndex: It.IsAny<int>(),
+                packageId: "testpackage",
+                packageVersion: new NuGetVersion(1, 0, 0),
+                isPackageVulnerable: It.IsAny<bool>(),
+                isPackageDeprecated: It.IsAny<bool>(),
+                hasDeprecationAlternativePackage: It.IsAny<bool>(),
+                currentTab: It.IsAny<ContractsItemFilter>(),
+                packageLevel: It.IsAny<PackageLevel>(),
+                isSolutionLevel: isSolution);
+
+            // Act
+            service.EmitTelemetryEvent(evt);
+
+            // Assert
+            Assert.NotNull(lastTelemetryEvent);
+            Assert.Equal(isSolution, lastTelemetryEvent["IsSolutionLevel"]);
         }
     }
 }

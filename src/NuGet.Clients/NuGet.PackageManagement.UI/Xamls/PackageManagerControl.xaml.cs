@@ -1091,7 +1091,8 @@ namespace NuGet.PackageManagement.UI
                     selectedPackage.IsPackageDeprecated,
                     hasDeprecationAlternative,
                     UIUtility.ToContractsItemFilter(_topPanel.Filter),
-                    selectedPackage.PackageLevel));
+                    selectedPackage.PackageLevel,
+                    _topPanel.IsSolution));
             }
         }
 
