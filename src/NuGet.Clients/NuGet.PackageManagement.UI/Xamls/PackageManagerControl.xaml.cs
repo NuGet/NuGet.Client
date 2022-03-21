@@ -1089,7 +1089,9 @@ namespace NuGet.PackageManagement.UI
                     selectedPackage.Version,
                     selectedPackage.IsPackageVulnerable,
                     selectedPackage.IsPackageDeprecated,
-                    hasDeprecationAlternative));
+                    hasDeprecationAlternative,
+                    UIUtility.ToContractsItemFilter(_topPanel.Filter),
+                    selectedPackage.PackageLevel));
             }
         }
 

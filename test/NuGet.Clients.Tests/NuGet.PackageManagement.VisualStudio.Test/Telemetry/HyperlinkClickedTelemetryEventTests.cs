@@ -87,7 +87,9 @@ namespace NuGet.PackageManagement.Test.Telemetry
                 packageVersion: testPackageVersion,
                 isPackageVulnerable: It.IsAny<bool>(),
                 isPackageDeprecated: true,
-                hasDeprecationAlternativePackage: true);
+                hasDeprecationAlternativePackage: true,
+                currentTab: It.IsAny<ContractsItemFilter>(),
+                packageLevel: It.IsAny<PackageLevel>());
 
             var evtActions = new VSActionsTelemetryEvent(
                 operationId: It.IsAny<string>(),
