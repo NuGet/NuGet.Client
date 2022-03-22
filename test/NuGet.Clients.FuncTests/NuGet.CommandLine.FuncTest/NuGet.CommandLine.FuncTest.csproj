@@ -1,5 +1,5 @@
 <Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'NuGet.sln'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
@@ -11,7 +11,7 @@
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
- 
+
   <ItemGroup>
     <None Remove="compiler\resources\pc.packages.lock.json" />
   </ItemGroup>
@@ -32,7 +32,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" Condition="'$(SkipILMergeOfNuGetExe)' != 'true'">
       <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe" DestinationFolder="$(OutputPath)NuGet\" />
   </Target>

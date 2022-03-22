@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'NuGet.sln'))\build\common.legacy.props" />
   <PropertyGroup>
     <MinimumVisualStudioVersion>$(VisualStudioVersion)</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -187,7 +187,7 @@ namespace $(RootNamespace)
       <FileWrites Include="%(_ProductVersionAssemblyInfoFile.Identity)" />
     </ItemGroup>
   </Target>
-  
+
   <Target Name="GenerateProductVersionAssemblyInfo" BeforeTargets="GenerateAdditionalSources"
           DependsOnTargets="DetermineGenerateProductVersionAssemblyInfoOutputs"
           Inputs="$(MSBuildAllProjects)"
