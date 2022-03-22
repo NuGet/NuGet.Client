@@ -9,7 +9,7 @@ namespace NuGet.VisualStudio.Common.Test
     /// <summary>
     /// Defines the "MockedVS" xunit test collection.
     /// </summary>
-    [CollectionDefinition(Collection)]
+    [CollectionDefinition(Collection, DisableParallelization = true)]
     public class MockedVS : ICollectionFixture<GlobalServiceProvider>, ICollectionFixture<MefHostingFixture>
     {
         /// <summary>
