@@ -13,7 +13,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class CertificateUtilityTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class CertificateUtilityTests
     {
         private readonly CertificatesFixture _fixture;
 

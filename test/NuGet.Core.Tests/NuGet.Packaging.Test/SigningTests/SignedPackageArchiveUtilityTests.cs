@@ -16,7 +16,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignedPackageArchiveUtilityTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class SignedPackageArchiveUtilityTests
     {
         private static readonly byte[] _signatureFileName = Encoding.ASCII.GetBytes(SigningSpecifications.V1.SignaturePath);
         private readonly CertificatesFixture _fixture;

@@ -19,7 +19,7 @@ using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Dotnet.Integration.Test
 {
-    [Collection("Dotnet Integration Tests")]
+    [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetRestoreTests
     {
         private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
