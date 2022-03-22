@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -73,7 +74,7 @@ namespace NuGet.SolutionRestoreManager
         private Lazy<INuGetErrorList> _errorList;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
-        private Lazy<INuGetExperimentationService> _nuGetExperimentationService;
+        private Lazy<INuGetFeatureFlagService> _nugetFeatureFlagService;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -97,7 +98,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetExperimentationService> nuGetExperimentationService)
+            Lazy<INuGetFeatureFlagService> nuGetExperimentationService)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
@@ -114,7 +115,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetExperimentationService> nuGetExperimentationService)
+            Lazy<INuGetFeatureFlagService> nuGetExperimentationService)
         {
             if (asyncServiceProvider == null)
             {
@@ -157,7 +158,7 @@ namespace NuGet.SolutionRestoreManager
             _logger = logger;
             _errorList = errorList;
             _outputConsoleProvider = outputConsoleProvider;
-            _nuGetExperimentationService = nuGetExperimentationService;
+            _nugetFeatureFlagService = nuGetExperimentationService;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
@@ -410,7 +411,7 @@ namespace NuGet.SolutionRestoreManager
                     using (var restoreOperation = new BackgroundRestoreOperation())
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, token);
-                        var isBulkRestoreCoordinationEnabled = _nuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.BulkRestoreCoordination);
+                        var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
                         var restoreTrackingData = GetRestoreTrackingData(
                             restoreReason: ImplicitRestoreReason.None,
                             requestCount: 1,
@@ -430,6 +431,11 @@ namespace NuGet.SolutionRestoreManager
                 // Signal that restore has been completed.
                 _isCompleteEvent.Set();
             }
+        }
+
+        private async Task<bool> IsBulkRestoreCoordinationEnabledAsync()
+        {
+            return await _nugetFeatureFlagService.Value.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.BulkRestoreCoordination);
         }
 
         public async Task CleanCacheAsync()
@@ -468,7 +474,7 @@ namespace NuGet.SolutionRestoreManager
             }
 
             ImplicitRestoreReason restoreReason = ImplicitRestoreReason.None;
-            var isBulkRestoreCoordinationEnabled = _nuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.BulkRestoreCoordination);
+            var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
             DateTime? bulkRestoreCoordinationCheckStartTime = default;
             // Loops until there are pending restore requests or it's get cancelled
             while (!token.IsCancellationRequested)
