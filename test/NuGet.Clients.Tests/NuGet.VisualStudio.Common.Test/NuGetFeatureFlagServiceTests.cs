@@ -45,7 +45,7 @@ namespace NuGet.VisualStudio.Common.Test
 
         public async Task IsFeatureEnabledAsync_WithoutFlag_ReturnsDefaultValueFromConstant(bool featureFlagDefault)
         {
-            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultFeatureFlag: featureFlagDefault);
+            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultState: featureFlagDefault);
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();
 
             Mock.Get(vsFeatureFlags)
@@ -61,10 +61,10 @@ namespace NuGet.VisualStudio.Common.Test
         [Fact]
         public async Task IsFeatureEnabledAsync_WithEnabledFeatureFlagAndForcedEnabledEnvVar_ReturnsTrue()
         {
-            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultFeatureFlag: false);
+            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultState: false);
             var envVars = new Dictionary<string, string>()
             {
-                { featureFlagConstant.FeatureEnvironmentVariable, "1" },
+                { featureFlagConstant.EnvironmentVariable, "1" },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();
@@ -85,10 +85,10 @@ namespace NuGet.VisualStudio.Common.Test
         [InlineData("randomValue")]
         public async Task IsFeatureEnabledAsync_WithEnvVarWithIncorrectValue_WithEnvironmentVariable__ReturnsFalse(string value)
         {
-            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultFeatureFlag: false);
+            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultState: false);
             var envVars = new Dictionary<string, string>()
             {
-                { featureFlagConstant.FeatureEnvironmentVariable, value },
+                { featureFlagConstant.EnvironmentVariable, value },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();
@@ -108,7 +108,7 @@ namespace NuGet.VisualStudio.Common.Test
         [InlineData(false, false)]
         public async Task IsFeatureEnabledAsync_WithEnvVarNotSetWithEnabledFeatureFromWithFeatureFlagService_ReturnsExpectedResult(bool isFeatureEnabled, bool expectedResult)
         {
-            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultFeatureFlag: false);
+            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultState: false);
             var envVarWrapper = new TestEnvironmentVariableReader(new Dictionary<string, string>());
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();
 
@@ -125,10 +125,10 @@ namespace NuGet.VisualStudio.Common.Test
         [Fact]
         public async Task IsFeatureEnabledAsync_WithEnvVarEnabled_WithFeatureFlagServiceDisabled_ReturnsTrue()
         {
-            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultFeatureFlag: false);
+            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultState: false);
             var envVars = new Dictionary<string, string>()
             {
-                { featureFlagConstant.FeatureEnvironmentVariable, "1" },
+                { featureFlagConstant.EnvironmentVariable, "1" },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();
@@ -146,10 +146,10 @@ namespace NuGet.VisualStudio.Common.Test
         [Fact]
         public async Task IsFeatureEnabledAsync_WithEnvVarDisabled_WithFeatureFlagServiceEnabled_ReturnsFalse()
         {
-            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultFeatureFlag: false);
+            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", "featureEnvVar", defaultState: false);
             var envVars = new Dictionary<string, string>()
             {
-                { featureFlagConstant.FeatureEnvironmentVariable, "0" },
+                { featureFlagConstant.EnvironmentVariable, "0" },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();
@@ -167,7 +167,7 @@ namespace NuGet.VisualStudio.Common.Test
         [Fact]
         public async Task IsFeatureEnabledAsync_WithNullEnvironmentVariableForConstant_HandlesGracefully()
         {
-            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", null, defaultFeatureFlag: false);
+            var featureFlagConstant = new NuGetFeatureFlagConstants("featureFlag", null, defaultState: false);
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();
 
             _globalProvider.AddService(typeof(SVsFeatureFlags), vsFeatureFlags);
@@ -178,13 +178,13 @@ namespace NuGet.VisualStudio.Common.Test
         [Fact]
         public async Task IsFeatureEnabledAsync_MultipleFeaturesOverriddenWithDifferentEnvVars_DoNotConflict()
         {
-            var forcedOff = new NuGetFeatureFlagConstants("TestExp1", "TEST_EXP_1", defaultFeatureFlag: false);
-            var forcedOn = new NuGetFeatureFlagConstants("TestExp2", "TEST_EXP_2", defaultFeatureFlag: false);
-            var noOverride = new NuGetFeatureFlagConstants("TestExp3", "TEST_EXP_3", defaultFeatureFlag: false);
+            var forcedOff = new NuGetFeatureFlagConstants("TestExp1", "TEST_EXP_1", defaultState: false);
+            var forcedOn = new NuGetFeatureFlagConstants("TestExp2", "TEST_EXP_2", defaultState: false);
+            var noOverride = new NuGetFeatureFlagConstants("TestExp3", "TEST_EXP_3", defaultState: false);
             var envVars = new Dictionary<string, string>()
             {
-                { forcedOn.FeatureEnvironmentVariable, "1" },
-                { forcedOff.FeatureEnvironmentVariable, "0" },
+                { forcedOn.EnvironmentVariable, "1" },
+                { forcedOff.EnvironmentVariable, "0" },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var vsFeatureFlags = Mock.Of<IVsFeatureFlags>();

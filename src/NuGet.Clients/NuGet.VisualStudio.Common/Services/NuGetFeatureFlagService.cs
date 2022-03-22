@@ -35,31 +35,31 @@ namespace NuGet.VisualStudio
             _featureFlagCache = new();
         }
 
-        public async Task<bool> IsFeatureEnabledAsync(NuGetFeatureFlagConstants experiment)
+        public async Task<bool> IsFeatureEnabledAsync(NuGetFeatureFlagConstants featureFlag)
         {
-            GetEnvironmentVariablesForFeature(experiment, out bool isFeatureForcedEnabled, out bool isFeatureForcedDisabled);
+            GetEnvironmentVariablesForFeature(featureFlag, out bool isFeatureForcedEnabled, out bool isFeatureForcedDisabled);
             // Perform the check from the feature flag service only once.
             // There are events sent for targetted notification changes, but we don't listen to those at this point.
-            if (!_featureFlagCache.TryGetValue(experiment.FeatureFlagName, out bool featureEnabled))
+            if (!_featureFlagCache.TryGetValue(featureFlag.Name, out bool featureEnabled))
             {
                 var featureFlagService = await _ivsFeatureFlags.GetValueAsync();
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                featureEnabled = featureFlagService.IsFeatureEnabled(experiment.FeatureFlagName, defaultValue: experiment.DefaultFeatureFlag);
-                _featureFlagCache.Add(experiment.FeatureFlagName, featureEnabled);
+                featureEnabled = featureFlagService.IsFeatureEnabled(featureFlag.Name, defaultValue: featureFlag.DefaultState);
+                _featureFlagCache.Add(featureFlag.Name, featureEnabled);
             }
             return !isFeatureForcedDisabled && (isFeatureForcedEnabled || featureEnabled);
         }
 
-        private void GetEnvironmentVariablesForFeature(NuGetFeatureFlagConstants experiment, out bool isExpForcedEnabled, out bool isExpForcedDisabled)
+        private void GetEnvironmentVariablesForFeature(NuGetFeatureFlagConstants featureFlag, out bool isFeatureForcedEnabled, out bool isFeatureForcedDisabled)
         {
-            isExpForcedEnabled = false;
-            isExpForcedDisabled = false;
-            if (!string.IsNullOrEmpty(experiment.FeatureEnvironmentVariable))
+            isFeatureForcedEnabled = false;
+            isFeatureForcedDisabled = false;
+            if (!string.IsNullOrEmpty(featureFlag.EnvironmentVariable))
             {
-                string envVarOverride = _environmentVariableReader.GetEnvironmentVariable(experiment.FeatureEnvironmentVariable);
+                string envVarOverride = _environmentVariableReader.GetEnvironmentVariable(featureFlag.EnvironmentVariable);
 
-                isExpForcedDisabled = envVarOverride == "0";
-                isExpForcedEnabled = envVarOverride == "1";
+                isFeatureForcedDisabled = envVarOverride == "0";
+                isFeatureForcedEnabled = envVarOverride == "1";
             }
         }
     }

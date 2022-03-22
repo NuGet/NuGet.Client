@@ -7,29 +7,29 @@ namespace NuGet.VisualStudio
 {
     public class NuGetFeatureFlagConstants
     {
-        internal NuGetFeatureFlagConstants(string featureFlagName, string featureEnvironmentVariable, bool defaultFeatureFlag)
+        internal NuGetFeatureFlagConstants(string name, string environmentVariable, bool defaultState)
         {
-            FeatureFlagName = featureFlagName ?? throw new ArgumentNullException(nameof(featureFlagName));
-            FeatureEnvironmentVariable = featureEnvironmentVariable;
-            DefaultFeatureFlag = defaultFeatureFlag;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            EnvironmentVariable = environmentVariable;
+            DefaultState = defaultState;
         }
 
         /// <summary>
         /// The value defined for the VS feature flag service.
         /// </summary>
-        internal string FeatureFlagName { get; }
+        internal string Name { get; }
 
         /// <summary>
         /// The environment variable means of enabled this feature.
         /// Might be <see cref="null"/>.
         /// </summary>
-        internal string FeatureEnvironmentVariable { get; }
+        internal string EnvironmentVariable { get; }
 
         /// <summary>
         /// Default feature state, if the Feature Flag is not specified.
         /// </summary>
-        internal bool DefaultFeatureFlag { get; }
+        internal bool DefaultState { get; }
 
-        public static readonly NuGetFeatureFlagConstants BulkRestoreCoordination = new("NuGet.BulkRestoreCoordination", "NUGET_BULK_RESTORE_COORDINATION", defaultFeatureFlag: true);
+        public static readonly NuGetFeatureFlagConstants BulkRestoreCoordination = new("NuGet.BulkRestoreCoordination", "NUGET_BULK_RESTORE_COORDINATION", defaultState: true);
     }
 }

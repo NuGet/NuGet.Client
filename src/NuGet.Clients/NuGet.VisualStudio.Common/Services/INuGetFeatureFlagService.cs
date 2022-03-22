@@ -15,8 +15,8 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Determines whether a feature has been enabled.
         /// </summary>
-        /// <param name="experimentation">The experiment info.</param>
+        /// <param name="featureFlag">The feature flag info.</param>
         /// <returns>Whether the feature is enabled.</returns>
-        Task<bool> IsFeatureEnabledAsync(NuGetFeatureFlagConstants experimentation);
+        Task<bool> IsFeatureEnabledAsync(NuGetFeatureFlagConstants featureFlag);
     }
 }

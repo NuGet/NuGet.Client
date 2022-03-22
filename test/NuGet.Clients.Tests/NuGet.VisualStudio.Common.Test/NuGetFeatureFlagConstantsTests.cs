@@ -12,15 +12,15 @@ namespace NuGet.VisualStudio.Common.Test
         [Fact]
         public void Constructor_WithNullFlightFlag_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new NuGetFeatureFlagConstants(null, "value", defaultFeatureFlag: true));
+            Assert.Throws<ArgumentNullException>(() => new NuGetFeatureFlagConstants(null, "value", defaultState: true));
         }
 
         [Fact]
         public void Constructor_WithNullFlightExperimentalVariable_DoesNotThrow()
         {
-            var constant = new NuGetFeatureFlagConstants("value", null, defaultFeatureFlag: true);
+            var constant = new NuGetFeatureFlagConstants("value", null, defaultState: true);
 
-            constant.FeatureEnvironmentVariable.Should().BeNull();
+            constant.EnvironmentVariable.Should().BeNull();
         }
 
         [Theory]
@@ -30,7 +30,7 @@ namespace NuGet.VisualStudio.Common.Test
         {
             var constant = new NuGetFeatureFlagConstants("value", null, defaultFeatureFlag);
 
-            constant.DefaultFeatureFlag.Should().Be(defaultFeatureFlag);
+            constant.DefaultState.Should().Be(defaultFeatureFlag);
         }
     }
 }
