@@ -3,12 +3,13 @@
 
 using System;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
     public class UserAction
     {
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, UIOperationSource uiSource)
         {
             Action = action;
 
@@ -19,7 +20,10 @@ namespace NuGet.PackageManagement.UI
 
             PackageId = packageId;
             Version = packageVersion;
+            UIOperationsource = uiSource;
         }
+
+        public UIOperationSource UIOperationsource { get; set; }
 
         public NuGetProjectActionType Action { get; private set; }
 
@@ -27,19 +31,19 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetVersion Version { get; }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion)
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, UIOperationSource uiSource)
         {
             if (packageVersion == null)
             {
                 throw new ArgumentNullException(nameof(packageVersion));
             }
 
-            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion);
+            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, uiSource);
         }
 
-        public static UserAction CreateUnInstallAction(string packageId)
+        public static UserAction CreateUnInstallAction(string packageId, UIOperationSource uiSource)
         {
-            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null);
+            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, uiSource);
         }
     }
 }

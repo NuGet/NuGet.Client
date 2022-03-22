@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI.Test
                 actionTelemetryEvent: actionTelemetryData,
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0)),
+                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<UIOperationSource>()),
                 selectedIndex: 0,
                 recommendedCount: 0,
                 recommendPackages: false,
