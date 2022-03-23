@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken)
         {
             var operationType = NuGetOperationType.Install;
-            if (userAction.Action == NuGetProjectActionType.Uninstall)
+            if (userAction.Action == NuGetOperationType.Uninstall)
             {
                 operationType = NuGetOperationType.Uninstall;
             }
@@ -199,6 +199,7 @@ namespace NuGet.PackageManagement.UI
         /// <remarks>This needs to be called from a background thread. It may make the UI thread stop responding.</remarks>
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
+            UserAction action,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken cancellationToken)
         {
@@ -212,7 +213,7 @@ namespace NuGet.PackageManagement.UI
 
                 await PerformActionAsync(
                     uiService,
-                    userAction: null,
+                    userAction: action,
                     NuGetOperationType.Update,
                     (projectManagerService) =>
                         ResolveActionsForUpdateAsync(projectManagerService, uiService, packagesToUpdate, cancellationToken),
@@ -539,7 +540,6 @@ namespace NuGet.PackageManagement.UI
             }, cancellationToken);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
         internal static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
             bool continueAfterPreview,
@@ -594,6 +594,9 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
                 actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
+                actionTelemetryEvent.UIOperationSource = userAction.UIOperationsource;
+                actionTelemetryEvent.IsSolutionLevel = userAction.IsSolutionLevel;
+                actionTelemetryEvent.ActiveTab = UIUtility.ToContractsItemFilter(userAction.ActiveTab);
             }
 
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;
@@ -631,7 +634,7 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var package in removedPackages)
                 {
-                    packages.Add(new TelemetryPiiProperty(package?.ToLowerInvariant() ?? "(empty package id)"));
+                    packages.Add(new TelemetryPiiProperty(VSTelemetryServiceUtility.NormalizePackageId(package)));
                 }
 
                 actionTelemetryEvent.ComplexData["RemovedPackages"] = packages;
@@ -789,7 +792,7 @@ namespace NuGet.PackageManagement.UI
 
             // Allow prerelease packages only if the target is prerelease
             bool includePrelease =
-                userAction.Action == NuGetProjectActionType.Uninstall ||
+                userAction.Action == NuGetOperationType.Uninstall ||
                 userAction.Version.IsPrerelease == true;
 
             IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
@@ -798,7 +801,7 @@ namespace NuGet.PackageManagement.UI
                 .Distinct()
                 .ToArray();
 
-            if (userAction.Action == NuGetProjectActionType.Install)
+            if (userAction.Action == NuGetOperationType.Install)
             {
                 var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
 

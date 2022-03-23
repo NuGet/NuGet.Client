@@ -7,5 +7,6 @@ namespace NuGet.VisualStudio
     {
         PackgesList = 0,
         DetailsPane = 1,
+        UpdateButton = 2,
     }
 }

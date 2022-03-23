@@ -113,6 +113,8 @@ namespace NuGet.PackageManagement.UI
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
                     model.SelectedVersion.Version,
+                    model.IsSolution,
+                    Control.ActiveFilter,
                     UIOperationSource.DetailsPane);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
@@ -125,7 +127,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, UIOperationSource.DetailsPane);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, model.IsSolution, Control.ActiveFilter, UIOperationSource.DetailsPane);
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }
@@ -139,6 +141,8 @@ namespace NuGet.PackageManagement.UI
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
                     model.SelectedVersion.Version,
+                    model.IsSolution,
+                    Control.ActiveFilter,
                     UIOperationSource.DetailsPane);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
@@ -151,7 +155,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, UIOperationSource.DetailsPane);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, model.IsSolution, Control.ActiveFilter, UIOperationSource.DetailsPane);
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }

@@ -12,8 +12,8 @@ namespace NuGet.VisualStudio
     {
         public ItemFilter ActiveTab { set => this["Tab"] = value; }
         public bool IsSolutionLevel { set => this["IsSolutionLevel"] = value; }
-        public int TopLevelPackagesCount { set => this["TopLevelPackagesCount"] = value; }
-        public int TransitivePackagesCount { set => this["TransitivePackagesCount"] = value; }
+        public int TopLevelPackagesShownCount { set => this["TopLevelPackagesCount"] = value; }
+        public int TransitivePackagesShownCount { set => this["TransitivePackagesCount"] = value; }
         public PackageLevel SelectedPackageLevel { set => this["SelectedPackageLevel"] = value; }
         public UIOperationSource UIOperationSource { set => this["UIOperationSource"] = value; }
 

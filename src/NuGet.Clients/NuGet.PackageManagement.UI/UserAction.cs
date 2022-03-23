@@ -7,43 +7,51 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
+    /// <summary>
+    /// Represents an action performed in PM UI
+    /// </summary>
     public class UserAction
     {
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, UIOperationSource uiSource)
+        private UserAction(NuGetOperationType action, string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ItemFilter activeTab, UIOperationSource uiSource)
         {
-            Action = action;
-
             if (string.IsNullOrEmpty(packageId))
             {
                 throw new ArgumentNullException(nameof(packageId));
             }
 
+            Action = action;
             PackageId = packageId;
             Version = packageVersion;
             UIOperationsource = uiSource;
+            ActiveTab = activeTab;
+            IsSolutionLevel = isSolutionLevel;
         }
 
-        public UIOperationSource UIOperationsource { get; set; }
-
-        public NuGetProjectActionType Action { get; private set; }
-
+        public bool IsSolutionLevel { get; private set; }
+        public ItemFilter ActiveTab { get; private set; }
+        public UIOperationSource UIOperationsource { get; private set; }
+        public NuGetOperationType Action { get; private set; }
         public string PackageId { get; }
-
         public NuGetVersion Version { get; }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, UIOperationSource uiSource)
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ItemFilter activeTab, UIOperationSource uiSource)
         {
             if (packageVersion == null)
             {
                 throw new ArgumentNullException(nameof(packageVersion));
             }
 
-            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, uiSource);
+            return new UserAction(NuGetOperationType.Install, packageId, packageVersion, isSolutionLevel, activeTab, uiSource);
         }
 
-        public static UserAction CreateUnInstallAction(string packageId, UIOperationSource uiSource)
+        public static UserAction CreateUnInstallAction(string packageId, bool isSolutionLevel, ItemFilter activeTab, UIOperationSource uiSource)
         {
-            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, uiSource);
+            return new UserAction(NuGetOperationType.Uninstall, packageId, packageVersion: null, isSolutionLevel, activeTab, uiSource);
+        }
+
+        public static UserAction CreateUpdateAction(bool isSolutionLevel, ItemFilter activeTab, UIOperationSource uiSource)
+        {
+            return new UserAction(NuGetOperationType.Update, null, null, isSolutionLevel, activeTab, uiSource);
         }
     }
 }
