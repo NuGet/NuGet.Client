@@ -3,7 +3,6 @@
 
 using System;
 using NuGet.Common;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
