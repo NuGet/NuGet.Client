@@ -92,18 +92,6 @@ Register-TabExpansion 'Run-Test' @{
     }
 }
 
-function Rearrange-Tests {
-    param($tests)
-
-    # Tracked by issue: https://github.com/NuGet/Home/issues/2387
-    # And, the commit is linked to the issue
-    # TODO: PackageRestore tests should be fixed and enabled or deleted
-    # They were only ever running on Dev10.
-    $tests = $tests | ? {!($_.Name -like 'Test-PackageRestore*') }
-
-    $tests
-}
-
 function Run-Test {
     [CmdletBinding(DefaultParameterSetName="Test")]
     param(
