@@ -233,8 +233,8 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 result.Success.Should().BeFalse();
                 logger.ErrorMessages.Count.Should().Be(1);
-                logger.ErrorMessages.Single().Should().Contain("NU1004");
-                logger.ErrorMessages.Single().Should().Contain("The package reference a version has changed from [1.0.0, ) to [2.0.0, )");
+                logger.ErrorMessages.Single().Should().Contain("NU1005");
+                logger.ErrorMessages.Single().Should().Contain("RestoreForceEvaluate should not be used with RestoreLockedMode in the same command.");
             }
         }
 
