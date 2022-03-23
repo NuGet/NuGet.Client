@@ -219,9 +219,6 @@
   <data name="ErrorPackageNotSigned" xml:space="preserve">
     <value>The package is not signed.</value>
   </data>
-  <data name="InvalidPackageSignature" xml:space="preserve">
-    <value>Package {0} signature is invalid.</value>
-  </data>
   <data name="VerifyError_TimestampIntegrityCheckFailed" xml:space="preserve">
     <value>The {0}'s timestamp integrity check failed.</value>
     <comment>0 -Signature friendly name</comment>
@@ -242,10 +239,6 @@
   </data>
   <data name="TimestampFailureNonceMismatch" xml:space="preserve">
     <value>The timestamp response is invalid.  Nonces did not match.</value>
-  </data>
-  <data name="TimestampResponseExceptionGeneral" xml:space="preserve">
-    <value>Timestamp service's response does not meet the NuGet package signature specification: '{0}'.</value>
-    <comment>0 - Reason for failure</comment>
   </data>
   <data name="VerifyError_TimestampSignatureValidationFailed" xml:space="preserve">
     <value>The {0}'s timestamp signature validation failed.</value>
@@ -318,9 +311,6 @@ Valid from:</comment>
   <data name="SignatureContainsInvalidAttribute" xml:space="preserve">
     <value>Package signature contains an invalid attribute: {0}</value>
   </data>
-  <data name="ErrorByteSignatureTooBig" xml:space="preserve">
-    <value>Byte signature too big to seek in current stream position.</value>
-  </data>
   <data name="VerifyError_InvalidCertificateChain" xml:space="preserve">
     <value>The {0}'s certificate chain validation failed with error(s): {1}</value>
     <comment>0 - Signature friendly name
@@ -369,14 +359,6 @@ Valid from:</comment>
   <data name="Error_NotOnePrimarySignature" xml:space="preserve">
     <value>The package signature file does not contain exactly one primary signature.</value>
   </data>
-  <data name="TimestampCertificateInvalid" xml:space="preserve">
-    <value>The timestamp service's certificate has a valid time in the future: {0}</value>
-    <comment>0 -  X509Certificate2 details in the following format -
-Subject Name:
-SHA1 hash:
-Issued by:
-Valid from:</comment>
-  </data>
   <data name="InvalidSignatureContent" xml:space="preserve">
     <value>The package signature content is invalid.</value>
   </data>
@@ -404,11 +386,6 @@ Valid from:</comment>
     <value>The central directory header field '{0}' has an invalid value ({1}).</value>
     <comment>{0} is the name of field with the invalid value
 {1} is the field value</comment>
-  </data>
-  <data name="SignatureInvalidGeneralPurposeBits" xml:space="preserve">
-    <value>Invalid general purpose bit flags. Expected '{0}', actual '{1}'.</value>
-    <comment>0 - expected value in uint
-1 - actual value in uint</comment>
   </data>
   <data name="InvalidPackageSignatureFileEntryLocalFileHeader" xml:space="preserve">
     <value>The local file header field '{0}' has an invalid value ({1}).</value>
@@ -456,9 +433,6 @@ Valid from:</comment>
   </data>
   <data name="SigningCertificateV2CertificateNotFound" xml:space="preserve">
     <value>A certificate referenced by the signing-certificate-v2 attribute could not be found.</value>
-  </data>
-  <data name="SigningCertificateV2NotExactlyOneAttributeValue" xml:space="preserve">
-    <value>The signing-certificate-v2 attribute does not have exactly one attribute value.</value>
   </data>
   <data name="SigningCertificateV2UnsupportedHashAlgorithm" xml:space="preserve">
     <value>The signing-certificate-v2 attribute uses an unsupported hash algorithm.</value>
@@ -772,9 +746,6 @@ Valid from:</comment>
   <data name="DefaultError_NoMatchInAllowList" xml:space="preserve">
     <value>The package signature certificate fingerprint does not match any certificate fingerprint in the allow list.</value>
   </data>
-  <data name="NuGetLicense_InvalidLicenseExpression" xml:space="preserve">
-    <value>The license expression '{0}' cannot be parsed succesfully.</value>
-  </data>
   <data name="NuGetLicense_InvalidLicenseExpressionVersion" xml:space="preserve">
     <value>The license version string '{0}'  is invalid.</value>
     <comment>0 - version string, 1 - the metadata</comment>
@@ -823,9 +794,6 @@ Valid from:</comment>
   </data>
   <data name="MissingPackageTypeName" xml:space="preserve">
     <value>Nuspec file contains a package type that is missing the name attribute.</value>
-  </data>
-  <data name="MultiplePackageTypes" xml:space="preserve">
-    <value>Nuspec file contains multiple package types. Zero or one package type nodes are allowed.</value>
   </data>
   <data name="Message_Path" xml:space="preserve">
     <value>Path: {0}</value>

@@ -120,9 +120,6 @@
   <data name="Cmdlet_CommandObsolete" xml:space="preserve">
     <value>This Command/Parameter combination has been deprecated and will be removed in the next release. Please consider using the new command that replaces it: '{0}'.</value>
   </data>
-  <data name="Cmdlet_CommandRemoved" xml:space="preserve">
-    <value>The {0} Command has been deprecated and will be removed in the next release. Please modify your PowerShell scripts accordingly. </value>
-  </data>
   <data name="Cmdlet_DisplayMorePackagesNoHelp" xml:space="preserve">
     <value>Stop to display more packages</value>
   </data>
@@ -150,9 +147,6 @@
   <data name="Cmdlet_GetPackageNoPackageFound" xml:space="preserve">
     <value>No packages found in the current package source.</value>
   </data>
-  <data name="Cmdlet_InstallSuccessDisclaimerText" xml:space="preserve">
-    <value>You are downloading {0} from {1}, the license agreement to which is available at {2}. Check the package for additional dependencies, which may come with their own license agreement(s). Your use of the package and dependencies constitutes your acceptance of their license agreements. If you do not accept the license agreement(s), then delete the relevant components from your device.</value>
-  </data>
   <data name="Cmdlet_InvalidPathSyntax" xml:space="preserve">
     <value>The path '{0}' is invalid.</value>
   </data>
@@ -164,9 +158,6 @@
   </data>
   <data name="Cmdlet_No" xml:space="preserve">
     <value>&amp;No</value>
-  </data>
-  <data name="Cmdlet_NoActivePackageSource" xml:space="preserve">
-    <value>Unable to retrieve package list because no source was specified.</value>
   </data>
   <data name="Cmdlet_NoAll" xml:space="preserve">
     <value>No to Al&amp;l</value>
@@ -183,23 +174,8 @@
   <data name="Cmdlet_NoSolution" xml:space="preserve">
     <value>The current environment doesn't have a solution open.</value>
   </data>
-  <data name="Cmdlet_OpenPackagePageAction" xml:space="preserve">
-    <value>Open</value>
-  </data>
-  <data name="Cmdlet_PackageIdAndVersionNotFound" xml:space="preserve">
-    <value>Package with the Id '{0}' and version '{1}' is not found in the specified source.</value>
-  </data>
-  <data name="Cmdlet_PackageIdNotFound" xml:space="preserve">
-    <value>Package with the Id '{0}' is not found in the specified source.</value>
-  </data>
   <data name="Cmdlet_PackageNotInstalled" xml:space="preserve">
     <value>Package with the Id '{0}' is not installed to project '{1}'.</value>
-  </data>
-  <data name="Cmdlet_PackageOperation" xml:space="preserve">
-    <value>{0} {1}</value>
-  </data>
-  <data name="Cmdlet_PackageSourceNotFound" xml:space="preserve">
-    <value>Package source '{0}' is not matching any of the enabled package sources.</value>
   </data>
   <data name="Cmdlet_ProjectNotFound" xml:space="preserve">
     <value>Project '{0}' is not found.</value>
@@ -207,32 +183,17 @@
   <data name="Cmdlet_PrompToDisplayMorePackages" xml:space="preserve">
     <value>There may be more packages to display. Do you want to continue?</value>
   </data>
-  <data name="Cmdlet_UrlMissing" xml:space="preserve">
-    <value>The package '{0}' does not provide the requested URL.</value>
-  </data>
   <data name="Cmdlet_Yes" xml:space="preserve">
     <value>&amp;Yes</value>
   </data>
   <data name="Cmdlet_YesAll" xml:space="preserve">
     <value>Yes to &amp;All</value>
   </data>
-  <data name="Cmdlet_Log_NoActionsWhatIf" xml:space="preserve">
-    <value>None</value>
-  </data>
-  <data name="Cmdlet_Log_OperationWhatIf" xml:space="preserve">
-    <value>WhatIf: {0}</value>
-  </data>
   <data name="Cmdlet_FileConflictTitle" xml:space="preserve">
     <value>File Conflict</value>
   </data>
   <data name="Cmdlet_PackageNotInstalledInAnyProject" xml:space="preserve">
     <value>'{0}' was not installed in any project. Update failed.</value>
-  </data>
-  <data name="Cmdlet_UnknownPackage" xml:space="preserve">
-    <value>Unable to find package '{0}'.</value>
-  </data>
-  <data name="Cmdlet_UnknownPackageSpecificVersion" xml:space="preserve">
-    <value>Unable to find version '{1}' of package '{0}'.</value>
   </data>
   <data name="Cmdlet_ExecutingScript" xml:space="preserve">
     <value>Executing script file '{0}'</value>

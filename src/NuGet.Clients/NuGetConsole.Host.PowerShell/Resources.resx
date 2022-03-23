@@ -133,9 +133,6 @@
   <data name="Console_HelpText" xml:space="preserve">
     <value>Type 'get-help NuGet' to see all available NuGet commands.</value>
   </data>
-  <data name="Console_InitializeHostFails" xml:space="preserve">
-    <value>Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first.</value>
-  </data>
   <data name="ErrorNestedPromptNotSupported" xml:space="preserve">
     <value>Nested prompt not supported.</value>
   </data>
@@ -144,9 +141,6 @@
   </data>
   <data name="PowerShellHostTitle" xml:space="preserve">
     <value>Package Manager Console Host Version {0}</value>
-  </data>
-  <data name="PowerShellInitializationTimeoutError" xml:space="preserve">
-    <value>Timed out waiting for PowerShell initialization. Try restarting Visual Studio.</value>
   </data>
   <data name="PromptForChoiceSuffix" xml:space="preserve">
     <value>[?] Help (default is "{0}"):</value>

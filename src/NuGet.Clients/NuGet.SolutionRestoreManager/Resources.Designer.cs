@@ -19,7 +19,7 @@ namespace NuGet.SolutionRestoreManager {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -66,15 +66,6 @@ namespace NuGet.SolutionRestoreManager {
         internal static string Argument_Cannot_Be_Null_Or_Empty {
             get {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet Package Manager.
-        /// </summary>
-        internal static string DialogTitle {
-            get {
-                return ResourceManager.GetString("DialogTitle", resourceCulture);
             }
         }
         
@@ -240,15 +231,6 @@ namespace NuGet.SolutionRestoreManager {
         internal static string SolutionIsNotSaved {
             get {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Solution Restore cannot be started while an automatic restore is in progress..
-        /// </summary>
-        internal static string SolutionRestoreFailed_RestoreWorkerIsBusy {
-            get {
-                return ResourceManager.GetString("SolutionRestoreFailed_RestoreWorkerIsBusy", resourceCulture);
             }
         }
     }

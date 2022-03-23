@@ -129,21 +129,6 @@
   <data name="Finished" xml:space="preserve">
     <value>========== Finished ==========</value>
   </data>
-  <data name="NuGetSearchProvider_CategoryShortcut" xml:space="preserve">
-    <value>nuget</value>
-  </data>
-  <data name="NuGetSearchProvider_Description" xml:space="preserve">
-    <value>Search NuGet packages</value>
-  </data>
-  <data name="NuGetSearchProvider_DisplayText" xml:space="preserve">
-    <value>NuGet Packages</value>
-  </data>
-  <data name="NuGetSearchProvider_Name" xml:space="preserve">
-    <value>NuGet Search</value>
-  </data>
-  <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
-    <value>Search Online for NuGet Packages matching '{0}'</value>
-  </data>
   <data name="Text_PackageFormatSelection" xml:space="preserve">
     <value>Select the NuGet package manager format for {0}</value>
   </data>

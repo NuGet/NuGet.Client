@@ -124,7 +124,7 @@
     <value>NuGet Command Line</value>
   </data>
   <data name="ConsoleConfirmMessage" xml:space="preserve">
-    <value>{0} (y/N) </value>
+    <value>{0} (y/N)</value>
   </data>
   <data name="ConsoleConfirmMessageAccept" xml:space="preserve">
     <value>y</value>
@@ -144,27 +144,6 @@
   <data name="NoSymbols_Description" xml:space="preserve">
     <value>If a symbols package exists, it will not be pushed to a symbols server.</value>
   </data>
-  <data name="Log_Committing" xml:space="preserve">
-    <value>Committing restore...</value>
-  </data>
-  <data name="Log_FoundProjectRoot" xml:space="preserve">
-    <value>Found project root directory: {0}.</value>
-  </data>
-  <data name="Log_LoadedProject" xml:space="preserve">
-    <value>Loaded project {0} from {1}.</value>
-  </data>
-  <data name="Log_RunningNonParallelRestore" xml:space="preserve">
-    <value>Running non-parallel restore.</value>
-  </data>
-  <data name="Log_RunningParallelRestore" xml:space="preserve">
-    <value>Running restore with {0} concurrent jobs.</value>
-  </data>
-  <data name="Log_UsingPackagesDirectory" xml:space="preserve">
-    <value>Using packages directory: {0}.</value>
-  </data>
-  <data name="NoApiKeyFound" xml:space="preserve">
-    <value>No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.</value>
-  </data>
   <data name="NonInteractive_Description" xml:space="preserve">
     <value>Do not prompt for user input or confirmations.</value>
   </data>
@@ -180,109 +159,11 @@
   <data name="Push_Timeout_Description" xml:space="preserve">
     <value>Timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
   </data>
-  <data name="Restore_Arg_ProjectName_Description" xml:space="preserve">
-    <value>List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files.</value>
-  </data>
-  <data name="Restore_Description" xml:space="preserve">
-    <value>Restores packages for a project and writes a lock file.</value>
-  </data>
-  <data name="Restore_Switch_ConfigFile_Description" xml:space="preserve">
-    <value>The NuGet configuration file to use.</value>
-  </data>
-  <data name="Restore_Switch_DisableParallel_Description" xml:space="preserve">
-    <value>Disables restoring multiple projects in parallel.</value>
-  </data>
-  <data name="Restore_Switch_Fallback_Description" xml:space="preserve">
-    <value>A list of packages sources to use as a fallback.</value>
-  </data>
-  <data name="Restore_Switch_Packages_Description" xml:space="preserve">
-    <value>Directory to install packages in.</value>
-  </data>
-  <data name="Restore_Switch_Source_Description" xml:space="preserve">
-    <value>Specifies a NuGet package source to use during the restore.</value>
-  </data>
   <data name="Source_Description" xml:space="preserve">
     <value>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</value>
   </data>
-  <data name="Switch_Verbosity" xml:space="preserve">
-    <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error.</value>
-    <comment>The allowed values should not be localized as they are Enum variants</comment>
-  </data>
-  <data name="Error_MissingSourceParameter" xml:space="preserve">
-    <value>Source parameter was not specified.</value>
-  </data>
   <data name="Push_InvalidTimeout" xml:space="preserve">
     <value>Invalid timeout parameter value.</value>
-  </data>
-  <data name="Restore_Switch_NoCache_Description" xml:space="preserve">
-    <value>Do not cache packages and http requests.</value>
-  </data>
-  <data name="BasePath_Description" xml:space="preserve">
-    <value>The base path of the files defined in the nuspec file.</value>
-  </data>
-  <data name="CommandLine_Warning" xml:space="preserve">
-    <value>WARNING: {0}</value>
-  </data>
-  <data name="ExcludeEmptyDirectories_Description" xml:space="preserve">
-    <value>Prevent inclusion of empty directories when building the package.</value>
-  </data>
-  <data name="InputFile_Description" xml:space="preserve">
-    <value>Specify the location of the nuspec or project file to create a package.</value>
-  </data>
-  <data name="MinClientVersion_Description" xml:space="preserve">
-    <value>Set the minClientVersion attribute for the created package.</value>
-    <comment>Please don't localize "minClientVersion"</comment>
-  </data>
-  <data name="NoDefaultExcludes_Description" xml:space="preserve">
-    <value>Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn.</value>
-  </data>
-  <data name="NoPackageAnalysis_Description" xml:space="preserve">
-    <value>Specify if the command should not run package analysis after building the package.</value>
-  </data>
-  <data name="NuGetDocs" xml:space="preserve">
-    <value>https://docs.nuget.org/</value>
-  </data>
-  <data name="OutputDirectory_Description" xml:space="preserve">
-    <value>Specifies the directory for the created NuGet package file. If not specified, uses the current directory</value>
-  </data>
-  <data name="PackageCommandInvalidMinClientVersion" xml:space="preserve">
-    <value>The value of MinClientVersion argument is not a valid version.</value>
-  </data>
-  <data name="PackCommand_Description" xml:space="preserve">
-    <value>Creates a NuGet package based on the specified nuspec or project file</value>
-  </data>
-  <data name="Suffix_Description" xml:space="preserve">
-    <value>Appends a pre-release suffix to the internally generated version number.</value>
-  </data>
-  <data name="Symbols_Description" xml:space="preserve">
-    <value>Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package.</value>
-  </data>
-  <data name="Version_Description" xml:space="preserve">
-    <value>Overrides the version number from the nuspec file.</value>
-  </data>
-  <data name="Build_Description" xml:space="preserve">
-    <value>Determines if the project should be built before building the package.</value>
-  </data>
-  <data name="IncludeReferencedProjects_Description" xml:space="preserve">
-    <value>Include referenced projects either as dependencies or as part of the package.</value>
-  </data>
-  <data name="MsBuildVersion_Description" xml:space="preserve">
-    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
-  </data>
-  <data name="PackageCommandAttemptingToBuildPackage" xml:space="preserve">
-    <value>Attempting to build package from '{0}'.</value>
-  </data>
-  <data name="PackageVersionInvalid" xml:space="preserve">
-    <value>Version string specified '{0}' is invalid.</value>
-  </data>
-  <data name="Tool_Description" xml:space="preserve">
-    <value>Determines if the output files of the project should be in the tool folder.</value>
-  </data>
-  <data name="Restore_Switch_IgnoreFailedSource_Description" xml:space="preserve">
-    <value>Only warn about failed sources if there are packages meeting version requirement.</value>
-  </data>
-  <data name="Exclude_Description" xml:space="preserve">
-    <value>Specifies one or more wildcard patterns to exclude when creating a package.</value>
   </data>
   <data name="Push_Timeout_Error" xml:space="preserve">
     <value>Pushing took too long. You can change the default timeout of 300 seconds by using the --timeout &lt;seconds&gt; option with the push command.</value>
@@ -295,17 +176,11 @@
     <comment>{0}: App full name
 {1}: App version</comment>
   </data>
-  <data name="Serviceable_Description" xml:space="preserve">
-    <value>Sets the nuspec serviceable element to true.</value>
-  </data>
   <data name="SymbolSource_Description" xml:space="preserve">
     <value>Symbol server URL to use.</value>
   </data>
   <data name="SymbolApiKey_Description" xml:space="preserve">
     <value>The API key for the symbol server.</value>
-  </data>
-  <data name="Restore_Switch_LegacyPackagesDirectory_Description" xml:space="preserve">
-    <value>Use legacy behavior when the restore operation is interacting with the global packages directory. This means the ID and version folder names are written with the original package case rather than being normalized to lowercase.</value>
   </data>
   <data name="LocalsCommand_ArgumentDescription" xml:space="preserve">
     <value>Specifies the cache location(s) to list or clear.
@@ -319,10 +194,6 @@
   </data>
   <data name="LocalsCommand_Description" xml:space="preserve">
     <value>Clears or lists local NuGet resources such as http requests cache, packages folder, plugin operations cache  or machine-wide global packages folder.</value>
-  </data>
-  <data name="LocalsCommand_Help" xml:space="preserve">
-    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="LocalsCommand_MultipleOperations" xml:space="preserve">
     <value>Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
@@ -458,11 +329,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>{0} - Operation Name
 {1} - project file path</comment>
   </data>
-  <data name="Error_NoMatchingSpecs" xml:space="preserve">
-    <value>No matching package specs found when attempting to add package '{0}' to project '{1}'.</value>
-    <comment>{0} - Package ID
-{1} - Project path</comment>
-  </data>
   <data name="Error_UnsupportedProject" xml:space="preserve">
     <value>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</value>
     <comment>{0} - Package Id
@@ -527,15 +393,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="Error_NotPRProject" xml:space="preserve">
     <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
-  </data>
-  <data name="ListPkg_OutdatedPkgDescription" xml:space="preserve">
-    <value>(O): Outdated package(s). Use 'dotnet list package --outdated' for more info.</value>
-  </data>
-  <data name="ListPkg_DeprecatedPkgDescription" xml:space="preserve">
-    <value>(D): Deprecated package(s). Use 'dotnet list package --deprecated' for more info.</value>
-  </data>
-  <data name="ListPkg_VulnerablePkgDescription" xml:space="preserve">
-    <value>(V): Vulnerable package(s). Use 'dotnet list package --vulnerable' for more info.</value>
   </data>
   <data name="ListPkg_ErrorReadingAssetsFile" xml:space="preserve">
     <value>Unable to read the assets file `{0}`. Please make sure the file has the write format.</value>
@@ -621,9 +478,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="PushCommandSkipDuplicateDescription" xml:space="preserve">
     <value>If a package and version already exists, skip it and continue with the next package in the push, if any.</value>
   </data>
-  <data name="SourcesCommandDescription" xml:space="preserve">
-    <value>Provides the ability to manage list of sources located in NuGet.config files.</value>
-  </data>
   <data name="AddSourceCommandDescription" xml:space="preserve">
     <value>Add a NuGet source.</value>
   </data>
@@ -654,10 +508,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="SourcesCommandFormatDescription" xml:space="preserve">
     <value>The format of the list command output: `Detailed` (the default) and `Short`.</value>
   </data>
-  <data name="SourcesCommandUsageSummary" xml:space="preserve">
-    <value>&lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source]</value>
-    <comment>Only localize "[name]" and "[source]"</comment>
-  </data>
   <data name="SourcesCommandUsernameDescription" xml:space="preserve">
     <value>Username to be used when connecting to an authenticated source.</value>
   </data>
@@ -668,15 +518,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Comma-separated list of valid authentication types for this source. Set this to basic if the server advertises NTLM or Negotiate and your credentials must be sent using the Basic mechanism, for instance when using a PAT with on-premises Azure DevOps Server. Other valid values include negotiate, kerberos, ntlm, and digest, but these values are unlikely to be useful.</value>
     <comment>Please don't localize "basic, NTLM, Negotiate, kerberos, ntlm, digest"</comment>
   </data>
-  <data name="SourcesCommandValidAuthenticationTypesDescription_Docs" xml:space="preserve">
-    <value>Comma-separated list of valid authentication types for this source. Set this to `basic` if the server advertises NTLM or Negotiate and your credentials must be sent using the Basic mechanism, for instance when using a PAT with on-premises Azure DevOps Server. Other valid values include `negotiate`, `kerberos`, `ntlm`, and `digest`, but these values are unlikely to be useful.</value>
-    <comment>Please don't localize "basic, NTLM, Negotiate, kerberos, ntlm, digest"</comment>
-  </data>
   <data name="Option_ConfigFile" xml:space="preserve">
     <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior.</value>
-  </data>
-  <data name="Option_ConfigFile_Docs" xml:space="preserve">
-    <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).</value>
   </data>
   <data name="Option_PackageSource" xml:space="preserve">
     <value>Package source name.</value>
@@ -769,13 +612,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="VerifyCommandPackagePathDescription" xml:space="preserve">
     <value>Specify the path to the package</value>
-  </data>
-  <data name="Error_UnknownAction" xml:space="preserve">
-    <value>The action '{0}' is not recognized.</value>
-    <comment>0 - action</comment>
-  </data>
-  <data name="TrustCommandActionDescription" xml:space="preserve">
-    <value>Command actions allow you to specify only a specific subset of signers whose signatures will be accepted, while rejecting all others.</value>
   </data>
   <data name="TrustCommandAlgorithm" xml:space="preserve">
     <value>Specifies the hash algorithm used to calculate the certificate fingerprint. Defaults to SHA256. Values supported are SHA256, SHA384 and SHA512.</value>

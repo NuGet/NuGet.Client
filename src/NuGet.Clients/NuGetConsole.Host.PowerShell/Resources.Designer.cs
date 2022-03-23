@@ -19,7 +19,7 @@ namespace NuGetConsole.Host.PowerShell {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -130,15 +130,6 @@ namespace NuGetConsole.Host.PowerShell {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first..
-        /// </summary>
-        internal static string Console_InitializeHostFails {
-            get {
-                return ResourceManager.GetString("Console_InitializeHostFails", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Nested prompt not supported..
         /// </summary>
         internal static string ErrorNestedPromptNotSupported {
@@ -162,15 +153,6 @@ namespace NuGetConsole.Host.PowerShell {
         internal static string PowerShellHostTitle {
             get {
                 return ResourceManager.GetString("PowerShellHostTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Timed out waiting for PowerShell initialization. Try restarting Visual Studio..
-        /// </summary>
-        internal static string PowerShellInitializationTimeoutError {
-            get {
-                return ResourceManager.GetString("PowerShellInitializationTimeoutError", resourceCulture);
             }
         }
         

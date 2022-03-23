@@ -120,9 +120,6 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The argument cannot be null or empty.</value>
   </data>
-  <data name="FrameworkDoesNotSupportPlatforms" xml:space="preserve">
-    <value>TargetPlatformIdentifier is only supported on .NET 5.0 and above.</value>
-  </data>
   <data name="FrameworkDoesNotSupportProfiles" xml:space="preserve">
     <value>.NET 5.0 and above does not support profiles.</value>
   </data>

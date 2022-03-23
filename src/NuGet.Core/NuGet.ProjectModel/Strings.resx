@@ -143,9 +143,6 @@
     <value>Problem reading the cache file {0} : {1}</value>
     <comment>{0} is the file path, {1} is the exception message</comment>
   </data>
-  <data name="MissingToolName" xml:space="preserve">
-    <value>Unable to resolve tool ''.</value>
-  </data>
   <data name="MissingVersionOnDependency" xml:space="preserve">
     <value>Package dependencies must specify a version range.</value>
   </data>

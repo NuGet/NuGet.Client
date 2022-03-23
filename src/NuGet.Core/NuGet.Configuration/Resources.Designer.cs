@@ -124,15 +124,6 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot update the origin of a setting..
-        /// </summary>
-        internal static string CannotUpdateOrigin {
-            get {
-                return ResourceManager.GetString("CannotUpdateOrigin", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to update setting since it is in an uneditable config file..
         /// </summary>
         internal static string CannotUpdateReadOnlyConfig {
@@ -228,15 +219,6 @@ namespace NuGet.Configuration {
         internal static string Error_MoreThanOneValidAuthenticationTypes {
             get {
                 return ResourceManager.GetString("Error_MoreThanOneValidAuthenticationTypes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to There are no writable config files..
-        /// </summary>
-        internal static string Error_NoWritableConfig {
-            get {
-                return ResourceManager.GetString("Error_NoWritableConfig", resourceCulture);
             }
         }
         
@@ -367,29 +349,11 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package source does not belong to the collection of available sources..
-        /// </summary>
-        internal static string PackageSource_Invalid {
-            get {
-                return ResourceManager.GetString("PackageSource_Invalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0} cannot be null or empty..
         /// </summary>
         internal static string PropertyCannotBeNullOrEmpty {
             get {
                 return ResourceManager.GetString("PropertyCannotBeNullOrEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Environment variable &apos;{0}&apos; must contain an absolute path, the full path of &apos;{1}&apos; cannot be determined..
-        /// </summary>
-        internal static string RelativeEnvVarPath {
-            get {
-                return ResourceManager.GetString("RelativeEnvVarPath", resourceCulture);
             }
         }
         

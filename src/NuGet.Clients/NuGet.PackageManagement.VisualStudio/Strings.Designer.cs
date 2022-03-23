@@ -61,33 +61,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not get the account manager, unable to check the keychain..
-        /// </summary>
-        public static string AccountProvider_FailedToLoadAccountManager {
-            get {
-                return ResourceManager.GetString("AccountProvider_FailedToLoadAccountManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not get the account provider, unable to check the keychain..
-        /// </summary>
-        public static string AccountProvider_FailedToLoadVSOAccountProvider {
-            get {
-                return ResourceManager.GetString("AccountProvider_FailedToLoadVSOAccountProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No valid credentials found for VSO account..
-        /// </summary>
-        public static string AccountProvider_NoValidCrededentialsFound {
-            get {
-                return ResourceManager.GetString("AccountProvider_NoValidCrededentialsFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to authenticate without prompting user..
         /// </summary>
         public static string AccountProvider_TriedToShowUIOnNonInteractive {
@@ -367,29 +340,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package stream should be seekable.
-        /// </summary>
-        public static string PackageStreamShouldBeSeekable {
-            get {
-                return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
         /// </summary>
         public static string PathToExistingFileNotPresent {
             get {
                 return ResourceManager.GetString("PathToExistingFileNotPresent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
-        /// </summary>
-        public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
-            get {
-                return ResourceManager.GetString("ProjectCouldNotBeCastedToBuildPropertyStorage", resourceCulture);
             }
         }
         
@@ -480,15 +435,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string UnableToGetCPSPackageInstallationService {
             get {
                 return ResourceManager.GetString("UnableToGetCPSPackageInstallationService", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Uninstalling NuGet package {0}..
-        /// </summary>
-        public static string UninstallingPackage {
-            get {
-                return ResourceManager.GetString("UninstallingPackage", resourceCulture);
             }
         }
         
