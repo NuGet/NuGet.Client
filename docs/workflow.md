@@ -23,7 +23,13 @@ To commit the PR to the repo use the GitHub `Squash and Merge` button. We can't 
 GitHub merges have 2 means to specify a commit message when squash merging. Inspect both! In most scenarios, you will want to delete the commit by commit messages. Only leave the messages when they are helpful to a user in the future.
 
 ![Good Commit Message](images/good-commit-message.png)
+- Good commit message
+
+![Good Commit Message With More Details](images/good-commit-message-expanded.png)
+- Good Commit Message With More Details
+
 ![Bad Commit Message](images/bad-commit-message.png)
+- Bad Commit Message
 
 #### Draft Pull Requests
 
