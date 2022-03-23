@@ -141,6 +141,10 @@ namespace NuGet.PackageManagement.UI
 
         public Guid? OperationId => _loader?.State.OperationId;
 
+        public int TopLevelPackageCount { get; private set; }
+
+        public int TransitivePackageCount { get; private set; }
+
         // Load items using the specified loader
         internal async Task LoadItemsAsync(
             IPackageItemLoader loader,
@@ -492,6 +496,10 @@ namespace NuGet.PackageManagement.UI
                         Items.Add(package);
                         _selectedCount = package.IsSelected ? _selectedCount + 1 : _selectedCount;
                     }
+
+                    // update the top-level and transitive package counts
+                    TopLevelPackageCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.TopLevel);
+                    TransitivePackageCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.Transitive);
 
                     if (removed)
                     {

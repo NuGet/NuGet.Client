@@ -1537,7 +1537,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Top-level packages.
+        ///   Looks up a localized string similar to Top-level packages ({0}).
         /// </summary>
         public static string PackageLevel_TopLevelPackageHeaderText {
             get {
@@ -1546,7 +1546,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Transitive packages.
+        ///   Looks up a localized string similar to Transitive packages ({0}).
         /// </summary>
         public static string PackageLevel_TransitivePackageHeaderText {
             get {
