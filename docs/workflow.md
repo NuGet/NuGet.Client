@@ -22,8 +22,8 @@ To commit the PR to the repo use the GitHub `Squash and Merge` button. We can't 
 
 GitHub merges have 2 means to specify a commit message when squash merging. Inspect both! In most scenarios, you will want to delete the commit by commit messages. Only leave the messages when they are helpful to a user in the future.
 
-![Good Commit Message](resources/good-commit-message.png)
-![Bad Commit Message](resources/bad-commit-message.png)
+![Good Commit Message](images/good-commit-message.png)
+![Bad Commit Message](images/bad-commit-message.png)
 
 #### Draft Pull Requests
 
@@ -47,9 +47,10 @@ When moving to the release branch the recommended approach is the following:
 - Create a Pull Request against the release branch.
 
 The cherry-picked request does not need to be reviewed, but when the build passes it can be merged.
+Normally, you would only cherry pick on commit per Pull Request, so that in case a change needs reverted, only that single commit will be affected.
 The recommended pattern for release branches is slightly different. We should preserve the original commit message one can follow the original Pull Request.
 
-![Good Release branch Commit Message](resources/release-branch-commit-message.png)
+![Good Release branch Commit Message](images/release-branch-commit-message.png)
 
 ### Solution and project folder structure and naming
 
