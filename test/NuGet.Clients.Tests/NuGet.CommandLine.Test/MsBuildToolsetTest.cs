@@ -10,11 +10,15 @@ namespace NuGet.CommandLine.Test
 {
     public class MsBuildToolsetTest
     {
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public void WhenNullIsPassedForVersionParameterThenMsBuildVersionIsFetchedFromPath_Success()
         {
             //Arrange
             var msbuildPath = Util.GetMsbuildPathOnWindows();
+            if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+            }
 
             //Act
             var toolset = new MsBuildToolset(version: null, path: msbuildPath);
