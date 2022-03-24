@@ -632,6 +632,7 @@ function Test-UpdateAllPackagesInSolution {
 }
 
 function Test-UpdatePackageOnAnFSharpProjectWithMultiplePackages {
+    [SkipTest('https://github.com/dotnet/fsharp/issues/12835')]
     param(
         $context
     )
