@@ -74,7 +74,7 @@ namespace NuGet.SolutionRestoreManager
         private Lazy<INuGetErrorList> _errorList;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
-        private Lazy<INuGetFeatureFlagService> _nugetFeatureFlagService;
+        private readonly Lazy<INuGetFeatureFlagService> _nugetFeatureFlagService;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -98,14 +98,14 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetFeatureFlagService> nuGetExperimentationService)
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
                   logger,
                   errorList,
                   outputConsoleProvider,
-                  nuGetExperimentationService)
+                  nugetFeatureFlagService)
         { }
 
         public SolutionRestoreWorker(
@@ -115,7 +115,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetFeatureFlagService> nuGetExperimentationService)
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService)
         {
             if (asyncServiceProvider == null)
             {
@@ -147,9 +147,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(outputConsoleProvider));
             }
 
-            if (nuGetExperimentationService == null)
+            if (nugetFeatureFlagService == null)
             {
-                throw new ArgumentNullException(nameof(nuGetExperimentationService));
+                throw new ArgumentNullException(nameof(nugetFeatureFlagService));
             }
 
             _asyncServiceProvider = asyncServiceProvider;
@@ -158,7 +158,7 @@ namespace NuGet.SolutionRestoreManager
             _logger = logger;
             _errorList = errorList;
             _outputConsoleProvider = outputConsoleProvider;
-            _nugetFeatureFlagService = nuGetExperimentationService;
+            _nugetFeatureFlagService = nugetFeatureFlagService;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
