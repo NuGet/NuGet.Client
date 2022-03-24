@@ -15,12 +15,12 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// The value defined for the VS feature flag service.
+        /// The feature flag name defined for the VS feature flag service.
         /// </summary>
         internal string Name { get; }
 
         /// <summary>
-        /// The environment variable means of enabled this feature.
+        /// The environment variable used to override the enabled or disabled state of this feature.
         /// Might be <see cref="null"/>.
         /// </summary>
         internal string EnvironmentVariable { get; }
