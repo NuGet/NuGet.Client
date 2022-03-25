@@ -402,7 +402,7 @@
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsInstalledAndTransitive}" Value="false">
+                <DataTrigger Binding="{Binding IsUninstalledAndTransitive}" Value="false">
                   <DataTrigger.Setters>
                     <Setter Property="Visibility" Value="Hidden" />
                   </DataTrigger.Setters>

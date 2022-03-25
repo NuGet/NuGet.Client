@@ -100,6 +100,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _installedVersion = value;
                     OnPropertyChanged(nameof(InstalledVersion));
+                    OnPropertyChanged(nameof(IsInstalledAndTransitive));
                     OnPropertyChanged(nameof(IsLatestInstalled));
 
                     // update tool tip
@@ -270,7 +271,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(IsUninstallable));
                     OnPropertyChanged(nameof(IsNotInstalled));
-                    OnPropertyChanged(nameof(IsInstalledAndTransitive));
+                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
                 }
             }
         }
@@ -285,11 +286,19 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsInstalledAndTransitive
+        public bool IsUninstalledAndTransitive
         {
             get
             {
                 return (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
+            }
+        }
+
+        public bool IsInstalledAndTransitive
+        {
+            get
+            {
+                return PackageLevel == PackageLevel.Transitive || InstalledVersion != null;
             }
         }
 
@@ -489,6 +498,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _packageLevel = value;
                     OnPropertyChanged(nameof(PackageLevel));
+                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
                     OnPropertyChanged(nameof(IsInstalledAndTransitive));
                 }
             }
@@ -497,12 +507,7 @@ namespace NuGet.PackageManagement.UI
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
         {
             var identity = new PackageIdentity(Id, Version);
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
-        }
-
-        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(bool isTransitive)
-        {
-            var identity = new PackageIdentity(Id, Version);
+            var isTransitive = PackageLevel == PackageLevel.Transitive;
             return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
         }
 
@@ -689,7 +694,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync(PackageLevel == PackageLevel.Transitive);
+                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
 
                 // filter package versions based on allowed versions in packages.config
                 packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
