@@ -1586,7 +1586,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void InstallPackage(string packageId, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, _topPanel.Filter, UIOperationSource.PackgesList);
+            var action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, _topPanel.Filter, UIOperationSource.PackgesList, _packageList.SelectedItem.PackageLevel, _packageList.TopLevelPackageCount, _packageList.TransitivePackageCount);
 
             ExecuteAction(
                 () =>
@@ -1606,7 +1606,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void UninstallPackage(string packageId, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateUnInstallAction(packageId, Model.IsSolution, _topPanel.Filter, UIOperationSource.PackgesList);
+            var action = UserAction.CreateUnInstallAction(packageId, Model.IsSolution, _topPanel.Filter, UIOperationSource.PackgesList, _packageList.SelectedItem.PackageLevel, _packageList.TopLevelPackageCount, _packageList.TransitivePackageCount);
 
             ExecuteAction(
                 () =>
@@ -1636,7 +1636,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     return Model.Context.UIActionEngine.PerformUpdateAsync(
                         Model.UIController,
-                        UserAction.CreateUpdateAction(Model.IsSolution, _topPanel.Filter, UIOperationSource.UpdateButton),
+                        UserAction.CreateUpdateAction(packages, Model.IsSolution, _topPanel.Filter, UIOperationSource.UpdateButton, _packageList.SelectedItem.PackageLevel, _packageList.TopLevelPackageCount, _packageList.TransitivePackageCount),
                         packages,
                         CancellationToken.None);
                 },

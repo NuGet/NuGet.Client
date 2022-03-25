@@ -115,7 +115,10 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Version,
                     model.IsSolution,
                     Control.ActiveFilter,
-                    UIOperationSource.DetailsPane);
+                    UIOperationSource.DetailsPane,
+                    Control._packageList.SelectedItem.PackageLevel,
+                    Control._packageList.TopLevelPackageCount,
+                    Control._packageList.TransitivePackageCount);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -127,7 +130,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, model.IsSolution, Control.ActiveFilter, UIOperationSource.DetailsPane);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, model.IsSolution, Control.ActiveFilter, UIOperationSource.DetailsPane, Control._packageList.SelectedItem.PackageLevel, Control._packageList.TopLevelPackageCount, Control._packageList.TransitivePackageCount);
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }
@@ -143,7 +146,10 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Version,
                     model.IsSolution,
                     Control.ActiveFilter,
-                    UIOperationSource.DetailsPane);
+                    UIOperationSource.DetailsPane,
+                    Control._packageList.SelectedItem.PackageLevel,
+                    Control._packageList.TopLevelPackageCount,
+                    Control._packageList.TransitivePackageCount);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -155,7 +161,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, model.IsSolution, Control.ActiveFilter, UIOperationSource.DetailsPane);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, model.IsSolution, Control.ActiveFilter, UIOperationSource.DetailsPane, Control._packageList.SelectedItem.PackageLevel, Control._packageList.TopLevelPackageCount, Control._packageList.TransitivePackageCount);
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }

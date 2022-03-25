@@ -597,6 +597,9 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent.UIOperationSource = userAction.UIOperationsource;
                 actionTelemetryEvent.IsSolutionLevel = userAction.IsSolutionLevel;
                 actionTelemetryEvent.ActiveTab = UIUtility.ToContractsItemFilter(userAction.ActiveTab);
+                actionTelemetryEvent.SelectedPackageLevel = userAction.SelectedPackageLevel;
+                actionTelemetryEvent.TopLevelPackagesShownCount = userAction.TopLevelPackagesCount;
+                actionTelemetryEvent.TransitivePackagesShownCount = userAction.TransitivePackagesCount;
             }
 
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;
