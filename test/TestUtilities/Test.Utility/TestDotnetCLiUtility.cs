@@ -9,6 +9,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -233,6 +236,21 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
                 sourceFileName: typeof(Newtonsoft.Json.JsonSerializer).Assembly.Location,
                 destFileName: Path.Combine(pathToSdkInCli, "Newtonsoft.Json.dll"),
                 overwrite: true);
+
+            File.Copy(
+                sourceFileName: typeof(FileInfoBase).Assembly.Location,
+                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(FileInfoBase).Assembly.Location)),
+                overwrite: true);
+
+            File.Copy(
+                sourceFileName: typeof(IFileInfo).Assembly.Location,
+                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(IFileInfo).Assembly.Location)),
+                overwrite: true);
+
+            File.Copy(
+                sourceFileName: typeof(IChangeToken).Assembly.Location,
+                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(IChangeToken).Assembly.Location)),
+                overwrite: true);
         }
 
         private static string GetTfmToCopy(string projectArtifactsBinFolder)
@@ -289,7 +307,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
                 {
                     File.Copy(sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
                         destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName),
-                        overwrite:true);
+                        overwrite: true);
                 }
             }
             else
