@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
@@ -145,6 +146,11 @@ namespace NuGet.PackageManagement.Telemetry
         public static string NormalizePackageId(string packageId)
         {
             return packageId?.ToLowerInvariant() ?? "(empty package id)";
+        }
+
+        public static string NormalizePackageVersion(NuGetVersion version)
+        {
+            return version?.ToNormalizedString().ToLowerInvariant() ?? string.Empty;
         }
     }
 }

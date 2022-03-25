@@ -1076,10 +1076,7 @@ namespace NuGet.PackageManagement.UI
             var selectedIndex = _packageList.SelectedIndex;
             var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
             var hasDeprecationAlternative = selectedPackage.DeprecationMetadata?.AlternatePackage != null;
-
-            if (_topPanel.Filter == ItemFilter.All
-                && operationId.HasValue
-                && selectedIndex >= 0)
+            if ((_topPanel.Filter == ItemFilter.All || _topPanel.Filter == ItemFilter.Installed) && operationId.HasValue && selectedIndex >= 0)
             {
                 TelemetryActivity.EmitTelemetryEvent(new SearchSelectionTelemetryEvent(
                     operationId.Value,
