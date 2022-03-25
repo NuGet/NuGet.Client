@@ -16,6 +16,7 @@ namespace NuGet.VisualStudio
         public int TransitivePackagesShownCount { set => this["TransitivePackagesCount"] = value; }
         public PackageLevel SelectedPackageLevel { set => this["SelectedPackageLevel"] = value; }
         public UIOperationSource UIOperationSource { set => this["UIOperationSource"] = value; }
+        public bool IsPackageToInstallInTransitive { set => this["IsPackageToInstallTransitive"] = value; }
 
         public VSActionsTelemetryEvent(
            string operationId,
