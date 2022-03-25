@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI.Test
                 actionTelemetryEvent: actionTelemetryData,
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<bool>(), It.IsAny<ItemFilter>(), It.IsAny<UIOperationSource>()),
+                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<bool>(), It.IsAny<ItemFilter>(), It.IsAny<UIOperationSource>(), It.IsAny<PackageLevel>(), It.IsAny<int>(), It.IsAny<int>()),
                 selectedIndex: 0,
                 recommendedCount: 0,
                 recommendPackages: false,
@@ -179,6 +179,78 @@ namespace NuGet.PackageManagement.UI.Test
                 item => Assert.Equal(1, item),
                 item => Assert.Equal(3, item));
             Assert.Equal(3, pkgSeverities.Count());
+        }
+
+
+        public static IEnumerable<object[]> GenerateActionTestData()
+        {
+            foreach (var activeTab in Enum.GetValues(typeof(ItemFilter)))
+            {
+                foreach (var uiOpSource in Enum.GetValues(typeof(UIOperationSource)))
+                {
+                    foreach (var packageLevel in Enum.GetValues(typeof(PackageLevel)))
+                    {
+                        yield return new object[] { packageLevel, activeTab, uiOpSource, true, 1, 0 }; // solution PM UI, 1 top-level, 0 transitive shown
+                        yield return new object[] { packageLevel, activeTab, uiOpSource, false, 1, 20 }; // project PM UI, 1 top-level, 20 transitive shown
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GenerateActionTestData))]
+        public void AddUiActionEngineTelemetryProperties_WithInstallAction_EmitsTransitiveDependenciesData(PackageLevel pkgLevel, ItemFilter activeTab, UIOperationSource uiSource, bool isSolutionLevel, int topLevel, int transitive)
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+
+            var operationId = Guid.NewGuid().ToString();
+
+            var actionTelemetryData = new VSActionsTelemetryEvent(
+                operationId,
+                projectIds: new[] { Guid.NewGuid().ToString() },
+                operationType: NuGetOperationType.Install,
+                source: OperationSource.PMC,
+                startTime: DateTimeOffset.Now.AddSeconds(-1),
+                status: NuGetOperationStatus.NoOp,
+                packageCount: 1,
+                endTime: DateTimeOffset.Now,
+                duration: .40,
+                isPackageSourceMappingEnabled: false);
+
+            UIActionEngine.AddUiActionEngineTelemetryProperties(
+                actionTelemetryEvent: actionTelemetryData,
+                continueAfterPreview: true,
+                acceptedLicense: true,
+                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), isSolutionLevel, activeTab, uiSource, pkgLevel, topLevel, transitive),
+                selectedIndex: 0,
+                recommendedCount: 0,
+                recommendPackages: false,
+                recommenderVersion: null,
+                topLevelVulnerablePackagesCount: 3,
+                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 }, // each package has its own max severity
+                existingPackages: null,
+                addedPackages: null,
+                removedPackages: null,
+                updatedPackagesOld: null,
+                updatedPackagesNew: null,
+                targetFrameworks: null);
+
+            // Act
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
+            service.EmitTelemetryEvent(actionTelemetryData);
+
+            // Assert
+            Assert.Equal(activeTab, lastTelemetryEvent["Tab"]);
+            Assert.Equal(uiSource, lastTelemetryEvent["IsSolutionLevel"]);
+            Assert.Equal(pkgLevel, lastTelemetryEvent["SelectedPackageLevel"]);
+            Assert.Equal(uiSource, lastTelemetryEvent["UIOperationSource"]);
+            Assert.Equal(topLevel, lastTelemetryEvent["TopLevelPackagesCount"]);
+            Assert.Equal(transitive, lastTelemetryEvent["TransitivePackagesCount"]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity
