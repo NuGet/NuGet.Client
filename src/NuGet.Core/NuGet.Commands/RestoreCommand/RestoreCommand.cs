@@ -208,7 +208,7 @@ namespace NuGet.Commands
                 }
                 telemetry.TelemetryEvent[NoOpResult] = false; // Getting here means we did not no-op.
 
-                if (!await AreCentralVersionRequirementsSatisfiedAsync(_request.Project.RestoreMetadata))
+                if (!await AreCentralVersionRequirementsSatisfiedAsync(_request))
                 {
                     // the errors will be added to the assets file
                     _success = false;
@@ -450,16 +450,16 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync(ProjectRestoreMetadata projectRestoreMetadata)
+        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync(RestoreRequest restoreRequest)
         {
-            if (projectRestoreMetadata == null || !projectRestoreMetadata.CentralPackageVersionsEnabled)
+            if (restoreRequest?.Project?.RestoreMetadata == null || !restoreRequest.Project.RestoreMetadata.CentralPackageVersionsEnabled)
             {
                 return true;
             }
 
-            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
+            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = restoreRequest.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
 
-            if (projectRestoreMetadata.CentralPackageVersionOverrideDisabled)
+            if (restoreRequest.Project.RestoreMetadata.CentralPackageVersionOverrideDisabled)
             {
                 // Emit a error if VersionOverride was specified for a package reference but that functionality is disabled
                 foreach (var item in dependenciesWithVersionOverride)
@@ -468,6 +468,12 @@ namespace NuGet.Commands
                 }
 
                 return false;
+            }
+
+            // Log a warning if there are more than one configured source and package source mapping is not enabled
+            if (restoreRequest.Project.RestoreMetadata.Sources.Count > 1 && !restoreRequest.PackageSourceMapping.IsEnabled)
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping));
             }
 
             // The dependencies should not have versions explicitly defined if cpvm is enabled.

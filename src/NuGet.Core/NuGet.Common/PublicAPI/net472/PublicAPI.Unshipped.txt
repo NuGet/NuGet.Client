@@ -4,6 +4,7 @@ NuGet.Common.IPackLogMessage.LibraryId.get -> string
 NuGet.Common.IPackLogMessage.LibraryId.set -> void
 NuGet.Common.NuGetLogCode.NU1013 = 1013 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1301 = 1301 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1507 = 1507 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5133 = 5133 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1802 = 1802 -> NuGet.Common.NuGetLogCode
 NuGet.Common.PackagingLogMessage.Framework.get -> NuGet.Frameworks.NuGetFramework
