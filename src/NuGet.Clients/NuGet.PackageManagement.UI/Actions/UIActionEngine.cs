@@ -325,10 +325,11 @@ namespace NuGet.PackageManagement.UI
                 IServiceBroker sb = uiService.UIContext.ServiceBroker;
                 if (!userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && uiService.Projects?.Count() == 1)
                 {
-                    // expected only 1 project. foreach avoids collection manipulation
-                    foreach (IProjectContextInfo project in uiService.Projects)
+                    // expected only 1 PackageReference project
+                    IProjectContextInfo prj = uiService.Projects.First();
+                    if (prj.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && prj.ProjectKind == NuGetProjectKind.PackageReference)
                     {
-                        IInstalledAndTransitivePackages installedAndTransitives = await project.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
+                        IInstalledAndTransitivePackages installedAndTransitives = await prj.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
                         foreach (IPackageReferenceContextInfo package in installedAndTransitives.InstalledPackages)
                         {
                             AddToExisting(package, existingPackages);
@@ -336,6 +337,14 @@ namespace NuGet.PackageManagement.UI
 
                         transitivePackageIds = installedAndTransitives.TransitivePackages
                             .Select(pkg => VSTelemetryServiceUtility.NormalizePackageId(pkg.Identity.Id)).Distinct().ToHashSet();
+                    }
+                    else
+                    {
+                        IEnumerable<IPackageReferenceContextInfo> installedPackages = await prj.GetInstalledPackagesAsync(sb, cancellationToken);
+                        foreach (IPackageReferenceContextInfo package in installedPackages)
+                        {
+                            AddToExisting(package, existingPackages);
+                        }
                     }
                 }
                 else
@@ -552,10 +561,14 @@ namespace NuGet.PackageManagement.UI
                         updatedPackagesNew,
                         frameworks);
 
-                    if (userAction != null && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install)
+                    if (userAction != null && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && uiService.Projects?.Count() == 1)
                     {
-                        var selectedPackageId = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
-                        actionTelemetryEvent.IsSelectedPackageTransitive = transitivePackageIds?.Contains(selectedPackageId) ?? false;
+                        IProjectContextInfo prj = uiService.Projects.First();
+                        if (prj.ProjectKind == NuGetProjectKind.PackageReference && prj.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
+                        {
+                            var selectedPackageId = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
+                            actionTelemetryEvent.IsSelectedPackageTransitive = transitivePackageIds?.Contains(selectedPackageId) ?? false;
+                        }
                     }
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 
