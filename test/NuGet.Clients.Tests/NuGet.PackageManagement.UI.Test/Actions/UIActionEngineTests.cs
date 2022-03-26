@@ -12,6 +12,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.Protocol.Core.Types;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
@@ -181,8 +182,15 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(3, pkgSeverities.Count());
         }
 
+        [Fact]
         public void PerformActionImplAsync_OnInstallinProject_EmitsProperty()
         {
+            var sourceProvider = new Mock<ISourceRepositoryProvider>();
+            var settings = new Mock<ISettings>();
+            var nugetPM = new NuGetPackageManager(sourceProvider, settings, "\packagesFolder");
+            var lockService = new Mock<INuGetLockService>();
+
+            var uiEngine = new UIActionEngine(sourceProvider.Object, nugetPM, lockService.Object);
             throw new NotImplementedException();
         }
 
