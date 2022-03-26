@@ -9,6 +9,8 @@ namespace NuGet.VisualStudio
 {
     public class VSActionsTelemetryEvent : ActionsTelemetryEvent
     {
+        public bool IsSelectedPackageTransitive { set => this["IsSelectedPackageTransitive"] = value; }
+
         public VSActionsTelemetryEvent(
            string operationId,
            string[] projectIds,

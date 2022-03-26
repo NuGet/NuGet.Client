@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class UserAction
     {
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, bool isSolutionLevel)
         {
             Action = action;
 
@@ -19,27 +19,27 @@ namespace NuGet.PackageManagement.UI
 
             PackageId = packageId;
             Version = packageVersion;
+            IsSolutionLevel = isSolutionLevel;
         }
 
         public NuGetProjectActionType Action { get; private set; }
-
+        public bool IsSolutionLevel { get; private set; }
         public string PackageId { get; }
-
         public NuGetVersion Version { get; }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion)
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel)
         {
             if (packageVersion == null)
             {
                 throw new ArgumentNullException(nameof(packageVersion));
             }
 
-            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion);
+            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel);
         }
 
-        public static UserAction CreateUnInstallAction(string packageId)
+        public static UserAction CreateUnInstallAction(string packageId, bool isSolutionLevel)
         {
-            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null);
+            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, isSolutionLevel);
         }
     }
 }

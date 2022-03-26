@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI.Test
                 actionTelemetryEvent: actionTelemetryData,
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0)),
+                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<bool>()),
                 selectedIndex: 0,
                 recommendedCount: 0,
                 recommendPackages: false,
@@ -179,6 +179,11 @@ namespace NuGet.PackageManagement.UI.Test
                 item => Assert.Equal(1, item),
                 item => Assert.Equal(3, item));
             Assert.Equal(3, pkgSeverities.Count());
+        }
+
+        public void PerformActionImplAsync_OnInstallinProject_EmitsProperty()
+        {
+            throw new NotImplementedException();
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity

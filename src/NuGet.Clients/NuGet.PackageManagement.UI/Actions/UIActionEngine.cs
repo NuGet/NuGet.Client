@@ -282,6 +282,16 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private static void AddToExisting(IPackageReferenceContextInfo pkg, ISet<Tuple<string, string>> existingPackages)
+        {
+            PackageIdentity package = pkg.Identity;
+            Tuple<string, string> packageInfo = Tuple.Create(package.Id, package.Version == null ? "" : package.Version.ToNormalizedString());
+            if (!existingPackages.Contains(packageInfo))
+            {
+                existingPackages.Add(packageInfo);
+            }
+        }
+
         private async Task PerformActionImplAsync(
             IServiceBroker serviceBroker,
             INuGetProjectManagerService projectManagerService,
@@ -300,6 +310,7 @@ namespace NuGet.PackageManagement.UI
 
             List<string> removedPackages = null;
             var existingPackages = new HashSet<Tuple<string, string>>();
+            HashSet<string> transitivePackageIds = null;
             List<Tuple<string, string>> addedPackages = null;
             List<Tuple<string, string>> updatedPackagesOld = null;
             List<Tuple<string, string>> updatedPackagesNew = null;
@@ -311,22 +322,29 @@ namespace NuGet.PackageManagement.UI
             packageEnumerationTime.Start();
             try
             {
-                // collect the install state of the existing packages
-                foreach (IProjectContextInfo project in uiService.Projects)
+                if (!userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install)
                 {
-                    IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                        uiService.UIContext.ServiceBroker,
-                        cancellationToken);
-
-                    foreach (IPackageReferenceContextInfo package in installedPackages)
+                    IInstalledAndTransitivePackages installedAndTransitive = await uiService.Projects.First().GetInstalledAndTransitivePackagesAsync(uiService.UIContext.ServiceBroker, cancellationToken);
+                    foreach (IPackageReferenceContextInfo package in installedAndTransitive.InstalledPackages)
                     {
-                        Tuple<string, string> packageInfo = new Tuple<string, string>(
-                            package.Identity.Id,
-                            (package.Identity.Version == null ? "" : package.Identity.Version.ToNormalizedString()));
+                        AddToExisting(package, existingPackages);
+                    }
 
-                        if (!existingPackages.Contains(packageInfo))
+                    transitivePackageIds = installedAndTransitive.TransitivePackages
+                        .Select(pkg => VSTelemetryServiceUtility.NormalizePackageId(pkg.Identity.Id)).Distinct().ToHashSet();
+                }
+                else
+                {
+                    // collect the install state of the existing packages
+                    foreach (IProjectContextInfo project in uiService.Projects)
+                    {
+                        IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
+                            uiService.UIContext.ServiceBroker,
+                            cancellationToken);
+
+                        foreach (IPackageReferenceContextInfo package in installedPackages)
                         {
-                            existingPackages.Add(packageInfo);
+                            AddToExisting(package, existingPackages);
                         }
                     }
                 }
@@ -532,6 +550,11 @@ namespace NuGet.PackageManagement.UI
                         updatedPackagesNew,
                         frameworks);
 
+                    if (!userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install)
+                    {
+                        var selectedPackageId = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
+                        actionTelemetryEvent.IsSelectedPackageTransitive = transitivePackageIds.Contains(selectedPackageId);
+                    }
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
