@@ -21,6 +21,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
+using ContractsItemFiler = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI.Test
 {
@@ -166,7 +167,7 @@ namespace NuGet.PackageManagement.UI.Test
                 actionTelemetryEvent: actionTelemetryData,
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<bool>()),
+                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<bool>(), It.IsAny<ContractsItemFiler>()),
                 selectedIndex: 0,
                 recommendedCount: 0,
                 recommendPackages: false,
@@ -196,11 +197,19 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(3, pkgSeverities.Count());
         }
 
+        public static IEnumerable<object[]> GetInstallActionTestData()
+        {
+            foreach(var activeTab in Enum.GetValues(typeof(ContractsItemFiler)))
+            {
+                yield return new object[] { activeTab, true, "transitiveA", false, false, }; // don't care in expectedValue in this case (solution PM UI)
+                yield return new object[] { activeTab, false, "transitiveA", true, true, }; // installs a transitive package
+                yield return new object[] { activeTab, false, "anotherPackage", true, false, }; // installs a non-transitive package
+            }
+        }
+
         [Theory]
-        [InlineData(true, "transitiveA", false, false)] // don't care in expectedValue in this case (solution PM UI)
-        [InlineData(false, "transitiveA", true, true)]
-        [InlineData(false, "anotherPackage", true, false)]
-        public async Task CreateInstallAction_OnInstallingProject_EmitsNuGetActionTelemetryWithIsSelectedPackageTransitivePropertyAsync(bool isSolutionLevel, string packageIdToInstall, bool containsValue, bool expectedValue)
+        [MemberData(nameof(GetInstallActionTestData))]
+        public async Task CreateInstallAction_OnInstallingProject_EmitsTelemetryPropertiesAsync(ContractsItemFiler activeTab, bool isSolutionLevel, string packageIdToInstall, bool containsValue, bool expectedValue)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -253,7 +262,7 @@ namespace NuGet.PackageManagement.UI.Test
             uiService.Setup(ui => ui.Settings).Returns(settings.Object);
             uiService.Setup(ui => ui.Projects).Returns(new[] { new ProjectContextInfo("a", ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) });
 
-            var action = UserAction.CreateInstallAction(packageIdToInstall, NuGetVersion.Parse("1.0.0"), isSolutionLevel: isSolutionLevel);
+            var action = UserAction.CreateInstallAction(packageIdToInstall, NuGetVersion.Parse("1.0.0"), isSolutionLevel, activeTab);
 
             // Act
             await uiEngine.PerformInstallOrUninstallAsync(uiService.Object, action, CancellationToken.None);
@@ -263,6 +272,8 @@ namespace NuGet.PackageManagement.UI.Test
             // expect failed action because we mocked just enough objects to emit telemetry
             Assert.Equal(NuGetOperationStatus.Failed, lastTelemetryEvent["Status"]);
             Assert.Equal(NuGetOperationType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
+            Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
+            Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
 
             bool hasValue = false;
             var enumerator = lastTelemetryEvent.GetEnumerator();

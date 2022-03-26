@@ -3,12 +3,13 @@
 
 using System;
 using NuGet.Versioning;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI
 {
     public class UserAction
     {
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, bool isSolutionLevel)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab)
         {
             Action = action;
 
@@ -20,26 +21,28 @@ namespace NuGet.PackageManagement.UI
             PackageId = packageId;
             Version = packageVersion;
             IsSolutionLevel = isSolutionLevel;
+            ActiveTab = activeTab;
         }
 
         public NuGetProjectActionType Action { get; private set; }
         public bool IsSolutionLevel { get; private set; }
+        public ContractsItemFilter ActiveTab { get; private set; }
         public string PackageId { get; }
         public NuGetVersion Version { get; }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel)
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab)
         {
             if (packageVersion == null)
             {
                 throw new ArgumentNullException(nameof(packageVersion));
             }
 
-            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel);
+            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel, activeTab);
         }
 
-        public static UserAction CreateUnInstallAction(string packageId, bool isSolutionLevel)
+        public static UserAction CreateUnInstallAction(string packageId, bool isSolutionLevel, ContractsItemFilter activeTab)
         {
-            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, isSolutionLevel);
+            return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, isSolutionLevel, activeTab);
         }
     }
 }

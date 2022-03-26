@@ -552,7 +552,7 @@ namespace NuGet.PackageManagement.UI
                         updatedPackagesNew,
                         frameworks);
 
-                    if (!userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install)
+                    if (userAction != null && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install)
                     {
                         var selectedPackageId = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
                         actionTelemetryEvent.IsSelectedPackageTransitive = transitivePackageIds?.Contains(selectedPackageId) ?? false;
@@ -619,6 +619,8 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
                 actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
+                actionTelemetryEvent.IsSolutionLevel = userAction.IsSolutionLevel;
+                actionTelemetryEvent.Tab = userAction.ActiveTab;
             }
 
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;

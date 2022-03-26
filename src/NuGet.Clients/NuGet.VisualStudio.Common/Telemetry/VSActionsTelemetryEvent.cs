@@ -4,11 +4,14 @@
 using System;
 using NuGet.Common;
 using NuGet.PackageManagement;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.VisualStudio
 {
     public class VSActionsTelemetryEvent : ActionsTelemetryEvent
     {
+        public bool IsSolutionLevel { set => this["IsSolutionLevel"] = value; }
+        public ItemFilter Tab { set => this["Tab"] = value; }
         public bool IsSelectedPackageTransitive { set => this["IsSelectedPackageTransitive"] = value; }
 
         public VSActionsTelemetryEvent(
