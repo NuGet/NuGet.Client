@@ -387,7 +387,7 @@ namespace NuGet.PackageManagement.UI
             while (currentLoader.State.LoadingStatus == LoadingStatus.Loading)
             {
                 token.ThrowIfCancellationRequested();
-                await currentLoader.UpdateStateAsync(progress: null, token);
+                await currentLoader.UpdateStateAsync(progress: null, token);//don't report progress to UI while waiting for packages list
             }
 
             progress.Report(currentLoader.State);
@@ -402,7 +402,7 @@ namespace NuGet.PackageManagement.UI
                 currentLoader.State.ItemsCount == 0)
             {
                 token.ThrowIfCancellationRequested();
-                await currentLoader.UpdateStateAsync(progress: null, token);
+                await currentLoader.UpdateStateAsync(progress: null, token);//don't report progress to UI while waiting for packages list
             }
 
             progress?.Report(currentLoader.State);
