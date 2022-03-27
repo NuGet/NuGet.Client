@@ -279,7 +279,7 @@ namespace NuGet.PackageManagement.UI.Test
             var enumerator = lastTelemetryEvent.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                hasValue = enumerator.Current.Key == nameof(VSActionsTelemetryEvent.IsSelectedPackageTransitive);
+                hasValue = enumerator.Current.Key == nameof(VSActionsTelemetryEvent.IsPackageToInstallTransitive);
                 if (hasValue)
                 {
                     break;
@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(containsValue, hasValue);
             if (containsValue)
             {
-                Assert.Equal(expectedValue, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSelectedPackageTransitive)]);
+                Assert.Equal(expectedValue, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsPackageToInstallTransitive)]);
             }
         }
 

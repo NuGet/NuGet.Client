@@ -567,7 +567,7 @@ namespace NuGet.PackageManagement.UI
                         if (prj.ProjectKind == NuGetProjectKind.PackageReference && prj.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
                         {
                             var selectedPackageId = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
-                            actionTelemetryEvent.IsSelectedPackageTransitive = transitivePackageIds?.Contains(selectedPackageId) ?? false;
+                            actionTelemetryEvent.IsPackageToInstallTransitive = transitivePackageIds?.Contains(selectedPackageId) ?? false;
                         }
                     }
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
