@@ -69,6 +69,7 @@ stages:
 
 - stage: StaticSourceAnalysis
   displayName: Static Source Analysis
+  condition: false
   dependsOn: []
   jobs:
   - job: RunStaticSourceAnalysis
@@ -106,6 +107,7 @@ stages:
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
   dependsOn: Initialize
+  condition: false
   jobs:
   - job: Build_and_UnitTest_RTM
     timeoutInMinutes: 170
@@ -126,6 +128,7 @@ stages:
 
 - stage: Source_Build
   dependsOn: Initialize
+  condition: false
   jobs:
   - job: Build_Source_Build
     timeoutInMinutes: 120
@@ -166,7 +169,7 @@ stages:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
       MSBUILDDISABLENODEREUSE: 1
-    condition: "and(succeeded(), eq(variables['RunTestsOnLinux'], 'true'))"
+    condition: false
     pool:
       vmImage: ubuntu-latest
     steps:
@@ -205,7 +208,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd_Part1
     stageDisplayName: VS EndToEnd Tests Part 1
-    condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
+    condition: false
     dependsOn:
     - Initialize
     - Build_Insertable
@@ -226,7 +229,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd_Part2
     stageDisplayName: VS EndToEnd Tests Part 2
-    condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
+    condition: false
     dependsOn:
     - Initialize
     - Build_Insertable
@@ -247,7 +250,7 @@ stages:
   parameters:
     stageName: Visual_Studio_Apex_Tests
     stageDisplayName: Apex Tests On Windows
-    condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
+    condition: false
     dependsOn:
       - Initialize
       - Build_Insertable
