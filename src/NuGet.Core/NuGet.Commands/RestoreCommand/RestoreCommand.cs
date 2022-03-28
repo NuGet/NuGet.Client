@@ -261,9 +261,10 @@ namespace NuGet.Commands
                     // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
                     // The other scenario is when the lock file is not up to date and we're running locked mode.
                     // In that case we want to write a `target` for each target framework to avoid missing target errors from the SDK build tasks.
-                    graphs = _request.Project.TargetFrameworks.Select(e =>
+                    var frameworkRuntimePair = CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
+                    graphs = frameworkRuntimePair.Select(e =>
                     {
-                        return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.FrameworkName, null);
+                        return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.Framework, e.RuntimeIdentifier);
                     });
                 }
 
