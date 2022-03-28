@@ -2048,7 +2048,7 @@ EndGlobal";
 
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageSources>        
+    <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
         <packageSourceMapping>
@@ -2073,7 +2073,7 @@ EndGlobal";
         }
 
         [Fact]
-        public async Task WhenPackageSourceMappingIsEnabled_CanotInstallsPackagesFromRestoreSources_Fails()
+        public async Task WhenPackageSourceMappingIsEnabled_CannotInstallsPackagesFromRestoreSources_Fails()
         {
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
 
@@ -2119,7 +2119,7 @@ EndGlobal";
 
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-    <packageSources>        
+    <packageSources>
         <add key=""source2"" value=""{packageSource2.FullName}"" />
     </packageSources>
         <packageSourceMapping>
@@ -2151,6 +2151,74 @@ EndGlobal";
             pkgX.Files.Clear();
             pkgX.AddFile($"lib/netstandard2.0/x.dll");
             return pkgX;
+        }
+
+        [Fact]
+        public async Task DotnetRestore_CentralPackageVersionManagement_NoOps()
+        {
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var testDirectory = pathContext.SolutionRoot;
+                var pkgX = new SimpleTestPackageContext("x", "1.0.0");
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgX);
+
+                var projectName1 = "ClassLibrary1";
+                var workingDirectory1 = Path.Combine(testDirectory, projectName1);
+                var projectFile1 = Path.Combine(workingDirectory1, $"{projectName1}.csproj");
+                _msbuildFixture.CreateDotnetNewProject(testDirectory, projectName1, " classlib");
+
+                using (var stream = File.Open(projectFile1, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net5.0");
+                    ProjectFileUtils.AddProperty(xml, "ManagePackageVersionsCentrally", "true");
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "x",
+                        framework: "",
+                        new Dictionary<string, string>(),
+                        new Dictionary<string, string>());
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                var packagesFile = Path.Combine(testDirectory, "Directory.Packages.props");
+                await File.WriteAllTextAsync(packagesFile, "<Project><ItemGroup></ItemGroup></Project>");
+
+                using (var stream = File.Open(packagesFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageVersion",
+                        "x",
+                        framework: "",
+                        new Dictionary<string, string>(),
+                        new Dictionary<string, string>(){{"Version", "1.0.0"}});
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Preconditions
+                var command = $"restore {projectFile1} {$"--source \"{pathContext.PackageSource}\" /p:AutomaticallyUseReferenceAssemblyPackages=false"}";
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, command, ignoreExitCode: true);
+
+                result.ExitCode.Should().Be(0, because: result.AllOutput);
+                var assetsFilePath = Path.Combine(workingDirectory1, "obj", "project.assets.json");
+                File.Exists(assetsFilePath).Should().BeTrue(because: "The assets file needs to exist");
+                var assetsFile = new LockFileFormat().Read(assetsFilePath);
+                LockFileTarget target = assetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net5.0")) && string.IsNullOrEmpty(e.RuntimeIdentifier));
+                target.Libraries.Should().ContainSingle(e => e.Name.Equals("x"));
+
+                // Act another restore
+                result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, command, ignoreExitCode: true);
+
+                // Ensure restore no-ops
+                result.ExitCode.Should().Be(0, because: result.AllOutput);
+                result.AllOutput.Should().Contain("All projects are up-to-date for restore.");
+            }
         }
     }
 }

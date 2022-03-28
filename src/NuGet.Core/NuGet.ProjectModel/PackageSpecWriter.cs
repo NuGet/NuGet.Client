@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -17,13 +18,13 @@ namespace NuGet.ProjectModel
 {
     /// <summary>
     /// Writes out a PackageSpec object graph.
-    /// 
+    ///
     /// This is non-private only to facilitate unit testing.
     /// </summary>
     public sealed class PackageSpecWriter
     {
         /// <summary>
-        /// Writes a PackageSpec to an <c>NuGet.Common.IObjectWriter</c> instance. 
+        /// Writes a PackageSpec to an <c>NuGet.Common.IObjectWriter</c> instance.
         /// </summary>
         /// <param name="packageSpec">A <c>PackageSpec</c> instance.</param>
         /// <param name="writer">An <c>NuGet.Common.IObjectWriter</c> instance.</param>
@@ -469,7 +470,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// The central transitive dependecy groups are used for pack operation.
         /// The metadata needed for pack is composed from:
-        ///     Name, IncludeType, SuppressParent and Version 
+        ///     Name, IncludeType, SuppressParent and Version
         /// </summary>
         internal static void SetCentralTransitveDependencyGroup(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
         {
@@ -605,7 +606,7 @@ namespace NuGet.ProjectModel
 
             if (compressed)
             {
-                SetValue(writer, "centralPackageVersionsHash", GetHash(centralPackageVersions).ToString());
+                SetValue(writer, "centralPackageVersionsHash", GetHash(centralPackageVersions));
                 return;
             }
 
@@ -617,15 +618,18 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
-        private static int GetHash(ICollection<CentralPackageVersion> items)
+        private static string GetHash(ICollection<CentralPackageVersion> items)
         {
-            var hashCode = new HashCodeCombiner();
-            foreach (var item in items)
+            using (var hashFunc = new Sha512HashFunction())
+            using (var writer = new HashObjectWriter(hashFunc))
             {
-                hashCode.AddStringIgnoreCase(item.Name);
-                hashCode.AddObject(item.VersionRange.GetHashCode());
+                foreach (var item in items)
+                {
+                    writer.WriteNameValue(item.Name, item.VersionRange.ToString());
+                }
+
+                return writer.GetHash();
             }
-            return hashCode.CombinedHash;
         }
 
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
