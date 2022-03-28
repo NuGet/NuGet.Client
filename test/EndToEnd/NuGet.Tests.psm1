@@ -167,7 +167,6 @@ function Run-Test {
     if(!$test) {
         # Get all of the the tests functions
         $tests = Get-ChildItem function:\Test-*
-        $tests = Rearrange-Tests $tests
     }
     else {
         $tests = @(Get-ChildItem "function:\Test-$Test")
