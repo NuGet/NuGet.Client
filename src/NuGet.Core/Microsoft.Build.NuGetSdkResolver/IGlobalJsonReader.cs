@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
@@ -11,6 +12,11 @@ namespace Microsoft.Build.NuGetSdkResolver
     /// </summary>
     internal interface IGlobalJsonReader
     {
+        /// <summary>
+        /// Occurs when a file is read.
+        /// </summary>
+        event EventHandler<string> FileRead;
+
         /// <summary>
         /// Walks up the directory tree to find the first global.json and reads the msbuild-sdks section.
         /// </summary>

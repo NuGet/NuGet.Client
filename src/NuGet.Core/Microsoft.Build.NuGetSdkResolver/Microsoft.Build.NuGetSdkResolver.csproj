@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'NuGet.sln'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -11,6 +11,7 @@
     <PackProject>true</PackProject>
     <Description>MSBuild SDK resolver for NuGet packages.</Description>
     <XPLATProject>true</XPLATProject>
+    <SkipShared>true</SkipShared>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">

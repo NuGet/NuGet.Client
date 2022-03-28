@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
@@ -18,8 +19,12 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             _sdkVersions = sdkVersions;
         }
 
+        public event EventHandler<string> FileRead;
+
         public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, string fileName = "global.json")
         {
+            FileRead?.Invoke(this, fileName);
+
             return _sdkVersions;
         }
     }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using Moq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -33,6 +33,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         [Fact]
         public void Resolve_WhenPackageDoesNotExists_ReturnsFailedSdkResultAndLogsError()
         {
+            NuGetSdkResolver.ResultCache.Clear();
+
             using (var pathContext = new SimpleTestPathContext())
             {
                 var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
@@ -58,6 +60,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         [Fact]
         public void Resolve_WhenPackageExists_ReturnsSucceededSdkResult()
         {
+            NuGetSdkResolver.ResultCache.Clear();
+
             using (var pathContext = new SimpleTestPathContext())
             {
                 var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
@@ -78,6 +82,24 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 result.Errors.Should().BeEmpty();
                 result.Warnings.Should().BeEmpty();
             }
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="NuGetSdkResolver.TryGetNuGetVersionForSdk(string, string, SdkResolverContext, out object)" /> returns <c>null</c> if a version is not an exact NuGet version.
+        /// </summary>
+        [Theory]
+        [InlineData("1.*")]
+        [InlineData("(1.0,2.0)")]
+        [InlineData("[1.0,2.0)")]
+        public void TryGetNuGetVersionForSdk_WhenContainsRange_ReturnsNull(string version)
+        {
+            var sdkResolverContext = new MockSdkResolverContext(ProjectName);
+
+            VerifyTryGetNuGetVersionForSdk(
+                allVersions: null,
+                version: version,
+                expectedVersion: null,
+                sdkResolverContext);
         }
 
         /// <summary>
@@ -193,7 +215,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
             var sdkResolver = new NuGetSdkResolver(globalJsonReader);
 
-            var result = sdkResolver.TryGetNuGetVersionForSdk(PackageA, version, context, out var parsedVersion);
+            var result = sdkResolver.TryGetNuGetVersionForSdk(new SdkReference(PackageA, version, minimumVersion: null), context, NullLogger.Instance, out var parsedVersion);
 
             if (expectedVersion != null)
             {
