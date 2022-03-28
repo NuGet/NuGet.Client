@@ -413,10 +413,10 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
                 if (loader == _loader)
                 {
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+
                     _loadingStatusBar.UpdateLoadingState(state);
 
                     // decide when to show status bar
