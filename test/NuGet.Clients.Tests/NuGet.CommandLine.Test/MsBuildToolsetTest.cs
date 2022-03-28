@@ -12,19 +12,20 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void WhenNullIsPassedForVersionParameterThenMsBuildVersionIsFetchedFromPath_Success()
         {
-            //Arrange
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
+            MsBuildToolset msbuildToolset;
+
             if (RuntimeEnvironmentHelper.IsMono && RuntimeEnvironmentHelper.IsMacOSX)
             {
-                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+                msbuildToolset = MsBuildUtility.GetMsBuildFromMonoPaths(userVersion: null);
+            }
+            else
+            {
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
+                msbuildToolset = new MsBuildToolset(version: null, path: msbuildPath);
+                Assert.Equal(msbuildPath, msbuildToolset.Path);
             }
 
-            //Act
-            var toolset = new MsBuildToolset(version: null, path: msbuildPath);
-
-            //Assert
-            Assert.Equal(msbuildPath, toolset.Path);
-            Assert.True(toolset.ParsedVersion.CompareTo(new Version()) > 0);
+            Assert.True(msbuildToolset.ParsedVersion.CompareTo(new Version()) > 0);
         }
     }
 }
