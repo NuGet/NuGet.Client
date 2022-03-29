@@ -24,7 +24,6 @@ namespace NuGet.Configuration
         /// nuget.exe setApiKey XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
         /// </remarks>
         public static readonly string DefaultGalleryServerUrl = "https://www.nuget.org";
-        public static readonly string DefaultSymbolServerUrl = "https://nuget.smbsrc.net/";
 
         public static readonly string ReadmeFileName = "readme.txt";
         public static readonly string NuGetSolutionSettingsFolder = ".nuget";
