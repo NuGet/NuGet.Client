@@ -309,7 +309,7 @@ namespace NuGet.PackageManagement.UI
             List<Tuple<string, string>> addedPackages = null;
             List<Tuple<string, string>> updatedPackagesOld = null;
             List<Tuple<string, string>> updatedPackagesNew = null;
-            bool? wasPacakgeToInstallATransitive = null;
+            bool? packageToInstallWasTransitive = null;
 
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
@@ -331,13 +331,13 @@ namespace NuGet.PackageManagement.UI
                             existingPackages.Add(CreatePackageTuple(package));
                         }
 
-                        wasPacakgeToInstallATransitive = false;
+                        packageToInstallWasTransitive = false;
                         string packageIdToInstall = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
                         foreach (IPackageReferenceContextInfo transitivePackage in installedAndTransitives.TransitivePackages)
                         {
                             if (packageIdToInstall == VSTelemetryServiceUtility.NormalizePackageId(transitivePackage.Identity.Id))
                             {
-                                wasPacakgeToInstallATransitive = true;
+                                packageToInstallWasTransitive = true;
                                 break;
                             }
                         }
@@ -565,9 +565,9 @@ namespace NuGet.PackageManagement.UI
                         updatedPackagesNew,
                         frameworks);
 
-                    if (wasPacakgeToInstallATransitive.HasValue)
+                    if (packageToInstallWasTransitive.HasValue)
                     {
-                        actionTelemetryEvent.IsPackageToInstallTransitive = wasPacakgeToInstallATransitive.Value;
+                        actionTelemetryEvent.PackageToInstallWasTransitive = packageToInstallWasTransitive.Value;
                     }
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 

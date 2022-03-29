@@ -12,7 +12,7 @@ namespace NuGet.VisualStudio
     {
         public bool IsSolutionLevel { set => this[nameof(IsSolutionLevel)] = value; }
         public ItemFilter Tab { set => this[nameof(Tab)] = value; }
-        public bool IsPackageToInstallTransitive { set => this[nameof(IsPackageToInstallTransitive)] = value; }
+        public bool PackageToInstallWasTransitive { set => this[nameof(PackageToInstallWasTransitive)] = value; }
 
         public VSActionsTelemetryEvent(
            string operationId,

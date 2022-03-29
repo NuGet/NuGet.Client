@@ -274,7 +274,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(NuGetOperationType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
             Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
             Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
-            Assert.Equal(expectedValue, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsPackageToInstallTransitive)]);
+            Assert.Equal(expectedValue, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity
