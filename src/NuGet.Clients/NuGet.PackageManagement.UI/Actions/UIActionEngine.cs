@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement.UI
                 int projectsCount = uiService.Projects.Count();
                 IEnumerable<IPackageReferenceContextInfo> installedPackages = null;
                 // collect the install state of the existing packages
-                foreach (IProjectContextInfo project in uiService.Projects)
+                foreach (IProjectContextInfo project in uiService.Projects) // only one project when PM UI is in project mode
                 {
                     if (projectsCount == 1 && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && project.ProjectKind == NuGetProjectKind.PackageReference)
                     {
