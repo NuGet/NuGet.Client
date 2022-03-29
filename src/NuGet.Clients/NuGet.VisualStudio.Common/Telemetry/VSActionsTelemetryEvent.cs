@@ -10,9 +10,9 @@ namespace NuGet.VisualStudio
 {
     public class VSActionsTelemetryEvent : ActionsTelemetryEvent
     {
-        public bool IsSolutionLevel { set => this["IsSolutionLevel"] = value; }
-        public ItemFilter Tab { set => this["Tab"] = value; }
-        public bool IsPackageToInstallTransitive { set => this["IsPackageToInstallTransitive"] = value; }
+        public bool IsSolutionLevel { set => this[nameof(IsSolutionLevel)] = value; }
+        public ItemFilter Tab { set => this[nameof(Tab)] = value; }
+        public bool IsPackageToInstallTransitive { set => this[nameof(IsPackageToInstallTransitive)] = value; }
 
         public VSActionsTelemetryEvent(
            string operationId,

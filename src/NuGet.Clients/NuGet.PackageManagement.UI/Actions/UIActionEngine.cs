@@ -282,14 +282,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static void AddToExisting(IPackageReferenceContextInfo pkg, ISet<Tuple<string, string>> existingPackages)
+        private static Tuple<string, string> CreatePackageTuple(IPackageReferenceContextInfo pkg)
         {
             PackageIdentity package = pkg.Identity;
-            Tuple<string, string> packageInfo = Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString());
-            if (!existingPackages.Contains(packageInfo))
-            {
-                existingPackages.Add(packageInfo);
-            }
+            return Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString());
         }
 
         private async Task PerformActionImplAsync(
@@ -310,10 +306,10 @@ namespace NuGet.PackageManagement.UI
 
             List<string> removedPackages = null;
             var existingPackages = new HashSet<Tuple<string, string>>();
-            HashSet<string> transitivePackageIds = null;
             List<Tuple<string, string>> addedPackages = null;
             List<Tuple<string, string>> updatedPackagesOld = null;
             List<Tuple<string, string>> updatedPackagesNew = null;
+            bool? wasPacakgeToInstallATransitive = null;
 
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
@@ -332,18 +328,21 @@ namespace NuGet.PackageManagement.UI
                         IInstalledAndTransitivePackages installedAndTransitives = await prj.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
                         foreach (IPackageReferenceContextInfo package in installedAndTransitives.InstalledPackages)
                         {
-                            AddToExisting(package, existingPackages);
+                            existingPackages.Add(CreatePackageTuple(package));
                         }
 
-                        transitivePackageIds = installedAndTransitives.TransitivePackages
-                            .Select(pkg => VSTelemetryServiceUtility.NormalizePackageId(pkg.Identity.Id)).Distinct().ToHashSet();
+                        IEnumerable<string> transitivePackageIds = installedAndTransitives.TransitivePackages
+                            .Select(pkg => VSTelemetryServiceUtility.NormalizePackageId(pkg.Identity.Id)).Distinct();
+
+                        string packageIdToInstall = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
+                        wasPacakgeToInstallATransitive = transitivePackageIds.Contains(packageIdToInstall);
                     }
                     else
                     {
                         IEnumerable<IPackageReferenceContextInfo> installedPackages = await prj.GetInstalledPackagesAsync(sb, cancellationToken);
                         foreach (IPackageReferenceContextInfo package in installedPackages)
                         {
-                            AddToExisting(package, existingPackages);
+                            existingPackages.Add(CreatePackageTuple(package));
                         }
                     }
                 }
@@ -355,7 +354,7 @@ namespace NuGet.PackageManagement.UI
                         IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(sb, cancellationToken);
                         foreach (IPackageReferenceContextInfo package in installedPackages)
                         {
-                            AddToExisting(package, existingPackages);
+                            existingPackages.Add(CreatePackageTuple(package));
                         }
                     }
                 }
@@ -561,14 +560,9 @@ namespace NuGet.PackageManagement.UI
                         updatedPackagesNew,
                         frameworks);
 
-                    if (userAction != null && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && uiService.Projects?.Count() == 1)
+                    if (wasPacakgeToInstallATransitive.HasValue)
                     {
-                        IProjectContextInfo prj = uiService.Projects.First();
-                        if (prj.ProjectKind == NuGetProjectKind.PackageReference && prj.ProjectStyle == ProjectModel.ProjectStyle.PackageReference)
-                        {
-                            var selectedPackageId = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
-                            actionTelemetryEvent.IsPackageToInstallTransitive = transitivePackageIds?.Contains(selectedPackageId) ?? false;
-                        }
+                        actionTelemetryEvent.IsPackageToInstallTransitive = wasPacakgeToInstallATransitive.Value;
                     }
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 

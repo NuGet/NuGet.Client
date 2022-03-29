@@ -201,15 +201,15 @@ namespace NuGet.PackageManagement.UI.Test
         {
             foreach(var activeTab in Enum.GetValues(typeof(ContractsItemFiler)))
             {
-                yield return new object[] { activeTab, true, "transitiveA", false, false, }; // don't care in expectedValue in this case (solution PM UI)
-                yield return new object[] { activeTab, false, "transitiveA", true, true, }; // installs a package that was a transitive dependency
-                yield return new object[] { activeTab, false, "anotherPackage", true, false, }; // installs a package that was not a transitive dependency
+                yield return new object[] { activeTab, true, "transitiveA", null, }; // don't care in expectedValue in this case (solution PM UI)
+                yield return new object[] { activeTab, false, "transitiveA", true, }; // installs a package that was a transitive dependency
+                yield return new object[] { activeTab, false, "anotherPackage", false, }; // installs a package that was not a transitive dependency
             }
         }
 
         [Theory]
         [MemberData(nameof(GetInstallActionTestData))]
-        public async Task CreateInstallAction_OnInstallingProject_EmitsTelemetryPropertiesAsync(ContractsItemFiler activeTab, bool isSolutionLevel, string packageIdToInstall, bool containsValue, bool expectedValue)
+        public async Task CreateInstallAction_OnInstallingProject_EmitsTelemetryPropertiesAsync(ContractsItemFiler activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedValue)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -270,26 +270,11 @@ namespace NuGet.PackageManagement.UI.Test
             // Assert
             Assert.NotNull(lastTelemetryEvent);
             // expect failed action because we mocked just enough objects to emit telemetry
-            Assert.Equal(NuGetOperationStatus.Failed, lastTelemetryEvent["Status"]);
+            Assert.Equal(NuGetOperationStatus.Failed, lastTelemetryEvent[nameof(ActionEventBase.Status)]);
             Assert.Equal(NuGetOperationType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
             Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
             Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
-
-            bool hasValue = false;
-            var enumerator = lastTelemetryEvent.GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-                hasValue = enumerator.Current.Key == nameof(VSActionsTelemetryEvent.IsPackageToInstallTransitive);
-                if (hasValue)
-                {
-                    break;
-                }
-            }
-            Assert.Equal(containsValue, hasValue);
-            if (containsValue)
-            {
-                Assert.Equal(expectedValue, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsPackageToInstallTransitive)]);
-            }
+            Assert.Equal(expectedValue, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsPackageToInstallTransitive)]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity
