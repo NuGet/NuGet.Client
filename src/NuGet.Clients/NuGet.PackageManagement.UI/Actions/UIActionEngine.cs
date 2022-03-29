@@ -282,6 +282,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private static Tuple<string, string> CreatePackageTuple(IPackageReferenceContextInfo pkg)
+        {
+            PackageIdentity package = pkg.Identity;
+            return Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString());
+        }
+
         private async Task PerformActionImplAsync(
             IServiceBroker serviceBroker,
             INuGetProjectManagerService projectManagerService,
@@ -303,6 +309,7 @@ namespace NuGet.PackageManagement.UI
             List<Tuple<string, string>> addedPackages = null;
             List<Tuple<string, string>> updatedPackagesOld = null;
             List<Tuple<string, string>> updatedPackagesNew = null;
+            bool? packageToInstallWasTransitive = null;
 
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
@@ -311,23 +318,36 @@ namespace NuGet.PackageManagement.UI
             packageEnumerationTime.Start();
             try
             {
+                IServiceBroker sb = uiService.UIContext.ServiceBroker;
+                int projectsCount = uiService.Projects.Count();
+                IEnumerable<IPackageReferenceContextInfo> installedPackages = null;
                 // collect the install state of the existing packages
-                foreach (IProjectContextInfo project in uiService.Projects)
+                foreach (IProjectContextInfo project in uiService.Projects) // only one project when PM UI is in project mode
                 {
-                    IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                        uiService.UIContext.ServiceBroker,
-                        cancellationToken);
+                    if (projectsCount == 1 && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && project.ProjectKind == NuGetProjectKind.PackageReference)
+                    {
+                        IInstalledAndTransitivePackages installedAndTransitives = await project.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
+                        installedPackages = installedAndTransitives.InstalledPackages;
+
+                        packageToInstallWasTransitive = false;
+                        string packageIdToInstall = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
+                        foreach (IPackageReferenceContextInfo transitivePackage in installedAndTransitives.TransitivePackages)
+                        {
+                            if (packageIdToInstall == VSTelemetryServiceUtility.NormalizePackageId(transitivePackage.Identity.Id))
+                            {
+                                packageToInstallWasTransitive = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        installedPackages = await project.GetInstalledPackagesAsync(sb, cancellationToken);
+                    }
 
                     foreach (IPackageReferenceContextInfo package in installedPackages)
                     {
-                        Tuple<string, string> packageInfo = new Tuple<string, string>(
-                            package.Identity.Id,
-                            (package.Identity.Version == null ? "" : package.Identity.Version.ToNormalizedString()));
-
-                        if (!existingPackages.Contains(packageInfo))
-                        {
-                            existingPackages.Add(packageInfo);
-                        }
+                        existingPackages.Add(CreatePackageTuple(package));
                     }
                 }
             }
@@ -532,6 +552,10 @@ namespace NuGet.PackageManagement.UI
                         updatedPackagesNew,
                         frameworks);
 
+                    if (packageToInstallWasTransitive.HasValue)
+                    {
+                        actionTelemetryEvent.PackageToInstallWasTransitive = packageToInstallWasTransitive.Value;
+                    }
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
@@ -594,6 +618,8 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
                 actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
+                actionTelemetryEvent.IsSolutionLevel = userAction.IsSolutionLevel;
+                actionTelemetryEvent.Tab = userAction.ActiveTab;
             }
 
             actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;
