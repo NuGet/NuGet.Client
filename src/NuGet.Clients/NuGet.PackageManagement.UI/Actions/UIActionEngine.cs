@@ -319,17 +319,15 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 IServiceBroker sb = uiService.UIContext.ServiceBroker;
-                if (!userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && uiService.Projects?.Count() == 1)
+                int projectsCount = uiService.Projects.Count();
+                IEnumerable<IPackageReferenceContextInfo> installedPackages = null;
+                // collect the install state of the existing packages
+                foreach (IProjectContextInfo project in uiService.Projects)
                 {
-                    // expected only 1 PackageReference project
-                    IProjectContextInfo prj = uiService.Projects.First();
-                    if (prj.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && prj.ProjectKind == NuGetProjectKind.PackageReference)
+                    if (projectsCount == 1 && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && project.ProjectKind == NuGetProjectKind.PackageReference)
                     {
-                        IInstalledAndTransitivePackages installedAndTransitives = await prj.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
-                        foreach (IPackageReferenceContextInfo package in installedAndTransitives.InstalledPackages)
-                        {
-                            existingPackages.Add(CreatePackageTuple(package));
-                        }
+                        IInstalledAndTransitivePackages installedAndTransitives = await project.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
+                        installedPackages = installedAndTransitives.InstalledPackages;
 
                         packageToInstallWasTransitive = false;
                         string packageIdToInstall = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
@@ -344,23 +342,12 @@ namespace NuGet.PackageManagement.UI
                     }
                     else
                     {
-                        IEnumerable<IPackageReferenceContextInfo> installedPackages = await prj.GetInstalledPackagesAsync(sb, cancellationToken);
-                        foreach (IPackageReferenceContextInfo package in installedPackages)
-                        {
-                            existingPackages.Add(CreatePackageTuple(package));
-                        }
+                        installedPackages = await project.GetInstalledPackagesAsync(sb, cancellationToken);
                     }
-                }
-                else
-                {
-                    // collect the install state of the existing packages
-                    foreach (IProjectContextInfo project in uiService.Projects)
+
+                    foreach (IPackageReferenceContextInfo package in installedPackages)
                     {
-                        IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(sb, cancellationToken);
-                        foreach (IPackageReferenceContextInfo package in installedPackages)
-                        {
-                            existingPackages.Add(CreatePackageTuple(package));
-                        }
+                        existingPackages.Add(CreatePackageTuple(package));
                     }
                 }
             }

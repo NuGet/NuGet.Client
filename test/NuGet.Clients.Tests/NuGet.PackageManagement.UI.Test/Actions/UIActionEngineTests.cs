@@ -21,7 +21,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
-using ContractsItemFiler = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI.Test
 {
@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.UI.Test
                 actionTelemetryEvent: actionTelemetryData,
                 continueAfterPreview: true,
                 acceptedLicense: true,
-                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<bool>(), It.IsAny<ContractsItemFiler>()),
+                userAction: UserAction.CreateInstallAction("mypackageId", new NuGetVersion(1, 0, 0), It.IsAny<bool>(), It.IsAny<ContractsItemFilter>()),
                 selectedIndex: 0,
                 recommendedCount: 0,
                 recommendPackages: false,
@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         public static IEnumerable<object[]> GetInstallActionTestData()
         {
-            foreach(var activeTab in Enum.GetValues(typeof(ContractsItemFiler)))
+            foreach(var activeTab in Enum.GetValues(typeof(ContractsItemFilter)))
             {
                 yield return new object[] { activeTab, true, "transitiveA", null, }; // don't care in expectedValue in this case (solution PM UI)
                 yield return new object[] { activeTab, false, "transitiveA", true, }; // installs a package that was a transitive dependency
@@ -209,7 +209,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         [Theory]
         [MemberData(nameof(GetInstallActionTestData))]
-        public async Task CreateInstallAction_OnInstallingProject_EmitsTelemetryPropertiesAsync(ContractsItemFiler activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedValue)
+        public async Task CreateInstallAction_OnInstallingProject_EmitsPkgWasTransitiveTelemetryAndTabAndIsSolutionPropertiesAsync(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPkgWasTransitive)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -274,7 +274,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(NuGetOperationType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
             Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
             Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
-            Assert.Equal(expectedValue, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
+            Assert.Equal(expectedPkgWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity
