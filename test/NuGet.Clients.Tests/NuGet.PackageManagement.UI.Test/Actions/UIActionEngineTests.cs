@@ -202,8 +202,8 @@ namespace NuGet.PackageManagement.UI.Test
             foreach(var activeTab in Enum.GetValues(typeof(ContractsItemFiler)))
             {
                 yield return new object[] { activeTab, true, "transitiveA", false, false, }; // don't care in expectedValue in this case (solution PM UI)
-                yield return new object[] { activeTab, false, "transitiveA", true, true, }; // installs a transitive package
-                yield return new object[] { activeTab, false, "anotherPackage", true, false, }; // installs a non-transitive package
+                yield return new object[] { activeTab, false, "transitiveA", true, true, }; // installs a package that was a transitive dependency
+                yield return new object[] { activeTab, false, "anotherPackage", true, false, }; // installs a package that was not a transitive dependency
             }
         }
 

@@ -285,7 +285,7 @@ namespace NuGet.PackageManagement.UI
         private static void AddToExisting(IPackageReferenceContextInfo pkg, ISet<Tuple<string, string>> existingPackages)
         {
             PackageIdentity package = pkg.Identity;
-            Tuple<string, string> packageInfo = Tuple.Create(package.Id, package.Version == null ? "" : package.Version.ToNormalizedString());
+            Tuple<string, string> packageInfo = Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString());
             if (!existingPackages.Contains(packageInfo))
             {
                 existingPackages.Add(packageInfo);
