@@ -373,7 +373,6 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result.Item1);
                 Assert.Contains("Your package was pushed.", result.Item2);
                 Assert.DoesNotContain("symbol", result.Item2);
-                Assert.DoesNotContain(NuGetConstants.DefaultSymbolServerUrl, result.Item2);
             }
         }
 
@@ -1712,6 +1711,385 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("{0}index.json")] // package source url
+        [InlineData("{0}push")] // push package endpoint
+        public void PushCommand_PushToServerV3_WithSymbols_ApiKey_SymbolApiKey_BothFromConfig(string configKeyFormatString)
+        {
+            var testApiKey = Guid.NewGuid().ToString();
+            var testSymbolApiKey = Guid.NewGuid().ToString();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                using (var serverV3 = new MockServer())
+                {
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
+                    });
+
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
+                    {
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.Unauthorized;
+                        }
+
+                        MockServer.SavePushedPackage(r, outputFileName);
+
+                        return HttpStatusCode.Created;
+                    });
+
+                    serverV3.Get.Add("/symbols", r => "OK");
+                    serverV3.Put.Add("/symbols", r =>
+                    {
+                        return r.Headers["X-NuGet-ApiKey"] == testSymbolApiKey
+                            ? HttpStatusCode.Created
+                            : HttpStatusCode.Unauthorized;
+                    });
+
+                    serverV3.Start();
+                    var pushUri = $"{serverV3.Uri}push";
+                    var pushSymbolsUri = $"{serverV3.Uri}symbols";
+
+                    // Add source into NuGet.Config file
+                    var settings = pathContext.Settings;
+                    var source = serverV3.Uri + "index.json";
+                    var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+
+                    // set api key
+                    var configKey = string.Format(configKeyFormatString, serverV3.Uri);
+                    var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
+                    var apikeysSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.ApiKeys);
+                    SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
+
+                    // set symbol api key
+                    configKey = pushSymbolsUri;
+                    configValue = Configuration.EncryptionUtility.EncryptString(testSymbolApiKey);
+                    SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
+
+                    settings.Save();
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        pathContext.SolutionRoot,
+                        $"push {packageFileName} -Source contoso.org -SymbolSource {pushSymbolsUri} -ConfigFile {settings.ConfigPath}",
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    Assert.Contains($"PUT {pushUri}", result.Item2);
+                    Assert.Contains($"Created {pushUri}", result.Item2);
+                    Assert.Contains($"PUT {pushSymbolsUri}", result.Item2);
+                    Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerV3_ApiKeyFromCli_WithSymbols_SymbolApiKeyFromConfig()
+        {
+            var testApiKey = Guid.NewGuid().ToString();
+            var testSymbolApiKey = Guid.NewGuid().ToString();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                using (var serverV3 = new MockServer())
+                {
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
+                    });
+
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
+                    {
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.Unauthorized;
+                        }
+
+                        MockServer.SavePushedPackage(r, outputFileName);
+
+                        return HttpStatusCode.Created;
+                    });
+
+                    serverV3.Get.Add("/symbols", r => "OK");
+                    serverV3.Put.Add("/symbols", r =>
+                    {
+                        return r.Headers["X-NuGet-ApiKey"] == testSymbolApiKey
+                            ? HttpStatusCode.Created
+                            : HttpStatusCode.Unauthorized;
+                    });
+
+                    serverV3.Start();
+                    var pushUri = $"{serverV3.Uri}push";
+                    var pushSymbolsUri = $"{serverV3.Uri}symbols";
+
+                    // Add source into NuGet.Config file
+                    var settings = pathContext.Settings;
+                    var source = serverV3.Uri + "index.json";
+                    var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    settings.Save();
+
+                    // set symbol api key
+                    string configKey = pushSymbolsUri;
+                    string configValue = Configuration.EncryptionUtility.EncryptString(testSymbolApiKey);
+                    var apikeysSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.ApiKeys);
+                    SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
+
+                    settings.Save();
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        pathContext.SolutionRoot,
+                        $"push {packageFileName} -Source contoso.org -SymbolSource {pushSymbolsUri} -ConfigFile {settings.ConfigPath} -ApiKey {testApiKey}",
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    Assert.Contains($"PUT {pushUri}", result.Item2);
+                    Assert.Contains($"Created {pushUri}", result.Item2);
+                    Assert.Contains($"PUT {pushSymbolsUri}", result.Item2);
+                    Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("{0}index.json")] // package source url
+        [InlineData("{0}push")] // push package endpoint
+        public void PushCommand_PushToServerV3_ApiKeyFromConfig_WithSymbols_SymbolApiKeyFromCli(string configKeyFormatString)
+        {
+            var testApiKey = Guid.NewGuid().ToString();
+            var testSymbolApiKey = Guid.NewGuid().ToString();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                using (var serverV3 = new MockServer())
+                {
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
+                    });
+
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
+                    {
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.Unauthorized;
+                        }
+
+                        MockServer.SavePushedPackage(r, outputFileName);
+
+                        return HttpStatusCode.Created;
+                    });
+
+                    serverV3.Get.Add("/symbols", r => "OK");
+                    serverV3.Put.Add("/symbols", r =>
+                    {
+                        return r.Headers["X-NuGet-ApiKey"] == testSymbolApiKey
+                            ? HttpStatusCode.Created
+                            : HttpStatusCode.Unauthorized;
+                    });
+
+                    serverV3.Start();
+                    var pushUri = $"{serverV3.Uri}push";
+                    var pushSymbolsUri = $"{serverV3.Uri}symbols";
+
+                    // Add source into NuGet.Config file
+                    var settings = pathContext.Settings;
+                    var source = serverV3.Uri + "index.json";
+                    var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    settings.Save();
+
+                    // set api key
+                    var configKey = string.Format(configKeyFormatString, serverV3.Uri);
+                    var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
+                    var apikeysSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.ApiKeys);
+                    SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
+                    settings.Save();
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        pathContext.SolutionRoot,
+                        $"push {packageFileName} -Source contoso.org -SymbolSource {pushSymbolsUri} -ConfigFile {settings.ConfigPath} -SymbolApiKey {testSymbolApiKey}",
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    Assert.Contains($"PUT {pushUri}", result.Item2);
+                    Assert.Contains($"Created {pushUri}", result.Item2);
+                    Assert.Contains($"PUT {pushSymbolsUri}", result.Item2);
+                    Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerV3_WithSymbols_ApiKey_SymbolApiKey_BothFromCli()
+        {
+            var testApiKey = Guid.NewGuid().ToString();
+            var testSymbolApiKey = Guid.NewGuid().ToString();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                using (var serverV3 = new MockServer())
+                {
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
+                    });
+
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
+                    {
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.Unauthorized;
+                        }
+
+                        MockServer.SavePushedPackage(r, outputFileName);
+
+                        return HttpStatusCode.Created;
+                    });
+
+                    serverV3.Get.Add("/symbols", r => "OK");
+                    serverV3.Put.Add("/symbols", r =>
+                    {
+                        return r.Headers["X-NuGet-ApiKey"] == testSymbolApiKey
+                            ? HttpStatusCode.Created
+                            : HttpStatusCode.Unauthorized;
+                    });
+
+                    serverV3.Start();
+                    var pushUri = $"{serverV3.Uri}push";
+                    var pushSymbolsUri = $"{serverV3.Uri}symbols";
+
+                    // Add source into NuGet.Config file
+                    var settings = pathContext.Settings;
+                    var source = serverV3.Uri + "index.json";
+                    var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    settings.Save();
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        pathContext.SolutionRoot,
+                        $"push {packageFileName} -Source contoso.org -SymbolSource {pushSymbolsUri} -ConfigFile {settings.ConfigPath} -ApiKey {testApiKey} -SymbolApiKey {testSymbolApiKey}",
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    Assert.Contains($"PUT {pushUri}", result.Item2);
+                    Assert.Contains($"Created {pushUri}", result.Item2);
+                    Assert.Contains($"PUT {pushSymbolsUri}", result.Item2);
+                    Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+        }
+
         [Fact]
         public void PushCommand_FailWhenNoSourceSpecified()
         {
@@ -1869,9 +2247,9 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2/Package")]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org")]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org/api/v2")]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org/api/v2/Package")]
         public void PushCommand_InvalidInput_V2HttpSource(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1914,7 +2292,7 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(
                         result.Item3.Contains(
-                            "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                            "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org'"),
                         "Expected error message not found in " + result.Item3
                     );
                 }
@@ -1959,6 +2337,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org/v3/index.json")]
         public void PushCommand_InvalidInput_V3_NonExistent(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
