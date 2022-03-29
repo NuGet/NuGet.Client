@@ -252,6 +252,20 @@ namespace NuGet.Common
         /// </summary>
         NU1503 = 1503,
 
+        /// Duplicate PackageReference found
+        /// </summary>
+        NU1504 = 1504,
+
+        /// <summary>
+        /// Duplicate PackageDownload found
+        /// </summary>
+        NU1505 = 1505,
+
+        /// <summary>
+        /// Duplicate PackageVersion found
+        /// </summary>
+        NU1506 = 1506,
+
         /// <summary>
         /// Central package management is in use but there are multiple feeds configured without using package source mapping.
         /// </summary>

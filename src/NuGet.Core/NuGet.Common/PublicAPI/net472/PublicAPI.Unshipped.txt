@@ -4,6 +4,9 @@ NuGet.Common.IPackLogMessage.LibraryId.get -> string
 NuGet.Common.IPackLogMessage.LibraryId.set -> void
 NuGet.Common.NuGetLogCode.NU1013 = 1013 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1301 = 1301 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1504 = 1504 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1505 = 1505 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1506 = 1506 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1507 = 1507 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5133 = 5133 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1802 = 1802 -> NuGet.Common.NuGetLogCode

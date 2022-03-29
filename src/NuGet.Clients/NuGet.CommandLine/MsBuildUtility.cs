@@ -255,6 +255,7 @@ namespace NuGet.CommandLine
             // Override the target under ImportsAfter with the current NuGet.targets version.
             AddProperty(args, "NuGetRestoreTargets", entryPointTargetPath);
             AddProperty(args, "RestoreUseCustomAfterTargets", bool.TrueString);
+            AddProperty(args, "DisableCheckingDuplicateNuGetItems", bool.TrueString);
 
             // Set path to nuget.exe or the build task
             AddProperty(args, "RestoreTaskAssemblyFile", nugetExePath);
