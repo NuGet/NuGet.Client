@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.Test
 
             //Assert
             Assert.Equal(msbuildPath, msbuildToolset.Path);
-            Assert.True(msbuildToolset.ParsedVersion.CompareTo(new Version()) > 0);
+            Assert.True(msbuildToolset.ParsedVersion.CompareTo(new Version(0, 0)) > 0, msbuildToolset.ParsedVersion.ToString());
         }
     }
 }
