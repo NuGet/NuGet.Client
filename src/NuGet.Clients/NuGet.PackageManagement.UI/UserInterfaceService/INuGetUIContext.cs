@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
