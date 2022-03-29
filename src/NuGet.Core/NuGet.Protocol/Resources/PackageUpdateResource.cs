@@ -254,10 +254,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 return Strings.LiveFeed + " (" + NuGetConstants.DefaultGalleryServerUrl + ")";
             }
-            if (source.Equals(NuGetConstants.DefaultSymbolServerUrl, StringComparison.OrdinalIgnoreCase))
-            {
-                return Strings.DefaultSymbolServer + " (" + NuGetConstants.DefaultSymbolServerUrl + ")";
-            }
+
             return "'" + source + "'";
         }
 
