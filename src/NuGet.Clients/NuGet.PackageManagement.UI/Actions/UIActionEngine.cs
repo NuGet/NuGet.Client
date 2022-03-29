@@ -331,11 +331,16 @@ namespace NuGet.PackageManagement.UI
                             existingPackages.Add(CreatePackageTuple(package));
                         }
 
-                        IEnumerable<string> transitivePackageIds = installedAndTransitives.TransitivePackages
-                            .Select(pkg => VSTelemetryServiceUtility.NormalizePackageId(pkg.Identity.Id)).Distinct();
-
+                        wasPacakgeToInstallATransitive = false;
                         string packageIdToInstall = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
-                        wasPacakgeToInstallATransitive = transitivePackageIds.Contains(packageIdToInstall);
+                        foreach (IPackageReferenceContextInfo transitivePackage in installedAndTransitives.TransitivePackages)
+                        {
+                            if (packageIdToInstall == VSTelemetryServiceUtility.NormalizePackageId(transitivePackage.Identity.Id))
+                            {
+                                wasPacakgeToInstallATransitive = true;
+                                break;
+                            }
+                        }
                     }
                     else
                     {
