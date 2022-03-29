@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
@@ -32,7 +34,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains($"The API Key '{testApiKey}' was saved for the NuGet gallery (https://www.nuget.org) and the symbol server (https://nuget.smbsrc.net/)", result.Item2);
+                Assert.Contains($"The API Key '{testApiKey}' was saved for the NuGet gallery (https://www.nuget.org)", result.Item2);
+                Assert.DoesNotContain($"symbol", result.Item2);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(
                     Path.GetDirectoryName(configFile),
@@ -42,6 +45,8 @@ namespace NuGet.CommandLine.Test
                 var actualApiKey = SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, NuGetConstants.DefaultGalleryServerUrl);
                 Assert.NotNull(actualApiKey);
                 Assert.Equal(testApiKey, actualApiKey);
+                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.LoadSafe(configFile), ConfigurationConstants.ApiKeys);
+                Assert.Equal(1, apiKeySection.Elements().Count());
             }
         }
 
@@ -52,6 +57,108 @@ namespace NuGet.CommandLine.Test
         public void SetApiKey_Failure_InvalidArguments(string cmd)
         {
             Util.TestCommandInvalidArguments(cmd);
+        }
+
+        [Theory]
+        [InlineData("http://nuget.org/api/v2")]
+        [InlineData("https://NUGET.ORG/api/v2")]
+        [InlineData("http://www.nuget.org/api/v2")]
+        [InlineData("https://WWW.NUGET.ORG/api/v2")]
+        [InlineData("http://api.nuget.org/v3/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
+        [InlineData("http://some.nuget.org")]
+        [InlineData("https://some.nuget.org/")]
+        [InlineData("https://nuget.contoso.org/")]
+        [InlineData("https://nuget.contoso.org/v3/api/v2")]
+        [InlineData("https://nuget.contoso.org/v3/index.json")]
+        [InlineData("https://randomnuget.org/v3/index.json")]
+        [InlineData("https://randomnuget.org/v2")]
+        public void SetApiKey_WithSpecifiedSource_SetApiKeyBySourceKey(string serverUri)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Add source into NuGet.Config file
+                SimpleTestSettingsContext settings = pathContext.Settings;
+                var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
+                string sourceKey = serverUri.Contains("random") ? "random" : serverUri.Contains("contos") ? "contoso" : "nuget.org";
+                SimpleTestSettingsContext.AddEntry(packageSourcesSection, sourceKey, serverUri);
+                settings.Save();
+
+                var testApiKey = Guid.NewGuid().ToString();
+
+                // Act
+                var result = CommandRunner.Run(
+                    NuGetExePath,
+                    pathContext.WorkingDirectory,
+                    $"setApiKey {testApiKey} -Source {sourceKey} -ConfigFile {settings.ConfigPath}",
+                    waitForExit: true);
+
+                var iSettings = Configuration.Settings.LoadDefaultSettings(
+                    Path.GetDirectoryName(settings.ConfigPath),
+                    Path.GetFileName(settings.ConfigPath),
+                    null);
+
+                // Assert
+                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                Assert.Contains($"The API Key '{testApiKey}' was saved for '{serverUri}'", result.Item2);
+                Assert.DoesNotContain($"symbol", result.Item2);
+
+                var actualApiKey = SettingsUtility.GetDecryptedValueForAddItem(iSettings, ConfigurationConstants.ApiKeys, serverUri);
+                Assert.Equal(testApiKey, actualApiKey);
+                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.LoadSafe(settings.ConfigPath), ConfigurationConstants.ApiKeys);
+                Assert.Equal(1, apiKeySection.Elements().Count());
+            }
+        }
+
+        [Theory]
+        [InlineData("http://nuget.org/api/v2")]
+        [InlineData("https://NUGET.ORG/api/v2")]
+        [InlineData("http://www.nuget.org/api/v2")]
+        [InlineData("https://WWW.NUGET.ORG/api/v2")]
+        [InlineData("http://api.nuget.org/v3/index.json")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
+        [InlineData("http://some.nuget.org")]
+        [InlineData("https://some.nuget.org/")]
+        [InlineData("https://nuget.contoso.org/")]
+        [InlineData("https://nuget.contoso.org/v3/api/v2")]
+        [InlineData("https://nuget.contoso.org/v3/index.json")]
+        [InlineData("https://randomnuget.org/v3/index.json")]
+        [InlineData("https://randomnuget.org/v2")]
+        public void SetApiKey_WithSpecifiedSource_SetApiKeyBySourceUri(string serverUri)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Add source into NuGet.Config file
+                SimpleTestSettingsContext settings = pathContext.Settings;
+                var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
+                string sourceKey = serverUri.Contains("random") ? "random" : serverUri.Contains("contos") ? "contoso" : "nuget.org";
+                SimpleTestSettingsContext.AddEntry(packageSourcesSection, sourceKey, serverUri);
+                settings.Save();
+
+                var testApiKey = Guid.NewGuid().ToString();
+
+                // Act
+                var result = CommandRunner.Run(
+                    NuGetExePath,
+                    pathContext.WorkingDirectory,
+                    $"setApiKey {testApiKey} -Source {serverUri} -ConfigFile {settings.ConfigPath}",
+                    waitForExit: true);
+
+                var iSettings = Configuration.Settings.LoadDefaultSettings(
+                    Path.GetDirectoryName(settings.ConfigPath),
+                    Path.GetFileName(settings.ConfigPath),
+                    null);
+
+                // Assert
+                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                Assert.Contains($"The API Key '{testApiKey}' was saved for '{serverUri}'", result.Item2);
+                Assert.DoesNotContain($"symbol", result.Item2);
+
+                var actualApiKey = SettingsUtility.GetDecryptedValueForAddItem(iSettings, ConfigurationConstants.ApiKeys, serverUri);
+                Assert.Equal(testApiKey, actualApiKey);
+                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.LoadSafe(settings.ConfigPath), ConfigurationConstants.ApiKeys);
+                Assert.Equal(1, apiKeySection.Elements().Count());
+            }
         }
     }
 }
