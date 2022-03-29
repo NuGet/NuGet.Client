@@ -73,7 +73,7 @@ namespace NuGet.SolutionRestoreManager
         private Lazy<INuGetErrorList> _errorList;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
-        private Lazy<INuGetExperimentationService> _nuGetExperimentationService;
+        private readonly Lazy<INuGetFeatureFlagService> _nugetFeatureFlagService;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -97,14 +97,14 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetExperimentationService> nuGetExperimentationService)
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
                   logger,
                   errorList,
                   outputConsoleProvider,
-                  nuGetExperimentationService)
+                  nugetFeatureFlagService)
         { }
 
         public SolutionRestoreWorker(
@@ -114,7 +114,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetExperimentationService> nuGetExperimentationService)
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService)
         {
             if (asyncServiceProvider == null)
             {
@@ -146,9 +146,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(outputConsoleProvider));
             }
 
-            if (nuGetExperimentationService == null)
+            if (nugetFeatureFlagService == null)
             {
-                throw new ArgumentNullException(nameof(nuGetExperimentationService));
+                throw new ArgumentNullException(nameof(nugetFeatureFlagService));
             }
 
             _asyncServiceProvider = asyncServiceProvider;
@@ -157,7 +157,7 @@ namespace NuGet.SolutionRestoreManager
             _logger = logger;
             _errorList = errorList;
             _outputConsoleProvider = outputConsoleProvider;
-            _nuGetExperimentationService = nuGetExperimentationService;
+            _nugetFeatureFlagService = nugetFeatureFlagService;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
@@ -410,7 +410,7 @@ namespace NuGet.SolutionRestoreManager
                     using (var restoreOperation = new BackgroundRestoreOperation())
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, token);
-                        var isBulkRestoreCoordinationEnabled = _nuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.BulkRestoreCoordination);
+                        var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
                         var restoreTrackingData = GetRestoreTrackingData(
                             restoreReason: ImplicitRestoreReason.None,
                             requestCount: 1,
@@ -430,6 +430,11 @@ namespace NuGet.SolutionRestoreManager
                 // Signal that restore has been completed.
                 _isCompleteEvent.Set();
             }
+        }
+
+        private async Task<bool> IsBulkRestoreCoordinationEnabledAsync()
+        {
+            return await _nugetFeatureFlagService.Value.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.BulkRestoreCoordination);
         }
 
         public async Task CleanCacheAsync()
@@ -468,7 +473,7 @@ namespace NuGet.SolutionRestoreManager
             }
 
             ImplicitRestoreReason restoreReason = ImplicitRestoreReason.None;
-            var isBulkRestoreCoordinationEnabled = _nuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.BulkRestoreCoordination);
+            var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
             DateTime? bulkRestoreCoordinationCheckStartTime = default;
             // Loops until there are pending restore requests or it's get cancelled
             while (!token.IsCancellationRequested)
