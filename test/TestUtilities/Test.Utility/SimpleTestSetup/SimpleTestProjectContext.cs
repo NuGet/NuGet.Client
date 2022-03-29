@@ -210,16 +210,25 @@ namespace NuGet.Test.Utility
             }
         }
 
+        private LockFile _assetsFileCache = null;
+        private DateTime _assetsFileLastModified = DateTime.MinValue;
+
         public LockFile AssetsFile
         {
             get
             {
                 var path = AssetsFileOutputPath;
-
                 if (File.Exists(path))
                 {
-                    var format = new LockFileFormat();
-                    return format.Read(path);
+                    var lastWriteTime = File.GetLastWriteTimeUtc(path);
+                    if (_assetsFileLastModified < lastWriteTime)
+                    {
+                        var format = new LockFileFormat();
+                        _assetsFileCache = format.Read(path);
+                        _assetsFileLastModified = lastWriteTime;
+                    }
+
+                    return _assetsFileCache;
                 }
 
                 return null;
