@@ -252,6 +252,7 @@ namespace NuGet.Common
         /// </summary>
         NU1503 = 1503,
 
+        /// <summary>
         /// Duplicate PackageReference found
         /// </summary>
         NU1504 = 1504,
