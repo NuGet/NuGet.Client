@@ -486,7 +486,6 @@ static readonly NuGet.Configuration.ConfigurationConstants.ValidAuthenticationTy
 static readonly NuGet.Configuration.ConfigurationConstants.ValueAttribute -> string
 static readonly NuGet.Configuration.NuGetConstants.DefaultConfigContent -> string
 static readonly NuGet.Configuration.NuGetConstants.DefaultGalleryServerUrl -> string
-static readonly NuGet.Configuration.NuGetConstants.DefaultSymbolServerUrl -> string
 static readonly NuGet.Configuration.NuGetConstants.FeedName -> string
 static readonly NuGet.Configuration.NuGetConstants.ManifestExtension -> string
 static readonly NuGet.Configuration.NuGetConstants.ManifestSymbolsExtension -> string
