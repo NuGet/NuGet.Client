@@ -584,18 +584,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreTargetFrameworksOutput"
-    DependsOnTargets="_GetRestoreProjectStyle"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworkOverride"
     Returns="@(_RestoreTargetFrameworksOutputFiltered)">
 
     <PropertyGroup>
       <_RestoreProjectFramework/>
+      <TargetFrameworkToBeUsed>$(TargetFrameworks)</TargetFrameworkToBeUsed>
+      <TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' != '' ">$(_TargetFrameworkOverride)</TargetFrameworkToBeUsed>
     </PropertyGroup>
+
+    <!-- TODO NK add it here-->
 
     <!-- For project.json projects target frameworks will be read from project.json. -->
     <GetProjectTargetFrameworksTask
       Condition=" '$(RestoreProjectStyle)' != 'ProjectJson'"
       ProjectPath="$(MSBuildProjectFullPath)"
-      TargetFrameworks="$(TargetFrameworks)"
+      TargetFrameworks="$(TargetFrameworkToBeUsed)"
       TargetFramework="$(TargetFramework)"
       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
       TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
@@ -1361,6 +1365,34 @@ Copyright (c) .NET Foundation. All rights reserved.
           Returns="$(_RestoreFallbackFoldersOverride)">
     <PropertyGroup>
       <_RestoreFallbackFoldersOverride>$(RestoreFallbackFolders)</_RestoreFallbackFoldersOverride>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GetRestoreTargetFrameworkOverride"
+          Returns="$(_TargetFrameworkOverride)">
+
+    <!-- TargetFramework -->
+    <MSBuild
+        BuildInParallel="$(RestoreBuildInParallel)"
+        Condition=" '$(TargetFrameworks)' != '' "
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="_GetTargetFrameworkOverrides">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          PropertyName="_TargetFrameworkOverride" />
+    </MSBuild>
+  </Target>
+
+    <!--
+    ============================================================
+    _GetRestoreFallbackFoldersOverride
+    ============================================================
+  -->
+  <Target Name="_GetTargetFrameworkOverrides"
+          Returns="$(_TargetFrameworkOverride)">
+    <PropertyGroup>
+      <_TargetFrameworkOverride>$(TargetFramework)</_TargetFrameworkOverride>
     </PropertyGroup>
   </Target>
 
