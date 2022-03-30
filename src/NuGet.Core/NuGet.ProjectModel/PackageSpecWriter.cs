@@ -30,11 +30,6 @@ namespace NuGet.ProjectModel
         /// <param name="writer">An <c>NuGet.Common.IObjectWriter</c> instance.</param>
         public static void Write(PackageSpec packageSpec, IObjectWriter writer)
         {
-            Write(packageSpec, writer, compressed: false);
-        }
-
-        internal static void Write(PackageSpec packageSpec, IObjectWriter writer, bool compressed)
-        {
             if (packageSpec == null)
             {
                 throw new ArgumentNullException(nameof(packageSpec));
@@ -72,7 +67,7 @@ namespace NuGet.ProjectModel
                 SetDependencies(writer, packageSpec.Dependencies);
             }
 
-            SetFrameworks(writer, packageSpec.TargetFrameworks, compressed);
+            SetFrameworks(writer, packageSpec.TargetFrameworks);
 
             JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
         }
@@ -538,7 +533,7 @@ namespace NuGet.ProjectModel
             writer.WriteArrayEnd();
         }
 
-        private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks, bool compressed)
+        private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks)
         {
             if (frameworks.Any())
             {
@@ -549,7 +544,7 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
                     SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
                     SetDependencies(writer, framework.Dependencies);
-                    SetCentralDependencies(writer, framework.CentralPackageVersions.Values, compressed);
+                    SetCentralDependencies(writer, framework.CentralPackageVersions.Values);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfNotNull(writer, "secondaryFramework",
@@ -597,16 +592,10 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralPackageVersion> centralPackageVersions, bool compressed)
+        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralPackageVersion> centralPackageVersions)
         {
             if (!centralPackageVersions.Any())
             {
-                return;
-            }
-
-            if (compressed)
-            {
-                SetValue(writer, "centralPackageVersionsHash", GetHash(centralPackageVersions));
                 return;
             }
 
@@ -616,20 +605,6 @@ namespace NuGet.ProjectModel
                 writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
             }
             writer.WriteObjectEnd();
-        }
-
-        private static string GetHash(ICollection<CentralPackageVersion> items)
-        {
-            using (var hashFunc = new Sha512HashFunction())
-            using (var writer = new HashObjectWriter(hashFunc))
-            {
-                foreach (var item in items)
-                {
-                    writer.WriteNameValue(item.Name, item.VersionRange.ToString());
-                }
-
-                return writer.GetHash();
-            }
         }
 
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
