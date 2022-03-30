@@ -23,6 +23,10 @@ namespace NuGet.SolutionRestoreManager
         [ImportingConstructor]
         public VsRestoreProgressEvents(IPackageProjectEventsProvider eventProvider, INuGetTelemetryProvider telemetryProvider)
         {
+            if (eventProvider == null)
+            {
+                throw new ArgumentNullException(nameof(eventProvider));
+            }
             var eventSource = eventProvider.GetPackageProjectEvents();
 
             eventSource.BatchStart += NotifyBatchStart;
@@ -31,7 +35,7 @@ namespace NuGet.SolutionRestoreManager
             // MEF components do not participate in Visual Studio's Package extensibility,
             // hence importing INuGetTelemetryProvider ensures that the ETW collector is
             // set up correctly.
-            _ = telemetryProvider;
+            _ = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
         }
 
         private const string SolutionRestoreStartedEventName = nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(SolutionRestoreStarted);
