@@ -623,9 +623,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreTargetFrameworksAsItems"
-    DependsOnTargets="_GetRestoreProjectStyle"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworkOverride"
     Returns="@(_RestoreTargetFrameworkItems)">
-    <ItemGroup Condition=" '$(TargetFrameworks)' != '' ">
+    <ItemGroup Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' ">
       <_RestoreTargetFrameworkItems Include="$(TargetFrameworks.Split(';'))" />
     </ItemGroup>
   </Target>
