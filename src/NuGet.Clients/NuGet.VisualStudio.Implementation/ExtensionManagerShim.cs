@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.VisualStudio.ExtensionManager;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio.Implementation.Resources;
 
@@ -11,9 +12,7 @@ namespace NuGet.VisualStudio
 {
     internal class ExtensionManagerShim
     {
-        private static Type _iInstalledExtensionType;
         private static Type _iVsExtensionManagerType;
-        private static PropertyInfo _installPathProperty;
         private static Type _sVsExtensionManagerType;
         private static MethodInfo _tryGetInstalledExtensionMethod;
         private static bool _typesInitialized;
@@ -41,15 +40,9 @@ namespace NuGet.VisualStudio
                     extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager");
                 _iVsExtensionManagerType =
                     extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager");
-                _iInstalledExtensionType =
-                    extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IInstalledExtension");
                 _tryGetInstalledExtensionMethod = _iVsExtensionManagerType.GetMethod("TryGetInstalledExtension",
-                    new[] { typeof(string), _iInstalledExtensionType.MakeByRefType() });
-                _installPathProperty = _iInstalledExtensionType.GetProperty("InstallPath", typeof(string));
-                if (_installPathProperty == null
-                    || _tryGetInstalledExtensionMethod == null
-                    ||
-                    _sVsExtensionManagerType == null)
+                    new[] { typeof(string), typeof(IInstalledExtension).MakeByRefType() });
+                if (_tryGetInstalledExtensionMethod == null || _sVsExtensionManagerType == null)
                 {
                     throw new Exception();
                 }
@@ -73,8 +66,8 @@ namespace NuGet.VisualStudio
             {
                 return false;
             }
-            object extension = parameters[1];
-            installPath = _installPathProperty.GetValue(extension, index: null) as string;
+            var extension = parameters[1] as IInstalledExtension;
+            installPath = extension?.InstallPath;
             return true;
         }
     }
