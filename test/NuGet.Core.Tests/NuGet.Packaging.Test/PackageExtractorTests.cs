@@ -2257,7 +2257,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [CIOnlyTheory]
+        [CIOnlyTheory(Skip = "https://github.com/NuGet/Home/issues/11700")]
         [MemberData(nameof(KnownClientPolicyModesList))]
         public async Task ExtractPackageAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromRepositoryAllowList_SuccessAsync(SignatureValidationMode clientPolicyMode)
         {
