@@ -183,4 +183,7 @@
   <data name="Log_NoProjectsForRestore" xml:space="preserve">
     <value>The solution did not have any projects to restore, ensure that all projects are known to be MSBuild and that the projects exist.</value>
   </data>
+  <data name="Error_DuplicateItems" xml:space="preserve">
+    <value>Duplicate '{0}' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate '{0}' items are: {1}.</value>
+  </data>
 </root>

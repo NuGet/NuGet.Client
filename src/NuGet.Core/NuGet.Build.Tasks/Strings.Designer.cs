@@ -97,6 +97,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate &apos;{0}&apos; items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate &apos;{0}&apos; items are: {1}..
+        /// </summary>
+        public static string Error_DuplicateItems {
+            get {
+                return ResourceManager.GetString("Error_DuplicateItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing..
         /// </summary>
         public static string Error_MissingRestoreGraphOutputPath {

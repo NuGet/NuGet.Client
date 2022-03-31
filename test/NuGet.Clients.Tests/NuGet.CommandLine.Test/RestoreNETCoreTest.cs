@@ -11140,6 +11140,142 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             Assert.Contains($"Failed to restore {projectA.ProjectPath}", r.Output);
         }
 
+        [Theory]
+        [InlineData("PackageReference", "NU1504")]
+        [InlineData("PackageDownload", "NU1505")]
+        public async Task NuGetExeRestore_WithDuplicatePackageItems_SucceedsAndDoesNotWarn(string item, string warningCode)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETFramework4.7.2"));
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext("X", "1.0.0")
+                    );
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var xml = projectA.GetXML();
+
+                var attributes = new Dictionary<string, string>();
+                attributes.Add("Version", "[1.0.0]");
+                ProjectFileUtils.AddItem(
+                                    xml,
+                                    item,
+                                    "X",
+                                    NuGetFramework.AnyFramework,
+                                    new Dictionary<string, string>(),
+                                    attributes);
+
+                attributes.Clear();
+                attributes.Add("Version", "[2.0.0]");
+                ProjectFileUtils.AddItem(
+                                    xml,
+                                    item,
+                                    "X",
+                                    NuGetFramework.AnyFramework,
+                                    new Dictionary<string, string>(),
+                                    attributes);
+                xml.Save(projectA.ProjectPath);
+
+                var args = new string[] {
+                    "restore",
+                    solution.SolutionPath,
+                    "-Verbosity",
+                    "detailed",
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                r.Success.Should().BeTrue(because: r.AllOutput);
+                r.AllOutput.Should().NotContain(warningCode);
+            }
+        }
+
+        [Fact]
+        public async Task NuGetExeRestore_WithDuplicatePackageVersion_SucceedsAndDoesNotWarn()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    "a",
+                    pathContext.SolutionRoot,
+                    "net472");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext("X", "1.0.0")
+                    );
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var xml = projectA.GetXML();
+
+                ProjectFileUtils.AddProperty(
+                    xml,
+                    "ManagePackageVersionsCentrally",
+                    "true");
+
+                ProjectFileUtils.AddItem(
+                                    xml,
+                                    "PackageReference",
+                                    "X",
+                                    NuGetFramework.AnyFramework,
+                                    new Dictionary<string, string>(),
+                                    new Dictionary<string, string>());
+                xml.Save(projectA.ProjectPath);
+
+                var directoryPackagesPropsContent =
+                   @"<Project>                    
+                        <ItemGroup>
+                            <PackageVersion Include=""X"" Version=""[1.0.0]"" />
+                            <PackageVersion Include=""X"" Version=""[2.0.0]"" />
+                        </ItemGroup>
+                    </Project>";
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, $"Directory.Packages.Props"), directoryPackagesPropsContent);
+
+                var args = new string[] {
+                    "restore",
+                    solution.SolutionPath,
+                    "-Verbosity",
+                    "detailed",
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                r.Success.Should().BeTrue(because: r.AllOutput);
+                r.AllOutput.Should().NotContain("NU1506");
+            }
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
