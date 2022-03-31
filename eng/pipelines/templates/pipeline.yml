@@ -218,7 +218,7 @@ stages:
       value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
     - name: GitHubStatusName
       value: End_To_End_Tests_On_Windows Part1
-    part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1,PackageRestoreTest.ps1"
+    part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1"
     testMachineCleanUpStrategy: ${{parameters.E2EPart1AgentCleanup}}
 
 # Dartlab's template defines this in its own stage
