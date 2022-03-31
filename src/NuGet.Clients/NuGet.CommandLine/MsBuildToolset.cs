@@ -26,7 +26,7 @@ namespace NuGet.CommandLine
         /// </summary>
         public MsBuildToolset(string version, string path)
         {
-            Version = version;
+            Version = version ?? GetMsBuildVersionFromMsBuildDir(path);
             Path = path;
         }
 
