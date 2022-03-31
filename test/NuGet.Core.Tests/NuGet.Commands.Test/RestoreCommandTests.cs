@@ -1680,6 +1680,7 @@ namespace NuGet.Commands.Test
                 else
                 {
                     logger.WarningMessages.Should().Contain(i => i.Contains(NuGetLogCode.NU1507.ToString()));
+                    logger.WarningMessages.Should().Contain(i => i.Contains("There are 3 package sources defined in your configuration"));
                 }
             }
         }
