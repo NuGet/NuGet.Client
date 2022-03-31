@@ -888,6 +888,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     "a",
                     pathContext.SolutionRoot,
                     net461);
+                projectA.Properties.Add("RuntimeIdentifier", "win");
 
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -931,10 +932,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.Contains("NU1004:", result.Errors);
-                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                var assetsFile = projectA.AssetsFile;
+                var logCodes = assetsFile.LogMessages.Select(e => e.Code);
                 Assert.Contains(NuGetLogCode.NU1004, logCodes);
-                var ridlessMainTarget = projectA.AssetsFile.Targets.FirstOrDefault(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+                Assert.Equal(2, assetsFile.Targets.Count);
+                var ridlessMainTarget = assetsFile.Targets.FirstOrDefault(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
                 Assert.Equal(net461, ridlessMainTarget.TargetFramework);
+                var ridMainTarget = assetsFile.Targets.FirstOrDefault(e => "win".Equals(e.RuntimeIdentifier));
+                Assert.Equal("win", ridMainTarget.RuntimeIdentifier);
                 Assert.True(File.Exists(projectA.PropsOutput));
                 Assert.True(File.Exists(projectA.TargetsOutput));
                 Assert.True(File.Exists(projectA.CacheFileOutputPath));
