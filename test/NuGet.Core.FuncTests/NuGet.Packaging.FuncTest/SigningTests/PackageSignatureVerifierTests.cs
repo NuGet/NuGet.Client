@@ -157,7 +157,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            // https://github.com/NuGet/Home/issues/11321
+            // https://github.com/NuGet/Home/issues/11459
             [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestamp_SuccessAsync()
             {
@@ -202,7 +202,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            // https://github.com/NuGet/Home/issues/11321
+            // https://github.com/NuGet/Home/issues/11459
             [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
             public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_FailsAsync()
             {
