@@ -19,7 +19,7 @@ namespace NuGet.Packaging {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -340,15 +340,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Byte signature too big to seek in current stream position..
-        /// </summary>
-        internal static string ErrorByteSignatureTooBig {
-            get {
-                return ResourceManager.GetString("ErrorByteSignatureTooBig", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to There are duplicate packages: {0}.
         /// </summary>
         internal static string ErrorDuplicatePackages {
@@ -646,15 +637,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package {0} signature is invalid..
-        /// </summary>
-        internal static string InvalidPackageSignature {
-            get {
-                return ResourceManager.GetString("InvalidPackageSignature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The package contains an invalid package signature file..
         /// </summary>
         internal static string InvalidPackageSignatureFile {
@@ -862,15 +844,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nuspec file contains multiple package types. Zero or one package type nodes are allowed..
-        /// </summary>
-        internal static string MultiplePackageTypes {
-            get {
-                return ResourceManager.GetString("MultiplePackageTypes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
         /// </summary>
         internal static string MustContainAbsolutePath {
@@ -894,15 +867,6 @@ namespace NuGet.Packaging {
         internal static string NoRepositoryCountersignature {
             get {
                 return ResourceManager.GetString("NoRepositoryCountersignature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The license expression &apos;{0}&apos; cannot be parsed succesfully..
-        /// </summary>
-        internal static string NuGetLicense_InvalidLicenseExpression {
-            get {
-                return ResourceManager.GetString("NuGetLicense_InvalidLicenseExpression", resourceCulture);
             }
         }
         
@@ -1294,15 +1258,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid general purpose bit flags. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
-        /// </summary>
-        internal static string SignatureInvalidGeneralPurposeBits {
-            get {
-                return ResourceManager.GetString("SignatureInvalidGeneralPurposeBits", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The package integrity check failed. The package has changed since it was signed. Try clearing the local http-cache and run nuget operation again..
         /// </summary>
         internal static string SignaturePackageIntegrityFailure {
@@ -1510,15 +1465,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The signing-certificate-v2 attribute does not have exactly one attribute value..
-        /// </summary>
-        internal static string SigningCertificateV2NotExactlyOneAttributeValue {
-            get {
-                return ResourceManager.GetString("SigningCertificateV2NotExactlyOneAttributeValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The signing-certificate-v2 attribute uses an unsupported hash algorithm..
         /// </summary>
         internal static string SigningCertificateV2UnsupportedHashAlgorithm {
@@ -1600,15 +1546,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp service&apos;s certificate has a valid time in the future: {0}.
-        /// </summary>
-        internal static string TimestampCertificateInvalid {
-            get {
-                return ResourceManager.GetString("TimestampCertificateInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm ({0}). The following algorithms are supported: {1}..
         /// </summary>
         internal static string TimestampCertificateUnsupportedSignatureAlgorithm {
@@ -1632,15 +1569,6 @@ namespace NuGet.Packaging {
         internal static string TimestampFailureNonceMismatch {
             get {
                 return ResourceManager.GetString("TimestampFailureNonceMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Timestamp service&apos;s response does not meet the NuGet package signature specification: &apos;{0}&apos;..
-        /// </summary>
-        internal static string TimestampResponseExceptionGeneral {
-            get {
-                return ResourceManager.GetString("TimestampResponseExceptionGeneral", resourceCulture);
             }
         }
         

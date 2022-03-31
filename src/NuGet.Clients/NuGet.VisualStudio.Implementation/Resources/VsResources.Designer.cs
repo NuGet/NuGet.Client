@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio.Implementation.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class VsResources {
@@ -178,15 +178,6 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; does not support PackageReference..
-        /// </summary>
-        internal static string Error_InvalidPackageRefProjectCast {
-            get {
-                return ResourceManager.GetString("Error_InvalidPackageRefProjectCast", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Project {0} does not exist in the project system cache..
         /// </summary>
         internal static string Error_ProjectNotInCache {
@@ -210,15 +201,6 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         internal static string InvalidNuGetVersionString {
             get {
                 return ResourceManager.GetString("InvalidNuGetVersionString", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package list contains invalid or duplicate entries..
-        /// </summary>
-        internal static string InvalidPackageList {
-            get {
-                return ResourceManager.GetString("InvalidPackageList", resourceCulture);
             }
         }
         

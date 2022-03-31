@@ -79,15 +79,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} Command has been deprecated and will be removed in the next release. Please modify your PowerShell scripts accordingly. .
-        /// </summary>
-        internal static string Cmdlet_CommandRemoved {
-            get {
-                return ResourceManager.GetString("Cmdlet_CommandRemoved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Would you like to continue with the project action(s) anyways?.
         /// </summary>
         internal static string Cmdlet_DeprecatedFrameworkContinue {
@@ -232,15 +223,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are downloading {0} from {1}, the license agreement to which is available at {2}. Check the package for additional dependencies, which may come with their own license agreement(s). Your use of the package and dependencies constitutes your acceptance of their license agreements. If you do not accept the license agreement(s), then delete the relevant components from your device..
-        /// </summary>
-        internal static string Cmdlet_InstallSuccessDisclaimerText {
-            get {
-                return ResourceManager.GetString("Cmdlet_InstallSuccessDisclaimerText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The path &apos;{0}&apos; is invalid..
         /// </summary>
         internal static string Cmdlet_InvalidPathSyntax {
@@ -268,24 +250,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to None.
-        /// </summary>
-        internal static string Cmdlet_Log_NoActionsWhatIf {
-            get {
-                return ResourceManager.GetString("Cmdlet_Log_NoActionsWhatIf", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to WhatIf: {0}.
-        /// </summary>
-        internal static string Cmdlet_Log_OperationWhatIf {
-            get {
-                return ResourceManager.GetString("Cmdlet_Log_OperationWhatIf", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph. Restore the packages before performing any operations..
         /// </summary>
         internal static string Cmdlet_MissingPackages {
@@ -300,15 +264,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_No {
             get {
                 return ResourceManager.GetString("Cmdlet_No", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to retrieve package list because no source was specified..
-        /// </summary>
-        internal static string Cmdlet_NoActivePackageSource {
-            get {
-                return ResourceManager.GetString("Cmdlet_NoActivePackageSource", resourceCulture);
             }
         }
         
@@ -376,33 +331,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open.
-        /// </summary>
-        internal static string Cmdlet_OpenPackagePageAction {
-            get {
-                return ResourceManager.GetString("Cmdlet_OpenPackagePageAction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package with the Id &apos;{0}&apos; and version &apos;{1}&apos; is not found in the specified source..
-        /// </summary>
-        internal static string Cmdlet_PackageIdAndVersionNotFound {
-            get {
-                return ResourceManager.GetString("Cmdlet_PackageIdAndVersionNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package with the Id &apos;{0}&apos; is not found in the specified source..
-        /// </summary>
-        internal static string Cmdlet_PackageIdNotFound {
-            get {
-                return ResourceManager.GetString("Cmdlet_PackageIdNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package with the Id &apos;{0}&apos; is not installed to project &apos;{1}&apos;..
         /// </summary>
         internal static string Cmdlet_PackageNotInstalled {
@@ -417,24 +345,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_PackageNotInstalledInAnyProject {
             get {
                 return ResourceManager.GetString("Cmdlet_PackageNotInstalledInAnyProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} {1}.
-        /// </summary>
-        internal static string Cmdlet_PackageOperation {
-            get {
-                return ResourceManager.GetString("Cmdlet_PackageOperation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package source &apos;{0}&apos; is not matching any of the enabled package sources..
-        /// </summary>
-        internal static string Cmdlet_PackageSourceNotFound {
-            get {
-                return ResourceManager.GetString("Cmdlet_PackageSourceNotFound", resourceCulture);
             }
         }
         
@@ -471,33 +381,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_TotalTime {
             get {
                 return ResourceManager.GetString("Cmdlet_TotalTime", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;..
-        /// </summary>
-        internal static string Cmdlet_UnknownPackage {
-            get {
-                return ResourceManager.GetString("Cmdlet_UnknownPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find version &apos;{1}&apos; of package &apos;{0}&apos;..
-        /// </summary>
-        internal static string Cmdlet_UnknownPackageSpecificVersion {
-            get {
-                return ResourceManager.GetString("Cmdlet_UnknownPackageSpecificVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The package &apos;{0}&apos; does not provide the requested URL..
-        /// </summary>
-        internal static string Cmdlet_UrlMissing {
-            get {
-                return ResourceManager.GetString("Cmdlet_UrlMissing", resourceCulture);
             }
         }
         

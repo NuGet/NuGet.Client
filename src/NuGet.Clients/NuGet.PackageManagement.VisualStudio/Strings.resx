@@ -165,9 +165,6 @@
   <data name="InstallingPackage" xml:space="preserve">
     <value>Installing NuGet package {0}.</value>
   </data>
-  <data name="UninstallingPackage" xml:space="preserve">
-    <value>Uninstalling NuGet package {0}.</value>
-  </data>
   <data name="Warning_FailedToDeleteMarkedPackageDirectory" xml:space="preserve">
     <value>Failed to remove package directory '{0}' that was marked for deletion on Visual Studio restart.</value>
   </data>
@@ -204,22 +201,9 @@
     <value>The {0} MSBuild property could not be found for project '{1}'.</value>
     <comment>{0} is the name of the property that was not set.  {1} is the full path to the project.</comment>
   </data>
-  <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
-    <value>The project '{0}' could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio.</value>
-    <comment>{0} is the full path to the project.</comment>
-  </data>
   <data name="UnableToGetCPSPackageInstallationService" xml:space="preserve">
     <value>Unable to get the project's package installation service for project '{0}'.</value>
     <comment>{0} is the full path to the project.</comment>
-  </data>
-  <data name="AccountProvider_FailedToLoadAccountManager" xml:space="preserve">
-    <value>Could not get the account manager, unable to check the keychain.</value>
-  </data>
-  <data name="AccountProvider_FailedToLoadVSOAccountProvider" xml:space="preserve">
-    <value>Could not get the account provider, unable to check the keychain.</value>
-  </data>
-  <data name="AccountProvider_NoValidCrededentialsFound" xml:space="preserve">
-    <value>No valid credentials found for VSO account.</value>
   </data>
   <data name="AccountProvider_TriedToShowUIOnNonInteractive" xml:space="preserve">
     <value>Unable to authenticate without prompting user.</value>
@@ -251,9 +235,6 @@
   </data>
   <data name="Debug_RemovedFolder" xml:space="preserve">
     <value>Removed folder '{0}'.</value>
-  </data>
-  <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
-    <value>Package stream should be seekable</value>
   </data>
   <data name="Warning_DirectoryNotEmpty" xml:space="preserve">
     <value>Directory '{0}' is not empty. Skipping...</value>

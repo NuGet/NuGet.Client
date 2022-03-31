@@ -61,15 +61,6 @@ namespace NuGet.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An absolute path is required: &apos;{0}&apos;..
-        /// </summary>
-        internal static string AbsolutePathRequired {
-            get {
-                return ResourceManager.GetString("AbsolutePathRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Value must be greater than or equal to {0}.
         /// </summary>
         internal static string Argument_Must_Be_GreaterThanOrEqualTo {
@@ -88,15 +79,6 @@ namespace NuGet.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to create random file for dotnet add pkg command..
-        /// </summary>
-        internal static string Error_FailedToCreateRandomFile {
-            get {
-                return ResourceManager.GetString("Error_FailedToCreateRandomFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Required environment variable &apos;{0}&apos; is not set. Try setting &apos;{0}&apos; and running the operation again..
         /// </summary>
         internal static string MissingRequiredEnvVar {
@@ -111,24 +93,6 @@ namespace NuGet.Common {
         internal static string MissingRequiredEnvVarsDotnet {
             get {
                 return ResourceManager.GetString("MissingRequiredEnvVarsDotnet", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to At least one package folder path must be provided..
-        /// </summary>
-        internal static string NoPackageFoldersFound {
-            get {
-                return ResourceManager.GetString("NoPackageFoldersFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package folder not found: &apos;{0}&apos;..
-        /// </summary>
-        internal static string PackageFolderNotFound {
-            get {
-                return ResourceManager.GetString("PackageFolderNotFound", resourceCulture);
             }
         }
         
