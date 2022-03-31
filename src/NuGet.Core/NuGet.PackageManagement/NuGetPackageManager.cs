@@ -2507,7 +2507,8 @@ namespace NuGet.PackageManagement
                     var batchId = Guid.NewGuid().ToString();
                     string name;
                     nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out name);
-                    packageProjectEventArgs = new PackageProjectEventArgs(batchId, name);
+                    var projectPath = msbuildProject?.MSBuildProjectPath;
+                    packageProjectEventArgs = new PackageProjectEventArgs(batchId, name, projectPath);
                     BatchStart?.Invoke(this, packageProjectEventArgs);
                     PackageProjectEventsProvider.Instance.NotifyBatchStart(packageProjectEventArgs);
 

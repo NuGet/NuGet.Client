@@ -37,7 +37,8 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Raised when particular project is about to be updated.
         /// For PackageReference projects, this means an assets file or a nuget temp msbuild file write (nuget.g.props or nuget.g.targets). The list of updated files will include the aforementioned.
-        /// If a project was restore, but no file updates happen, this event will not be fired.
+        /// If a project was restored, but no file updates happen, this event will not be fired.
+        /// For packages.config projects, this means that the project file was changed.
         /// </summary>
         /// <remarks>
         /// No heavy computation should happen in any of these methods as it'll block the NuGet progress.
@@ -47,7 +48,8 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Raised when particular project update has been completed.
         /// For PackageReference projects, this means an assets file or a nuget temp msbuild file write (nuget.g.props or nuget.g.targets). The list of updated files will include the aforementioned.
-        /// If a project was restore, but no file updates happen, this event will not be fired.
+        /// If a project was restored, but no file updates happen, this event will not be fired.
+        /// For packages.config projects, this means that the project file was changed.
         /// </summary>
         /// <remarks>
         /// No heavy computation should happen in any of these methods as it'll block the NuGet progress.

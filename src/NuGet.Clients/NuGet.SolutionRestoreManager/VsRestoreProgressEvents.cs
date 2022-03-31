@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using NuGet.Commands;
+using NuGet.PackageManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Etw;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -17,6 +19,22 @@ namespace NuGet.SolutionRestoreManager
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class VsRestoreProgressEvents : IVsNuGetProjectUpdateEvents, IVsNuGetProgressReporter
     {
+
+        [ImportingConstructor]
+        public VsRestoreProgressEvents(IPackageProjectEventsProvider eventProvider, INuGetTelemetryProvider telemetryProvider)
+        {
+            _ = eventProvider ?? throw new ArgumentNullException(nameof(eventProvider));
+
+            // MEF components do not participate in Visual Studio's Package extensibility,
+            // hence importing INuGetTelemetryProvider ensures that the ETW collector is
+            // set up correctly.
+            _ = telemetryProvider ?? throw new ArgumentNullException(nameof(telemetryProvider));
+
+            var eventSource = eventProvider.GetPackageProjectEvents();
+            eventSource.BatchStart += NotifyBatchStart;
+            eventSource.BatchEnd += NotifyBatchEnd;
+        }
+
         private const string SolutionRestoreStartedEventName = nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(SolutionRestoreStarted);
         public event SolutionRestoreEventHandler SolutionRestoreStarted
         {
@@ -169,6 +187,22 @@ namespace NuGet.SolutionRestoreManager
                     }
                     catch { }
                 }
+            }
+        }
+
+        private void NotifyBatchEnd(object sender, PackageProjectEventArgs e)
+        {
+            if (e.ProjectPath != null)
+            {
+                EndProjectUpdate(e.ProjectPath, new List<string>() { e.ProjectPath });
+            }
+        }
+
+        private void NotifyBatchStart(object sender, PackageProjectEventArgs e)
+        {
+            if (e.ProjectPath != null)
+            {
+                StartProjectUpdate(e.ProjectPath, new List<string>() { e.ProjectPath });
             }
         }
     }
