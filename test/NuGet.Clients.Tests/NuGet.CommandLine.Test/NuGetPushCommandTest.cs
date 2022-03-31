@@ -373,7 +373,6 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result.Item1);
                 Assert.Contains("Your package was pushed.", result.Item2);
                 Assert.DoesNotContain("symbol", result.Item2);
-                Assert.DoesNotContain(NuGetConstants.DefaultSymbolServerUrl, result.Item2);
             }
         }
 
