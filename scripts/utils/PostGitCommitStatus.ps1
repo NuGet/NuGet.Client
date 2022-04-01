@@ -42,9 +42,26 @@ Function Update-GitCommitStatus {
     } | ConvertTo-Json;
 
     Write-Host $Body
-    $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/nuget/nuget.client/statuses/$CommitSha" -Body $Body
 
-    Write-Host $r1
+    try {
+        # Post status of tests and build to GitHub.
+        $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/nuget/nuget.client/statuses/$CommitSha" -Body $Body
+        Write-Host $r1
+    }
+    catch {
+        $StatusCode = $PSItem.Exception.Response.StatusCode.Value__
+        $exceptionMessage = $PSItem.Exception.Message
+
+        # If branch name ends with "-MSRC" and the post statuscode is 404 (not found), it's acceptable.
+        if ($env:BUILD_SOURCEBRANCHNAME.toUpper().endsWith("-MSRC") -and ($StatusCode -eq "404") )
+        {
+            Write-Host "[Info] : The commit hash could not be found on github."
+        }
+        else
+        {
+            throw $exceptionMessage
+        }
+    }
 }
 
 Function InitializeAllTestsToPending {
