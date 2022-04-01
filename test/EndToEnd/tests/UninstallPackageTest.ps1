@@ -768,6 +768,7 @@ function Test-WebSiteSimpleUninstall
 
 function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveContentFiles
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -800,6 +801,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveConten
 
 function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveAssemblies
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -832,6 +834,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveAssemb
 
 function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToInvokeUninstallScript
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
