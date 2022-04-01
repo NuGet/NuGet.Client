@@ -677,7 +677,7 @@ namespace NuGet.Commands.FuncTest
                 // Add the dependency
                 var dependency = new LibraryDependency
                 {
-                    LibraryRange = new LibraryRange(packageA.Id, VersionRange.Parse("*"), LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange(packageA.Id, VersionRange.Parse("1.0.*"), LibraryDependencyTarget.Package)
                 };
 
                 childProject.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
