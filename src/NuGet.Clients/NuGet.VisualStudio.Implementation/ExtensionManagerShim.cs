@@ -35,7 +35,7 @@ namespace NuGet.VisualStudio
             try
             {
                 Assembly extensionManagerAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                    .First(a => a.FullName.StartsWith("Microsoft.VisualStudio.ExtensionManager,"));
+                    .First(a => a.FullName.StartsWith("Microsoft.VisualStudio.ExtensionManager,", StringComparison.InvariantCultureIgnoreCase));
                 _sVsExtensionManagerType =
                     extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager");
                 _iVsExtensionManagerType =
