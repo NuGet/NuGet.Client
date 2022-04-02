@@ -21,7 +21,6 @@ namespace NuGet.PackageManagement.UI.Test
     [Collection(MockedVS.Collection)]
     public class DetailControlModelTests
     {
-
         public DetailControlModelTests(GlobalServiceProvider gsp)
         {
             gsp.Reset();
