@@ -46,14 +46,6 @@ steps:
     AccessToken: $(System.AccessToken)
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: PowerShell@1
-  displayName: "Restore dotnet tools"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      dotnet tool restore
-  condition: "and(not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
-
 # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
 # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
 # won't be able to determine the URL to embed in the pdbs.
@@ -174,14 +166,6 @@ steps:
     mergeTestResults: "true"
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
-
-- task: PowerShell@1
-  displayName: "Check source file format"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
