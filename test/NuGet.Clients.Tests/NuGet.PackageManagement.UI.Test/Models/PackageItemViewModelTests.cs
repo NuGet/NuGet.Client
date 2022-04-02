@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
+using NuGet.Common;
 using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.PackageManagement.VisualStudio.Test;
@@ -19,6 +20,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using Test.Utility.Threading;
@@ -45,6 +47,7 @@ namespace NuGet.PackageManagement.UI.Test
             : base(globalServiceProvider)
         {
             globalServiceProvider.Reset();
+            _searchService.Reset();
             _serviceBroker.Setup(
 #pragma warning disable ISB001 // Dispose of proxies
                 x => x.GetProxyAsync<INuGetPackageFileService>(
@@ -398,6 +401,48 @@ namespace NuGet.PackageManagement.UI.Test
                 // Assert
                 Assert.Equal(IconBitmapStatus.DefaultIconDueToDecodingError, packageItemViewModel.BitmapStatus);
             }
+        }
+
+        [Theory]
+        [InlineData(PackageLevel.TopLevel, true)]
+        [InlineData(PackageLevel.Transitive, false)]
+        public void UpdatePackageStatus_WithPackageLevel_DoesNotReloadMetadataWithTransitive(PackageLevel pkgLevel, bool exectedIsMetadataCalled)
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+
+            bool calledMetadata = false;
+            _searchService.Setup(s => s.GetPackageMetadataAsync(
+                It.IsAny<PackageIdentity>(),
+                It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
+                .Callback(() => calledMetadata = true);
+
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
+            {
+                Id = "TransitivePackage",
+                Version = new NuGetVersion("0.0.1"),
+                PackageLevel = pkgLevel,
+            };
+            var installedPackages = new[] // No transitive packages should be in installedPackages collection
+            {
+                new PackageCollectionItem("pkg1", NuGetVersion.Parse("1.0.0"), installedReferences: null),
+                new PackageCollectionItem("pkg2", NuGetVersion.Parse("1.0.0"), installedReferences: null),
+            };
+
+            // Act
+            packageItemViewModel.UpdatePackageStatus(installedPackages);
+
+            // Assert
+            Assert.Null(lastTelemetryEvent); // make sure fault telemetry is not emited
+            Assert.Equal(calledMetadata, exectedIsMetadataCalled);
         }
 
         private static void VerifyImageResult(object result, IconBitmapStatus bitmapStatus)

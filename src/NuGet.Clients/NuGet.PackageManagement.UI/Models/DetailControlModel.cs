@@ -389,6 +389,8 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageDeprecated => _packageMetadata?.DeprecationMetadata != null;
 
+        public bool IsDeprecationControlVisible => IsPackageDeprecated && _searchResultPackage.PackageLevel == PackageLevel.TopLevel;
+
         private string _packageDeprecationReasons;
         public string PackageDeprecationReasons
         {
@@ -448,6 +450,8 @@ namespace NuGet.PackageManagement.UI
         {
             get => PackageVulnerabilities?.Count ?? 0;
         }
+
+        public bool IsVulnerabilityControlVisible => IsPackageVulnerable && _searchResultPackage.PackageLevel == PackageLevel.TopLevel;
 
         public string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
         {
@@ -514,7 +518,9 @@ namespace NuGet.PackageManagement.UI
 
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
+                    OnPropertyChanged(nameof(IsDeprecationControlVisible));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(IsVulnerabilityControlVisible));
                     OnPropertyChanged(nameof(PackageVulnerabilityCount));
                     OnPropertyChanged(nameof(PackageVulnerabilities));
                     OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));

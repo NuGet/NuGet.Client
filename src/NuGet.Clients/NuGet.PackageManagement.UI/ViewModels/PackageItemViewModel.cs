@@ -746,10 +746,12 @@ namespace NuGet.PackageManagement.UI
                 .RunAsync(ReloadPackageVersionsAsync)
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageMetadataAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
-
+            if (PackageLevel == PackageLevel.TopLevel) // only reload metadata for Installed, top-level packages
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(ReloadPackageMetadataAsync)
+                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
+            }
             OnPropertyChanged(nameof(Status));
         }
 
