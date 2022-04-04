@@ -54,8 +54,21 @@ namespace NuGet.Protocol
                 clientHandler.ClientCertificates.AddRange(packageSource.ClientCertificates.ToArray());
             }
 
+#if !IS_CORECLR
+            clientHandler.AllowAutoRedirect = false;
+
+            // HTTP handler pipeline can be injected here, around the client handler            
+            HttpMessageHandler messageHandler = new RedirectHandler(clientHandler);
+
+            messageHandler = new ServerWarningLogHandler(clientHandler)
+            {
+                InnerHandler = messageHandler
+            };
+#else
+
             // HTTP handler pipeline can be injected here, around the client handler
             HttpMessageHandler messageHandler = new ServerWarningLogHandler(clientHandler);
+#endif
 
             if (proxy != null)
             {

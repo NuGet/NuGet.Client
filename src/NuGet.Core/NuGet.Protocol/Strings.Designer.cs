@@ -169,6 +169,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Insecure https to http redirect from &apos;{0}&apos; to &apos;{1}&apos; blocked..
+        /// </summary>
+        internal static string Error_InsecureRedirectionBlocked {
+            get {
+                return ResourceManager.GetString("Error_InsecureRedirectionBlocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The server responded with HTTP &apos;403 Forbidden&apos; when accessing the source &apos;{0}&apos;. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource..
         /// </summary>
         internal static string Http_CredentialsForForbidden {
