@@ -59,12 +59,14 @@ namespace NuGet.Protocol
 
             if (proxy != null)
             {
-                messageHandler = new ProxyAuthenticationHandler(clientHandler, HttpHandlerResourceV3.CredentialService?.Value, ProxyCache.Instance);
+                messageHandler = new ProxyAuthenticationHandler(clientHandler, HttpHandlerResourceV3.CredentialService?.Value, ProxyCache.Instance)
+                {
+                    InnerHandler = messageHandler
+                };
             }
 
 #if !IS_CORECLR
             {
-                var innerHandler = messageHandler;
 
                 messageHandler = new StsAuthenticationHandler(packageSource, TokenStore.Instance)
                 {
@@ -73,11 +75,9 @@ namespace NuGet.Protocol
             }
 #endif
             {
-                var innerHandler = messageHandler;
-
                 messageHandler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, HttpHandlerResourceV3.CredentialService?.Value)
                 {
-                    InnerHandler = innerHandler
+                    InnerHandler = messageHandler
                 };
             }
 
