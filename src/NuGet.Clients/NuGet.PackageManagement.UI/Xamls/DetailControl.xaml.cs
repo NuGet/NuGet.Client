@@ -114,7 +114,7 @@ namespace NuGet.PackageManagement.UI
                     model.Id,
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
-                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
+                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
                     model.SelectedVersion.Range);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
