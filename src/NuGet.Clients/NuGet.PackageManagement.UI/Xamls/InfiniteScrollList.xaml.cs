@@ -696,10 +696,9 @@ namespace NuGet.PackageManagement.UI
 
         private void List_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            // toggle the selection state when user presses the space bar
-            var package = _list.SelectedItem as PackageItemViewModel;
-            if (package != null && e.Key == Key.Space)
+            if (e.Key == Key.Space && e.OriginalSource is ListBoxItem && _list.SelectedItem is PackageItemViewModel package)
             {
+                // toggle the selection state when user presses the space bar
                 package.IsSelected = !package.IsSelected;
                 e.Handled = true;
             }
