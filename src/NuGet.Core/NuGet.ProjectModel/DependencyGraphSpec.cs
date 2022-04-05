@@ -286,7 +286,7 @@ namespace NuGet.ProjectModel
             {
                 jsonWriter.Formatting = Formatting.Indented;
 
-                Write(writer, compressed: false, PackageSpecWriter.Write);
+                Write(writer, hashing: false, PackageSpecWriter.Write);
             }
         }
 
@@ -295,12 +295,12 @@ namespace NuGet.ProjectModel
             using (var hashFunc = new Sha512HashFunction())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, compressed: true, PackageSpecWriter.Write);
+                Write(writer, hashing: true, PackageSpecWriter.Write);
                 return writer.GetHash();
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, bool compressed, Action<PackageSpec, RuntimeModel.IObjectWriter, bool> writeAction)
+        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool> writeAction)
         {
             writer.WriteObjectStart();
             writer.WriteNameValue("format", Version);
@@ -324,7 +324,7 @@ namespace NuGet.ProjectModel
                 var project = pair.Value;
 
                 writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                writeAction.Invoke(project, writer, compressed);
+                writeAction.Invoke(project, writer, hashing);
                 writer.WriteObjectEnd();
             }
 
