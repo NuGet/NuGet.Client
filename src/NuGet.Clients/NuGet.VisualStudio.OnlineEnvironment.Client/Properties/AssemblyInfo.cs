@@ -17,6 +17,9 @@ using Microsoft.VisualStudio.Shell;
 [assembly: ComVisible(false)]
 
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Lucene.Net.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Extensions.FileProviders.Abstractions.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Extensions.FileSystemGlobbing.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Extensions.Primitives.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Web.XmlTransform.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Newtonsoft.Json.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Commands.dll")]
