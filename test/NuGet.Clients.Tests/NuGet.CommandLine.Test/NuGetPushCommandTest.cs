@@ -301,7 +301,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [MemberData(nameof(ServerWarningData))]
+        [MemberData(nameof(ServerWarningData))] // Similar to this.
         public void PushCommand_LogsServerWarningsWhenPresent(string firstServerWarning, string secondServerWarning)
         {
             var serverWarnings = new[] { firstServerWarning, secondServerWarning };
@@ -378,7 +378,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void PushCommand_PushToServerWithSymbols()
+        public void PushCommand_PushToServerWithSymbols() // Something like this too.
         {
             using (var packageDirectory = TestDirectory.Create())
             using (var server = new MockServer())
@@ -1300,7 +1300,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void PushCommand_PushToServerV3()
+        public void PushCommand_PushToServerV3() // And finally, something like this.
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -2050,6 +2050,46 @@ namespace NuGet.CommandLine.Test
         {
             Util.TestCommandInvalidArguments(cmd);
         }
+
+        // ADd a test so that when pushing to a file source, there is no warning - or maybe reuse existing ones.
+        // Creating an HTTPS server for local dev sounds like a lot of work.
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServer_Warns()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using var packageDirectory = TestDirectory.Create();
+            var packageFileName = Util.CreateTestPackage("test", "1.1.0", packageDirectory);
+            var outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+
+            using var server = new MockServer();
+            server.Get.Add("/push", r => "OK");
+            server.Put.Add("/push", r =>
+            {
+                byte[] buffer = MockServer.GetPushedPackage(r);
+                using (var of = new FileStream(outputFileName, FileMode.Create))
+                {
+                    of.Write(buffer, 0, buffer.Length);
+                }
+
+                return HttpStatusCode.Created;
+            });
+            server.Start();
+
+            // Act
+            var result = CommandRunner.Run(
+                            nugetexe,
+                            Directory.GetCurrentDirectory(),
+                            $"push {packageFileName} -Source {server.Uri}push",
+                            true);
+            server.Stop();
+
+            // Assert
+            Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+            var output = result.Item2;
+            Assert.Contains("WARNING: You are attempting to push to an `http server.", output);
+        }
+
 
         // Asserts that the contents of two files are equal.
         void AssertFileEqual(string fileName1, string fileName2)

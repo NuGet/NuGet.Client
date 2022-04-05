@@ -27,8 +27,8 @@ namespace NuGet.Commands
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
-
-            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
+            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 
             await packageUpdateResource.Delete(
                 packageId,

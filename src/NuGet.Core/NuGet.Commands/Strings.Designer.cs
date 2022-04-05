@@ -1781,6 +1781,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are attempting to push to an `http` source, &apos;{0}&apos;. Support for `http` sources will be removed in a future version..
+        /// </summary>
+        internal static string Push_Warning_HTTPSourceUsage {
+            get {
+                return ResourceManager.GetString("Push_Warning_HTTPSourceUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Registered client certificates:.
         /// </summary>
         internal static string RegsiteredClientCertificates {

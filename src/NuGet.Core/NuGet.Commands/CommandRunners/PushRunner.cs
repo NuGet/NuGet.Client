@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -37,8 +38,21 @@ namespace NuGet.Commands
             {
                 timeoutSeconds = 5 * 60;
             }
+            PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
+            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 
-            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            if (packageSource.IsHttp && !packageSource.IsHttps)
+            {
+                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, packageSource.Source));
+            }
+
+            var packageUpdateResourceScheme = packageUpdateResource.SourceUri.Scheme;
+            if (packageUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO NK - Move this into the resource.
+                logger.LogWarning($"You have specified an HTTP Source, please stop doing it. Here's the source {source}");
+            }
+
             packageUpdateResource.Settings = settings;
             SymbolPackageUpdateResourceV3 symbolPackageUpdateResource = null;
 
@@ -54,6 +68,14 @@ namespace NuGet.Commands
                 {
                     symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                     symbolApiKey = apiKey;
+
+                    // Warn for the symbol package source.
+                    var symbolsUpdateResourceScheme = symbolPackageUpdateResource.SourceUri.Scheme;
+                    if (symbolsUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // TODO NK - Move into the resource.
+                        logger.LogWarning($"You have specified an HTTP Source, please stop doing it. Here's the source {source}");
+                    }
                 }
             }
 
