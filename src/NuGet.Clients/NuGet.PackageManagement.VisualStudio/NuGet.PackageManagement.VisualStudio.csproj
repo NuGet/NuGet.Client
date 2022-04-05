@@ -97,8 +97,6 @@
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
     <Compile Include="Services\BrokeredServicesUtilities.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
-    <Compile Include="IInteractiveLoginProvider.cs" />
-    <Compile Include="InteractiveLoginProvider.cs" />
     <Compile Include="Projects\CpsPackageReferenceProject.cs" />
     <Compile Include="Projects\INuGetProjectProvider.cs" />
     <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />
