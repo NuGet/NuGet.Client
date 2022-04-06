@@ -16,9 +16,6 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
-    // TODO NK - Add tests here.
-    // Is it easy to add http vs http here?
-    // Consider moving the warning here.
     public class PackageUpdateResourceTests
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
@@ -353,7 +350,7 @@ namespace NuGet.Protocol.Tests
                 var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
                 var resource = await repo.GetResourceAsync<PackageUpdateResource>();
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
-
+                var logger = new TestLogger();
                 // Act
                 await resource.Push(
                     packagePaths: new[] { packageInfo.FullName },
@@ -365,7 +362,7 @@ namespace NuGet.Protocol.Tests
                     noServiceEndpoint: false,
                     skipDuplicate: false,
                     symbolPackageUpdateResource: null,
-                    log: NullLogger.Instance);
+                    log: logger);
 
                 // Assert
                 IEnumerable<string> apiValues;
@@ -378,6 +375,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal("serverapikey", apiValues.First());
                 Assert.NotNull(symbolClientVersionValues.First());
                 Assert.NotNull(sourceClientVersionValues.First());
+                Assert.Equal(0, logger.WarningMessages.Count);
             }
         }
 
@@ -839,17 +837,14 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             using var workingDir = TestDirectory.Create();
-            var source = "https://www.nuget.org/api/v2";
-            var symbolSource = "https://other.smbsrc.net/";
+            var source = "http://www.nuget.org/api/v2/";
             HttpRequestMessage sourceRequest = null;
-            var apiKey = "serverapikey";
-
             var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
 
             var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
                     {
-                        "https://www.nuget.org/api/v2/",
+                        source,
                         request =>
                         {
                             sourceRequest = request;
@@ -857,11 +852,67 @@ namespace NuGet.Protocol.Tests
                         }
                     },
                 };
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>();
+            var logger = new TestLogger();
 
-            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
-            var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: string.Empty,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => "serverapikey",
+                getSymbolApiKey: _ => null,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                log: logger);
+
+            // Assert
+            Assert.NotNull(sourceRequest);
+            Assert.Equal(1, logger.WarningMessages.Count);
+            Assert.Equal("WARNING: Yu are calling an http source", logger.WarningMessages.First());
+
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_WhenPushingToAnHttpSymbolSource_Warns()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "https://www.nuget.org/api/v2/";
+            var symbolSource = "http://other.smbsrc.net/";
+            HttpRequestMessage sourceRequest = null;
+            HttpRequestMessage symbolRequest = null;
+            var apiKey = "serverapikey";
+
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+            var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "http://other.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>();
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
             var logger = new TestLogger();
+
             // Act
             await resource.Push(
                 packagePaths: new[] { packageInfo.FullName },
@@ -876,50 +927,49 @@ namespace NuGet.Protocol.Tests
                 log: logger);
 
             // Assert
-            sourceRequest.Headers.TryGetValues(ApiKeyHeader, out IEnumerable<string> apiValues);
-            sourceRequest.Headers.TryGetValues(NuGetClientVersionHeader, out IEnumerable<string> sourceClientVersionValues);
-
-            Assert.Equal("serverapikey", apiValues.First());
-            Assert.NotNull(sourceClientVersionValues.First());
+            Assert.NotNull(sourceRequest);
+            Assert.NotNull(symbolRequest);
+            Assert.Equal(1, logger.WarningMessages.Count);
+            Assert.Equal("WARNING: Yu are calling an http source", logger.WarningMessages.First());
         }
 
         [Fact]
-        public async Task PackageUpdateResource_WhenPushingToAnHttpSymbolSource_Warns()
+        public async Task PackageUpdateResource_WhenPushingToAnHttpSourceAndSymbolSource_WarnsForBoth()
         {
             // Arrange
             using var workingDir = TestDirectory.Create();
-            var source = "https://www.nuget.org/api/v2";
-            var symbolSource = "https://other.smbsrc.net/";
+            var source = "http://www.nuget.org/api/v2/";
+            var symbolSource = "http://other.smbsrc.net/";
             HttpRequestMessage sourceRequest = null;
-            //HttpRequestMessage symbolRequest = null;
+            HttpRequestMessage symbolRequest = null;
             var apiKey = "serverapikey";
 
             var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
-            //var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+            var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
 
             var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
                     {
-                        "https://www.nuget.org/api/v2/",
+                        source,
                         request =>
                         {
                             sourceRequest = request;
                             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
                         }
                     },
-                    //{
-                    //    "https://other.smbsrc.net/api/v2/package/",
-                    //    request =>
-                    //    {
-                    //        symbolRequest = request;
-                    //        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-                    //    }
-                    //},
+                    {
+                        "http://other.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
                 };
 
-            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
-            var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>();
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+            var logger = new TestLogger();
 
             // Act
             await resource.Push(
@@ -932,16 +982,13 @@ namespace NuGet.Protocol.Tests
                 noServiceEndpoint: false,
                 skipDuplicate: false,
                 symbolPackageUpdateResource: null,
-                log: NullLogger.Instance);
+                log: logger);
 
             // Assert
-            //symbolRequest.Headers.TryGetValues(NuGetClientVersionHeader, out IEnumerable<string> symbolClientVersionValues);
-            sourceRequest.Headers.TryGetValues(ApiKeyHeader, out IEnumerable<string> apiValues);
-            sourceRequest.Headers.TryGetValues(NuGetClientVersionHeader, out IEnumerable<string> sourceClientVersionValues);
-
-            Assert.Equal("serverapikey", apiValues.First());
-            //Assert.NotNull(symbolClientVersionValues.First());
-            Assert.NotNull(sourceClientVersionValues.First());
+            Assert.NotNull(sourceRequest);
+            Assert.NotNull(symbolRequest);
+            Assert.Equal(2, logger.WarningMessages.Count);
+            Assert.Equal("WARNING: Yu are calling an http source", logger.WarningMessages.First());
         }
     }
 }
