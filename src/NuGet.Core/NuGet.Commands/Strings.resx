@@ -1032,8 +1032,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_NoMatchingClientCertificate" xml:space="preserve">
     <value>This package is signed but not by a trusted signer.</value>
   </data>
-  <data name="Push_Warning_HTTPSourceUsage" xml:space="preserve">
-    <value>You are attempting to push to an 'http' source, '{0}'. Support for 'http' sources will be removed in a future version.</value>
-    <comment>0 - the package source url</comment>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are attempting to '{0}' to an 'http' source, '{1}'. Support for 'http' sources will be removed in a future version.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - server uri.</comment>
   </data>
 </root>

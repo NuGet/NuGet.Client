@@ -41,15 +41,11 @@ namespace NuGet.Commands
             PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 
-            if (packageSource.IsHttp && !packageSource.IsHttps)
+            // Only warn for V3 style sources because they have a service index which is different from the final push url.
+            if (packageSource.IsHttp && !packageSource.IsHttps &&
+                (packageSource.ProtocolVersion == 3 || packageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase)))
             {
-                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, packageSource.Source));
-            }
-
-            var packageUpdateResourceScheme = packageUpdateResource.SourceUri.Scheme;
-            if (packageUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
-            {
-                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, packageUpdateResource.SourceUri));
+                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "push", packageSource.Source));
             }
 
             packageUpdateResource.Settings = settings;
@@ -67,13 +63,6 @@ namespace NuGet.Commands
                 {
                     symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                     symbolApiKey = apiKey;
-
-                    var symbolsUpdateResourceScheme = symbolPackageUpdateResource.SourceUri.Scheme;
-                    if (symbolsUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // TODO NK - Validate all the warnings make sense.
-                        logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, symbolPackageUpdateResource.SourceUri));
-                    }
                 }
             }
 

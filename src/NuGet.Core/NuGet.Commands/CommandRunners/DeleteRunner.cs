@@ -28,9 +28,11 @@ namespace NuGet.Commands
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
             PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
-            if (packageSource.IsHttp && !packageSource.IsHttps)
+            // Only warn for V3 style sources because they have a service index which is different from the final push url.
+            if (packageSource.IsHttp && !packageSource.IsHttps &&
+                (packageSource.ProtocolVersion == 3 || packageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase)))
             {
-                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, packageSource.Source));
+                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "push", packageSource.Source));
             }
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 

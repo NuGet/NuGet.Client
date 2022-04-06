@@ -871,7 +871,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             Assert.True(result.Success, result.AllOutput);
-            Assert.Contains("WARNING: You are attempting to push to an 'http' source", result.AllOutput);
+            Assert.Contains("WARNING: You are attempting to 'push' to an 'http' source", result.AllOutput);
         }
 
         #region Helpers

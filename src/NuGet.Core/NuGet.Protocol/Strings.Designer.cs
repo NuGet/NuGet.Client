@@ -961,6 +961,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are attempting to &apos;{0}&apos; to an &apos;http&apos; source, &apos;{1}&apos;. Support for &apos;http&apos; sources will be removed in a future version..
+        /// </summary>
+        internal static string Warning_HttpServerUsage {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Found symbols package &apos;{0}&apos;, but no API key was specified for the symbol server. To save an API Key, run &apos;NuGet.exe setApiKey [your API key from http://www.NuGet.org]&apos;..
         /// </summary>
         internal static string Warning_SymbolServerNotConfigured {

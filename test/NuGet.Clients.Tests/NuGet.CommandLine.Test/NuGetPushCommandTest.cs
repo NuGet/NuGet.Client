@@ -2209,6 +2209,8 @@ namespace NuGet.CommandLine.Test
                         result.Success.Should().BeTrue(result.AllOutput);
                         result.AllOutput.Should().Contain("Your package was pushed");
                         result.AllOutput.Should().Contain("WARNING: You are attempting to push to an 'http' source");
+                        result.AllOutput.Should().Contain("bla bla. There should be 2 warnings. Check that both are raising it.");
+
                         AssertFileEqual(packageFileName, outputFileName);
                     }
                 }

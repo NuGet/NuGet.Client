@@ -871,7 +871,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.NotNull(sourceRequest);
             Assert.Equal(1, logger.WarningMessages.Count);
-            Assert.Equal("WARNING: Yu are calling an http source", logger.WarningMessages.First());
+            Assert.Contains("You are attempting to 'push' to an 'http'", logger.WarningMessages.First());
 
         }
 
@@ -930,7 +930,7 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(sourceRequest);
             Assert.NotNull(symbolRequest);
             Assert.Equal(1, logger.WarningMessages.Count);
-            Assert.Equal("WARNING: Yu are calling an http source", logger.WarningMessages.First());
+            Assert.Contains("You are attempting to 'push' to an 'http'", logger.WarningMessages.First());
         }
 
         [Fact]
@@ -988,7 +988,8 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(sourceRequest);
             Assert.NotNull(symbolRequest);
             Assert.Equal(2, logger.WarningMessages.Count);
-            Assert.Equal("WARNING: Yu are calling an http source", logger.WarningMessages.First());
+            Assert.Contains("You are attempting to 'push' to an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.First());
+            Assert.Contains("You are attempting to 'push' to an 'http' source, 'http://other.smbsrc.net/api/v2/package/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
         }
     }
 }

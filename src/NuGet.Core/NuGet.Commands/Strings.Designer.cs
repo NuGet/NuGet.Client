@@ -1781,15 +1781,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are attempting to push to an &apos;http&apos; source, &apos;{0}&apos;. Support for &apos;http&apos; sources will be removed in a future version..
-        /// </summary>
-        internal static string Push_Warning_HTTPSourceUsage {
-            get {
-                return ResourceManager.GetString("Push_Warning_HTTPSourceUsage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Registered client certificates:.
         /// </summary>
         internal static string RegsiteredClientCertificates {
@@ -2380,6 +2371,15 @@ namespace NuGet.Commands {
         internal static string Warning_FileExcludedByDefault {
             get {
                 return ResourceManager.GetString("Warning_FileExcludedByDefault", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are attempting to &apos;{0}&apos; to an &apos;http&apos; source, &apos;{1}&apos;. Support for &apos;http&apos; sources will be removed in a future version..
+        /// </summary>
+        internal static string Warning_HttpServerUsage {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage", resourceCulture);
             }
         }
         
