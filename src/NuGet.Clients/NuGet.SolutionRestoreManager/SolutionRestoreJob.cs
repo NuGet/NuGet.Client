@@ -252,11 +252,13 @@ namespace NuGet.SolutionRestoreManager
                 }
                 catch (OperationCanceledException)
                 {
+                    _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(true);
                     _status = NuGetOperationStatus.Cancelled;
                     throw;
                 }
                 catch
                 {
+                    _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(true);
                     _status = NuGetOperationStatus.Failed;
                     throw;
                 }

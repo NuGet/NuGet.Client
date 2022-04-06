@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -120,13 +121,15 @@ namespace NuGet.PackageManagement.UI
                         string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(CancellationToken.None);
                         _componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
                         _vsSolutionManager = _componentModel.GetService<IVsSolutionManager>();
+                        _solutionRestoreWorker = _componentModel.GetService<ISolutionRestoreWorker>();
 
-                        // when the control is first loaded, check for missing packages
+                        // if the project is PR check for missing assets file if the user has disabled the automatic restore
+                        // otherwise check for missing packages
                         if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(CancellationToken.None) &&
                             _projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
+                            _solutionRestoreWorker.IsRunning == false &&
                             await GetMissingAssetsFileStatusAsync(_projectContextInfo.ProjectId))
                         {
-                            _solutionRestoreWorker = _componentModel.GetService<ISolutionRestoreWorker>();
                             _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(true);
                         }
                         else
@@ -158,6 +161,14 @@ namespace NuGet.PackageManagement.UI
             if (nuGetProject?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
                 nuGetProject is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
             {
+                // If there are no packages we dont need the assets file in the PM UI
+                var installedPackages = await buildIntegratedNuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                if (!installedPackages.Any())
+                {
+                    return false;
+                }
+
                 string assetsFilePath = await buildIntegratedNuGetProject.GetAssetsFilePathAsync();
                 var fileInfo = new FileInfo(assetsFilePath);
 
