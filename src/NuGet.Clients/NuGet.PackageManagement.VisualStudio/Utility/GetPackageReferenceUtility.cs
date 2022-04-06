@@ -100,21 +100,71 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 
         private static NuGetVersion GetInstalledVersion(string libraryName, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets)
         {
-            return targets
-                ?.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
-                ?.Libraries
-                ?.FirstOrDefault(a => a.Name.Equals(libraryName, StringComparison.OrdinalIgnoreCase))
-                ?.Version;
+            // PERF: Intentionally avoiding LINQ and foreach to avoid allocating capture classes and enumerators
+            if (targets != null)
+            {
+                LockFileTarget target = default;
+                for (int i = 0; i < targets.Count; ++i)
+                {
+                    LockFileTarget t = targets[i];
+                    if (t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
+                    {
+                        target = t;
+                    }
+                }
+
+                if (target != null && target.Libraries != null)
+                {
+                    for (int i = 0; i < target.Libraries.Count; ++i)
+                    {
+                        LockFileTargetLibrary a = target.Libraries[i];
+                        if (a != null && a.Name.Equals(libraryName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return a.Version;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static IReadOnlyList<PackageDependency> GetTransitivePackagesForLibrary(LockFileTargetLibrary library, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets)
         {
-            return targets
-                ?.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
-                ?.Libraries
-                ?.Where(lib => lib.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
-                ?.SelectMany(lib => lib.Dependencies)
-                ?.ToList();
+            // PERF: Intentionally avoiding LINQ and foreach to avoid allocating capture classes and enumerators
+            if (targets != null)
+            {
+                LockFileTarget target = default;
+                for (int i = 0; i < targets.Count; ++i)
+                {
+                    LockFileTarget t = targets[i];
+                    if (t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
+                    {
+                        target = t;
+                        break;
+                    }
+                }
+
+                if (target != null && target.Libraries != null)
+                {
+                    var packageDependencies = new List<PackageDependency>();
+                    for (int i = 0; i < target.Libraries.Count; ++i)
+                    {
+                        LockFileTargetLibrary lib = target.Libraries[i];
+                        if (lib.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (lib.Dependencies != null)
+                            {
+                                packageDependencies.AddRange(lib.Dependencies);
+                            }
+                        }
+                    }
+
+                    return packageDependencies;
+                }
+            }
+
+            return null;
         }
     }
 }
