@@ -423,6 +423,41 @@ namespace NuGet.CommandLine.Test
             Util.TestCommandInvalidArguments(args);
         }
 
+        [Fact]
+        public void DeleteCommand_WhenDeleteWithHttpSource_Warns()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using (var server = new MockServer())
+            {
+                server.Start();
+                bool deleteRequestIsCalled = false;
+
+                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                {
+                    deleteRequestIsCalled = true;
+                    return HttpStatusCode.OK;
+                });
+
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0",
+                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.True(deleteRequestIsCalled);
+                Assert.Contains("WARNING: You are attempting to push to an 'http' source", r.AllOutput);
+            }
+        }
+
         public static IEnumerable<object[]> ServerWarningData
         {
             get
