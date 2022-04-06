@@ -177,12 +177,12 @@ namespace NuGet.PackageManagement.VisualStudio
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
             IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
 
+            // Update the cache
             var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
             cacheEntry.UpdateSearchMetadata(packageMetadata);
+            PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
 
-            object cacheObject = PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
-
-            return await ((PackageSearchMetadataCacheItem)cacheObject).AllVersionsContextInfo;
+            return await cacheEntry.AllVersionsContextInfo;
         }
 
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
@@ -197,13 +197,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
             string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
             PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
+
+            // Transitive packages will have only one version the first time they are loaded, when the package is selected we update the cache with all the versions
             if (backgroundDataCache != null)
             {
                 if (isTransitive &&
-                    (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count == 1))
+                    (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count <= 1))
                 {
                     IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
-                    IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
                     backgroundDataCache.UpdateSearchMetadata(transitivePackageMetadata);
                 }
                 return await backgroundDataCache.AllVersionsContextInfo;
@@ -212,11 +214,12 @@ namespace NuGet.PackageManagement.VisualStudio
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
             IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
 
+            // Update the cache
             var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
             cacheEntry.UpdateSearchMetadata(packageMetadata);
-            object cacheObject = PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
+            PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
 
-            return await ((PackageSearchMetadataCacheItem)cacheObject).AllVersionsContextInfo;
+            return await cacheEntry.AllVersionsContextInfo;
         }
 
         public async ValueTask<PackageDeprecationMetadataContextInfo?> GetDeprecationMetadataAsync(

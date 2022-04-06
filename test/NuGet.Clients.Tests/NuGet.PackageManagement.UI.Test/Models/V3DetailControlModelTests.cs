@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
-            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             var vm = new PackageItemViewModel(searchService.Object)
@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
-                It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var vm = new PackageItemViewModel(searchService.Object);
 
@@ -553,7 +553,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
-            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             var vm = new PackageItemViewModel(searchService.Object)
@@ -607,7 +607,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
-                It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
             var vm = new PackageItemViewModel(searchService.Object);
 
