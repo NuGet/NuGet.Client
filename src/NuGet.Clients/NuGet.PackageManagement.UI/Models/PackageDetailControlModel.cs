@@ -296,7 +296,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersion = value;
                 OnPropertyChanged(nameof(InstalledVersion));
-<<<<<<< HEAD
             }
         }
 
@@ -308,7 +307,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersionRange = value;
                 OnPropertyChanged(nameof(InstalledVersionRange));
-=======
                 OnPropertyChanged(nameof(IsSelectedVersionInstalled));
                 OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
             }
@@ -323,19 +321,15 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageLevel = value;
                 OnPropertyChanged(nameof(PackageLevel));
->>>>>>> 24f57648c (Updating cache versions for transitive dependencies)
             }
         }
 
         public override void OnSelectedVersionChanged()
         {
             base.OnSelectedVersionChanged();
-<<<<<<< HEAD
             OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
-=======
             OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
->>>>>>> 24f57648c (Updating cache versions for transitive dependencies)
         }
 
         public bool IsSelectedVersionInstalled
@@ -349,7 +343,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-<<<<<<< HEAD
         public bool IsInstallorUpdateButtonEnabled
         {
             get
@@ -363,13 +356,14 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
-=======
+            }
+        }
+        
         public bool IsInstalledVersionTopLevel
         {
             get
             {
                 return InstalledVersion != null && PackageLevel == PackageLevel.TopLevel;
->>>>>>> 24f57648c (Updating cache versions for transitive dependencies)
             }
         }
 
