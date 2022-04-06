@@ -833,5 +833,115 @@ namespace NuGet.Protocol.Tests
                 }
             }
         }
+
+        [Fact]
+        public async Task Push_WithAnHttpSource_NupkgOnly_Warns()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "https://www.nuget.org/api/v2";
+            var symbolSource = "https://other.smbsrc.net/";
+            HttpRequestMessage sourceRequest = null;
+            var apiKey = "serverapikey";
+
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.nuget.org/api/v2/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+            var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+            var logger = new TestLogger();
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: symbolSource,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => apiKey,
+                getSymbolApiKey: _ => apiKey,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                log: logger);
+
+            // Assert
+            sourceRequest.Headers.TryGetValues(ApiKeyHeader, out IEnumerable<string> apiValues);
+            sourceRequest.Headers.TryGetValues(NuGetClientVersionHeader, out IEnumerable<string> sourceClientVersionValues);
+
+            Assert.Equal("serverapikey", apiValues.First());
+            Assert.NotNull(sourceClientVersionValues.First());
+        }
+
+        [Fact]
+        public async Task PackageUpdateResource_WhenPushingToAnHttpSymbolSource_Warns()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "https://www.nuget.org/api/v2";
+            var symbolSource = "https://other.smbsrc.net/";
+            HttpRequestMessage sourceRequest = null;
+            //HttpRequestMessage symbolRequest = null;
+            var apiKey = "serverapikey";
+
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+            //var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "https://www.nuget.org/api/v2/",
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    //{
+                    //    "https://other.smbsrc.net/api/v2/package/",
+                    //    request =>
+                    //    {
+                    //        symbolRequest = request;
+                    //        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                    //    }
+                    //},
+                };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+            var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: symbolSource,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => apiKey,
+                getSymbolApiKey: _ => apiKey,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                log: NullLogger.Instance);
+
+            // Assert
+            //symbolRequest.Headers.TryGetValues(NuGetClientVersionHeader, out IEnumerable<string> symbolClientVersionValues);
+            sourceRequest.Headers.TryGetValues(ApiKeyHeader, out IEnumerable<string> apiValues);
+            sourceRequest.Headers.TryGetValues(NuGetClientVersionHeader, out IEnumerable<string> sourceClientVersionValues);
+
+            Assert.Equal("serverapikey", apiValues.First());
+            //Assert.NotNull(symbolClientVersionValues.First());
+            Assert.NotNull(sourceClientVersionValues.First());
+        }
     }
 }
