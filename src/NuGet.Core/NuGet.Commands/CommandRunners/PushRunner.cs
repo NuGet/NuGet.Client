@@ -49,7 +49,7 @@ namespace NuGet.Commands
             var packageUpdateResourceScheme = packageUpdateResource.SourceUri.Scheme;
             if (packageUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
             {
-                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, source));
+                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, packageUpdateResource.SourceUri));
             }
 
             packageUpdateResource.Settings = settings;
@@ -71,7 +71,7 @@ namespace NuGet.Commands
                     var symbolsUpdateResourceScheme = symbolPackageUpdateResource.SourceUri.Scheme;
                     if (symbolsUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
                     {
-                        logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, source));
+                        logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, symbolPackageUpdateResource.SourceUri));
                     }
                 }
             }
