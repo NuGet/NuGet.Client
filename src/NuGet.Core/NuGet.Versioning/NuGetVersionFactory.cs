@@ -42,13 +42,12 @@ namespace NuGet.Versioning
                 Version systemVersion = null;
 
                 // trim the value before passing it in since we not strict here
-                var sections = ParseSections(value.Trim());
+                ParseSections(value.Trim(), out string versionString, out string[] releaseLabels, out string buildMetadata);
 
                 // null indicates the string did not meet the rules
-                if (sections != null
-                    && !string.IsNullOrEmpty(sections.Item1))
+                if (!string.IsNullOrEmpty(versionString))
                 {
-                    var versionPart = sections.Item1;
+                    var versionPart = versionString;
 
                     if (versionPart.IndexOf('.') < 0)
                     {
@@ -59,11 +58,11 @@ namespace NuGet.Versioning
                     if (Version.TryParse(versionPart, out systemVersion))
                     {
                         // labels
-                        if (sections.Item2 != null)
+                        if (releaseLabels != null)
                         {
-                            for (int i = 0; i < sections.Item2.Length; i++)
+                            for (int i = 0; i < releaseLabels.Length; i++)
                             {
-                                if (!IsValidPart(sections.Item2[i], allowLeadingZeros: false))
+                                if (!IsValidPart(releaseLabels[i], allowLeadingZeros: false))
                                 {
                                     return false;
                                 }
@@ -71,8 +70,8 @@ namespace NuGet.Versioning
                         }
 
                         // build metadata
-                        if (sections.Item3 != null
-                            && !IsValid(sections.Item3, allowLeadingZeros: true))
+                        if (buildMetadata != null
+                            && !IsValid(buildMetadata, allowLeadingZeros: true))
                         {
                             return false;
                         }
@@ -87,8 +86,8 @@ namespace NuGet.Versioning
                         }
 
                         version = new NuGetVersion(version: ver,
-                            releaseLabels: sections.Item2,
-                            metadata: sections.Item3 ?? string.Empty,
+                            releaseLabels: releaseLabels,
+                            metadata: buildMetadata ?? string.Empty,
                             originalVersion: originalVersion);
 
                         return true;
