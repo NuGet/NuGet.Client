@@ -71,6 +71,7 @@ namespace NuGet.Commands
                     var symbolsUpdateResourceScheme = symbolPackageUpdateResource.SourceUri.Scheme;
                     if (symbolsUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
                     {
+                        // TODO NK - Validate all the warnings make sense.
                         logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, symbolPackageUpdateResource.SourceUri));
                     }
                 }

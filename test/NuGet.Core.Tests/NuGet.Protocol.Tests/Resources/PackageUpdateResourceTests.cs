@@ -16,6 +16,9 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    // TODO NK - Add tests here.
+    // Is it easy to add http vs http here?
+    // Consider moving the warning here.
     public class PackageUpdateResourceTests
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
