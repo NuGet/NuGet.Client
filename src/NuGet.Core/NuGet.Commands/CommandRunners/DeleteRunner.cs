@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -28,6 +28,10 @@ namespace NuGet.Commands
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
             PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
+            if (packageSource.IsHttp && !packageSource.IsHttps)
+            {
+                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, packageSource.Source));
+            }
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 
             await packageUpdateResource.Delete(

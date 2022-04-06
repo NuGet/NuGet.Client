@@ -4,18 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading;
-using FluentAssertions;
 using NuGet.CommandLine.Test;
-using NuGet.Commands;
 using NuGet.Configuration;
-using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.FuncTest.Commands
@@ -851,6 +844,34 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.True(result2.Success, "Expected a Duplicate response to be skipped resulting in a successful push.");
                 Assert.Contains("Conflict", result2.AllOutput);
             }
+        }
+
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerV3_WithSymbols_Warns()
+        {
+            // Arrange
+            using var packageDirectory = TestDirectory.Create();
+            var nuget = Util.GetNuGetExePath();
+            string snupkgFileName = "fileName.snupkg";
+            string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+            //Create snupkg in test directory.
+            WriteSnupkgFile(snupkgFullPath);
+
+            CommandRunnerResult result = null;
+            using var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName);
+
+            SetupMockServerAlwaysCreate(server);
+            // Act
+            result = CommandRunner.Run(
+                nuget,
+                packageDirectory,
+                $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -Verbosity detailed",
+                waitForExit: true,
+                timeOutInMilliseconds: 120000); // 120 seconds
+
+            // Assert
+            Assert.True(result.Success, result.AllOutput);
+            Assert.Contains("WARNING: You are attempting to push to an 'http' source", result.AllOutput);
         }
 
         #region Helpers

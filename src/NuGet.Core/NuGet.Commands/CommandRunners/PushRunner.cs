@@ -49,8 +49,7 @@ namespace NuGet.Commands
             var packageUpdateResourceScheme = packageUpdateResource.SourceUri.Scheme;
             if (packageUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
             {
-                // TODO NK - Move this into the resource.
-                logger.LogWarning($"You have specified an HTTP Source, please stop doing it. Here's the source {source}");
+                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, source));
             }
 
             packageUpdateResource.Settings = settings;
@@ -69,12 +68,10 @@ namespace NuGet.Commands
                     symbolSource = symbolPackageUpdateResource.SourceUri.AbsoluteUri;
                     symbolApiKey = apiKey;
 
-                    // Warn for the symbol package source.
                     var symbolsUpdateResourceScheme = symbolPackageUpdateResource.SourceUri.Scheme;
                     if (symbolsUpdateResourceScheme.Equals("http", StringComparison.OrdinalIgnoreCase))
                     {
-                        // TODO NK - Move into the resource.
-                        logger.LogWarning($"You have specified an HTTP Source, please stop doing it. Here's the source {source}");
+                        logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Push_Warning_HTTPSourceUsage, source));
                     }
                 }
             }

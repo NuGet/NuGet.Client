@@ -48,6 +48,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
                 var output = result.Item2;
                 Assert.DoesNotContain("WARNING: No API Key was provided", output);
+                Assert.DoesNotContain("WARNING: You are attempting to push to an 'http' source", output);
             }
         }
 
@@ -85,6 +86,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg.sha512")));
+                Assert.DoesNotContain("WARNING: You are attempting to push to an 'http' source", result.Output);
             }
         }
 
@@ -301,7 +303,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [MemberData(nameof(ServerWarningData))] // Similar to this.
+        [MemberData(nameof(ServerWarningData))]
         public void PushCommand_LogsServerWarningsWhenPresent(string firstServerWarning, string secondServerWarning)
         {
             var serverWarnings = new[] { firstServerWarning, secondServerWarning };
@@ -378,7 +380,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void PushCommand_PushToServerWithSymbols() // Something like this too.
+        public void PushCommand_PushToServerWithSymbols()
         {
             using (var packageDirectory = TestDirectory.Create())
             using (var server = new MockServer())
@@ -1300,7 +1302,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void PushCommand_PushToServerV3() // And finally, something like this.
+        public void PushCommand_PushToServerV3()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -2051,8 +2053,6 @@ namespace NuGet.CommandLine.Test
             Util.TestCommandInvalidArguments(cmd);
         }
 
-        // ADd a test so that when pushing to a file source, there is no warning - or maybe reuse existing ones.
-        // Creating an HTTPS server for local dev sounds like a lot of work.
         [Fact]
         public void PushCommand_WhenPushingToAnHttpServer_Warns()
         {
@@ -2082,14 +2082,138 @@ namespace NuGet.CommandLine.Test
                             Directory.GetCurrentDirectory(),
                             $"push {packageFileName} -Source {server.Uri}push",
                             true);
-            server.Stop();
-
             // Assert
-            Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-            var output = result.Item2;
-            Assert.Contains("WARNING: You are attempting to push to an `http server.", output);
+            result.Success.Should().BeTrue(result.AllOutput);
+            result.AllOutput.Should().Contain("WARNING: You are attempting to push to an 'http' source");
         }
 
+
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerWithSymbols_Warns()
+        {
+            using var packageDirectory = TestDirectory.Create();
+            using var server = new MockServer();
+            // Arrange
+            var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+            var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+            File.Copy(packageFileName, symbolFileName);
+
+            server.Get.Add("/push", r => "OK");
+            server.Put.Add("/push", r =>
+            {
+                return r.Headers["X-NuGet-ApiKey"] == "PushKey"
+                    ? HttpStatusCode.Created
+                    : HttpStatusCode.Unauthorized;
+            });
+
+            server.Get.Add("/symbols", r => "OK");
+            server.Put.Add("/symbols", r =>
+            {
+                return r.Headers["X-NuGet-ApiKey"] == "PushSymbolsKey"
+                    ? HttpStatusCode.Created
+                    : HttpStatusCode.Unauthorized;
+            });
+
+            server.Start();
+
+            var pushUri = $"{server.Uri}push";
+            var pushSymbolsUri = $"{server.Uri}symbols";
+
+            // Act
+            CommandRunnerResult result = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                Directory.GetCurrentDirectory(),
+                $"push {packageFileName} -Source {pushUri} -SymbolSource {pushSymbolsUri} -ApiKey PushKey -SymbolApiKey PushSymbolsKey",
+                waitForExit: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Item2);
+            Assert.Contains($"Created {pushUri}", result.Item2);
+            Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Item2);
+            Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
+            Assert.Contains("Your package was pushed.", result.Item2);
+            Assert.Contains("WARNING: You are attempting to push to an 'http' source", result.AllOutput);
+            Assert.Contains("WARNING: You are attempting to push to an 'http' source. Check for the symbols warning as well.", result.AllOutput);
+        }
+
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerV3_Warns()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    using (var serverV2 = new MockServer())
+                    {
+                        Util.AddFlatContainerResource(indexJson, serverV3);
+                        Util.AddPublishResource(indexJson, serverV2);
+
+                        serverV2.Get.Add("/push", r => "OK");
+                        serverV2.Put.Add("/push", r =>
+                        {
+                            byte[] buffer = MockServer.GetPushedPackage(r);
+                            using (var of = new FileStream(outputFileName, FileMode.Create))
+                            {
+                                of.Write(buffer, 0, buffer.Length);
+                            }
+
+                            return HttpStatusCode.Created;
+                        });
+
+                        serverV3.Start();
+                        serverV2.Start();
+
+                        // Act
+                        string[] args = new string[]
+                        {
+                            "push",
+                            packageFileName,
+                            "-Source",
+                            serverV3.Uri + "index.json"
+                        };
+
+                        var result = CommandRunner.Run(
+                                        nugetexe,
+                                        pathContext.SolutionRoot,
+                                        string.Join(" ", args),
+                                        true);
+
+                        // Assert
+                        result.Success.Should().BeTrue(result.AllOutput);
+                        result.AllOutput.Should().Contain("Your package was pushed");
+                        result.AllOutput.Should().Contain("WARNING: You are attempting to push to an 'http' source");
+                        AssertFileEqual(packageFileName, outputFileName);
+                    }
+                }
+            }
+        }
 
         // Asserts that the contents of two files are equal.
         void AssertFileEqual(string fileName1, string fileName2)

@@ -1033,7 +1033,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>This package is signed but not by a trusted signer.</value>
   </data>
   <data name="Push_Warning_HTTPSourceUsage" xml:space="preserve">
-    <value>You are attempting to push to an `http` source, '{0}'. Support for `http` sources will be removed in a future version.</value>
+    <value>You are attempting to push to an 'http' source, '{0}'. Support for 'http' sources will be removed in a future version.</value>
     <comment>0 - the package source url</comment>
   </data>
 </root>
