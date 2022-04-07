@@ -2084,7 +2084,7 @@ namespace NuGet.CommandLine.Test
                             true);
             // Assert
             result.Success.Should().BeTrue(result.AllOutput);
-            result.AllOutput.Should().Contain("WARNING: You are attempting to push to an 'http' source");
+            result.AllOutput.Should().Contain("WARNING: You are running the 'push' operation with an 'http' source");
         }
 
 
@@ -2133,8 +2133,8 @@ namespace NuGet.CommandLine.Test
             Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Item2);
             Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
             Assert.Contains("Your package was pushed.", result.Item2);
-            Assert.Contains("WARNING: You are attempting to push to an 'http' source", result.AllOutput);
-            Assert.Contains("WARNING: You are attempting to push to an 'http' source. Check for the symbols warning as well.", result.AllOutput);
+            Assert.Contains($"WARNING: You are running the 'push' operation with an 'http' source, '{pushUri}/'", result.AllOutput);
+            Assert.Contains($"WARNING: You are running the 'push' operation with an 'http' source, '{pushSymbolsUri}/'", result.AllOutput);
         }
 
         [Fact]
@@ -2208,9 +2208,8 @@ namespace NuGet.CommandLine.Test
                         // Assert
                         result.Success.Should().BeTrue(result.AllOutput);
                         result.AllOutput.Should().Contain("Your package was pushed");
-                        result.AllOutput.Should().Contain("WARNING: You are attempting to push to an 'http' source");
-                        result.AllOutput.Should().Contain("bla bla. There should be 2 warnings. Check that both are raising it.");
-
+                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'http' source, '{serverV3.Uri}index.json'");
+                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'http' source, '{serverV2.Uri}push/'");
                         AssertFileEqual(packageFileName, outputFileName);
                     }
                 }

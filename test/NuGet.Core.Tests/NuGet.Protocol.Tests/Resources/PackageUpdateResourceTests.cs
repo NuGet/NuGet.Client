@@ -871,7 +871,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.NotNull(sourceRequest);
             Assert.Equal(1, logger.WarningMessages.Count);
-            Assert.Contains("You are attempting to 'push' to an 'http'", logger.WarningMessages.First());
+            Assert.Contains("You are running the 'push' operation with an 'http' source", logger.WarningMessages.First());
 
         }
 
@@ -930,7 +930,7 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(sourceRequest);
             Assert.NotNull(symbolRequest);
             Assert.Equal(1, logger.WarningMessages.Count);
-            Assert.Contains("You are attempting to 'push' to an 'http'", logger.WarningMessages.First());
+            Assert.Contains("You are running the 'push' operation with an 'http' source", logger.WarningMessages.First());
         }
 
         [Fact]
