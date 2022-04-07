@@ -9,9 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
-using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -237,19 +234,22 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
                 destFileName: Path.Combine(pathToSdkInCli, "Newtonsoft.Json.dll"),
                 overwrite: true);
 
+            // Copy Microsoft.Extensions.FileSystemGlobbing.Abstractions.dll to the test folder as its a runtime dependency
             File.Copy(
-                sourceFileName: typeof(FileInfoBase).Assembly.Location,
-                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(FileInfoBase).Assembly.Location)),
+                sourceFileName: typeof(Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase).Assembly.Location,
+                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase).Assembly.Location)),
                 overwrite: true);
 
+            // Copy Microsoft.Extensions.FileProviders.dll to the test folder as its a runtime dependency
             File.Copy(
-                sourceFileName: typeof(IFileInfo).Assembly.Location,
-                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(IFileInfo).Assembly.Location)),
+                sourceFileName: typeof(Microsoft.Extensions.FileProviders.IFileInfo).Assembly.Location,
+                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(Microsoft.Extensions.FileProviders.IFileInfo).Assembly.Location)),
                 overwrite: true);
 
+            // Copy Microsoft.Extensions.Primitives.dll to the test folder as its a runtime dependency
             File.Copy(
-                sourceFileName: typeof(IChangeToken).Assembly.Location,
-                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(IChangeToken).Assembly.Location)),
+                sourceFileName: typeof(Microsoft.Extensions.Primitives.IChangeToken).Assembly.Location,
+                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(Microsoft.Extensions.Primitives.IChangeToken).Assembly.Location)),
                 overwrite: true);
         }
 
