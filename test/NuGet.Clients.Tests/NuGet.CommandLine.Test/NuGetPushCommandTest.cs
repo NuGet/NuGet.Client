@@ -2087,7 +2087,6 @@ namespace NuGet.CommandLine.Test
             result.AllOutput.Should().Contain("WARNING: You are running the 'push' operation with an 'http' source");
         }
 
-
         [Fact]
         public void PushCommand_WhenPushingToAnHttpServerWithSymbols_Warns()
         {
