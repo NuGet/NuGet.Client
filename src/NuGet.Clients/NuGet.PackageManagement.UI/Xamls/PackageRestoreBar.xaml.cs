@@ -14,6 +14,7 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -215,10 +216,14 @@ namespace NuGet.PackageManagement.UI
             {
                 if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && _isAssetsFileMissing)
                 {
+                    var evt = new RestoreBannerClickedTelemetryEvent(RestoreButtonAction.MissingAssetsFile);
+                    TelemetryActivity.EmitTelemetryEvent(evt);
                     return RestoreProjectAsync(CancellationToken.None);
                 }
                 else
                 {
+                    var evt = new RestoreBannerClickedTelemetryEvent(RestoreButtonAction.MissingPackages);
+                    TelemetryActivity.EmitTelemetryEvent(evt);
                     return UIRestorePackagesAsync(CancellationToken.None);
                 }
             }).PostOnFailure(nameof(PackageRestoreBar));

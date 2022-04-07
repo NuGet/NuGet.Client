@@ -53,6 +53,7 @@
     <Compile Include="Telemetry\HyperlinkClickedTelemetryEventTests.cs" />
     <Compile Include="Telemetry\IntervalTrackerTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />
+    <Compile Include="Telemetry\ResoreBannerClickedTelemetryEventTests.cs" />
     <Compile Include="Telemetry\RestoreTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\SearchSelectionTelemetryEventTests.cs" />
     <Compile Include="Telemetry\TestTelemetryUtility.cs" />
