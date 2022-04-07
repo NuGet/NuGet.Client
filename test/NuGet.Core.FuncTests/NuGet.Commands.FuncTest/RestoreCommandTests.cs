@@ -3844,6 +3844,43 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+        [Fact]
+        public async Task Restore_WithHttpSource_Warns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+
+            var logger = new TestLogger();
+            Directory.Delete(pathContext.PackageSource);
+
+            var project1Spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id);
+            var cacheContext = new SourceCacheContext();
+            cacheContext.IgnoreFailedSources = true; // Use ignore failed sources so that the test does not have to access remote sources.
+            var restoreContext = new RestoreArgs()
+            {
+                Sources = new List<string>() { pathContext.PackageSource, "http://api.source/index.json", "http://api.another.source/index.json" },
+                GlobalPackagesFolder = pathContext.UserPackagesFolder,
+                Log = logger,
+                CacheContext = new SourceCacheContext()
+            };
+
+            var dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
+            var request = await dgProvider.CreateRequests(restoreContext)[0];
+
+            var command = new RestoreCommand(request.Request);
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(1);
+            result.LockFile.LogMessages.Should().HaveCount(1); // More than 1 - We need to make sure that the error code is new one.
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
+        }
+
         static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource>  sources, ILogger logger)
         {
             var dgSpec = new DependencyGraphSpec();
