@@ -763,7 +763,7 @@ namespace NuGet.Commands
             string propertyName = "Pkg" + localPackageInfo.Id.Replace(".", "_");
 #endif
 
-            string propertyValue = localPackageInfo.ExpandedPath + Path.DirectorySeparatorChar;
+            string propertyValue = localPackageInfo.ExpandedPath + Path.DirectorySeparatorChar + Path.DirectorySeparatorChar;
 
             return GenerateProperty(propertyName, propertyValue);
         }
