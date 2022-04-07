@@ -876,7 +876,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task PackageUpdateResource_WhenPushingToAnHttpSymbolSource_Warns()
+        public async Task Push_WhenPushingToAnHttpSymbolSource_Warns()
         {
             // Arrange
             using var workingDir = TestDirectory.Create();
@@ -934,7 +934,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task PackageUpdateResource_WhenPushingToAnHttpSourceAndSymbolSource_WarnsForBoth()
+        public async Task Push_WhenPushingToAnHttpSourceAndSymbolSource_WarnsForBoth()
         {
             // Arrange
             using var workingDir = TestDirectory.Create();
@@ -988,8 +988,50 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(sourceRequest);
             Assert.NotNull(symbolRequest);
             Assert.Equal(2, logger.WarningMessages.Count);
-            Assert.Contains("You are attempting to 'push' to an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.First());
-            Assert.Contains("You are attempting to 'push' to an 'http' source, 'http://other.smbsrc.net/api/v2/package/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
+            Assert.Contains("You are running the 'push' operation with an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.First());
+            Assert.Contains("You are running the 'push' operation with an 'http' source, 'http://other.smbsrc.net/api/v2/package/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
+        }
+
+        [Fact]
+        public async Task Delete_WhenDeletingFromHTTPSource_Warns()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "http://www.nuget.org/api/v2";
+                HttpRequestMessage actualRequest = null;
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "http://www.nuget.org/api/v2/DeepEqual/1.4.0.1-rc",
+                        request =>
+                        {
+                            actualRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                var apiKey = string.Empty;
+                var logger = new TestLogger();
+
+                // Act
+                await resource.Delete(
+                    packageId: "DeepEqual",
+                    packageVersion: "1.4.0.1-rc",
+                    getApiKey: _ => apiKey,
+                    confirm: _ => true,
+                    noServiceEndpoint: false,
+                    log: logger);
+
+                // Assert
+                Assert.NotNull(actualRequest);
+                Assert.Equal(HttpMethod.Delete, actualRequest.Method);
+                Assert.Equal(3, logger.WarningMessages.Count);
+                Assert.Contains("You are running the 'delete' operation with an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
+            }
         }
     }
 }

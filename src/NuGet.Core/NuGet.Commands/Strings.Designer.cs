@@ -2375,7 +2375,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are attempting to &apos;{0}&apos; to an &apos;http&apos; source, &apos;{1}&apos;. Support for &apos;http&apos; sources will be removed in a future version..
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;http&apos; source, &apos;{1}&apos;. Support for &apos;http&apos; sources will be removed in a future version..
         /// </summary>
         internal static string Warning_HttpServerUsage {
             get {
