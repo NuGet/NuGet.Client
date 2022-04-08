@@ -214,6 +214,15 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
+                foreach (var source in _request.Project.RestoreMetadata.Sources)
+                {
+                    if (source.IsHttp && !source.IsHttps)
+                    {
+                        await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
+                            string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
+                    }
+                }
+
                 _success &= HasValidPlatformVersions();
 
                 // evaluate packages.lock.json file
