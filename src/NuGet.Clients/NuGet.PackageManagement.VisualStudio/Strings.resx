@@ -205,9 +205,6 @@
     <value>Unable to get the project's package installation service for project '{0}'.</value>
     <comment>{0} is the full path to the project.</comment>
   </data>
-  <data name="AccountProvider_TriedToShowUIOnNonInteractive" xml:space="preserve">
-    <value>Unable to authenticate without prompting user.</value>
-  </data>
   <data name="CredentialProviderFailed_VisualStudioCredentialProvider" xml:space="preserve">
     <value>The Visual Studio credential provider failed to load.</value>
   </data>
