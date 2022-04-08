@@ -38,7 +38,7 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(packageId);
         }
 
-        internal PackageSourceMapping(Dictionary<string, IReadOnlyList<string>> patterns)
+        public PackageSourceMapping(Dictionary<string, IReadOnlyList<string>> patterns)
         {
             Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
             IsEnabled = Patterns.Keys.Count > 0;
