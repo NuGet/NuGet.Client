@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -56,8 +57,8 @@ namespace NuGet.Commands
 
             // fallback for a case of nuget.org source
             // try to retrieve an api key mapped to a default "gallery" url
-            if (apiKey == null
-                && source.IndexOf(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (apiKey == null &&
+                UriUtility.IsNuGetOrg(source))
             {
                 var defaultConfigKey = NuGetConstants.DefaultGalleryServerUrl;
                 apiKey = SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, defaultConfigKey);
