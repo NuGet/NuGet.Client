@@ -110,6 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                     if (t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
                     {
                         target = t;
+                        break;
                     }
                 }
 
