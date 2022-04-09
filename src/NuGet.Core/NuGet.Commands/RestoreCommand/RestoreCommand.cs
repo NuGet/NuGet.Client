@@ -214,12 +214,15 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                foreach (var source in _request.Project.RestoreMetadata.Sources)
+                if (_request.Project?.RestoreMetadata != null)
                 {
-                    if (source.IsHttp && !source.IsHttps)
+                    foreach (var source in _request.Project.RestoreMetadata.Sources)
                     {
-                        await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
-                            string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
+                        if (source.IsHttp && !source.IsHttps)
+                        {
+                            await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
+                                string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
+                        }
                     }
                 }
 
