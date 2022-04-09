@@ -87,6 +87,7 @@ namespace NuGet.Common.Test
         [InlineData("https://API.NUGET.ORG/v3/index.json", true)]
         [InlineData("http://notnuget.org/api/v2", false)]
         [InlineData("https://nuget.org.internal/v3/index.json", false)]
+        [InlineData("https://nuget.smbsrc.net/", false)]
         [InlineData("", false)]
         [InlineData("file://test", false)]
         [InlineData("..\\a", false)]
