@@ -46,7 +46,7 @@ namespace NuGet.Commands
             return symbolSource;
         }
 
-        public static string GetApiKey(ISettings settings, string endpoint, string source, string defaultApiKey)
+        public static string GetApiKey(ISettings settings, string endpoint, string source)
         {
             // try searching API key by endpoint first
             // needed to support config key mappings like 'https://www.nuget.org/api/v2/package'
@@ -64,8 +64,8 @@ namespace NuGet.Commands
                 apiKey = SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, defaultConfigKey);
             }
 
-            // return an API key when found or the default one
-            return apiKey ?? defaultApiKey;
+            // return an API key when found or null when not found
+            return apiKey;
         }
 
         public static async Task<PackageUpdateResource> GetPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)
