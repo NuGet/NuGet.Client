@@ -294,29 +294,6 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get all installed packages across all projects (distinct)
         /// </summary>
-        public virtual IEnumerable<PackageIdentity> InstalledPackages
-        {
-            get
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        var installedPackages = new List<IPackageReferenceContextInfo>();
-                        foreach (var project in _nugetProjects)
-                        {
-                            IReadOnlyCollection<IPackageReferenceContextInfo> projectInstalledPackages = await project.GetInstalledPackagesAsync(
-                                ServiceBroker,
-                                CancellationToken.None);
-
-                            installedPackages.AddRange(projectInstalledPackages);
-                        }
-                        return installedPackages.Select(e => e.Identity).Distinct(PackageIdentity.Comparer);
-                    });
-            }
-        }
-
-        /// <summary>
-        /// Get all installed packages across all projects (distinct)
-        /// </summary>
         public virtual IEnumerable<PackageDependency> InstalledPackageDependencies
         {
             get
@@ -389,37 +366,9 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageDeprecated => _packageMetadata?.DeprecationMetadata != null;
 
-        public bool IsDeprecationControlVisible => IsPackageDeprecated && _searchResultPackage.PackageLevel == PackageLevel.TopLevel;
-
-        private string _packageDeprecationReasons;
-        public string PackageDeprecationReasons
-        {
-            get => _packageDeprecationReasons;
-            set
-            {
-                if (_packageDeprecationReasons != value)
-                {
-                    _packageDeprecationReasons = value;
-
-                    OnPropertyChanged(nameof(PackageDeprecationReasons));
-                }
-            }
-        }
-
-        private string _packageDeprecationAlternatePackageText;
-        public string PackageDeprecationAlternatePackageText
-        {
-            get => _packageDeprecationAlternatePackageText;
-            set
-            {
-                if (_packageDeprecationAlternatePackageText != value)
-                {
-                    _packageDeprecationAlternatePackageText = value;
-
-                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageText));
-                }
-            }
-        }
+        public string PackageDeprecationReasons => ExplainPackageDeprecationReasons(_packageMetadata?.DeprecationMetadata?.Reasons?.ToList());
+ 
+        public string PackageDeprecationAlternatePackageText => GetPackageDeprecationAlternatePackageText(_packageMetadata?.DeprecationMetadata?.AlternatePackage);
 
         private IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> _packageVulnerabilities;
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> PackageVulnerabilities
@@ -451,9 +400,7 @@ namespace NuGet.PackageManagement.UI
             get => PackageVulnerabilities?.Count ?? 0;
         }
 
-        public bool IsVulnerabilityControlVisible => IsPackageVulnerable && _searchResultPackage.PackageLevel == PackageLevel.TopLevel;
-
-        public string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
+        public static string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
         {
             if (reasons == null || !reasons.Any())
             {
@@ -490,37 +437,22 @@ namespace NuGet.PackageManagement.UI
 
         public DetailedPackageMetadata PackageMetadata
         {
-            get { return _packageMetadata; }
+            get => _packageMetadata;
             set
             {
                 if (_packageMetadata != value)
                 {
                     _packageMetadata = value;
 
-                    // deprecation metadata
-                    string newDeprecationReasons = null;
-                    string newAlternatePackageText = null;
-                    if (_packageMetadata?.DeprecationMetadata != null)
-                    {
-                        newDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons?.ToList());
-
-                        var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
-                        if (alternatePackage != null)
-                        {
-                            newAlternatePackageText = GetPackageDeprecationAlternatePackageText(alternatePackage);
-                        }
-                    }
-
-                    PackageDeprecationReasons = newDeprecationReasons;
-                    PackageDeprecationAlternatePackageText = newAlternatePackageText;
-
                     PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
 
                     OnPropertyChanged(nameof(PackageMetadata));
+
+                    OnPropertyChanged(nameof(PackageDeprecationReasons));
+                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageText));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
-                    OnPropertyChanged(nameof(IsDeprecationControlVisible));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
-                    OnPropertyChanged(nameof(IsVulnerabilityControlVisible));
+
                     OnPropertyChanged(nameof(PackageVulnerabilityCount));
                     OnPropertyChanged(nameof(PackageVulnerabilities));
                     OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
@@ -528,7 +460,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadataContextInfo alternatePackageMetadata)
+        private static string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadataContextInfo alternatePackageMetadata)
         {
             if (alternatePackageMetadata == null)
             {

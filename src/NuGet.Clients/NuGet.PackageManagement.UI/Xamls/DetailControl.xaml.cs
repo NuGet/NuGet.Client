@@ -44,19 +44,19 @@ namespace NuGet.PackageManagement.UI
 
             if (dataContext.IsSolution)
             {
-                _solutionView.InstallButtonClicked += SolutionInstallButtonClicked;
-                _solutionView.UninstallButtonClicked += SolutionUninstallButtonClicked;
+                _solutionView.InstallButtonClicked += InstallButtonClicked;
+                _solutionView.UninstallButtonClicked += UninstallButtonClicked;
 
-                _projectView.InstallButtonClicked -= ProjectInstallButtonClicked;
-                _projectView.UninstallButtonClicked -= ProjectUninstallButtonClicked;
+                _projectView.InstallButtonClicked -= InstallButtonClicked;
+                _projectView.UninstallButtonClicked -= UninstallButtonClicked;
             }
             else
             {
-                _projectView.InstallButtonClicked += ProjectInstallButtonClicked;
-                _projectView.UninstallButtonClicked += ProjectUninstallButtonClicked;
+                _projectView.InstallButtonClicked += InstallButtonClicked;
+                _projectView.UninstallButtonClicked += UninstallButtonClicked;
 
-                _solutionView.InstallButtonClicked -= SolutionInstallButtonClicked;
-                _solutionView.UninstallButtonClicked -= SolutionUninstallButtonClicked;
+                _solutionView.InstallButtonClicked -= InstallButtonClicked;
+                _solutionView.UninstallButtonClicked -= UninstallButtonClicked;
             }
         }
 
@@ -68,8 +68,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="e">Command arguments</param>
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
-            var hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink != null && hyperlink.NavigateUri != null)
+            if (e.OriginalSource is Hyperlink hyperlink && hyperlink.NavigateUri != null)
             {
                 Control.Model.UIController.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
@@ -95,20 +94,25 @@ namespace NuGet.PackageManagement.UI
 
                 // because the code is async, it's possible that the DataContext has been changed
                 // once execution reaches here and thus 'model' could be null.
-                var model = DataContext as DetailControlModel;
-
-                if (model != null)
+                if (DataContext is DetailControlModel model)
                 {
                     await model.RefreshAsync(CancellationToken.None);
                 }
-            }).PostOnFailure(nameof(DetailControl));
+            }).PostOnFailure(nameof(DetailControl), nameof(Refresh));
         }
 
-        private void ProjectInstallButtonClicked(object sender, EventArgs e)
+        private void UninstallButtonClicked(object sender, EventArgs e)
         {
-            var model = (PackageDetailControlModel)DataContext;
+            if (DataContext is DetailControlModel model)
+            {
+                var userAction = UserAction.CreateUnInstallAction(model.Id, Control.Model.IsSolution, UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
+                ExecuteUserAction(userAction, NuGetActionType.Uninstall);
+            }
+        }
 
-            if (model != null && model.SelectedVersion != null)
+        private void InstallButtonClicked(object sender, EventArgs e)
+        {
+            if (DataContext is DetailControlModel model && model.SelectedVersion != null)
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
@@ -118,45 +122,6 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Range);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
-            }
-        }
-
-        private void ProjectUninstallButtonClicked(object sender, EventArgs e)
-        {
-            var model = (PackageDetailControlModel)DataContext;
-
-            if (model != null)
-            {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, Control.Model.IsSolution, UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
-                ExecuteUserAction(userAction, NuGetActionType.Uninstall);
-            }
-        }
-
-        private void SolutionInstallButtonClicked(object sender, EventArgs e)
-        {
-            var model = (PackageSolutionDetailControlModel)DataContext;
-
-            if (model != null && model.SelectedVersion != null)
-            {
-                var userAction = UserAction.CreateInstallAction(
-                    model.Id,
-                    model.SelectedVersion.Version,
-                    Control.Model.IsSolution,
-                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
-                    model.SelectedVersion.Range);
-
-                ExecuteUserAction(userAction, NuGetActionType.Install);
-            }
-        }
-
-        private void SolutionUninstallButtonClicked(object sender, EventArgs e)
-        {
-            var model = (PackageSolutionDetailControlModel)DataContext;
-
-            if (model != null)
-            {
-                var userAction = UserAction.CreateUnInstallAction(model.Id, Control.Model.IsSolution, UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
-                ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }
 

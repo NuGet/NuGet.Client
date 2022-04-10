@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
-using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Test
@@ -34,12 +33,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         protected override Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
-            _versions = new List<DisplayVersion>()
-            {
-                new DisplayVersion(NuGetVersion.Parse("1.0.0"), "additionalInfo")
-,           };
-
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
     }
 }

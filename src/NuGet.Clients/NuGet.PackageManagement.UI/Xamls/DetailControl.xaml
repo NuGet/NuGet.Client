@@ -8,7 +8,7 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
-  Background="{Binding UIBrushes.DetailPaneBackground }"
+  Background="{Binding UIBrushes.DetailPaneBackground}"
   x:Name="_self"
   mc:Ignorable="d"
   d:DesignHeight="600"
@@ -163,7 +163,7 @@
         Grid.Row="3"
         Margin="0,11,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-        Visibility="{Binding Path=IsVulnerabilityControlVisible,Converter={StaticResource BooleanToVisibilityConverter}}"
+        Visibility="{Binding Path=IsPackageVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
         BorderThickness="0,1,0,0">
         <Grid>
           <nuget:VulnerabilitiesControl
@@ -178,7 +178,7 @@
         Grid.Row="4"
         Margin="0,11,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-        Visibility="{Binding Path=IsDeprecationControlVisible,Converter={StaticResource BooleanToVisibilityConverter}}"
+        Visibility="{Binding Path=IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
         BorderThickness="0,1,0,0">
         <Grid>
           <nuget:DeprecationControl
@@ -199,7 +199,7 @@
             Margin="0,12,0,16"
             TextWrapping="WrapWithOverflow"
             AutomationProperties.Name="{Binding OptionsBlockedMessage}"
-            Visibility="{Binding Path=OptionsBlockedMessage,Converter={StaticResource NullToVisibilityConverter}}">
+            Visibility="{Binding Path=OptionsBlockedMessage, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
             <Run Text="{Binding OptionsBlockedMessage}"/>
             <Hyperlink
               NavigateUri="{Binding Path=OptionsBlockedUrl}"
@@ -212,11 +212,11 @@
           <nuget:OptionsControl
             x:Name="_optionsControl"
             Margin="0,12,0,16"
-            DataContext="{Binding}"
-            Visibility="{Binding Path=OptionsBlockedMessage,Converter={StaticResource InverseNullToVisibilityConverter}}" />
+            DataContext="{Binding Path=DataContext, ElementName=_self}"
+            Visibility="{Binding Path=DataContext.OptionsBlockedMessage, ElementName=_self, Converter={StaticResource InverseNullToVisibilityConverter}, Mode=OneWay}" />
         </Grid>
       </Border>
-      
+
       <nuget:PackageMetadataControl
         Grid.Row="7"
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
