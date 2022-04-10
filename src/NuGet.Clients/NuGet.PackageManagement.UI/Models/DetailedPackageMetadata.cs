@@ -19,6 +19,11 @@ namespace NuGet.PackageManagement.UI
 
         public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, long? downloadCount)
         {
+            if (serverData == null)
+            {
+                throw new ArgumentNullException(nameof(serverData));
+            }
+
             Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;

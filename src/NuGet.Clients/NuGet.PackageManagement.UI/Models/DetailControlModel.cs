@@ -127,6 +127,11 @@ namespace NuGet.PackageManagement.UI
             ItemFilter filter,
             Func<PackageItemViewModel> getPackageItemViewModel)
         {
+            if (getPackageItemViewModel == null)
+            {
+                throw new ArgumentNullException(nameof(getPackageItemViewModel));
+            }
+
             // Clear old data
             ClearVersions();
             PackageMetadata = null;
@@ -740,6 +745,11 @@ namespace NuGet.PackageManagement.UI
 
         protected void AddBlockedVersions(List<NuGetVersion> blockedVersions)
         {
+            if (blockedVersions == null)
+            {
+                throw new ArgumentNullException(nameof(blockedVersions));
+            }
+
             // add a separator
             if (blockedVersions.Count > 0)
             {

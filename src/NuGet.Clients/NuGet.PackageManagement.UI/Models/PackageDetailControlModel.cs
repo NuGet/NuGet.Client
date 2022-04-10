@@ -28,6 +28,11 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<IProjectContextInfo> projects)
             : base(serviceBroker, projects)
         {
+            if (solutionManager == null)
+            {
+                throw new ArgumentNullException(nameof(solutionManager));
+            }
+
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
         }
