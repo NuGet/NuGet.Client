@@ -3,26 +3,15 @@
 
 using System.Linq;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Sdk.TestFramework;
-using Microsoft.VisualStudio.Shell;
 using Moq;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
-    [Collection(MockedVS.Collection)]
     public class DetailControlModelTests
     {
-        public DetailControlModelTests(GlobalServiceProvider gsp)
-        {
-            gsp.Reset();
-
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(ThreadHelper.JoinableTaskFactory);
-        }
-
         [Theory]
         [InlineData("*", "ANewPackage")]
         [InlineData("*-*", "ANewPackage")]
