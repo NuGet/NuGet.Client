@@ -199,21 +199,21 @@
             Margin="0,12,0,16"
             TextWrapping="WrapWithOverflow"
             AutomationProperties.Name="{Binding OptionsBlockedMessage}"
-            Visibility="{Binding Path=OptionsBlockedMessage, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{Binding OptionsBlockedMessage, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
             <Run Text="{Binding OptionsBlockedMessage}"/>
             <Hyperlink
               NavigateUri="{Binding Path=OptionsBlockedUrl}"
               Style="{StaticResource HyperlinkStyle}"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
               CommandParameter="{x:Static nugettel:HyperlinkType.OptionsBlocked}">
-              <Run Text="{Binding Path=OptionsBlockedUrlText}" />
+              <Run Text="{Binding OptionsBlockedUrlText}" />
             </Hyperlink>
           </TextBlock>
           <nuget:OptionsControl
             x:Name="_optionsControl"
             Margin="0,12,0,16"
-            DataContext="{Binding Path=DataContext, ElementName=_self}"
-            Visibility="{Binding Path=DataContext.OptionsBlockedMessage, ElementName=_self, Converter={StaticResource InverseNullToVisibilityConverter}, Mode=OneWay}" />
+            DataContext="{Binding}"
+            Visibility="{Binding OptionsBlockedMessage, Converter={StaticResource InverseNullToVisibilityConverter}, Mode=OneWay}" />
         </Grid>
       </Border>
 
