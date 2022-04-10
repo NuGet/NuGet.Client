@@ -39,12 +39,12 @@
           Style="{DynamicResource SelectableTextBlockStyle}" 
           Margin="0,8,0,0"
           TextWrapping="WrapWithOverflow"
-          Text="{Binding Path=PackageDeprecationReasons}"
+          Text="{Binding Path=PackageDeprecationReasons, Mode=OneWay}"
           AutomationProperties.Name="{x:Static nuget:Resources.Label_DeprecationReasons}"/>
         <TextBlock>
           <Hyperlink
-            NavigateUri="{Binding Path=PackageMetadata.PackageDetailsUrl}"
-            ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
+            NavigateUri="{Binding Path=PackageMetadata.PackageDetailsUrl, Mode=OneWay}"
+            ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl, Mode=OneWay}"
             Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
             CommandParameter="{x:Static nugettel:HyperlinkType.DeprecationMoreInfo}"
             Style="{StaticResource HyperlinkStyleNoUri}">
@@ -54,7 +54,7 @@
         <StackPanel
           Margin="0,8,0,0"
           Orientation="Vertical"
-          Visibility="{Binding Path=PackageDeprecationAlternatePackageText, Converter={StaticResource NullToVisibilityConverter}}">
+          Visibility="{Binding Path=PackageDeprecationAlternatePackageText, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
           <TextBlock
             Text="{x:Static nuget:Resources.Label_DeprecationAlternatePackage}"
             FontWeight="Bold"
@@ -76,7 +76,7 @@
                     <Binding Source="{x:Static nugettel:HyperlinkType.DeprecationAlternativeDetails}" />
                   </MultiBinding>
                 </Hyperlink.CommandParameter>
-                <Run Text="{Binding Path=PackageDeprecationAlternatePackageText}" />
+                <Run Text="{Binding Path=PackageDeprecationAlternatePackageText, Mode=OneWay}" />
               </Hyperlink>
             </TextBlock>
           </StackPanel>
