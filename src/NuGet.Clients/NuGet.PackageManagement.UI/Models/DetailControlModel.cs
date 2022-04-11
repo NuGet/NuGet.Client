@@ -34,8 +34,7 @@ namespace NuGet.PackageManagement.UI
         protected IEnumerable<IProjectContextInfo> _nugetProjects;
 
         // all versions of the _searchResultPackage
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected List<(NuGetVersion version, bool isDeprecated)> _allPackageVersions;
+        private protected List<(NuGetVersion version, bool isDeprecated)> _allPackageVersions;
 
         private protected PackageItemViewModel _searchResultPackage;
 
@@ -153,7 +152,6 @@ namespace NuGet.PackageManagement.UI
 
             // Filter out projects that are not managed by NuGet.
             var projects = _nugetProjects.Where(project => project.ProjectKind != NuGetProjectKind.ProjectK).ToArray();
-
             foreach (var project in projects)
             {
                 if (project.ProjectKind == NuGetProjectKind.PackagesConfig)
@@ -225,12 +223,9 @@ namespace NuGet.PackageManagement.UI
             {
                 (searchResultPackage.Version, false)
             };
-
             await CreateVersionsAsync(CancellationToken.None);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
                 .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
-
-            var versions = await getVersionsTask;
 
             // GetVersionAsync can take long time to finish, user might changed selected package.
             // Check selected package.
@@ -240,17 +235,16 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
+            IReadOnlyCollection<VersionInfoContextInfo> versions = await searchResultPackage.GetVersionsAsync();
             _allPackageVersions = versions
                 .Where(v => v?.Version != null)
                 .Select(GetVersion)
                 .ToList();
-
             await CreateVersionsAsync(CancellationToken.None);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
                 .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
 
             DetailedPackageMetadata meta = await ReloadDetailedMetadataAsync(searchResultPackage, searchResultPackage.Version, getPackageItemViewModel, CancellationToken.None);
-            //DetailedPackageMetadata meta = await GetMetadataFromViewModelAsync(searchResultPackage, searchResultPackage.Version);
             if (meta != null)
             {
                 PackageMetadata = meta;
@@ -512,7 +506,7 @@ namespace NuGet.PackageManagement.UI
 
         public DisplayVersion SelectedVersion
         {
-            get { return _selectedVersion; }
+            get => _selectedVersion;
             set
             {
                 if (_selectedVersion != value && (value == null || value.IsValidVersion))
@@ -533,19 +527,20 @@ namespace NuGet.PackageManagement.UI
                         {
                             PackageMetadata = detailedPackageMetadata;
                         }
-
-                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                        else
                         {
-                            try
+                            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                             {
-                                await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
-                            }
-                            catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
-                            {
-                                // Expected
-                            }
-                        })
-                            .PostOnFailure(nameof(DetailControlModel));
+                                try
+                                {
+                                    await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
+                                }
+                                catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
+                                {
+                                    // Expected
+                                }
+                            }).PostOnFailure(nameof(DetailControlModel), nameof(SelectedVersion));
+                        }
                     }
 
                     OnPropertyChanged(nameof(SelectedVersion));
@@ -565,7 +560,6 @@ namespace NuGet.PackageManagement.UI
         private async ValueTask<DetailedPackageMetadata> ReloadDetailedMetadataAsync(PackageItemViewModel searchResultPackage, NuGetVersion newVersion, Func<PackageItemViewModel> getCurrentPackageItemViewModel, CancellationToken cancellationToken)
         {
             DetailedPackageMetadata result = null;
-
             using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
             {
                 PackageSearchMetadataContextInfo packageSearchMetadata = null;
@@ -586,8 +580,8 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (!IsSolution && searchResultPackage.PackageLevel == PackageLevel.Transitive)
                 {
-                    // Get only local metadata
-                    packageSearchMetadata = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), _searchResultPackage.Sources, cancellationToken);
+                    // Get only local metadata for transitive packages
+                    packageSearchMetadata = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
                 }
 
                 result = new DetailedPackageMetadata(
@@ -602,14 +596,8 @@ namespace NuGet.PackageManagement.UI
         private async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, NuGetVersion newVersion, CancellationToken cancellationToken)
         {
             // Load the detailed metadata that we already have and check to see if this matches what is selected, we cannot use the _metadataDict here unfortunately as it won't be populated yet
-            //DetailedPackageMetadata meta = await GetMetadataFromViewModelAsync(packageItemViewModel, newVersion);
-            DetailedPackageMetadata meta = null;
-            if (meta == null)
-            {
-                // We don't have the data readily available, we need to query the server
-                meta = await ReloadDetailedMetadataAsync(packageItemViewModel, newVersion, () => packageItemViewModel, cancellationToken);
-            }
-
+            // We don't have the data readily available, we need to query the server
+            DetailedPackageMetadata meta = await ReloadDetailedMetadataAsync(packageItemViewModel, newVersion, () => packageItemViewModel, cancellationToken);
             if (meta != null)
             {
                 PackageMetadata = meta;
