@@ -594,32 +594,9 @@ namespace NuGet.PackageManagement.UI
                         packageSearchMetadata,
                         packageDeprecationMetadata,
                         packageSearchMetadata.DownloadCount);
-
-                // TODO: Set this on caller
-                //_metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata; // TODO: Do we need to cache this in dictionary for transitive packages?
-                // PackageMetadata = detailedPackageMetadata;
             }
 
             return result;
-        }
-
-        private async ValueTask<DetailedPackageMetadata> GetMetadataFromViewModelAsync(PackageItemViewModel packageItemViewModel, NuGetVersion newVersion)
-        {
-            (PackageSearchMetadataContextInfo meta, PackageDeprecationMetadataContextInfo deprecation) = await packageItemViewModel.GetDetailedPackageSearchMetadataAsync();
-            if (meta != null && meta.Identity.Version.Equals(newVersion))
-            {
-                if (_searchResultPackage != packageItemViewModel)
-                {
-                    return null;
-                }
-
-                return new DetailedPackageMetadata(
-                    meta,
-                    deprecation,
-                    packageItemViewModel.DownloadCount);
-            }
-
-            return null;
         }
 
         private async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, NuGetVersion newVersion, CancellationToken cancellationToken)
