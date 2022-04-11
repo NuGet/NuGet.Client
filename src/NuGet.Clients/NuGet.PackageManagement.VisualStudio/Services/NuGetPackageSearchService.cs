@@ -546,5 +546,30 @@ namespace NuGet.PackageManagement.VisualStudio
                 new PackageSource(PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings)),
                 FeedType.FileSystemPackagesConfig);
         }
+
+        public async ValueTask<PackageSearchMetadataContextInfo> GetPackageMetadataFromLocalSourcesAsync(PackageIdentity identity, IProjectContextInfo currentProject, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+            if (currentProject == null)
+            {
+                throw new ArgumentNullException(nameof(currentProject));
+            }
+
+            IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
+            SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
+            IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(new[] { currentProject }, cancellationToken);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(
+                sourceRepositories,
+                packagesFolderSourceRepository,
+                globalPackageFolderRepositories,
+                new VisualStudioActivityLogger());
+
+            IPackageSearchMetadata metadata = await metadataProvider.GetOnlyLocalPackageMetadataAsync(identity, cancellationToken);
+
+            return PackageSearchMetadataContextInfo.Create(metadata);
+        }
     }
 }

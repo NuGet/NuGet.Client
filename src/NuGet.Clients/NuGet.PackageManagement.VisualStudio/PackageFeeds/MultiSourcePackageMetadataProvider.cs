@@ -174,6 +174,11 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageIdentity identity,
             CancellationToken cancellationToken)
         {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
             var sources = new List<SourceRepository>();
 
