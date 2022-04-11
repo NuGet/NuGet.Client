@@ -40,6 +40,8 @@ namespace NuGet.PackageManagement.UI
             _searchService = searchService;
         }
 
+        public IProjectContextInfo Project { get; set; }
+
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
 
@@ -360,46 +362,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _isPackageDeprecated;
-        public bool IsPackageDeprecated
-        {
-            get { return _isPackageDeprecated; }
-            set
-            {
-                if (_isPackageDeprecated != value)
-                {
-                    _isPackageDeprecated = value;
-                    OnPropertyChanged(nameof(IsPackageDeprecated));
-                    OnPropertyChanged(nameof(IsPackageWithWarnings));
-                }
-            }
-        }
+        public bool IsPackageDeprecated => DeprecationMetadata != null;
 
-        public bool IsPackageVulnerable
-        {
-            get => VulnerabilityMaxSeverity > -1;
-        }
+        public bool IsPackageVulnerable => VulnerabilityMaxSeverity > -1;
 
-        private int _vulnerabilityMaxSeverity = -1;
-        public int VulnerabilityMaxSeverity
-        {
-            get { return _vulnerabilityMaxSeverity; }
-            set
-            {
-                if (_vulnerabilityMaxSeverity != value)
-                {
-                    _vulnerabilityMaxSeverity = value;
-                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
-                    OnPropertyChanged(nameof(IsPackageVulnerable));
-                    OnPropertyChanged(nameof(IsPackageWithWarnings));
-                }
-            }
-        }
+        public int VulnerabilityMaxSeverity => Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
 
-        public bool IsPackageWithWarnings
-        {
-            get => IsPackageDeprecated || IsPackageVulnerable;
-        }
+        public bool IsPackageWithWarnings => IsPackageDeprecated || IsPackageVulnerable;
 
         private Uri _iconUrl;
         public Uri IconUrl
@@ -517,11 +486,28 @@ namespace NuGet.PackageManagement.UI
                 {
                     _deprecationMetadata = value;
                     OnPropertyChanged(nameof(DeprecationMetadata));
+                    OnPropertyChanged(nameof(IsPackageDeprecated));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
                 }
             }
         }
 
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
+        private IEnumerable<PackageVulnerabilityMetadataContextInfo> _vulnerabilities;
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
+        {
+            get => _vulnerabilities;
+            set
+            {
+                if (_vulnerabilities != value)
+                {
+                    _vulnerabilities = value;
+                    OnPropertyChanged(nameof(Vulnerabilities));
+                    OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
+                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
+                }
+            }
+        }
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {
@@ -669,7 +655,7 @@ namespace NuGet.PackageManagement.UI
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
         }
 
-        private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
+        private async Task ReloadPackageVersionsAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
@@ -694,21 +680,31 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        internal PackageSearchMetadataContextInfo PackageMetadata { get; set; }
+
         private async Task ReloadPackageMetadataAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
+                PackageSearchMetadataContextInfo packageMetadata = null;
+                PackageDeprecationMetadataContextInfo deprecationMetadata = null;
                 var identity = new PackageIdentity(Id, Version);
-                (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
-                    await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+                if (PackageLevel == PackageLevel.TopLevel) // only reload metadata for Installed, top-level packages
+                {
+                    (packageMetadata, deprecationMetadata) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+                else if (PackageLevel == PackageLevel.Transitive)
+                {
+                    await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, cancellationToken);
+                }
 
+                PackageMetadata = packageMetadata;
                 DeprecationMetadata = deprecationMetadata;
-                IsPackageDeprecated = deprecationMetadata != null;
-                VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+                Vulnerabilities = packageMetadata.Vulnerabilities;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -730,12 +726,10 @@ namespace NuGet.PackageManagement.UI
                 .RunAsync(ReloadPackageVersionsAsync)
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
 
-            if (PackageLevel == PackageLevel.TopLevel) // only reload metadata for Installed, top-level packages
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .RunAsync(ReloadPackageMetadataAsync)
-                    .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
-            }
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(ReloadPackageMetadataAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
+
             OnPropertyChanged(nameof(Status));
         }
 

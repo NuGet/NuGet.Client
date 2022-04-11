@@ -235,7 +235,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
-            IReadOnlyCollection<VersionInfoContextInfo> versions = await searchResultPackage.GetVersionsAsync();
+            IReadOnlyCollection<VersionInfoContextInfo> versions = await searchResultPackage.GetVersionsAsync(_nugetProjects);
             _allPackageVersions = versions
                 .Where(v => v?.Version != null)
                 .Select(GetVersion)
@@ -244,7 +244,15 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
                 .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
 
-            DetailedPackageMetadata meta = await ReloadDetailedMetadataAsync(searchResultPackage, searchResultPackage.Version, getPackageItemViewModel, CancellationToken.None);
+            DetailedPackageMetadata meta = null;
+            if (searchResultPackage.PackageMetadata != null)
+            {
+                meta = new DetailedPackageMetadata(searchResultPackage.PackageMetadata, searchResultPackage.DeprecationMetadata, searchResultPackage.DownloadCount);
+            }
+            else
+            {
+                meta = await ReloadDetailedMetadataAsync(searchResultPackage, searchResultPackage.Version, getPackageItemViewModel, CancellationToken.None);
+            }
             if (meta != null)
             {
                 PackageMetadata = meta;
