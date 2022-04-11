@@ -511,6 +511,13 @@ namespace NuGet.PackageManagement.UI
             return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
         }
 
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
+        {
+            var identity = new PackageIdentity(Id, Version);
+            var isTransitive = PackageLevel == PackageLevel.Transitive;
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
+        }
+
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
         // and there are tests that don't mock IServiceBroker and INuGetSearchService. It's called via a jtf.RunAsync that is
         // not awaited. By keeping this AsyncLazy, we ensure that the exception is thrown in an async continuation. Whereas

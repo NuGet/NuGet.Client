@@ -234,6 +234,24 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetPackageVersionsAsync_WithProjectAndPackageVersionsExist_ReturnsPackageVersions()
+        {
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
+                    new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5")),
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
+                    includePrerelease: true,
+                    isTransitive: false,
+                    _projects,
+                    CancellationToken.None); ;
+
+                Assert.Equal(60, result.Count);
+                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.0.0")));
+            }
+        }
+
+        [Fact]
         public async Task GetPackageVersionsAsync_WhenIsTransitiveAndCacheIsNotPopulated()
         {
             using(NuGetPackageSearchService searchService = SetupSearchService())
@@ -264,6 +282,45 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageSources,
                     includePrerelease: true,
                     isTransitive: true,
+                    CancellationToken.None);
+
+                Assert.Equal(60, result.Count);
+                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.0.0")));
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageVersionsAsync_WithProjectAndIsTransitiveAndCacheIsNotPopulated()
+        {
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                PackageIdentity transitivePackage = new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5"));
+                var packageSources = new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) };
+                var metadataProvider = Mock.Of<IPackageMetadataProvider>();
+
+                CacheItemPolicy _cacheItemPolicy = new CacheItemPolicy
+                {
+                    SlidingExpiration = ObjectCache.NoSlidingExpiration,
+                    AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
+                };
+
+                Mock.Get(metadataProvider)
+                    .Setup(m => m.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                    .Returns(() => Task.FromResult(PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("microsoft.extensions.logging.abstractions", NuGetVersion.Parse("5.0.0-rc.2.20475.5"))).Build()));
+
+                IPackageSearchMetadata packageMetadata = await metadataProvider.GetPackageMetadataAsync(transitivePackage, true, CancellationToken.None);
+
+                string cacheId = PackageSearchMetadataCacheItem.GetCacheId(transitivePackage.Id, true, packageSources);
+                var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, metadataProvider);
+
+                NuGetPackageSearchService.PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
+
+                IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
+                    transitivePackage,
+                    packageSources,
+                    includePrerelease: true,
+                    isTransitive: true,
+                    _projects,
                     CancellationToken.None);
 
                 Assert.Equal(60, result.Count);

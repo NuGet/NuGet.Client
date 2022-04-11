@@ -57,6 +57,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
             bool isTransitive,
+            IEnumerable<IProjectContextInfo> projects,
+            CancellationToken cancellationToken);
+
+        ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
+            PackageIdentity identity,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease,
+            bool isTransitive,
             CancellationToken cancellationToken);
 
         ValueTask<PackageDeprecationMetadataContextInfo?> GetDeprecationMetadataAsync(

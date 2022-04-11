@@ -222,6 +222,45 @@ namespace NuGet.PackageManagement.VisualStudio
             return await cacheEntry.AllVersionsContextInfo;
         }
 
+        public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
+            PackageIdentity identity,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease,
+            bool isTransitive,
+            IEnumerable<IProjectContextInfo> projects,
+            CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(identity);
+            Assumes.NotNullOrEmpty(packageSources);
+
+            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
+            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
+
+            // Transitive packages will have only one version the first time they are loaded, when the package is selected we update the cache with all the versions
+            if (backgroundDataCache != null)
+            {
+                if (isTransitive &&
+                    (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count <= 1))
+                {
+                    IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects.ToList().AsReadOnly(), cancellationToken);
+                    IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    backgroundDataCache.UpdateSearchMetadata(transitivePackageMetadata);
+                }
+                return await backgroundDataCache.AllVersionsContextInfo;
+            }
+
+            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects.ToList().AsReadOnly(), cancellationToken);
+            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+
+            // Update the cache
+            var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
+            cacheEntry.UpdateSearchMetadata(packageMetadata);
+            PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
+
+            return await cacheEntry.AllVersionsContextInfo;
+        }
+
+
         public async ValueTask<PackageDeprecationMetadataContextInfo?> GetDeprecationMetadataAsync(
             PackageIdentity identity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
@@ -341,6 +380,17 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
             SourceRepository localRepo = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             IEnumerable<SourceRepository> globalRepo = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, new VisualStudioActivityLogger());
+        }
+
+        private async ValueTask<IPackageMetadataProvider> GetPackageMetadataProviderAsync(
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            IReadOnlyCollection<IProjectContextInfo> projects,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
+            SourceRepository localRepo = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
+            IEnumerable<SourceRepository> globalRepo = await GetAllPackageFoldersAsync(projects, cancellationToken);
             return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, new VisualStudioActivityLogger());
         }
 
