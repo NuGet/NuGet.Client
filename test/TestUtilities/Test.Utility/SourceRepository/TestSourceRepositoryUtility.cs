@@ -42,6 +42,15 @@ namespace Test.Utility
             return CreateSourceRepositoryProvider(new List<PackageSource> { V2PackageSource });
         }
 
+        public static SourceRepositoryProvider CreateSourceRepositoryProvider(PackageSource packageSource)
+        {
+            if (packageSource == null)
+            {
+                throw new ArgumentNullException(nameof(packageSource));
+            }
+            return CreateSourceRepositoryProvider(new[] { packageSource });
+        }
+
         public static SourceRepositoryProvider CreateSourceRepositoryProvider(IEnumerable<PackageSource> packageSources)
         {
             var thisUtility = new TestSourceRepositoryUtility();
