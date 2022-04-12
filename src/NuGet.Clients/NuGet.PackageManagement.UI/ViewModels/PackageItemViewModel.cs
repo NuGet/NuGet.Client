@@ -286,21 +286,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsUninstalledAndTransitive
-        {
-            get
-            {
-                return (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
-            }
-        }
+        public bool IsUninstalledAndTransitive => (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
 
-        public bool IsInstalledAndTransitive
-        {
-            get
-            {
-                return PackageLevel == PackageLevel.Transitive || InstalledVersion != null;
-            }
-        }
+        public bool IsInstalledAndTransitive => PackageLevel == PackageLevel.Transitive || InstalledVersion != null;
 
         // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsUninstallable
         // in all those properties.

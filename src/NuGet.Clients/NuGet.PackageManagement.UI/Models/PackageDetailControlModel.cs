@@ -316,7 +316,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageLevel PackageLevel
         {
-            get { return _packageLevel; }
+            get => _packageLevel;
             private set
             {
                 _packageLevel = value;
@@ -358,14 +358,8 @@ namespace NuGet.PackageManagement.UI
                 return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
             }
         }
-        
-        public bool IsInstalledVersionTopLevel
-        {
-            get
-            {
-                return InstalledVersion != null && PackageLevel == PackageLevel.TopLevel;
-            }
-        }
+
+        public bool IsInstalledVersionTopLevel => InstalledVersion != null && PackageLevel == PackageLevel.TopLevel;
 
         public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {
