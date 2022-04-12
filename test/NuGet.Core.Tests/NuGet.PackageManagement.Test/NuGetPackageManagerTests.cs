@@ -4129,7 +4129,7 @@ namespace NuGet.Test
             // web.infrastructure has no updates. However, new.json has updates but should pick it as per the version constraint
             // Hence, 4.5.11 will be uninstalled and 5.0.8 will be installed
             Assert.Equal(2, nuGetProjectActions.Count());
-            Assert.Contains(nuGetProjectActions, pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageReference));
+            Assert.Contains(nuGetProjectActions, pr => pr.PackageIdentity.Equals(newJsonPackageIdentityAfterUpdate));
         }
 
         [Fact]
