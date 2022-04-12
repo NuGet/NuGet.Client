@@ -161,9 +161,9 @@ namespace NuGet.PackageManagement.UI
             if (nuGetProject?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
                 nuGetProject is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
             {
-                // If there are no packages we dont need the assets file in the PM UI
+                // When creating a new project, the assets file is not created until restore
+                // and if there are no packages, we don't need the assets file in the PM UI
                 var installedPackages = await buildIntegratedNuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
-
                 if (!installedPackages.Any())
                 {
                     return false;
