@@ -72,7 +72,7 @@ function Test-TabExpansionForInstallPackageSortByDownloadCountDescending {
 function Test-TabExpansionForUninstallPackageShowSuggestionsForPackageId {
     # Arrange
     $project = New-ConsoleApplication
-    Install-Package AntiXSS -Project $project.Name
+    Install-Package Moq -Project $project.Name
     Install-Package elmah -Project $project.Name -Version 1.1
 
     # Act
@@ -80,7 +80,7 @@ function Test-TabExpansionForUninstallPackageShowSuggestionsForPackageId {
 
     # Assert
     Assert-AreEqual 2 $suggestions.count
-    Assert-AreEqual 'AntiXSS' $suggestions[0]
+    Assert-AreEqual 'Moq' $suggestions[0]
     Assert-AreEqual 'elmah' $suggestions[1]
 }
 
