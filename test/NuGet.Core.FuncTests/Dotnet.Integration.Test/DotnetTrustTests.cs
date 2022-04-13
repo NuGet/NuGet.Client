@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Dotnet.Integration.Test
 {
-    [Collection("Dotnet Integration Tests")]
+    [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetTrustTests
     {
         private const string _successfulAddTrustedSigner = "Successfully added a trusted {0} '{1}'.";

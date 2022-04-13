@@ -8,7 +8,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class DefaultX509ChainBuildPolicyTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class DefaultX509ChainBuildPolicyTests
     {
         private readonly CertificatesFixture _fixture;
 

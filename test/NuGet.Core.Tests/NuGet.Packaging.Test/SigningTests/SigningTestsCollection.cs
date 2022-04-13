@@ -3,12 +3,12 @@
 
 using Xunit;
 
-namespace Dotnet.Integration.Test
+namespace NuGet.Packaging.Test
 {
     [CollectionDefinition(Name)]
-    public class DotnetIntegrationCollection : ICollectionFixture<MsbuildIntegrationTestFixture>, ICollectionFixture<SignCommandTestFixture>
+    public sealed class SigningTestsCollection : ICollectionFixture<CertificatesFixture>
     {
-        internal const string Name = "Dotnet Integration Tests";
+        internal const string Name = "Signing tests collection";
 
         // This class has no code, and is never created. Its purpose is simply
         // to be the place to apply [CollectionDefinition] and all the

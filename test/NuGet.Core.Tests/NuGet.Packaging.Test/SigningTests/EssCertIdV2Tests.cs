@@ -20,7 +20,8 @@ using EssCertIdV2 = NuGet.Packaging.Signing.EssCertIdV2;
 
 namespace NuGet.Packaging.Test
 {
-    public class EssCertIdV2Tests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class EssCertIdV2Tests
     {
         private readonly CertificatesFixture _fixture;
 

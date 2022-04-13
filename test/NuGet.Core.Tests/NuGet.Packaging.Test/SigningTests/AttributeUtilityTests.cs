@@ -24,7 +24,8 @@ using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
 
 namespace NuGet.Packaging.Test
 {
-    public class AttributeUtilityTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class AttributeUtilityTests
     {
         private const string CommitmentTypeIdentifierProofOfDelivery = "1.2.840.113549.1.9.16.6.3";
         private const string CommitmentTypeIdentifierProofOfSender = "1.2.840.113549.1.9.16.6.4";
