@@ -139,7 +139,6 @@
     <Compile Include="Setting\WritableSettingsStoreWrapper.cs" />
     <Compile Include="SourceControl\DTESourceControlUtility.cs" />
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
-    <Compile Include="Telemetry\RestoreBannerClickedTelemetryEvent.cs" />
     <Compile Include="Telemetry\GetInstalledPackagesAsyncTelemetryEvent.cs" />
     <Compile Include="Telemetry\CacheMissException.cs" />
     <Compile Include="Telemetry\HyperlinkClickedTelemetryEvent.cs" />
@@ -148,7 +147,6 @@
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
     <Compile Include="Telemetry\DiagnosticTelemetryEvent.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
-    <Compile Include="Telemetry\RestoreButtonAction.cs" />
     <Compile Include="Telemetry\SearchPageTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchSelectionTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchTelemetryEvent.cs" />
