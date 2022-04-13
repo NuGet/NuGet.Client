@@ -418,7 +418,8 @@ namespace NuGet.SolutionRestoreManager
                             projectRestoreInfoSourcesCount: -1,
                             bulkRestoreCoordinationCheckStartTime: default,
                             projectsReadyCheckCount: 0,
-                            projectReadyTimings: new List<TimeSpan>());
+                            projectReadyTimings: new List<TimeSpan>(),
+                            request.ExplicitRestoreReason);
                         var result = await ProcessRestoreRequestAsync(restoreOperation, request, restoreTrackingData, token);
 
                         return result;
@@ -473,6 +474,7 @@ namespace NuGet.SolutionRestoreManager
             }
 
             ImplicitRestoreReason restoreReason = ImplicitRestoreReason.None;
+            ExplicitRestoreReason explicitRestoreReason;
             var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
             DateTime? bulkRestoreCoordinationCheckStartTime = default;
             // Loops until there are pending restore requests or it's get cancelled
@@ -507,6 +509,7 @@ namespace NuGet.SolutionRestoreManager
                         int requestCount = 1;
                         int projectsReadyCheckCount = 0;
                         int projectRestoreInfoSourcesCount = -1;
+                        explicitRestoreReason = request.ExplicitRestoreReason;
                         List<TimeSpan> projectReadyTimings = null;
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
@@ -630,7 +633,8 @@ namespace NuGet.SolutionRestoreManager
                             projectRestoreInfoSourcesCount,
                             bulkRestoreCoordinationCheckStartTime,
                             projectsReadyCheckCount,
-                            projectReadyTimings);
+                            projectReadyTimings,
+                            explicitRestoreReason);
 
                         // Runs restore job with scheduled request params
                         status = await ProcessRestoreRequestAsync(restoreOperation, request, restoreStartTrackingData, token);
@@ -670,7 +674,7 @@ namespace NuGet.SolutionRestoreManager
             return new TimeSpan(ticks: 0);
         }
 
-        private static Dictionary<string, object> GetRestoreTrackingData(ImplicitRestoreReason restoreReason, int requestCount, bool isBulkRestoreCoordinationEnabled, int projectRestoreInfoSourcesCount, DateTime? bulkRestoreCoordinationCheckStartTime, int projectsReadyCheckCount, List<TimeSpan> projectReadyTimings)
+        private static Dictionary<string, object> GetRestoreTrackingData(ImplicitRestoreReason restoreReason, int requestCount, bool isBulkRestoreCoordinationEnabled, int projectRestoreInfoSourcesCount, DateTime? bulkRestoreCoordinationCheckStartTime, int projectsReadyCheckCount, List<TimeSpan> projectReadyTimings, ExplicitRestoreReason explicitRestoreReason)
         {
             double bulkRestoreCoordinationTotalTime = bulkRestoreCoordinationCheckStartTime == default ?
                 0.0 :
@@ -684,7 +688,8 @@ namespace NuGet.SolutionRestoreManager
                 { RestoreTelemetryEvent.ProjectRestoreInfoSourcesCount, projectRestoreInfoSourcesCount },
                 { RestoreTelemetryEvent.ProjectsReadyCheckTotalTime, bulkRestoreCoordinationTotalTime },
                 { RestoreTelemetryEvent.ProjectsReadyCheckCount, projectsReadyCheckCount },
-                { RestoreTelemetryEvent.ProjectReadyCheckTimings, TelemetryUtility.ToJsonArrayOfTimingsInSeconds(projectReadyTimings) }
+                { RestoreTelemetryEvent.ProjectReadyCheckTimings, TelemetryUtility.ToJsonArrayOfTimingsInSeconds(projectReadyTimings) },
+                { RestoreTelemetryEvent.ExplicitRestoreReason, explicitRestoreReason },
             };
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
@@ -22,6 +23,8 @@ namespace NuGet.VisualStudio
 
         public RestoreOperationSource RestoreSource { get; }
 
+        public ExplicitRestoreReason ExplicitRestoreReason { get; }
+
         public Guid OperationId => Guid.NewGuid();
 
         public SolutionRestoreRequest(
@@ -30,6 +33,16 @@ namespace NuGet.VisualStudio
         {
             ForceRestore = forceRestore;
             RestoreSource = restoreSource;
+        }
+
+        public SolutionRestoreRequest(
+            bool forceRestore,
+            RestoreOperationSource restoreSource,
+            ExplicitRestoreReason explicitRestoreReason)
+        {
+            ForceRestore = forceRestore;
+            RestoreSource = restoreSource;
+            ExplicitRestoreReason = explicitRestoreReason;
         }
 
         /// <summary>
@@ -55,6 +68,19 @@ namespace NuGet.VisualStudio
             return new SolutionRestoreRequest(
                 forceRestore: false,
                 restoreSource: RestoreOperationSource.Explicit);
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to
+        /// on-demand restore as requested by an user via Visual Studio UI.
+        /// </summary>
+        /// <returns>New instance of <see cref="SolutionRestoreRequest"/></returns>
+        public static SolutionRestoreRequest ByMenu(ExplicitRestoreReason explicitRestoreReason)
+        {
+            return new SolutionRestoreRequest(
+                forceRestore: false,
+                restoreSource: RestoreOperationSource.Explicit,
+                explicitRestoreReason);
         }
 
         /// <summary>

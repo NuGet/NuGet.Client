@@ -230,7 +230,7 @@ namespace NuGet.PackageManagement.UI
             OperationId = Guid.NewGuid();
 
             return await _solutionRestoreWorker.ScheduleRestoreAsync(
-                       SolutionRestoreRequest.ByMenu(),
+                       SolutionRestoreRequest.ByMenu(ExplicitRestoreReason.Banner),
                        token);
         }
 
