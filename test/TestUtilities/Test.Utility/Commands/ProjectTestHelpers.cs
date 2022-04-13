@@ -298,7 +298,7 @@ namespace NuGet.Commands.Test
         /// <returns>Returns a PackageReference spec with all details similar to what a spec from a nomination would contain.</returns>
         public static PackageSpec GetPackageSpec(string projectName, string rootPath = @"C:\", string framework = "net5.0", bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "")
         {
-            var actualAssetTargetFallback = GetAssetTargetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks);
+            var actualAssetTargetFallback = GetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks);
 
             const string referenceSpec = @"
                 {
@@ -337,9 +337,9 @@ namespace NuGet.Commands.Test
             return packageSpec;
         }
 
-        public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "")
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
         {
-            var actualAssetTargetFallback = GetAssetTargetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks);
+            var actualAssetTargetFallback = GetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks, asAssetTargetFallback);
 
             const string referenceSpec = @"
                 {
@@ -357,16 +357,16 @@ namespace NuGet.Commands.Test
             return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
         }
 
-
-        private static string GetAssetTargetFallbackString(bool useAssetTargetFallback, string assetTargetFallbackFrameworks)
+        private static string GetFallbackString(bool useAssetTargetFallback, string assetTargetFallbackFrameworks, bool asAssetTargetFallback = true)
         {
             const string assetTargetFallback = @",
-                            ""assetTargetFallback"" : true,
+                            ""assetTargetFallback"" : ATF_VALUE,
                             ""imports"" : [ ""ASSET_TARGET_FALLBACK_FRAMEWORK_LIST"" ],
                             ""warn"" : true
                         ";
             var actualAssetTargetFallback = useAssetTargetFallback ?
-                assetTargetFallback.Replace("ASSET_TARGET_FALLBACK_FRAMEWORK_LIST", assetTargetFallbackFrameworks) :
+                assetTargetFallback.Replace("ASSET_TARGET_FALLBACK_FRAMEWORK_LIST", assetTargetFallbackFrameworks)
+                    .Replace("ATF_VALUE", asAssetTargetFallback.ToString().ToLowerInvariant()) :
                 string.Empty;
             return actualAssetTargetFallback;
         }
