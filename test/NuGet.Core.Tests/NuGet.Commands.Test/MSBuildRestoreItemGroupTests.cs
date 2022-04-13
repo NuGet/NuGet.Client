@@ -31,7 +31,7 @@ namespace NuGet.Commands.Test
             var condition = group.Condition;
 
             // Assert
-            Assert.Equal("'$(a)' == 'a'", condition);
+            Assert.Equal(" '$(a)' == 'a' ", condition);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace NuGet.Commands.Test
             var condition = group.Condition;
 
             // Assert
-            Assert.Equal("'$(b)' != 'b' AND '$(a)' == 'a'", condition);
+            Assert.Equal(" '$(b)' != 'b' AND '$(a)' == 'a' ", condition);
         }
     }
 }
