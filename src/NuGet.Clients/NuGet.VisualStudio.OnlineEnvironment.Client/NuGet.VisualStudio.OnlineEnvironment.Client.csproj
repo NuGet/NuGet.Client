@@ -27,7 +27,6 @@
     <CreateVsixContainer>false</CreateVsixContainer>
     <PackProject>false</PackProject>
     <DeployExtension>false</DeployExtension>
-    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
