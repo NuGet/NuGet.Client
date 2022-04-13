@@ -44,7 +44,6 @@ namespace NuGet.PackageManagement.UI
         private IVsSolutionManager _vsSolutionManager;
         private IComponentModel _componentModel;
         private bool _isAssetsFileMissing;
-        private bool _isSolution;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
@@ -67,7 +66,7 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty InnerVisibilityProperty =
             DependencyProperty.Register(nameof(InnerVisibility), typeof(Visibility), typeof(PackageRestoreBar), new PropertyMetadata(Visibility.Collapsed));
 
-        public PackageRestoreBar(INuGetSolutionManagerService solutionManager, IPackageRestoreManager packageRestoreManager, IProjectContextInfo projectContextInfo, bool isSolution)
+        public PackageRestoreBar(INuGetSolutionManagerService solutionManager, IPackageRestoreManager packageRestoreManager, IProjectContextInfo projectContextInfo)
         {
             DataContext = this;
             InitializeComponent();
@@ -75,7 +74,6 @@ namespace NuGet.PackageManagement.UI
             _solutionManager = solutionManager;
             _packageRestoreManager = packageRestoreManager;
             _projectContextInfo = projectContextInfo;
-            _isSolution = isSolution;
 
             if (_packageRestoreManager != null)
             {
@@ -218,13 +216,13 @@ namespace NuGet.PackageManagement.UI
             {
                 if (_projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && _isAssetsFileMissing)
                 {
-                    var evt = new RestoreBannerClickedTelemetryEvent(RestoreButtonAction.MissingAssetsFile, GetRestoreButtonOriginTelemetry());
+                    var evt = new RestoreBannerClickedTelemetryEvent(RestoreButtonAction.MissingAssetsFile);
                     TelemetryActivity.EmitTelemetryEvent(evt);
                     return RestoreProjectAsync(CancellationToken.None);
                 }
                 else
                 {
-                    var evt = new RestoreBannerClickedTelemetryEvent(RestoreButtonAction.MissingPackages, GetRestoreButtonOriginTelemetry());
+                    var evt = new RestoreBannerClickedTelemetryEvent(RestoreButtonAction.MissingPackages);
                     TelemetryActivity.EmitTelemetryEvent(evt);
                     return UIRestorePackagesAsync(CancellationToken.None);
                 }
@@ -366,20 +364,6 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 StatusMessage.Text = message;
             }).PostOnFailure(nameof(PackageRestoreBar));
-        }
-
-        private RestoreButtonOrigin GetRestoreButtonOriginTelemetry()
-        {
-            if (_isSolution)
-            {
-                return RestoreButtonOrigin.SolutionView;
-            }
-            else if (_projectContextInfo == null)
-            {
-                return RestoreButtonOrigin.PackageManagerConsole;
-            }
-
-            return RestoreButtonOrigin.ProjectView;
         }
     }
 }
