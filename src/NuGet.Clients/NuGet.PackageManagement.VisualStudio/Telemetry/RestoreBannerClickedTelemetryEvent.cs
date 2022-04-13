@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement.Telemetry
     {
         internal const string RestoreBannerClickedEventName = "RestoreBannerClicked";
         internal const string RestoreButtonActionName = "RestoreButtonAction";
-        internal const string RestoreButtonOriginPropertyName = "ProjectLevel";
+        internal const string RestoreButtonOriginPropertyName = "IsSolutionView";
 
         public RestoreBannerClickedTelemetryEvent(RestoreButtonAction restoreButtonAction, RestoreButtonOrigin restoreButtonOrigin)
             : base(RestoreBannerClickedEventName)
