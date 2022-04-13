@@ -15,7 +15,6 @@
     <Description>NuGet's Visual Studio functionalities, integrations and utilities.</Description>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
-    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Caching" />
