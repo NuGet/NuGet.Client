@@ -525,18 +525,6 @@ namespace NuGet.SolutionRestoreManager
             {
                 await _logger.ShowErrorAsync(Resources.PackageRefNotRestoredBecauseOfNoConsent);
             }
-
-            if (projects.Count() == 1 && projects.FirstOrDefault() is BuildIntegratedNuGetProject)
-            {
-                string assetsFilePath = await (projects.FirstOrDefault() as BuildIntegratedNuGetProject).GetAssetsFilePathAsync();
-
-                var fileInfo = new FileInfo(assetsFilePath);
-
-                if (!fileInfo.Exists)
-                {
-                    _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(true);
-                }
-            }
         }
 
         // This event could be raised from multiple threads. Only perform thread-safe operations
