@@ -590,6 +590,21 @@ namespace NuGet.Commands
             var isLockFileValid = false;
             var success = true;
 
+            var isLockedMode = _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode;
+            if (isLockedMode && _request.RestoreForceEvaluate)
+            {
+                success = false;
+
+                // invalid input since LockedMode and RestoreForce should not be used together.
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_RestoreLockedModeWithForceEvaluate, packagesLockFilePath);
+
+                // directly log to the request logger when we're not going to rewrite the assets file otherwise this log will
+                // be skipped for netcore projects.
+                await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1004, message));
+
+                return (success, isLockFileValid, packagesLockFile);
+            }
+
             var restorePackagesWithLockFile = _request.Project.RestoreMetadata?.RestoreLockProperties.RestorePackagesWithLockFile;
 
             if (!MSBuildStringUtility.IsTrueOrEmpty(restorePackagesWithLockFile) && File.Exists(packagesLockFilePath))

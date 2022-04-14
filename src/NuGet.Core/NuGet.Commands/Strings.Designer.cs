@@ -736,6 +736,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RestoreForceEvaluate should not be used with RestoreLockedMode in the same command..
+        /// </summary>
+        internal static string Error_RestoreLockedModeWithForceEvaluate {
+            get {
+                return ResourceManager.GetString("Error_RestoreLockedModeWithForceEvaluate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The repository service index &apos;{0}&apos; is not a valid HTTPS url..
         /// </summary>
         internal static string Error_ServiceIndexShouldBeHttps {

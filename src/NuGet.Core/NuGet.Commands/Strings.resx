@@ -1032,4 +1032,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_NoMatchingClientCertificate" xml:space="preserve">
     <value>This package is signed but not by a trusted signer.</value>
   </data>
+  <data name="Error_RestoreLockedModeWithForceEvaluate" xml:space="preserve">
+    <value>RestoreForceEvaluate should not be used with RestoreLockedMode in the same command.</value>
+  </data>
 </root>
