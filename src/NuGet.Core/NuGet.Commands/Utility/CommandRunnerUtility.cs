@@ -67,7 +67,15 @@ namespace NuGet.Commands
             return apiKey ?? defaultApiKey;
         }
 
-        public static async Task<PackageUpdateResource> GetPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)
+        public static async Task<PackageUpdateResource> GetPackageUpdateResource(IPackageSourceProvider sourceProvider, PackageSource packageSource)
+        {
+            var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
+            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
+
+            return await sourceRepository.GetResourceAsync<PackageUpdateResource>();
+        }
+
+        public static PackageSource GetOrCreatePackageSource(IPackageSourceProvider sourceProvider, string source)
         {
             // Use a loaded PackageSource if possible since it contains credential info
             PackageSource packageSource = null;
@@ -85,10 +93,7 @@ namespace NuGet.Commands
                 packageSource = new PackageSource(source);
             }
 
-            var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
-            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
-
-            return await sourceRepository.GetResourceAsync<PackageUpdateResource>();
+            return packageSource;
         }
 
         public static async Task<SymbolPackageUpdateResourceV3> GetSymbolPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)
