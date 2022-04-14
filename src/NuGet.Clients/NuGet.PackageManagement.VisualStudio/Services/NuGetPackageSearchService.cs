@@ -215,14 +215,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (isTransitive &&
                     (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count <= 1))
                 {
-                    IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects.ToList().AsReadOnly(), cancellationToken);
+                    IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
                     IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
                     backgroundDataCache.UpdateSearchMetadata(transitivePackageMetadata);
                 }
                 return await backgroundDataCache.AllVersionsContextInfo;
             }
 
-            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects.ToList().AsReadOnly(), cancellationToken);
+            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
             IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
 
             // Update the cache
