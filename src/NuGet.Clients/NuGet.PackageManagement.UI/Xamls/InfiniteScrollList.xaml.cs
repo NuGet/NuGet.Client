@@ -532,7 +532,14 @@ namespace NuGet.PackageManagement.UI
             // existing items in the package list
             foreach (var package in PackageItems)
             {
-                package.UpdatePackageStatus(installedPackages);
+                if (package.PackageLevel == PackageLevel.TopLevel)
+                {
+                    package.UpdatePackageStatus(installedPackages);
+                }
+                else
+                {
+                    package.UpdateTransitivePackageStatus(package.InstalledVersion);
+                }
             }
         }
 

@@ -10,6 +10,7 @@ using System.Windows.Data;
 using Microsoft.ServiceHub.Framework;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 
@@ -37,6 +38,7 @@ namespace NuGet.PackageManagement.UI
             Func<PackageItemViewModel> getPackageItemViewModel)
         {
             // Set InstalledVersion before fetching versions list.
+            PackageLevel = searchResultPackage.PackageLevel;
             InstalledVersion = searchResultPackage.InstalledVersion;
             InstalledVersionRange = searchResultPackage.AllowedVersions;
 
@@ -58,6 +60,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
             PreviousSelectedVersion = null;
+            PackageLevel = searchResultPackage.PackageLevel;
             InstalledVersion = searchResultPackage.InstalledVersion;
             InstalledVersionRange = searchResultPackage.AllowedVersions;
             SelectedVersion.IsCurrentInstalled = InstalledVersion == SelectedVersion.Version && InstalledVersionRange == SelectedVersion.Range;
@@ -304,6 +307,20 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersionRange = value;
                 OnPropertyChanged(nameof(InstalledVersionRange));
+                OnPropertyChanged(nameof(IsSelectedVersionInstalled));
+                OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
+            }
+        }
+
+        private PackageLevel _packageLevel;
+
+        public PackageLevel PackageLevel
+        {
+            get => _packageLevel;
+            private set
+            {
+                _packageLevel = value;
+                OnPropertyChanged(nameof(PackageLevel));
             }
         }
 
@@ -311,6 +328,8 @@ namespace NuGet.PackageManagement.UI
         {
             base.OnSelectedVersionChanged();
             OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
+            OnPropertyChanged(nameof(IsSelectedVersionInstalled));
+            OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
         }
 
         public bool IsSelectedVersionInstalled
@@ -339,6 +358,8 @@ namespace NuGet.PackageManagement.UI
                 return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
             }
         }
+
+        public bool IsInstalledVersionTopLevel => InstalledVersion != null && PackageLevel == PackageLevel.TopLevel;
 
         public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {

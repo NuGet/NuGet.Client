@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             new PackageReferenceContextInfo(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")), NuGetFramework.Parse("net6.0")),
                         }
                     }
-                })
+                }),
             };
 
             var metadataProvider = Mock.Of<IPackageMetadataProvider>();
