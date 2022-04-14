@@ -380,15 +380,17 @@ namespace NuGet.PackageManagement.UI
 
         private async Task WaitForCompletionAsync(IItemLoader<PackageItemViewModel> currentLoader, CancellationToken token)
         {
-            var progress = new Progress<IItemLoaderState>(
+            IProgress<IItemLoaderState> progress = new Progress<IItemLoaderState>(
                 s => HandleItemLoaderStateChange(currentLoader, s));
 
             // run to completion
             while (currentLoader.State.LoadingStatus == LoadingStatus.Loading)
             {
                 token.ThrowIfCancellationRequested();
-                await currentLoader.UpdateStateAsync(progress, token);
+                await currentLoader.UpdateStateAsync(progress: null, token);//don't report progress to UI while waiting for packages list
             }
+
+            progress.Report(currentLoader.State);
         }
 
         private async Task WaitForInitialResultsAsync(
@@ -400,8 +402,10 @@ namespace NuGet.PackageManagement.UI
                 currentLoader.State.ItemsCount == 0)
             {
                 token.ThrowIfCancellationRequested();
-                await currentLoader.UpdateStateAsync(progress, token);
+                await currentLoader.UpdateStateAsync(progress: null, token);//don't report progress to UI while waiting for packages list
             }
+
+            progress?.Report(currentLoader.State);
         }
 
         /// <summary>
