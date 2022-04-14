@@ -234,7 +234,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetPackageVersionsAsync_WithProjectAndPackageVersionsExist_ReturnsPackageVersions()
+        public async Task GetPackageVersionsAsync_WithProjectAndPackageVersionsExist_ReturnsPackageVersionsAsync()
         {
             using (NuGetPackageSearchService searchService = SetupSearchService())
             {
@@ -252,9 +252,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetPackageVersionsAsync_WhenIsTransitiveAndCacheIsNotPopulated()
+        public async Task GetPackageVersionsAsync_WhenIsTransitiveAndCacheIsNotPopulatedAsync()
         {
-            using(NuGetPackageSearchService searchService = SetupSearchService())
+            using (NuGetPackageSearchService searchService = SetupSearchService())
             {
                 PackageIdentity transitivePackage = new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5"));
                 var packageSources = new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) };
@@ -290,7 +290,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetPackageVersionsAsync_WithProjectAndIsTransitiveAndCacheIsNotPopulated()
+        public async Task GetPackageVersionsAsync_WithProjectAndIsTransitiveAndCacheIsNotPopulatedAsync()
         {
             using (NuGetPackageSearchService searchService = SetupSearchService())
             {
