@@ -1,3 +1,5 @@
+extern alias CoreV2;
+
 using System;
 using System.IO;
 using Moq;
@@ -7,12 +9,12 @@ namespace NuGet.CommandLine.Test
     public class PackageCreater
     {
         public static string CreatePackage(string id, string version, string outputDirectory,
-            Action<PackageBuilder> additionalAction = null)
+            Action<CoreV2.NuGet.PackageBuilder> additionalAction = null)
         {
-            PackageBuilder builder = new PackageBuilder()
+            CoreV2.NuGet.PackageBuilder builder = new CoreV2.NuGet.PackageBuilder()
             {
                 Id = id,
-                Version = new SemanticVersion(version),
+                Version = new CoreV2.NuGet.SemanticVersion(version),
                 Description = "Descriptions",
             };
             builder.Authors.Add("test");
@@ -33,10 +35,10 @@ namespace NuGet.CommandLine.Test
 
         public static string CreateSymbolPackage(string id, string version, string outputDirectory)
         {
-            PackageBuilder builder = new PackageBuilder()
+            CoreV2.NuGet.PackageBuilder builder = new CoreV2.NuGet.PackageBuilder()
             {
                 Id = id,
-                Version = new SemanticVersion(version),
+                Version = new CoreV2.NuGet.SemanticVersion(version),
                 Description = "Descriptions",
             };
             builder.Authors.Add("test");
@@ -52,14 +54,14 @@ namespace NuGet.CommandLine.Test
             return packageFileName;
         }
 
-        private static IPackageFile CreatePackageFile(string name)
+        private static CoreV2.NuGet.IPackageFile CreatePackageFile(string name)
         {
-            var file = new Mock<IPackageFile>();
+            var file = new Mock<CoreV2.NuGet.IPackageFile>();
             file.SetupGet(f => f.Path).Returns(name);
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
 
             string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var fx = CoreV2.NuGet.VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
             file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
             file.SetupGet(f => f.TargetFramework).Returns(fx);
 

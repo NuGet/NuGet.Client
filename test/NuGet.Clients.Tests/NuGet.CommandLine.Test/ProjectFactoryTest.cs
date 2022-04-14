@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -77,7 +78,7 @@ namespace NuGet.CommandLine
                 }
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
                 var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = CoreV2.NuGet.Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -155,7 +156,7 @@ namespace NuGet.CommandLine
 
                 // Act
                 var packageBuilder = factory.CreateBuilder(basePath, null, null, true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = CoreV2.NuGet.Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -229,7 +230,7 @@ namespace NuGet.CommandLine
 
                 // Act
                 var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = CoreV2.NuGet.Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -303,7 +304,7 @@ namespace NuGet.CommandLine
 
                 // Act
                 var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = CoreV2.NuGet.Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(cmdLineProperties["id"], xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -371,7 +372,7 @@ namespace NuGet.CommandLine
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
                 var packageBuilder = factory.CreateBuilder(basePath, cmdLineVersion, "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = CoreV2.NuGet.Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);

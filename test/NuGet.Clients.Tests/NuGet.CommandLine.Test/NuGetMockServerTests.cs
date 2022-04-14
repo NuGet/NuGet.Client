@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Xunit;
@@ -27,8 +28,8 @@ namespace NuGet.CommandLine.Test
             {
                 var nugetexe = Util.GetNuGetExePath();
 
-                var packageA = new ZipPackage(Util.CreateTestPackage("a", "1.0.0", pathContext.PackageSource));
-                var packageB = new ZipPackage(Util.CreateTestPackage("b", "1.0.0", pathContext.PackageSource));
+                var packageA = new FileInfo(Util.CreateTestPackage("a", "1.0.0", pathContext.PackageSource));
+                var packageB = new FileInfo(Util.CreateTestPackage("b", "1.0.0", pathContext.PackageSource));
 
                 var project = SimpleTestProjectContext.CreateNETCore("proj", pathContext.SolutionRoot, NuGetFramework.Parse("net46"));
 
@@ -66,8 +67,8 @@ namespace NuGet.CommandLine.Test
             {
                 var nugetexe = Util.GetNuGetExePath();
 
-                var packageA = new ZipPackage(Util.CreateTestPackage("a", "1.0.0", pathContext.PackageSource));
-                var packageB = new ZipPackage(Util.CreateTestPackage("b", "1.0.0", pathContext.PackageSource));
+                var packageA = new FileInfo(Util.CreateTestPackage("a", "1.0.0", pathContext.PackageSource));
+                var packageB = new FileInfo(Util.CreateTestPackage("b", "1.0.0", pathContext.PackageSource));
 
                 Util.CreateFile(pathContext.SolutionRoot, "packages.config",
 @"<packages>

@@ -935,22 +935,11 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    if (EnvironmentUtility.IsNet45Installed)
-                    {
-                        Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.Item1);
 
-                        var currentUser = WindowsIdentity.GetCurrent();
-                        Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
-                        Assert.Equal(currentUser.Name, putUser.Identity.Name);
-                    }
-                    else
-                    {
-                        // On .net 4.0, the process will get killed since integrated windows
-                        // authentication won't work when buffering is disabled.
-                        Assert.Equal(1, r1.Item1);
-                        Assert.Contains("Failed to process request. 'Unauthorized'", r1.Item3);
-                        Assert.Contains("This request requires buffering data to succeed.", r1.Item3);
-                    }
+                    var currentUser = WindowsIdentity.GetCurrent();
+                    Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
+                    Assert.Equal(currentUser.Name, putUser.Identity.Name);
                 }
             }
         }
@@ -1148,8 +1137,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
-
+                    r1.Success.Should().BeTrue(because: r1.AllOutput);
                     Assert.Equal(1, credentialForPutRequest.Count);
                 }
             }
