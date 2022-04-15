@@ -99,8 +99,8 @@ namespace NuGet.CommandLine.Test
 </dependencies>".Replace("\r\n", "\n"), actual);
 
                     var files = package.GetNonPackageDefiningFiles();
-                    Assert.Contains(Path.Combine("Content", "image.jpg"), files);
-                    Assert.Contains(Path.Combine("Content", "other", "image2.jpg"), files);
+                    Assert.Contains("Content/image.jpg", files);
+                    Assert.Contains("Content/other/image2.jpg", files);
                 }
             }
         }
@@ -164,7 +164,7 @@ namespace NuGet.CommandLine.Test
                     var files = package.GetNonPackageDefiningFiles();
                     // All of the nuspecs should be excluded.
                     Assert.Equal(files.Length, 1);
-                    Assert.Contains(Path.Combine("Content", "image.jpg"), files);
+                    Assert.Contains("Content/image.jpg", files);
                 }
             }
         }
@@ -393,10 +393,10 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(
                     new string[]
                     {
-                            Path.Combine("lib", "uap10.0", "a.dll"),
-                            Path.Combine("native", "a.dll"),
-                            Path.Combine("ref", "uap10.0", "a.dll"),
-                            Path.Combine("runtimes", "win-x86", "lib", "uap10.0", "a.dll"),
+                            "lib/uap10.0/a.dll",
+                            "native/a.dll",
+                            "ref/uap10.0/a.dll",
+                            "runtimes/win-x86/lib/uap10.0/a.dll",
                     },
                     files);
 
@@ -449,7 +449,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("analyzers", "cs", "code", "a.dll"),
+                        "analyzers/cs/code/a.dll",
                     },
                     files);
 
@@ -771,8 +771,8 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(
                         new string[]
                         {
-                            Path.Combine("contentFiles", "any", "any", "image.jpg"),
-                            Path.Combine("contentFiles", "cs", "net45", "code.cs"),
+                            "contentFiles/any/any/image.jpg",
+                            "contentFiles/cs/net45/code.cs",
                         },
                         files);
 
@@ -881,9 +881,9 @@ namespace Proj2
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net40/proj1.dll",
+                        "lib/net40/proj2.dll"
                     },
                     files);
             }
@@ -980,12 +980,12 @@ namespace Proj1
                     var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
                     Assert.True(File.Exists(nupkgName));
                     var package = new PackageArchiveReader(File.OpenRead(nupkgName));
-                    var files = package.GetFiles().ToArray();
+                    var files = package.GetNonPackageDefiningFiles();
                     Array.Sort(files);
                     Assert.Equal(
                         new string[]
                         {
-                        Path.Combine("lib", "netstandard1.3", "proj1.dll")
+                            "lib/netstandard1.3/proj1.dll"
                         },
                         files);
 
@@ -1401,8 +1401,8 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "A.dll"),
-                        Path.Combine("lib", "net40", "A.xml"),
+                        "lib/net40/A.dll",
+                        "lib/net40/A.xml",
                     },
                     files);
             }
@@ -1499,14 +1499,14 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        "lib/net40/proj1.dll",
+                        "lib/net40/proj3.dll",
+                        "lib/net40/proj7.dll",
                     },
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);;
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id); ;
                 Assert.Equal(
                     new PackageDependency[]
                     {
@@ -1615,14 +1615,14 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        "lib/net40/proj1.dll",
+                        "lib/net40/proj3.dll",
+                        "lib/net40/proj7.dll",
                     },
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);;
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id); ;
                 Assert.Equal(
                     new PackageDependency[]
                     {
@@ -2413,7 +2413,7 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll")
+                        "lib/net40/proj1.dll"
                     },
                     files);
 
@@ -2716,7 +2716,7 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll")
+                        "lib/net40/proj1.dll"
                     },
                     files);
             }
@@ -2765,9 +2765,9 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                       Path.Combine("lib", "net40", "proj1.dll"),
-                       Path.Combine("lib", "net40", "proj2.dll"),
-                       Path.Combine("lib", "net40", "proj3.dll")
+                       "lib/net40/proj1.dll",
+                       "lib/net40/proj2.dll",
+                       "lib/net40/proj3.dll"
                     },
                     files);
             }
@@ -2808,8 +2808,8 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "lib/net40/proj1.dll",
+                        "lib/net40/proj2.dll"
                     },
                     files);
             }
@@ -3055,9 +3055,9 @@ namespace Proj2
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net40/proj1.dll",
+                        "lib/net40/proj2.dll"
                     },
                     files);
             }
@@ -3113,7 +3113,7 @@ namespace Proj2
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("Content", "package", "include.me")
+                        "Content/package/include.me"
                     },
                     files);
             }
@@ -4118,9 +4118,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net40/proj1.dll",
+                        "lib/net40/proj2.dll"
                     });
             }
         }
@@ -4248,9 +4248,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net40/proj1.dll",
+                        "lib/net40/proj2.dll"
                     });
             }
         }
@@ -4717,8 +4717,8 @@ namespace Proj1
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net40/proj1.dll"
                     },
                     files);
             }

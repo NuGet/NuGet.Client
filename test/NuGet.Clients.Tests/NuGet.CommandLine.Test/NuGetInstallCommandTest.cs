@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1416,7 +1417,7 @@ namespace NuGet.CommandLine.Test
                     "testPackage1", "1.1.0", source,
                     (builder) =>
                     {
-                        var dependencySet = new PackageDependencyGroup(null,
+                        var dependencySet = new PackageDependencyGroup(CommonFrameworks.Net47,
                             new[] {
                                 new PackageDependency(
                                     "non_existing",
@@ -1468,13 +1469,13 @@ namespace NuGet.CommandLine.Test
                     {
                         if (requestedVersion == null)
                         {
-                            var dependencySet = new PackageDependencyGroup(null,
+                            var dependencySet = new PackageDependencyGroup(CommonFrameworks.Net47,
                                 new[] { new PackageDependency("depPackage") });
                             builder.DependencyGroups.Add(dependencySet);
                         }
                         else
                         {
-                            var dependencySet = new PackageDependencyGroup(null,
+                            var dependencySet = new PackageDependencyGroup(CommonFrameworks.Net47,
                                 new[] { new PackageDependency("depPackage", VersionRange.Parse(requestedVersion)) });
                             builder.DependencyGroups.Add(dependencySet);
                         }

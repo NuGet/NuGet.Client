@@ -130,7 +130,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("testPackage1", lines[1]);
                 Assert.Equal(" 1.1.0", lines[2]);
                 Assert.Equal(" desc of testPackage1 1.1.0", lines[3]);
-                Assert.Equal(" License url: http://kaka", lines[4]);
+                Assert.Equal(" License url: http://kaka/", lines[4]);
             }
         }
 
