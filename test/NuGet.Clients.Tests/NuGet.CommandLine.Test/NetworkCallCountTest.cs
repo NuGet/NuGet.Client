@@ -1,7 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-extern alias CoreV2;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -120,8 +118,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                var packagesFolder = new CoreV2.NuGet.LocalPackageRepository(packagesFolderPath);
-                var allPackages = packagesFolder.GetPackages().ToList();
+                var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
                 Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
@@ -258,8 +255,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                var packagesFolder = new CoreV2.NuGet.LocalPackageRepository(packagesFolderPath);
-                var allPackages = packagesFolder.GetPackages().ToList();
+                var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
                 Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
@@ -270,8 +266,8 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var package in expectedPackages)
                 {
-                    Assert.True(allPackages.Any(p => p.Id == package.Id
-                        && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                    Assert.True(allPackages.Any(p => p.Identity.Id == package.Id
+                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
             }
         }
@@ -392,8 +388,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                var packagesFolder = new CoreV2.NuGet.LocalPackageRepository(packagesFolderPath);
-                var allPackages = packagesFolder.GetPackages().ToList();
+                var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -402,8 +397,8 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var package in expectedPackages)
                 {
-                    Assert.True(allPackages.Any(p => p.Id == package.Id
-                        && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                    Assert.True(allPackages.Any(p => p.Identity.Id == package.Id
+                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
             }
         }
@@ -523,8 +518,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                var packagesFolder = new CoreV2.NuGet.LocalPackageRepository(packagesFolderPath);
-                var allPackages = packagesFolder.GetPackages().ToList();
+                var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -533,8 +527,8 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var package in expectedPackages)
                 {
-                    Assert.True(allPackages.Any(p => p.Id == package.Id
-                        && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                    Assert.True(allPackages.Any(p => p.Identity.Id == package.Id
+                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
             }
         }
