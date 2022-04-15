@@ -6,7 +6,7 @@ using Moq;
 
 namespace NuGet.CommandLine.Test
 {
-    public class PackageCreater
+    public class PackageCreator
     {
         public static string CreatePackage(string id, string version, string outputDirectory,
             Action<CoreV2.NuGet.PackageBuilder> additionalAction = null)

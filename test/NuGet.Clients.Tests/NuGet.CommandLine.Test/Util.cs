@@ -19,7 +19,6 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-using PackageDependency_V3 = NuGet.Packaging.Core.PackageDependency;
 
 namespace NuGet.CommandLine.Test
 {
@@ -101,9 +100,9 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageId,
             string dependencyPackageVersion)
         {
-            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency_V3>()
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency>()
             {
-                new PackageDependency_V3(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
+                new PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
             });
 
             return CreateTestPackage(packageId, version, path,

@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
-using System.IO.Packaging;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -384,7 +382,7 @@ namespace NuGet.CommandLine.Test
                 var workingPath = pathContext.WorkingDirectory;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", pathContext.PackageSource);
 
                 // Act
@@ -692,7 +690,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 Util.CreateFile(workingPath, "packages.config",
@@ -731,7 +729,7 @@ namespace NuGet.CommandLine.Test
                 var outputDirectory = pathContext.SolutionRoot;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
@@ -762,7 +760,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
@@ -793,7 +791,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
@@ -829,7 +827,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 var args = new string[] {
@@ -1373,9 +1371,9 @@ namespace NuGet.CommandLine.Test
                 var outputDirectory = pathContext.SolutionRoot;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
-                var symbolPackageFileName = PackageCreater.CreateSymbolPackage(
+                var symbolPackageFileName = PackageCreator.CreateSymbolPackage(
                     "testPackage1", "1.1.0", source);
 
                 var nugetexe = Util.GetNuGetExePath();
@@ -1416,7 +1414,7 @@ namespace NuGet.CommandLine.Test
                 var outputDirectory = pathContext.SolutionRoot;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source,
                     (builder) =>
                     {
@@ -1466,7 +1464,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("depPackage", "1.2.0", source);
                 Util.CreateTestPackage("depPackage", "2.0.0", source);
 
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage", "1.1.0", pathContext.PackageSource,
                     (builder) =>
                     {
