@@ -1824,7 +1824,7 @@ public class B
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
-                var files = package.GetFiles().ToArray();
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
@@ -2053,7 +2053,7 @@ public class B
                 Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
 
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
-                var files = package.GetFiles().ToArray();
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
@@ -3859,7 +3859,7 @@ namespace Proj2
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
-                var files = package.GetFiles().ToArray();
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
                     new string[]
