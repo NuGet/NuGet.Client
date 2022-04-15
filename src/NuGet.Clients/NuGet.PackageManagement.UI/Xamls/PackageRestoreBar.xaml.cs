@@ -19,6 +19,7 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
@@ -230,7 +231,7 @@ namespace NuGet.PackageManagement.UI
             OperationId = Guid.NewGuid();
 
             return await _solutionRestoreWorker.ScheduleRestoreAsync(
-                       SolutionRestoreRequest.ByMenu(ExplicitRestoreReason.Banner),
+                       SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.MissingPackagesBanner),
                        token);
         }
 

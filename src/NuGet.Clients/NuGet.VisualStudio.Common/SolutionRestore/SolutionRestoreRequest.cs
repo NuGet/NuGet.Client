@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
@@ -75,7 +76,7 @@ namespace NuGet.VisualStudio
         /// on-demand restore as requested by an user via Visual Studio UI.
         /// </summary>
         /// <returns>New instance of <see cref="SolutionRestoreRequest"/></returns>
-        public static SolutionRestoreRequest ByMenu(ExplicitRestoreReason explicitRestoreReason)
+        public static SolutionRestoreRequest ByUserCommand(ExplicitRestoreReason explicitRestoreReason)
         {
             return new SolutionRestoreRequest(
                 forceRestore: false,

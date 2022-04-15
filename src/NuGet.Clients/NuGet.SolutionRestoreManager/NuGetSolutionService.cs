@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
@@ -28,7 +29,7 @@ namespace NuGet.SolutionRestoreManager
         {
             cancellationToken.ThrowIfCancellationRequested();
             await _initializer.InitializeAsync(cancellationToken);
-            await SolutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(ExplicitRestoreReason.Menu), cancellationToken);
+            await SolutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.RestoreSolutionPackages), cancellationToken);
         }
 
         private async Task InitializeAsync()

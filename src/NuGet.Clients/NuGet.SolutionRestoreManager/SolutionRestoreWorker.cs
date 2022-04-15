@@ -474,7 +474,7 @@ namespace NuGet.SolutionRestoreManager
             }
 
             ImplicitRestoreReason restoreReason = ImplicitRestoreReason.None;
-            ExplicitRestoreReason explicitRestoreReason;
+            ExplicitRestoreReason explicitRestoreReason = ExplicitRestoreReason.None;
             var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
             DateTime? bulkRestoreCoordinationCheckStartTime = default;
             // Loops until there are pending restore requests or it's get cancelled
