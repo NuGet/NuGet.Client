@@ -1,7 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-extern alias CoreV2;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,7 +23,6 @@ namespace NuGet.CommandLine.Test
     /// <summary>
     /// A Mock Server that is used to mimic a NuGet Server.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class MockServer : IDisposable
     {
         private Task _listenerTask;

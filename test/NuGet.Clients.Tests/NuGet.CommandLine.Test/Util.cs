@@ -1,7 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-extern alias CoreV2;
-
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -21,8 +19,6 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-
-using PackageDependency_V2 = CoreV2.NuGet.PackageDependency;
 using PackageDependency_V3 = NuGet.Packaging.Core.PackageDependency;
 
 namespace NuGet.CommandLine.Test
@@ -122,10 +118,10 @@ namespace NuGet.CommandLine.Test
             List<NuGetFramework> frameworks,
             List<PackageDependencyGroup> dependencies)
         {
-            var packageBuilder = new CoreV2.NuGet.PackageBuilder
+            var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new CoreV2.NuGet.SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
 
             packageBuilder.Description = string.Format(
@@ -145,16 +141,7 @@ namespace NuGet.CommandLine.Test
 
             packageBuilder.Authors.Add("test author");
 
-            foreach (var group in dependencies)
-            {
-                var set = new CoreV2.NuGet.PackageDependencySet(
-                    null,
-                    group.Packages.Select(package =>
-                        new PackageDependency_V2(package.Id,
-                            CoreV2.NuGet.VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
-
-                packageBuilder.DependencySets.Add(set);
-            }
+            packageBuilder.DependencyGroups.AddRange(dependencies);
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
@@ -175,10 +162,10 @@ namespace NuGet.CommandLine.Test
             List<NuGetFramework> frameworks,
             params string[] contentFiles)
         {
-            var packageBuilder = new CoreV2.NuGet.PackageBuilder
+            var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new CoreV2.NuGet.SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
             packageBuilder.Description = string.Format(
                 CultureInfo.InvariantCulture,
@@ -228,10 +215,10 @@ namespace NuGet.CommandLine.Test
             Uri licenseUrl = null,
             params string[] contentFiles)
         {
-            var packageBuilder = new CoreV2.NuGet.PackageBuilder
+            var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new CoreV2.NuGet.SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
             packageBuilder.Description = string.Format(
                 CultureInfo.InvariantCulture,
@@ -285,12 +272,12 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Creates a basic package builder for unit tests.
         /// </summary>
-        public static CoreV2.NuGet.PackageBuilder CreateTestPackageBuilder(string packageId, string version)
+        public static PackageBuilder CreateTestPackageBuilder(string packageId, string version)
         {
-            var packageBuilder = new CoreV2.NuGet.PackageBuilder
+            var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new CoreV2.NuGet.SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
 
             packageBuilder.Description = string.Format(
@@ -381,30 +368,16 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private static CoreV2.NuGet.IPackageFile CreatePackageFile(string name)
+        private static IPackageFile CreatePackageFile(string name)
         {
-            var file = new Mock<CoreV2.NuGet.IPackageFile>();
+            var file = new Mock<IPackageFile>();
             file.SetupGet(f => f.Path).Returns(name);
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
 
             string effectivePath;
-            var fx = CoreV2.NuGet.VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var fx = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(name, out effectivePath);
             file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
-
-            return file.Object;
-        }
-
-        public static CoreV2.NuGet.IPackageFile CreatePackageFile(string path, string content)
-        {
-            var file = new Mock<CoreV2.NuGet.IPackageFile>();
-            file.SetupGet(f => f.Path).Returns(path);
-            file.Setup(f => f.GetStream()).Returns(new MemoryStream(Encoding.UTF8.GetBytes(content)));
-
-            string effectivePath;
-            var fx = CoreV2.NuGet.VersionUtility.ParseFrameworkNameFromFilePath(path, out effectivePath);
-            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
+            file.SetupGet(f => f.NuGetFramework).Returns(fx);
 
             return file.Object;
         }
