@@ -20,6 +20,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
@@ -37,6 +38,20 @@ namespace NuGet.PackageManagement.VisualStudio
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
 
         private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
+
+        private static Lazy<bool> IsCounterFactualTriggered = new Lazy<bool>(
+            () =>
+            {
+                try
+                {
+                    var evt = new TransitiveDependenciesCounterfactualEvent();
+                    TelemetryActivity.EmitTelemetryEvent(evt);
+                }
+                finally
+                {
+                }
+                return true;
+            }, isThreadSafe: false);
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
@@ -160,6 +175,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
+            if (!IsCounterFactualTriggered.IsValueCreated)
+            {
+                _ = IsCounterFactualTriggered.Value;
+            }
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
                 // Get Transitive Origins
