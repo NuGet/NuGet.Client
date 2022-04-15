@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.UI
                         _vsSolutionManager = _componentModel.GetService<IVsSolutionManager>();
                         _solutionRestoreWorker = _componentModel.GetService<ISolutionRestoreWorker>();
 
-                        // if the project is PR check for missing assets file if the user has disabled the automatic restore
+                        // if the project is PR and there is no restore running, check for missing assets file
                         // otherwise check for missing packages
                         if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(CancellationToken.None) &&
                             _projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
