@@ -699,7 +699,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (PackageLevel == PackageLevel.Transitive)
                 {
-                    await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, cancellationToken);
+                    packageMetadata = await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, cancellationToken);
                 }
 
                 PackageMetadata = packageMetadata;

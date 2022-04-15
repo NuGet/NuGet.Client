@@ -298,7 +298,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     listItem.UpdatePackageStatus(_installedPackages);
                 }
-                else
+                else // is transitive
                 {
                     listItem.Project = _context.Projects.First();
                     listItem.UpdateTransitivePackageStatus(metadata.Identity.Version);
