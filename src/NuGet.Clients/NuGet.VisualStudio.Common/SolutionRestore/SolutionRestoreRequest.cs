@@ -31,9 +31,8 @@ namespace NuGet.VisualStudio
         public SolutionRestoreRequest(
             bool forceRestore,
             RestoreOperationSource restoreSource)
+            : this(forceRestore, restoreSource, ExplicitRestoreReason.None)
         {
-            ForceRestore = forceRestore;
-            RestoreSource = restoreSource;
         }
 
         public SolutionRestoreRequest(
@@ -57,18 +56,6 @@ namespace NuGet.VisualStudio
             return new SolutionRestoreRequest(
                 forceRestore: forceRestore,
                 restoreSource: RestoreOperationSource.OnBuild);
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to
-        /// on-demand restore as requested by an user via Visual Studio UI.
-        /// </summary>
-        /// <returns>New instance of <see cref="SolutionRestoreRequest"/></returns>
-        public static SolutionRestoreRequest ByMenu()
-        {
-            return new SolutionRestoreRequest(
-                forceRestore: false,
-                restoreSource: RestoreOperationSource.Explicit);
         }
 
         /// <summary>
