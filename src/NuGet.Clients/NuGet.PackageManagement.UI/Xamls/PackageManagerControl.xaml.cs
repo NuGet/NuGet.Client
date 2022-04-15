@@ -233,6 +233,7 @@ namespace NuGet.PackageManagement.UI
 
         private void OnProjectChanged(object sender, IProjectContextInfo project)
         {
+            var sw = Stopwatch.StartNew();
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
@@ -252,10 +253,12 @@ namespace NuGet.PackageManagement.UI
                 {
                     await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
+                sw.Stop(); // stop in any case
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
+                sw.Stop();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
             }
         }
 
@@ -344,18 +347,21 @@ namespace NuGet.PackageManagement.UI
         private async ValueTask RefreshWhenNotExecutingActionAsync(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
         {
             var sw = Stopwatch.StartNew();
+            var refreshStatus = RefreshOperationStatus.NoOp;
             // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
             if (_isExecutingAction)
             {
                 _isRefreshRequired = true;
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
+                sw.Stop();
+                refreshStatus = RefreshOperationStatus.NoOp;
             }
             else
             {
                 await RefreshAsync();
                 sw.Stop();
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                refreshStatus = RefreshOperationStatus.Success;
             }
+            EmitRefreshEvent(timeSpanSinceLastRefresh, source, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
         }
 
         private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false, double? duration = null)
@@ -399,21 +405,19 @@ namespace NuGet.PackageManagement.UI
 
         private async Task PackageManagerLoadedAsync()
         {
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             var sw = Stopwatch.StartNew();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
+            var refreshStatus = RefreshOperationStatus.NoOp;
             // Do not trigger a refresh if this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
             if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                sw.Stop();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+                refreshStatus = RefreshOperationStatus.Success;
             }
-            else
-            {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false, 0);
-            }
+            sw.Stop();
+            EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
             await RefreshConsolidatablePackagesCountAsync();
         }
 
@@ -1532,9 +1536,14 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => ExecuteRestartSearchCommandAsync())
-                .PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                var sw = Stopwatch.StartNew();
+                await ExecuteRestartSearchCommandAsync();
+                sw.Stop();
+                EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success, duration: sw.Elapsed.TotalMilliseconds);
+
+            }).PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
         private void ExecuteSearchPackageCommand(object sender, ExecutedRoutedEventArgs e)
