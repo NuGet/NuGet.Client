@@ -721,52 +721,39 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_FrameworkImport_WarnOnAsync()
         {
             // Arrange
-            var sources = new List<PackageSource>
-            {
-                new PackageSource(NuGetConstants.V3FeedUrl)
-            };
+            using var pathContext = new SimpleTestPathContext();
 
-            using (var packagesDir = TestDirectory.Create())
-            using (var projectDir = TestDirectory.Create())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
-                    ""frameworks"": {
-                        ""dotnet"": {
-                            ""imports"": ""portable-net452+win81"",
-                            ""warn"": true
-                        }
-                    }
-                }");
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
 
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
 
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1",
+                pathContext.SolutionRoot,
+                framework: "net5.0",
+                dependencyName: "a",
+                useAssetTargetFallback: true,
+                assetTargetFallbackFrameworks: "net472",
+                asAssetTargetFallback: false);
+            var logger = new TestLogger();
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, pathContext, logger));
 
-                var command = new RestoreCommand(request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-                var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead of the project target framework '.NETPlatform,Version=v5.0'. This package may not be fully compatible with your project.";
+            // Act
+            var result = await command.ExecuteAsync();
 
-                // Act
-                var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                Assert.Equal(1, result.GetAllInstalled().Count);
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
-                Assert.Equal(1, logger.Messages.Where(message => message.Contains(warning)).Count());
-            }
+            // Assert
+            result.Success.Should().BeTrue();
+            result.GetAllInstalled().Should().HaveCount(1, because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
+            result.LockFile.LogMessages.Select(e => e.Message).First().Should().
+                Be("Package 'a 1.0.0' was restored using '.NETFramework,Version=v4.7.2' instead of the project target framework 'net5.0'. This package may not be fully compatible with your project.");
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+            logger.Errors.Should().Be(0, because: logger.ShowErrors());
+            logger.Warnings.Should().Be(1, because: logger.ShowWarnings());
         }
 
         [Fact]
