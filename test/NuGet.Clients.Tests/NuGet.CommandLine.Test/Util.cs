@@ -367,7 +367,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private static IPackageFile CreatePackageFile(string name)
+        public static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
             file.SetupGet(f => f.Path).Returns(name);

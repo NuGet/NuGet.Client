@@ -1418,13 +1418,13 @@ namespace NuGet.CommandLine.Test
                     "testPackage1", "1.1.0", source,
                     (builder) =>
                     {
-                        var dependencySet = new CoreV2.NuGet.PackageDependencySet(null,
+                        var dependencySet = new PackageDependencyGroup(null,
                             new[] {
-                                new CoreV2.NuGet.PackageDependency(
+                                new PackageDependency(
                                     "non_existing",
-                                    CoreV2.NuGet.VersionUtility.ParseVersionSpec("1.1"))
+                                    VersionRange.Parse("1.1"))
                             });
-                        builder.DependencySets.Add(dependencySet);
+                        builder.DependencyGroups.Add(dependencySet);
                     });
 
                 var nugetexe = Util.GetNuGetExePath();
@@ -1470,16 +1470,15 @@ namespace NuGet.CommandLine.Test
                     {
                         if (requestedVersion == null)
                         {
-                            var dependencySet = new CoreV2.NuGet.PackageDependencySet(null,
-                                new[] { new CoreV2.NuGet.PackageDependency("depPackage") });
-                            builder.DependencySets.Add(dependencySet);
+                            var dependencySet = new PackageDependencyGroup(null,
+                                new[] { new PackageDependency("depPackage") });
+                            builder.DependencyGroups.Add(dependencySet);
                         }
                         else
                         {
-                            var dependencySet = new CoreV2.NuGet.PackageDependencySet(null,
-                                new[] { new CoreV2.NuGet.PackageDependency("depPackage",
-                                    CoreV2.NuGet.VersionUtility.ParseVersionSpec(requestedVersion)) });
-                            builder.DependencySets.Add(dependencySet);
+                            var dependencySet = new PackageDependencyGroup(null,
+                                new[] { new PackageDependency("depPackage", VersionRange.Parse(requestedVersion)) });
+                            builder.DependencyGroups.Add(dependencySet);
                         }
                     });
 
