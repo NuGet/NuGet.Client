@@ -354,7 +354,9 @@ namespace NuGet.PackageManagement.UI
                 var sw = Stopwatch.StartNew();
                 await RefreshAsync();
                 sw.Stop();
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                double duration = sw.Elapsed.Milliseconds;
+                await TaskScheduler.Default;
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: duration);
             }
         }
 
