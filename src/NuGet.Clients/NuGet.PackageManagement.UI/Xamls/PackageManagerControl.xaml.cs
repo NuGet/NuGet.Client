@@ -683,6 +683,7 @@ namespace NuGet.PackageManagement.UI
             // Don't do anything if solution is closed.
             // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
             // only when package is missing last time and is not missing this time, we need to refresh
+            // Note: This event is not triggered on PackageReference projects. This triggers in packages.config projects
             if (!e.PackagesMissing && _missingPackageStatus)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
