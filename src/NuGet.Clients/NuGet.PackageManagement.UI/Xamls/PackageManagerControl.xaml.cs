@@ -233,7 +233,7 @@ namespace NuGet.PackageManagement.UI
 
         private void OnProjectChanged(object sender, IProjectContextInfo project)
         {
-            var sw = Stopwatch.StartNew();
+
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
@@ -253,12 +253,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.ProjectsChanged, timeSpan);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(OnProjectChanged));
-                sw.Stop(); // stop in any case
             }
             else
             {
-                sw.Stop();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false);
             }
         }
 
@@ -347,20 +345,19 @@ namespace NuGet.PackageManagement.UI
         private async ValueTask RefreshWhenNotExecutingActionAsync(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
         {
             var sw = Stopwatch.StartNew();
-            var refreshStatus = RefreshOperationStatus.NoOp;
+            RefreshOperationStatus refreshStatus;
             // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
             if (_isExecutingAction)
             {
                 _isRefreshRequired = true;
-                sw.Stop();
                 refreshStatus = RefreshOperationStatus.NoOp;
             }
             else
             {
                 await RefreshAsync();
-                sw.Stop();
                 refreshStatus = RefreshOperationStatus.Success;
             }
+            sw.Stop();
             EmitRefreshEvent(timeSpanSinceLastRefresh, source, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
         }
 
@@ -688,10 +685,12 @@ namespace NuGet.PackageManagement.UI
             // only when package is missing last time and is not missing this time, we need to refresh
             if (!e.PackagesMissing && _missingPackageStatus)
             {
-                EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
+                    var sw = Stopwatch.StartNew();
                     await RefreshAsync();
+                    sw.Stop();
+                    EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success, duration: sw.Elapsed.TotalMilliseconds);
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageRestoreManager_PackagesMissingStatusChanged));
             }
 
