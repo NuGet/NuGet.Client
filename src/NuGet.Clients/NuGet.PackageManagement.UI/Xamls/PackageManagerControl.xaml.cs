@@ -233,7 +233,6 @@ namespace NuGet.PackageManagement.UI
 
         private void OnProjectChanged(object sender, IProjectContextInfo project)
         {
-
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
@@ -344,21 +343,19 @@ namespace NuGet.PackageManagement.UI
 
         private async ValueTask RefreshWhenNotExecutingActionAsync(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
         {
-            var sw = Stopwatch.StartNew();
-            RefreshOperationStatus refreshStatus;
             // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
             if (_isExecutingAction)
             {
                 _isRefreshRequired = true;
-                refreshStatus = RefreshOperationStatus.NoOp;
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp, isUIFiltering: false);
             }
             else
             {
+                var sw = Stopwatch.StartNew();
                 await RefreshAsync();
-                refreshStatus = RefreshOperationStatus.Success;
+                sw.Stop();
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
             }
-            sw.Stop();
-            EmitRefreshEvent(timeSpanSinceLastRefresh, source, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
         }
 
         private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false, double? duration = null)
