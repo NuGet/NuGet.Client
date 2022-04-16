@@ -403,17 +403,19 @@ namespace NuGet.PackageManagement.UI
         {
             var sw = Stopwatch.StartNew();
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            var refreshStatus = RefreshOperationStatus.NoOp;
             // Do not trigger a refresh if this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
             if (!_loadedAndInitialized)
             {
                 _loadedAndInitialized = true;
                 await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                refreshStatus = RefreshOperationStatus.Success;
+                sw.Stop();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
             }
-            sw.Stop();
-            EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+            else
+            {
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false);
+            }
             await RefreshConsolidatablePackagesCountAsync();
         }
 
@@ -1541,7 +1543,6 @@ namespace NuGet.PackageManagement.UI
                 await ExecuteRestartSearchCommandAsync();
                 sw.Stop();
                 EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success, duration: sw.Elapsed.TotalMilliseconds);
-
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 

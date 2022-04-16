@@ -36,22 +36,19 @@ namespace NuGet.PackageManagement.VisualStudio
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>, new()
     {
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
+        private static readonly Lazy<bool> IsCounterFactualTriggered = new(() =>
+        {
+            try
+            {
+                TelemetryActivity.EmitTelemetryEvent(new TransitiveDependenciesCounterfactualEvent());
+            }
+            finally
+            {
+            }
+            return true;
+        }, isThreadSafe: false);
 
         private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
-
-        private static Lazy<bool> IsCounterFactualTriggered = new Lazy<bool>(
-            () =>
-            {
-                try
-                {
-                    var evt = new TransitiveDependenciesCounterfactualEvent();
-                    TelemetryActivity.EmitTelemetryEvent(evt);
-                }
-                finally
-                {
-                }
-                return true;
-            }, isThreadSafe: false);
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
