@@ -9,7 +9,6 @@ namespace NuGet.VisualStudio.Common.Test
 {
     public class TransitiveDependenciesCounterfactualEventTests
     {
-
         [Fact]
         public void EmitEvent_Succeeds()
         {
