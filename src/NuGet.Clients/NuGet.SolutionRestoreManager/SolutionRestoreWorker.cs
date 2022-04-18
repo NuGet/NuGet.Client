@@ -474,7 +474,6 @@ namespace NuGet.SolutionRestoreManager
             }
 
             ImplicitRestoreReason restoreReason = ImplicitRestoreReason.None;
-            ExplicitRestoreReason explicitRestoreReason = ExplicitRestoreReason.None;
             var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
             DateTime? bulkRestoreCoordinationCheckStartTime = default;
             // Loops until there are pending restore requests or it's get cancelled
@@ -509,7 +508,7 @@ namespace NuGet.SolutionRestoreManager
                         int requestCount = 1;
                         int projectsReadyCheckCount = 0;
                         int projectRestoreInfoSourcesCount = -1;
-                        explicitRestoreReason = request.ExplicitRestoreReason;
+                        ExplicitRestoreReason explicitRestoreReason = request.ExplicitRestoreReason;
                         List<TimeSpan> projectReadyTimings = null;
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
@@ -608,7 +607,8 @@ namespace NuGet.SolutionRestoreManager
                                     // Explicit is always preferred.
                                     request = new SolutionRestoreRequest(
                                         next.ForceRestore || request.ForceRestore,
-                                        RestoreOperationSource.Explicit);
+                                        RestoreOperationSource.Explicit,
+                                        explicitRestoreReason);
 
                                     // we don't want to delay explicit solution restore request so just break at this time.
                                     restoreReason = ImplicitRestoreReason.None;
