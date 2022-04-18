@@ -20,9 +20,6 @@ namespace NuGet.CommandLine.Test
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
 
-        private readonly string _originalCredentialProvidersEnvar =
-            Environment.GetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar);
-
         // Tests pushing to a source that is a v2 file system directory.
         [Fact]
         public void PushCommand_PushToV2FileSystemSource()

@@ -27,12 +27,7 @@ namespace NuGet.CommandLine.Test
 
         public static Stream AsStream(this string value)
         {
-            return AsStream(value, Encoding.UTF8);
-        }
-
-        public static Stream AsStream(this string value, Encoding encoding)
-        {
-            return new MemoryStream(encoding.GetBytes(value));
+            return new MemoryStream(Encoding.UTF8.GetBytes(value));
         }
     }
 }

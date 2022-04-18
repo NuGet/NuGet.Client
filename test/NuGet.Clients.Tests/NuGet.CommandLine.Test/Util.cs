@@ -269,39 +269,6 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
-        /// Creates a basic package builder for unit tests.
-        /// </summary>
-        public static PackageBuilder CreateTestPackageBuilder(string packageId, string version)
-        {
-            var packageBuilder = new PackageBuilder
-            {
-                Id = packageId,
-                Version = new NuGetVersion(version)
-            };
-
-            packageBuilder.Description = string.Format(
-                CultureInfo.InvariantCulture,
-                "desc of {0} {1}",
-                packageId, version);
-
-            packageBuilder.Authors.Add("test author");
-
-            return packageBuilder;
-        }
-
-        public static string CreateTestPackage(PackageBuilder packageBuilder, string directory)
-        {
-            var packageFileName = string.Format("{0}.{1}.nupkg", packageBuilder.Id, packageBuilder.Version);
-            var packageFileFullPath = Path.Combine(directory, packageFileName);
-            using (var fileStream = File.Create(packageFileFullPath))
-            {
-                packageBuilder.Save(fileStream);
-            }
-
-            return packageFileFullPath;
-        }
-
-        /// <summary>
         /// Create a project.json based project. Returns the path to the project file.
         /// </summary>
         public static string CreateUAPProject(string directory, string projectJsonContent)
@@ -481,11 +448,6 @@ namespace NuGet.CommandLine.Test
         public static string GetTestablePluginDirectory()
         {
             return Path.GetDirectoryName(GetTestablePluginPath());
-        }
-
-        public static bool IsSuccess(CommandRunnerResult result)
-        {
-            return result.Item1 == 0;
         }
 
         public static JObject CreateIndexJson()
