@@ -610,7 +610,7 @@ namespace NuGet.CommandLine.Test
         /// Create a simple package with a lib folder. This package should install everywhere.
         /// The package will be removed from the machine cache upon creation
         /// </summary>
-        public static string CreatePackage(string repositoryPath, string id, string version)
+        public static void CreatePackage(string repositoryPath, string id, string version)
         {
 
             var context = new SimpleTestPackageContext(id, version);
@@ -620,7 +620,6 @@ namespace NuGet.CommandLine.Test
             context.AddFile("lib/win/a.dll", "a");
             context.AddFile("lib/net20/a.dll", "a");
             SimpleTestPackageUtility.CreateOPCPackage(context, repositoryPath);
-            return "yay";
         }
 
         /// <summary>

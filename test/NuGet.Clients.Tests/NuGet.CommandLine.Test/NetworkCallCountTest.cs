@@ -832,7 +832,7 @@ namespace NuGet.CommandLine.Test
                 var outputPath = Path.Combine(workingPath, "output");
                 Directory.CreateDirectory(outputPath);
 
-                var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
+                Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -905,7 +905,7 @@ namespace NuGet.CommandLine.Test
                 var outputPath = Path.Combine(workingPath, "output");
                 Directory.CreateDirectory(outputPath);
 
-                var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
+                Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -980,7 +980,7 @@ namespace NuGet.CommandLine.Test
                 var outputPath = Path.Combine(workingPath, "output");
                 Directory.CreateDirectory(outputPath);
 
-                var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
+                Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -1051,7 +1051,7 @@ namespace NuGet.CommandLine.Test
                 var outputPath = Path.Combine(workingPath, "output");
                 Directory.CreateDirectory(outputPath);
 
-                var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
+                Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -1544,13 +1544,13 @@ namespace NuGet.CommandLine.Test
             Directory.CreateDirectory(repositoryPath);
             Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
-            var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
-            var packageB = Util.CreatePackage(repositoryPath, "packageB", "1.0.0");
-            var packageC = Util.CreatePackage(repositoryPath, "packageC", "1.0.0");
+            Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
+            Util.CreatePackage(repositoryPath, "packageB", "1.0.0");
+            Util.CreatePackage(repositoryPath, "packageC", "1.0.0");
 
-            var packageD = Util.CreatePackage(repositoryPath, "packageD", "1.0.0");
-            var packageE = Util.CreatePackage(repositoryPath, "packageE", "1.0.0");
-            var packageF = Util.CreatePackage(repositoryPath, "packageF", "1.0.0");
+            Util.CreatePackage(repositoryPath, "packageD", "1.0.0");
+            Util.CreatePackage(repositoryPath, "packageE", "1.0.0");
+            Util.CreatePackage(repositoryPath, "packageF", "1.0.0");
 
             Util.CreateFile(
                proj1Dir,
