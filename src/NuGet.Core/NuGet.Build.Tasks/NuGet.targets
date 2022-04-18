@@ -590,10 +590,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_RestoreProjectFramework/>
       <TargetFrameworkToBeUsed>$(TargetFrameworks)</TargetFrameworkToBeUsed>
-      <TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' != '' ">$(_TargetFrameworkOverride)</TargetFrameworkToBeUsed>
+      <TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' != '' "></TargetFrameworkToBeUsed>
     </PropertyGroup>
-
-    <!-- TODO NK add it here-->
 
     <!-- For project.json projects target frameworks will be read from project.json. -->
     <GetProjectTargetFrameworksTask
@@ -779,7 +777,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- Determine if this will use cross targeting -->
-    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(TargetFrameworks)' != '' ">
+    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' ">
       <_RestoreCrossTargeting>true</_RestoreCrossTargeting>
     </PropertyGroup>
 
@@ -855,7 +853,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RepositoryPath>$(_OutputRepositoryPath)</RepositoryPath>
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks> <!-- what here? does it matter-->
         </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -867,7 +865,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks> <!-- what here? does it matter-->
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>
@@ -906,7 +904,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' "
+    Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' "
     DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
     Returns="@(_RestoreGraphEntry)">
 
@@ -931,8 +929,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     Walk dependencies with the current framework.
     ============================================================
   -->
+  <!-- probably it does not matter -->
   <Target Name="_GenerateProjectRestoreGraphCurrentProject"
-    Condition=" '$(TargetFrameworks)' == '' "
+    Condition=" '$(TargetFrameworks)' == '' OR '$(_TargetFrameworkOverride)' != '' " 
     DependsOnTargets="_GenerateProjectRestoreGraphPerFramework"
     Returns="@(_RestoreGraphEntry)">
   </Target>
@@ -1040,7 +1039,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreProjectPathItemsCurrentProject"
-    Condition=" '$(TargetFrameworks)' == '' "
+    Condition=" '$(TargetFrameworks)' == '' OR '$(_TargetFrameworkOverride)' != '' "
     DependsOnTargets="_GenerateRestoreProjectPathItemsPerFramework"
     Returns="@(_RestoreProjectPathItems)">
   </Target>
@@ -1090,7 +1089,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreProjectPathItemsAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' "
+    Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' "
     DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
     Returns="@(_RestoreProjectPathItems)">
 
