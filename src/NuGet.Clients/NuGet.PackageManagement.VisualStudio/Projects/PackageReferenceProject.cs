@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
         private static readonly object CounterfactualLock = new();
-        private static bool IsCounterfactualEmitted = false;
+        internal static bool IsCounterfactualEmitted = false;
 
         private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
 
