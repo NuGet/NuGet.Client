@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
-                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
 
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
 
@@ -123,7 +123,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
-                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
 
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
 
@@ -178,7 +178,7 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(
                     configFileDirectory,
@@ -428,7 +428,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Util.VerifyResultSuccess(result);
                 // Ensure that no messages are shown with Verbosity as Quiet
-                Assert.Equal(string.Empty, result.Item2);
+                Assert.Equal(string.Empty, result.Output);
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");

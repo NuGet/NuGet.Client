@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
@@ -153,7 +153,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
@@ -207,7 +207,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
@@ -273,7 +273,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -321,7 +321,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -383,7 +383,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -400,7 +400,7 @@ namespace NuGet.CommandLine.Test
                     },
                     files);
 
-                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
+                Assert.False(r.Output.Contains("Assembly outside lib folder"));
             }
         }
 
@@ -438,7 +438,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -453,7 +453,7 @@ namespace NuGet.CommandLine.Test
                     },
                     files);
 
-                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
+                Assert.False(r.Output.Contains("Assembly outside lib folder"));
             }
         }
 
@@ -506,7 +506,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec -symbols -SymbolPackageFormat snupkg",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -674,7 +674,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec -symbols -SymbolPackageFormat snupkg",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -753,7 +753,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -872,7 +872,7 @@ namespace Proj2
                     proj2Directory,
                     "pack proj2.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
@@ -976,7 +976,7 @@ namespace Proj1
                 // Assert
                 if (packEnabled)
                 {
-                    Assert.True(0 == r.Item1, r.AllOutput);
+                    Assert.True(0 == r.ExitCode, r.AllOutput);
                     var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
                     Assert.True(File.Exists(nupkgName));
                     var package = new PackageArchiveReader(File.OpenRead(nupkgName));
@@ -993,7 +993,7 @@ namespace Proj1
                 }
                 else
                 {
-                    Assert.True(1 == r.Item1, r.AllOutput);
+                    Assert.True(1 == r.ExitCode, r.AllOutput);
                     var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
                     Assert.False(File.Exists(nupkgName));
 
@@ -1079,7 +1079,7 @@ namespace Proj1
                     proj1Directory,
                     "pack proj1.csproj -build ",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
@@ -1174,7 +1174,7 @@ namespace Proj2
                     proj2Directory,
                     $"pack proj2.csproj -build -IncludeReferencedProjects -symbols -SymbolPackageFormat {extension}",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 using (var package = new PackageArchiveReader(Path.Combine(proj2Directory, $"proj2.0.0.0.{extension}")))
@@ -1248,7 +1248,7 @@ namespace Proj2
                     projDirectory,
                     $"pack A.csproj -build -symbols -SymbolPackageFormat {extension}",
                     waitForExit: true);
-                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                Assert.True(result.ExitCode == 0, result.Output + " " + result.Errors);
 
                 // Assert
                 using (var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}")))
@@ -1320,7 +1320,7 @@ public class B
                     projDirectory,
                     $"pack A.csproj -build -symbols -SymbolPackageFormat {extension}",
                     waitForExit: true);
-                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                Assert.True(result.ExitCode == 0, result.Output + " " + result.Errors);
 
                 // Assert
                 using (var package = new PackageArchiveReader(Path.Combine(projDirectory, $"A.0.0.0.{extension}")))
@@ -1391,7 +1391,7 @@ public class B
                     projDirectory,
                     "pack A.csproj -build",
                     waitForExit: true);
-                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                Assert.True(result.ExitCode == 0, result.Output + " " + result.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(projDirectory, "A.0.0.0.nupkg")));
@@ -1488,7 +1488,7 @@ public class B
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -1601,10 +1601,10 @@ public class B
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
-                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
-                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Output);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Output);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -1715,7 +1715,7 @@ public class B
                     proj1Directory,
                     $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion {version}",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -1820,7 +1820,7 @@ public class B
                     proj1Directory,
                     $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 15.0",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -1935,11 +1935,11 @@ public class B
                     proj1Directory,
                     $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion {version}",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
-                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
-                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Output);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Output);
 
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
                 var files = package.GetFiles().ToArray();
@@ -2046,11 +2046,11 @@ public class B
                     proj1Directory,
                     $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 15.0",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
-                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
-                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Output);
+                Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Output);
 
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
                 var files = package.GetNonPackageDefiningFiles();
@@ -2160,7 +2160,7 @@ public class B
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects -Properties prefix=" + prefixTokenValue,
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -2202,7 +2202,7 @@ public class B
                 var outputPackage = new PackageArchiveReader(File.OpenRead(outputPackageFileName));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3); // Exited successfully
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors); // Exited successfully
                 Assert.Equal(new NuGetVersion(version), outputPackage.NuspecReader.GetVersion());
             }
         }
@@ -2230,7 +2230,7 @@ public class B
                 var outputPackage = new PackageArchiveReader(File.OpenRead(outputPackageFileName));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3); // Exited successfully
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors); // Exited successfully
                 Assert.Equal(new NuGetVersion(semverVersion), outputPackage.NuspecReader.GetVersion());
             }
         }
@@ -2403,7 +2403,7 @@ namespace " + projectName + @"
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -2471,14 +2471,14 @@ namespace " + projectName + @"
 
                 // Verify the nuget pack command exit code
                 Assert.NotNull(commandRunner);
-                Assert.Equal(1, commandRunner.Item1);
+                Assert.Equal(1, commandRunner.ExitCode);
 
                 var exepctedError = string.Format(
                     "Unable to output resolved nuspec file because it would overwrite the original at '{0}\\{1}'\r\n",
                     workingDirectory,
                     nuspecName);
 
-                Assert.Contains(exepctedError, commandRunner.Item3);
+                Assert.Contains(exepctedError, commandRunner.Errors);
             }
         }
 
@@ -2545,8 +2545,8 @@ namespace " + projectName + @"
                 // Verify the nuget pack command exit code
                 Assert.NotNull(commandRunner);
                 Assert.True(
-                    0 == commandRunner.Item1,
-                    string.Format("{0} {1}", commandRunner.Item2 ?? "null", commandRunner.Item3 ?? "null"));
+                    0 == commandRunner.ExitCode,
+                    string.Format("{0} {1}", commandRunner.Output ?? "null", commandRunner.Errors ?? "null"));
 
                 var nupkgPath = Path.Combine(workingDirectory, "packageA.nupkg");
 
@@ -2647,8 +2647,8 @@ namespace " + projectName + @"
                 // Verify the nuget pack command exit code
                 Assert.NotNull(commandRunner);
                 Assert.True(
-                    0 == commandRunner.Item1,
-                    string.Format("{0} {1}", commandRunner.Item2 ?? "null", commandRunner.Item3 ?? "null"));
+                    0 == commandRunner.ExitCode,
+                    string.Format("{0} {1}", commandRunner.Output ?? "null", commandRunner.Errors ?? "null"));
 
                 var nupkgPath = Path.Combine(workingDirectory, "packageA.nupkg");
 
@@ -2706,7 +2706,7 @@ namespace " + projectName + @"
                     $"pack proj1.csproj -build -IncludeReferencedProjects -outputDirectory \"{outputDirectory}\"",
                     waitForExit: true);
 
-                Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + Environment.NewLine + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(outputDirectory, "proj1.0.0.0.nupkg")));
@@ -2755,7 +2755,7 @@ namespace " + projectName + @"
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -2798,7 +2798,7 @@ namespace " + projectName + @"
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -2927,7 +2927,7 @@ namespace Proj2
                     proj2Directory,
                     "pack proj2.csproj -p Config=Release",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
@@ -3042,7 +3042,7 @@ namespace Proj2
                     proj2Directory,
                     "pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
 
@@ -3103,7 +3103,7 @@ namespace Proj2
                     "pack package.nuspec",
                     waitForExit: true);
 
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(projDirectory, "ExcludeBug.0.1.0.nupkg")));
@@ -3192,7 +3192,7 @@ namespace Proj1
                     proj1Directory,
                     "pack proj1.csproj -build",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -3276,7 +3276,7 @@ namespace Proj1
                     proj1Directory,
                     "pack proj1.csproj -build",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -3392,7 +3392,7 @@ namespace Proj1
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -3504,7 +3504,7 @@ namespace Proj1
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
@@ -3615,7 +3615,7 @@ namespace Proj1
                     proj1Directory,
                     "pack proj1.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 Assert.Contains(string.Format(AnalysisResources.UnspecifiedDependencyVersionWarning, "json"), r.AllOutput);
@@ -3726,7 +3726,7 @@ namespace Proj2
                     $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 14",
                     waitForExit: true);
 
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
 
@@ -3851,7 +3851,7 @@ namespace Proj2
                     $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 15.0",
                     waitForExit: true);
 
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
 
@@ -3975,7 +3975,7 @@ namespace Proj2
                     proj2Directory,
                     @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildVersion 15.1",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
 
@@ -4103,13 +4103,13 @@ namespace Proj2
                     proj2Directory,
                     $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildPath ""{msbuildPath}"" ",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
 
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
-                Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
+                Assert.True(r.Output.Contains($"Using Msbuild from '{msbuildPath}'."));
 
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
                 var files = package.GetNonPackageDefiningFiles();
@@ -4232,14 +4232,14 @@ namespace Proj2
                     proj2Directory,
                     $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildPath ""{msbuildPath}"" -MSBuildVersion 12 ",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
 
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
-                Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
-                Assert.True(r.Item2.Contains($"MsbuildPath : {msbuildPath} is using, ignore MsBuildVersion: 12."));
+                Assert.True(r.Output.Contains($"Using Msbuild from '{msbuildPath}'."));
+                Assert.True(r.Output.Contains($"MsbuildPath : {msbuildPath} is using, ignore MsBuildVersion: 12."));
 
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
                 var files = package.GetNonPackageDefiningFiles();
@@ -4358,11 +4358,11 @@ namespace Proj2
                     proj2Directory,
                     $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildPath ""{msbuildPath}"" ",
                     waitForExit: true);
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
 
-                Assert.True(r.Item3.Contains($"MSBuildPath : {msbuildPath}  doesn't not exist."));
+                Assert.True(r.Errors.Contains($"MSBuildPath : {msbuildPath}  doesn't not exist."));
             }
         }
 
@@ -4494,7 +4494,7 @@ stuff \n &lt;&lt;
                     workingDirectory,
                     "pack packageA.nuspec -verbosity detailed",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
@@ -4584,10 +4584,10 @@ stuff \n <<".Replace("\r\n", "\n");
                     proj1Directory,
                     "pack proj1.csproj -build",
                     waitForExit: true);
-                Assert.Equal(1, r.Item1);
+                Assert.Equal(1, r.ExitCode);
 
                 // Assert
-                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Errors);
             }
         }
 
@@ -4630,7 +4630,7 @@ stuff \n <<".Replace("\r\n", "\n");
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0-beta.1.build.234.nupkg");
@@ -4706,7 +4706,7 @@ namespace Proj1
                     proj1ProjectDirectory,
                     @"pack proj1.csproj -build -IncludeReferencedProjects -Properties Configuration=Release",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 Assert.True(Directory.Exists(Path.Combine(proj1ProjectDirectory, "out", "Release")));
@@ -4904,7 +4904,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
@@ -4968,7 +4968,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
@@ -5034,12 +5034,12 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     "pack packageA.nuspec",
                     waitForExit: true);
                 // This should fail.
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
                 Assert.False(File.Exists(nupkgPath));
-                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Item3);
+                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Errors);
             }
         }
 
@@ -5082,12 +5082,12 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     "pack packageA.nuspec",
                     waitForExit: true);
                 // This should fail.
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
                 Assert.False(File.Exists(nupkgPath));
-                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Item3);
+                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Errors);
             }
         }
 
@@ -5130,13 +5130,13 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     "pack packageA.nuspec",
                     waitForExit: true);
                 // This should fail.
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
                 Assert.False(File.Exists(nupkgPath));
-                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Item3);
-                Assert.Contains("is not supported by this toolset. The highest supported version is", r.Item3);
+                Assert.Contains($"An error occured while trying to parse the value '{licenseExpr}' of property 'license' in the manifest file.", r.Errors);
+                Assert.Contains("is not supported by this toolset. The highest supported version is", r.Errors);
             }
         }
 
@@ -5183,7 +5183,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
@@ -5252,13 +5252,13 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     "pack packageA.nuspec",
                     waitForExit: true);
                 // This should fail.
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
                 Assert.False(File.Exists(nupkgPath));
                 // file not found.
-                Assert.Contains("NU5030", r.Item3);
+                Assert.Contains("NU5030", r.Errors);
             }
         }
 
@@ -5303,13 +5303,13 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     "pack packageA.nuspec",
                     waitForExit: true);
                 // This should fail.
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
                 Assert.False(File.Exists(nupkgPath));
                 // file not found.
-                Assert.Contains("NU5031", r.Item3);
+                Assert.Contains("NU5031", r.Errors);
             }
         }
 
@@ -5355,13 +5355,13 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     "pack packageA.nuspec",
                     waitForExit: true);
                 // This should fail.
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
                 Assert.False(File.Exists(nupkgPath));
                 // file not found.
-                Assert.Contains("Unrecognized license type", r.Item3);
+                Assert.Contains("Unrecognized license type", r.Errors);
             }
         }
 
@@ -5404,13 +5404,13 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     "pack packageA.nuspec",
                     waitForExit: true);
                 // This should fail.
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
                 Assert.False(File.Exists(nupkgPath));
                 // file not found.
-                Assert.Contains("The element 'license' cannot be empty", r.Item3);
+                Assert.Contains("The element 'license' cannot be empty", r.Errors);
             }
         }
 
@@ -5449,9 +5449,9 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
-                Assert.Contains("NU5125", r.Item2);
+                Assert.Contains("NU5125", r.Output);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
@@ -5515,7 +5515,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
@@ -5619,7 +5619,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     $"pack {packageName}.csproj -build -symbols -SymbolPackageFormat {extension}",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{packageName}.{version}.nupkg");
@@ -5721,7 +5721,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
@@ -5789,7 +5789,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     workingDirectory,
                     "pack packageA.nuspec",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
@@ -6670,7 +6670,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                         workingDirectory,
                         string.Format(command, path),
                         waitForExit: true);
-                    Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                    Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
 
                     using (var reader = new PackageArchiveReader(packagePath))
@@ -7094,7 +7094,7 @@ using System.Runtime.InteropServices;
                     projectDirectory,
                     "pack -build",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(projectDirectory, "proj.1.0.0.nupkg");
@@ -7214,7 +7214,7 @@ using System.Runtime.InteropServices;
                     projectDirectory,
                     "pack -build",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Assert
                 var nupkgPath = Path.Combine(projectDirectory, "proj.1.0.0.nupkg");
@@ -7260,7 +7260,7 @@ using System.Runtime.InteropServices;
                     projDirectory,
                     "pack A.csproj -build",
                     waitForExit: true);
-                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                Assert.True(result.ExitCode == 0, result.Output + " " + result.Errors);
 
                 // Assert
                 using (var package = new PackageArchiveReader(Path.Combine(projDirectory, "A.0.0.0.nupkg")))
@@ -7331,7 +7331,7 @@ using System.Runtime.InteropServices;
                         },
                         files);
 
-                    Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+                    Assert.False(packResult.Output.Contains("Assembly outside lib folder"));
                 }
             }
         }
@@ -7411,7 +7411,7 @@ namespace proj1
                         },
                         files);
 
-                    Assert.False(packResult.Item2.Contains("Assembly outside lib folder"));
+                    Assert.False(packResult.Output.Contains("Assembly outside lib folder"));
                 }
             }
         }

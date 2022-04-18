@@ -289,7 +289,7 @@ namespace NuGet.CommandLine.Test
 
                 // Main Assert
                 Util.VerifyResultSuccess(result);
-                var output = result.Item2;
+                var output = result.Output;
                 foreach (var p in packages)
                 {
                     output.Contains(string.Format(
@@ -351,7 +351,7 @@ namespace NuGet.CommandLine.Test
                     firstPackage.ToString(),
                     testInfo.DestinationFeed));
 
-                var output = result.Item2;
+                var output = result.Output;
                 foreach (var p in packages.Skip(1))
                 {
                     output.Contains(string.Format(

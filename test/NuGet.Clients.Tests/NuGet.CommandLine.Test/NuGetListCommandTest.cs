@@ -40,8 +40,8 @@ namespace NuGet.CommandLine.Test
                 });
 
             // Assert
-            Assert.Contains(expected, result.Item2 + " " + result.Item3);
-            Assert.NotEqual(0, result.Item1);
+            Assert.Contains(expected, result.Output + " " + result.Errors);
+            Assert.NotEqual(0, result.ExitCode);
         }
 
         [Fact]
@@ -71,8 +71,8 @@ namespace NuGet.CommandLine.Test
                 });
 
             // Assert
-            Assert.Contains(expected, result.Item2 + " " + result.Item3);
-            Assert.NotEqual(0, result.Item1);
+            Assert.Contains(expected, result.Output + " " + result.Errors);
+            Assert.NotEqual(0, result.ExitCode);
         }
 
         [Fact]
@@ -96,8 +96,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
-                var output = result.Item2;
+                Assert.Equal(0, result.ExitCode);
+                var output = result.Output;
                 Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
@@ -122,8 +122,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
-                var output = r.Item2;
+                Assert.Equal(0, r.ExitCode);
+                var output = r.Output;
                 string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
                 Assert.Equal(5, lines.Length);
@@ -173,8 +173,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
-                var output = result.Item2;
+                Assert.Equal(0, result.ExitCode);
+                var output = result.Output;
                 Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
@@ -222,12 +222,12 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, result.Item1);
+                    Assert.Equal(0, result.ExitCode);
 
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, result.Item2);
+                    Assert.Equal(expectedOutput, result.Output);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -279,12 +279,12 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(r1.Item1 == 0, r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.ExitCode == 0, r1.Output + " " + r1.Errors);
 
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
                     var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, r1.Output);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -340,13 +340,13 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(r1.Item1 == 0, r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.ExitCode == 0, r1.Output + " " + r1.Errors);
 
                     // verify that both testPackage1 and testPackage2 are listed.
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, r1.Output);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -398,11 +398,11 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     // verify that the output is detailed
-                    Assert.Contains(new PackageArchiveReader(package1.OpenRead()).NuspecReader.GetDescription(), r1.Item2);
-                    Assert.Contains(new PackageArchiveReader(package2.OpenRead()).NuspecReader.GetDescription(), r1.Item2);
+                    Assert.Contains(new PackageArchiveReader(package1.OpenRead()).NuspecReader.GetDescription(), r1.Output);
+                    Assert.Contains(new PackageArchiveReader(package2.OpenRead()).NuspecReader.GetDescription(), r1.Output);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -455,12 +455,12 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, r1.Output);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -515,12 +515,12 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    Assert.Equal(expectedOutput, r1.Output);
 
                     Assert.Contains("$filter=IsAbsoluteLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -575,12 +575,12 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    r1.Item2.Should().Be(expectedOutput);
+                    r1.Output.Should().Be(expectedOutput);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -675,12 +675,12 @@ namespace NuGet.CommandLine.Test
                         serverV3.Stop();
 
                         // Assert
-                        Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                        Assert.True(result.ExitCode == 0, result.Output + " " + result.Errors);
 
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                             "testPackage2 2.1.0" + Environment.NewLine;
-                        Assert.Equal(expectedOutput, result.Item2);
+                        Assert.Equal(expectedOutput, result.Output);
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);
                         Assert.Contains("searchTerm='test", searchRequest);
@@ -735,7 +735,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                    Assert.True(result.ExitCode == 0, result.Output + " " + result.Errors);
 
                     // verify that only package id & version is displayed
                     var expectedOutput =
@@ -745,7 +745,7 @@ namespace NuGet.CommandLine.Test
                       serverV3.Uri + "index.json");
 
                     // Verify that the output contains the expected output
-                    Assert.True(result.Item2.Contains(expectedOutput));
+                    Assert.True(result.Output.Contains(expectedOutput));
                 }
             }
         }
@@ -790,11 +790,11 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
+                    Assert.True(result.ExitCode != 0, result.Output + " " + result.Errors);
 
                     Assert.True(
-                        result.Item3.Contains("404 (Not Found)"),
-                        "Expected error message not found in " + result.Item3
+                        result.Errors.Contains("404 (Not Found)"),
+                        "Expected error message not found in " + result.Errors
                         );
                 }
             }
@@ -818,15 +818,15 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+                    result.ExitCode != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Output);
 
                 Assert.True(
-                    result.Item3.Contains(
+                    result.Errors.Contains(
                         string.Format(
                             "The specified source '{0}' is invalid. Please provide a valid source.",
                             invalidInput)),
-                    "Expected error message not found in " + result.Item3
+                    "Expected error message not found in " + result.Errors
                     );
             }
         }
@@ -851,10 +851,10 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+                    result.ExitCode != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Output);
 
-                Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Item3);
+                Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Errors);
             }
         }
 
@@ -875,13 +875,13 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Assert.True(
-                result.Item1 != 0,
-                "The run did not fail as desired. Simply got this output:" + result.Item2);
+                result.ExitCode != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Output);
 
             Assert.True(
-                result.Item3.Contains(
+                result.Errors.Contains(
                     "returned an unexpected status code '404 Not Found'."),
-                "Expected error message not found in:\n " + result.Item3
+                "Expected error message not found in:\n " + result.Errors
                 );
         }
 
@@ -904,12 +904,12 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+                    result.ExitCode != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Output);
 
                 Assert.True(
-                    result.Item3.Contains($"Unable to load the service index for source {invalidInput}."),
-                    "Expected error message not found in " + result.Item3
+                    result.Errors.Contains($"Unable to load the service index for source {invalidInput}."),
+                    "Expected error message not found in " + result.Errors
                     );
             }
         }
@@ -1037,11 +1037,11 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
                     Assert.True(serverReceiveProperAuthorizationHeader);
-                    Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
+                    Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Output);
                     // verify that only package id & version is displayed
-                    Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Item2);
+                    Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Output);
 
                 }
             }
@@ -1138,11 +1138,11 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
                     Assert.True(serverReceiveProperAuthorizationHeader);
-                    Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
+                    Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Output);
                     // verify that only package id & version is displayed
-                    Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Item2);
+                    Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Output);
 
                 }
             }

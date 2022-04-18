@@ -482,7 +482,7 @@ namespace NuGet.CommandLine
                 {
                     var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                    Assert.Equal(0, r.Item1);
+                    Assert.Equal(0, r.ExitCode);
                     Array.Sort(files);
                     Assert.Equal(
                         files,
@@ -526,7 +526,7 @@ namespace NuGet.CommandLine
                 {
                     var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                    Assert.Equal(0, r.Item1);
+                    Assert.Equal(0, r.ExitCode);
                     Array.Sort(files);
                     Assert.Equal(
                         files,
@@ -580,7 +580,7 @@ namespace NuGet.CommandLine
                 {
                     var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                    Assert.Equal(0, r.Item1);
+                    Assert.Equal(0, r.ExitCode);
                     Array.Sort(files);
                     Assert.Equal(
                         files,

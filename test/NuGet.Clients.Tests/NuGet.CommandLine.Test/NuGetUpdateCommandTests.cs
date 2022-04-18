@@ -125,7 +125,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
 
@@ -208,7 +208,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -331,7 +331,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content1 = File.ReadAllText(projectFile1);
                 Assert.False(content1.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -427,11 +427,11 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
-                Assert.Contains("Scanning for projects...", r.Item2);
-                Assert.Contains($"WARNING: Found multiple project files for '{packagesConfigFile}'.", r.Item2);
-                Assert.Contains("No projects found with packages.config.", r.Item2);
+                Assert.Contains("Scanning for projects...", r.Output);
+                Assert.Contains($"WARNING: Found multiple project files for '{packagesConfigFile}'.", r.Output);
+                Assert.Contains("No projects found with packages.config.", r.Output);
 
                 var content1 = File.ReadAllText(projectFile1);
                 Assert.True(content1.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -514,7 +514,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0-beta", "lib", "net45", "file.dll"))));
@@ -596,7 +596,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -685,7 +685,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A." + oldVersion.ToString(), "lib", "net45", "file.dll"))));
@@ -778,7 +778,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -871,7 +871,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -954,7 +954,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -1037,8 +1037,8 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
-                System.Console.WriteLine(r.Item2);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
+                System.Console.WriteLine(r.Output);
 
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
@@ -1148,7 +1148,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
                 Assert.False(File.Exists(test1textPath), "Content file test1.txt should not exist but does.");
                 Assert.True(File.Exists(test2textPath), "Content file test2.txt should exist but does not.");
 
@@ -1245,7 +1245,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Should be no errors returned - used to fail as update command assumed folder was <solutiondir>\packages.
-                Assert.Empty(r.Item3);
+                Assert.Empty(r.Errors);
 
                 // Check that the new version is installed into the custom folder
                 Assert.True(Directory.Exists(Path.Combine(packagesDirectory, "A.2.0.0")));
@@ -1432,7 +1432,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Should be no errors returned - used to fail as update command assumed folder was <solutiondir>\packages.
-                Assert.Empty(r.Item3);
+                Assert.Empty(r.Errors);
 
                 // Check that the new version is installed into the custom folder
                 Assert.True(Directory.Exists(Path.Combine(packagesDirectory, "A.2.0.0")));
@@ -1560,7 +1560,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
             }
         }
 
@@ -1654,10 +1654,10 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 //Assert
-                Assert.True(commandRunResult.Item1 == 0, "Output is " + commandRunResult.Item2 + ". Error is " + commandRunResult.Item3);
+                Assert.True(commandRunResult.ExitCode == 0, "Output is " + commandRunResult.Output + ". Error is " + commandRunResult.Errors);
                 var content = File.ReadAllText(projectFile);
                 // Assert no error
-                Assert.Equal(0, commandRunResult.Item1);
+                Assert.Equal(0, commandRunResult.ExitCode);
                 Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "dep." + expectedVersion, "lib", "net45", "file.dll"))));
             }
         }
