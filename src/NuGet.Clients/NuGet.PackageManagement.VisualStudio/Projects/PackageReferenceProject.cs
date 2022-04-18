@@ -36,17 +36,8 @@ namespace NuGet.PackageManagement.VisualStudio
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>, new()
     {
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
-        private static readonly Lazy<bool> IsCounterFactualTriggered = new(() =>
-        {
-            try
-            {
-                TelemetryActivity.EmitTelemetryEvent(new TransitiveDependenciesCounterfactualEvent());
-            }
-            finally
-            {
-            }
-            return true;
-        }, isThreadSafe: false);
+        private static readonly object CounterfactualLock = new();
+        private static bool IsCounterfactualEmitted = false;
 
         private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
 
@@ -172,9 +163,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            if (!IsCounterFactualTriggered.IsValueCreated)
+            if (!IsCounterfactualEmitted)
             {
-                _ = IsCounterFactualTriggered.Value;
+                // we just need at least one event per VS session
+                // Dirty reads can occur, but, we don't need to guarantee an exactly-once event call to emit telemetry
+                lock (CounterfactualLock)
+                {
+                    TelemetryActivity.EmitTelemetryEvent(new TransitiveDependenciesCounterfactualEvent());
+                    IsCounterfactualEmitted = true;
+                }
             }
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
