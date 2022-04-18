@@ -7,7 +7,7 @@ namespace NuGet.VisualStudio
 {
     public class TransitiveDependenciesCounterfactualEvent : TelemetryEvent
     {
-        private const string EventName = "TransitiveDependenciesCounterfactual";
+        internal const string EventName = "TransitiveDependenciesCounterfactual";
 
         public TransitiveDependenciesCounterfactualEvent() : base(EventName)
         {

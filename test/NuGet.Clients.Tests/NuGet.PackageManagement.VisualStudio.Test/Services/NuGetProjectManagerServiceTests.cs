@@ -793,7 +793,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_WithCpsPackageReferenceProject_OneTransitiveReferenceAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_WithCpsPackageReferenceProject_OneTransitiveReferenceAndEmitsCounterfactualTelemetryAsync()
         {
             // packageA_2.0.0 -> packageB_1.0.0
 
@@ -877,6 +877,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(1, packagesB.Count());
             Assert.Collection(packagesB,
                 pkg => AssertElement(pkg, "packageA", "2.0.0"));
+            Assert.Contains(telemetryEvents, te => te.Name == TransitiveDependenciesCounterfactualEvent.EventName);
         }
 
         [Fact]
