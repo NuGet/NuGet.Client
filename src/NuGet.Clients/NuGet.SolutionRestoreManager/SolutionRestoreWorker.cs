@@ -608,7 +608,7 @@ namespace NuGet.SolutionRestoreManager
                                     request = new SolutionRestoreRequest(
                                         next.ForceRestore || request.ForceRestore,
                                         RestoreOperationSource.Explicit,
-                                        explicitRestoreReason);
+                                        next.ExplicitRestoreReason);
 
                                     // we don't want to delay explicit solution restore request so just break at this time.
                                     restoreReason = ImplicitRestoreReason.None;
