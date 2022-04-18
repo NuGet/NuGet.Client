@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using Microsoft.VisualStudio.Experimentation;
 using NuGet.Common;
 using NuGet.VisualStudio.Telemetry;
@@ -58,8 +59,8 @@ namespace NuGet.VisualStudio
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 IOutputConsole console = await _outputConsoleProvider.Value.CreatePackageManagerConsoleAsync();
-                await console.WriteLineAsync(string.Format(Resources.ExperimentVariableOverrideLogText, flightName, variableName, variableValue));
-            }).PostOnFailure(nameof(NuGetExperimentationService));
+                await console.WriteLineAsync(string.Format(CultureInfo.CurrentUICulture, Resources.ExperimentVariableOverrideLogText, flightName, variableName, variableValue));
+            }).PostOnFailure(nameof(NuGetExperimentationService), nameof(LogEnvironmentVariableOverride));
         }
     }
 }
