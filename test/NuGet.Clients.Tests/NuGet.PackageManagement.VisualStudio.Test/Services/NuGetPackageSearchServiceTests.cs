@@ -436,7 +436,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task CreatePackageFeedAsync_ProjectPMUIInstalledTab_EmitsCounterfactualTelemetryAsync()
         {
-            // Prepare: Create telemetry
+            // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
             var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
             telemetrySession
@@ -445,6 +445,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
             using NuGetPackageSearchService searchService = SetupSearchService();
+
+            CounterfactualMutex.IsPMUICounterfactualEmitted = false;
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
@@ -456,6 +458,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 sourceRepositories: new List<SourceRepository>() { _sourceRepository },
                 cancellationToken: CancellationToken.None);
 
+            // Assert
             Assert.Contains(telemetryEvents, evt => evt.Name == PMUITransitiveDependenciesCounterfactualEvent.EventName);
         }
 
@@ -469,7 +472,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(ItemFilter.Consolidate, false)]
         public async Task CreatePackageFeedAsync_NotInProjectPMUIInstalledTab_DoesNotEmitCounterfactualTelemetryAsync(ItemFilter itemFilter, bool isSolution)
         {
-            // Prepare: Create telemetry
+            // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
             var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
             telemetrySession
@@ -478,6 +481,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
             using NuGetPackageSearchService searchService = SetupSearchService();
+
+            CounterfactualMutex.IsPMUICounterfactualEmitted = false;
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
@@ -489,6 +494,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 sourceRepositories: new List<SourceRepository>() { _sourceRepository },
                 cancellationToken: CancellationToken.None);
 
+            // Assert
             Assert.DoesNotContain(telemetryEvents, evt => evt.Name == PMUITransitiveDependenciesCounterfactualEvent.EventName);
         }
 

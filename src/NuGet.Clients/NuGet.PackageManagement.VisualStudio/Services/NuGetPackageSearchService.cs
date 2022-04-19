@@ -489,7 +489,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else // is Project
                 {
-                    TelemetryActivity.EmitTelemetryEvent(new PMUITransitiveDependenciesCounterfactualEvent());
+                    if (!CounterfactualMutex.IsPMUICounterfactualEmitted)
+                    {
+                        lock (CounterfactualMutex.PMUICounterfactualLock) // at least one counterfactual per VS session
+                        {
+                            TelemetryActivity.EmitTelemetryEvent(new PMUITransitiveDependenciesCounterfactualEvent());
+                            CounterfactualMutex.IsPMUICounterfactualEmitted = true;
+                        }
+                    }
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
                         packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);

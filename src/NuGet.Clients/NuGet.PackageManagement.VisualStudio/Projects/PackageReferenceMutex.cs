@@ -3,9 +3,11 @@
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal class PackageReferenceMutex
+    internal class CounterfactualMutex
     {
         internal static readonly object CounterfactualLock = new();
         internal static bool IsCounterfactualEmitted = false;
+        internal static readonly object PMUICounterfactualLock = new();
+        internal static bool IsPMUICounterfactualEmitted = false;
     }
 }
