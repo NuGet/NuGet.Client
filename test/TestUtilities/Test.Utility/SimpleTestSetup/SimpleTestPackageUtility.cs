@@ -630,7 +630,7 @@ namespace NuGet.Test.Utility
         {
             foreach (var package in packages)
             {
-                var builder = new Packaging.PackageBuilder()
+                var builder = new PackageBuilder()
                 {
                     Id = package.Id,
                     Version = NuGetVersion.Parse(package.Version),
