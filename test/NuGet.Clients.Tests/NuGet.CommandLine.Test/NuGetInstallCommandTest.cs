@@ -365,7 +365,7 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, string.Empty, 0, $"-OutputDirectory outputDir -Source {repositoryPath} -ExcludeVersion");
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 var packageADir = Path.Combine(workingPath, "outputDir", "packageA");
                 var packageBDir = Path.Combine(workingPath, "outputDir", "packageB");
                 Assert.True(Directory.Exists(packageADir));
@@ -432,7 +432,7 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, "", 0, args);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -477,7 +477,7 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, "", 1, args);
 
                 // Assert
-                Assert.Equal(1, r.Item1);
+                Assert.Equal(1, r.ExitCode);
                 r.AllOutput.Should().NotContain("NU1000");
                 r.Errors.Should().Contain("Unable to find version");
             }
@@ -551,7 +551,7 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, packagesConfig, 0, args);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -569,7 +569,7 @@ namespace NuGet.CommandLine.Test
                 var r1 = RunInstall(pathContext, packagesConfig, 0, args2);
 
                 // Assert
-                var message = r1.Item2;
+                var message = r1.Output;
                 var alreadyInstalledMessage = string.Format("All packages listed in {0} are already installed.", packagesConfig);
                 Assert.Contains(alreadyInstalledMessage, message, StringComparison.OrdinalIgnoreCase);
                 r1.ExitCode.Should().Be(0);
@@ -613,7 +613,7 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, "", 0, args);
 
                 // Assert
-                Assert.True(0 == r.Item1, $"{r.Item2} {r.Item3}");
+                Assert.True(0 == r.ExitCode, $"{r.Output} {r.Errors}");
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -669,7 +669,7 @@ namespace NuGet.CommandLine.Test
                     environmentVariables: envVars);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -839,12 +839,12 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, "testPackage1", 0, args);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
 
                 // Act (Install a second time)
                 var result = RunInstall(pathContext, "testPackage1", 0, args);
 
-                var output = result.Item2;
+                var output = result.Output;
 
                 // Assert
                 var alreadyInstalledMessage = "Package \"testPackage1.1.1.0\" is already installed.";
@@ -947,12 +947,12 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, configFileName, 0, " -Source " + repositoryPath + $@" -ConfigFile my.config -RequireConsent");
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 var optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
-                Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Item2.Replace("\r\n", "\n"));
+                Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Output.Replace("\r\n", "\n"));
             }
         }
 
@@ -1008,12 +1008,12 @@ namespace NuGet.CommandLine.Test
                 var r = RunInstall(pathContext, configFileName, 0, " -Source " + repositoryPath + $@" -ConfigFile my.config");
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 var optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
-                Assert.DoesNotContain(optOutMessage, r.Item2);
+                Assert.DoesNotContain(optOutMessage, r.Output);
             }
         }
 
@@ -1091,7 +1091,7 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     // testPackage1 1.2.0-beta1 is installed
                     Assert.True(Directory.Exists(Path.Combine(pathContext.PackagesV2, "testPackage1.1.2.0-beta1")));
@@ -1128,7 +1128,7 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     // testPackage1 1.2.0-beta1 is installed
                     Assert.True(Directory.Exists(Path.Combine(pathContext.PackagesV2, "testPackage1.1.2.0-beta1")));
@@ -1439,8 +1439,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.NotEqual(0, r.Item1);
-                Assert.Contains("Unable to resolve dependency 'non_existing'", r.Item3);
+                Assert.NotEqual(0, r.ExitCode);
+                Assert.Contains("Unable to resolve dependency 'non_existing'", r.Errors);
             }
         }
 
@@ -1869,8 +1869,8 @@ namespace NuGet.CommandLine.Test
             var r2 = RunInstall(pathContext, "Contoso.Opensource", 0, "-Version", "1.0.0", "-OutputDirectory", "outputDir", "-Verbosity", "d");
 
             // Assert
-            Assert.Equal(0, r1.Item1);
-            Assert.Equal(0, r2.Item1);
+            Assert.Equal(0, r1.ExitCode);
+            Assert.Equal(0, r2.ExitCode);
             Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r1.Output);
             var packageFileContosoMVCASP = Path.Combine(workingPath, "outputDir", "Contoso.MVC.ASP.1.0.0", "Contoso.MVC.ASP.1.0.0.nupkg");
             var packageFileContosoOpensource = Path.Combine(workingPath, "outputDir", "Contoso.Opensource.1.0.0", "Contoso.Opensource.1.0.0.nupkg");
@@ -1916,7 +1916,7 @@ namespace NuGet.CommandLine.Test
             var r = RunInstall(pathContext, "Contoso.MVC.ASP", 1, "-Version", "1.0.0", "-OutputDirectory", "outputDir");
 
             // Assert
-            Assert.Equal(1, r.Item1);
+            Assert.Equal(1, r.ExitCode);
             Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             r.AllOutput.Should().NotContain("NU1000");
             r.Errors.Should().Contain("Package 'Contoso.MVC.ASP 1.0.0' is not found in the following primary source(s):");
@@ -2052,7 +2052,7 @@ namespace NuGet.CommandLine.Test
                 environmentVariables: envVars);
 
             // Assert
-            Assert.True(expectedExitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+            Assert.True(expectedExitCode == r.ExitCode, r.Errors + "\n\n" + r.Output);
 
             return r;
         }

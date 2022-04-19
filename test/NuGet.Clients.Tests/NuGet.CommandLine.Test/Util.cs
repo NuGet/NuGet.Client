@@ -87,7 +87,7 @@ namespace NuGet.CommandLine.Test
                 environmentVariables: envVars);
 
             // Assert
-            Assert.True(expectedExitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+            Assert.True(expectedExitCode == r.ExitCode, r.Errors + "\n\n" + r.Output);
 
             return r;
         }
@@ -775,14 +775,14 @@ EndProject";
         public static void VerifyResultSuccess(CommandRunnerResult result, string expectedOutputMessage = null)
         {
             Assert.True(
-                result.Item1 == 0,
-                "nuget.exe DID NOT SUCCEED: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+                result.ExitCode == 0,
+                "nuget.exe DID NOT SUCCEED: Ouput is " + result.Output + ". Error is " + result.Errors);
 
             if (!string.IsNullOrEmpty(expectedOutputMessage))
             {
                 Assert.Contains(
                     expectedOutputMessage,
-                    result.Item2);
+                    result.Output);
             }
         }
 
@@ -797,12 +797,12 @@ EndProject";
                                                string expectedErrorMessage)
         {
             Assert.True(
-                result.Item1 != 0,
-                "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+                result.ExitCode != 0,
+                "nuget.exe DID NOT FAIL: Ouput is " + result.Output + ". Error is " + result.Errors);
 
             Assert.True(
-                result.Item3.Contains(expectedErrorMessage),
-                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item3);
+                result.Errors.Contains(expectedErrorMessage),
+                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Errors);
         }
 
         public static void VerifyPackageExists(
@@ -1156,13 +1156,13 @@ EndProject");
             var mainCommand = commandSplit[0];
 
             // Assert command
-            Assert.Contains(mainCommand, result.Item3, StringComparison.InvariantCultureIgnoreCase);
+            Assert.Contains(mainCommand, result.Errors, StringComparison.InvariantCultureIgnoreCase);
             // Assert invalid argument message
             var invalidMessage = string.Format(": invalid arguments.", mainCommand);
             // Verify Exit code
             VerifyResultFailure(result, invalidMessage);
             // Verify traits of help message in stdout
-            Assert.Contains("usage:", result.Item2);
+            Assert.Contains("usage:", result.Output);
         }
 
         /// <summary>

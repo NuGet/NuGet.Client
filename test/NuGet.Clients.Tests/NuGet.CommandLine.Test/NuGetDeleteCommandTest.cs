@@ -38,7 +38,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(File.Exists(packageFileName));
             }
         }
@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(File.Exists(packageFileName));
             }
         }
@@ -96,7 +96,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 //The specific version folder should be gone.
                 Assert.False(Directory.Exists(packageVersionFolder.FullName));
             }
@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(Directory.Exists(packageVersionFolder.FullName));
             }
         }
@@ -164,7 +164,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(File.Exists(packageFileName));
             }
         }
@@ -198,7 +198,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.True(deleteRequestIsCalled);
             }
         }
@@ -244,8 +244,8 @@ namespace NuGet.CommandLine.Test
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
+                Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Output);
             }
         }
 
@@ -293,8 +293,8 @@ namespace NuGet.CommandLine.Test
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
+                Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Output);
             }
         }
 
@@ -373,8 +373,8 @@ namespace NuGet.CommandLine.Test
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
+                Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Output);
             }
         }
 
@@ -409,7 +409,7 @@ namespace NuGet.CommandLine.Test
                 {
                     if (!string.IsNullOrEmpty(serverWarning))
                     {
-                        Assert.Contains(serverWarning, r.Item2);
+                        Assert.Contains(serverWarning, r.Output);
                     }
                 }
             }
@@ -452,7 +452,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.True(deleteRequestIsCalled);
                 Assert.Contains("WARNING: You are running the 'delete' operation with an 'http' source", r.AllOutput);
             }

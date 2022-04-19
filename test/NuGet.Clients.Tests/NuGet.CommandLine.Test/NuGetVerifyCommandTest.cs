@@ -32,8 +32,8 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(_failureCode, result.Item1);
-                Assert.Contains("Verification type not supported.", result.Item3);
+                Assert.Equal(_failureCode, result.ExitCode);
+                Assert.Contains("Verification type not supported.", result.Errors);
             }
         }
 
@@ -61,8 +61,8 @@ namespace NuGet.CommandLine.Test
                 }
                 else
                 {
-                    Assert.Equal(_failureCode, result.Item1);
-                    Assert.Contains("File does not exist", result.Item3);
+                    Assert.Equal(_failureCode, result.ExitCode);
+                    Assert.Contains("File does not exist", result.Errors);
                 }
             }
         }

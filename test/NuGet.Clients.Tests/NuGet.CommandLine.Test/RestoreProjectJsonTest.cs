@@ -68,8 +68,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
+                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", r.Errors);
             }
         }
 
@@ -125,7 +125,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -221,7 +221,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -310,7 +310,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
@@ -389,7 +389,7 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.True(test1Lock.Exists);
             }
@@ -539,7 +539,7 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.True(test1Lock.Exists);
 
@@ -651,9 +651,9 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + Environment.NewLine + r.Errors);
 
-                var lines = r.Item2.Split(
+                var lines = r.Output.Split(
                                 new[] { Environment.NewLine },
                                 StringSplitOptions.RemoveEmptyEntries);
 
@@ -781,7 +781,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -843,9 +843,9 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(workingPath, "project.lock.json"));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.False(test1Lock.Exists);
-                Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("input file does not exist", r.Errors, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -883,9 +883,9 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(workingPath, "project.lock.json"));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.False(test1Lock.Exists);
-                Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("input file does not exist", r.Errors, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -935,7 +935,7 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(test1Lock.Exists);
             }
         }
@@ -986,7 +986,7 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(test1Lock.Exists);
             }
         }
@@ -1083,7 +1083,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -1203,7 +1203,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 // Verify restore worked, this requires finding the packages from the repository, which is in 
                 // the solution level nuget.config.
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -1264,7 +1264,7 @@ namespace NuGet.CommandLine.Test
                 var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("1.0.0-beta-02", installedA.Version.ToNormalizedString());
             }
         }
@@ -1320,7 +1320,7 @@ namespace NuGet.CommandLine.Test
                 var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("1.0.0", installedA.Version.ToNormalizedString());
             }
         }
@@ -1379,7 +1379,7 @@ namespace NuGet.CommandLine.Test
                 var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("1.0.10", installedA.Version.ToNormalizedString());
             }
         }
@@ -1434,7 +1434,7 @@ namespace NuGet.CommandLine.Test
                 var installedB = lockFile.Targets.First().Libraries.Where(package => package.Name == "packageB").ToList();
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(1, installedB.Count);
                 Assert.Equal("3.0.0", installedB.Single().Version.ToNormalizedString());
             }
@@ -1492,7 +1492,7 @@ namespace NuGet.CommandLine.Test
                 var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("2.0.0-beta", installedC.Version.ToNormalizedString());
             }
         }
@@ -1549,7 +1549,7 @@ namespace NuGet.CommandLine.Test
                 var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("2.1.0", installedC.Version.ToNormalizedString());
             }
         }
@@ -1606,7 +1606,7 @@ namespace NuGet.CommandLine.Test
                 var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("2.0.0-beta", installedC.Version.ToNormalizedString());
             }
         }
@@ -1717,7 +1717,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFileA));
                 Assert.True(File.Exists(targetFileB));
                 Assert.True(File.Exists(lockFileA));
@@ -1778,7 +1778,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(lockFilePath));
                 Assert.True(File.Exists(targetFilePath));
             }
@@ -1866,7 +1866,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -1932,7 +1932,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2033,7 +2033,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2096,7 +2096,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2160,7 +2160,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2223,7 +2223,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2291,7 +2291,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 using (var stream = File.OpenText(targetFilePath))
@@ -2309,7 +2309,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert 2
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 using (var stream = File.OpenText(targetFilePath))
@@ -2327,7 +2327,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert 3
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 using (var stream = File.OpenText(targetFilePath))
@@ -2392,7 +2392,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 // If the library count can be obtained then a new lock file was created
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(2, lockFile.Libraries.Count);
             }
         }

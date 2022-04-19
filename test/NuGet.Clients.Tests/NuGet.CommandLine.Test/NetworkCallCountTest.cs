@@ -121,7 +121,7 @@ namespace NuGet.CommandLine.Test
                 var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
-                Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 != r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
                 Assert.Equal(100, hitsByUrl2.Keys.Count(s => s.StartsWith("/nuget/Packages")));
@@ -258,7 +258,7 @@ namespace NuGet.CommandLine.Test
                 var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
-                Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 != r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
 
@@ -391,7 +391,7 @@ namespace NuGet.CommandLine.Test
                 var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.Equal(testCount, allPackages.Count());
 
@@ -521,7 +521,7 @@ namespace NuGet.CommandLine.Test
                 var allPackages = LocalFolderUtility.GetPackagesV2(packagesFolderPath, NullLogger.Instance);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.Equal(testCount, allPackages.Count());
 
@@ -628,7 +628,7 @@ namespace NuGet.CommandLine.Test
                     .Count();
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.Equal(3, packagesFolderCount);   // project.json packages still go here
                 Assert.Equal(6, globalFolderCount);
@@ -726,7 +726,7 @@ namespace NuGet.CommandLine.Test
                     .Count();
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.Equal(3, packagesFolderCount);
                 Assert.Equal(6, globalFolderCount);
@@ -801,7 +801,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 // Network calls can happen multiple times here with cancelation
                 foreach (var url in hitsByUrl.Keys)
@@ -880,7 +880,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 foreach (var url in hitsByUrl.Keys)
                 {
@@ -953,7 +953,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(1, hitsByUrl["/index.json"]);
                 Assert.Equal(1, hitsByUrl["/reg/packagea/index.json"]);
 
@@ -1026,7 +1026,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 foreach (var url in hitsByUrl.Keys)
                 {
@@ -1097,7 +1097,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(1, hitsByUrl["/index.json"]);
                 Assert.Equal(1, hitsByUrl["/reg/packagea/index.json"]);
 
@@ -1170,7 +1170,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
             }
@@ -1239,7 +1239,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 foreach (var url in hitsByUrl.Keys)
                 {
@@ -1321,7 +1321,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 foreach (var url in hitsByUrl.Keys)
                 {
@@ -1389,7 +1389,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(1, hitsByUrl["/index.json"]);
 
                 // PackageE is hit twice, once from packages.config and the other from project.json.
@@ -1457,7 +1457,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(1, hitsByUrl["/index.json"]);
 
                 foreach (var url in hitsByUrl.Keys)
@@ -1523,7 +1523,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 foreach (var url in hitsByUrl.Keys)
                 {

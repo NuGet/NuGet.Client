@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.Test.Caching
 
             validations.Add(
                 CachingValidationType.CommandSucceeded,
-                result.Item1 == 0);
+                result.ExitCode == 0);
 
             validations.Add(
                 CachingValidationType.DirectDownloadFilesDoNotExist,

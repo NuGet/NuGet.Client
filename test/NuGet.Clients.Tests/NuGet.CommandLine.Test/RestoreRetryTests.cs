@@ -117,7 +117,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(r1.Success, r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.Success, r1.AllOutput);
 
                     var path = Path.Combine(pathContext.PackagesV2, "testpackage1.1.1.0", "testpackage1.1.1.0.nupkg");
 
@@ -233,7 +233,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(r1.Success, r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.Success, r1.AllOutput);
 
                     Assert.True(
                         File.Exists(
@@ -375,7 +375,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(r1.Success, r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.Success, r1.AllOutput);
 
                     Assert.True(
                         File.Exists(

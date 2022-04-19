@@ -41,9 +41,9 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
-                var output = result.Item2;
+                var output = result.Output;
                 Assert.DoesNotContain("WARNING: No API Key was provided", output);
                 Assert.DoesNotContain("WARNING: You are attempting to push to an 'http' source", output);
             }
@@ -77,7 +77,7 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 var basename = string.Format("{0}.{1}.", packageId, version);
                 var baseFolder = Path.Combine(packageId, version) + Path.DirectorySeparatorChar;
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
@@ -116,9 +116,9 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
-                var output = result.Item2;
+                var output = result.Output;
                 Assert.DoesNotContain("WARNING: No API Key was provided", output);
             }
         }
@@ -156,7 +156,7 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
             }
         }
@@ -193,7 +193,7 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
             }
         }
@@ -222,7 +222,7 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
             }
         }
@@ -250,7 +250,7 @@ namespace NuGet.CommandLine.Test
                                 true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
             }
         }
@@ -291,8 +291,8 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    var output = result.Item2;
+                    Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                    var output = result.Output;
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
@@ -330,7 +330,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    var output = result.Item2;
+                    var output = result.Output;
                     foreach (var serverWarning in serverWarnings)
                     {
                         if (!string.IsNullOrEmpty(serverWarning))
@@ -369,10 +369,10 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
-                Assert.Contains("Your package was pushed.", result.Item2);
-                Assert.DoesNotContain("symbol", result.Item2);
-                Assert.DoesNotContain(NuGetConstants.DefaultSymbolServerUrl, result.Item2);
+                Assert.Equal(0, result.ExitCode);
+                Assert.Contains("Your package was pushed.", result.Output);
+                Assert.DoesNotContain("symbol", result.Output);
+                Assert.DoesNotContain(NuGetConstants.DefaultSymbolServerUrl, result.Output);
             }
         }
 
@@ -417,11 +417,11 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == result.ExitCode, result.AllOutput);
-                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Item2);
-                Assert.Contains($"Created {pushUri}", result.Item2);
-                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Item2);
-                Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
-                Assert.Contains("Your package was pushed.", result.Item2);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Output);
+                Assert.Contains($"Created {pushUri}", result.Output);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Output);
+                Assert.Contains($"Created {pushSymbolsUri}", result.Output);
+                Assert.Contains("Your package was pushed.", result.Output);
             }
         }
 
@@ -448,10 +448,10 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
-                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Item2);
-                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Item2);
-                Assert.Contains("Your package was pushed.", result.Item2);
+                Assert.Equal(0, result.ExitCode);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Output);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Output);
+                Assert.Contains("Your package was pushed.", result.Output);
             }
         }
 
@@ -489,10 +489,10 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
-                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Item2);
-                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Item2);
-                Assert.Contains("Your package was pushed.", result.Item2);
+                Assert.Equal(0, result.ExitCode);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Output);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Output);
+                Assert.Contains("Your package was pushed.", result.Output);
             }
         }
 
@@ -520,8 +520,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(1, result.Item1);
-                Assert.Contains("took too long", result.Item3);
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains("took too long", result.Errors);
             }
         }
 
@@ -568,8 +568,8 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    var output = result.Item2;
-                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                    var output = result.Output;
+                    Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
@@ -609,8 +609,8 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.NotEqual(0, result.Item1);
-                    Assert.Contains("Too many automatic redirections were attempted.", result.Item3);
+                    Assert.NotEqual(0, result.ExitCode);
+                    Assert.Contains("Too many automatic redirections were attempted.", result.Errors);
                 }
             }
         }
@@ -642,8 +642,8 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.NotEqual(0, result.Item1);
-                    Assert.Contains("The remote server returned an error: (302)", result.Item3);
+                    Assert.NotEqual(0, result.ExitCode);
+                    Assert.Contains("The remote server returned an error: (302)", result.Errors);
                 }
             }
         }
@@ -685,9 +685,9 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.NotEqual(0, r1.Item1);
-                    Assert.Contains("Please provide credentials for:", r1.Item2);
-                    Assert.Contains("UserName:", r1.Item2);
+                    Assert.NotEqual(0, r1.ExitCode);
+                    Assert.Contains("Please provide credentials for:", r1.Output);
+                    Assert.Contains("UserName:", r1.Output);
                 }
             }
         }
@@ -759,7 +759,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
+                    Assert.True(0 == r1.ExitCode, r1.Output + " " + r1.Errors);
 
                     // Because the credential service caches the answer and attempts
                     // to use it for token refresh the first request happens twice
@@ -839,7 +839,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     // Because the credential service caches the answer and attempts
                     // to use it for token refresh the first request happens twice
@@ -888,7 +888,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     var currentUser = WindowsIdentity.GetCurrent();
                     Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
@@ -932,7 +932,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.Equal(0, r1.ExitCode);
 
                     var currentUser = WindowsIdentity.GetCurrent();
                     Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
@@ -1001,7 +1001,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
+                    Assert.True(0 == r1.ExitCode, r1.Output + " " + r1.Errors);
                     Assert.NotEqual(0, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
@@ -1068,7 +1068,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
+                    Assert.True(0 == r1.ExitCode, r1.Output + " " + r1.Errors);
                     Assert.NotEqual(0, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
@@ -1199,9 +1199,9 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    r1.Item1.Should().Be(1, because: r1.AllOutput);
-                    Assert.Contains("401 (Unauthorized)", r1.Item2 + " " + r1.Item3);
-                    Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2 + " " + r1.Item3);
+                    r1.ExitCode.Should().Be(1, because: r1.AllOutput);
+                    Assert.Contains("401 (Unauthorized)", r1.Output + " " + r1.Errors);
+                    Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Output + " " + r1.Errors);
 
                     // No requests hit server, since abort during credential acquisition
                     // and no fallback to console provider
@@ -1270,10 +1270,10 @@ namespace NuGet.CommandLine.Test
                         });
                     server.Stop();
 
-                    var output = r1.Item2 + " " + r1.Item3;
+                    var output = r1.Output + " " + r1.Errors;
 
                     // Assert
-                    Assert.True(1 == r1.Item1, output);
+                    Assert.True(1 == r1.ExitCode, output);
                     Assert.Contains("401 (Unauthorized)", output);
                     Assert.Contains($"Credential plugin {pluginPath} timed out", output);
                     // ensure the process was killed
@@ -1358,8 +1358,8 @@ namespace NuGet.CommandLine.Test
                         serverV3.Stop();
 
                         // Assert
-                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                        var output = result.Item2;
+                        Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
+                        var output = result.Output;
                         Assert.Contains("Your package was pushed.", output);
                         AssertFileEqual(packageFileName, outputFileName);
                     }
@@ -1413,7 +1413,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(1 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.True(1 == result.ExitCode, $"{result.Output} {result.Errors}");
 
                     var expectedOutput =
                         string.Format(
@@ -1421,7 +1421,7 @@ namespace NuGet.CommandLine.Test
                       serverV3.Uri + "index.json");
 
                     // Verify that the output contains the expected output
-                    Assert.True(result.Item3.Contains(expectedOutput));
+                    Assert.True(result.Errors.Contains(expectedOutput));
                 }
             }
         }
@@ -1480,11 +1480,11 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
+                    Assert.True(result.ExitCode != 0, result.Output + " " + result.Errors);
 
                     Assert.True(
-                        result.Item3.Contains("404 (Not Found)"),
-                        "Expected error message not found in " + result.Item3
+                        result.Errors.Contains("404 (Not Found)"),
+                        "Expected error message not found in " + result.Errors
                         );
                 }
             }
@@ -1529,8 +1529,8 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    Assert.Contains("Your package was pushed.", result.Item2);
+                    Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                    Assert.Contains("Your package was pushed.", result.Output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
             }
@@ -1604,8 +1604,8 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    Assert.Contains("Your package was pushed.", result.Item2);
+                    Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                    Assert.Contains("Your package was pushed.", result.Output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
             }
@@ -1692,8 +1692,8 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    Assert.Contains("Your package was pushed.", result.Item2);
+                    Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                    Assert.Contains("Your package was pushed.", result.Output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
             }
@@ -1727,8 +1727,8 @@ namespace NuGet.CommandLine.Test
                                 true);
 
                 // Assert
-                Assert.True(1 == result.Item1, result.Item2 + " " + result.Item3);
-                Assert.Contains("Source parameter was not specified", result.Item3);
+                Assert.True(1 == result.ExitCode, result.Output + " " + result.Errors);
+                Assert.Contains("Source parameter was not specified", result.Errors);
             }
         }
 
@@ -1806,8 +1806,8 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                    var output = result.Item2;
+                    Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
+                    var output = result.Output;
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
@@ -1842,15 +1842,15 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+                    result.ExitCode != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Output);
 
                 Assert.True(
-                    result.Item3.Contains(
+                    result.Errors.Contains(
                         string.Format(
                             "The specified source '{0}' is invalid. Provide a valid source.",
                             invalidInput)),
-                    "Expected error message not found in " + result.Item3
+                    "Expected error message not found in " + result.Errors
                     );
             }
         }
@@ -1886,23 +1886,23 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+                    result.ExitCode != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Output);
 
                 if (RuntimeEnvironmentHelper.IsMono)
                 {
                     Assert.True(
-                        result.Item3.Contains(
+                        result.Errors.Contains(
                         "No such host is known"),
-                        "Expected error message not found in " + result.Item3
+                        "Expected error message not found in " + result.Errors
                     );
                 }
                 else
                 {
                     Assert.True(
-                        result.Item3.Contains(
+                        result.Errors.Contains(
                             "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
-                        "Expected error message not found in " + result.Item3
+                        "Expected error message not found in " + result.Errors
                     );
                 }
 
@@ -1936,10 +1936,10 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+                    result.ExitCode != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Output);
 
-                Assert.Contains("Response status code does not indicate success: 404 (Not Found)", result.Item3);
+                Assert.Contains("Response status code does not indicate success: 404 (Not Found)", result.Errors);
 
             }
         }
@@ -1975,16 +1975,16 @@ namespace NuGet.CommandLine.Test
                 if (RuntimeEnvironmentHelper.IsMono)
                 {
                     Assert.True(
-                   result.Item3.Contains(
+                   result.Errors.Contains(
                        "No such host is known"),
-                   "Expected error message not found in " + result.Item3
+                   "Expected error message not found in " + result.Errors
                    );
                 }
                 else
                 {
                     Assert.True(
-                        result.Item3.Contains("An error occurred while sending the request."),
-                        "Expected error message not found in " + result.Item3
+                        result.Errors.Contains("An error occurred while sending the request."),
+                        "Expected error message not found in " + result.Errors
                         );
                 }
             }
@@ -2112,11 +2112,11 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             result.Success.Should().BeTrue(because: result.AllOutput);
-            Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Item2);
-            Assert.Contains($"Created {pushUri}", result.Item2);
-            Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Item2);
-            Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
-            Assert.Contains("Your package was pushed.", result.Item2);
+            Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Output);
+            Assert.Contains($"Created {pushUri}", result.Output);
+            Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Output);
+            Assert.Contains($"Created {pushSymbolsUri}", result.Output);
+            Assert.Contains("Your package was pushed.", result.Output);
             Assert.Contains($"WARNING: You are running the 'push' operation with an 'http' source, '{pushUri}/'", result.AllOutput);
             Assert.Contains($"WARNING: You are running the 'push' operation with an 'http' source, '{pushSymbolsUri}/'", result.AllOutput);
         }

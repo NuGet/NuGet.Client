@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
                 var reader = new LockFileFormat();
                 var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
@@ -93,7 +93,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
                 var reader = new LockFileFormat();
                 var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
@@ -132,7 +132,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
                 var reader = new LockFileFormat();
                 var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
@@ -176,7 +176,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
 
                 // Assert
                 Assert.Contains("NU1401", output, StringComparison.OrdinalIgnoreCase);
