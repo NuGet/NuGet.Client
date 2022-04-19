@@ -46,8 +46,8 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(MockedVS.Collection)]
-    public sealed class NuGetProjectManagerServiceTests : MockedVSCollectionTests, IDisposable
+    [Collection("MockedVS")]
+    public class NuGetProjectManagerServiceTests : MockedVSCollectionTests, IDisposable
     {
         private NuGetPackageManager _packageManager;
         private NuGetProjectManagerService _projectManager;
@@ -866,7 +866,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(File.Exists(pajFilepath));
 
             // Reset sending counterfactual telemetry, for testing purposes
-            PackageReferenceProject<List<object>, object>.IsCounterfactualEmitted = false;
+            PackageReferenceMutex.IsCounterfactualEmitted = false;
 
             // Act
             var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
