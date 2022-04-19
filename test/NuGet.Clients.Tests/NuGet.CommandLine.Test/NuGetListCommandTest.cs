@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -129,7 +130,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("testPackage1", lines[1]);
                 Assert.Equal(" 1.1.0", lines[2]);
                 Assert.Equal(" desc of testPackage1 1.1.0", lines[3]);
-                Assert.Equal(" License url: http://kaka", lines[4]);
+                Assert.Equal(" License url: http://kaka/", lines[4]);
             }
         }
 
@@ -190,8 +191,8 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 using (var server = new MockServer())
                 {
@@ -247,10 +248,8 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
-                package1.Published = new DateTimeOffset?(new DateTime(1800, 1, 1));
-                package1.Listed = false;
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 using (var server = new MockServer())
                 {
@@ -263,7 +262,7 @@ namespace NuGet.CommandLine.Test
                         {
                             searchRequest = r.Url.ToString();
                             response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                            string feed = server.ToODataFeed(new[] { package1, package2 }, "Search");
+                            string feed = server.ToODataFeed(new[] { (package1, false, new DateTimeOffset(new DateTime(1800, 1, 1))), (package2, true, DateTimeOffset.Now) }, "Search");
                             MockServer.SetResponseContent(response, feed);
                         }));
                     server.Get.Add("/nuget", r => "OK");
@@ -310,9 +309,8 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
-                package1.Listed = false;
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 using (var server = new MockServer())
                 {
@@ -325,7 +323,7 @@ namespace NuGet.CommandLine.Test
                         {
                             searchRequest = r.Url.ToString();
                             response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                            string feed = server.ToODataFeed(new[] { package1, package2 }, "Search");
+                            string feed = server.ToODataFeed(new[] { (package1, false, DateTimeOffset.Now), (package2, true, DateTimeOffset.Now) }, "Search");
                             MockServer.SetResponseContent(response, feed);
                         }));
                     server.Get.Add("/nuget", r => "OK");
@@ -369,8 +367,8 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 using (var server = new MockServer())
                 {
@@ -403,8 +401,8 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // verify that the output is detailed
-                    Assert.Contains(package1.Description, r1.Item2);
-                    Assert.Contains(package2.Description, r1.Item2);
+                    Assert.Contains(new PackageArchiveReader(package1.OpenRead()).NuspecReader.GetDescription(), r1.Item2);
+                    Assert.Contains(new PackageArchiveReader(package2.OpenRead()).NuspecReader.GetDescription(), r1.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -426,8 +424,8 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 using (var server = new MockServer())
                 {
@@ -486,8 +484,8 @@ namespace NuGet.CommandLine.Test
 
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 using (var server = new MockServer())
                 {
@@ -546,8 +544,8 @@ namespace NuGet.CommandLine.Test
 
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 using (var server = new MockServer())
                 {
@@ -604,8 +602,8 @@ namespace NuGet.CommandLine.Test
 
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
-                var package1 = new ZipPackage(packageFileName1);
-                var package2 = new ZipPackage(packageFileName2);
+                var package1 = new FileInfo(packageFileName1);
+                var package2 = new FileInfo(packageFileName2);
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -957,7 +955,7 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var repo = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", repo);
-                var package1 = new ZipPackage(packageFileName1);
+                var package1 = new FileInfo(packageFileName1);
 
                 // Server setup
                 using (var serverV3 = new MockServer())
@@ -1060,7 +1058,7 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var repo = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", repo);
-                var package1 = new ZipPackage(packageFileName1);
+                var package1 = new FileInfo(packageFileName1);
 
                 // Server setup
                 using (var serverV3 = new MockServer())

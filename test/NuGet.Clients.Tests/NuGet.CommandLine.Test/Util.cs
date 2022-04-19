@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,9 +19,6 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-
-using PackageDependency_V2 = NuGet.PackageDependency;
-using PackageDependency_V3 = NuGet.Packaging.Core.PackageDependency;
 
 namespace NuGet.CommandLine.Test
 {
@@ -104,9 +100,9 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageId,
             string dependencyPackageVersion)
         {
-            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency_V3>()
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency>()
             {
-                new PackageDependency_V3(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
+                new PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
             });
 
             return CreateTestPackage(packageId, version, path,
@@ -124,7 +120,7 @@ namespace NuGet.CommandLine.Test
             var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
 
             packageBuilder.Description = string.Format(
@@ -144,16 +140,7 @@ namespace NuGet.CommandLine.Test
 
             packageBuilder.Authors.Add("test author");
 
-            foreach (var group in dependencies)
-            {
-                var set = new PackageDependencySet(
-                    null,
-                    group.Packages.Select(package =>
-                        new PackageDependency_V2(package.Id,
-                            VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
-
-                packageBuilder.DependencySets.Add(set);
-            }
+            packageBuilder.DependencyGroups.AddRange(dependencies);
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
@@ -177,7 +164,7 @@ namespace NuGet.CommandLine.Test
             var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
             packageBuilder.Description = string.Format(
                 CultureInfo.InvariantCulture,
@@ -230,7 +217,7 @@ namespace NuGet.CommandLine.Test
             var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
             packageBuilder.Description = string.Format(
                 CultureInfo.InvariantCulture,
@@ -279,39 +266,6 @@ namespace NuGet.CommandLine.Test
         {
             string dotPrefix = (!extension.StartsWith(".")) ? "." : string.Empty;
             return $"{packageId}.{version}{dotPrefix}{extension}";
-        }
-
-        /// <summary>
-        /// Creates a basic package builder for unit tests.
-        /// </summary>
-        public static PackageBuilder CreateTestPackageBuilder(string packageId, string version)
-        {
-            var packageBuilder = new PackageBuilder
-            {
-                Id = packageId,
-                Version = new SemanticVersion(version)
-            };
-
-            packageBuilder.Description = string.Format(
-                CultureInfo.InvariantCulture,
-                "desc of {0} {1}",
-                packageId, version);
-
-            packageBuilder.Authors.Add("test author");
-
-            return packageBuilder;
-        }
-
-        public static string CreateTestPackage(PackageBuilder packageBuilder, string directory)
-        {
-            var packageFileName = string.Format("{0}.{1}.nupkg", packageBuilder.Id, packageBuilder.Version);
-            var packageFileFullPath = Path.Combine(directory, packageFileName);
-            using (var fileStream = File.Create(packageFileFullPath))
-            {
-                packageBuilder.Save(fileStream);
-            }
-
-            return packageFileFullPath;
         }
 
         /// <summary>
@@ -380,30 +334,16 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private static IPackageFile CreatePackageFile(string name)
+        public static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
             file.SetupGet(f => f.Path).Returns(name);
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
 
             string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var fx = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(name, out effectivePath);
             file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
-
-            return file.Object;
-        }
-
-        public static IPackageFile CreatePackageFile(string path, string content)
-        {
-            var file = new Mock<IPackageFile>();
-            file.SetupGet(f => f.Path).Returns(path);
-            file.Setup(f => f.GetStream()).Returns(new MemoryStream(Encoding.UTF8.GetBytes(content)));
-
-            string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(path, out effectivePath);
-            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
+            file.SetupGet(f => f.NuGetFramework).Returns(fx);
 
             return file.Object;
         }
@@ -411,7 +351,7 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Creates a mock server that contains the specified list of packages
         /// </summary>
-        public static MockServer CreateMockServer(IList<IPackage> packages)
+        public static MockServer CreateMockServer(IList<FileInfo> packages)
         {
             var server = new MockServer();
 
@@ -425,13 +365,14 @@ namespace NuGet.CommandLine.Test
                     MockServer.SetResponseContent(response, feed);
                 }));
 
-            foreach (var package in packages)
+            foreach (var file in packages)
             {
+                var package = new PackageArchiveReader(file.OpenRead());
                 var url = string.Format(
                     CultureInfo.InvariantCulture,
                     "/nuget/Packages(Id='{0}',Version='{1}')",
-                    package.Id,
-                    package.Version);
+                    package.NuspecReader.GetId(),
+                    package.NuspecReader.GetVersion());
                 server.Get.Add(url, r =>
                     new Action<HttpListenerResponse>(response =>
                     {
@@ -444,13 +385,13 @@ namespace NuGet.CommandLine.Test
                 url = string.Format(
                     CultureInfo.InvariantCulture,
                     "/package/{0}/{1}",
-                    package.Id,
-                    package.Version);
+                    package.NuspecReader.GetId(),
+                    package.NuspecReader.GetVersion());
                 server.Get.Add(url, r =>
                     new Action<HttpListenerResponse>(response =>
                     {
                         response.ContentType = "application/zip";
-                        using (var stream = package.GetStream())
+                        using (var stream = file.OpenRead())
                         {
                             var content = stream.ReadAllBytes();
                             MockServer.SetResponseContent(response, content);
@@ -507,11 +448,6 @@ namespace NuGet.CommandLine.Test
         public static string GetTestablePluginDirectory()
         {
             return Path.GetDirectoryName(GetTestablePluginPath());
-        }
-
-        public static bool IsSuccess(CommandRunnerResult result)
-        {
-            return result.Item1 == 0;
         }
 
         public static JObject CreateIndexJson()
@@ -674,29 +610,16 @@ namespace NuGet.CommandLine.Test
         /// Create a simple package with a lib folder. This package should install everywhere.
         /// The package will be removed from the machine cache upon creation
         /// </summary>
-        public static ZipPackage CreatePackage(string repositoryPath, string id, string version)
+        public static void CreatePackage(string repositoryPath, string id, string version)
         {
-            var package = Util.CreateTestPackageBuilder(id, version);
-            var libFile = Util.CreatePackageFile("lib/uap/a.dll", "a");
-            package.Files.Add(libFile);
 
-            libFile = Util.CreatePackageFile("lib/net45/a.dll", "a");
-            package.Files.Add(libFile);
-
-            libFile = Util.CreatePackageFile("lib/native/a.dll", "a");
-            package.Files.Add(libFile);
-
-            libFile = Util.CreatePackageFile("lib/win/a.dll", "a");
-            package.Files.Add(libFile);
-
-            libFile = Util.CreatePackageFile("lib/net20/a.dll", "a");
-            package.Files.Add(libFile);
-
-            var path = Util.CreateTestPackage(package, repositoryPath);
-
-            ZipPackage zipPackage = new ZipPackage(path);
-
-            return zipPackage;
+            var context = new SimpleTestPackageContext(id, version);
+            context.AddFile("lib/uap/a.dll", "a");
+            context.AddFile("lib/net45/a.dll", "a");
+            context.AddFile("lib/native/a.dll", "a");
+            context.AddFile("lib/win/a.dll", "a");
+            context.AddFile("lib/net20/a.dll", "a");
+            SimpleTestPackageUtility.CreateOPCPackage(context, repositoryPath);
         }
 
         /// <summary>

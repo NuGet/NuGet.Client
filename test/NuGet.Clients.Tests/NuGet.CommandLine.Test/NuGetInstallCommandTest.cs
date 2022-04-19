@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.CommandLine.Test
 {
@@ -381,7 +381,7 @@ namespace NuGet.CommandLine.Test
                 var workingPath = pathContext.WorkingDirectory;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", pathContext.PackageSource);
 
                 // Act
@@ -689,7 +689,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 Util.CreateFile(workingPath, "packages.config",
@@ -728,7 +728,7 @@ namespace NuGet.CommandLine.Test
                 var outputDirectory = pathContext.SolutionRoot;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
@@ -759,7 +759,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
@@ -790,7 +790,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 // Act
@@ -826,7 +826,7 @@ namespace NuGet.CommandLine.Test
                 var source = pathContext.PackageSource;
                 var outputDirectory = pathContext.SolutionRoot;
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
                 var args = new string[] {
@@ -950,8 +950,8 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, r.Item1);
                 var optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
-                    NuGet.CommandLine.NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
-                    NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                    NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
+                    NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Item2.Replace("\r\n", "\n"));
             }
         }
@@ -1012,7 +1012,7 @@ namespace NuGet.CommandLine.Test
                 var optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
-                    NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                    NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.DoesNotContain(optOutMessage, r.Item2);
             }
         }
@@ -1035,9 +1035,9 @@ namespace NuGet.CommandLine.Test
 
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package1 = new ZipPackage(packageFileName);
+                var package1 = new FileInfo(packageFileName);
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0", packageDirectory);
-                var package2 = new ZipPackage(packageFileName);
+                var package2 = new FileInfo(packageFileName);
                 var nugetexe = Util.GetNuGetExePath();
 
                 using (var server = Util.CreateMockServer(new[] { package1, package2 }))
@@ -1073,10 +1073,10 @@ namespace NuGet.CommandLine.Test
                 var nugetexe = Util.GetNuGetExePath();
 
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package1 = new ZipPackage(packageFileName);
+                var package1 = new FileInfo(packageFileName);
 
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0-beta1", packageDirectory);
-                var package2 = new ZipPackage(packageFileName);
+                var package2 = new FileInfo(packageFileName);
 
                 using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
@@ -1110,10 +1110,10 @@ namespace NuGet.CommandLine.Test
                 var nugetexe = Util.GetNuGetExePath();
 
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package1 = new ZipPackage(packageFileName);
+                var package1 = new FileInfo(packageFileName);
 
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0-beta1", packageDirectory);
-                var package2 = new ZipPackage(packageFileName);
+                var package2 = new FileInfo(packageFileName);
 
                 using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
@@ -1145,7 +1145,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.PackageSource);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName);
 
                 using (var server = new MockServer())
                 {
@@ -1159,7 +1159,7 @@ namespace NuGet.CommandLine.Test
                         {
                             getPackageByVersionIsCalled = true;
                             response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                            var p1 = server.ToOData(package);
+                            var p1 = server.ToOData(new PackageArchiveReader(package.OpenRead()));
                             MockServer.SetResponseContent(response, p1);
                         }));
 
@@ -1168,7 +1168,7 @@ namespace NuGet.CommandLine.Test
                         {
                             packageDownloadIsCalled = true;
                             response.ContentType = "application/zip";
-                            using (var stream = package.GetStream())
+                            using (var stream = package.OpenRead())
                             {
                                 var content = stream.ReadAllBytes();
                                 MockServer.SetResponseContent(response, content);
@@ -1206,7 +1206,7 @@ namespace NuGet.CommandLine.Test
 
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName);
 
                 using (var server = new MockServer())
                 {
@@ -1216,7 +1216,7 @@ namespace NuGet.CommandLine.Test
                         new Action<HttpListenerResponse>(response =>
                         {
                             response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                            var p1 = server.ToOData(package);
+                            var p1 = server.ToOData(new PackageArchiveReader(package.OpenRead()));
                             MockServer.SetResponseContent(response, p1);
                         }));
 
@@ -1224,7 +1224,7 @@ namespace NuGet.CommandLine.Test
                         new Action<HttpListenerResponse>(response =>
                         {
                             response.ContentType = "application/zip";
-                            using (var stream = package.GetStream())
+                            using (var stream = package.OpenRead())
                             {
                                 var content = stream.ReadAllBytes();
                                 MockServer.SetResponseContent(response, content);
@@ -1301,7 +1301,7 @@ namespace NuGet.CommandLine.Test
                 // Arrange
 
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName); ;
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.UserPackagesFolder, PackageSaveMode.Defaultv3, new PackageIdentity("testPackage1", NuGetVersion.Parse("1.1.0")));
 
@@ -1325,7 +1325,7 @@ namespace NuGet.CommandLine.Test
                         new Action<HttpListenerResponse>(response =>
                         {
                             response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                            var p1 = server.ToOData(package);
+                            var p1 = server.ToOData(new PackageArchiveReader(package.OpenRead()));
                             MockServer.SetResponseContent(response, p1);
                         }));
 
@@ -1334,7 +1334,7 @@ namespace NuGet.CommandLine.Test
                         {
                             packageDownloadIsCalled = true;
                             response.ContentType = "application/zip";
-                            using (var stream = package.GetStream())
+                            using (var stream = package.OpenRead())
                             {
                                 var content = stream.ReadAllBytes();
                                 MockServer.SetResponseContent(response, content);
@@ -1370,9 +1370,9 @@ namespace NuGet.CommandLine.Test
                 var outputDirectory = pathContext.SolutionRoot;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source);
-                var symbolPackageFileName = PackageCreater.CreateSymbolPackage(
+                var symbolPackageFileName = PackageCreator.CreateSymbolPackage(
                     "testPackage1", "1.1.0", source);
 
                 var nugetexe = Util.GetNuGetExePath();
@@ -1413,17 +1413,17 @@ namespace NuGet.CommandLine.Test
                 var outputDirectory = pathContext.SolutionRoot;
 
                 // Arrange
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage1", "1.1.0", source,
                     (builder) =>
                     {
-                        var dependencySet = new PackageDependencySet(null,
+                        var dependencySet = new PackageDependencyGroup(CommonFrameworks.Net47,
                             new[] {
                                 new PackageDependency(
                                     "non_existing",
-                                    VersionUtility.ParseVersionSpec("1.1"))
+                                    VersionRange.Parse("1.1"))
                             });
-                        builder.DependencySets.Add(dependencySet);
+                        builder.DependencyGroups.Add(dependencySet);
                     });
 
                 var nugetexe = Util.GetNuGetExePath();
@@ -1463,22 +1463,21 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("depPackage", "1.2.0", source);
                 Util.CreateTestPackage("depPackage", "2.0.0", source);
 
-                var packageFileName = PackageCreater.CreatePackage(
+                var packageFileName = PackageCreator.CreatePackage(
                     "testPackage", "1.1.0", pathContext.PackageSource,
                     (builder) =>
                     {
                         if (requestedVersion == null)
                         {
-                            var dependencySet = new PackageDependencySet(null,
+                            var dependencySet = new PackageDependencyGroup(CommonFrameworks.Net47,
                                 new[] { new PackageDependency("depPackage") });
-                            builder.DependencySets.Add(dependencySet);
+                            builder.DependencyGroups.Add(dependencySet);
                         }
                         else
                         {
-                            var dependencySet = new PackageDependencySet(null,
-                                new[] { new PackageDependency("depPackage",
-                                    VersionUtility.ParseVersionSpec(requestedVersion)) });
-                            builder.DependencySets.Add(dependencySet);
+                            var dependencySet = new PackageDependencyGroup(CommonFrameworks.Net47,
+                                new[] { new PackageDependency("depPackage", VersionRange.Parse(requestedVersion)) });
+                            builder.DependencyGroups.Add(dependencySet);
                         }
                     });
 
