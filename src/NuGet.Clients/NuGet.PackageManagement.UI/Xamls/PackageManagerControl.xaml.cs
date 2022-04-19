@@ -351,12 +351,23 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                var refreshStatus = RefreshOperationStatus.NoOp;
                 var sw = Stopwatch.StartNew();
-                await RefreshAsync();
-                sw.Stop();
-                double duration = sw.Elapsed.Milliseconds;
-                await TaskScheduler.Default;
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success, isUIFiltering: false, duration: duration);
+                try
+                {
+                    await RefreshAsync();
+                    refreshStatus = RefreshOperationStatus.Success;
+                }
+                catch
+                {
+                    refreshStatus = RefreshOperationStatus.Failed;
+                    throw; // this will be logged on caller
+                }
+                finally
+                {
+                    sw.Stop();
+                    EmitRefreshEvent(timeSpanSinceLastRefresh, source, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                }
             }
         }
 
