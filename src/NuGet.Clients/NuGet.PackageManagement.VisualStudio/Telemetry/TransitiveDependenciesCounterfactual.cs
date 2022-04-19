@@ -6,8 +6,8 @@ using System.Threading;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// This class is needed to avoid generic type issues and static variables in <see cref="PackageReferenceProject{T, U}" />
-    /// and to keep all counterfactual state in one place
+    /// This class avoids generic type issues and static variables in <see cref="PackageReferenceProject{T, U}" />
+    /// Also, it keeps all counterfactual state in one place
     /// </summary>
     internal static class TransitiveDependenciesCounterfactual
     {
@@ -15,9 +15,13 @@ namespace NuGet.PackageManagement.VisualStudio
         internal static int PMUIEmittedFlag = 0;
 
         /// <summary>
-        /// Gets a value indicating whether or not the counterfactual telemetry should be emitted.
+        /// Indicates if counterfactual telemetry for Transitive Dependencies should be emitted.
         /// </summary>
         public static bool ShouldEmitTelemetry => Interlocked.CompareExchange(ref EmittedFlag, 1, 0) == 0;
+
+        /// <summary>
+        /// Indicates if counterfactual telemetry for PM UI Transitive Dependencies should be emitted.
+        /// </summary>
         public static bool ShouldEmitPMUITelemetry => Interlocked.CompareExchange(ref PMUIEmittedFlag, 1, 0) == 0;
     }
 }

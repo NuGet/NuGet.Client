@@ -161,8 +161,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            // we just need at least one event per VS session
-            // Dirty reads can occur, but, we don't need to guarantee an exactly-once event call to emit telemetry
+            // Emit at least one event per VS session, but not so many events
             if (TransitiveDependenciesCounterfactual.ShouldEmitTelemetry)
             {
                 TelemetryActivity.EmitTelemetryEvent(new TransitiveDependenciesCounterfactualEvent());
