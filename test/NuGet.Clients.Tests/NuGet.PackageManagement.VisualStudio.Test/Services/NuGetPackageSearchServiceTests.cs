@@ -445,8 +445,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
             using NuGetPackageSearchService searchService = SetupSearchService();
-
-            CounterfactualMutex.PMUICounterfactualEmittedFlag = 0;
+            TransitiveDependenciesCounterfactual.PMUIEmittedFlag = 0;
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
@@ -481,8 +480,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
             using NuGetPackageSearchService searchService = SetupSearchService();
-
-            CounterfactualMutex.PMUICounterfactualEmittedFlag = 0;
+            TransitiveDependenciesCounterfactual.PMUIEmittedFlag = 0;
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
