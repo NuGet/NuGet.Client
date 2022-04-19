@@ -409,14 +409,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(true, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
         public async Task CreatePackageFeedAsync_WithTransitiveOriginsExpFlag_OnlyInstalledFeedOnSolutionViewAsync(bool transitiveDependenciesExperimentEnabled, ItemFilter itemFilter, bool isSolution, Type expectedFeedType)
         {
-            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled;
+            // Arrange
             // Recreate async lazy on each test
+            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled;
             ExperimentUtility.ResetAsyncValues();
 
             using NuGetPackageSearchService searchService = SetupSearchService();
             bool expValue = await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync();
-            Assert.Equal(expValue, transitiveDependenciesExperimentEnabled);
+            Assert.Equal(transitiveDependenciesExperimentEnabled, expValue);
 
+            // Act
             (IPackageFeed main, IPackageFeed recommender) = await searchService.CreatePackageFeedAsync(
                 projectContextInfos: _projects,
                 targetFrameworks: new List<string>() { "net45" },
@@ -426,8 +428,68 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 sourceRepositories: new List<SourceRepository>() { _sourceRepository },
                 cancellationToken: CancellationToken.None);
 
+            // Assert
             Assert.IsType(expectedFeedType, main);
             Assert.Null(recommender);
+        }
+
+        [Fact]
+        public async Task CreatePackageFeedAsync_ProjectPMUIInstalledTab_EmitsCounterfactualTelemetryAsync()
+        {
+            // Prepare: Create telemetry
+            var telemetrySession = new Mock<ITelemetrySession>();
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            using NuGetPackageSearchService searchService = SetupSearchService();
+
+            // Act
+            _ = await searchService.CreatePackageFeedAsync(
+                projectContextInfos: _projects,
+                targetFrameworks: new List<string>() { "net45" },
+                itemFilter: ItemFilter.Installed,
+                isSolution: false,
+                recommendPackages: It.IsAny<bool>(),
+                sourceRepositories: new List<SourceRepository>() { _sourceRepository },
+                cancellationToken: CancellationToken.None);
+
+            Assert.Contains(telemetryEvents, evt => evt.Name == PMUITransitiveDependenciesCounterfactualEvent.EventName);
+        }
+
+        [Theory]
+        [InlineData(ItemFilter.All, true)]
+        [InlineData(ItemFilter.Installed, true)]
+        [InlineData(ItemFilter.UpdatesAvailable, true)]
+        [InlineData(ItemFilter.Consolidate, true)]
+        [InlineData(ItemFilter.All, false)]
+        [InlineData(ItemFilter.UpdatesAvailable, false)]
+        [InlineData(ItemFilter.Consolidate, false)]
+        public async Task CreatePackageFeedAsync_NotInProjectPMUIInstalledTab_DoesNotEmitCounterfactualTelemetryAsync(ItemFilter itemFilter, bool isSolution)
+        {
+            // Prepare: Create telemetry
+            var telemetrySession = new Mock<ITelemetrySession>();
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            using NuGetPackageSearchService searchService = SetupSearchService();
+
+            // Act
+            _ = await searchService.CreatePackageFeedAsync(
+                projectContextInfos: _projects,
+                targetFrameworks: new List<string>() { "net45" },
+                itemFilter: itemFilter,
+                isSolution: isSolution,
+                recommendPackages: It.IsAny<bool>(),
+                sourceRepositories: new List<SourceRepository>() { _sourceRepository },
+                cancellationToken: CancellationToken.None);
+
+            Assert.DoesNotContain(telemetryEvents, evt => evt.Name == PMUITransitiveDependenciesCounterfactualEvent.EventName);
         }
 
         private NuGetPackageSearchService SetupSearchService()
