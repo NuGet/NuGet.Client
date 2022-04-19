@@ -589,8 +589,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_RestoreProjectFramework/>
-      <TargetFrameworkToBeUsed>$(TargetFrameworks)</TargetFrameworkToBeUsed>
-      <TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' != '' "></TargetFrameworkToBeUsed>
+      <TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' == '' ">$(TargetFrameworks)</TargetFrameworkToBeUsed>
     </PropertyGroup>
 
     <!-- For project.json projects target frameworks will be read from project.json. -->
@@ -853,7 +852,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RepositoryPath>$(_OutputRepositoryPath)</RepositoryPath>
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks> <!-- what here? does it matter-->
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -865,7 +864,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks> <!-- what here? does it matter-->
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>
