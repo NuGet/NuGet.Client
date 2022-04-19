@@ -493,7 +493,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         TelemetryActivity.EmitTelemetryEvent(new PMUITransitiveDependenciesCounterfactualEvent());
                     }
-
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
                         packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
