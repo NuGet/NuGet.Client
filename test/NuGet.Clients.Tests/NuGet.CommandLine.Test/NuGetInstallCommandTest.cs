@@ -952,7 +952,7 @@ namespace NuGet.CommandLine.Test
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
-                Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Item2.Replace("\r\n", "\n"));
+                Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Output.Replace("\r\n", "\n"));
             }
         }
 
@@ -1013,7 +1013,7 @@ namespace NuGet.CommandLine.Test
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
-                Assert.DoesNotContain(optOutMessage, r.Item2);
+                Assert.DoesNotContain(optOutMessage, r.Output);
             }
         }
 
