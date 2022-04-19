@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
             // we just need at least one event per VS session
             // Dirty reads can occur, but, we don't need to guarantee an exactly-once event call to emit telemetry
-            if (Interlocked.CompareExchange(ref CounterfactualMutex.CounterfactualEmittedFlag, 1, 0) == 0)
+            if (TransitiveDependenciesCounterfactual.ShouldEmitTelemetry)
             {
                 TelemetryActivity.EmitTelemetryEvent(new TransitiveDependenciesCounterfactualEvent());
             }

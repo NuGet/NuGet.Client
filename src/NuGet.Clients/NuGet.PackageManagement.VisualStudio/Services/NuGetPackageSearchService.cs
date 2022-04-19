@@ -489,7 +489,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else // is Project
                 {
-                    if (Interlocked.CompareExchange(ref CounterfactualMutex.PMUICounterfactualEmittedFlag, 1, 0) == 0)
+                    if (TransitiveDependenciesCounterfactual.ShouldEmitPMUITelemetry)
                     {
                         TelemetryActivity.EmitTelemetryEvent(new PMUITransitiveDependenciesCounterfactualEvent());
                     }
