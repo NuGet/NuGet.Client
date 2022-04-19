@@ -483,13 +483,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.Installed)
             {
-                if (!isSolution && await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
-                {
-                    packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
-                }
-                else
+                if (isSolution)
                 {
                     packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
+                }
+                else // is Project
+                {
+                    TelemetryActivity.EmitTelemetryEvent(new PMUITransitiveDependenciesCounterfactualEvent());
+                    if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
+                    {
+                        packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
+                    }
+                    else
+                    {
+                        packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
+                    }
                 }
 
                 return packageFeeds;
