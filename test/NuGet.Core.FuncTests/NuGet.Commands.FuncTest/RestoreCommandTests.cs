@@ -1933,7 +1933,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public void RestoreCommand_PathTooLongException()
+        public async Task RestoreCommand_PathTooLongException()
         {
             // Arrange
             var sources = new List<PackageSource>
@@ -1978,7 +1978,7 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act
-                new Func<Task>(async () => await command.ExecuteAsync()).Should().Throw<PathTooLongException>();
+                await ((Func<Task>)command.ExecuteAsync).Should().ThrowAsync<PathTooLongException>();
             }
         }
 
@@ -3859,7 +3859,7 @@ namespace NuGet.Commands.FuncTest
             logMessage.Message.Should().Be("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.");
         }
 
-        static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource>  sources, ILogger logger)
+        static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
         {
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddProject(spec);

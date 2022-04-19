@@ -56,7 +56,7 @@ namespace NuGet.Configuration.Test
             var firstPatternItem = new PackagePatternItem(first);
             var secondPatternItem = new PackagePatternItem(second);
 
-            firstPatternItem.GetHashCode().Should().Equals(secondPatternItem.GetHashCode());
+            firstPatternItem.GetHashCode().Should().Be(secondPatternItem.GetHashCode());
         }
 
         [Theory]

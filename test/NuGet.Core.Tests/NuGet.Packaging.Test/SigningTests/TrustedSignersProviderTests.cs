@@ -121,9 +121,9 @@ namespace NuGet.Packaging.Test
                 trustedSigners.Count.Should().Be(3);
                 trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners,
                     options => options
-                        .Excluding(o => o.SelectedMemberPath == "[0].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[1].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[2].Origin"));
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin"));
             }
         }
 
@@ -173,9 +173,9 @@ namespace NuGet.Packaging.Test
                 trustedSigners.Should().BeEquivalentTo(
                     expectedTrustedSigners,
                     options => options
-                        .Excluding(o => o.SelectedMemberPath == "[0].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[1].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[2].Origin"));
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin"));
             }
         }
 
@@ -249,8 +249,8 @@ namespace NuGet.Packaging.Test
                 trustedSigners.Should().BeEquivalentTo(
                     expectedTrustedSigners,
                     options => options
-                        .Excluding(o => o.SelectedMemberPath == "[0].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[1].Origin"));
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin"));
             }
         }
 
@@ -299,8 +299,8 @@ namespace NuGet.Packaging.Test
                 trustedSigners.Should().BeEquivalentTo(
                     expectedTrustedSigners,
                     options => options
-                        .Excluding(o => o.SelectedMemberPath == "[0].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[1].Origin"));
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin"));
             }
         }
 
@@ -362,10 +362,10 @@ namespace NuGet.Packaging.Test
                 trustedSigners.Should().BeEquivalentTo(
                     expectedTrustedSigners,
                     options => options
-                        .Excluding(o => o.SelectedMemberPath == "[0].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[1].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[2].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[3].Origin"));
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin")
+                        .Excluding(o => o.Path == "[3].Origin"));
             }
         }
 
@@ -413,9 +413,9 @@ namespace NuGet.Packaging.Test
                 trustedSigners.Count.Should().Be(3);
                 trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners,
                     options => options
-                        .Excluding(o => o.SelectedMemberPath == "[0].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[1].Origin")
-                        .Excluding(o => o.SelectedMemberPath == "[2].Origin"));
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin"));
             }
         }
 
