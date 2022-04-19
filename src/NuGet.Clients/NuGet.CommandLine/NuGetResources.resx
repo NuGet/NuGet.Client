@@ -5436,4 +5436,7 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
   <data name="Error_NuGetExeNeedsToBeUnblockedAfterDownloading" xml:space="preserve">
     <value>NuGet.exe file on path {0} needs to be unblocked after downloading.</value>
   </data>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'http' source, '{1}'. Support for 'http' sources will be removed in a future version.</value>
+  </data>
 </root>

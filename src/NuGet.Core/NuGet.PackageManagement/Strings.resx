@@ -429,4 +429,7 @@
     <value>Package source mapping match not found for package ID '{0}'</value>
     <comment>{0} - package id</comment>
   </data>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'http' source, '{1}'. Support for 'http' sources will be removed in a future version.</value>
+  </data>
 </root>

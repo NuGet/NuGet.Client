@@ -224,6 +224,20 @@ namespace NuGet.CommandLine
                     ClientPolicyContext = clientPolicyContext
                 };
 
+                IEnumerable<SourceRepository> sourceRepositories = packageRestoreContext.SourceRepositories;
+                IEnumerable<SourceRepository> enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
+                    sourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+
+                foreach (SourceRepository enabledSource in enabledSources)
+                {
+                    PackageSource source = enabledSource.PackageSource;
+                    if (source.IsHttp && !source.IsHttps)
+                    {
+                        projectContext.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
+                            string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("Warning_HttpServerUsage"), "restore", source.Source)));
+                    }
+                }
+
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
                     projectContext,

@@ -186,4 +186,7 @@
   <data name="Error_DuplicateItems" xml:space="preserve">
     <value>Duplicate '{0}' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate '{0}' items are: {1}.</value>
   </data>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'http' source, '{1}'. Support for 'http' sources will be removed in a future version.</value>
+  </data>
 </root>
