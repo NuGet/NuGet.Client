@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -118,7 +120,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 _restoreTask = NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(() => SolutionRestoreWorker.Value.ScheduleRestoreAsync(
-                        SolutionRestoreRequest.ByMenu(),
+                        SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.RestoreSolutionPackages),
                         CancellationToken.None))
                     .Task;
             }
