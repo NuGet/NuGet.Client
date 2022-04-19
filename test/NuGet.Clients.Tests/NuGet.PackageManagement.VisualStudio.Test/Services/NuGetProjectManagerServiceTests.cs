@@ -866,7 +866,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(File.Exists(pajFilepath));
 
             // Reset sending counterfactual telemetry, for testing purposes
-            CounterfactualMutex.IsCounterfactualEmitted = false;
+            CounterfactualMutex.CounterfactualEmittedFlag = 0;
 
             // Act
             var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);

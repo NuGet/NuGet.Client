@@ -161,15 +161,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            if (!CounterfactualMutex.IsCounterfactualEmitted)
+            // we just need at least one event per VS session
+            // Dirty reads can occur, but, we don't need to guarantee an exactly-once event call to emit telemetry
+            if (Interlocked.CompareExchange(ref CounterfactualMutex.CounterfactualEmittedFlag, 1, 0) == 0)
             {
-                // we just need at least one event per VS session
-                // Dirty reads can occur, but, we don't need to guarantee an exactly-once event call to emit telemetry
-                lock (CounterfactualMutex.CounterfactualLock)
-                {
-                    TelemetryActivity.EmitTelemetryEvent(new TransitiveDependenciesCounterfactualEvent());
-                    CounterfactualMutex.IsCounterfactualEmitted = true;
-                }
+                TelemetryActivity.EmitTelemetryEvent(new TransitiveDependenciesCounterfactualEvent());
             }
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {

@@ -446,7 +446,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             using NuGetPackageSearchService searchService = SetupSearchService();
 
-            CounterfactualMutex.IsPMUICounterfactualEmitted = false;
+            CounterfactualMutex.PMUICounterfactualEmittedFlag = 0;
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
@@ -482,7 +482,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             using NuGetPackageSearchService searchService = SetupSearchService();
 
-            CounterfactualMutex.IsPMUICounterfactualEmitted = false;
+            CounterfactualMutex.PMUICounterfactualEmittedFlag = 0;
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
