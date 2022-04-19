@@ -1366,10 +1366,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
+  <!--
+    ============================================================
+    _GetRestoreTargetFrameworkOverride
+    ============================================================
+  -->
   <Target Name="_GetRestoreTargetFrameworkOverride"
           Returns="$(_TargetFrameworkOverride)">
-
-    <!-- TargetFramework -->
     <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Condition=" '$(TargetFrameworks)' != '' "
@@ -1384,7 +1387,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!--
     ============================================================
-    _GetRestoreFallbackFoldersOverride
+    _GetTargetFrameworkOverrides
     ============================================================
   -->
   <Target Name="_GetTargetFrameworkOverrides"
