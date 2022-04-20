@@ -617,6 +617,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     _GetRestoreTargetFrameworksAsItems
     Read $(TargetFrameworks) from the project as items.
     Projects that do not have $(TargetFrameworks) will noop.
+    If $(TargetFramework) is specified globally, it'll be preferred over $(TargetFrameworks)
     ============================================================
   -->
   <Target Name="_GetRestoreTargetFrameworksAsItems"
@@ -689,8 +690,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-    _GetRestoreSettingsCurrentProject
-    Generate items for a single framework.
+    _GetRestoreSettingsAllFrameworks
+    Generate items for all frameworks.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsAllFrameworks"
@@ -776,7 +777,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- Determine if this will use cross targeting -->
-    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' ">
+    <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(TargetFrameworks)' != '' ">
       <_RestoreCrossTargeting>true</_RestoreCrossTargeting>
     </PropertyGroup>
 
@@ -902,11 +903,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Walk dependencies for all frameworks.
     ============================================================
   -->
-  <Target Name="_GenerateProjectRestoreGraphAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' "
+  <!-- This should probably not check TF override -->
+<Target Name="_GenerateProjectRestoreGraphAllFrameworks"
+    Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' " 
     DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
     Returns="@(_RestoreGraphEntry)">
-
     <!-- Get project and package references  -->
     <!-- Evaluate for each framework -->
     <MSBuild
@@ -928,7 +929,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Walk dependencies with the current framework.
     ============================================================
   -->
-  <!-- probably it does not matter -->
+  <!-- probably it does not matter?  -->
   <Target Name="_GenerateProjectRestoreGraphCurrentProject"
     Condition=" '$(TargetFrameworks)' == '' OR '$(_TargetFrameworkOverride)' != '' " 
     DependsOnTargets="_GenerateProjectRestoreGraphPerFramework"
@@ -1036,6 +1037,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     _GenerateRestoreProjectPathItemsCurrentProject
     Get absolute paths for all project references.
     ============================================================
+    probably it does not matter? Do we really care for TargetFramework override? 
   -->
   <Target Name="_GenerateRestoreProjectPathItemsCurrentProject"
     Condition=" '$(TargetFrameworks)' == '' OR '$(_TargetFrameworkOverride)' != '' "
