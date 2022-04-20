@@ -46,7 +46,7 @@
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
     <Compile Include="ProjectServices\CpsProjectSystemReferenceReader.cs" />
     <Compile Include="Projects\IPackageReferenceProject.cs" />
-    <Compile Include="Telemetry\CounterfactualLogger.cs" />
+    <Compile Include="Telemetry\TelemetryOnceEmitter.cs" />
     <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Projects\ProjectPackages.cs" />
     <Compile Include="Projects\FrameworkInstalledPackages.cs" />
