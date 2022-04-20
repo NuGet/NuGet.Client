@@ -2470,8 +2470,10 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_RestoresForSingleFramework()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_RestoresForSingleFramework(bool useStaticGraphEvaluation)
         {
             // Arrange
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
@@ -2490,7 +2492,8 @@ EndGlobal";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "a.csproj"), projectFileContents);
 
             // Act
-            var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args: "restore a.csproj /p:TargetFramework=\"net5.0\"", ignoreExitCode: true);
+            var additionalArgs = useStaticGraphEvaluation ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+            var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args: $"restore a.csproj {additionalArgs} /p:TargetFramework=\"net5.0\"", ignoreExitCode: true);
 
             // Assert
             result.Success.Should().BeTrue(because: result.AllOutput);
@@ -2506,8 +2509,10 @@ EndGlobal";
             net50Target.Libraries.Single().Name.Should().Be("x");
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_AndPerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_AndPerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework(bool useStaticGraphEvaluation)
         {
             // Arrange
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
@@ -2537,7 +2542,8 @@ EndGlobal";
             File.WriteAllText(projectBPath, projectBFileContents);
 
             // Act
-            var result = _msbuildFixture.RunDotnet(projectAWorkingDirectory, args: "restore a.csproj /p:TargetFramework=\"net5.0\" /p:RestoreRecursive=\"false\" /bl", ignoreExitCode: true);
+            var additionalArgs = useStaticGraphEvaluation ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+            var result = _msbuildFixture.RunDotnet(projectAWorkingDirectory, args: $"restore a.csproj /p:TargetFramework=\"net5.0\" /p:RestoreRecursive=\"false\" {additionalArgs}", ignoreExitCode: true);
 
             // Assert
             result.Success.Should().BeTrue(because: result.AllOutput);
@@ -2553,8 +2559,10 @@ EndGlobal";
             net50Target.Libraries.Single().Name.Should().Be("b");
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_WithMultiTargettingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_PerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargettingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_PerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework(bool useStaticGraphEvaluation)
         {
             // Arrange
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
@@ -2575,7 +2583,8 @@ EndGlobal";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "a.csproj"), projectFileContents);
 
             // Act
-            var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args: "restore a.csproj /p:TargetFramework=\"net5.0\" /bl", ignoreExitCode: true);
+            var additionalArgs = useStaticGraphEvaluation ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+            var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args: $"restore a.csproj /p:TargetFramework=\"net5.0\" {additionalArgs}", ignoreExitCode: true);
 
             // Assert
             result.Success.Should().BeTrue(because: result.AllOutput);
@@ -2590,22 +2599,12 @@ EndGlobal";
             net50Target.Libraries.Should().HaveCount(1);
             net50Target.Libraries.Single().Name.Should().Be("x");
             assetsFile.PackageSpec.RestoreMetadata.Sources.Select(e => e.Source).Should().Contain(additionalSource);
+
+            var condition = @"<ItemGroup Condition="" '$(TargetFramework)' == 'net5.0' AND '$(ExcludeRestorePackageImports)' != 'true' "">";
+            var targetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", "a.csproj.nuget.g.props");
+            var allTargets = File.ReadAllText(targetsFilePath);
+            allTargets.Should().Contain(condition);
         }
-
-        /***
-         * Test cases:
-         * 1. With configured project references.
-         * 1. Ensure the cross targetting thing is respected...for a good reason of course.
-         * 1. Should we be checking for more than what we currently have? 
-         * 1. Check static graph. Does it even work? I'd say yes, but let's see, maybe it requires some special work :D
-         **/
-
-
-        // Things to validate - Restore Settigns, *All* of the collect targets.
-
-        // Ensure that things are still treated as a single framework, not multiple...namely there should be a condition in the nuget.g.props  and nuget.g.
-        //Get restore settings should be kept only for that framework and not read in the outer build, right ?
-
         //_GetRestoreSettingsCurrentProject -> Do these make a different whether it's inner or outer build? If `TargetFramework` is the thing that's set then they become functionally equivalent.
         //_GetRestoreSettingsAllFrameworks
 
@@ -2616,6 +2615,5 @@ EndGlobal";
         //_GenerateRestoreProjectPathItemsCurrentProject
         //_GenerateRestoreProjectPathItemsAllFrameworks
 
-        // globally specific target frameworks should be preferred over globally specified TargetFramework.
     }
 }
