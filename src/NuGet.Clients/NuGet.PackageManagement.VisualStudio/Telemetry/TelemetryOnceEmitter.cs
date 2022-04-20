@@ -7,15 +7,15 @@ using NuGet.Common;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Keeps all counterfactuals state in one place
+    /// Ensures a given telemetry event is emitted once. Useful for counterfactual logging.
     /// </summary>
-    internal class CounterfactualLogger
+    internal class TelemetryOnceEmitter
     {
         private int _emittedFlag = 0;
 
-        internal CounterfactualLogger(string eventName)
+        internal TelemetryOnceEmitter(string eventName)
         {
-            EventName = eventName + "Counterfactual";
+            EventName = eventName;
         }
 
         internal string EventName { get; }
@@ -43,9 +43,5 @@ namespace NuGet.PackageManagement.VisualStudio
         /// For testing purposes only
         /// </summary>
         internal void Reset() => Interlocked.Exchange(ref _emittedFlag, 0);
-
-
-        internal static CounterfactualLogger TransitiveDependencies = new(nameof(TransitiveDependencies));
-        internal static CounterfactualLogger PMUITransitiveDependencies = new(nameof(PMUITransitiveDependencies));
     }
 }

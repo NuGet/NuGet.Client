@@ -49,6 +49,8 @@ namespace NuGet.PackageManagement.VisualStudio
             AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
         };
 
+        internal readonly static TelemetryOnceEmitter CounterfactualEmitter = new("PMUITransitiveDependenciesCounterfactual");
+
         public NuGetPackageSearchService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, ISharedServiceState state)
         {
             _options = options;
@@ -489,7 +491,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else // is Project
                 {
-                    CounterfactualLogger.PMUITransitiveDependencies.EmitIfNeeded();
+                    CounterfactualEmitter.EmitIfNeeded();
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
                         packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);

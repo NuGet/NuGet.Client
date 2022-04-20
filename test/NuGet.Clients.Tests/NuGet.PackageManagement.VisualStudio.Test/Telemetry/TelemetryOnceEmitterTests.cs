@@ -12,11 +12,11 @@ using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    public class CounterfactualLoggingTests
+    public class TelemetryOnceEmitterTests
     {
         private readonly ConcurrentQueue<TelemetryEvent> _telemetryEvents;
 
-        public CounterfactualLoggingTests()
+        public TelemetryOnceEmitterTests()
         {
             var telemetrySession = new Mock<ITelemetrySession>();
             _telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
@@ -27,10 +27,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void TryEmit_HappyPath_EmitsTelemetryOnce()
+        public void EmitIfNeeded_HappyPath_EmitsTelemetryOnce()
         {
             // Arrange
-            CounterfactualLogger logger = new("TestEvent");
+            TelemetryOnceEmitter logger = new("TestEvent");
 
             // Act and Assert I 
             logger.EmitIfNeeded();
@@ -43,11 +43,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TryEmit_MultipleThreads_EmitsOnceAsync()
+        public async Task EmitIfNeeded_MultipleThreads_EmitsOnceAsync()
         {
             // Arrange
-            CounterfactualLogger logger = new("TestEvent");
-            IEnumerable<Task> tasks = Enumerable.Repeat(new Task(() => logger.EmitIfNeeded()), 10);
+            TelemetryOnceEmitter logger = new("TestEvent");
+            IEnumerable<Task> tasks = Enumerable.Repeat(new Task(() => logger.EmitIfNeeded()), 5);
 
             // Act
             Parallel.ForEach(tasks, t =>
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void Reset_WithAlreadyEmited_Restarts()
         {
             // Arrange
-            CounterfactualLogger logger = new("TestEvent");
+            TelemetryOnceEmitter logger = new("TestEvent");
             logger.EmitIfNeeded();
 
             // Act
