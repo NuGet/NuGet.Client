@@ -89,7 +89,7 @@
 
     <!-- Test and utility packages -->
     <ItemGroup>
-        <PackageReference Update="FluentAssertions" Version="5.4.1" />
+        <PackageReference Update="FluentAssertions" Version="6.6.0" />
         <PackageReference Update="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="Microsoft.CodeAnalysis" Version="3.0.0" />
