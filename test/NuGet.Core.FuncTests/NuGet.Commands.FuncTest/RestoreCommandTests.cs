@@ -1933,7 +1933,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_PathTooLongException()
+        public async Task RestoreCommand_PathTooLongExceptionAsync()
         {
             // Arrange
             var sources = new List<PackageSource>
@@ -1978,7 +1978,7 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act
-                await ((Func<Task>)command.ExecuteAsync).Should().ThrowAsync<PathTooLongException>();
+                await Assert.ThrowsAsync<PathTooLongException>(command.ExecuteAsync);
             }
         }
 
