@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Emits counterfactual telemetry event once
         /// </summary>
-        public void TryEmit()
+        public void EmitIfNeeded()
         {
             if (Interlocked.CompareExchange(ref _emittedFlag, 1, 0) == 0)
             {
@@ -42,7 +42,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// For testing purposes only
         /// </summary>
-        internal void Reset() => _emittedFlag = 0;
+        internal void Reset() => Interlocked.Exchange(ref _emittedFlag, 0);
+
 
         internal static CounterfactualLogger TransitiveDependencies = new(nameof(TransitiveDependencies));
         internal static CounterfactualLogger PMUITransitiveDependencies = new(nameof(PMUITransitiveDependencies));

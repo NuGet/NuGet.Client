@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            CounterfactualLogger.TransitiveDependencies.TryEmit(); // Emit at least one event per VS session, but not so many events
+            CounterfactualLogger.TransitiveDependencies.EmitIfNeeded(); // Emit at least one event per VS session, but not so many events
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
                 // Get Transitive Origins

@@ -489,7 +489,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else // is Project
                 {
-                    CounterfactualLogger.PMUITransitiveDependencies.TryEmit();
+                    CounterfactualLogger.PMUITransitiveDependencies.EmitIfNeeded();
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
                         packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);

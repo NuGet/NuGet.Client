@@ -33,12 +33,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             CounterfactualLogger logger = new("TestEvent");
 
             // Act and Assert I 
-            logger.TryEmit();
+            logger.EmitIfNeeded();
             Assert.NotEmpty(_telemetryEvents);
             Assert.Contains(_telemetryEvents, e => e.Name == "TestEventCounterfactual");
 
             // Act and Assert II
-            logger.TryEmit();
+            logger.EmitIfNeeded();
             Assert.Equal(1, _telemetryEvents.Count);
         }
 
@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             CounterfactualLogger logger = new("TestEvent");
-            IEnumerable<Task> tasks = Enumerable.Repeat(new Task(() => logger.TryEmit()), 10);
+            IEnumerable<Task> tasks = Enumerable.Repeat(new Task(() => logger.EmitIfNeeded()), 10);
 
             // Act
             Parallel.ForEach(tasks, t =>
@@ -69,11 +69,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             CounterfactualLogger logger = new("TestEvent");
-            logger.TryEmit();
+            logger.EmitIfNeeded();
 
             // Act
             logger.Reset();
-            logger.TryEmit();
+            logger.EmitIfNeeded();
 
             // Assert
             Assert.Equal(2, _telemetryEvents.Count);
