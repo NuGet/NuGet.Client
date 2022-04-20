@@ -489,10 +489,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else // is Project
                 {
-                    if (TransitiveDependenciesCounterfactual.ShouldEmitPMUITelemetry)
-                    {
-                        TelemetryActivity.EmitTelemetryEvent(new PMUITransitiveDependenciesCounterfactualEvent());
-                    }
+                    CounterfactualLogger.PMUITransitiveDependencies.TryEmit();
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
                         packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);

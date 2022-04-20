@@ -2,26 +2,49 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// This class avoids generic type issues and static variables in <see cref="PackageReferenceProject{T, U}" />
-    /// Also, it keeps all counterfactual state in one place
+    /// Keeps all counterfactuals state in one place
     /// </summary>
-    internal static class TransitiveDependenciesCounterfactual
+    internal class CounterfactualLogger
     {
-        internal static int EmittedFlag = 0;
-        internal static int PMUIEmittedFlag = 0;
+        private int _emittedFlag = 0;
+
+        internal CounterfactualLogger(string eventName)
+        {
+            EventName = eventName + "Counterfactual";
+        }
+
+        internal string EventName { get; }
 
         /// <summary>
-        /// Indicates if counterfactual telemetry for Transitive Dependencies should be emitted.
+        /// Emits counterfactual telemetry event once
         /// </summary>
-        public static bool ShouldEmitTelemetry => Interlocked.CompareExchange(ref EmittedFlag, 1, 0) == 0;
+        public void TryEmit()
+        {
+            if (Interlocked.CompareExchange(ref _emittedFlag, 1, 0) == 0)
+            {
+                try
+                {
+                    TelemetryActivity.EmitTelemetryEvent(new TelemetryEvent(EventName));
+                }
+                catch
+                {
+                    _emittedFlag = 0;
+                    throw; // caller should handle telemetry failure
+                }
+            }
+        }
 
         /// <summary>
-        /// Indicates if counterfactual telemetry for PM UI Transitive Dependencies should be emitted.
+        /// For testing purposes only
         /// </summary>
-        public static bool ShouldEmitPMUITelemetry => Interlocked.CompareExchange(ref PMUIEmittedFlag, 1, 0) == 0;
+        internal void Reset() => _emittedFlag = 0;
+
+        internal static CounterfactualLogger TransitiveDependencies = new(nameof(TransitiveDependencies));
+        internal static CounterfactualLogger PMUITransitiveDependencies = new(nameof(PMUITransitiveDependencies));
     }
 }
