@@ -8,6 +8,8 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.CommandLine.Test;
+using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
@@ -254,6 +256,53 @@ namespace NuGet.CommandLine.FuncTest.Commands
             Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);
 
             return r;
+        }
+
+        [Fact]
+        public async Task Install_WithHttpSource_Warns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var packageAPath = Path.Combine(pathContext.PackageSource, "a", "1.0.0", "a.1.0.0.nupkg");
+
+            pathContext.Settings.AddSource("http-feed", "http://api.source/api/v2");
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json");
+
+            var net461 = NuGetFramework.Parse("net461");
+
+            var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                "a",
+                pathContext.SolutionRoot,
+                net461);
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            // Act
+
+            var args = new string[]
+            {
+                "packages.config",
+                "-OutputDirectory",
+                Path.Combine(pathContext.WorkingDirectory, "packages")
+            };
+
+            // Act
+            var result = RunInstall(_nugetExePath, pathContext, expectedExitCode: 0, additionalArgs: args);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.", result.Output);
+            Assert.Contains("WARNING: NU1803", result.Output);
         }
     }
 }
