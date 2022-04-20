@@ -255,7 +255,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
             }
         }
 
@@ -347,7 +347,7 @@ namespace NuGet.PackageManagement.UI
             if (_isExecutingAction)
             {
                 _isRefreshRequired = true;
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp, isUIFiltering: false);
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
             }
             else
             {
