@@ -47,7 +47,7 @@ using Task = System.Threading.Tasks.Task;
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
     [Collection(MockedVS.Collection)]
-    public class NuGetProjectManagerServiceTests : MockedVSCollectionTests, IDisposable
+    public sealed class NuGetProjectManagerServiceTests : MockedVSCollectionTests, IDisposable
     {
         private NuGetPackageManager _packageManager;
         private NuGetProjectManagerService _projectManager;
