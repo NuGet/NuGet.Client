@@ -908,7 +908,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <!-- This should probably not check TF override -->
 <Target Name="_GenerateProjectRestoreGraphAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' " 
+    Condition=" '$(TargetFrameworks)' != '' " 
     DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
     Returns="@(_RestoreGraphEntry)">
     <!-- Get project and package references  -->
@@ -934,7 +934,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <!-- probably it does not matter?  -->
   <Target Name="_GenerateProjectRestoreGraphCurrentProject"
-    Condition=" '$(TargetFrameworks)' == '' OR '$(_TargetFrameworkOverride)' != '' " 
+    Condition=" '$(TargetFrameworks)' == '' " 
     DependsOnTargets="_GenerateProjectRestoreGraphPerFramework"
     Returns="@(_RestoreGraphEntry)">
   </Target>
@@ -1093,7 +1093,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreProjectPathItemsAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' "
+    Condition=" '$(TargetFrameworks)' != '' "
     DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
     Returns="@(_RestoreProjectPathItems)">
 
