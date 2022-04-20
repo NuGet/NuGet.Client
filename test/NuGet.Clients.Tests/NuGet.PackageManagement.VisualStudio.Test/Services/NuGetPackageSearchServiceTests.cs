@@ -35,7 +35,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection("MockedVS")]
+    [Collection(MockedVS.Collection)]
     public class NuGetPackageSearchServiceTests : MockedVSCollectionTests
     {
         private readonly SourceRepository _sourceRepository;

@@ -11,7 +11,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    public class MockedVSCollectionTests : IAsyncServiceProvider
+    public abstract class MockedVSCollectionTests : IAsyncServiceProvider
     {
         private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>();
         protected readonly Dictionary<string, bool> _experimentationFlags;
