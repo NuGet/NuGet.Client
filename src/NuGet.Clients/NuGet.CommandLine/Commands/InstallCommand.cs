@@ -112,7 +112,15 @@ namespace NuGet.CommandLine
             // If the SolutionDir is specified, use the .nuget directory under it to determine the solution-level settings
             if (!string.IsNullOrEmpty(SolutionDirectory))
             {
-                var path = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
+                string path;
+                try
+                {
+                    path = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new ArgumentException($"Invalid Solution Directory: '{SolutionDirectory}'", e);
+                }
 
                 var solutionSettingsFile = Path.GetFullPath(path);
 
