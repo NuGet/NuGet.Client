@@ -623,8 +623,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetRestoreTargetFrameworksAsItems"
     DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworkOverride"
     Returns="@(_RestoreTargetFrameworkItems)">
-    <ItemGroup Condition=" '$(TargetFrameworks)' != ''">
+    <ItemGroup Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' == '' ">
       <_RestoreTargetFrameworkItems Include="$(TargetFrameworks.Split(';'))" />
+    </ItemGroup>
+    <ItemGroup Condition=" '$(TargetFrameworks)' != '' AND '$(_TargetFrameworkOverride)' != '' ">
+      <_RestoreTargetFrameworkItems Include="$(_TargetFrameworkOverride)" />
     </ItemGroup>
   </Target>
 
@@ -1040,7 +1043,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     probably it does not matter? Do we really care for TargetFramework override? 
   -->
   <Target Name="_GenerateRestoreProjectPathItemsCurrentProject"
-    Condition=" '$(TargetFrameworks)' == '' OR '$(_TargetFrameworkOverride)' != '' "
+    Condition=" '$(TargetFrameworks)' == '' "
     DependsOnTargets="_GenerateRestoreProjectPathItemsPerFramework"
     Returns="@(_RestoreProjectPathItems)">
   </Target>

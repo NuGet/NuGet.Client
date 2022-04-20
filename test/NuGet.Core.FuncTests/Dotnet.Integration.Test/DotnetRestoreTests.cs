@@ -2507,7 +2507,54 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_AndPerFrameworkConfigSourcesAreUsed_RestoresForSingleFramework()
+        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_AndPerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework()
+        {
+            // Arrange
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new SimpleTestPackageContext("x", "1.0.0"));
+            var projectAWorkingDirectory = Path.Combine(pathContext.SolutionRoot, "a");
+            var projectBWorkingDirectory = Path.Combine(pathContext.SolutionRoot, "b");
+            Directory.CreateDirectory(projectAWorkingDirectory);
+            Directory.CreateDirectory(projectBWorkingDirectory);
+            var projectAPath = Path.Combine(projectAWorkingDirectory, "a.csproj");
+            var projectBPath = Path.Combine(projectBWorkingDirectory, "b.csproj");
+            string projectAFileContents =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>nestandard2.0;net5.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""..\b\b.csproj"" Version=""1.0.0"" />
+    </ItemGroup>
+</Project>";
+            string projectBFileContents =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>net5.0</TargetFrameworks>
+    </PropertyGroup>
+</Project>";
+            File.WriteAllText(projectAPath, projectAFileContents);
+            File.WriteAllText(projectBPath, projectBFileContents);
+
+            // Act
+            var result = _msbuildFixture.RunDotnet(projectAWorkingDirectory, args: "restore a.csproj /p:TargetFramework=\"net5.0\" /p:RestoreRecursive=\"false\" /bl", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            var assetsFilePath = Path.Combine(projectAWorkingDirectory, "obj", LockFileFormat.AssetsFileName);
+            var format = new LockFileFormat();
+            LockFile assetsFile = format.Read(assetsFilePath);
+
+            var targetsWithoutARuntime = assetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+            targetsWithoutARuntime.Count().Should().Be(1, because: "Expected that only the framework passed in as a global property is restored.");
+            var net50Target = targetsWithoutARuntime.Single();
+
+            net50Target.Libraries.Should().HaveCount(1);
+            net50Target.Libraries.Single().Name.Should().Be("b");
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_WithMultiTargettingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_PerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework()
         {
             // Arrange
             using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
@@ -2542,13 +2589,13 @@ EndGlobal";
 
             net50Target.Libraries.Should().HaveCount(1);
             net50Target.Libraries.Single().Name.Should().Be("x");
-            assetsFile.PackageSpec.RestoreMetadata.Sources.Should().ContainSingle(additionalSource);
+            assetsFile.PackageSpec.RestoreMetadata.Sources.Select(e => e.Source).Should().Contain(additionalSource);
         }
 
         /***
          * Test cases:
          * 1. With configured project references.
-         * 1. Ensure the cross targetting thing is respect...for a good reason of course.
+         * 1. Ensure the cross targetting thing is respected...for a good reason of course.
          * 1. Should we be checking for more than what we currently have? 
          * 1. Check static graph. Does it even work? I'd say yes, but let's see, maybe it requires some special work :D
          **/
@@ -2568,5 +2615,7 @@ EndGlobal";
 
         //_GenerateRestoreProjectPathItemsCurrentProject
         //_GenerateRestoreProjectPathItemsAllFrameworks
+
+        // globally specific target frameworks should be preferred over globally specified TargetFramework.
     }
 }
