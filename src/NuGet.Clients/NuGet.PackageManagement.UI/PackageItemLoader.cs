@@ -272,7 +272,6 @@ namespace NuGet.PackageManagement.UI
                     transitiveToolTipMessage = string.Format(CultureInfo.CurrentUICulture, Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins));
                 }
 
-
                 var listItem = new PackageItemViewModel(_searchService)
                 {
                     Id = metadata.Identity.Id,

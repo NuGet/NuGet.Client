@@ -693,9 +693,6 @@ namespace NuGet.PackageManagement.UI
                 if (PackageLevel == PackageLevel.TopLevel) // only reload metadata for Installed, top-level packages
                 {
                     (packageMetadata, deprecationMetadata) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
-
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                    cancellationToken.ThrowIfCancellationRequested();
                 }
                 else if (PackageLevel == PackageLevel.Transitive)
                 {
