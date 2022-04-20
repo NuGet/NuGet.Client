@@ -2445,7 +2445,7 @@ EndGlobal";
                         "x",
                         framework: "",
                         new Dictionary<string, string>(),
-                        new Dictionary<string, string>(){{"Version", "1.0.0"}});
+                        new Dictionary<string, string>() { { "Version", "1.0.0" } });
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -2468,6 +2468,57 @@ EndGlobal";
                 result.ExitCode.Should().Be(0, because: result.AllOutput);
                 result.AllOutput.Should().Contain("All projects are up-to-date for restore.");
             }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_RestoresForSingleFramework()
+        {
+            // Arrange
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new SimpleTestPackageContext("x", "1.0.0"));
+
+            string projectFileContents =
+@"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>nestandard2.0;net5.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""x"" Version=""1.0.0"" />
+    </ItemGroup>
+</Project>";
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "a.csproj"), projectFileContents);
+
+            // Act
+            var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args: "restore a.csproj /p:TargetFramework=\"net5.0\"", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            var assetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", LockFileFormat.AssetsFileName);
+            var format = new LockFileFormat();
+            LockFile assetsFile = format.Read(assetsFilePath);
+
+            var targetsWithoutARuntime = assetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+            targetsWithoutARuntime.Count().Should().Be(1, because: "Expected that only the framework passed in as a global property is restored.");
+            var net50Target = targetsWithoutARuntime.Single();
+
+            net50Target.Libraries.Should().HaveCount(1);
+            net50Target.Libraries.Single().Name.Should().Be("x");
+
+            // Things to validate - Restore Settigns, *All* of the collect targets.
+
+            // Ensure that things are still treated as a single framework, not multiple...namely there should be a condition in the nuget.g.props  and nuget.g.targets
+
+            //Get restore settings should be kept only for that framework and not read in the outer build, right ?
+
+            //_GetRestoreSettingsCurrentProject -> Do these make a different whether it's inner or outer build? If `TargetFramework` is the thing that's set then they become functionally equivalent.
+            //_GetRestoreSettingsAllFrameworks
+
+            //_GenerateProjectRestoreGraphAllFrameworks
+            //_GenerateProjectRestoreGraphCurrentProject
+            
+
+            //_GenerateRestoreProjectPathItemsCurrentProject
+            //_GenerateRestoreProjectPathItemsAllFrameworks
         }
     }
 }
