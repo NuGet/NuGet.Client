@@ -866,7 +866,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(File.Exists(pajFilepath));
 
             // Reset sending counterfactual telemetry, for testing purposes
-            TransitiveDependenciesCounterfactual.EmittedFlag = 0;
+            CounterfactualLogger.TransitiveDependencies.Reset();
 
             // Act
             var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
@@ -880,7 +880,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(1, packagesB.Count());
             Assert.Collection(packagesB,
                 pkg => AssertElement(pkg, "packageA", "2.0.0"));
-            Assert.Contains(telemetryEvents, te => te.Name == TransitiveDependenciesCounterfactualEvent.EventName);
+            Assert.Contains(telemetryEvents, te => te.Name == CounterfactualLogger.TransitiveDependencies.EventName);
         }
 
         [Fact]
