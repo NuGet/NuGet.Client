@@ -589,14 +589,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_RestoreProjectFramework/>
-      <TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' == '' ">$(TargetFrameworks)</TargetFrameworkToBeUsed>
+      <_TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' == '' ">$(TargetFrameworks)</_TargetFrameworkToBeUsed>
     </PropertyGroup>
 
     <!-- For project.json projects target frameworks will be read from project.json. -->
     <GetProjectTargetFrameworksTask
       Condition=" '$(RestoreProjectStyle)' != 'ProjectJson'"
       ProjectPath="$(MSBuildProjectFullPath)"
-      TargetFrameworks="$(TargetFrameworkToBeUsed)"
+      TargetFrameworks="$(_TargetFrameworkToBeUsed)"
       TargetFramework="$(TargetFramework)"
       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
       TargetPlatformIdentifier="$(TargetPlatformIdentifier)"

@@ -2482,7 +2482,7 @@ EndGlobal";
             string projectFileContents =
 @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
-        <TargetFrameworks>nestandard2.0;net5.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""x"" Version=""1.0.0"" />
@@ -2526,7 +2526,7 @@ EndGlobal";
             string projectAFileContents =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
-        <TargetFrameworks>nestandard2.0;net5.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""..\b\b.csproj"" Version=""1.0.0"" />
@@ -2572,7 +2572,7 @@ EndGlobal";
             string projectFileContents =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
-        <TargetFrameworks>nestandard2.0;net5.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
         <RestoreAdditionalProjectSources Condition=""'$(TargetFramework)' == 'net5.0'"">{additionalSource}</RestoreAdditionalProjectSources>
     </PropertyGroup>
     <ItemGroup>
