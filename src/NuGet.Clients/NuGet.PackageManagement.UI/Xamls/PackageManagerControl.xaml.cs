@@ -411,7 +411,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.NoOp, isUIFiltering: false, 0);
             }
             await RefreshConsolidatablePackagesCountAsync();
         }
