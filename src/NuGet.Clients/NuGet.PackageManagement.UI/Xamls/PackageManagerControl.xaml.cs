@@ -418,10 +418,23 @@ namespace NuGet.PackageManagement.UI
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
             if (!_loadedAndInitialized)
             {
-                _loadedAndInitialized = true;
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                sw.Stop();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                var refreshStatus = RefreshOperationStatus.NoOp;
+                try
+                {
+                    _loadedAndInitialized = true;
+                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                    refreshStatus = RefreshOperationStatus.Success;
+                }
+                catch
+                {
+                    refreshStatus = RefreshOperationStatus.Failed;
+                    throw;
+                }
+                finally
+                {
+                    sw.Stop();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageManagerLoaded, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                }
             }
             else
             {
@@ -539,10 +552,23 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    SaveSettings();
-                    await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-                    sw.Stop();
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                    var refreshStatus = RefreshOperationStatus.NoOp;
+                    try
+                    {
+                        SaveSettings();
+                        await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                        refreshStatus = RefreshOperationStatus.Success;
+                    }
+                    catch
+                    {
+                        refreshStatus = RefreshOperationStatus.Failed;
+                        throw;
+                    }
+                    finally
+                    {
+                        sw.Stop();
+                        EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, refreshStatus, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                    }
                 }
             }
             finally
@@ -701,9 +727,22 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     var sw = Stopwatch.StartNew();
-                    await RefreshAsync();
-                    sw.Stop();
-                    EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success, duration: sw.Elapsed.TotalMilliseconds);
+                    var refreshStatus = RefreshOperationStatus.NoOp;
+                    try
+                    {
+                        await RefreshAsync();
+                        refreshStatus = RefreshOperationStatus.Success;
+                    }
+                    catch
+                    {
+                        refreshStatus = RefreshOperationStatus.Failed;
+                        throw;
+                    }
+                    finally
+                    {
+                        sw.Stop();
+                        EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.PackagesMissingStatusChanged, refreshStatus, duration: sw.Elapsed.TotalMilliseconds);
+                    }
                 }).PostOnFailure(nameof(PackageManagerControl), nameof(PackageRestoreManager_PackagesMissingStatusChanged));
             }
 
@@ -1132,10 +1171,23 @@ namespace NuGet.PackageManagement.UI
         private async Task SourceRepoList_SelectionChangedAsync(TimeSpan timeSpan)
         {
             var sw = Stopwatch.StartNew();
-            SaveSettings();
-            await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
-            sw.Stop();
-            EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+            var refreshStatus = RefreshOperationStatus.NoOp;
+            try
+            {
+                SaveSettings();
+                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
+                refreshStatus = RefreshOperationStatus.Success;
+            }
+            catch
+            {
+                refreshStatus = RefreshOperationStatus.Failed;
+                throw;
+            }
+            finally
+            {
+                sw.Stop();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, refreshStatus, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+            }
         }
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
