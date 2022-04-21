@@ -445,7 +445,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
             using NuGetPackageSearchService searchService = SetupSearchService();
-            NuGetPackageSearchService.CounterfactualEmitter.Reset();
+            CounterfactualLoggers.PMUITransitiveDependencies.Reset();
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
@@ -458,7 +458,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.Contains(telemetryEvents, evt => evt.Name == NuGetPackageSearchService.CounterfactualEmitter.EventName);
+            Assert.Contains(telemetryEvents, evt => evt.Name == CounterfactualLoggers.PMUITransitiveDependencies.EventName);
         }
 
         [Theory]
@@ -480,7 +480,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
 
             using NuGetPackageSearchService searchService = SetupSearchService();
-            NuGetPackageSearchService.CounterfactualEmitter.Reset();
+            CounterfactualLoggers.PMUITransitiveDependencies.Reset();
 
             // Act
             _ = await searchService.CreatePackageFeedAsync(
@@ -493,7 +493,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.DoesNotContain(telemetryEvents, evt => evt.Name == NuGetPackageSearchService.CounterfactualEmitter.EventName);
+            Assert.DoesNotContain(telemetryEvents, evt => evt.Name == CounterfactualLoggers.PMUITransitiveDependencies.EventName);
         }
 
         private NuGetPackageSearchService SetupSearchService()

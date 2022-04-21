@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void EmitIfNeeded_HappyPath_EmitsTelemetryOnce()
+        public void EmitIfNeeded_TwoCalls_EmitsTelemetryOnce()
         {
             // Arrange
             TelemetryOnceEmitter logger = new("TestEvent");

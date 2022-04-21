@@ -14,6 +14,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
+using NuGet.PackageManagement.VisualStudio.Telemetry;
 using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -25,11 +26,6 @@ using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal static class PackageReferenceProject
-    {
-        internal static TelemetryOnceEmitter CounterfactualEmitter = new("TransitiveDependenciesCounterfactual");
-    }
-
     /// <summary>
     /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
     /// packages in a package reference style project.
@@ -164,7 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
-            PackageReferenceProject.CounterfactualEmitter.EmitIfNeeded(); // Emit at least one event per VS session, but not so many events
+            CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {

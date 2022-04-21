@@ -8,7 +8,7 @@ using NuGet.Common;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Ensures a given telemetry event is emitted once. Useful for counterfactual logging.
+    /// Ensures a given telemetry event is emitted once.
     /// </summary>
     internal class TelemetryOnceEmitter
     {
@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
         internal string EventName { get; }
 
         /// <summary>
-        /// Emits counterfactual telemetry event once
+        /// Emits telemetry event once
         /// </summary>
         public void EmitIfNeeded()
         {
