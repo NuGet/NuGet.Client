@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
-                () => null).Wait();
+                () => null, CancellationToken.None).Wait();
         }
 
         [Fact]
@@ -135,7 +135,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     Version = installedVersion
                 },
                 ItemFilter.All,
-                () => null);
+                () => null,
+                CancellationToken.None);
 
             NuGetVersion selectedVersion = NuGetVersion.Parse("2.0.0");
 
@@ -166,7 +167,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     Version = installedVersion
                 },
                 ItemFilter.All,
-                () => null);
+                () => null,
+                CancellationToken.None);
 
             model.SelectedVersion = new DisplayVersion(installedVersion, additionalInfo: null);
 
@@ -205,7 +207,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
-                () => null).Wait();
+                () => null,
+                CancellationToken.None).Wait();
         }
     }
 }

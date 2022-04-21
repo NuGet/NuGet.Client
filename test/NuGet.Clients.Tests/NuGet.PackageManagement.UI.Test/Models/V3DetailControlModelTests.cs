@@ -134,7 +134,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
-                () => null).Wait();
+                () => null,
+                CancellationToken.None).Wait();
         }
 
         [Fact]
@@ -199,7 +200,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             var expectedAdditionalInfo = string.Empty;
@@ -273,7 +275,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
 
@@ -351,7 +354,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.Installed,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
@@ -432,7 +436,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
@@ -521,7 +526,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 await _testInstance.SetCurrentPackageAsync(
                     _testViewModel,
                     ItemFilter.All,
-                    () => null);
+                    () => null,
+                    CancellationToken.None);
             });
         }
 
@@ -568,7 +574,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             var expectedAdditionalInfo = string.Empty;
@@ -642,7 +649,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
 

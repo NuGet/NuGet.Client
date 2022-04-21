@@ -474,14 +474,16 @@ namespace NuGet.PackageManagement.UI
             await BatchUpdateIsSelectedAsync(select);
         }
 
-        protected override async Task OnCurrentPackageChanged()
+        protected override async Task OnCurrentPackageChangedAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             if (_searchResultPackage == null)
             {
                 return;
             }
 
-            await UpdateInstalledVersionsAsync(CancellationToken.None);
+            await UpdateInstalledVersionsAsync(token);
         }
 
         // auto select projects based on the current tab and currently selected package

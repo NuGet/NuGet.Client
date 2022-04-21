@@ -469,11 +469,13 @@ namespace NuGet.PackageManagement.UI
             return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
         }
 
-        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var identity = new PackageIdentity(Id, Version);
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, token);
         }
 
         private PackageDeprecationMetadataContextInfo _deprecationMetadata;

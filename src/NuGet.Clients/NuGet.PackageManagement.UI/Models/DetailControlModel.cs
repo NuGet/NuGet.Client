@@ -38,6 +38,24 @@ namespace NuGet.PackageManagement.UI
 
         private protected PackageItemViewModel _searchResultPackage;
 
+        public PackageItemViewModel SearchResult
+        {
+            get => _searchResultPackage;
+            internal set
+            {
+                if (_searchResultPackage != value)
+                {
+                    _searchResultPackage = value;
+                    OnPropertyChanged(nameof(Id));
+                    OnPropertyChanged(nameof(PackagePath));
+                    OnPropertyChanged(nameof(IconUrl));
+                    OnPropertyChanged(nameof(IconBitmap));
+                    OnPropertyChanged(nameof(PrefixReserved));
+                }
+            }
+
+        }
+
         private protected ItemFilter _filter;
 
         // Project constraints on the allowed package versions.
@@ -122,7 +140,8 @@ namespace NuGet.PackageManagement.UI
         public async virtual Task SetCurrentPackageAsync(
             PackageItemViewModel searchResultPackage,
             ItemFilter filter,
-            Func<PackageItemViewModel> getPackageItemViewModel)
+            Func<PackageItemViewModel> getPackageItemViewModel,
+            CancellationToken token)
         {
             if (searchResultPackage == null)
             {
@@ -133,61 +152,60 @@ namespace NuGet.PackageManagement.UI
                 throw new ArgumentNullException(nameof(getPackageItemViewModel));
             }
 
+            token.ThrowIfCancellationRequested();
+
             // Clear old data
             ClearVersions();
             PackageMetadata = null;
             _metadataDict.Clear();
 
-            _searchResultPackage = searchResultPackage;
+            SearchResult = searchResultPackage;
             _filter = filter;
-            OnPropertyChanged(nameof(Id));
-            OnPropertyChanged(nameof(PackagePath));
-            OnPropertyChanged(nameof(IconUrl));
-            OnPropertyChanged(nameof(IconBitmap));
-            OnPropertyChanged(nameof(PrefixReserved));
 
-            Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync(_nugetProjects);
+            DetailedPackageMetadata meta = null;
+            if (searchResultPackage.PackageMetadata != null)
+            {
+                meta = new DetailedPackageMetadata(searchResultPackage.PackageMetadata, searchResultPackage.DeprecationMetadata, searchResultPackage.DownloadCount);
+            }
+            else
+            {
+                meta = await ReloadDetailedMetadataAsync(searchResultPackage, searchResultPackage.Version, getPackageItemViewModel, token);
+            }
+            if (meta != null)
+            {
+                PackageMetadata = meta;
+                _metadataDict[meta.Version] = meta;
+            }
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
-
             // Filter out projects that are not managed by NuGet.
             var projects = _nugetProjects.Where(project => project.ProjectKind != NuGetProjectKind.ProjectK).ToArray();
             foreach (var project in projects)
             {
+                IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(ServiceBroker, token);
+                ProjectVersionConstraint constraint = null;
                 if (project.ProjectKind == NuGetProjectKind.PackagesConfig)
                 {
                     // cache allowed version range for each nuget project for current selected package
-                    IReadOnlyCollection<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                        ServiceBroker,
-                        CancellationToken.None);
                     IPackageReferenceContextInfo packageReference = installedPackages
                         .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, searchResultPackage.Id));
 
                     VersionRange range = packageReference?.AllowedVersions;
-
                     if (range != null && !VersionRange.All.Equals(range))
                     {
-                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
-                            ServiceBroker,
-                            CancellationToken.None);
-                        var constraint = new ProjectVersionConstraint()
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(ServiceBroker, token);
+                        constraint = new ProjectVersionConstraint()
                         {
                             ProjectName = projectMetadata.Name,
                             VersionRange = range,
                             IsPackagesConfig = true
                         };
-
-                        _projectVersionConstraints.Add(constraint);
                     }
                 }
                 else if (project.ProjectKind == NuGetProjectKind.PackageReference)
                 {
-                    IReadOnlyCollection<IPackageReferenceContextInfo> packageReferences = await project.GetInstalledPackagesAsync(
-                        ServiceBroker,
-                        CancellationToken.None);
-
                     // Find the lowest auto referenced version of this package.
-                    IPackageReferenceContextInfo autoReferenced = packageReferences
+                    IPackageReferenceContextInfo autoReferenced = installedPackages
                         .Where(e => StringComparer.OrdinalIgnoreCase.Equals(searchResultPackage.Id, e.Identity.Id)
                             && e.Identity.Version != null)
                         .Where(e => e.IsAutoReferenced)
@@ -196,12 +214,9 @@ namespace NuGet.PackageManagement.UI
 
                     if (autoReferenced != null)
                     {
-                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
-                            ServiceBroker,
-                            CancellationToken.None);
-
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(ServiceBroker, token);
                         // Add constraint for auto referenced package.
-                        var constraint = new ProjectVersionConstraint()
+                        constraint = new ProjectVersionConstraint()
                         {
                             ProjectName = projectMetadata.Name,
                             VersionRange = new VersionRange(
@@ -209,12 +224,13 @@ namespace NuGet.PackageManagement.UI
                                 includeMinVersion: true,
                                 maxVersion: autoReferenced.Identity.Version,
                                 includeMaxVersion: true),
-
                             IsAutoReferenced = true
                         };
-
-                        _projectVersionConstraints.Add(constraint);
                     }
+                }
+                if (constraint != null)
+                {
+                    _projectVersionConstraints.Add(constraint);
                 }
             }
 
@@ -223,9 +239,9 @@ namespace NuGet.PackageManagement.UI
             {
                 (searchResultPackage.Version, false)
             };
-            await CreateVersionsAsync(CancellationToken.None);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
-                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
+            await CreateVersionsAsync(token);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await OnCurrentPackageChangedAsync(token))
+                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChangedAsync));
 
             // GetVersionAsync can take long time to finish, user might changed selected package.
             // Check selected package.
@@ -235,29 +251,14 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
-            IReadOnlyCollection<VersionInfoContextInfo> versions = await searchResultPackage.GetVersionsAsync(_nugetProjects);
+            IReadOnlyCollection<VersionInfoContextInfo> versions = await searchResultPackage.GetVersionsAsync(_nugetProjects, token);
             _allPackageVersions = versions
                 .Where(v => v?.Version != null)
                 .Select(GetVersion)
                 .ToList();
-            await CreateVersionsAsync(CancellationToken.None);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
-                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));
-
-            DetailedPackageMetadata meta = null;
-            if (searchResultPackage.PackageMetadata != null)
-            {
-                meta = new DetailedPackageMetadata(searchResultPackage.PackageMetadata, searchResultPackage.DeprecationMetadata, searchResultPackage.DownloadCount);
-            }
-            else
-            {
-                meta = await ReloadDetailedMetadataAsync(searchResultPackage, searchResultPackage.Version, getPackageItemViewModel, CancellationToken.None);
-            }
-            if (meta != null)
-            {
-                PackageMetadata = meta;
-                _metadataDict[meta.Version] = meta;
-            }
+            await CreateVersionsAsync(token);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await OnCurrentPackageChangedAsync(token))
+                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChangedAsync));
         }
 
         private (NuGetVersion version, bool isDeprecated) GetVersion(VersionInfoContextInfo versionInfo)
@@ -277,8 +278,10 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(DetailControlModel), nameof(DependencyBehavior_SelectedChanged));
         }
 
-        protected virtual Task OnCurrentPackageChanged()
+        protected virtual Task OnCurrentPackageChangedAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             return Task.CompletedTask;
         }
 
@@ -541,7 +544,7 @@ namespace NuGet.PackageManagement.UI
                             {
                                 try
                                 {
-                                    await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
+                                    await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token);
                                 }
                                 catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
                                 {
@@ -560,42 +563,40 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Reload package metadata from remote/local nuget feeds
         /// </summary>
-        /// <param name="searchResultPackage"></param>
-        /// <param name="newVersion"></param>
-        /// <param name="getCurrentPackageItemViewModel"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         private async ValueTask<DetailedPackageMetadata> ReloadDetailedMetadataAsync(PackageItemViewModel searchResultPackage, NuGetVersion newVersion, Func<PackageItemViewModel> getCurrentPackageItemViewModel, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             DetailedPackageMetadata result = null;
+            // Getting the metadata can take awhile, check to see if its still selected
+            if (getCurrentPackageItemViewModel() != searchResultPackage)
+            {
+                return result;
+            }
+
             using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
             {
                 PackageSearchMetadataContextInfo packageSearchMetadata = null;
                 PackageDeprecationMetadataContextInfo packageDeprecationMetadata = null;
                 var pkgIdentity = new PackageIdentity(_searchResultPackage.Id, newVersion);
 
-                if (searchResultPackage.PackageLevel == PackageLevel.TopLevel)
+                if (getCurrentPackageItemViewModel() == searchResultPackage)
                 {
-                    (packageSearchMetadata, packageDeprecationMetadata) = await searchService.GetPackageMetadataAsync(pkgIdentity, searchResultPackage.Sources, includePrerelease: true, cancellationToken);
-                    if (packageSearchMetadata != null)
+                    if (searchResultPackage.PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(searchResultPackage.Version))
                     {
-                        // Getting the metadata can take awhile, check to see if its still selected
-                        if (getCurrentPackageItemViewModel() != searchResultPackage)
-                        {
-                            return result;
-                        }
+                        (packageSearchMetadata, packageDeprecationMetadata) = await searchService.GetPackageMetadataAsync(pkgIdentity, searchResultPackage.Sources, includePrerelease: true, cancellationToken);
                     }
-                }
-                else if (!IsSolution && searchResultPackage.PackageLevel == PackageLevel.Transitive)
-                {
-                    // Get only local metadata for transitive packages
-                    packageSearchMetadata = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
-                }
+                    else if (!IsSolution && searchResultPackage.PackageLevel == PackageLevel.Transitive)
+                    {
+                        // Get only local metadata for transitive packages
+                        packageSearchMetadata = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
+                    }
 
-                result = new DetailedPackageMetadata(
-                        packageSearchMetadata,
-                        packageDeprecationMetadata,
-                        packageSearchMetadata.DownloadCount);
+                    result = new DetailedPackageMetadata(
+                            packageSearchMetadata,
+                            packageDeprecationMetadata,
+                            packageSearchMetadata.DownloadCount);
+                }
             }
 
             return result;
