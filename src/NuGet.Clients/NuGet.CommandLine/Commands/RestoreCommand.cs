@@ -900,7 +900,10 @@ namespace NuGet.CommandLine
             }
             catch (ArgumentException e)
             {
-                throw new ArgumentException($"Invalid Solution Directory: '{restoreInputs.DirectoryOfSolutionFile}'", e);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("Error_InvalidSolutionDirectory"),
+                        restoreInputs.DirectoryOfSolutionFile),
+                    e);
             }
 
             var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, MsBuildDirectory.Value.Path);

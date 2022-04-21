@@ -1026,7 +1026,10 @@ namespace NuGet.CommandLine
             }
             catch (ArgumentException e)
             {
-                throw new ArgumentException($"Invalid characters in one of the following paths: '{string.Join("', '", paths)}'", e);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("Error_InvalidCharactersInPathSegment"),
+                        string.Join("', '", paths)),
+                    e);
             }
 
         }

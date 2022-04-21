@@ -119,7 +119,10 @@ namespace NuGet.CommandLine
                 }
                 catch (ArgumentException e)
                 {
-                    throw new ArgumentException($"Invalid Solution Directory: '{SolutionDirectory}'", e);
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString("Error_InvalidSolutionDirectory"),
+                            SolutionDirectory),
+                        e);
                 }
 
                 var solutionSettingsFile = Path.GetFullPath(path);
