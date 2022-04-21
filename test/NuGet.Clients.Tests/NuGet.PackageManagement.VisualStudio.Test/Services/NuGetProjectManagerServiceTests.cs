@@ -793,7 +793,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        private async Task GetInstalledAndTransitivePackagesAsync_WithCpsPackageReferenceProject_OneTransitiveReferenceAsync()
+        private async Task GetInstalledAndTransitivePackagesAsync_WithCpsPackageReferenceProject_OneTransitiveReferenceAndEmitsCounterfactualTelemetryAsync()
         {
             // packageA_2.0.0 -> packageB_1.0.0
 
@@ -865,6 +865,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(result.Success);
             Assert.True(File.Exists(pajFilepath));
 
+            // Reset sending counterfactual telemetry, for testing purposes
+            CounterfactualLoggers.TransitiveDependencies.Reset();
+
             // Act
             var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(new[] { projectId }, CancellationToken.None);
 
@@ -877,6 +880,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(1, packagesB.Count());
             Assert.Collection(packagesB,
                 pkg => AssertElement(pkg, "packageA", "2.0.0"));
+            Assert.Contains(telemetryEvents, te => te.Name == CounterfactualLoggers.TransitiveDependencies.EventName);
         }
 
         [Fact]
