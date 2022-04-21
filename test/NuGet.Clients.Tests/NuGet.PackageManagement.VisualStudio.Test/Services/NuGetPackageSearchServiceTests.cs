@@ -461,7 +461,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Contains(telemetryEvents, evt => evt.Name == CounterfactualLoggers.PMUITransitiveDependencies.EventName);
         }
 
-        [Theory]
+        [Theory] // Installed tab and and project PM UI emits counterfactual, proved in test above
         [InlineData(ItemFilter.All, true)]
         [InlineData(ItemFilter.Installed, true)]
         [InlineData(ItemFilter.UpdatesAvailable, true)]
