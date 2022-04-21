@@ -126,6 +126,10 @@
   <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
     <value>Value must be greater than or equal to {0}.</value>
   </data>
+  <data name="ExperimentVariableOverrideLogText" xml:space="preserve">
+    <value>Experiment flight '{0}' evaluation overridden by environment variable '{1}' set to '{2}'</value>
+    <comment>{0} is a flight name, {1} is a variable name, {2} is a string value of the variable</comment>
+  </data>
   <data name="Finished" xml:space="preserve">
     <value>========== Finished ==========</value>
   </data>

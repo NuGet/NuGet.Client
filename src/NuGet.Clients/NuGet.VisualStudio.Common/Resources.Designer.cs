@@ -88,6 +88,15 @@ namespace NuGet.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Experiment flight &apos;{0}&apos; evaluation overridden by environment variable &apos;{1}&apos; set to &apos;{2}&apos;.
+        /// </summary>
+        internal static string ExperimentVariableOverrideLogText {
+            get {
+                return ResourceManager.GetString("ExperimentVariableOverrideLogText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ========== Finished ==========.
         /// </summary>
         internal static string Finished {
