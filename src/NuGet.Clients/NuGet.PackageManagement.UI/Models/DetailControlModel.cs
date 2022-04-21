@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -151,7 +152,6 @@ namespace NuGet.PackageManagement.UI
             {
                 throw new ArgumentNullException(nameof(getPackageItemViewModel));
             }
-
             token.ThrowIfCancellationRequested();
 
             // Clear old data
@@ -574,28 +574,28 @@ namespace NuGet.PackageManagement.UI
                 return result;
             }
 
-            using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
+            using (IReconnectingNuGetSearchService searchService = await ServiceBroker.GetProxyAsync<IReconnectingNuGetSearchService>(NuGetServices.SearchService, cancellationToken))
             {
-                PackageSearchMetadataContextInfo packageSearchMetadata = null;
-                PackageDeprecationMetadataContextInfo packageDeprecationMetadata = null;
+                PackageSearchMetadataContextInfo packageMetadata = null;
+                PackageDeprecationMetadataContextInfo deprecationMetadata = null;
                 var pkgIdentity = new PackageIdentity(_searchResultPackage.Id, newVersion);
 
                 if (getCurrentPackageItemViewModel() == searchResultPackage)
                 {
                     if (searchResultPackage.PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(searchResultPackage.Version))
                     {
-                        (packageSearchMetadata, packageDeprecationMetadata) = await searchService.GetPackageMetadataAsync(pkgIdentity, searchResultPackage.Sources, includePrerelease: true, cancellationToken);
+                        (packageMetadata, deprecationMetadata) = await searchService.GetPackageMetadataAsync(pkgIdentity, searchResultPackage.Sources, includePrerelease: true, cancellationToken);
                     }
                     else if (!IsSolution && searchResultPackage.PackageLevel == PackageLevel.Transitive)
                     {
                         // Get only local metadata for transitive packages
-                        packageSearchMetadata = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
+                        packageMetadata = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
                     }
 
                     result = new DetailedPackageMetadata(
-                            packageSearchMetadata,
-                            packageDeprecationMetadata,
-                            packageSearchMetadata.DownloadCount);
+                            packageMetadata,
+                            deprecationMetadata,
+                            packageMetadata.DownloadCount);
                 }
             }
 

@@ -315,10 +315,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
 
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(projectManagerService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
 
             var project = new Mock<IProjectContextInfo>();
 
@@ -336,10 +334,24 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
                 new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
             };
-
+            var ipsm = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("Contoso.A", NuGetVersion.Parse("1.0.0")),
+            };
+            var psmCtxInfo = PackageSearchMetadataContextInfo.Create(ipsm);
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
+            searchService.Setup(ss => ss.GetPackageMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((psmCtxInfo, null));
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<IReconnectingNuGetSearchService>(
+                    It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.SearchService.Moniker),
+                    It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(searchService.Object);
 
             // Act
             var vm = new PackageItemViewModel(searchService.Object)
@@ -397,10 +409,9 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
 
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(projectManagerService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
+
 
             var project = new Mock<IProjectContextInfo>();
 
@@ -422,6 +433,19 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
+            var ipsm = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("Contoso.A", NuGetVersion.Parse("1.0.0")),
+            };
+            var psmCtxInfo = PackageSearchMetadataContextInfo.Create(ipsm);
+            searchService.Setup(ss => ss.GetPackageMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((psmCtxInfo, null));
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<IReconnectingNuGetSearchService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.SearchService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(searchService.Object);
 
             // Act
             var vm = new PackageItemViewModel(searchService.Object)
