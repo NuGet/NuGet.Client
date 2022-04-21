@@ -1381,24 +1381,13 @@ Copyright (c) .NET Foundation. All rights reserved.
         BuildInParallel="$(RestoreBuildInParallel)"
         Condition=" '$(TargetFrameworks)' != '' "
         Projects="$(MSBuildThisFileFullPath)"
-        Targets="_GetTargetFrameworksOverrides">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          PropertyName="_TargetFrameworksOverride" />
-    </MSBuild>
-
-    <!-- Only set the override if TargetFrameworks has not been overriden as well. In that case, prefer it. -->
-    <MSBuild
-        BuildInParallel="$(RestoreBuildInParallel)"
-        Condition=" '$(TargetFrameworks)' != '' AND $(_TargetFrameworksOverride) == '' "
-        Projects="$(MSBuildThisFileFullPath)"
         Targets="_GetTargetFrameworkOverrides">
-
       <Output
           TaskParameter="TargetOutputs"
           PropertyName="_TargetFrameworkOverride" />
     </MSBuild>
+
+    <!-- Only set the override if TargetFrameworks has not been overriden as well. In that case, prefer it. -->
 
   </Target>
 
@@ -1410,19 +1399,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetTargetFrameworkOverrides"
           Returns="$(_TargetFrameworkOverride)">
     <PropertyGroup>
-      <_TargetFrameworkOverride>$(TargetFramework)</_TargetFrameworkOverride>
-    </PropertyGroup>
-  </Target>
-
-    <!--
-    ============================================================
-    _GetTargetFrameworksOverrides
-    ============================================================
-  -->
-  <Target Name="_GetTargetFrameworksOverrides"
-          Returns="$(_TargetFrameworksOverride)">
-    <PropertyGroup>
-      <_TargetFrameworksOverride>$(TargetFrameworks)</_TargetFrameworksOverride>
+      <_TargetFrameworkOverride Condition=" '$(TargetFrameworks)' == '' ">$(TargetFramework)</_TargetFrameworkOverride>
     </PropertyGroup>
   </Target>
 
