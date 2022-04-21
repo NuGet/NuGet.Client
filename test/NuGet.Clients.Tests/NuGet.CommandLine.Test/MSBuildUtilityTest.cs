@@ -334,6 +334,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void CombinePathWithVerboseError_CombinesPaths()
+        {
+            var paths = new[] {"C:\\", "directory/", "\\folder", "file.txt"};
+            Assert.Equal(Path.Combine(paths), MsBuildUtility.CombinePathWithVerboseError(paths));
+        }
+
+        [Fact]
         public void CombinePathWithVerboseError_IllegalCharacters_MessageContainsBadPath()
         {
             const string badPath = @"C:\bad>dir";
