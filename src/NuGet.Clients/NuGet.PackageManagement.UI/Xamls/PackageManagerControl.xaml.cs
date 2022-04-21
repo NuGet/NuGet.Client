@@ -16,7 +16,6 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
@@ -1247,9 +1246,7 @@ namespace NuGet.PackageManagement.UI
             TimeSpan timeSpan = GetTimeSinceLastRefreshAndRestart();
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
-                sw.Stop();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.ClearSearch, RefreshOperationStatus.Success, isUIFiltering: false, sw.Elapsed.TotalMilliseconds);
+                await RunAndEmitRefreshAsync(async () => await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true), RefreshOperationSource.ClearSearch, timeSpan, sw);
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ClearSearch));
         }
 
@@ -1481,10 +1478,7 @@ namespace NuGet.PackageManagement.UI
                     _isExecutingAction = false;
                     if (_isRefreshRequired)
                     {
-                        var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
-                        await RefreshAsync();
-                        sw.Stop();
-                        EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success, isUIFiltering: false, duration: sw.Elapsed.TotalMilliseconds);
+                        await RunAndEmitRefreshAsync(async () => await RefreshAsync(), RefreshOperationSource.ExecuteAction, GetTimeSinceLastRefreshAndRestart(), sw);
                         _isRefreshRequired = false;
                     }
 
@@ -1553,10 +1547,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                var sw = Stopwatch.StartNew();
-                await ExecuteRestartSearchCommandAsync();
-                sw.Stop();
-                EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success, duration: sw.Elapsed.TotalMilliseconds);
+                await RunAndEmitRefreshAsync(async () => await ExecuteRestartSearchCommandAsync(), RefreshOperationSource.RestartSearchCommand, GetTimeSinceLastRefreshAndRestart(), Stopwatch.StartNew());
             }).PostOnFailure(nameof(PackageManagerControl), nameof(ExecuteRestartSearchCommand));
         }
 
