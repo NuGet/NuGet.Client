@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
-using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -569,31 +568,13 @@ namespace NuGet.PackageManagement.UI
 
             DetailedPackageMetadata result = null;
             // Getting the metadata can take awhile, check to see if its still selected
-            if (getCurrentPackageItemViewModel() != searchResultPackage)
+            if (getCurrentPackageItemViewModel() == searchResultPackage)
             {
-                return result;
-            }
+                PackageSearchMetadataContextInfo meta;
+                PackageDeprecationMetadataContextInfo deprecation;
+                (meta, deprecation) = await searchResultPackage.ReloadPackageMetadataAsync(newVersion, cancellationToken);
 
-            using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
-            {
-                PackageSearchMetadataContextInfo meta = null;
-                PackageDeprecationMetadataContextInfo deprecation = null;
-                var pkgIdentity = new PackageIdentity(_searchResultPackage.Id, newVersion);
-
-                if (getCurrentPackageItemViewModel() == searchResultPackage)
-                {
-                    if (searchResultPackage.PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(searchResultPackage.Version))
-                    {
-                        (meta, deprecation) = await searchService.GetPackageMetadataAsync(pkgIdentity, searchResultPackage.Sources, includePrerelease: true, cancellationToken);
-                    }
-                    else if (!IsSolution && searchResultPackage.PackageLevel == PackageLevel.Transitive)
-                    {
-                        // Get only local metadata for transitive packages
-                        meta = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
-                    }
-
-                    result = new DetailedPackageMetadata(meta, deprecation, meta.DownloadCount);
-                }
+                result = new DetailedPackageMetadata(meta, deprecation, meta.DownloadCount);
             }
 
             return result;

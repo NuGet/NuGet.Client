@@ -692,17 +692,7 @@ namespace NuGet.PackageManagement.UI
                 cancellationToken.ThrowIfCancellationRequested();
                 PackageSearchMetadataContextInfo meta = null;
                 PackageDeprecationMetadataContextInfo deprecation = null;
-                var identity = new PackageIdentity(Id, Version);
-                if (PackageLevel == PackageLevel.TopLevel)
-                {
-                    (meta, deprecation) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
-                }
-                else if (PackageLevel == PackageLevel.Transitive)
-                {
-                    // Get only local metadata for transitive packages
-                    meta = await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, cancellationToken);
-                }
-
+                (meta, deprecation) = await ReloadPackageMetadataAsync(Version, cancellationToken);
                 PackageMetadata = meta;
                 DeprecationMetadata = deprecation;
                 Vulnerabilities = meta.Vulnerabilities;
@@ -711,6 +701,28 @@ namespace NuGet.PackageManagement.UI
             {
                 // UI requested cancellation.
             }
+        }
+
+
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+        internal async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> ReloadPackageMetadataAsync(NuGetVersion newVersion, CancellationToken token)
+#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+        {
+            token.ThrowIfCancellationRequested();
+            PackageSearchMetadataContextInfo meta = null;
+            PackageDeprecationMetadataContextInfo deprecation = null;
+            var identity = new PackageIdentity(Id, newVersion);
+            if (PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(Version))
+            {
+                (meta, deprecation) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, token);
+            }
+            else if (PackageLevel == PackageLevel.Transitive)
+            {
+                // Get only local metadata for transitive packages
+                meta = await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, token);
+            }
+
+            return (meta, deprecation);
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)
