@@ -567,14 +567,14 @@ namespace NuGet.PackageManagement.UI
             cancellationToken.ThrowIfCancellationRequested();
 
             DetailedPackageMetadata result = null;
-            // Getting the metadata can take awhile, check to see if its still selected
+            // Getting the metadata can take a while, check to see if its still selected
             if (getCurrentPackageItemViewModel() == searchResultPackage)
             {
                 PackageSearchMetadataContextInfo meta;
                 PackageDeprecationMetadataContextInfo deprecation;
                 (meta, deprecation) = await searchResultPackage.ReloadPackageMetadataAsync(newVersion, cancellationToken);
 
-                result = new DetailedPackageMetadata(meta, deprecation, meta.DownloadCount);
+                result = new DetailedPackageMetadata(meta, deprecation, meta?.DownloadCount);
             }
 
             return result;

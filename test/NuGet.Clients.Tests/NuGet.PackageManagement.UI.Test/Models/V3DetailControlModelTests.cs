@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
-                () => null,
+                () => _testViewModel,
                 CancellationToken.None).Wait();
         }
 
