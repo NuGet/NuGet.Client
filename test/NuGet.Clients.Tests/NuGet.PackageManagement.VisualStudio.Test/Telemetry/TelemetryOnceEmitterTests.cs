@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void TelemetryOnceEmitter_NullOrEmpty_Throws(string eventName)
+        {
+            Assert.Throws<ArgumentException>(() => new TelemetryOnceEmitter(eventName));
+        }
+
         [Fact]
         public void EmitIfNeeded_HappyPath_EmitsTelemetryOnce()
         {
@@ -35,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Act and Assert I 
             logger.EmitIfNeeded();
             Assert.NotEmpty(_telemetryEvents);
-            Assert.Contains(_telemetryEvents, e => e.Name == "TestEventCounterfactual");
+            Assert.Contains(_telemetryEvents, e => e.Name == logger.EventName);
 
             // Act and Assert II
             logger.EmitIfNeeded();
@@ -61,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.Equal(1, _telemetryEvents.Count);
-            Assert.Contains(_telemetryEvents, e => e.Name == "TestEventCounterfactual");
+            Assert.Contains(_telemetryEvents, e => e.Name == logger.EventName);
         }
 
         [Fact]
@@ -77,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.Equal(2, _telemetryEvents.Count);
-            Assert.All(_telemetryEvents, e => Assert.Equal("TestEventCounterfactual", e.Name));
+            Assert.All(_telemetryEvents, e => Assert.Equal(logger.EventName, e.Name));
         }
     }
 }

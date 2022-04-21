@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using NuGet.Common;
 
@@ -15,6 +16,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal TelemetryOnceEmitter(string eventName)
         {
+            if (string.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(eventName));
+            }
+
             EventName = eventName;
         }
 
@@ -27,15 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (Interlocked.CompareExchange(ref _emittedFlag, 1, 0) == 0)
             {
-                try
-                {
-                    TelemetryActivity.EmitTelemetryEvent(new TelemetryEvent(EventName));
-                }
-                catch
-                {
-                    _emittedFlag = 0;
-                    throw; // caller should handle telemetry failure
-                }
+                TelemetryActivity.EmitTelemetryEvent(new TelemetryEvent(EventName));
             }
         }
 
