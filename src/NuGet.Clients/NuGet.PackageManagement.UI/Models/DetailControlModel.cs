@@ -576,26 +576,23 @@ namespace NuGet.PackageManagement.UI
 
             using (IReconnectingNuGetSearchService searchService = await ServiceBroker.GetProxyAsync<IReconnectingNuGetSearchService>(NuGetServices.SearchService, cancellationToken))
             {
-                PackageSearchMetadataContextInfo packageMetadata = null;
-                PackageDeprecationMetadataContextInfo deprecationMetadata = null;
+                PackageSearchMetadataContextInfo meta = null;
+                PackageDeprecationMetadataContextInfo deprecation = null;
                 var pkgIdentity = new PackageIdentity(_searchResultPackage.Id, newVersion);
 
                 if (getCurrentPackageItemViewModel() == searchResultPackage)
                 {
                     if (searchResultPackage.PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(searchResultPackage.Version))
                     {
-                        (packageMetadata, deprecationMetadata) = await searchService.GetPackageMetadataAsync(pkgIdentity, searchResultPackage.Sources, includePrerelease: true, cancellationToken);
+                        (meta, deprecation) = await searchService.GetPackageMetadataAsync(pkgIdentity, searchResultPackage.Sources, includePrerelease: true, cancellationToken);
                     }
                     else if (!IsSolution && searchResultPackage.PackageLevel == PackageLevel.Transitive)
                     {
                         // Get only local metadata for transitive packages
-                        packageMetadata = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
+                        meta = await searchService.GetPackageMetadataFromLocalSourcesAsync(pkgIdentity, _nugetProjects.First(), searchResultPackage.Sources, cancellationToken);
                     }
 
-                    result = new DetailedPackageMetadata(
-                            packageMetadata,
-                            deprecationMetadata,
-                            packageMetadata.DownloadCount);
+                    result = new DetailedPackageMetadata(meta, deprecation, meta.DownloadCount);
                 }
             }
 

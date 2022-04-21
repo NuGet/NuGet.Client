@@ -689,21 +689,23 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                PackageSearchMetadataContextInfo packageMetadata = null;
-                PackageDeprecationMetadataContextInfo deprecationMetadata = null;
+                cancellationToken.ThrowIfCancellationRequested();
+                PackageSearchMetadataContextInfo meta = null;
+                PackageDeprecationMetadataContextInfo deprecation = null;
                 var identity = new PackageIdentity(Id, Version);
-                if (PackageLevel == PackageLevel.TopLevel) // only reload metadata for Installed, top-level packages
+                if (PackageLevel == PackageLevel.TopLevel)
                 {
-                    (packageMetadata, deprecationMetadata) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+                    (meta, deprecation) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
                 }
                 else if (PackageLevel == PackageLevel.Transitive)
                 {
-                    packageMetadata = await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, cancellationToken);
+                    // Get only local metadata for transitive packages
+                    meta = await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, cancellationToken);
                 }
 
-                PackageMetadata = packageMetadata;
-                DeprecationMetadata = deprecationMetadata;
-                Vulnerabilities = packageMetadata.Vulnerabilities;
+                PackageMetadata = meta;
+                DeprecationMetadata = deprecation;
+                Vulnerabilities = meta.Vulnerabilities;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
