@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
@@ -24,6 +25,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common.Test;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -66,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
             };
             _componentModel = new Mock<IComponentModel>();
-            var expService = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(_experimentationFlags));
+            var expService = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(_experimentationFlags), new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider()));
             _componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(expService);
 
             globalServiceProvider.AddService(typeof(SComponentModel), _componentModel.Object);
@@ -223,6 +225,102 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5")),
                     new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
                     includePrerelease: true,
+                    isTransitive: false,
+                    CancellationToken.None); ;
+
+                Assert.Equal(60, result.Count);
+                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.0.0")));
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageVersionsAsync_WithProjectAndPackageVersionsExist_ReturnsPackageVersionsAsync()
+        {
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
+                    new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5")),
+                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) },
+                    includePrerelease: true,
+                    isTransitive: false,
+                    _projects,
+                    CancellationToken.None); ;
+
+                Assert.Equal(60, result.Count);
+                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.0.0")));
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageVersionsAsync_WhenIsTransitiveAndCacheIsNotPopulatedAsync()
+        {
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                PackageIdentity transitivePackage = new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5"));
+                var packageSources = new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) };
+                var metadataProvider = Mock.Of<IPackageMetadataProvider>();
+
+                CacheItemPolicy _cacheItemPolicy = new CacheItemPolicy
+                {
+                    SlidingExpiration = ObjectCache.NoSlidingExpiration,
+                    AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
+                };
+
+                Mock.Get(metadataProvider)
+                    .Setup(m => m.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                    .Returns(() => Task.FromResult(PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("microsoft.extensions.logging.abstractions", NuGetVersion.Parse("5.0.0-rc.2.20475.5"))).Build()));
+
+                IPackageSearchMetadata packageMetadata = await metadataProvider.GetPackageMetadataAsync(transitivePackage, true, CancellationToken.None);
+
+                string cacheId = PackageSearchMetadataCacheItem.GetCacheId(transitivePackage.Id, true, packageSources);
+                var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, metadataProvider);
+
+                NuGetPackageSearchService.PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
+
+                IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
+                    transitivePackage,
+                    packageSources,
+                    includePrerelease: true,
+                    isTransitive: true,
+                    CancellationToken.None);
+
+                Assert.Equal(60, result.Count);
+                Assert.True(result.Last().Version.Version.Equals(new Version("1.0.0.0")));
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageVersionsAsync_WithProjectAndIsTransitiveAndCacheIsNotPopulatedAsync()
+        {
+            using (NuGetPackageSearchService searchService = SetupSearchService())
+            {
+                PackageIdentity transitivePackage = new PackageIdentity("microsoft.extensions.logging.abstractions", new Versioning.NuGetVersion("5.0.0-rc.2.20475.5"));
+                var packageSources = new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(_sourceRepository.PackageSource) };
+                var metadataProvider = Mock.Of<IPackageMetadataProvider>();
+
+                CacheItemPolicy _cacheItemPolicy = new CacheItemPolicy
+                {
+                    SlidingExpiration = ObjectCache.NoSlidingExpiration,
+                    AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
+                };
+
+                Mock.Get(metadataProvider)
+                    .Setup(m => m.GetPackageMetadataAsync(It.IsAny<PackageIdentity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                    .Returns(() => Task.FromResult(PackageSearchMetadataBuilder.FromIdentity(new PackageIdentity("microsoft.extensions.logging.abstractions", NuGetVersion.Parse("5.0.0-rc.2.20475.5"))).Build()));
+
+                IPackageSearchMetadata packageMetadata = await metadataProvider.GetPackageMetadataAsync(transitivePackage, true, CancellationToken.None);
+
+                string cacheId = PackageSearchMetadataCacheItem.GetCacheId(transitivePackage.Id, true, packageSources);
+                var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, metadataProvider);
+
+                NuGetPackageSearchService.PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, _cacheItemPolicy);
+
+                IReadOnlyCollection<VersionInfoContextInfo> result = await searchService.GetPackageVersionsAsync(
+                    transitivePackage,
+                    packageSources,
+                    includePrerelease: true,
+                    isTransitive: true,
+                    _projects,
                     CancellationToken.None);
 
                 Assert.Equal(60, result.Count);
@@ -311,14 +409,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(true, ItemFilter.Consolidate, false, typeof(ConsolidatePackageFeed))]
         public async Task CreatePackageFeedAsync_WithTransitiveOriginsExpFlag_OnlyInstalledFeedOnSolutionViewAsync(bool transitiveDependenciesExperimentEnabled, ItemFilter itemFilter, bool isSolution, Type expectedFeedType)
         {
-            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled;
+            // Arrange
             // Recreate async lazy on each test
+            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled;
             ExperimentUtility.ResetAsyncValues();
 
             using NuGetPackageSearchService searchService = SetupSearchService();
             bool expValue = await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync();
-            Assert.Equal(expValue, transitiveDependenciesExperimentEnabled);
+            Assert.Equal(transitiveDependenciesExperimentEnabled, expValue);
 
+            // Act
             (IPackageFeed main, IPackageFeed recommender) = await searchService.CreatePackageFeedAsync(
                 projectContextInfos: _projects,
                 targetFrameworks: new List<string>() { "net45" },
@@ -328,8 +428,72 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 sourceRepositories: new List<SourceRepository>() { _sourceRepository },
                 cancellationToken: CancellationToken.None);
 
+            // Assert
             Assert.IsType(expectedFeedType, main);
             Assert.Null(recommender);
+        }
+
+        [Fact]
+        public async Task CreatePackageFeedAsync_ProjectPMUIInstalledTab_EmitsCounterfactualTelemetryAsync()
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            using NuGetPackageSearchService searchService = SetupSearchService();
+            CounterfactualLoggers.PMUITransitiveDependencies.Reset();
+
+            // Act
+            _ = await searchService.CreatePackageFeedAsync(
+                projectContextInfos: _projects,
+                targetFrameworks: new List<string>() { "net45" },
+                itemFilter: ItemFilter.Installed,
+                isSolution: false,
+                recommendPackages: It.IsAny<bool>(),
+                sourceRepositories: new List<SourceRepository>() { _sourceRepository },
+                cancellationToken: CancellationToken.None);
+
+            // Assert
+            Assert.Contains(telemetryEvents, evt => evt.Name == CounterfactualLoggers.PMUITransitiveDependencies.EventName);
+        }
+
+        [Theory] // Installed tab and and project PM UI emits counterfactual, proved in test above
+        [InlineData(ItemFilter.All, true)]
+        [InlineData(ItemFilter.Installed, true)]
+        [InlineData(ItemFilter.UpdatesAvailable, true)]
+        [InlineData(ItemFilter.Consolidate, true)]
+        [InlineData(ItemFilter.All, false)]
+        [InlineData(ItemFilter.UpdatesAvailable, false)]
+        [InlineData(ItemFilter.Consolidate, false)]
+        public async Task CreatePackageFeedAsync_NotInProjectPMUIInstalledTab_DoesNotEmitCounterfactualTelemetryAsync(ItemFilter itemFilter, bool isSolution)
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            using NuGetPackageSearchService searchService = SetupSearchService();
+            CounterfactualLoggers.PMUITransitiveDependencies.Reset();
+
+            // Act
+            _ = await searchService.CreatePackageFeedAsync(
+                projectContextInfos: _projects,
+                targetFrameworks: new List<string>() { "net45" },
+                itemFilter: itemFilter,
+                isSolution: isSolution,
+                recommendPackages: It.IsAny<bool>(),
+                sourceRepositories: new List<SourceRepository>() { _sourceRepository },
+                cancellationToken: CancellationToken.None);
+
+            // Assert
+            Assert.DoesNotContain(telemetryEvents, evt => evt.Name == CounterfactualLoggers.PMUITransitiveDependencies.EventName);
         }
 
         private NuGetPackageSearchService SetupSearchService()

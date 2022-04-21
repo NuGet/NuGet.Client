@@ -106,14 +106,14 @@ namespace NuGet.XPlat.FuncTest
         public static void VerifyResultSuccess(CommandRunnerResult result, string expectedOutputMessage = null)
         {
             Assert.True(
-                result.Item1 == 0,
-                $"Command DID NOT SUCCEED. Ouput is: \"{result.Item2}\". Error is: \"{result.Item3}\"");
+                result.ExitCode == 0,
+                $"Command DID NOT SUCCEED. Ouput is: \"{result.Output}\". Error is: \"{result.Errors}\"");
 
             if (!string.IsNullOrEmpty(expectedOutputMessage))
             {
                 Assert.Contains(
                     expectedOutputMessage,
-                    result.Item2);
+                    result.Output);
             }
         }
 
@@ -126,12 +126,12 @@ namespace NuGet.XPlat.FuncTest
                                                string expectedErrorMessage)
         {
             Assert.True(
-                result.Item1 != 0,
-                $"Command DID NOT FAIL. Ouput is: \"{result.Item2}\". Error is: \"{result.Item3}\"");
+                result.ExitCode != 0,
+                $"Command DID NOT FAIL. Ouput is: \"{result.Output}\". Error is: \"{result.Errors}\"");
 
             Assert.True(
-                result.Item2.Contains(expectedErrorMessage),
-                $"Expected error is: \"{expectedErrorMessage}\". Actual error is: \"{result.Item3}\". Ouput is: \"{result.Item2}\".");
+                result.Output.Contains(expectedErrorMessage),
+                $"Expected error is: \"{expectedErrorMessage}\". Actual error is: \"{result.Errors}\". Ouput is: \"{result.Output}\".");
         }
     }
 }

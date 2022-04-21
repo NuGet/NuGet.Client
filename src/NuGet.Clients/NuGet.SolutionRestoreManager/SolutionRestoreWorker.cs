@@ -418,7 +418,8 @@ namespace NuGet.SolutionRestoreManager
                             projectRestoreInfoSourcesCount: -1,
                             bulkRestoreCoordinationCheckStartTime: default,
                             projectsReadyCheckCount: 0,
-                            projectReadyTimings: new List<TimeSpan>());
+                            projectReadyTimings: new List<TimeSpan>(),
+                            request.ExplicitRestoreReason);
                         var result = await ProcessRestoreRequestAsync(restoreOperation, request, restoreTrackingData, token);
 
                         return result;
@@ -507,6 +508,7 @@ namespace NuGet.SolutionRestoreManager
                         int requestCount = 1;
                         int projectsReadyCheckCount = 0;
                         int projectRestoreInfoSourcesCount = -1;
+                        ExplicitRestoreReason explicitRestoreReason = request.ExplicitRestoreReason;
                         List<TimeSpan> projectReadyTimings = null;
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
@@ -522,9 +524,6 @@ namespace NuGet.SolutionRestoreManager
                             {
                                 if (isAllProjectsNominated)
                                 {
-                                    // Counterfactual logging for bulk file restore coordination scenario
-                                    Common.TelemetryActivity.EmitTelemetryEvent(new CpsBulkFileRestoreCoordinationEvent());
-
                                     if (isBulkRestoreCoordinationEnabled)
                                     {
                                         var projectReadyCheckMeasurement = Stopwatch.StartNew();
@@ -605,7 +604,8 @@ namespace NuGet.SolutionRestoreManager
                                     // Explicit is always preferred.
                                     request = new SolutionRestoreRequest(
                                         next.ForceRestore || request.ForceRestore,
-                                        RestoreOperationSource.Explicit);
+                                        RestoreOperationSource.Explicit,
+                                        next.ExplicitRestoreReason);
 
                                     // we don't want to delay explicit solution restore request so just break at this time.
                                     restoreReason = ImplicitRestoreReason.None;
@@ -630,7 +630,8 @@ namespace NuGet.SolutionRestoreManager
                             projectRestoreInfoSourcesCount,
                             bulkRestoreCoordinationCheckStartTime,
                             projectsReadyCheckCount,
-                            projectReadyTimings);
+                            projectReadyTimings,
+                            explicitRestoreReason);
 
                         // Runs restore job with scheduled request params
                         status = await ProcessRestoreRequestAsync(restoreOperation, request, restoreStartTrackingData, token);
@@ -670,7 +671,7 @@ namespace NuGet.SolutionRestoreManager
             return new TimeSpan(ticks: 0);
         }
 
-        private static Dictionary<string, object> GetRestoreTrackingData(ImplicitRestoreReason restoreReason, int requestCount, bool isBulkRestoreCoordinationEnabled, int projectRestoreInfoSourcesCount, DateTime? bulkRestoreCoordinationCheckStartTime, int projectsReadyCheckCount, List<TimeSpan> projectReadyTimings)
+        private static Dictionary<string, object> GetRestoreTrackingData(ImplicitRestoreReason restoreReason, int requestCount, bool isBulkRestoreCoordinationEnabled, int projectRestoreInfoSourcesCount, DateTime? bulkRestoreCoordinationCheckStartTime, int projectsReadyCheckCount, List<TimeSpan> projectReadyTimings, ExplicitRestoreReason explicitRestoreReason)
         {
             double bulkRestoreCoordinationTotalTime = bulkRestoreCoordinationCheckStartTime == default ?
                 0.0 :
@@ -684,7 +685,8 @@ namespace NuGet.SolutionRestoreManager
                 { RestoreTelemetryEvent.ProjectRestoreInfoSourcesCount, projectRestoreInfoSourcesCount },
                 { RestoreTelemetryEvent.ProjectsReadyCheckTotalTime, bulkRestoreCoordinationTotalTime },
                 { RestoreTelemetryEvent.ProjectsReadyCheckCount, projectsReadyCheckCount },
-                { RestoreTelemetryEvent.ProjectReadyCheckTimings, TelemetryUtility.ToJsonArrayOfTimingsInSeconds(projectReadyTimings) }
+                { RestoreTelemetryEvent.ProjectReadyCheckTimings, TelemetryUtility.ToJsonArrayOfTimingsInSeconds(projectReadyTimings) },
+                { RestoreTelemetryEvent.ExplicitRestoreReason, explicitRestoreReason },
             };
         }
 

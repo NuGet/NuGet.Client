@@ -90,10 +90,10 @@ namespace NuGet.CommandLine.FuncTest
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
 
                 var actualLineCount = 0;
-                using (var stringReader = new StringReader(result.Item2))
+                using (var stringReader = new StringReader(result.Output))
                 {
                     string actualLineContent;
                     while ((actualLineContent = stringReader.ReadLine()) != null)
@@ -134,8 +134,8 @@ namespace NuGet.CommandLine.FuncTest
                 waitForExit: true);
 
             // Assert
-            Assert.Equal(0, result.Item1);
-            Assert.Contains(expected, result.Item2);
+            Assert.Equal(0, result.ExitCode);
+            Assert.Contains(expected, result.Output);
         }
     }
 }

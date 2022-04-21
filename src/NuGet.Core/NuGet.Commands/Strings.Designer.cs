@@ -2375,6 +2375,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;http&apos; source, &apos;{1}&apos;. Support for &apos;http&apos; sources will be removed in a future version..
+        /// </summary>
+        internal static string Warning_HttpServerUsage {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} depends on {1} but {2} was not found. An approximate best match of {3} was resolved..
         /// </summary>
         internal static string Warning_MinVersionDoesNotExist {

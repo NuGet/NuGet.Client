@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Dotnet.Integration.Test
 {
-    [Collection("Dotnet Integration Tests")]
+    [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetSourcesTests
     {
         private readonly MsbuildIntegrationTestFixture _fixture;
@@ -84,7 +84,7 @@ namespace Dotnet.Integration.Test
 
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
+                Assert.True(result.Success, result.AllOutput);
 
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
@@ -133,7 +133,7 @@ namespace Dotnet.Integration.Test
                 var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
+                Assert.True(result.Success, result.AllOutput);
 
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 

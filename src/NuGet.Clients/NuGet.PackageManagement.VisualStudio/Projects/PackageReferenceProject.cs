@@ -159,6 +159,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GroupBy(p => p.PackageIdentity)
                 .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
 
+            CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {

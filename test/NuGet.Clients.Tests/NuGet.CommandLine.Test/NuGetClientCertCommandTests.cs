@@ -45,7 +45,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
-                Assert.True(result.Item2.Contains(expectedError));
+                Assert.True(result.Output.Contains(expectedError));
             }
         }
 
@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
-                Assert.True(result.Item2.Contains(expectedError));
+                Assert.True(result.Output.Contains(expectedError));
             }
         }
 
@@ -126,7 +126,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedError = "Property 'PackageSource' should not be null or empty";
-                Assert.True(result.Item2.Contains(expectedError));
+                Assert.True(result.Output.Contains(expectedError));
             }
         }
 
@@ -554,7 +554,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
-                Assert.True(result.Item2.Contains(expectedError));
+                Assert.True(result.Output.Contains(expectedError));
             }
         }
 
@@ -587,7 +587,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedError = "does not exist";
-                Assert.True(result.Item3.Contains(expectedError));
+                Assert.True(result.Errors.Contains(expectedError));
             }
         }
 
@@ -616,7 +616,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedError = "Invalid combination of arguments";
-                Assert.True(result.Item2.Contains(expectedError));
+                Assert.True(result.Output.Contains(expectedError));
             }
         }
 

@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,9 +9,11 @@ using System.Linq;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Test.Server;
 using Test.Utility;
@@ -22,7 +23,6 @@ namespace NuGet.CommandLine.Test
     /// <summary>
     /// A Mock Server that is used to mimic a NuGet Server.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class MockServer : IDisposable
     {
         private Task _listenerTask;
@@ -370,10 +370,10 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Creates OData feed from the list of packages.
         /// </summary>
-        /// <param name="packages">The list of packages.</param>
+        /// <param name="packages">The list of packages. The type is file, Listed and Published date.</param>
         /// <param name="title">The title of the feed.</param>
         /// <returns>The string representation of the created OData feed.</returns>
-        public string ToODataFeed(IEnumerable<IPackage> packages, string title)
+        public string ToODataFeed(IEnumerable<(FileInfo, bool, DateTimeOffset)> packages, string title)
         {
             string nsAtom = "http://www.w3.org/2005/Atom";
             var id = string.Format(CultureInfo.InvariantCulture, "{0}{1}", Uri, title);
@@ -384,7 +384,30 @@ namespace NuGet.CommandLine.Test
 
             foreach (var p in packages)
             {
-                doc.Root.Add(ToODataEntryXElement(p));
+                doc.Root.Add(ToODataEntryXElement(new PackageArchiveReader(p.Item1.OpenRead()), publishedTime: p.Item3, isListed: p.Item2));
+            }
+
+            return doc.ToString();
+        }
+
+        /// <summary>
+        /// Creates OData feed from the list of packages.
+        /// </summary>
+        /// <param name="packages">The list of packages.</param>
+        /// <param name="title">The title of the feed.</param>
+        /// <returns>The string representation of the created OData feed.</returns>
+        public string ToODataFeed(IEnumerable<FileInfo> packages, string title)
+        {
+            string nsAtom = "http://www.w3.org/2005/Atom";
+            var id = string.Format(CultureInfo.InvariantCulture, "{0}{1}", Uri, title);
+            XDocument doc = new XDocument(
+                new XElement(XName.Get("feed", nsAtom),
+                    new XElement(XName.Get("id", nsAtom), id),
+                    new XElement(XName.Get("title", nsAtom), title)));
+
+            foreach (var p in packages)
+            {
+                doc.Root.Add(ToODataEntryXElement(new PackageArchiveReader(p.OpenRead()), publishedTime: DateTimeOffset.UtcNow));
             }
 
             return doc.ToString();
@@ -395,40 +418,40 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         /// <param name="package">The package.</param>
         /// <returns>The OData entry XElement.</returns>
-        private XElement ToODataEntryXElement(IPackage package)
+        private XElement ToODataEntryXElement(PackageArchiveReader package, DateTimeOffset publishedTime, bool isListed = true)
         {
             string nsAtom = "http://www.w3.org/2005/Atom";
             XNamespace nsDataService = "http://schemas.microsoft.com/ado/2007/08/dataservices";
             string nsMetadata = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
             string downloadUrl = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}package/{1}/{2}", Uri, package.Id, package.Version);
+                "{0}package/{1}/{2}", Uri, package.NuspecReader.GetId(), package.NuspecReader.GetVersion());
             string entryId = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}Packages(Id='{1}',Version='{2}')",
-                Uri, package.Id, package.Version);
+                Uri, package.NuspecReader.GetId(), package.NuspecReader.GetVersion());
 
             var entry = new XElement(XName.Get("entry", nsAtom),
                 new XAttribute(XNamespace.Xmlns + "d", nsDataService.ToString()),
                 new XAttribute(XNamespace.Xmlns + "m", nsMetadata.ToString()),
                 new XElement(XName.Get("id", nsAtom), entryId),
-                new XElement(XName.Get("title", nsAtom), package.Id),
+                new XElement(XName.Get("title", nsAtom), package.NuspecReader.GetId()),
                 new XElement(XName.Get("content", nsAtom),
                     new XAttribute("type", "application/zip"),
                     new XAttribute("src", downloadUrl)),
                 new XElement(XName.Get("properties", nsMetadata),
-                    new XElement(nsDataService + "Version", package.Version),
-                    new XElement(nsDataService + "PackageHash", package.GetHash("SHA512")),
+                    new XElement(nsDataService + "Version", package.NuspecReader.GetVersion()),
+                    new XElement(nsDataService + "PackageHash", package.GetContentHash(CancellationToken.None)),
                     new XElement(nsDataService + "PackageHashAlgorithm", "SHA512"),
-                    new XElement(nsDataService + "Description", package.Description),
-                    new XElement(nsDataService + "Listed", package.Listed),
-                    new XElement(nsDataService + "Published", package.Published)));
+                    new XElement(nsDataService + "Description", package.NuspecReader.GetDescription()),
+                    new XElement(nsDataService + "Listed", isListed.ToString()),
+                    new XElement(nsDataService + "Published", publishedTime)));
             return entry;
         }
 
-        public string ToOData(IPackage package)
+        public string ToOData(PackageArchiveReader package)
         {
-            XDocument doc = new XDocument(ToODataEntryXElement(package));
+            XDocument doc = new XDocument(ToODataEntryXElement(package, publishedTime: DateTimeOffset.UtcNow));
             return doc.ToString();
         }
 

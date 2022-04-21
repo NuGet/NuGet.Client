@@ -19,13 +19,32 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
-using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
 {
     public static class SimpleTestPackageUtility
     {
+        public static async Task CreateFullPackagesAsync(string repositoryDir, IDictionary<string, IEnumerable<string>> packages)
+        {
+            if (packages == null)
+            {
+                throw new ArgumentNullException(nameof(packages));
+            }
+            if (repositoryDir == null)
+            {
+                throw new ArgumentNullException(nameof(repositoryDir));
+            }
+
+            foreach (KeyValuePair<string, IEnumerable<string>> package in packages)
+            {
+                foreach (string pkgVersion in package.Value)
+                {
+                    await CreateFullPackageAsync(repositoryDir, package.Key, pkgVersion);
+                }
+            }
+        }
+
         /// <summary>
         /// Creates a net45 package containing lib, build, native, tools, and contentFiles
         /// </summary>
@@ -611,7 +630,7 @@ namespace NuGet.Test.Utility
         {
             foreach (var package in packages)
             {
-                var builder = new Packaging.PackageBuilder()
+                var builder = new PackageBuilder()
                 {
                     Id = package.Id,
                     Version = NuGetVersion.Parse(package.Version),

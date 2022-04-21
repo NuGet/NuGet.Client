@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,6 +20,7 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
@@ -120,13 +122,15 @@ namespace NuGet.PackageManagement.UI
                         string solutionDirectory = await _solutionManager.GetSolutionDirectoryAsync(CancellationToken.None);
                         _componentModel = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
                         _vsSolutionManager = _componentModel.GetService<IVsSolutionManager>();
+                        _solutionRestoreWorker = _componentModel.GetService<ISolutionRestoreWorker>();
 
-                        // when the control is first loaded, check for missing packages
+                        // if the project is PR and there is no restore running, check for missing assets file
+                        // otherwise check for missing packages
                         if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(CancellationToken.None) &&
                             _projectContextInfo?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
+                            _solutionRestoreWorker.IsRunning == false &&
                             await GetMissingAssetsFileStatusAsync(_projectContextInfo.ProjectId))
                         {
-                            _solutionRestoreWorker = _componentModel.GetService<ISolutionRestoreWorker>();
                             _packageRestoreManager.RaiseAssetsFileMissingEventForProjectAsync(true);
                         }
                         else
@@ -158,6 +162,14 @@ namespace NuGet.PackageManagement.UI
             if (nuGetProject?.ProjectStyle == ProjectModel.ProjectStyle.PackageReference &&
                 nuGetProject is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
             {
+                // When creating a new project, the assets file is not created until restore
+                // and if there are no packages, we don't need the assets file in the PM UI
+                var installedPackages = await buildIntegratedNuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
+                if (!installedPackages.Any())
+                {
+                    return false;
+                }
+
                 string assetsFilePath = await buildIntegratedNuGetProject.GetAssetsFilePathAsync();
                 var fileInfo = new FileInfo(assetsFilePath);
 
@@ -230,7 +242,7 @@ namespace NuGet.PackageManagement.UI
             OperationId = Guid.NewGuid();
 
             return await _solutionRestoreWorker.ScheduleRestoreAsync(
-                       SolutionRestoreRequest.ByMenu(),
+                       SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.MissingPackagesBanner),
                        token);
         }
 

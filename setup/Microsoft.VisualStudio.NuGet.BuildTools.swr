@@ -8,6 +8,9 @@ folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet
         file source=$(NuGetTargetsBasePath)NuGet.targets
         file source=$(NuGetTargetsBasePath)NuGet.props
         file source=$(NuGetTargetsBasePath)NuGet.RestoreEx.targets
+        file source=$(ReferenceOutputPath)Microsoft.Extensions.FileProviders.Abstractions.dll
+        file source=$(ReferenceOutputPath)Microsoft.Extensions.FileSystemGlobbing.dll
+        file source=$(ReferenceOutputPath)Microsoft.Extensions.Primitives.dll
         file source=$(ReferenceOutputPath)Microsoft.Web.XmlTransform.dll
         file source=$(ReferenceOutputPath)Microsoft.Build.NuGetSdkResolver.dll
         file source=$(NewtonsoftJsonPath)Newtonsoft.Json.dll

@@ -41,7 +41,7 @@ namespace NuGet.Commands
             {
                 if (Conditions.Count > 0)
                 {
-                    return string.Join(" AND ", Conditions.Select(s => s.Trim()));
+                    return " " + string.Join(" AND ", Conditions.Select(s => s.Trim())) + " ";
                 }
                 else
                 {

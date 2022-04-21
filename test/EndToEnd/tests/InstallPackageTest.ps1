@@ -458,7 +458,6 @@ function Test-AddBindingRedirectToWebsiteWithNonExistingOutputPath {
 }
 
 function Test-InstallCanPipeToFSharpProjects {
-    [SkipTest('https://github.com/dotnet/fsharp/issues/12835')]
     param($context)    
     # Arrange
     $p = New-FSharpLibrary
@@ -765,15 +764,14 @@ function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
 }
 
 function Test-SimpleBindingRedirectsClassLibraryReference {
-    [SkipTest('https://github.com/NuGet/Home/issues/10890')]
     param(
         $context
     )
     # Arrange
     $a = New-WebApplication
     $b = New-WebSite
-    $d = New-ClassLibrary
-    $e = New-ClassLibrary
+    $d = New-ClassLibraryNET46
+    $e = New-ClassLibraryNET46
 
     Add-ProjectReference $a $d
     Add-ProjectReference $b $e

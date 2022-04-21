@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -193,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (retargetedProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
-                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
+                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.ProjectRetargeting), CancellationToken.None));
             }
             return VSConstants.S_OK;
         }
@@ -297,7 +298,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (nuGetProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
-                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
+                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.ProjectRetargeting), CancellationToken.None));
             }
 
             return VSConstants.S_OK;
