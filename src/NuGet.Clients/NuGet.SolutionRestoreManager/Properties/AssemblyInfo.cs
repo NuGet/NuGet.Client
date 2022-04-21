@@ -21,6 +21,9 @@ using Microsoft.VisualStudio.Shell;
 [assembly: Guid("06662133-1292-4918-90f3-36c930c0b16f")]
 
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Lucene.Net.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Extensions.FileProviders.Abstractions.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Extensions.FileSystemGlobbing.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Extensions.Primitives.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Newtonsoft.Json.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Commands.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Common.dll")]
