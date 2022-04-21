@@ -932,9 +932,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Walk dependencies with the current framework.
     ============================================================
   -->
-  <!-- probably it does not matter?  -->
   <Target Name="_GenerateProjectRestoreGraphCurrentProject"
-    Condition=" '$(TargetFrameworks)' == '' " 
+    Condition=" '$(TargetFrameworks)' == '' "
     DependsOnTargets="_GenerateProjectRestoreGraphPerFramework"
     Returns="@(_RestoreGraphEntry)">
   </Target>
@@ -1040,7 +1039,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     _GenerateRestoreProjectPathItemsCurrentProject
     Get absolute paths for all project references.
     ============================================================
-    probably it does not matter? Do we really care for TargetFramework override? 
   -->
   <Target Name="_GenerateRestoreProjectPathItemsCurrentProject"
     Condition=" '$(TargetFrameworks)' == '' "
@@ -1377,10 +1375,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreTargetFrameworkOverride"
+          Condition=" '$(_DisableNuGetRestoreTargetFrameworksOverride)' != 'true' "
           Returns="$(_TargetFrameworkOverride)">
     <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Condition=" '$(TargetFrameworks)' != '' "
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="_GetTargetFrameworksOverrides">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          PropertyName="_TargetFrameworksOverride" />
+    </MSBuild>
+
+    <!-- Only set the override if TargetFrameworks has not been overriden as well. In that case, prefer it. -->
+    <MSBuild
+        BuildInParallel="$(RestoreBuildInParallel)"
+        Condition=" '$(TargetFrameworks)' != '' AND $(_TargetFrameworksOverride) == '' "
         Projects="$(MSBuildThisFileFullPath)"
         Targets="_GetTargetFrameworkOverrides">
 
@@ -1388,6 +1399,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           PropertyName="_TargetFrameworkOverride" />
     </MSBuild>
+
   </Target>
 
     <!--
@@ -1399,6 +1411,18 @@ Copyright (c) .NET Foundation. All rights reserved.
           Returns="$(_TargetFrameworkOverride)">
     <PropertyGroup>
       <_TargetFrameworkOverride>$(TargetFramework)</_TargetFrameworkOverride>
+    </PropertyGroup>
+  </Target>
+
+    <!--
+    ============================================================
+    _GetTargetFrameworksOverrides
+    ============================================================
+  -->
+  <Target Name="_GetTargetFrameworksOverrides"
+          Returns="$(_TargetFrameworksOverride)">
+    <PropertyGroup>
+      <_TargetFrameworksOverride>$(TargetFrameworks)</_TargetFrameworksOverride>
     </PropertyGroup>
   </Target>
 
