@@ -2471,7 +2471,7 @@ EndGlobal";
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData(true)]
+        // [InlineData(true)] - Disabled static graph tests due to https://github.com/NuGet/Home/issues/11761.
         [InlineData(false)]
         public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_RestoresForSingleFramework(bool useStaticGraphEvaluation)
         {
@@ -2510,7 +2510,7 @@ EndGlobal";
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData(true)]
+        // [InlineData(true)] - Disabled static graph tests due to https://github.com/NuGet/Home/issues/11761.
         [InlineData(false)]
         public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_AndPerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework(bool useStaticGraphEvaluation)
         {
@@ -2560,7 +2560,7 @@ EndGlobal";
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData(true)]
+        // [InlineData(true)] - Disabled static graph tests due to https://github.com/NuGet/Home/issues/11761.
         [InlineData(false)]
         public async Task DotnetRestore_WithMultiTargettingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_PerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework(bool useStaticGraphEvaluation)
         {
@@ -2605,15 +2605,5 @@ EndGlobal";
             var allTargets = File.ReadAllText(targetsFilePath);
             allTargets.Should().Contain(condition);
         }
-        //_GetRestoreSettingsCurrentProject -> Do these make a different whether it's inner or outer build? If `TargetFramework` is the thing that's set then they become functionally equivalent.
-        //_GetRestoreSettingsAllFrameworks
-
-        //_GenerateProjectRestoreGraphAllFrameworks
-        //_GenerateProjectRestoreGraphCurrentProject
-
-
-        //_GenerateRestoreProjectPathItemsCurrentProject
-        //_GenerateRestoreProjectPathItemsAllFrameworks
-
     }
 }
