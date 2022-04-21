@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void TelemetryOnceEmitter_NullOrEmpty_Throws(string eventName)
+        public void TelemetryOnceEmitter_NullOrEmptyEventName_Throws(string eventName)
         {
             Assert.Throws<ArgumentException>(() => new TelemetryOnceEmitter(eventName));
         }
@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void Reset_WithAlreadyEmited_Restarts()
+        public void Reset_WithAlreadyEmitted_Restarts()
         {
             // Arrange
             TelemetryOnceEmitter logger = new("TestEvent");
