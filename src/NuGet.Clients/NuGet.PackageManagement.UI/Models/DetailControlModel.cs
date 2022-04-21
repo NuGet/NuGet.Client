@@ -574,7 +574,7 @@ namespace NuGet.PackageManagement.UI
                 return result;
             }
 
-            using (IReconnectingNuGetSearchService searchService = await ServiceBroker.GetProxyAsync<IReconnectingNuGetSearchService>(NuGetServices.SearchService, cancellationToken))
+            using (INuGetSearchService searchService = await ServiceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken))
             {
                 PackageSearchMetadataContextInfo meta = null;
                 PackageDeprecationMetadataContextInfo deprecation = null;
