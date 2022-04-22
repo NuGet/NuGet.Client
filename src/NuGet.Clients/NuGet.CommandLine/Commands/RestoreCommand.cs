@@ -889,7 +889,7 @@ namespace NuGet.CommandLine
             {
                 // restore packages for the solution
                 var solutionLevelPackagesConfig = Path.Combine(
-                    restoreInputs.DirectoryOfSolutionFile,
+                    restoreInputs.DirectoryOfSolutionFile.Trim('\"'),
                     NuGetConstants.NuGetSolutionSettingsFolder,
                     Constants.PackageReferenceFile);
 

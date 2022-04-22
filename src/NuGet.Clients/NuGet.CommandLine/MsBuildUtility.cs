@@ -439,7 +439,7 @@ namespace NuGet.CommandLine
                 var solution = new Solution(solutionFile, msbuildPath);
                 var solutionDirectory = Path.GetDirectoryName(solutionFile);
                 return solution.Projects.Where(project => !project.IsSolutionFolder)
-                    .Select(project => CombinePathWithVerboseError(solutionDirectory, project.RelativePath));
+                    .Select(project => CombinePathWithVerboseError(solutionDirectory.Trim('\"'), project.RelativePath));
             }
             catch (Exception ex)
             {
@@ -980,15 +980,9 @@ namespace NuGet.CommandLine
                 {
                     return msbuildExe;
                 }
-                else
-                {
-                    return CombinePathWithVerboseError(msbuildDirectory, "xbuild.exe");
-                }
             }
-            else
-            {
-                return CombinePathWithVerboseError(msbuildDirectory, "msbuild.exe");
-            }
+
+            return CombinePathWithVerboseError(msbuildDirectory.Trim('\"'), "msbuild.exe");
         }
 
         internal static string GetMSBuild(IEnvironmentVariableReader reader)
