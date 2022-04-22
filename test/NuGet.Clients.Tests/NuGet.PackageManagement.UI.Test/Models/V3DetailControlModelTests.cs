@@ -580,7 +580,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
+        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDescAsync()
         {
             // Arrange
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
@@ -599,16 +599,19 @@ namespace NuGet.PackageManagement.UI.Test
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-
+            var packageMetadata = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("package", installedVersion),
+            };
             var vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "package",
                 InstalledVersion = installedVersion,
                 Version = installedVersion,
+                PackageMetadata = PackageSearchMetadataContextInfo.Create(packageMetadata),
             };
 
             // Act
-
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
@@ -637,7 +640,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public async Task SetCurrentPackageAsync_ClearVersions_Always()
+        public async Task SetCurrentPackageAsync_ClearVersions_AlwaysAsync()
         {
             // Arrange
             var installedVersion = NuGetVersion.Parse("1.0.0");
@@ -654,12 +657,18 @@ namespace NuGet.PackageManagement.UI.Test
             searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                 It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-            var vm = new PackageItemViewModel(searchService.Object);
-
-            vm.Id = "a";
-            vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
-            vm.InstalledVersion = installedVersion;
-            vm.Version = installedVersion;
+            var packageMetadata = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("package", installedVersion),
+            };
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "a",
+                Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>()),
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+                PackageMetadata = PackageSearchMetadataContextInfo.Create(packageMetadata),
+            };
 
             // Test Setup already selected a package.
             int previousVersionListCount = _testInstance.Versions.Count;
@@ -691,7 +700,6 @@ namespace NuGet.PackageManagement.UI.Test
                 CancellationToken.None);
 
             // Assert
-
             Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
             Assert.True(wasVersionsListCleared, "Versions list was not cleared.");
         }
