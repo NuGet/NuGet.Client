@@ -28,6 +28,7 @@ function NoTest-PackFromProject {
 }
 
 function Test-PackFromProjectWithDevelopmentDependencySet {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1571')]
     param(
         $context
     )
