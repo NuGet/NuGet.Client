@@ -50,7 +50,7 @@ steps:
   displayName: "Ensure msbuild.exe can parse nuget.sln"
   inputs:
     solution: "nuget.sln"
-    msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
+    msbuildArguments: "/t:EnsureNewtonsoftJsonVersion /bl:$(Build.StagingDirectory)\\binlog\\01.EnsureNewtonsoftJsonVersion.binlog"
     maximumCpuCount: true
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
@@ -59,6 +59,13 @@ steps:
   displayName: "Ensure package versions are declared in packages.targets"
   inputs:
     solution: "build\\build.proj"
-    msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
+    msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution /bl:$(Build.StagingDirectory)\\binlog\\02.EnsurePackageReferenceVersionsInSolution.binlog"
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish binlogs"
+  inputs:
+    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+    targetPath: $(Build.StagingDirectory)\binlog
+  condition: " failed() "
