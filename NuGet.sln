@@ -244,6 +244,69 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tools.Test", "test\Nu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Signing.CrossFramework.Test", "test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\NuGet.Signing.CrossFramework.Test.csproj", "{3CAE192D-FF86-4A51-8936-E4BFFC192C94}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{70336E30-C737-4175-BC69-9015D49E496E}"
+	ProjectSection(SolutionItems) = preProject
+		eng\SourceBuild.props = eng\SourceBuild.props
+		eng\SourceBuildPrebuiltBaseline.xml = eng\SourceBuildPrebuiltBaseline.xml
+		eng\Version.Details.xml = eng\Version.Details.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{41230E57-542E-4CFD-8D4A-C41A126461E6}"
+	ProjectSection(SolutionItems) = preProject
+		eng\pipelines\compliance.yml = eng\pipelines\compliance.yml
+		eng\pipelines\official.yml = eng\pipelines\official.yml
+		eng\pipelines\pull_request.yml = eng\pipelines\pull_request.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{E9D19125-B748-4572-BEF9-12AEC7524CB9}"
+	ProjectSection(SolutionItems) = preProject
+		eng\pipelines\templates\Apex_Tests_On_Windows.yml = eng\pipelines\templates\Apex_Tests_On_Windows.yml
+		eng\pipelines\templates\Build_and_UnitTest.yml = eng\pipelines\templates\Build_and_UnitTest.yml
+		eng\pipelines\templates\CrossFramework_Tests_On_Windows.yml = eng\pipelines\templates\CrossFramework_Tests_On_Windows.yml
+		eng\pipelines\templates\End_To_End_Tests_On_Windows.yml = eng\pipelines\templates\End_To_End_Tests_On_Windows.yml
+		eng\pipelines\templates\Functional_Tests_On_Windows.yml = eng\pipelines\templates\Functional_Tests_On_Windows.yml
+		eng\pipelines\templates\Initialize_Build.yml = eng\pipelines\templates\Initialize_Build.yml
+		eng\pipelines\templates\Initialize_Build_SemanticVersion.yml = eng\pipelines\templates\Initialize_Build_SemanticVersion.yml
+		eng\pipelines\templates\pipeline.yml = eng\pipelines\templates\pipeline.yml
+		eng\pipelines\templates\Source_Build.yml = eng\pipelines\templates\Source_Build.yml
+		eng\pipelines\templates\Static_Source_Analysis.yml = eng\pipelines\templates\Static_Source_Analysis.yml
+		eng\pipelines\templates\Tests_On_Linux.yml = eng\pipelines\templates\Tests_On_Linux.yml
+		eng\pipelines\templates\Tests_On_Mac.yml = eng\pipelines\templates\Tests_On_Mac.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{4497DE20-D8E5-4DCA-86F8-1993180E0EC2}"
+	ProjectSection(SolutionItems) = preProject
+		eng\common\generate-sbom-prep.ps1 = eng\common\generate-sbom-prep.ps1
+		eng\common\generate-sbom-prep.sh = eng\common\generate-sbom-prep.sh
+		eng\common\README.md = eng\common\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{AC389B99-E1E9-42AE-97AE-9874D0EFAD25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "steps", "steps", "{00112503-3502-4331-B6C3-FD3F2D262242}"
+	ProjectSection(SolutionItems) = preProject
+		eng\common\templates\steps\generate-sbom.yml = eng\common\templates\steps\generate-sbom.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source-build", "source-build", "{85D69893-216B-4D97-9E90-39340CA24CA4}"
+	ProjectSection(SolutionItems) = preProject
+		eng\source-build\build.sh = eng\source-build\build.sh
+		eng\source-build\global.json = eng\source-build\global.json
+		eng\source-build\source-build.proj = eng\source-build\source-build.proj
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source-build-patches", "source-build-patches", "{24038CC5-9A57-472D-825D-9C48F8E4009A}"
+	ProjectSection(SolutionItems) = preProject
+		eng\source-build-patches\0001-Rename-NuGet.Config-to-NuGet.config-to-account-for-a.patch = eng\source-build-patches\0001-Rename-NuGet.Config-to-NuGet.config-to-account-for-a.patch
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{EA5A2D72-33C8-442C-AB6D-99EA8739591D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "funcTests", "funcTests", "{4B35F4D8-A967-40ED-AFA0-CD3AE3DAD77E}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\funcTests\runFuncTests.sh = scripts\funcTests\runFuncTests.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -690,6 +753,14 @@ Global
 		{C24DD62A-905D-4C48-A17A-B83107F17EA7} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
 		{FC1F1CF8-4902-46F0-929F-204E5B1B6D53} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
 		{3CAE192D-FF86-4A51-8936-E4BFFC192C94} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
+		{41230E57-542E-4CFD-8D4A-C41A126461E6} = {70336E30-C737-4175-BC69-9015D49E496E}
+		{E9D19125-B748-4572-BEF9-12AEC7524CB9} = {41230E57-542E-4CFD-8D4A-C41A126461E6}
+		{4497DE20-D8E5-4DCA-86F8-1993180E0EC2} = {70336E30-C737-4175-BC69-9015D49E496E}
+		{AC389B99-E1E9-42AE-97AE-9874D0EFAD25} = {4497DE20-D8E5-4DCA-86F8-1993180E0EC2}
+		{00112503-3502-4331-B6C3-FD3F2D262242} = {AC389B99-E1E9-42AE-97AE-9874D0EFAD25}
+		{85D69893-216B-4D97-9E90-39340CA24CA4} = {70336E30-C737-4175-BC69-9015D49E496E}
+		{24038CC5-9A57-472D-825D-9C48F8E4009A} = {70336E30-C737-4175-BC69-9015D49E496E}
+		{4B35F4D8-A967-40ED-AFA0-CD3AE3DAD77E} = {EA5A2D72-33C8-442C-AB6D-99EA8739591D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}
