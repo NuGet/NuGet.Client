@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.UI
     public partial class PackageManagerControl : UserControl, IVsWindowSearch, IDisposable
     {
         internal event EventHandler _actionCompleted;
+        internal event EventHandler _controlClosing;
         internal DetailControlModel _detailModel;
         internal CancellationTokenSource _loadCts;
         private CancellationTokenSource _cancelSelectionChangedSource;
@@ -65,6 +66,8 @@ namespace NuGet.PackageManagement.UI
         private bool _disposed = false;
         private bool _isTransitiveDependenciesExperimentEnabled;
 
+        private PackageManagerInstalledTabData _installedTabTelemetryData;
+
         private PackageManagerControl()
         {
             InitializeComponent();
@@ -83,6 +86,9 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             _sinceLastRefresh = Stopwatch.StartNew();
+
+            _installedTabTelemetryData = new PackageManagerInstalledTabData();
+            _controlClosing += PackageManagerControl_ControlClosing;
 
             Model = model;
             _uiLogger = uiLogger;
@@ -1017,6 +1023,8 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            IncrementInstalledPackageSelectionCount();
+
             var loadCts = new CancellationTokenSource();
             var oldCts = Interlocked.Exchange(ref _cancelSelectionChangedSource, loadCts);
             oldCts?.Cancel();
@@ -1091,6 +1099,63 @@ namespace NuGet.PackageManagement.UI
                     selectedPackage.IsPackageDeprecated,
                     hasDeprecationAlternative));
             }
+        }
+
+        private void IncrementInstalledPackageSelectionCount()
+        {
+            PackageItemViewModel selectedItem = _packageList.SelectedItem;
+            if (selectedItem == null || ActiveFilter != ItemFilter.Installed)
+            {
+                return;
+            }
+
+            if (selectedItem.PackageLevel == PackageLevel.TopLevel)
+            {
+                _installedTabTelemetryData.TopLevelPackageSelectedCount++;
+            }
+            else if (selectedItem.PackageLevel == PackageLevel.Transitive)
+            {
+                _installedTabTelemetryData.TransitivePackageSelectedCount++;
+            }
+        }
+
+        private void PackageList_GroupExpansionChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is Expander expander && expander.Tag is PackageLevel pkgLevel)
+            {
+                if (pkgLevel == PackageLevel.TopLevel)
+                {
+                    if (expander.IsExpanded)
+                    {
+                        _installedTabTelemetryData.TopLevelPackagesExpandedCount++;
+                    }
+                    else
+                    {
+                        _installedTabTelemetryData.TopLevelPackagesCollapsedCount++;
+                    }
+                }
+                else if (pkgLevel == PackageLevel.Transitive)
+                {
+                    if (expander.IsExpanded)
+                    {
+                        _installedTabTelemetryData.TransitivePackagesExpandedCount++;
+                    }
+                    else
+                    {
+                        _installedTabTelemetryData.TransitivePackagesCollapsedCount++;
+                    }
+                }
+            }
+        }
+
+        private void PackageManagerControl_ControlClosing(object sender, EventArgs e)
+        {
+            TelemetryActivity.EmitTelemetryEvent(
+                new PackageManagerCloseEvent(
+                    _sessionGuid,
+                    Model.IsSolution,
+                    _topPanel.Filter.ToString(),
+                    _installedTabTelemetryData));
         }
 
         private void SourceRepoList_SelectionChanged(object sender, EventArgs e)
@@ -1413,6 +1478,8 @@ namespace NuGet.PackageManagement.UI
 
             _detailModel.Dispose();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
+
+            _controlClosing?.Invoke(this, EventArgs.Empty);
         }
 
         private void SuppressDisclaimerChecked(object sender, RoutedEventArgs e)
