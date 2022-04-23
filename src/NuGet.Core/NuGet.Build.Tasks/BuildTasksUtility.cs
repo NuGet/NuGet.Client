@@ -30,7 +30,6 @@ using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
 using static NuGet.Shared.XmlUtility;
-using System.Globalization;
 #endif
 
 namespace NuGet.Build.Tasks
@@ -559,20 +558,6 @@ namespace NuGet.Build.Tasks
                 };
 
                 DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !interactive);
-
-                IEnumerable<SourceRepository> sourceRepositories = packageRestoreContext.SourceRepositories;
-                IEnumerable<SourceRepository> enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
-                    sourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-
-                foreach (SourceRepository enabledSource in enabledSources)
-                {
-                    PackageSource source = enabledSource.PackageSource;
-                    if (source.IsHttp && !source.IsHttps)
-                    {
-                        projectContext.Log(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
-                            string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
-                    }
-                }
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,

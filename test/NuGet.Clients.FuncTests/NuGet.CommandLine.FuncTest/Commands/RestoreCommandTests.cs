@@ -1208,7 +1208,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
             // Assert
             result.Success.Should().BeTrue();
             Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
-            Assert.Contains("WARNING: NU1803", result.Output);
         }
 
         public static string GetResource(string name)

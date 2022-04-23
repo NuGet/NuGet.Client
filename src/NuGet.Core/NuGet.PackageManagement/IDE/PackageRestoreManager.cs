@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -376,6 +377,22 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
+
+            IEnumerable<SourceRepository> enabledSources =
+                packageRestoreContext
+                .PackageManager
+                .SourceRepositoryProvider
+                .GetRepositories()
+                .Where(e => e.PackageSource.IsEnabled);
+
+            foreach (SourceRepository enabledSource in enabledSources)
+            {
+                PackageSource source = enabledSource.PackageSource;
+                if (source.IsHttp && !source.IsHttps)
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
+                }
+            }
 
             var attemptedPackages = await ThrottledPackageRestoreAsync(
                 hashSetOfMissingPackageReferences,

@@ -1021,7 +1021,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Assert.True(result.ExitCode == 0, result.AllOutput);
                 Assert.Contains("Added package 'x.1.0.0' to folder", result.AllOutput);
                 Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
-                Assert.Contains("warning NU1803", result.Output);
             }
         }
     }
