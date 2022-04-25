@@ -115,7 +115,7 @@ namespace NuGet.CommandLine
                 string path;
                 try
                 {
-                    path = Path.Combine(SolutionDirectory.Trim('\"'), NuGetConstants.NuGetSolutionSettingsFolder);
+                    path = Path.Combine(SolutionDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
                 }
                 catch (ArgumentException e)
                 {

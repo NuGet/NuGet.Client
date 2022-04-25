@@ -439,7 +439,7 @@ namespace NuGet.CommandLine
                 var solution = new Solution(solutionFile, msbuildPath);
                 var solutionDirectory = Path.GetDirectoryName(solutionFile);
                 return solution.Projects.Where(project => !project.IsSolutionFolder)
-                    .Select(project => CombinePathWithVerboseError(solutionDirectory.Trim('\"'), project.RelativePath));
+                    .Select(project => CombinePathWithVerboseError(solutionDirectory, project.RelativePath));
             }
             catch (Exception ex)
             {
@@ -982,7 +982,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            return CombinePathWithVerboseError(msbuildDirectory.Trim('\"'), "msbuild.exe");
+            return CombinePathWithVerboseError(msbuildDirectory, "msbuild.exe");
         }
 
         internal static string GetMSBuild(IEnvironmentVariableReader reader)
