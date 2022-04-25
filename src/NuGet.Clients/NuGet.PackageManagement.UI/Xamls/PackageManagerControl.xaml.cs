@@ -38,7 +38,6 @@ namespace NuGet.PackageManagement.UI
     public partial class PackageManagerControl : UserControl, IVsWindowSearch, IDisposable
     {
         internal event EventHandler _actionCompleted;
-        internal event EventHandler _controlClosing;
         internal DetailControlModel _detailModel;
         internal CancellationTokenSource _loadCts;
         private CancellationTokenSource _cancelSelectionChangedSource;
@@ -88,7 +87,6 @@ namespace NuGet.PackageManagement.UI
             _sinceLastRefresh = Stopwatch.StartNew();
 
             _installedTabTelemetryData = new PackageManagerInstalledTabData();
-            _controlClosing += PackageManagerControl_ControlClosing;
 
             Model = model;
             _uiLogger = uiLogger;
@@ -376,6 +374,16 @@ namespace NuGet.PackageManagement.UI
                     isUIFiltering,
                     timeSpan,
                     duration));
+        }
+
+        private void EmitPMUIClosingTelemetry()
+        {
+            TelemetryActivity.EmitTelemetryEvent(
+                new PackageManagerCloseEvent(
+                    _sessionGuid,
+                    Model.IsSolution,
+                    _topPanel.Filter.ToString(),
+                    _installedTabTelemetryData));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
@@ -1121,7 +1129,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_GroupExpansionChanged(object sender, RoutedEventArgs e)
         {
-            if (sender is Expander expander && expander.Tag is PackageLevel pkgLevel)
+            if (ActiveFilter == ItemFilter.Installed && sender is Expander expander && expander.Tag is PackageLevel pkgLevel)
             {
                 if (pkgLevel == PackageLevel.TopLevel)
                 {
@@ -1146,16 +1154,6 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
             }
-        }
-
-        private void PackageManagerControl_ControlClosing(object sender, EventArgs e)
-        {
-            TelemetryActivity.EmitTelemetryEvent(
-                new PackageManagerCloseEvent(
-                    _sessionGuid,
-                    Model.IsSolution,
-                    _topPanel.Filter.ToString(),
-                    _installedTabTelemetryData));
         }
 
         private void SourceRepoList_SelectionChanged(object sender, EventArgs e)
@@ -1479,7 +1477,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Dispose();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
 
-            _controlClosing?.Invoke(this, EventArgs.Empty);
+            EmitPMUIClosingTelemetry();
         }
 
         private void SuppressDisclaimerChecked(object sender, RoutedEventArgs e)

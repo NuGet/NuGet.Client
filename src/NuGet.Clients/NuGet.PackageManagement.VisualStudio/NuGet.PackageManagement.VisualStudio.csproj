@@ -48,6 +48,7 @@
     <Compile Include="Projects\IPackageReferenceProject.cs" />
     <Compile Include="Telemetry\CounterfactualLoggers.cs" />
     <Compile Include="Telemetry\PackageManagerCloseEvent.cs" />
+    <Compile Include="Telemetry\PackageManagerInstalledTabData.cs" />
     <Compile Include="Telemetry\TelemetryOnceEmitter.cs" />
     <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Projects\ProjectPackages.cs" />

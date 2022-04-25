@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Newtonsoft.Json.Serialization;
 using NuGet.Common;
-using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.PackageManagement.Telemetry
+namespace NuGet.PackageManagement.VisualStudio
 {
     public sealed class PackageManagerCloseEvent : TelemetryEvent
     {
@@ -30,24 +28,5 @@ namespace NuGet.PackageManagement.Telemetry
             base[prefix + nameof(installedTabData.TransitivePackagesExpandedCount)] = installedTabData.TransitivePackagesExpandedCount;
             base[prefix + nameof(installedTabData.TransitivePackagesCollapsedCount)] = installedTabData.TransitivePackagesCollapsedCount;
         }
-    }
-
-    public class PackageManagerInstalledTabData
-    {
-        public const string PropertyPrefix = "Installed.";
-
-        public string TabName { get; }
-
-        public int TopLevelPackageSelectedCount { get; set; }
-
-        public int TransitivePackageSelectedCount { get; set; }
-
-        public int TopLevelPackagesExpandedCount { get; set; }
-
-        public int TopLevelPackagesCollapsedCount { get; set; }
-
-        public int TransitivePackagesExpandedCount { get; set; }
-
-        public int TransitivePackagesCollapsedCount { get; set; }
     }
 }
