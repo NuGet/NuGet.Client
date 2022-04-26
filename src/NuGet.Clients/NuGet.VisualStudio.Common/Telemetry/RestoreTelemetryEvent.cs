@@ -31,6 +31,7 @@ namespace NuGet.VisualStudio
         public const string NumLocalFeeds = nameof(NumLocalFeeds);
         public const string NuGetOrg = nameof(NuGetOrg);
         public const string VsOfflinePackages = nameof(VsOfflinePackages);
+        public const string ExplicitRestoreReason = nameof(ExplicitRestoreReason);
 
         public RestoreTelemetryEvent(
             string operationId,

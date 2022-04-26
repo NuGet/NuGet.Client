@@ -46,6 +46,10 @@
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
     <Compile Include="ProjectServices\CpsProjectSystemReferenceReader.cs" />
     <Compile Include="Projects\IPackageReferenceProject.cs" />
+    <Compile Include="Telemetry\CounterfactualLoggers.cs" />
+    <Compile Include="Telemetry\PackageManagerCloseEvent.cs" />
+    <Compile Include="Telemetry\PackageManagerInstalledTabData.cs" />
+    <Compile Include="Telemetry\TelemetryOnceEmitter.cs" />
     <Compile Include="Projects\PackageReferenceProject.cs" />
     <Compile Include="Projects\ProjectPackages.cs" />
     <Compile Include="Projects\FrameworkInstalledPackages.cs" />
@@ -97,8 +101,6 @@
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
     <Compile Include="Services\BrokeredServicesUtilities.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
-    <Compile Include="IInteractiveLoginProvider.cs" />
-    <Compile Include="InteractiveLoginProvider.cs" />
     <Compile Include="Projects\CpsPackageReferenceProject.cs" />
     <Compile Include="Projects\INuGetProjectProvider.cs" />
     <Compile Include="Projects\MSBuildNuGetProjectProvider.cs" />

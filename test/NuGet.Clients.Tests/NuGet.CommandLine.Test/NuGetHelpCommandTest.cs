@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
+            Assert.True(0 == r.ExitCode, r.Output + Environment.NewLine + r.Errors);
         }
 
         // Tests that -ConfigFile is not included in the help message
@@ -52,8 +52,8 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Assert.Equal(0, r.Item1);
-            Assert.DoesNotContain("-ConfigFile", r.Item2, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(0, r.ExitCode);
+            Assert.DoesNotContain("-ConfigFile", r.Output, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]

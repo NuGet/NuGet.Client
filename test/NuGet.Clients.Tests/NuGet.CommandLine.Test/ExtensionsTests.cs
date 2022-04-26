@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test
                     randomTestFolder,
                     "hello",
                     true);
-                result.Item2.Should().Be("Hello!" + Environment.NewLine);
+                result.Output.Should().Be("Hello!" + Environment.NewLine);
             }
         }
     }

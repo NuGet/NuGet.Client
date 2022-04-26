@@ -288,7 +288,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Assert.True(exitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+            Assert.True(exitCode == r.ExitCode, r.Errors + "\n\n" + r.Output);
 
             return r;
         }

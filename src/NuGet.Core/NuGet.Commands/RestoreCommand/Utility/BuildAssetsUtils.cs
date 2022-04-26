@@ -24,6 +24,9 @@ namespace NuGet.Commands
     {
         private static readonly XNamespace Namespace = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
         internal const string CrossTargetingCondition = "'$(TargetFramework)' == ''";
+        internal const string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
+        internal const string LanguageCondition = "'$(Language)' == '{0}'";
+        internal const string NegativeLanguageCondition = "'$(Language)' != '{0}'";
         internal const string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
         public const string TargetsExtension = ".targets";
         public const string PropsExtension = ".props";
@@ -99,7 +102,7 @@ namespace NuGet.Commands
                 if (!string.IsNullOrEmpty(macroValue)
                     && path.StartsWith(macroValue, StringComparison.OrdinalIgnoreCase))
                 {
-                    path = "$(" + macroName + ")" + path.Substring(macroValue.Length);
+                    path = $"$({macroName})" + $"{path.Substring(macroValue.Length)}";
                 }
 
                 break;
@@ -164,7 +167,7 @@ namespace NuGet.Commands
 
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
-                            new XAttribute("Condition", ExcludeAllCondition),
+                            new XAttribute("Condition", $" {ExcludeAllCondition} "),
                             GenerateProperty("RestoreSuccess", success.ToString()),
                             GenerateProperty("RestoreTool", "NuGet"),
                             GenerateProperty("ProjectAssetsFile", assetsFilePath),
@@ -173,7 +176,7 @@ namespace NuGet.Commands
                             GenerateProperty("NuGetProjectStyle", projectStyle.ToString()),
                             GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())),
                 new XElement(Namespace + "ItemGroup",
-                            new XAttribute("Condition", ExcludeAllCondition),
+                            new XAttribute("Condition", $" {ExcludeAllCondition} "),
                             packageFolders.Select(e => GenerateItem("SourceRoot", PathUtility.EnsureTrailingSlash(e)))));
         }
 
@@ -195,7 +198,7 @@ namespace NuGet.Commands
         public static XElement GenerateProperty(string propertyName, string content)
         {
             return new XElement(Namespace + propertyName,
-                            new XAttribute("Condition", "'$(" + propertyName + ")' == ''"),
+                            new XAttribute("Condition", $" '$({propertyName})' == '' "),
                             content);
         }
 
@@ -208,14 +211,14 @@ namespace NuGet.Commands
         {
             return new XElement(Namespace + "Import",
                                 new XAttribute("Project", path),
-                                new XAttribute("Condition", "Exists('" + path + "')"));
+                                new XAttribute("Condition", $"Exists('{path}')"));
         }
 
         public static XElement GenerateContentFilesItem(string path, LockFileContentFile item, string packageId, string packageVersion)
         {
             var entry = new XElement(Namespace + item.BuildAction.Value,
                                 new XAttribute("Include", path),
-                                new XAttribute("Condition", "Exists('" + path + "')"),
+                                new XAttribute("Condition", $"Exists('{path}')"),
                                 new XElement(Namespace + "NuGetPackageId", packageId),
                                 new XElement(Namespace + "NuGetPackageVersion", packageVersion),
                                 new XElement(Namespace + "NuGetItemType", item.BuildAction),
@@ -316,7 +319,7 @@ namespace NuGet.Commands
 
             if (absolutePath.StartsWith(repositoryRoot, StringComparison.Ordinal))
             {
-                path = "$(NuGetPackageRoot)" + absolutePath.Substring(repositoryRoot.Length);
+                path = $"$(NuGetPackageRoot){absolutePath.Substring(repositoryRoot.Length)}";
             }
             else
             {
@@ -377,13 +380,13 @@ namespace NuGet.Commands
             {
                 // PackageReference style projects
                 var projFileName = Path.GetFileName(project.RestoreMetadata.ProjectPath);
-                path = Path.Combine(project.RestoreMetadata.OutputPath, projFileName + ".nuget.g" + extension);
+                path = Path.Combine(project.RestoreMetadata.OutputPath, $"{projFileName}.nuget.g{extension}");
             }
             else
             {
                 // Project.json style projects
                 var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, project.Name + ".nuget" + extension);
+                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
             }
             return path;
 
@@ -393,7 +396,7 @@ namespace NuGet.Commands
         {
             var projFileName = Path.GetFileName(project.RestoreMetadata.ProjectPath);
 
-            return Path.Combine(project.RestoreMetadata.OutputPath, projFileName + ".nuget.g" + extension);
+            return Path.Combine(project.RestoreMetadata.OutputPath, $"{projFileName}.nuget.g{extension}");
         }
 
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
@@ -445,7 +448,10 @@ namespace NuGet.Commands
 
             foreach (var ridlessTarget in ridlessTargets)
             {
-                var frameworkConditions = "'$(TargetFramework)' == '" + GetMatchingFrameworkStrings(project, ridlessTarget.TargetFramework) + "'";
+                var frameworkConditions = string.Format(
+                        CultureInfo.InvariantCulture,
+                        TargetFrameworkCondition,
+                        GetMatchingFrameworkStrings(project, ridlessTarget.TargetFramework));
 
                 // Find matching target in the original target graphs.
                 var targetGraph = targetGraphs.FirstOrDefault(e =>
@@ -616,13 +622,13 @@ namespace NuGet.Commands
                 // Must not be any of the other package languages.
                 foreach (var lang in allLanguages)
                 {
-                    yield return "'$(Language)' != '" + GetLanguage(lang) + "'";
+                    yield return string.Format(CultureInfo.InvariantCulture, NegativeLanguageCondition, GetLanguage(lang));
                 }
             }
             else
             {
                 // Must be the language.
-                yield return "'$(Language)' == '" + GetLanguage(language) + "'";
+                yield return string.Format(CultureInfo.InvariantCulture, LanguageCondition, GetLanguage(language));
             }
         }
 
@@ -756,16 +762,11 @@ namespace NuGet.Commands
 
         private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
         {
-
 #if NETCOREAPP
-            string propertyName = "Pkg" + localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal);
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal)}", localPackageInfo.ExpandedPath);
 #else
-            string propertyName = "Pkg" + localPackageInfo.Id.Replace(".", "_");
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", localPackageInfo.ExpandedPath);
 #endif
-
-            string propertyValue = localPackageInfo.ExpandedPath + Path.DirectorySeparatorChar;
-
-            return GenerateProperty(propertyName, propertyValue);
         }
     }
 }

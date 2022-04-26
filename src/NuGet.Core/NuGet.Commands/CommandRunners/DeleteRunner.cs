@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -27,8 +27,14 @@ namespace NuGet.Commands
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
-
-            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
+            // Only warn for V3 style sources because they have a service index which is different from the final push url.
+            if (packageSource.IsHttp && !packageSource.IsHttps &&
+                (packageSource.ProtocolVersion == 3 || packageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase)))
+            {
+                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "delete", packageSource.Source));
+            }
+            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 
             await packageUpdateResource.Delete(
                 packageId,

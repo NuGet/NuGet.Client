@@ -30,7 +30,7 @@ namespace NuGet.CommandLine.Test.Caching
 
             validations.Add(
                 CachingValidationType.CommandSucceeded,
-                result.Item1 == 0);
+                result.ExitCode == 0);
 
 
             validations.Add(CachingValidationType.RestoreNoOp, result.AllOutput.Contains("No further actions are required to complete the restore"));

@@ -100,6 +100,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _installedVersion = value;
                     OnPropertyChanged(nameof(InstalledVersion));
+                    OnPropertyChanged(nameof(IsInstalledAndTransitive));
                     OnPropertyChanged(nameof(IsLatestInstalled));
 
                     // update tool tip
@@ -270,6 +271,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(IsUninstallable));
                     OnPropertyChanged(nameof(IsNotInstalled));
+                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
                 }
             }
         }
@@ -283,6 +285,10 @@ namespace NuGet.PackageManagement.UI
                 return (Status == PackageStatus.NotInstalled && LatestVersion != null);
             }
         }
+
+        public bool IsUninstalledAndTransitive => (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
+
+        public bool IsInstalledAndTransitive => PackageLevel == PackageLevel.Transitive || InstalledVersion != null;
 
         // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsUninstallable
         // in all those properties.
@@ -480,6 +486,8 @@ namespace NuGet.PackageManagement.UI
                 {
                     _packageLevel = value;
                     OnPropertyChanged(nameof(PackageLevel));
+                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
+                    OnPropertyChanged(nameof(IsInstalledAndTransitive));
                 }
             }
         }
@@ -487,7 +495,15 @@ namespace NuGet.PackageManagement.UI
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
         {
             var identity = new PackageIdentity(Id, Version);
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
+            var isTransitive = PackageLevel == PackageLevel.Transitive;
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
+        }
+
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
+        {
+            var identity = new PackageIdentity(Id, Version);
+            var isTransitive = PackageLevel == PackageLevel.Transitive;
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
         }
 
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
@@ -732,6 +748,17 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(ReloadPackageMetadataAsync)
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageMetadataAsync));
+
+            OnPropertyChanged(nameof(Status));
+        }
+
+        public void UpdateTransitivePackageStatus(NuGetVersion installedVersion)
+        {
+            InstalledVersion = installedVersion;
+
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(ReloadPackageVersionsAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
 
             OnPropertyChanged(nameof(Status));
         }

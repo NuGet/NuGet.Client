@@ -306,7 +306,14 @@ namespace NuGet.PackageManagement.UI
                     TransitiveToolTipMessage = transitiveToolTipMessage,
                 };
 
-                listItem.UpdatePackageStatus(_installedPackages);
+                if (packageLevel == PackageLevel.TopLevel)
+                {
+                    listItem.UpdatePackageStatus(_installedPackages);
+                }
+                else
+                {
+                    listItem.UpdateTransitivePackageStatus(metadata.Identity.Version);
+                }
 
                 listItemViewModels.Add(listItem);
             }

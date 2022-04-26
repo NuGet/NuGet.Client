@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
 
-            var getVersionsTask = searchResultPackage.GetVersionsAsync();
+            Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync(_nugetProjects);
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
 
@@ -684,7 +684,7 @@ namespace NuGet.PackageManagement.UI
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
                 // The project level is the only one that has an editable combobox and we can only see one project.
-                if (!IsSolution && _nugetProjects.Count() == 1 && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
+                if (!IsSolution && _nugetProjects.Count() == 1 && FirstDisplayedVersion == null && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
                     // For the Updates and Browse tab we select the latest version, for the installed tab
                     // select the installed version by default. Otherwise, select the first version in the version list.
@@ -702,10 +702,7 @@ namespace NuGet.PackageManagement.UI
                         UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
                     }
 
-                    if (FirstDisplayedVersion == null)
-                    {
-                        FirstDisplayedVersion = SelectedVersion;
-                    }
+                    FirstDisplayedVersion = SelectedVersion;
                 }
                 else
                 {

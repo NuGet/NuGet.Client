@@ -61,15 +61,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to authenticate without prompting user..
-        /// </summary>
-        public static string AccountProvider_TriedToShowUIOnNonInteractive {
-            get {
-                return ResourceManager.GetString("AccountProvider_TriedToShowUIOnNonInteractive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
         public static string AggregateSourceName {

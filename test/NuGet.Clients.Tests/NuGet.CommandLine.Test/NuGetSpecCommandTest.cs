@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Xml.Linq;
+using NuGet.Shared;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -33,7 +34,7 @@ namespace NuGet.CommandLine.Test
                     "spec",
                     waitForExit: true);
 
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var nuspec = File.ReadAllText(Path.Combine(workingDirectory, "Package.nuspec"));
                 Assert.Equal($@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -73,7 +74,7 @@ namespace NuGet.CommandLine.Test
                     "spec Whatnot",
                     waitForExit: true);
 
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var fileName = Path.Combine(workingDirectory, "Whatnot.nuspec");
                 Assert.True(File.Exists(fileName));
@@ -127,7 +128,7 @@ namespace NuGet.CommandLine.Test
                     "spec",
                     waitForExit: true);
 
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var fileName = Path.Combine(workingDirectory, "Project.nuspec");
                 Assert.True(File.Exists(fileName));
@@ -167,7 +168,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.VerifyResultSuccess(r);
 
-                XDocument xdoc = XmlUtility.LoadSafe(Path.Combine(workingDirectory, "Package.nuspec"));
+                XDocument xdoc = XmlUtility.Load(Path.Combine(workingDirectory, "Package.nuspec"));
 
                 AssertWithoutNamespace(xdoc.Root);
             }

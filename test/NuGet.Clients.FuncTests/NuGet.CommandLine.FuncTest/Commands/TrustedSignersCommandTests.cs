@@ -146,12 +146,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
             //  Util.VerifyResultFailure(result, TrustedSignersHelpStringFragment, checkErrorMsgOnStdErr: false);
 
             Assert.True(
-                result.Item1 != 0,
-                "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+                result.ExitCode != 0,
+                "nuget.exe DID NOT FAIL: Ouput is " + result.Output + ". Error is " + result.Errors);
 
             Assert.True(
-                result.Item2.Contains(_trustedSignersHelpStringFragment),
-                "Expected error is " + _trustedSignersHelpStringFragment + ". Actual error is " + result.Item3);
+                result.Output.Contains(_trustedSignersHelpStringFragment),
+                "Expected error is " + _trustedSignersHelpStringFragment + ". Actual error is " + result.Errors);
         }
 
         [Theory]

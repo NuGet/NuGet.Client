@@ -290,22 +290,18 @@
         TargetType="{x:Type Expander}"
         BasedOn="{StaticResource {x:Type Expander}}">
         <Setter Property="Header" Value="{StaticResource GroupHeaderMultiBinding}" />
+        <Setter Property="Tag" Value="{Binding Name}" /> <!-- Store unconverted enum PackageLevel-->
         <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
-        <Style.Triggers>
-          <DataTrigger Binding="{Binding Name}" Value="{x:Static common:PackageLevel.Transitive}">
-            <Setter Property="IsExpanded" Value="False" />
-          </DataTrigger>
-          <DataTrigger Binding="{Binding Name}" Value="{x:Static common:PackageLevel.TopLevel}">
-            <Setter Property="IsExpanded" Value="True" />
-          </DataTrigger>
-        </Style.Triggers>
       </Style>
 
       <ControlTemplate
         x:Key="GroupedListItemControlTemplate"
         TargetType="{x:Type GroupItem}">
         <Expander
-          Style="{StaticResource ExpanderStyle}">
+          Style="{StaticResource ExpanderStyle}"
+          Expanded="Expander_ExpansionStateToggled"
+          Collapsed="Expander_ExpansionStateToggled"
+          IsExpanded="True">
           <ItemsPresenter />
         </Expander>
       </ControlTemplate>

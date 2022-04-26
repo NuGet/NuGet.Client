@@ -3,8 +3,10 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using Microsoft.VisualStudio.Experimentation;
 using NuGet.Common;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio
 {
@@ -14,32 +16,51 @@ namespace NuGet.VisualStudio
     {
         private readonly IEnvironmentVariableReader _environmentVariableReader;
         private readonly IExperimentationService _experimentationService;
+        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
-        public NuGetExperimentationService()
-            : this(EnvironmentVariableWrapper.Instance, ExperimentationService.Default)
+        [ImportingConstructor]
+        public NuGetExperimentationService(Lazy<IOutputConsoleProvider> _outputConsoleProvider)
+            : this(EnvironmentVariableWrapper.Instance, ExperimentationService.Default, _outputConsoleProvider)
         {
             // ensure uniqueness.
         }
 
-        internal NuGetExperimentationService(IEnvironmentVariableReader environmentVariableReader, IExperimentationService experimentationService)
+        internal NuGetExperimentationService(IEnvironmentVariableReader environmentVariableReader, IExperimentationService experimentationService, Lazy<IOutputConsoleProvider> outputConsoleProvider)
         {
             _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
             _experimentationService = experimentationService ?? throw new ArgumentNullException(nameof(experimentationService));
+            _outputConsoleProvider = outputConsoleProvider ?? throw new ArgumentNullException(nameof(outputConsoleProvider));
         }
 
         public bool IsExperimentEnabled(ExperimentationConstants experiment)
         {
             var isExpForcedEnabled = false;
             var isExpForcedDisabled = false;
-            if (!string.IsNullOrEmpty(experiment.FlightEnvironmentVariable))
+            string flightVariable = experiment.FlightEnvironmentVariable;
+
+            if (!string.IsNullOrEmpty(flightVariable))
             {
-                string envVarOverride = _environmentVariableReader.GetEnvironmentVariable(experiment.FlightEnvironmentVariable);
+                string envVarOverride = _environmentVariableReader.GetEnvironmentVariable(flightVariable);
 
                 isExpForcedDisabled = envVarOverride == "0";
                 isExpForcedEnabled = envVarOverride == "1";
+
+                if (isExpForcedDisabled || isExpForcedEnabled)
+                {
+                    LogEnvironmentVariableOverride(experiment.FlightFlag, flightVariable, envVarOverride);
+                }
             }
 
             return !isExpForcedDisabled && (isExpForcedEnabled || _experimentationService.IsCachedFlightEnabled(experiment.FlightFlag));
+        }
+
+        private void LogEnvironmentVariableOverride(string flightName, string variableName, string variableValue)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                IOutputConsole console = await _outputConsoleProvider.Value.CreatePackageManagerConsoleAsync();
+                await console.WriteLineAsync(string.Format(CultureInfo.CurrentUICulture, Resources.ExperimentVariableOverrideLogText, flightName, variableName, variableValue));
+            }).PostOnFailure(nameof(NuGetExperimentationService), nameof(LogEnvironmentVariableOverride));
         }
     }
 }

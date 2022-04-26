@@ -14,7 +14,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class RepositoryCountersignatureTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class RepositoryCountersignatureTests
     {
         private readonly CertificatesFixture _fixture;
 

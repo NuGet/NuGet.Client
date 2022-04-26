@@ -196,8 +196,8 @@ namespace Dotnet.Integration.Test
                 environmentVariables: _processEnvVars);
             if (validateSuccess)
             {
-                Assert.True(result.Item1 == 0, $"Restore failed with following log information :\n {result.AllOutput}");
-                Assert.True(result.Item3 == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
+                Assert.True(result.ExitCode == 0, $"Restore failed with following log information :\n {result.AllOutput}");
+                Assert.True(result.Errors == "", $"Restore failed with following message in error stream :\n {result.AllOutput}");
             }
         }
 
@@ -267,8 +267,8 @@ namespace Dotnet.Integration.Test
                 environmentVariables: _processEnvVars);
             if (validateSuccess)
             {
-                Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.AllOutput}");
-                Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
+                Assert.True(result.ExitCode == 0, $"Pack failed with following log information :\n {result.AllOutput}");
+                Assert.True(result.Errors == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
             }
             return result;
         }
@@ -300,8 +300,8 @@ namespace Dotnet.Integration.Test
                 environmentVariables: _processEnvVars);
             if (validateSuccess)
             {
-                Assert.True(result.Item1 == 0, $"Build failed with following log information :\n {result.AllOutput}");
-                Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
+                Assert.True(result.ExitCode == 0, $"Build failed with following log information :\n {result.AllOutput}");
+                Assert.True(result.Errors == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
             }
         }
 

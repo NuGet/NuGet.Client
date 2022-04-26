@@ -332,6 +332,11 @@ namespace NuGet.Common
         NU1802 = 1802,
 
         /// <summary>
+        /// HTTP Source specified, but HTTP sources will be deprecated.
+        /// </summary>
+        NU1803 = 1803,
+
+        /// <summary>
         /// Undefined signature error
         /// </summary>
         NU3000 = 3000,

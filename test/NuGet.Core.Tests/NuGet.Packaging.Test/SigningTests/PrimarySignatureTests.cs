@@ -11,7 +11,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class PrimarySignatureTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class PrimarySignatureTests
     {
         private const string NotExactlyOnePrimarySignature = "The package signature file does not contain exactly one primary signature.";
 

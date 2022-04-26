@@ -56,5 +56,6 @@ namespace NuGet.PackageManagement.Telemetry
         Success,
         NotApplicable,
         NoOp,
+        Failed,
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using FluentAssertions;
 using Microsoft.VisualStudio.Experimentation;
 using NuGet.Common;
@@ -13,25 +14,43 @@ using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test
 {
+    [Collection(nameof(TestJoinableTaskFactoryCollection))]
     public class NuGetExperimentationServiceTests
     {
+        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
+
+        public NuGetExperimentationServiceTests()
+        {
+            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider());
+        }
+
+        private IList<string> OutputMessages => ((TestOutputConsoleProvider)_outputConsoleProvider.Value).TestOutputConsole.Messages;
+
         [Fact]
         public void Constructor_WithNullWrapper_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new NuGetExperimentationService(null, new TestVisualStudioExperimentalService()));
+            Assert.Throws<ArgumentNullException>(() => new NuGetExperimentationService(null, new TestVisualStudioExperimentalService(), _outputConsoleProvider));
         }
 
         [Fact]
         public void Constructor_WithNullExperimentalService_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), null));
+            Assert.Throws<ArgumentNullException>(() => new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), null, _outputConsoleProvider));
+        }
+
+        [Fact]
+        public void Constructor_WithNullOutputConsoleProvider_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(), null));
         }
 
         [Fact]
         public void IsEnabled_WithoutEnabledFlight_ReturnsFalse()
         {
-            var service = new NuGetExperimentationService(new EnvironmentVariableWrapper(), new TestVisualStudioExperimentalService());
-            service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeFalse();
+            var service = new NuGetExperimentationService(new EnvironmentVariableWrapper(), new TestVisualStudioExperimentalService(), _outputConsoleProvider);
+            var constant = ExperimentationConstants.PackageManagerBackgroundColor;
+            service.IsExperimentEnabled(constant).Should().BeFalse();
+            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
         }
 
         [Fact]
@@ -43,9 +62,10 @@ namespace NuGet.VisualStudio.Common.Test
                 { constant.FlightEnvironmentVariable, "1" },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
-            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService());
+            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeTrue();
+            OutputMessages.Should().ContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*1*");
         }
 
         [Theory]
@@ -59,9 +79,10 @@ namespace NuGet.VisualStudio.Common.Test
                 { constant.FlightEnvironmentVariable, value },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
-            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService());
+            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeFalse();
+            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
         }
 
         [Fact]
@@ -72,9 +93,10 @@ namespace NuGet.VisualStudio.Common.Test
             {
                 { constant.FlightFlag, true },
             };
-            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
+            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeTrue();
+            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
         }
 
         [Theory]
@@ -87,9 +109,10 @@ namespace NuGet.VisualStudio.Common.Test
             {
                 { constant.FlightFlag, isFlightEnabled },
             };
-            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled));
+            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().Be(expectedResult);
+            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
         }
 
         [Fact]
@@ -107,9 +130,10 @@ namespace NuGet.VisualStudio.Common.Test
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
 
-            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(flightsEnabled));
+            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeTrue();
+            OutputMessages.Should().ContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*1*");
         }
 
         [Fact]
@@ -127,16 +151,19 @@ namespace NuGet.VisualStudio.Common.Test
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
 
-            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(flightsEnabled));
+            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeFalse();
+            OutputMessages.Should().ContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*0*");
         }
 
         [Fact]
         public void IsEnabled_WithNullEnvironmentVariableForConstant_HandlesGracefully()
         {
-            var service = new NuGetExperimentationService(new EnvironmentVariableWrapper(), new TestVisualStudioExperimentalService());
-            service.IsExperimentEnabled(new ExperimentationConstants("flag", null)).Should().BeFalse();
+            var service = new NuGetExperimentationService(new EnvironmentVariableWrapper(), new TestVisualStudioExperimentalService(), _outputConsoleProvider);
+            var constant = new ExperimentationConstants("flag", null);
+            service.IsExperimentEnabled(constant).Should().BeFalse();
+            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
         }
 
         [Fact]
@@ -157,11 +184,14 @@ namespace NuGet.VisualStudio.Common.Test
                 { forcedOffExperiment.FlightEnvironmentVariable, "0" },
             };
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
-            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(flightsEnabled));
+            var service = new NuGetExperimentationService(envVarWrapper, new TestVisualStudioExperimentalService(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(forcedOffExperiment).Should().BeFalse();
             service.IsExperimentEnabled(forcedOnExperiment).Should().BeTrue();
             service.IsExperimentEnabled(noOverrideExperiment).Should().BeTrue();
+            OutputMessages.Should().ContainMatch($"*{forcedOffExperiment.FlightFlag}*{forcedOffExperiment.FlightEnvironmentVariable}*0*");
+            OutputMessages.Should().ContainMatch($"*{forcedOnExperiment.FlightFlag}*{forcedOnExperiment.FlightEnvironmentVariable}*1*");
+            OutputMessages.Should().NotContainMatch($"*{noOverrideExperiment.FlightFlag}*{noOverrideExperiment.FlightEnvironmentVariable}*");
         }
     }
 
@@ -198,6 +228,74 @@ namespace NuGet.VisualStudio.Common.Test
         public void Start()
         {
             // do nothing.
+        }
+    }
+
+    public class TestOutputConsoleProvider : IOutputConsoleProvider
+    {
+        public TestOutputConsole TestOutputConsole { get; } = new TestOutputConsole();
+
+        public Task<IOutputConsole> CreateBuildOutputConsoleAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IOutputConsole> CreatePackageManagerConsoleAsync()
+        {
+            return Task.FromResult((IOutputConsole)TestOutputConsole);
+        }
+
+        public Task<IConsole> CreatePowerShellConsoleAsync()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class TestOutputConsole : IOutputConsole
+    {
+        public IList<string> Messages { get; } = new List<string>();
+
+        public int ConsoleWidth => throw new NotImplementedException();
+
+        public Task ActivateAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ClearAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task WriteAsync(string text)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task WriteAsync(string text, Color? foreground, Color? background)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task WriteBackspaceAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task WriteLineAsync(string text)
+        {
+            Messages.Add(text);
+            return Task.CompletedTask;
+        }
+
+        public Task WriteLineAsync(string format, params object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task WriteProgressAsync(string currentOperation, int percentComplete)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -31,8 +31,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains($"The API Key '{testApiKey}' was saved for the NuGet gallery (https://www.nuget.org) and the symbol server (https://nuget.smbsrc.net/)", result.Item2);
+                Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                Assert.Contains($"The API Key '{testApiKey}' was saved for the NuGet gallery (https://www.nuget.org) and the symbol server (https://nuget.smbsrc.net/)", result.Output);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(
                     Path.GetDirectoryName(configFile),

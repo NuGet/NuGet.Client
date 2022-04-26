@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Moq;
 using NuGet.Common;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using Test.Utility;
 using Xunit;
 
@@ -14,19 +15,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class RestoreTelemetryServiceTests
     {
         [Theory]
-        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.Succeeded)]
-        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.Succeeded)]
-        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.NoOp)]
-        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.NoOp)]
-        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.Failed)]
-        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.Failed)]
-        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.Succeeded)]
-        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.Succeeded)]
-        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.NoOp)]
-        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.NoOp)]
-        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.Failed)]
-        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.Failed)]
-        public void RestoreTelemetryService_EmitRestoreEvent_OperationSucceed(bool forceRestore, RestoreOperationSource source, NuGetOperationStatus status)
+        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.Succeeded, ExplicitRestoreReason.None)]
+        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.Succeeded, ExplicitRestoreReason.ProjectRetargeting)]
+        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.NoOp, ExplicitRestoreReason.None)]
+        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.NoOp, ExplicitRestoreReason.MissingPackagesBanner)]
+        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.Failed, ExplicitRestoreReason.None)]
+        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.Failed, ExplicitRestoreReason.RestoreSolutionPackages)]
+        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.Succeeded, ExplicitRestoreReason.None)]
+        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.Succeeded, ExplicitRestoreReason.ProjectRetargeting)]
+        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.NoOp, ExplicitRestoreReason.None)]
+        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.NoOp, ExplicitRestoreReason.MissingPackagesBanner)]
+        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.Failed, ExplicitRestoreReason.None)]
+        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.Failed, ExplicitRestoreReason.RestoreSolutionPackages)]
+        public void RestoreTelemetryService_EmitRestoreEvent_OperationSucceed(bool forceRestore, RestoreOperationSource source, NuGetOperationStatus status, ExplicitRestoreReason explicitRestoreReason)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -65,7 +66,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 duration: 2.10,
                 additionalTrackingData: new Dictionary<string, object>()
                 {
-                    { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true }
+                    { nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), true },
+                    { nameof(ExplicitRestoreReason), explicitRestoreReason }
                 },
                 new IntervalTracker("Activity"),
                 isPackageSourceMappingEnabled: false,
@@ -161,7 +163,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(25, actual.Count);
+            Assert.Equal(26, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
@@ -184,6 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(2, (int)actual["NumLocalFeeds"]);
             Assert.Equal(true, (bool)actual["NuGetOrg"]);
             Assert.Equal(false, (bool)actual["VsOfflinePackages"]);
+            Assert.Equal(expected["ExplicitRestoreReason"], actual["ExplicitRestoreReason"]);
             AssertProjectsCount(expected);
 
             TestTelemetryUtility.VerifyTelemetryEventData(operationId, expected, actual);

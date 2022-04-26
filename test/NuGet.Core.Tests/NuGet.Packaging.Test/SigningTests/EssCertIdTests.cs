@@ -15,7 +15,8 @@ using EssCertId = NuGet.Packaging.Signing.EssCertId;
 
 namespace NuGet.Packaging.Test
 {
-    public class EssCertIdTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class EssCertIdTests
     {
         private readonly CertificatesFixture _fixture;
 

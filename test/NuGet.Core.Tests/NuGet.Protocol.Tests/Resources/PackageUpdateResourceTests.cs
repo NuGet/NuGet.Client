@@ -350,7 +350,7 @@ namespace NuGet.Protocol.Tests
                 var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
                 var resource = await repo.GetResourceAsync<PackageUpdateResource>();
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
-
+                var logger = new TestLogger();
                 // Act
                 await resource.Push(
                     packagePaths: new[] { packageInfo.FullName },
@@ -362,7 +362,7 @@ namespace NuGet.Protocol.Tests
                     noServiceEndpoint: false,
                     skipDuplicate: false,
                     symbolPackageUpdateResource: null,
-                    log: NullLogger.Instance);
+                    log: logger);
 
                 // Assert
                 IEnumerable<string> apiValues;
@@ -375,6 +375,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal("serverapikey", apiValues.First());
                 Assert.NotNull(symbolClientVersionValues.First());
                 Assert.NotNull(sourceClientVersionValues.First());
+                Assert.Equal(0, logger.WarningMessages.Count);
             }
         }
 
@@ -828,6 +829,208 @@ namespace NuGet.Protocol.Tests
                     symbolRequest[i - 1].Headers.TryGetValues(ApiKeyHeader, out apiValues);
                     Assert.Equal($"tempkey{i}", apiValues.First());
                 }
+            }
+        }
+
+        [Fact]
+        public async Task Push_WithAnHttpSource_NupkgOnly_Warns()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "http://www.nuget.org/api/v2/";
+            HttpRequestMessage sourceRequest = null;
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>();
+            var logger = new TestLogger();
+
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: string.Empty,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => "serverapikey",
+                getSymbolApiKey: _ => null,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                log: logger);
+
+            // Assert
+            Assert.NotNull(sourceRequest);
+            Assert.Equal(1, logger.WarningMessages.Count);
+            Assert.Contains("You are running the 'push' operation with an 'http' source", logger.WarningMessages.First());
+
+        }
+
+        [Fact]
+        public async Task Push_WhenPushingToAnHttpSymbolSource_Warns()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "https://www.nuget.org/api/v2/";
+            var symbolSource = "http://other.smbsrc.net/";
+            HttpRequestMessage sourceRequest = null;
+            HttpRequestMessage symbolRequest = null;
+            var apiKey = "serverapikey";
+
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+            var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "http://other.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>();
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+            var logger = new TestLogger();
+
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: symbolSource,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => apiKey,
+                getSymbolApiKey: _ => apiKey,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                log: logger);
+
+            // Assert
+            Assert.NotNull(sourceRequest);
+            Assert.NotNull(symbolRequest);
+            Assert.Equal(1, logger.WarningMessages.Count);
+            Assert.Contains("You are running the 'push' operation with an 'http' source", logger.WarningMessages.First());
+        }
+
+        [Fact]
+        public async Task Push_WhenPushingToAnHttpSourceAndSymbolSource_WarnsForBoth()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "http://www.nuget.org/api/v2/";
+            var symbolSource = "http://other.smbsrc.net/";
+            HttpRequestMessage sourceRequest = null;
+            HttpRequestMessage symbolRequest = null;
+            var apiKey = "serverapikey";
+
+            var packageInfo = await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "test", "1.0.0");
+            var symbolPackageInfo = await SimpleTestPackageUtility.CreateSymbolPackageAsync(workingDir, "test", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            sourceRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                    {
+                        "http://other.smbsrc.net/api/v2/package/",
+                        request =>
+                        {
+                            symbolRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>();
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
+            var logger = new TestLogger();
+
+            // Act
+            await resource.Push(
+                packagePaths: new[] { packageInfo.FullName },
+                symbolSource: symbolSource,
+                timeoutInSecond: 5,
+                disableBuffering: false,
+                getApiKey: _ => apiKey,
+                getSymbolApiKey: _ => apiKey,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                log: logger);
+
+            // Assert
+            Assert.NotNull(sourceRequest);
+            Assert.NotNull(symbolRequest);
+            Assert.Equal(2, logger.WarningMessages.Count);
+            Assert.Contains("You are running the 'push' operation with an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.First());
+            Assert.Contains("You are running the 'push' operation with an 'http' source, 'http://other.smbsrc.net/api/v2/package/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
+        }
+
+        [Fact]
+        public async Task Delete_WhenDeletingFromHTTPSource_Warns()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var source = "http://www.nuget.org/api/v2";
+                HttpRequestMessage actualRequest = null;
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        "http://www.nuget.org/api/v2/DeepEqual/1.4.0.1-rc",
+                        request =>
+                        {
+                            actualRequest = request;
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    }
+                };
+
+                var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var resource = await repo.GetResourceAsync<PackageUpdateResource>();
+                var apiKey = string.Empty;
+                var logger = new TestLogger();
+
+                // Act
+                await resource.Delete(
+                    packageId: "DeepEqual",
+                    packageVersion: "1.4.0.1-rc",
+                    getApiKey: _ => apiKey,
+                    confirm: _ => true,
+                    noServiceEndpoint: false,
+                    log: logger);
+
+                // Assert
+                Assert.NotNull(actualRequest);
+                Assert.Equal(HttpMethod.Delete, actualRequest.Method);
+                Assert.Equal(3, logger.WarningMessages.Count);
+                Assert.Contains("You are running the 'delete' operation with an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
             }
         }
     }

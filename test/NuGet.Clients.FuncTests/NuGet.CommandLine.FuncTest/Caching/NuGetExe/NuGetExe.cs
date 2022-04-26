@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.Test.Caching
             {
                 var result = Execute(context, "locals http-cache -list", debug: false);
 
-                var stdout = result.Item2.Trim();
+                var stdout = result.Output.Trim();
 
                 // Example:
                 //   stdout = http-cache: C:\Users\jver\AppData\Local\NuGet\v3-cache
@@ -183,7 +183,7 @@ namespace NuGet.CommandLine.Test.Caching
                                 "help",
                                 waitForExit: true);
 
-                            if (helpResult.Item1 == 0)
+                            if (helpResult.ExitCode == 0)
                             {
                                 return thisPath;
                             }
