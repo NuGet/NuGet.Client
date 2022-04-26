@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.UI
         private ScrollViewer _scrollViewer;
 
         public event SelectionChangedEventHandler SelectionChanged;
+        public event RoutedEventHandler GroupExpansionChanged;
 
         public delegate void UpdateButtonClickEventHandler(PackageItemViewModel[] selectedPackages);
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
@@ -748,6 +749,11 @@ namespace NuGet.PackageManagement.UI
             {
                 ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
             }
+        }
+
+        private void Expander_ExpansionStateToggled(object sender, RoutedEventArgs e)
+        {
+            GroupExpansionChanged?.Invoke(sender, e);
         }
     }
 }
