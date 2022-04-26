@@ -390,7 +390,7 @@ namespace NuGet.PackageManagement
                 PackageSource source = enabledSource.PackageSource;
                 if (source.IsHttp && !source.IsHttps)
                 {
-                    nuGetProjectContext.Log(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
+                    packageRestoreContext.Logger.Log(LogLevel.Warning, string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
                 }
             }
 
