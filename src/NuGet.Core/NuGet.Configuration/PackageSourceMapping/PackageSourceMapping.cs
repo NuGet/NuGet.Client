@@ -18,7 +18,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Source name to package patterns list.
         /// </summary>
-        internal Dictionary<string, IReadOnlyList<string>> Patterns { get; }
+        internal IReadOnlyDictionary<string, IReadOnlyList<string>> Patterns { get; }
 
         private Lazy<SearchTree> SearchTree { get; }
 
@@ -38,10 +38,10 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(packageId);
         }
 
-        public PackageSourceMapping(Dictionary<string, IReadOnlyList<string>> patterns)
+        public PackageSourceMapping(IReadOnlyDictionary<string, IReadOnlyList<string>> patterns)
         {
             Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
-            IsEnabled = Patterns.Keys.Count > 0;
+            IsEnabled = Patterns.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
         }
 
