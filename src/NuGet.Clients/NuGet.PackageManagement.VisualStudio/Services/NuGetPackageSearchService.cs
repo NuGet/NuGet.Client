@@ -162,28 +162,7 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageIdentity identity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
-            CancellationToken cancellationToken)
-        {
-            Assumes.NotNull(identity);
-            Assumes.NotNullOrEmpty(packageSources);
-
-            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
-            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
-            if (backgroundDataCache != null)
-            {
-                return await backgroundDataCache.AllVersionsContextInfo;
-            }
-
-            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
-            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-
-            // Update the cache
-            var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
-            cacheEntry.UpdateSearchMetadata(packageMetadata);
-            PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, CacheItemPolicy);
-
-            return await cacheEntry.AllVersionsContextInfo;
-        }
+            CancellationToken cancellationToken) => await GetPackageVersionsAsync(identity, packageSources, includePrerelease, isTransitive: false, projects: null, cancellationToken);
 
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
             PackageIdentity identity,
@@ -217,7 +196,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
                     IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-                    backgroundDataCache.UpdateSearchMetadata(transitivePackageMetadata);
+                    var tpsm = new TransitivePackageSearchMetadata(transitivePackageMetadata, Array.Empty<PackageIdentity>());
+                    backgroundDataCache.UpdateSearchMetadata(tpsm);
                 }
                 return await backgroundDataCache.AllVersionsContextInfo;
             }

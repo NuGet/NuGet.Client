@@ -9,7 +9,7 @@ using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    public sealed class VersionInfoContextInfo
+    public class VersionInfoContextInfo
     {
         public VersionInfoContextInfo(NuGetVersion version) : this(version, new long?())
         {
@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public NuGetVersion Version { get; }
         public long? DownloadCount { get; }
 
-        public PackageDeprecationMetadataContextInfo? PackageDeprecationMetadata { get; internal set; }
+        public virtual PackageDeprecationMetadataContextInfo? PackageDeprecationMetadata { get; internal set; }
 
         public PackageSearchMetadataContextInfo? PackageSearchMetadata { get; internal set; }
 

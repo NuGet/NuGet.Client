@@ -55,7 +55,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public LicenseMetadata LicenseMetadata => _packageSearchMetadata.LicenseMetadata;
 
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => _packageSearchMetadata.Vulnerabilities;
+#pragma warning disable CS8603 // Possible null reference return.
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => null; // disabled for transitive packages
+#pragma warning restore CS8603 // Possible null reference return.
 
         private readonly IPackageSearchMetadata _packageSearchMetadata;
 
@@ -65,11 +67,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             TransitiveOrigins = transitiveOrigins ?? throw new ArgumentNullException(nameof(transitiveOrigins));
         }
 
-        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync()
-        {
-            return _packageSearchMetadata.GetDeprecationMetadataAsync();
-        }
-
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync()
         {
             return _packageSearchMetadata.GetVersionsAsync();

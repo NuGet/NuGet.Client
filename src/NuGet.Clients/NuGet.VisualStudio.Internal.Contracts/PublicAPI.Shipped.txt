@@ -208,7 +208,6 @@ NuGet.VisualStudio.Internal.Contracts.SearchResultContextInfo.SearchResultContex
 NuGet.VisualStudio.Internal.Contracts.SearchResultContextInfo.SourceLoadingStatus.get -> System.Collections.Generic.IReadOnlyDictionary<string!, NuGet.VisualStudio.Internal.Contracts.LoadingStatus>!
 NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo
 NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.DownloadCount.get -> long?
-NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.PackageDeprecationMetadata.get -> NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo?
 NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.PackageSearchMetadata.get -> NuGet.VisualStudio.Internal.Contracts.PackageSearchMetadataContextInfo?
 NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.Version.get -> NuGet.Versioning.NuGetVersion!
 NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.VersionInfoContextInfo(NuGet.Versioning.NuGetVersion! version) -> void

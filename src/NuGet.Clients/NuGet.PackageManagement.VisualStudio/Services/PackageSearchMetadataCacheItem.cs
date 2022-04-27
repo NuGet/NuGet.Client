@@ -73,8 +73,15 @@ namespace NuGet.PackageManagement.VisualStudio
         private async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoContextInfoAsync()
         {
             IEnumerable<VersionInfo> versions = await _packageSearchMetadata.GetVersionsAsync();
-            IEnumerable<Task<VersionInfoContextInfo>> versionContextInfoTasks = versions.Select(async v => await VersionInfoContextInfo.CreateAsync(v));
-            return await Task.WhenAll(versionContextInfoTasks);
+            if (_packageSearchMetadata is TransitivePackageSearchMetadata tpsm)
+            {
+                return versions.Select(TransitiveVersionInfoContextInfo.Create).ToArray();
+            }
+            else
+            {
+                IEnumerable<Task<VersionInfoContextInfo>> versionContextInfoTasks = versions.Select(async v => await VersionInfoContextInfo.CreateAsync(v));
+                return await Task.WhenAll(versionContextInfoTasks);
+            }
         }
     }
 }

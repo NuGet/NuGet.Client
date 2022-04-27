@@ -52,4 +52,9 @@ NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Title.get 
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.TransitiveOrigins.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Core.PackageIdentity!>!
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.TransitivePackageSearchMetadata(NuGet.Protocol.Core.Types.IPackageSearchMetadata! package, System.Collections.Generic.IReadOnlyCollection<NuGet.Packaging.Core.PackageIdentity!>! transitiveOrigins) -> void
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageSearchMetadata.Vulnerabilities.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.PackageVulnerabilityMetadata!>!
+NuGet.VisualStudio.Internal.Contracts.TransitiveVersionInfoContextInfo
+NuGet.VisualStudio.Internal.Contracts.TransitiveVersionInfoContextInfo.TransitiveVersionInfoContextInfo(NuGet.Versioning.NuGetVersion! version, long? downloadCount) -> void
+override NuGet.VisualStudio.Internal.Contracts.TransitiveVersionInfoContextInfo.PackageDeprecationMetadata.get -> NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo?
 static NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.Create(NuGet.VisualStudio.Internal.Contracts.TransitivePackageReference! transitivePackageReference) -> NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo!
+static NuGet.VisualStudio.Internal.Contracts.TransitiveVersionInfoContextInfo.Create(NuGet.Protocol.Core.Types.VersionInfo! version) -> NuGet.VisualStudio.Internal.Contracts.TransitiveVersionInfoContextInfo!
+virtual NuGet.VisualStudio.Internal.Contracts.VersionInfoContextInfo.PackageDeprecationMetadata.get -> NuGet.VisualStudio.Internal.Contracts.PackageDeprecationMetadataContextInfo?

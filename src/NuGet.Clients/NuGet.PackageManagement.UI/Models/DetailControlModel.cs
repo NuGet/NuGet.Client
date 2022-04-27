@@ -363,9 +363,7 @@ namespace NuGet.PackageManagement.UI
         public bool PrefixReserved => _searchResultPackage?.PrefixReserved ?? false;
 
         public bool IsPackageDeprecated => _packageMetadata?.DeprecationMetadata != null;
-
-        public string PackageDeprecationReasons => ExplainPackageDeprecationReasons(_packageMetadata?.DeprecationMetadata?.Reasons?.ToList());
-
+        public string PackageDeprecationReasons => ExplainPackageDeprecationReasons(_packageMetadata?.DeprecationMetadata?.Reasons);
         public string PackageDeprecationAlternatePackageText => GetPackageDeprecationAlternatePackageText(_packageMetadata?.DeprecationMetadata?.AlternatePackage);
 
         private IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> _packageVulnerabilities;
@@ -374,29 +372,21 @@ namespace NuGet.PackageManagement.UI
             get => _packageVulnerabilities;
             private set
             {
-                _packageVulnerabilities = value;
+                if (_packageVulnerabilities != value)
+                {
+                    _packageVulnerabilities = value;
 
-                OnPropertyChanged(nameof(PackageVulnerabilities));
-                OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
-                OnPropertyChanged(nameof(IsPackageVulnerable));
-                OnPropertyChanged(nameof(PackageVulnerabilityCount));
+                    OnPropertyChanged(nameof(PackageVulnerabilities));
+                    OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
+                    OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(PackageVulnerabilityCount));
+                }
             }
         }
 
-        public int PackageVulnerabilityMaxSeverity
-        {
-            get => PackageVulnerabilities?.FirstOrDefault()?.Severity ?? -1;
-        }
-
-        public bool IsPackageVulnerable
-        {
-            get => PackageVulnerabilities?.Count > 0;
-        }
-
-        public int PackageVulnerabilityCount
-        {
-            get => PackageVulnerabilities?.Count ?? 0;
-        }
+        public int PackageVulnerabilityMaxSeverity => PackageVulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+        public bool IsPackageVulnerable => PackageVulnerabilities?.Count > 0;
+        public int PackageVulnerabilityCount => PackageVulnerabilities?.Count ?? 0;
 
         public static string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
         {
@@ -432,7 +422,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         private DetailedPackageMetadata _packageMetadata;
-
         public DetailedPackageMetadata PackageMetadata
         {
             get => _packageMetadata;
@@ -441,7 +430,6 @@ namespace NuGet.PackageManagement.UI
                 if (_packageMetadata != value)
                 {
                     _packageMetadata = value;
-
                     PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
 
                     OnPropertyChanged(nameof(PackageMetadata));
@@ -449,11 +437,6 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(PackageDeprecationReasons));
                     OnPropertyChanged(nameof(PackageDeprecationAlternatePackageText));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
-                    OnPropertyChanged(nameof(IsPackageVulnerable));
-
-                    OnPropertyChanged(nameof(PackageVulnerabilityCount));
-                    OnPropertyChanged(nameof(PackageVulnerabilities));
-                    OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                 }
             }
         }
