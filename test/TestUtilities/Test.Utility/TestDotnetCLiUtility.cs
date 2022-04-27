@@ -233,24 +233,6 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
                 sourceFileName: typeof(Newtonsoft.Json.JsonSerializer).Assembly.Location,
                 destFileName: Path.Combine(pathToSdkInCli, "Newtonsoft.Json.dll"),
                 overwrite: true);
-
-            // Copy Microsoft.Extensions.FileSystemGlobbing.Abstractions.dll to the test folder as its a runtime dependency
-            File.Copy(
-                sourceFileName: typeof(Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase).Assembly.Location,
-                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase).Assembly.Location)),
-                overwrite: true);
-
-            // Copy Microsoft.Extensions.FileProviders.dll to the test folder as its a runtime dependency
-            File.Copy(
-                sourceFileName: typeof(Microsoft.Extensions.FileProviders.IFileInfo).Assembly.Location,
-                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(Microsoft.Extensions.FileProviders.IFileInfo).Assembly.Location)),
-                overwrite: true);
-
-            // Copy Microsoft.Extensions.Primitives.dll to the test folder as its a runtime dependency
-            File.Copy(
-                sourceFileName: typeof(Microsoft.Extensions.Primitives.IChangeToken).Assembly.Location,
-                destFileName: Path.Combine(pathToSdkInCli, Path.GetFileName(typeof(Microsoft.Extensions.Primitives.IChangeToken).Assembly.Location)),
-                overwrite: true);
         }
 
         private static string GetTfmToCopy(string projectArtifactsBinFolder)
@@ -307,7 +289,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
                 {
                     File.Copy(sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
                         destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName),
-                        overwrite: true);
+                        overwrite:true);
                 }
             }
             else

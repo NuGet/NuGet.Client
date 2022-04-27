@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNet.FileProviders;
 
 namespace NuGet.Commands
 {
