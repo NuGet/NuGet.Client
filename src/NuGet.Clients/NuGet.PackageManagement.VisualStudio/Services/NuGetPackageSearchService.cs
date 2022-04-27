@@ -106,6 +106,13 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageIdentity identity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,
+            CancellationToken cancellationToken) => await GetPackageMetadataAsync(identity, packageSources, includePrerelease, isTransitive: false, cancellationToken);
+
+        public async ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> GetPackageMetadataAsync(
+            PackageIdentity identity,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrerelease,
+            bool isTransitive,
             CancellationToken cancellationToken)
         {
             Assumes.NotNull(identity);
@@ -114,6 +121,18 @@ namespace NuGet.PackageManagement.VisualStudio
             string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
             if (PackageSearchMetadataMemoryCache.Get(cacheId) is PackageSearchMetadataCacheItem backgroundDataCache)
             {
+                if (isTransitive)
+                {
+                    if (backgroundDataCache.PackageSearchMetadata is TransitivePackageSearchMetadata)
+                    {
+                        // TODO
+                    }
+                }
+                else
+                {
+
+                }
+
                 PackageSearchMetadataCacheItemEntry cacheItem = await backgroundDataCache.GetPackageSearchMetadataCacheVersionedItemAsync(identity, cancellationToken);
                 PackageSearchMetadataContextInfo packageSearchData = await cacheItem.DetailedPackageSearchMetadataContextInfo;
                 PackageDeprecationMetadataContextInfo? deprecatedData = await cacheItem.PackageDeprecationMetadataContextInfo;
@@ -196,8 +215,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
                     IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-                    var tpsm = new TransitivePackageSearchMetadata(transitivePackageMetadata, Array.Empty<PackageIdentity>());
-                    backgroundDataCache.UpdateSearchMetadata(tpsm);
+                    IPackageSearchMetadata psm;
+                    if (transitivePackageMetadata is TransitivePackageSearchMetadata)
+                    {
+                        psm = transitivePackageMetadata;
+                    }
+                    else
+                    {
+                        psm = new TransitivePackageSearchMetadata(transitivePackageMetadata, Array.Empty<PackageIdentity>());
+                    }
+                    backgroundDataCache.UpdateSearchMetadata(psm);
                 }
                 return await backgroundDataCache.AllVersionsContextInfo;
             }
@@ -351,14 +378,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return new MultiSourcePackageMetadataProvider(sourceRepositories, localRepo, globalRepo, new VisualStudioActivityLogger());
-        }
-
-        private async ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>> GetAllInstalledPackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
-        {
-            IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = projectContextInfos
-                .Select(project => project.GetInstalledPackagesAsync(_serviceBroker, cancellationToken).AsTask());
-            IReadOnlyCollection<IPackageReferenceContextInfo>[] packageReferences = await Task.WhenAll(tasks);
-            return packageReferences.SelectMany(e => e).ToList();
         }
 
         private async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
@@ -548,8 +567,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 new VisualStudioActivityLogger());
 
             IPackageSearchMetadata metadata = await metadataProvider.GetOnlyLocalPackageMetadataAsync(identity, cancellationToken);
+            TransitivePackageSearchMetadata tpsm = new TransitivePackageSearchMetadata(metadata, Array.Empty<PackageIdentity>());
 
-            return PackageSearchMetadataContextInfo.Create(metadata);
+            return PackageSearchMetadataContextInfo.Create(tpsm);
         }
     }
 }

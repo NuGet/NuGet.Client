@@ -40,6 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> AllVersionsContextInfo { get; private set; }
+        public IPackageSearchMetadata PackageSearchMetadata => _packageSearchMetadata;
 
         public async ValueTask<PackageSearchMetadataCacheItemEntry> GetPackageSearchMetadataCacheVersionedItemAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {

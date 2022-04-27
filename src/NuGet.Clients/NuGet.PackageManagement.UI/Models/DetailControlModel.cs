@@ -99,7 +99,8 @@ namespace NuGet.PackageManagement.UI
         {
             if (disposing)
             {
-                _selectedVersionCancellationTokenSource.Dispose();
+                _selectedVersionCancellationTokenSource?.Cancel();
+                _selectedVersionCancellationTokenSource?.Dispose();
                 Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
                 CleanUp();
             }
