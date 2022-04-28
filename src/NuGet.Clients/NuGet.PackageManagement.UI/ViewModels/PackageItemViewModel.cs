@@ -139,6 +139,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsNotInstalled));
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(LatestVersion));
+                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
 
                     // update tool tip
                     if (_latestVersion != null)
