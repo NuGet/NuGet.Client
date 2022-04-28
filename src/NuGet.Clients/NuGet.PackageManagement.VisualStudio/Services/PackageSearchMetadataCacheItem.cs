@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -49,6 +50,11 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!_cachedItemEntries.TryGetValue(packageIdentity.Version, out PackageSearchMetadataCacheItemEntry cacheItemEntry))
             {
                 IPackageSearchMetadata packageSearchMetadata = await _packageMetadataProvider.GetPackageMetadataForIdentityAsync(packageIdentity, cancellationToken);
+                if (_packageSearchMetadata is TransitivePackageSearchMetadata)
+                {
+                    packageSearchMetadata = new TransitivePackageSearchMetadata(packageSearchMetadata, Array.Empty<PackageIdentity>());
+                }
+
                 cacheItemEntry = new PackageSearchMetadataCacheItemEntry(packageSearchMetadata, _packageMetadataProvider);
                 _cachedItemEntries[packageIdentity.Version] = cacheItemEntry;
             }

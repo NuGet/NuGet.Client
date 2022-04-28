@@ -121,16 +121,31 @@ namespace NuGet.PackageManagement.VisualStudio
             string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
             if (PackageSearchMetadataMemoryCache.Get(cacheId) is PackageSearchMetadataCacheItem backgroundDataCache)
             {
+                IPackageSearchMetadata psm;
                 if (isTransitive)
                 {
                     if (backgroundDataCache.PackageSearchMetadata is TransitivePackageSearchMetadata)
                     {
-                        // TODO
+                        psm = backgroundDataCache.PackageSearchMetadata;
                     }
+                    else
+                    {
+                        psm = new TransitivePackageSearchMetadata(backgroundDataCache.PackageSearchMetadata, Array.Empty<PackageIdentity>());
+                    }
+                    backgroundDataCache.UpdateSearchMetadata(psm);
                 }
                 else
                 {
-
+                    if (backgroundDataCache.PackageSearchMetadata is TransitivePackageSearchMetadata)
+                    {
+                        // need to update cache
+                        IPackageMetadataProvider newProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
+                        IPackageSearchMetadata newPackageMetadata = await newProvider.GetPackageMetadataAsync(
+                            identity,
+                            includePrerelease,
+                            cancellationToken);
+                        backgroundDataCache.UpdateSearchMetadata(newPackageMetadata);
+                    }
                 }
 
                 PackageSearchMetadataCacheItemEntry cacheItem = await backgroundDataCache.GetPackageSearchMetadataCacheVersionedItemAsync(identity, cancellationToken);
@@ -144,15 +159,22 @@ namespace NuGet.PackageManagement.VisualStudio
                 identity,
                 includePrerelease,
                 cancellationToken);
-
-            PackageSearchMetadataContextInfo packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageMetadata);
             PackageDeprecationMetadataContextInfo? deprecationMetadataContextInfo = null;
 
-            PackageDeprecationMetadata? deprecationMetadata = await packageMetadata.GetDeprecationMetadataAsync();
-            if (deprecationMetadata != null)
+            if (isTransitive)
             {
-                deprecationMetadataContextInfo = PackageDeprecationMetadataContextInfo.Create(deprecationMetadata);
+                packageMetadata = new TransitivePackageSearchMetadata(packageMetadata, Array.Empty<PackageIdentity>());
             }
+            else
+            {
+                PackageDeprecationMetadata? deprecationMetadata = await packageMetadata.GetDeprecationMetadataAsync();
+                if (deprecationMetadata != null)
+                {
+                    deprecationMetadataContextInfo = PackageDeprecationMetadataContextInfo.Create(deprecationMetadata);
+                }
+            }
+
+            PackageSearchMetadataContextInfo packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageMetadata);
 
             return (packageSearchMetadataContextInfo, deprecationMetadataContextInfo);
         }

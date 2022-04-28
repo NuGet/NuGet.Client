@@ -714,7 +714,7 @@ namespace NuGet.PackageManagement.UI
             var identity = new PackageIdentity(Id, newVersion);
             if (PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(Version))
             {
-                (meta, deprecation) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, token);
+                (meta, deprecation) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, PackageLevel == PackageLevel.Transitive, token);
             }
             else if (PackageLevel == PackageLevel.Transitive)
             {

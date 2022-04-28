@@ -381,6 +381,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(PackageVulnerabilityMaxSeverity));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
                     OnPropertyChanged(nameof(PackageVulnerabilityCount));
+                    OnPropertyChanged(nameof(PackageVulnerabilityCount));
                 }
             }
         }

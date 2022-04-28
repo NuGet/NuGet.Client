@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -23,9 +24,15 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _packageSearchMetadata = packageSearchMetadata;
             _packageMetadataProvider = packageMetadataProvider;
-            _detailedPackageSearchMetadata = AsyncLazy.New(() =>
+            _detailedPackageSearchMetadata = AsyncLazy.New(async () =>
             {
-                return _packageMetadataProvider.GetPackageMetadataForIdentityAsync(_packageSearchMetadata.Identity, CancellationToken.None);
+                IPackageSearchMetadata psm = await _packageMetadataProvider.GetPackageMetadataForIdentityAsync(_packageSearchMetadata.Identity, CancellationToken.None);
+                if (_packageSearchMetadata is TransitivePackageSearchMetadata)
+                {
+                    return new TransitivePackageSearchMetadata(psm, Array.Empty<PackageIdentity>());
+                }
+
+                return psm;
             });
         }
 
