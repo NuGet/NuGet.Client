@@ -115,7 +115,7 @@
         <PackageReference Update="System.Threading.Tasks" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="xunit" Version="$(XunitVersion)" />
         <PackageReference Update="xunit.runner.visualstudio" Version="$(XunitVersion)" />
-        <PackageReference Update="Xunit.StaFact" Version="0.2.9" />
+        <PackageReference Update="Xunit.StaFact" Version="1.0.37" />
     </ItemGroup>
 
   </Project>
