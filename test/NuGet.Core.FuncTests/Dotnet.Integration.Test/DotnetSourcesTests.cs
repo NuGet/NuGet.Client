@@ -104,6 +104,283 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void Sources_WarnWhenAddingHttpSource()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "http://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("http://source.test", sourceItem.GetValueAsPath());
+                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'add source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WarnWhenUpdatingHttpSource()
+        {
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                var settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                var source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("http://source.test", source.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "update",
+                    "source",
+                    "test_source",
+                    "--source",
+                    "http://source2.test",
+                    "--configfile",
+                    configFilePath
+                };
+
+                // Act
+                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                var loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("http://source2.test", sourceItem.GetValueAsPath());
+                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'update source' operation with an 'http' source, 'http://source2.test'. Support for 'http' sources will be removed in a future version."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WarnWhenListHttpSource()
+        {
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "list",
+                    "source",
+                };
+
+                // Act
+                var settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                var source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("http://source.test", source.Source);
+
+                // Act
+                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+                Assert.True(result.Output.Contains("warn : NU1803: A 'http' source, 'http://source.test', was found. Support for 'http' sources will be removed in a future version."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WarnWhenEnableHttpSource()
+        {
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test"" />
+  </packageSources>
+  <disabledPackageSources>
+    <add key=""test_source"" value=""true"" />
+  </disabledPackageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "enable",
+                    "source",
+                    "test_source",
+                };
+
+                // Act
+                var settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                var source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("http://source.test", source.Source);
+                Assert.False(source.IsEnabled);
+
+                // Act
+                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0);
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                packageSourceProvider = new PackageSourceProvider(settings);
+                sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var testSources = sources.Where(s => s.Name == "test_source");
+                Assert.Single(testSources);
+                source = testSources.Single();
+
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("http://source.test", source.Source);
+                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'enable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WarnWhenDisableHttpSource()
+        {
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "disable",
+                    "source",
+                    "test_source",
+                };
+
+                // Act
+                var settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                var source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("http://source.test", source.Source);
+                Assert.True(source.IsEnabled);
+
+                // Act
+                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0);
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                packageSourceProvider = new PackageSourceProvider(settings);
+                sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var testSources = sources.Where(s => s.Name == "test_source");
+                Assert.Single(testSources);
+                source = testSources.Single();
+
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("http://source.test", source.Source);
+                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'disable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSourceWithCredentialsInClearText_CredentialsWereAddedAndNotEncrypted()
         {
             using (var pathContext = new SimpleTestPathContext())

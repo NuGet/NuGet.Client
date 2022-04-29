@@ -60,6 +60,12 @@ namespace NuGet.Commands
                 throw new CommandException(Strings.SourcesCommandUniqueSource);
             }
 
+            if (!args.Source.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            {
+                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "add source", args.Source)));
+            }
+
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
 
             if (!string.IsNullOrEmpty(args.Username))
@@ -144,6 +150,12 @@ namespace NuGet.Commands
                                 source.Name,
                                 source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
                             getLogger().LogMinimal(string.Format("{0}{1}", sourcePadding, source.Source));
+
+                            if (source.IsHttp)
+                            {
+                                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
+                                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source)));
+                            }
                         }
                     }
                     break;
@@ -168,6 +180,12 @@ namespace NuGet.Commands
                             }
                             legend += " ";
                             getLogger().LogMinimal(legend + source.Source);
+
+                            if (source.IsHttp)
+                            {
+                                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
+                                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source)));
+                            }
                         }
                     }
                     break;
@@ -223,6 +241,13 @@ namespace NuGet.Commands
                 if (duplicateSource != null)
                 {
                     throw new CommandException(Strings.SourcesCommandUniqueSource);
+                }
+
+                // If the new source is not http, warn the user
+                if (!args.Source.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+                {
+                    getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
+                                string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "update source", args.Source)));
                 }
 
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
@@ -316,6 +341,13 @@ namespace NuGet.Commands
             {
                 getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture,
                     Strings.SourcesCommandSourceDisabledSuccessfully, name));
+            }
+
+            if (packageSource.IsHttp)
+            {
+                var operation = enable ? "enable" : "disable";
+                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
+                                string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, operation + " source", packageSource.Source)));
             }
         }
 
