@@ -32,7 +32,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   pool:
-    name: VSEng-MicroBuildVS2017
+    name: VSEngSS-MicroBuild2017-1ES
     demands:
       - DotNetFramework
       - msbuild
@@ -53,7 +53,7 @@ jobs:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
-    name: VSEngSS-MicroBuild2017
+    name: VSEngSS-MicroBuild2017-1ES
     demands:
         - DotNetFramework
         - msbuild
@@ -95,7 +95,7 @@ jobs:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   pool:
-    name: DDNuGet-Windows
+    name: VSEngSS-MicroBuild2017-1ES
     demands:
     - DotNetFramework
     - Allow_NuGet_E2E_Tests -equals true
@@ -112,7 +112,7 @@ jobs:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   pool:
-    name: DDNuGet-Windows
+    name: VSEngSS-MicroBuild2017-1ES
     demands:
     - DotNetFramework
     - Allow_NuGet_Apex_Tests -equals true
