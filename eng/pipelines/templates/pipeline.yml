@@ -39,7 +39,7 @@ jobs:
     BuildRTM: "false"
 
   pool:
-    name: VSEng-MicroBuildVS2019
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
       - DotNetFramework
       - msbuild
@@ -60,7 +60,7 @@ jobs:
     BuildRTM: "true"
 
   pool:
-    name: VSEng-MicroBuildVS2019
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
       - DotNetFramework
       - msbuild
@@ -77,7 +77,7 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
-    name: VSEngSS-MicroBuild2019
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
         - DotNetFramework
         - msbuild
@@ -131,7 +131,7 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   pool:
-    name: DDNuGet-Windows
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
     - DotNetFramework
     - Allow_NuGet_E2E_Tests -equals true
@@ -156,7 +156,7 @@ jobs:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   pool:
-    name: DDNuGet-Windows
+    name: VSEngSS-MicroBuild2019-1ES
     demands:
     - DotNetFramework
     - Allow_NuGet_Apex_Tests -equals true

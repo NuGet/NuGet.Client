@@ -182,14 +182,6 @@ steps:
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
 
 - task: PowerShell@1
-  displayName: "Check source file format"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
-
-- task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
     scriptType: "inlineScript"
@@ -460,10 +452,15 @@ steps:
     usePat: "false"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: MicroBuildUploadVstsDropFolder@1
+- task: artifactDropTask@0
   displayName: "Upload VSTS Drop"
   inputs:
-    DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    toLowerCase: false
+    usePat: true
+    dropMetadataContainerName: "DropMetadata-Product"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
@@ -485,7 +482,7 @@ steps:
   inputs:
     artifactName: LocValidationLogs
     targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
-  condition: "eq(variables['BuildRTM'], 'false')"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   # Use dotnet msbuild instead of MSBuild CLI.
   # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
