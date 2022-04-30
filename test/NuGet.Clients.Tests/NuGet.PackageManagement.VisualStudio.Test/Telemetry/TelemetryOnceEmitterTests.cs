@@ -10,15 +10,18 @@ using Moq;
 using NuGet.Common;
 using NuGet.VisualStudio;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class TelemetryOnceEmitterTests
     {
+        private readonly ITestOutputHelper _output;
         private readonly ConcurrentQueue<TelemetryEvent> _telemetryEvents;
 
-        public TelemetryOnceEmitterTests()
+        public TelemetryOnceEmitterTests(ITestOutputHelper output)
         {
+            _output = output;
             var telemetrySession = new Mock<ITelemetrySession>();
             _telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
             telemetrySession
@@ -56,13 +59,21 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             TelemetryOnceEmitter logger = new("TestEvent");
-            IEnumerable<Task> tasks = Enumerable.Repeat(new Task(() => logger.EmitIfNeeded()), 5);
+            Task[] tasks = new[]
+            {
+                new Task(() => logger.EmitIfNeeded()),
+                new Task(() => logger.EmitIfNeeded()),
+                new Task(() => logger.EmitIfNeeded()),
+                new Task(() => logger.EmitIfNeeded()),
+                new Task(() => logger.EmitIfNeeded())
+            };
 
             // Act
             Parallel.ForEach(tasks, t =>
             {
                 if (t.Status == TaskStatus.Created)
                 {
+                    _output.WriteLine($"{t.Id} {t.Status}");
                     t.Start();
                 }
             });
