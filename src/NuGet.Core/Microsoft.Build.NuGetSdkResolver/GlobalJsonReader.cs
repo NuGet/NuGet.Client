@@ -161,17 +161,27 @@ namespace Microsoft.Build.NuGetSdkResolver
 
             using (var reader = new JsonTextReader(new StringReader(json)))
             {
-                if (!reader.Read() || reader.TokenType != JsonToken.StartObject)
+                // Read to the first {
+                while (reader.Read() && reader.TokenType != JsonToken.StartObject)
                 {
-                    return null;
                 }
 
+                if (reader.TokenType != JsonToken.StartObject)
+                {
+                    // Return null if no { was found
+                    return versionsByName;
+                }
+
+                // Read through each top-level property
                 while (reader.Read())
                 {
+                    // Look for the first "msbuild-sdks" section
                     if (reader.TokenType == JsonToken.PropertyName && reader.Value is string objectName && string.Equals(objectName, MSBuildSdksPropertyName, StringComparison.Ordinal) && reader.Read() && reader.TokenType == JsonToken.StartObject)
                     {
+                        // Read each token in the "msbuild-sdks" section until the end
                         while (reader.Read() && reader.TokenType != JsonToken.EndObject)
                         {
+                            // Only read properties of type string
                             if (reader.TokenType == JsonToken.PropertyName && reader.Value is string name && reader.Read() && reader.TokenType == JsonToken.String && reader.Value is string value)
                             {
                                 versionsByName ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -181,9 +191,11 @@ namespace Microsoft.Build.NuGetSdkResolver
                                 continue;
                             }
 
+                            // Skips anything under the "mbsuild-sdks" section that wasn't a property of type string
                             reader.Skip();
                         }
 
+                        // Stop reading the global.json once the entire "mbsuild-sdks" section is read
                         return versionsByName;
                     }
 

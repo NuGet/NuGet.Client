@@ -368,13 +368,35 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             {
                 File.WriteAllText(
                     Path.Combine(testDirectory, GlobalJsonReader.GlobalJsonFileName),
-                    @"{
-  // This is a comment
-  ""msbuild-sdks"": {
+                    @"// Comment before content
+// Comment before content
+{ // Comment on same line as token
+// Comment after start token
+// Comment after start token
+  ""unrelated-section-before"" : {
+    // Comment in unrelated section
+    // Comment in unrelated section
+    ""property1"": ""value1""
+  }, // comment after token, whitespace below is intentional
+
+  ""msbuild-sdks"": {  // Comment after token
     /* This is another comment */
-    ""Sdk1"": ""1.0.0""
-  }
-}");
+    // Comment before value
+    ""Sdk1"": ""1.0.0"", // Comment after value
+    // Comment between value
+    // Comment between value
+    ""Sdk2"": ""2.0.0"" // Comment after value
+    // Comment after value
+    // Comment after value
+  }, // Comment after end token
+  ""unrelated-section-after"" : {
+    // Comment in unrelated section
+    // Comment in unrelated section
+    ""property1"": ""value1""
+  }, // comment after token
+} // Comment after end token
+// Comment at end of file
+// Comment at end of file");
 
                 var context = new MockSdkResolverContext(testDirectory);
 
@@ -389,7 +411,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 globalJsonReader.GetMSBuildSdkVersions(context).Should().BeEquivalentTo(new Dictionary<string, string>
                 {
-                    ["Sdk1"] = "1.0.0"
+                    ["Sdk1"] = "1.0.0",
+                    ["Sdk2"] = "2.0.0"
                 });
 
                 wasGlobalJsonRead.Should().BeTrue();
