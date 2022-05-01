@@ -78,10 +78,27 @@ $enableLongPathSupport = "LongPathsEnabled"
 $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
+# NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$NuGetLocalizationRepoBranch = 'master'
-$updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 
+# Check if there is a localization branch associated with this branch repo 
+$currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
+$lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
+Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
+$lsResult = & git -C $NuGetLocalization $lsRemoteOpts
+
+if ($lsResult)
+{
+    $NuGetLocalizationRepoBranch = $currentNuGetBranch
+}
+else
+{
+    $NuGetLocalizationRepoBranch = 'dev'
+}
+Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
+
+# update submodule NuGet.Build.Localization
+$updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
 # Get the commit of the localization repository that will be used for this build.
@@ -126,9 +143,18 @@ else
 {
     $newBuildCounter = $env:BUILD_BUILDNUMBER
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
-    $CliTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranch
-    $SdkTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranch
+    $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
+    $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
+    $ToolsetTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetToolsetTargetBranches
     Write-Host $VsTargetBranch
+    Write-Host '$newBuildCounter' $newBuildCounter
+    Write-Host '$env:BUILD_SOURCEVERSION' $env:BUILD_SOURCEVERSION
+    Write-Host '$env:BUILD_SOURCEBRANCHNAME' $env:BUILD_SOURCEBRANCHNAME
+    Write-Host '$NuGetLocalizationRepoBranch' $NuGetLocalizationRepoBranch
+    Write-Host '$LocalizationRepoCommitHash' $LocalizationRepoCommitHash
+    Write-Host '$CliTargetBranches' $CliTargetBranches
+    Write-Host '$SdkTargetBranches' $SdkTargetBranches
+    Write-Host '$ToolsetTargetBranches' $ToolsetTargetBranches
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
