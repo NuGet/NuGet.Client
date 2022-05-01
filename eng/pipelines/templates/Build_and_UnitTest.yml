@@ -442,17 +442,6 @@ steps:
     artifactName: "symbols - $(RtmLabel)"
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
-  displayName: "Publish Symbols on Symweb"
-  inputs:
-    symbolServiceURI: "https://microsoft.artifacts.visualstudio.com/DefaultCollection"
-    requestName: "CollectionId/$(System.CollectionId)/ProjectId/$(System.TeamProjectId)/$(TeamName)/BuildId/$(Build.BuildId)"
-    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    detailedLog: "true"
-    expirationInDays: "45"
-    usePat: "false"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
-
 - task: artifactDropTask@0
   displayName: "Upload VSTS Drop"
   inputs:
