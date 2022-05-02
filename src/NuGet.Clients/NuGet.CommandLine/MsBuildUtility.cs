@@ -420,7 +420,7 @@ namespace NuGet.CommandLine
                     solutionFile,
                     ex.Message);
 
-                throw new CommandException(message);
+                throw new CommandException(message, ex);
             }
         }
 
@@ -452,7 +452,7 @@ namespace NuGet.CommandLine
                     solutionFile,
                     exMessage);
 
-                throw new CommandException(message);
+                throw new CommandException(message, ex);
             }
         }
 
