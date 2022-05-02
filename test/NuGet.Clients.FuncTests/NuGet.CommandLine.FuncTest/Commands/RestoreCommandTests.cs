@@ -1187,11 +1187,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json");
 
             var net461 = NuGetFramework.Parse("net461");
-
-            var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+            var projectA = new SimpleTestProjectContext(
                 "a",
-                pathContext.SolutionRoot,
-                net461);
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
             var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
 
             Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
@@ -1207,6 +1207,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             result.Success.Should().BeTrue();
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectAPackages}'", result.Output);
             Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
         }
 

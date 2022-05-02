@@ -992,7 +992,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     Id = "x",
                     Version = "1.0.0"
                 };
-                packageX.Files.Clear();
                 packageX.AddFile("lib/net461/a.dll");
 
                 pathContext.Settings.AddSource("http-feed", "http://api.source/index.json");

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.CommandLine.Test;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
@@ -273,11 +274,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json");
 
             var net461 = NuGetFramework.Parse("net461");
-
-            var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+            var projectA = new SimpleTestProjectContext(
                 "a",
-                pathContext.SolutionRoot,
-                net461);
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
 
             Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
 @"<packages>
@@ -286,14 +287,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             solution.Projects.Add(projectA);
             solution.Create(pathContext.SolutionRoot);
-
+            var packagesFolder = Path.Combine(pathContext.WorkingDirectory, "packages");
             // Act
 
             var args = new string[]
             {
                 Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config"),
                 "-OutputDirectory",
-                Path.Combine(pathContext.WorkingDirectory, "packages")
+                packagesFolder
             };
 
             // Act
@@ -301,6 +302,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             result.Success.Should().BeTrue();
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{packagesFolder}'", result.Output);
             Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.", result.Output);
         }
     }

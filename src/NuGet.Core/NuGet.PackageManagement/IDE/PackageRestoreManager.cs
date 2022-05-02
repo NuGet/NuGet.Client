@@ -378,14 +378,7 @@ namespace NuGet.PackageManagement
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
 
-            IEnumerable<SourceRepository> enabledSources =
-                packageRestoreContext
-                .PackageManager
-                .SourceRepositoryProvider
-                .GetRepositories()
-                .Where(e => e.PackageSource.IsEnabled);
-
-            foreach (SourceRepository enabledSource in enabledSources)
+            foreach (SourceRepository enabledSource in packageRestoreContext.SourceRepositories)
             {
                 PackageSource source = enabledSource.PackageSource;
                 if (source.IsHttp && !source.IsHttps)

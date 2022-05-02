@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement
     {
         private IReadOnlyList<SourceRepository> _globalPackageFolderRepositories;
 
-        public ISourceRepositoryProvider SourceRepositoryProvider { get; }
+        private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
         private ISolutionManager SolutionManager { get; }
 

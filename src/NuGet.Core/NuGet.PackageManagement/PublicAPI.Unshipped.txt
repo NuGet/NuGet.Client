@@ -1,4 +1,3 @@
-NuGet.PackageManagement.NuGetPackageManager.SourceRepositoryProvider.get -> NuGet.Protocol.Core.Types.ISourceRepositoryProvider
 NuGet.PackageManagement.PackageProjectEventArgs.PackageProjectEventArgs(string id, string name, string projectPath) -> void
 NuGet.PackageManagement.PackageProjectEventArgs.ProjectPath.get -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.CentralPackageTransitivePinningEnabled = "CentralPackageTransitivePinningEnabled" -> string
