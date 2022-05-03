@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
-using NuGet.Packaging;
 using Task = Microsoft.Build.Utilities.Task;
 
 
@@ -21,26 +20,38 @@ namespace NuGet.Build.Tasks
         [Output]
         public string GlobalPropertyValue { get; set; }
 
+        [Output]
+        public bool CheckCompleted { get; set; }
+
         public override bool Execute()
         {
             var globalProperties = GetGlobalProperties();
 
-
-            if (globalProperties.TryGetValue(PropertyName, out string globalProperty))
+            if (globalProperties != null)
             {
-                GlobalPropertyValue = globalProperty;
+                var dictionaryWithOrdinal = globalProperties.ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
+                CheckCompleted = true;
+                if (dictionaryWithOrdinal.TryGetValue(PropertyName, out string globalProperty))
+                {
+                    GlobalPropertyValue = globalProperty;
+                }
             }
             return !Log.HasLoggedErrors;
         }
-        internal Dictionary<string, string> GetGlobalProperties()
+
+        /// <summary>
+        /// Get the global property from the IBuildEngine API. 
+        /// </summary>
+        /// <returns>Returns the dictionary with the global properties if they can be accessed. <see langword="null"/> otherwise, which means that the msbuild version doesn't implement this API. </returns>
+        internal IReadOnlyDictionary<string, string> GetGlobalProperties()
         {
 #if IS_CORECLR
             // MSBuild 16.5 and above has a method to get the global properties, older versions do not
-            Dictionary<string, string> msBuildGlobalProperties = BuildEngine is IBuildEngine6 buildEngine6
-                ? buildEngine6.GetGlobalProperties().ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase)
-                : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            IReadOnlyDictionary<string, string> msBuildGlobalProperties = BuildEngine is IBuildEngine6 buildEngine6
+                ? buildEngine6.GetGlobalProperties()
+                : null;
 #else
-            var msBuildGlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            IReadOnlyDictionary<string, string> msBuildGlobalProperties = null;
 
             // MSBuild 16.5 added a new interface, IBuildEngine6, which has a GetGlobalProperties() method.  However, we compile against
             // Microsoft.Build.Framework version 4.0 when targeting .NET Framework, so reflection is required since type checking
@@ -57,7 +68,7 @@ namespace NuGet.Build.Tasks
                     {
                         if (getGlobalPropertiesMethod.Invoke(BuildEngine, null) is IReadOnlyDictionary<string, string> globalProperties)
                         {
-                            msBuildGlobalProperties.AddRange(globalProperties);
+                            msBuildGlobalProperties = globalProperties;
                         }
                     }
                     catch (Exception)

@@ -110,6 +110,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectStyleTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.NuGetMessageTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetGlobalPropertyValueTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -234,7 +235,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackageVersion Remove="@(PackageVersion)" />
       <PackageVersion Include="@(DeduplicatedPackageVersions)" />
     </ItemGroup>
-    
+
   </Target>
 
   <!--
@@ -278,11 +279,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="CollectFrameworkReferences" Returns="@(_FrameworkReferenceForRestore)">
-      <ItemGroup>
-          <_FrameworkReferenceForRestore 
-            Include="@(FrameworkReference)"
-            Condition="'%(FrameworkReference.IsTransitiveFrameworkReference)' != 'true'"/>
-      </ItemGroup>
+    <ItemGroup>
+      <_FrameworkReferenceForRestore
+        Include="@(FrameworkReference)"
+        Condition="'%(FrameworkReference.IsTransitiveFrameworkReference)' != 'true'"/>
+    </ItemGroup>
   </Target>
   <!--
     ============================================================
@@ -857,7 +858,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
-        </_RestoreGraphEntry>
+      </_RestoreGraphEntry>
     </ItemGroup>
 
     <!-- Non-NuGet type -->
@@ -907,10 +908,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <!-- This should probably not check TF override -->
-<Target Name="_GenerateProjectRestoreGraphAllFrameworks"
-    Condition=" '$(TargetFrameworks)' != '' " 
-    DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
-    Returns="@(_RestoreGraphEntry)">
+  <Target Name="_GenerateProjectRestoreGraphAllFrameworks"
+      Condition=" '$(TargetFrameworks)' != '' "
+      DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
+      Returns="@(_RestoreGraphEntry)">
     <!-- Get project and package references  -->
     <!-- Evaluate for each framework -->
     <MSBuild
@@ -1382,22 +1383,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       PropertyName="TargetFramework"
         Condition=" '$(TargetFrameworks)' != '' ">
       <Output TaskParameter="GlobalPropertyValue" PropertyName="_TargetFrameworkOverride" />
+      <Output TaskParameter="CheckCompleted" PropertyName="_TargetFrameworkOverrideCheckCompleted" />
     </GetGlobalPropertyValueTask>
-    
-    <!--<MSBuild
+
+    <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
-        Condition=" '$(TargetFrameworks)' != '' "
+        Condition=" '$(_TargetFrameworkOverrideCheckCompleted)' != 'true' AND '$(TargetFrameworks)' != '' "
         Projects="$(MSBuildThisFileFullPath)"
         Targets="_GetTargetFrameworkOverrides">
       <Output
           TaskParameter="TargetOutputs"
           PropertyName="_TargetFrameworkOverride" />
-    </MSBuild>-->
+    </MSBuild>
 
     <!-- Only set the override if TargetFrameworks has not been overriden as well. In that case, prefer it. -->
   </Target>
 
-    <!--
+  <!--
     ============================================================
     _GetTargetFrameworkOverrides
     ============================================================
@@ -1422,7 +1424,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
     </ItemGroup>
   </Target>
- 
+
   <!--
     ============================================================
     Import NuGet.RestoreEx.targets if the MSBuild property 'RestoreEnableStaticGraph'
