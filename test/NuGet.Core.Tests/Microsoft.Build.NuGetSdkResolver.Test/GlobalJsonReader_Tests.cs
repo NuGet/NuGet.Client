@@ -274,14 +274,18 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         /// <summary>
-        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns null when the specified global.json is empty or does not contain an msbuild-sdks section.
+        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns <c>null</c> when the specified global.json is empty or does not contain an msbuild-sdks section.
         /// </summary>
-        [Fact]
-        public void GetMSBuildSdkVersions_ReturnsNull_WhenGlobalJsonIsEmpty()
+        [Theory]
+        [InlineData("{ }")]
+        [InlineData("  { }  ")]
+        [InlineData("// No actual content, only a comment")]
+        [InlineData("")]
+        public void GetMSBuildSdkVersions_ReturnsNull_WhenGlobalJsonIsEmpty(string contents)
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                File.WriteAllText(Path.Combine(testDirectory.Path, GlobalJsonReader.GlobalJsonFileName), @" { } ");
+                File.WriteAllText(Path.Combine(testDirectory.Path, GlobalJsonReader.GlobalJsonFileName), contents);
 
                 var context = new MockSdkResolverContext(testDirectory);
 
@@ -301,7 +305,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         /// <summary>
-        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns null when the specified global.json contains valid JSON but the msbuild-sdks section isn't correctly declared.
+        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns <c>null</c> when the specified global.json contains valid JSON but the msbuild-sdks section isn't correctly declared.
         /// </summary>
         [Theory]
         [InlineData("1")] // A number value
@@ -337,7 +341,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         /// <summary>
-        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns null when the <see cref="Framework.SdkResolverContext.SolutionFilePath" /> and <see cref="Framework.SdkResolverContext.ProjectFilePath" /> is null.
+        /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> returns <c>null</c> when the <see cref="Framework.SdkResolverContext.SolutionFilePath" /> and <see cref="Framework.SdkResolverContext.ProjectFilePath" /> is null.
         /// </summary>
         [Fact]
         public void GetMSBuildSdkVersions_ReturnsNull_WhenSolutionFilePathAndProjectFilePathIsNull()

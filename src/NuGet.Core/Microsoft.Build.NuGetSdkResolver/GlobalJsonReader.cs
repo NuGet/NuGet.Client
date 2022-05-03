@@ -157,8 +157,6 @@ namespace Microsoft.Build.NuGetSdkResolver
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Dictionary<string, string> ParseMSBuildSdkVersionsFromJson(string json)
         {
-            Dictionary<string, string> versionsByName = null;
-
             using (var reader = new JsonTextReader(new StringReader(json)))
             {
                 // Read to the first {
@@ -169,7 +167,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 if (reader.TokenType != JsonToken.StartObject)
                 {
                     // Return null if no { was found
-                    return versionsByName;
+                    return null;
                 }
 
                 // Read through each top-level property
@@ -178,6 +176,8 @@ namespace Microsoft.Build.NuGetSdkResolver
                     // Look for the first "msbuild-sdks" section
                     if (reader.TokenType == JsonToken.PropertyName && reader.Value is string objectName && string.Equals(objectName, MSBuildSdksPropertyName, StringComparison.Ordinal) && reader.Read() && reader.TokenType == JsonToken.StartObject)
                     {
+                        Dictionary<string, string> versionsByName = null;
+
                         // Read each token in the "msbuild-sdks" section until the end
                         while (reader.Read() && reader.TokenType != JsonToken.EndObject)
                         {
@@ -204,7 +204,8 @@ namespace Microsoft.Build.NuGetSdkResolver
                 }
             }
 
-            return versionsByName;
+            // Return null if an "msbuild-sdks" section was not found
+            return null;
         }
 
         /// <summary>
