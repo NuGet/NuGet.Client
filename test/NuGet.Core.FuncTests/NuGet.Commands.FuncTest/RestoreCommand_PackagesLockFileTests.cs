@@ -715,7 +715,7 @@ namespace NuGet.Commands.FuncTest
                 // Act
                 // Enable locked mode
                 parentProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
-                   restorePackagesWithLockFile: "false",
+                   restorePackagesWithLockFile: "true",
                    parentProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
                    restoreLockedMode: true);
 
