@@ -805,8 +805,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>0 - The name of a package reference.</comment>
   </data>
   <data name="Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping" xml:space="preserve">
-    <value>There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source.</value>
-    <comment>0 - The number of package sources.</comment>
+    <value>There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</value>
+    <comment>0 - The number of package sources, 1 - The URL of the package sources.</comment>
   </data>
   <data name="SourcesCommandNoMatchingSourcesFound" xml:space="preserve">
     <value>Unable to find any package source(s) matching name: {0}.</value>
