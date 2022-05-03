@@ -1377,7 +1377,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetRestoreTargetFrameworkOverride"
           Condition=" '$(_DisableNuGetRestoreTargetFrameworksOverride)' != 'true' "
           Returns="$(_TargetFrameworkOverride)">
-    <MSBuild
+
+    <GetGlobalPropertyValueTask
+      PropertyName="TargetFramework"
+        Condition=" '$(TargetFrameworks)' != '' ">
+      <Output TaskParameter="GlobalPropertyValue" PropertyName="_TargetFrameworkOverride" />
+    </GetGlobalPropertyValueTask>
+    
+    <!--<MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Condition=" '$(TargetFrameworks)' != '' "
         Projects="$(MSBuildThisFileFullPath)"
@@ -1385,10 +1392,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           PropertyName="_TargetFrameworkOverride" />
-    </MSBuild>
+    </MSBuild>-->
 
     <!-- Only set the override if TargetFrameworks has not been overriden as well. In that case, prefer it. -->
-
   </Target>
 
     <!--
