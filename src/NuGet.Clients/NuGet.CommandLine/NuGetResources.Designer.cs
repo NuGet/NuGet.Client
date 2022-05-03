@@ -9729,7 +9729,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Der Paketordner zum Widerherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie &quot;-PackagesDirectory&quot; oder &quot;-SolutionDirectory&quot; an..
+        ///   Looks up a localized string similar to Der Paketordner zum Wiederherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie &quot;-PackagesDirectory&quot; oder &quot;-SolutionDirectory&quot; an..
         /// </summary>
         public static string RestoreCommandCannotDeterminePackagesFolder_deu {
             get {

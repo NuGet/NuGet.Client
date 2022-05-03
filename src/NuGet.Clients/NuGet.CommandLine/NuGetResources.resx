@@ -4710,7 +4710,7 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
     <value>Nelze určit složku balíčků pro obnovení balíčků NuGet. Zadejte parametr -PackagesDirectory nebo -SolutionDirectory.</value>
   </data>
   <data name="RestoreCommandCannotDeterminePackagesFolder_deu" xml:space="preserve">
-    <value>Der Paketordner zum Widerherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie "-PackagesDirectory" oder "-SolutionDirectory" an.</value>
+    <value>Der Paketordner zum Wiederherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie "-PackagesDirectory" oder "-SolutionDirectory" an.</value>
   </data>
   <data name="RestoreCommandCannotDeterminePackagesFolder_esp" xml:space="preserve">
     <value>No se puede determinar la carpeta de paquetes para restaurar los paquetes NuGet. Especifique PackagesDirectory o SolutionDirectory.</value>
