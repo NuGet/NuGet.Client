@@ -682,6 +682,12 @@ namespace NuGet.Commands.FuncTest
 
                 childProject.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
 
+                // Enable lock file
+                childProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                   restorePackagesWithLockFile: "true",
+                   childProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                   restoreLockedMode: false);
+
                 var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(childProject, pathContext, logger)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
@@ -696,18 +702,23 @@ namespace NuGet.Commands.FuncTest
 
                 PackageSpecOperationsUtility.AddProjectReference(parentProject, childProject, targetFramework);
 
+                // Enable lock file
+                parentProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                   restorePackagesWithLockFile: "true",
+                   parentProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                   restoreLockedMode: false);
+
                 result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(parentProject, allPackageSpecs, pathContext, logger)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
+                // Act
                 // Enable locked mode
                 parentProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
-                    restorePackagesWithLockFile: "true",
-                    parentProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
-                    restoreLockedMode: true);
-                logger.Clear();
+                   restorePackagesWithLockFile: "false",
+                   parentProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                   restoreLockedMode: true);
 
-                // Act.
                 result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(parentProject, allPackageSpecs, pathContext, logger)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
 
