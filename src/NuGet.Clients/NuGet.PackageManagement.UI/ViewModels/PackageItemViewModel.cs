@@ -139,6 +139,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsNotInstalled));
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(LatestVersion));
+                    OnPropertyChanged(nameof(IsUninstalledOrTransitive));
 
                     // update tool tip
                     if (_latestVersion != null)
@@ -271,7 +272,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(IsUninstallable));
                     OnPropertyChanged(nameof(IsNotInstalled));
-                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
+                    OnPropertyChanged(nameof(IsUninstalledOrTransitive));
                 }
             }
         }
@@ -286,7 +287,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsUninstalledAndTransitive => (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
+        public bool IsUninstalledOrTransitive => (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
 
         public bool IsInstalledAndTransitive => PackageLevel == PackageLevel.Transitive || InstalledVersion != null;
 
@@ -486,7 +487,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _packageLevel = value;
                     OnPropertyChanged(nameof(PackageLevel));
-                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
+                    OnPropertyChanged(nameof(IsUninstalledOrTransitive));
                     OnPropertyChanged(nameof(IsInstalledAndTransitive));
                 }
             }
