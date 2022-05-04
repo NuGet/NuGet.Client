@@ -60,6 +60,24 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
+- task: PowerShell@1
+  displayName: "Find packages folder"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      pwd
+      ls
+      dotnet nuget locals all -l
+      echo 'change to work dir'
+      cd $env:BUILD_REPOSITORY_LOCALPATH
+      pwd
+      ls
+      dotnet nuget locals all -l
+      echo 'see packages folder'
+      $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
+      cd $packagesPath
+      ls
+      
 - task: MSBuild@1
   displayName: "Run unit tests"
   continueOnError: "true"

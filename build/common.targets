@@ -167,7 +167,7 @@
     <ItemGroup>
       <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
         <StrongName>$(StrongNameCert)</StrongName>
-        <Authenticode>Microsoft</Authenticode>
+        <Authenticode>Microsoft400</Authenticode>
       </LocalizedDllsToSign>
     </ItemGroup>
   </Target>
@@ -175,11 +175,11 @@
   <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
     <ItemGroup>
       <DllsToSignWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Extension)' == '.exe'" KeepDuplicates="false">
-        <StrongName>$(StrongNameCert)</StrongName>
-        <Authenticode>Microsoft</Authenticode>
+        <StrongName>72</StrongName>
+        <Authenticode>Microsoft400</Authenticode>
       </DllsToSignWithMetadata>
       <DllsToSignWithMetadata Include="@(DocumentationProjectOutputGroupOutput->'%(FinalOutputPath)')" KeepDuplicates="false">
-        <Authenticode>XML94</Authenticode>
+        <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsToSignWithMetadata>
     </ItemGroup>
   </Target>

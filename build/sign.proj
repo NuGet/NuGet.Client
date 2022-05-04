@@ -27,8 +27,8 @@
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
       <FilesToSign Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
-        <Authenticode>Microsoft</Authenticode>
-        <StrongName>67</StrongName>
+        <Authenticode>Microsoft400</Authenticode>
+        <StrongName>MsSharedLib72</StrongName>
       </FilesToSign>
     </ItemGroup>
     <MSBuild
