@@ -308,7 +308,9 @@ namespace NuGet.DependencyResolver
             {
                 // Central transitive dependencies should be considered only for root nodes
                 if (!isRoot && d.ReferenceType == LibraryDependencyReferenceType.None)
+                {
                     continue;
+                }
 
                 if (d != parentDependency && childDependencyLibrary.IsEclipsedBy(d.LibraryRange))
                 {
