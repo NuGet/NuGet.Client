@@ -907,11 +907,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Walk dependencies for all frameworks.
     ============================================================
   -->
-  <!-- This should probably not check TF override -->
   <Target Name="_GenerateProjectRestoreGraphAllFrameworks"
       Condition=" '$(TargetFrameworks)' != '' "
       DependsOnTargets="_GetRestoreTargetFrameworksAsItems"
       Returns="@(_RestoreGraphEntry)">
+
     <!-- Get project and package references  -->
     <!-- Evaluate for each framework -->
     <MSBuild
@@ -1383,18 +1383,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       PropertyName="TargetFramework"
         Condition=" '$(TargetFrameworks)' != '' ">
       <Output TaskParameter="GlobalPropertyValue" PropertyName="_TargetFrameworkOverride" />
-      <Output TaskParameter="CheckCompleted" PropertyName="_TargetFrameworkOverrideCheckCompleted" />
     </GetGlobalPropertyValueTask>
-
-    <MSBuild
-        BuildInParallel="$(RestoreBuildInParallel)"
-        Condition=" '$(_TargetFrameworkOverrideCheckCompleted)' != 'true' AND '$(TargetFrameworks)' != '' "
-        Projects="$(MSBuildThisFileFullPath)"
-        Targets="_GetTargetFrameworkOverrides">
-      <Output
-          TaskParameter="TargetOutputs"
-          PropertyName="_TargetFrameworkOverride" />
-    </MSBuild>
 
     <!-- Only set the override if TargetFrameworks has not been overriden as well. In that case, prefer it. -->
   </Target>
