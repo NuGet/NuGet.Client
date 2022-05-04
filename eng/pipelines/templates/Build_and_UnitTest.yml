@@ -33,6 +33,7 @@ steps:
 
 - task: MicroBuildLocalizationPlugin@1
   displayName: "Install Localization Plugin"
+  condition: false
 
 - task: MicroBuildSigningPlugin@1
   inputs:
@@ -105,7 +106,8 @@ steps:
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:AfterBuild"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  # condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: false
 
 - task: MSBuild@1
   displayName: "Sign Assemblies"
@@ -221,7 +223,8 @@ steps:
     SourceFolder: "artifacts\\"
     Contents: "**\\*.lcg"
     TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+  # condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+  condition: false
 
 - task: PowerShell@1
   displayName: "Publish Artifacts to MyGet"
