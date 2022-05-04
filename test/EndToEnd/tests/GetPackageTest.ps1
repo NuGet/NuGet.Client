@@ -180,25 +180,6 @@ function Test-GetPackageForProjectReturnsCorrectPackages2 {
     Assert-AreEqual "1.5.0" $result[0].Version
 }
 
-function Test-GetPackageForFSharpProjectReturnsCorrectPackages {
-    [SkipTest('https://github.com/dotnet/fsharp/issues/12835')]
-    param()     
-    # Arrange
-    $p = New-FSharpConsoleApplication
-    Build-Solution # wait for project nomination
-
-    Install-Package jQuery -Version 1.5 -Source $context.RepositoryPath
-    Build-Solution # wait for restore & assets file
-
-    # Act
-    $result = @(Get-Package -ProjectName $p.Name) | where { $_.id -ne "FSharp.Core" }
-
-    # Assert
-    Assert-AreEqual 1 $result.Count
-    Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5.0" $result[0].Version
-}
-
 function Test-GetPackageForProjectReturnsEmptyIfItHasNoInstalledPackage {
     # Arrange
     $p = New-ConsoleApplication
