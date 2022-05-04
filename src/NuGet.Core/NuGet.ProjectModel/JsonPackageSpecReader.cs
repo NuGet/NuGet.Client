@@ -519,7 +519,7 @@ namespace NuGet.ProjectModel
             });
         }
 
-        internal static void ReadCentralTransitveDependencyGroup(
+        internal static void ReadCentralTransitiveDependencyGroup(
             JsonTextReader jsonReader,
             IList<LibraryDependency> results,
             string packageSpecPath)

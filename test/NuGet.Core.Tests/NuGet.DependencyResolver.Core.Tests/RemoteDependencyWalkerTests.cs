@@ -1840,6 +1840,44 @@ namespace NuGet.DependencyResolver.Tests
             result.Downgrades.Should().BeEmpty();
         }
 
+        /// <summary>
+        /// A 1.0 -> D 1.0 (Central transitive)
+        ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored)
+        ///                -> C 1.0 -> D 2.0
+        /// </summary>
+        [Fact]
+        public async Task TransitiveDependenciesFromNonRootLibraries_AreIgnored()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                .DependsOn("B", "1.0")
+                .DependsOn("D", "1.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            provider.Package("B", "1.0")
+                .DependsOn("C", "1.0")
+                .DependsOn("D", "3.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            provider.Package("C", "1.0")
+                .DependsOn("D", "2.0");
+
+            provider.Package("D", "1.0");
+            provider.Package("D", "2.0");
+            provider.Package("D", "3.0");
+
+            context.LocalLibraryProviders.Add(provider);
+
+            var walker = new RemoteDependencyWalker(context);
+            var root = await DoWalkAsync(walker, "A");
+            var result = root.Analyze();
+            Assert.Equal(0, result.VersionConflicts.Count);
+            Assert.Equal(0, result.Cycles.Count);
+            Assert.Equal(1, result.Downgrades.Count);
+            var d = result.Downgrades.Single();
+            AssertPath(d.DowngradedFrom, "A 1.0", "B 1.0", "C 1.0", "D 2.0");
+            AssertPath(d.DowngradedTo, "A 1.0", "D 1.0");
+        }
+
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
         {
             var matches = new List<string>();
