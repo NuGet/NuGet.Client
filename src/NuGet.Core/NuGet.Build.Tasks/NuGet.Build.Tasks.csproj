@@ -11,6 +11,8 @@
     <Description>NuGet restore for dotnet CLI.</Description>    
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <XPLATProject>true</XPLATProject>
+    <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
+    <StrongNameCert>MsSharedLib72</StrongNameCert>    
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">

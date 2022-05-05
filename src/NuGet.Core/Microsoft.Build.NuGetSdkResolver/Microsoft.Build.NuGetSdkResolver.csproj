@@ -10,6 +10,8 @@
     <PackProject>true</PackProject>
     <Description>MSBuild SDK resolver for NuGet packages.</Description>
     <XPLATProject>true</XPLATProject>
+    <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
+    <StrongNameCert>MsSharedLib72</StrongNameCert>    
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
