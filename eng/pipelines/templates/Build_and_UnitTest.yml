@@ -133,13 +133,13 @@ steps:
     solution: "build\\sign.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /bl:$(Build.StagingDirectory)\\binlog\\AssemblySign.binlog"
+    msbuildArguments: "/t:AfterBuild /bl:$(Build.Repository.LocalPath)\\binlogs\\AssemblySign.binlog"
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish binlogs"
   inputs:
     artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\Binlogs"
+    targetPath: "$(Build.Repository.LocalPath)\\binlogs"
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
