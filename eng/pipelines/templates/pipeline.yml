@@ -40,7 +40,7 @@ resources:
   - repository: DartLabTemplates
     type: git
     name: DartLab.Templates
-    ref: refs/heads/main
+    ref: 96360c2392108b03deaed36e88c68319dfb45491
 
 variables:
   DOTNET_NOLOGO: 1
