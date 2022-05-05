@@ -64,18 +64,23 @@ steps:
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
-      pwd
-      ls
-      dotnet nuget locals all -l
-      echo 'change to work dir'
-      cd $env:BUILD_REPOSITORY_LOCALPATH
-      pwd
-      ls
-      dotnet nuget locals all -l
-      echo 'see packages folder'
-      $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
-      cd $packagesPath
-      ls
+      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
+        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+        pwd
+        ls
+        echo 'change to work dir'
+        cd $env:BUILD_REPOSITORY_LOCALPATH
+        pwd
+        ls
+        dotnet nuget locals all -l
+        echo 'see packages folder'
+        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
+        cd $packagesPath
+        ls
+      } else {
+        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+      }
+
       
 - task: MSBuild@1
   displayName: "Run unit tests"
@@ -139,6 +144,28 @@ steps:
     artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
     targetPath: "$(Build.Repository.LocalPath)\\binlogs"
 
+- task: PowerShell@1
+  displayName: "Find packages folder2"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
+        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+        pwd
+        ls
+        echo 'change to work dir'
+        cd $env:BUILD_REPOSITORY_LOCALPATH
+        pwd
+        ls
+        dotnet nuget locals all -l
+        echo 'see packages folder'
+        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
+        cd $packagesPath
+        ls
+      } else {
+        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+      }
+
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
   inputs:
@@ -146,6 +173,28 @@ steps:
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+
+- task: PowerShell@1
+  displayName: "Find packages folder3"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
+        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+        pwd
+        ls
+        echo 'change to work dir'
+        cd $env:BUILD_REPOSITORY_LOCALPATH
+        pwd
+        ls
+        dotnet nuget locals all -l
+        echo 'see packages folder'
+        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
+        cd $packagesPath
+        ls
+      } else {
+        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+      }
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
@@ -165,6 +214,28 @@ steps:
     msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
+- task: PowerShell@1
+  displayName: "Find packages folder4"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
+        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+        pwd
+        ls
+        echo 'change to work dir'
+        cd $env:BUILD_REPOSITORY_LOCALPATH
+        pwd
+        ls
+        dotnet nuget locals all -l
+        echo 'see packages folder'
+        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
+        cd $packagesPath
+        ls
+      } else {
+        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+      }
+
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
   inputs:
@@ -178,6 +249,28 @@ steps:
   inputs:
     command: "custom"
     arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
+
+- task: PowerShell@1
+  displayName: "Find packages folder5"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
+        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+        pwd
+        ls
+        echo 'change to work dir'
+        cd $env:BUILD_REPOSITORY_LOCALPATH
+        pwd
+        ls
+        dotnet nuget locals all -l
+        echo 'see packages folder'
+        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
+        cd $packagesPath
+        ls
+      } else {
+        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
+      }
 
 - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName
