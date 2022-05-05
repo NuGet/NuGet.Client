@@ -14,14 +14,16 @@
 
     <StrongNameKey>$(MS_PFX_PATH)</StrongNameKey>
     <DefaultStrongNameCert>MsSharedLib72</DefaultStrongNameCert>
+    <StrongNameCert>MsSharedLib72</StrongNameCert>
   </PropertyGroup>
 
   <PropertyGroup Condition = " Exists($(StrongNameKey)) ">
     <SignAssembly>true</SignAssembly>
     <DelaySign Condition="'$(IsXplat)' != 'true'">true</DelaySign>
     <PublicSign Condition="'$(IsXplat)' == 'true'">true</PublicSign>
-    <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(StrongNameKey)</AssemblyOriginatorKeyFile>
+    <StrongNameCert Condition="'$(StrongNameKey)' == '$(MS_PFX_PATH)'">MsSharedLib72</StrongNameCert>
     <StrongNameCert Condition="'$(StrongNameCert)' == ''">$(DefaultStrongNameCert)</StrongNameCert>
+    <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(StrongNameKey)</AssemblyOriginatorKeyFile>
     <DefineConstants>$(DefineConstants);SIGNED_BUILD</DefineConstants>
   </PropertyGroup>
 
