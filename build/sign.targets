@@ -12,7 +12,9 @@
                                $(MSBuildProjectFullPath.Contains('NuGet.CommandLine.csproj')) == 'true' or
                                $(MSBuildProjectFullPath.Contains('NuGet.Indexing.csproj')) == 'true' or
                                $(MSBuildProjectFullPath.Contains('NuGet.SolutionRestoreManager.Interop.csproj')) == 'true' or
-                               $(MSBuildProjectFullPath.Contains('NuGet.Credential.csproj')) == 'true' ">
+                               $(MSBuildProjectFullPath.Contains('NuGet.PackageManagement.VisualStudio.csproj')) == 'true' or
+                               $(MSBuildProjectFullPath.Contains('NuGet.VisualStudio.Common.csproj')) == 'true' or
+                               $(MSBuildProjectFullPath.Contains('NuGet.Credentials.csproj')) == 'true' ">
 
     <StrongNameKey>$(MS_PFX_PATH)</StrongNameKey>
     <DefaultStrongNameCert>MsSharedLib72</DefaultStrongNameCert>
