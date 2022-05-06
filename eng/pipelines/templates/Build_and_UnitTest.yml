@@ -65,11 +65,12 @@ steps:
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
 
-- task: ms-vseng.MicroBuildTasks.965C8DC6-1483-45C9-B384-5AC75DA1F1A4.MicroBuildOptProfPlugin@6
+- task: MicroBuildOptProfPlugin@6
   displayName: 'OptProfV2:  install the plugin'
   inputs:
     getDropNameByDrop: true
     optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+    ShouldSkipOptimize: $(ShouldSkipOptimize)
     AccessToken: $(System.AccessToken)
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -180,14 +181,6 @@ steps:
     mergeTestResults: "true"
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
-
-- task: PowerShell@1
-  displayName: "Check source file format"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      dotnet format --check --exclude submodules --verbosity diagnostic
-  condition: "and(succeededOrFailed(), not(eq(variables['IsOfficialBuild'], 'true')), eq(variables['BuildRTM'], 'true'))"   #skip this task for nonRTM in private build
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
@@ -380,7 +373,7 @@ steps:
     toLowerCase: false
     usePat: false
     dropMetadataContainerName: RunSettings
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['ShouldSkipOptimize'], 'false'))"
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
@@ -390,7 +383,7 @@ steps:
     sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
     toLowerCase: false
     usePat: false
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['ShouldSkipOptimize'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
@@ -414,14 +407,14 @@ steps:
   inputs:
     targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
     artifactName: "localizationArtifacts"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: PublishPipelineArtifact@1
   displayName: "Upload legacy localizeInputs artifact"
   inputs:
     targetPath: "$(Build.ArtifactStagingDirectory)\\PLOC"
     artifactName: "legacy localizeInputs"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: NuGetCommand@2
   displayName: Publish public Nuget packages to nuget-build
@@ -449,21 +442,15 @@ steps:
     artifactName: "symbols - $(RtmLabel)"
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
-  displayName: "Publish Symbols on Symweb"
-  inputs:
-    symbolServiceURI: "https://microsoft.artifacts.visualstudio.com/DefaultCollection"
-    requestName: "CollectionId/$(System.CollectionId)/ProjectId/$(System.TeamProjectId)/$(TeamName)/BuildId/$(Build.BuildId)"
-    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    detailedLog: "true"
-    expirationInDays: "45"
-    usePat: "false"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
-
-- task: MicroBuildUploadVstsDropFolder@1
+- task: artifactDropTask@0
   displayName: "Upload VSTS Drop"
   inputs:
-    DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
+    toLowerCase: false
+    usePat: true
+    dropMetadataContainerName: "DropMetadata-Product"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
@@ -485,7 +472,7 @@ steps:
   inputs:
     artifactName: LocValidationLogs
     targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
-  condition: "eq(variables['BuildRTM'], 'false')"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   # Use dotnet msbuild instead of MSBuild CLI.
   # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
