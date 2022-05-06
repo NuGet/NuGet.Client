@@ -14,6 +14,7 @@
                                $(MSBuildProjectFullPath.Contains('NuGet.SolutionRestoreManager.Interop.csproj')) == 'true' or
                                $(MSBuildProjectFullPath.Contains('NuGet.PackageManagement.VisualStudio.csproj')) == 'true' or
                                $(MSBuildProjectFullPath.Contains('NuGet.VisualStudio.Common.csproj')) == 'true' or
+                               $(MSBuildProjectFullPath.Contains('NuGet.VisualStudio.csproj')) == 'true' or
                                $(MSBuildProjectFullPath.Contains('NuGet.Credentials.csproj')) == 'true' ">
 
     <StrongNameKey>$(MS_PFX_PATH)</StrongNameKey>
