@@ -173,6 +173,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var packageDownloads = tfm
                 .DownloadDependencies
+                .GroupBy(e => e.Name)
                 .Select(ToPackageDownload);
 
             var frameworkReferences = tfm.FrameworkReferences.Select(ToFrameworkReference);
@@ -306,12 +307,14 @@ namespace NuGet.SolutionRestoreManager.Test
             return new VsReferenceItem(libraryRange.Name, properties);
         }
 
-        private static IVsReferenceItem ToPackageDownload(DownloadDependency library)
+        private static IVsReferenceItem ToPackageDownload(IGrouping<string, DownloadDependency> library)
         {
+            string versionProperty = string.Join(";", library.Select(e => e.VersionRange.OriginalString));
+
             var properties = new VsReferenceProperties(
-                new[] { new VsReferenceProperty("Version", library.VersionRange.OriginalString) }
-            );
-            return new VsReferenceItem(library.Name, properties);
+                    new[] { new VsReferenceProperty("Version", versionProperty) }
+                );
+            return new VsReferenceItem(library.Key, properties);
         }
     }
 }
