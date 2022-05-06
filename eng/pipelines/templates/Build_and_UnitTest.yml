@@ -277,12 +277,12 @@ steps:
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
-- task: CopyFiles@2
-  displayName: "Copy Nupkgs"
+- task: PublishPipelineArtifact@1
+  displayName: "Publish nupkgs"
   inputs:
-    SourceFolder: "artifacts\\$(NupkgOutputDir)"
-    Contents: "*.nupkg"
-    TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
+    artifactName: "nupkgs - $(RtmLabel)"
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
