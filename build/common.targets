@@ -173,6 +173,8 @@
         <StrongName>$(StrongNameCert)</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </LocalizedDllsToSign>
+    <Message Text="Count localized:   @(LocalizedDllsToSign->Count())" />
+    <Message Text="Files to sign localized: @(LocalizedDllsToSign, '%0a')" Importance="High"/>      
     </ItemGroup>
   </Target>
 
