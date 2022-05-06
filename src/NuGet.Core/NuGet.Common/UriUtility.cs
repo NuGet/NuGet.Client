@@ -10,6 +10,11 @@ namespace NuGet.Common
     {
         private const string FilePrefix = "file://";
 
+        private static bool IsHttpUrl(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+        }
+
         /// <summary>
         /// Same as "new Uri" except that it can handle UNIX style paths that start with '/'
         /// </summary>
@@ -131,6 +136,34 @@ namespace NuGet.Common
 
             // Absolute path or non-http url.
             return local;
+        }
+
+        /// <summary>
+        /// Determines if a package source url points to nuget.org
+        /// </summary>
+        /// <param name="source">Package source url</param>
+        /// <returns>True if the source is HTTP and has a *.nuget.org or nuget.org host otherwise false</returns>
+        public static bool IsNuGetOrg(string source)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                return false;
+            }
+
+            var uri = TryCreateSourceUri(source, UriKind.Absolute);
+
+            if (uri == null || !IsHttpUrl(uri))
+            {
+                return false;
+            }
+
+            if (StringComparer.OrdinalIgnoreCase.Equals(uri.Host, "nuget.org")
+                || uri.Host.EndsWith(".nuget.org", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
