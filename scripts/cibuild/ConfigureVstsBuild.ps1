@@ -60,6 +60,23 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
+Function Set-RtmLabel {
+    param(
+        [string]$BuildRTM
+    )
+
+    if ($BuildRTM -eq $true) {
+        $label = "RTM"
+    } else {
+        $label = "NonRTM"
+    }
+
+    Write-Host "RTM Label: $label"
+    Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
+}
+
+Set-RtmLabel -BuildRTM $BuildRTM
+
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against

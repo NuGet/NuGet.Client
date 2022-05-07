@@ -195,6 +195,13 @@ steps:
       } else {
         echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
       }
+      
+- task: PublishPipelineArtifact@1
+  displayName: "Publish nupkgs"
+  inputs:
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
+    artifactName: "nupkgs - $(RtmLabel)"
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
@@ -214,28 +221,6 @@ steps:
     msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
-  displayName: "Find packages folder4"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
-        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
-        pwd
-        ls
-        echo 'change to work dir'
-        cd $env:BUILD_REPOSITORY_LOCALPATH
-        pwd
-        ls
-        dotnet nuget locals all -l
-        echo 'see packages folder'
-        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
-        cd $packagesPath
-        ls
-      } else {
-        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
-      }
-
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
   inputs:
@@ -250,39 +235,10 @@ steps:
     command: "custom"
     arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
 
-- task: PowerShell@1
-  displayName: "Find packages folder5"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
-        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
-        pwd
-        ls
-        echo 'change to work dir'
-        cd $env:BUILD_REPOSITORY_LOCALPATH
-        pwd
-        ls
-        dotnet nuget locals all -l
-        echo 'see packages folder'
-        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
-        cd $packagesPath
-        ls
-      } else {
-        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
-      }
-
 - task: ms-vseng.MicroBuildShipTasks.7c429315-71ba-4cb3-94bb-f829c95f7915.MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish nupkgs"
-  inputs:
-    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
-    artifactName: "nupkgs - $(RtmLabel)"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
