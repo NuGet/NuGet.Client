@@ -111,10 +111,10 @@
     <ItemGroup>
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.dll" KeepDuplicates="false">
         <StrongName>MsSharedLib72</StrongName>
-        <Authenticode>Microsoft400</Authenticode>
+        <Authenticode>Microsoft</Authenticode>
       </DllsInOutputDir>
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.xml" KeepDuplicates="false">
-        <Authenticode>MicrosoftXmlSHA2</Authenticode>
+        <Authenticode>XML94</Authenticode>
       </DllsInOutputDir>
     </ItemGroup>
   </Target>
