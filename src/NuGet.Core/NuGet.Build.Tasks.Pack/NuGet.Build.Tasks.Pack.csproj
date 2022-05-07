@@ -61,7 +61,11 @@
 
   <Target Name="ILMergeNuGetPackResourcesPerCulture" DependsOnTargets="Publish">
     <ItemGroup>
-      <_PackResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll" />
+      <_PackResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll" KeepDuplicates="false">
+        <StrongName>MsSharedLib72</StrongName>
+        <Authenticode>Microsoft400</Authenticode>
+        <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
+      </_PackResourceDlls>     
     </ItemGroup>
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ILMergeNuGetPackResources"
              Properties="CurrentCulture=%(_PackResourceDlls.RecursiveDir);
@@ -114,6 +118,7 @@
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.dll" KeepDuplicates="false">
         <StrongName>MsSharedLib72</StrongName>
         <Authenticode>Microsoft400</Authenticode>
+        <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
       </DllsInOutputDir> 
      <Message Text="IL localized1:   @(DllsInOutputDir->Count())" />
      <Message Text="Files to sign IL localized1: @(DllsInOutputDir, '%0a')" Importance="High"/>              

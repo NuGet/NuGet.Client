@@ -172,6 +172,7 @@
       <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
         <StrongName>$(StrongNameCert)</StrongName>
         <Authenticode>Microsoft400</Authenticode>
+        <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
       </LocalizedDllsToSign>
     <Message Text="Count localized:   @(LocalizedDllsToSign->Count())" />
     <Message Text="Files to sign localized: @(LocalizedDllsToSign, '%0a')" Importance="High"/>      
