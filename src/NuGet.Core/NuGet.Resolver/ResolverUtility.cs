@@ -21,7 +21,7 @@ namespace NuGet.Resolver
         /// <param name="availablePackages">all packages that were available for the solution</param>
         /// <param name="packagesConfig">packages already installed in the project</param>
         /// <param name="newPackageIds">new packages that are not already installed</param>
-        /// <returns>A user friendly diagonstic message</returns>
+        /// <returns>A user friendly diagnostic message</returns>
         public static string GetDiagnosticMessage(IEnumerable<ResolverPackage> solution,
             IEnumerable<PackageDependencyInfo> availablePackages,
             IEnumerable<PackageReference> packagesConfig,
