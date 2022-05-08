@@ -195,7 +195,7 @@ steps:
       } else {
         echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
       }
-      
+
 - task: PublishPipelineArtifact@1
   displayName: "Publish nupkgs"
   inputs:
@@ -316,10 +316,15 @@ steps:
     artifactName: "symbols - $(RtmLabel)"
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: MicroBuildUploadVstsDropFolder@1
+- task: artifactDropTask@0
   displayName: "Upload VSTS Drop"
   inputs:
-    DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+    toLowerCase: false
+    usePat: true
+    dropMetadataContainerName: "DropMetadata-Product"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
@@ -341,7 +346,7 @@ steps:
   inputs:
     artifactName: LocValidationLogs
     targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
-  condition: "eq(variables['BuildRTM'], 'false')"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"
