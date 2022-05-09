@@ -27,7 +27,7 @@ parameters:
   - stop
 
 stages:
-- template: stages\visual-studio\base.yml@DartLabTemplates
+- template: stages\visual-studio\agent.yml@DartLabTemplates
   parameters:
     name: ${{parameters.stageName}}
     displayName: ${{parameters.stageDisplayName}}
