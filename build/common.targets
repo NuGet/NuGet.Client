@@ -147,7 +147,7 @@
     </MSBuild>
     <Message Text="Count1:   @(DllsToSign->Count())" />
     <Message Text="Files to sign1: @(DllsToSign, '%0a')" Importance="High"/>
-    <MsBuild
+    <MsBuild Condition="'$(BuildRTM)' != 'true'"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetLocalizedDllsForSigning"
       Properties="BuildProjectReferences=false;">
