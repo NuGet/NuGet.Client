@@ -113,9 +113,13 @@
         <StrongName>MsSharedLib72</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsInOutputDir>
+     <Message Text="IL localized1:   @(DllsInOutputDir->Count())" />
+     <Message Text="Files to sign IL localized1: @(DllsInOutputDir, '%0a')" Importance="High"/>        
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.xml" KeepDuplicates="false">
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsInOutputDir>
+     <Message Text="IL localized2:   @(DllsInOutputDir->Count())" />
+     <Message Text="Files to sign IL localized2: @(DllsInOutputDir, '%0a')" Importance="High"/>       
     </ItemGroup>
   </Target>
 

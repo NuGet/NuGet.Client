@@ -172,7 +172,10 @@
       <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
         <StrongName>$(StrongNameCert)</StrongName>
         <Authenticode>Microsoft400</Authenticode>
+        <StrongName Condition = " $(MSBuildProjectFullPath.Contains('NuGet.Build.Tasks.Pack.csproj')) == 'true' ">MsSharedLib72</StrongName>
+        <StrongNameCert  Condition = " $(MSBuildProjectFullPath.Contains('NuGet.Build.Tasks.Pack.csproj')) == 'true' ">MsSharedLib72</StrongNameCert>
         <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
+        <StrongNameKey Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(MS_PFX_PATH)</StrongNameKey>
       </LocalizedDllsToSign>
     <Message Text="Count localized:   @(LocalizedDllsToSign->Count())" />
     <Message Text="Files to sign localized: @(LocalizedDllsToSign, '%0a')" Importance="High"/>      
