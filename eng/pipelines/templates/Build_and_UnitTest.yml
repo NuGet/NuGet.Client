@@ -59,34 +59,18 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:BuildVS15NoVSIX /p:NUGET_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\NuGetKey.snk /p:MS_PFX_PATH=$(Build.Repository.LocalPath)\\keys\\35MSSharedLib1024.snk /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)  /bl:$(Build.Repository.LocalPath)\\msbuildbinlogs\\BuildLog.binlog"
 
+
 - task: PublishPipelineArtifact@1
   displayName: "Publish msbuild binlogs"
   inputs:
     artifactName: Msbuild binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
     targetPath: "$(Build.Repository.LocalPath)\\msbuildbinlogs"
-    
-- task: PowerShell@1
-  displayName: "Find packages folder"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      if (Test-Path $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)) {
-        cd $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
-        pwd
-        ls
-        echo 'change to work dir'
-        cd $env:BUILD_REPOSITORY_LOCALPATH
-        pwd
-        ls
-        dotnet nuget locals all -l
-        echo 'see packages folder'
-        $packagesPath = Join-Path -Path $env:BUILD_REPOSITORY_LOCALPATH -ChildPath 'packages'
-        cd $packagesPath
-        ls
-      } else {
-        echo "Path doesn't exist" $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)
-      }
 
+- task: PublishPipelineArtifact@1
+  displayName: "Publish build artifacts"
+  inputs:
+    artifactName: Build artifacts binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts"
       
 - task: MSBuild@1
   displayName: "Run unit tests"
@@ -136,6 +120,12 @@ steps:
     msbuildArguments: "/t:AfterBuild"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
+- task: PublishPipelineArtifact@1
+  displayName: "Publish build artifacts2"
+  inputs:
+    artifactName: Build artifacts2 binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts"
+
 - task: MSBuild@1
   displayName: "Sign Assemblies"
   inputs:
@@ -145,9 +135,9 @@ steps:
     msbuildArguments: "/t:AfterBuild /bl:$(Build.Repository.LocalPath)\\binlogs\\AssemblySign.binlog"
 
 - task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
+  displayName: "Publish sign binlogs"
   inputs:
-    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+    artifactName: Sign binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
     targetPath: "$(Build.Repository.LocalPath)\\binlogs"
 
 - task: PowerShell@1
