@@ -67,6 +67,16 @@
     </MSBuild>
   </Target>
 
+  <Target Name="GetILMergePlatformArg" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <ILMergeMscorlibReferencePath Include="@(ReferencePath)" Condition="'%(ReferencePath.Filename)' == 'mscorlib'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <ILMergePlatformDir>@(IlmergeMscorlibReferencePath->'%(RootDir)%(Directory)')</ILMergePlatformDir>
+      <ILMergePlatformArg>/targetplatform:v4,"$(ILMergePlatformDir.TrimEnd('\/'))"</ILMergePlatformArg>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' != 'true' ">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
