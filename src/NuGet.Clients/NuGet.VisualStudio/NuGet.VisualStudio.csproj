@@ -52,5 +52,14 @@
     <Message Text="!!!!NuGet.VisualStudio Files to sign: @(DllsToSign, '%0a')" Importance="High"/>        
   </Target>
 
+  <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
+    <ItemGroup>
+      </DllsToSignWithMetadata>
+      <DllsToSignWithMetadata Include="$(ArtifactsDirectory)NuGet.VisualStudio\**\NuGet.VisualStudio.xml">
+        <Authenticode>MicrosoftXmlSHA2</Authenticode>
+      </DllsToSignWithMetadata>
+    </ItemGroup>
+  </Target>  
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
