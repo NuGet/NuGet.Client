@@ -202,9 +202,6 @@ namespace NuGet.PackageManagement.UI
         public async Task UpdateStateAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            progress?.Report(_state);
-
             SearchResultContextInfo searchResult = await _searchService.RefreshSearchAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
