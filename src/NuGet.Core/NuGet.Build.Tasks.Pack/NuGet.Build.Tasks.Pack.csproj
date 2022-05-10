@@ -67,21 +67,7 @@
     </MSBuild>
   </Target>
 
-  <Target Name="GetILMergePlatformArg" DependsOnTargets="ResolveReferences">
-    <ItemGroup>
-      <ILMergeMscorlibReferencePath Include="@(ReferencePath)" Condition="'%(ReferencePath.Filename)' == 'mscorlib'" />
-    </ItemGroup>
-    <PropertyGroup>
-      <ILMergePlatformDir>@(IlmergeMscorlibReferencePath->'%(RootDir)%(Directory)')</ILMergePlatformDir>
-      <ILMergePlatformArg>/targetplatform:v4,"$(ILMergePlatformDir.TrimEnd('\/'))"</ILMergePlatformArg>
-    </PropertyGroup>
-    <Message Text="!!!!!!!ILMergePlatILMergeMscorlibReferencePathformDir = $(ILMergeMscorlibReferencePath)" Importance="High"/>
-    <Message Text="!!!!!ILMergePlatformDir = $(ILMergePlatformDir)" Importance="High"/>
-    <Message Text="!!!!!!ILMergePlatformArg = $(ILMergePlatformArg)" Importance="High"/>
-    <Message Text="!!!!!!!MS_PFX_PATH = $(MS_PFX_PATH)" Importance="High"/>
-  </Target>
-
-  <Target Name="ILMergeNuGetPack" DependsOnTargets="GetILMergePlatformArg" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' != 'true' ">
+  <Target Name="ILMergeNuGetPack" Condition="'$(TargetFramework)' != '' AND '$(IsBuildOnlyXPLATProjects)' != 'true' ">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge</ILMergeResultDir>
     </PropertyGroup>
@@ -89,18 +75,16 @@
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)*.dll" Exclude="$(OutputPath)*Pack.dll" />
     </ItemGroup>
-    <Message Text="!!!!!!BuildArtifacts: @(BuildArtifacts, '%0a')" Importance="High"/>
     <PropertyGroup>
       <PathToMergedNuGetPack>$(ILMergeResultDir)\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
-      <IlmergeCommand>$(ILMergeExePath) /out:$(PathToMergedNuGetPack) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
+      <DotnetSharedDirectoryArg Condition="'$(IsCore)' == 'true'">/lib:$(DotnetSharedSDKDirectory)</DotnetSharedDirectoryArg>
+      <IlmergeCommand>$(ILMergeExePath) $(OutputPath)NuGet.Build.Tasks.Pack.dll @(BuildArtifacts, ' ') /out:$(PathToMergedNuGetPack) $(DotnetSharedDirectoryArg) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)\IlMergeLog.txt</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
-      <IlmergeCommand>$(IlmergeCommand) $(OutputPath)NuGet.Build.Tasks.Pack.dll @(BuildArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
-    <Message Text="!!!!!IlmergeCommand = $(IlmergeCommand)" Importance="High"/>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  <Target Name="ILMergeNuGetPackResources" DependsOnTargets="GetILMergePlatformArg" Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
+  <Target Name="ILMergeNuGetPackResources" Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
     <PropertyGroup>
       <ILMergeResultDir>$(OutputPath)ilmerge\$(CurrentCulture)</ILMergeResultDir>
     </PropertyGroup>
@@ -110,9 +94,8 @@
     </ItemGroup>
     <PropertyGroup>
       <PathToMergedNuGetPackResource>$(ILMergeResultDir)NuGet.Build.Tasks.Pack.resources.dll</PathToMergedNuGetPackResource>
-      <IlmergeCommand>$(ILMergeExePath) /out:$(PathToMergedNuGetPackResource) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
+      <IlmergeCommand>$(ILMergeExePath) $(OutputPath)$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll @(ResourceArtifacts, ' ') /out:$(PathToMergedNuGetPackResource) /lib:$(OutputPath)$(RuntimeIdentifier)\publish /internalize /xmldocs /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
-      <IlmergeCommand>$(IlmergeCommand) $(OutputPath)$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll @(ResourceArtifacts, ' ')</IlmergeCommand>
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
@@ -130,13 +113,9 @@
         <StrongName>MsSharedLib72</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsInOutputDir>
-     <Message Text="IL localized1:   @(DllsInOutputDir->Count())" />
-     <Message Text="Files to sign IL localized1: @(DllsInOutputDir, '%0a')" Importance="High"/>        
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.xml" KeepDuplicates="false">
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsInOutputDir>
-     <Message Text="IL localized2:   @(DllsInOutputDir->Count())" />
-     <Message Text="Files to sign IL localized2: @(DllsInOutputDir, '%0a')" Importance="High"/>       
     </ItemGroup>
   </Target>
 
