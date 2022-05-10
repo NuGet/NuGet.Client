@@ -42,7 +42,7 @@ namespace NuGet.CommandLine.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("WARNING: NU1803: You are running the 'add source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: You are running the 'add source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -89,7 +89,7 @@ namespace NuGet.CommandLine.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("WARNING: NU1803: You are running the 'update source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: You are running the 'update source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -150,7 +150,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
                 Assert.True(source.IsEnabled, "Source is not enabled");
-                Assert.True(result.Output.Contains("WARNING: NU1803: You are running the 'enable source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: You are running the 'enable source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -207,7 +207,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
                 Assert.False(source.IsEnabled, "Source is not disabled");
-                Assert.True(result.Output.Contains("WARNING: NU1803: You are running the 'disable source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.Equal(result.Output, ("WARNING: You are running the 'disable source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -249,7 +249,7 @@ namespace NuGet.CommandLine.Test
 
                 // test to ensure detailed format is the default
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
-                Assert.True(result.Output.Contains("WARNING: NU1803: A 'http' source, 'http://test_source', was found. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: A 'http' source, 'http://test_source', was found. Support for 'http' sources will be removed in a future version."));
             }
         }
 
