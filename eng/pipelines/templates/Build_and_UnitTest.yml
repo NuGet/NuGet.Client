@@ -135,6 +135,12 @@ steps:
     msbuildArguments: "/t:AfterBuild /bl:$(Build.Repository.LocalPath)\\binlogs\\AssemblySign.binlog"
 
 - task: PublishPipelineArtifact@1
+  displayName: "Publish build artifacts3"
+  inputs:
+    artifactName: Build artifacts3 binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts"
+
+- task: PublishPipelineArtifact@1
   displayName: "Publish sign binlogs"
   inputs:
     artifactName: Sign binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
