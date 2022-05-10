@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Commands.Test;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Test.Utility.Commands;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
@@ -645,6 +647,83 @@ namespace NuGet.Commands.FuncTest
                 logger.ErrorMessages.Count.Should().Be(1);
                 logger.ErrorMessages.Single().Should().Contain("NU1004");
                 logger.ErrorMessages.Single().Should().Contain($"The project LeafProject has no compatible target framework.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WithFloatingVersions_WhenNoChangesInProjectReferenceDependencies_Success()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageA);
+
+                var targetFramework = CommonFrameworks.Net46;
+                var allPackageSpecs = new List<PackageSpec>();
+
+                var projectName = "childProject";
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var childProject = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                    .WithTargetFrameworks(new string[] { "net46" })
+                    .WithPackagesLockFile()
+                    .Build();
+                allPackageSpecs.Add(childProject);
+
+                // Add the dependency
+                var dependency = new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange(packageA.Id, VersionRange.Parse("1.0.*"), LibraryDependencyTarget.Package)
+                };
+
+                childProject.TargetFrameworks.FirstOrDefault().Dependencies.Add(dependency);
+
+                // Enable lock file
+                childProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                   restorePackagesWithLockFile: "true",
+                   childProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                   restoreLockedMode: false);
+
+                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(childProject, pathContext, logger)).ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue();
+
+                projectName = "parentProject";
+                projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                var parentProject = PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                    .WithTargetFrameworks(new string[] { targetFramework.GetShortFolderName() })
+                    .WithPackagesLockFile()
+                    .Build();
+                allPackageSpecs.Add(parentProject);
+
+                PackageSpecOperationsUtility.AddProjectReference(parentProject, childProject, targetFramework);
+
+                // Enable lock file
+                parentProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                   restorePackagesWithLockFile: "true",
+                   parentProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                   restoreLockedMode: false);
+
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(parentProject, allPackageSpecs, pathContext, logger)).ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue();
+
+                // Act
+                // Enable locked mode
+                parentProject.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                   restorePackagesWithLockFile: "true",
+                   parentProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
+                   restoreLockedMode: true);
+
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(parentProject, allPackageSpecs, pathContext, logger)).ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert.
+                result.Success.Should().BeTrue();
             }
         }
 
