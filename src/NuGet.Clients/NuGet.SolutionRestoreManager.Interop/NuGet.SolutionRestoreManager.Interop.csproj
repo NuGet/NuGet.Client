@@ -33,17 +33,12 @@
         <StrongName>67</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsToSign>
+      <DllsToSign Include="$(ArtifactsDirectory)NuGet.SolutionRestoreManager.Interop\**\NuGet.SolutionRestoreManager.Interop.xml">
+        <Authenticode>MicrosoftXmlSHA2</Authenticode>
+      </DllsToSign>      
     </ItemGroup>
     <Message Text="!!!!NuGet.SolutionRestoreManager.Interop Files to sign: @(DllsToSign, '%0a')" Importance="High"/>    
   </Target>
-
-  <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
-    <ItemGroup>
-      <DllsToSignWithMetadata Include="$(ArtifactsDirectory)NuGet.SolutionRestoreManager.Interop\**\NuGet.SolutionRestoreManager.Interop.xml">
-        <Authenticode>MicrosoftXmlSHA2</Authenticode>
-      </DllsToSignWithMetadata>
-    </ItemGroup>
-  </Target>  
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
