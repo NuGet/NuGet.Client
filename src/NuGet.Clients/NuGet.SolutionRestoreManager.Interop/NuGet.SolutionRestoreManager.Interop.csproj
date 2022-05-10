@@ -39,7 +39,6 @@
 
   <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
     <ItemGroup>
-      </DllsToSignWithMetadata>
       <DllsToSignWithMetadata Include="$(ArtifactsDirectory)NuGet.SolutionRestoreManager.Interop\**\NuGet.SolutionRestoreManager.Interop.xml">
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsToSignWithMetadata>

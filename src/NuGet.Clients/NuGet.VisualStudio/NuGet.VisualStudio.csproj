@@ -54,7 +54,6 @@
 
   <Target Name="GetBuildOutputWithSigningMetadata" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup" Returns="@(DllsToSignWithMetadata)">
     <ItemGroup>
-      </DllsToSignWithMetadata>
       <DllsToSignWithMetadata Include="$(ArtifactsDirectory)NuGet.VisualStudio\**\NuGet.VisualStudio.xml">
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsToSignWithMetadata>

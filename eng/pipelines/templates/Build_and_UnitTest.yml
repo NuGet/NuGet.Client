@@ -139,6 +139,7 @@ steps:
   inputs:
     artifactName: Build artifacts3 binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
     targetPath: "$(Build.Repository.LocalPath)\\artifacts"
+  condition: succeededOrFailed()
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish sign binlogs"
