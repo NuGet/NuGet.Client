@@ -60,13 +60,12 @@ namespace NuGet.Commands
                 throw new CommandException(Strings.SourcesCommandUniqueSource);
             }
 
-            if (!args.Source.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-            {
-                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
-                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "add source", args.Source)));
-            }
-
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
+
+            if (newPackageSource.IsHttp)
+            {
+                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "add source", args.Source));
+            }
 
             if (!string.IsNullOrEmpty(args.Username))
             {
@@ -153,8 +152,7 @@ namespace NuGet.Commands
 
                             if (source.IsHttp)
                             {
-                                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
-                                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source)));
+                                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source));
                             }
                         }
                     }
@@ -183,8 +181,7 @@ namespace NuGet.Commands
 
                             if (source.IsHttp)
                             {
-                                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
-                                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source)));
+                                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source));
                             }
                         }
                     }
@@ -243,14 +240,13 @@ namespace NuGet.Commands
                     throw new CommandException(Strings.SourcesCommandUniqueSource);
                 }
 
-                // If the new source is not http, warn the user
-                if (!args.Source.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-                {
-                    getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
-                                string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "update source", args.Source)));
-                }
-
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
+
+                // If the existing source is not http, warn the user
+                if (existingSource.IsHttp)
+                {
+                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "update source", args.Source));
+                }
             }
 
             RunnerHelper.ValidateCredentials(args.Username, args.Password, args.ValidAuthenticationTypes);
@@ -346,8 +342,7 @@ namespace NuGet.Commands
             if (packageSource.IsHttp)
             {
                 var operation = enable ? "enable" : "disable";
-                getLogger().Log(LogMessage.CreateWarning(NuGetLogCode.NU1803,
-                                string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, operation + " source", packageSource.Source)));
+                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, operation + " source", packageSource.Source));
             }
         }
 

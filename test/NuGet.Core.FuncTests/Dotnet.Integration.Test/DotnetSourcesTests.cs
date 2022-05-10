@@ -135,7 +135,7 @@ namespace Dotnet.Integration.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://source.test", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'add source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'add source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -193,7 +193,7 @@ namespace Dotnet.Integration.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://source2.test", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'update source' operation with an 'http' source, 'http://source2.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'update source' operation with an 'http' source, 'http://source2.test'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -241,7 +241,7 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.Success, result.Output + " " + result.Errors);
-                Assert.True(result.Output.Contains("warn : NU1803: A 'http' source, 'http://source.test', was found. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : A 'http' source, 'http://source.test', was found. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -310,7 +310,7 @@ namespace Dotnet.Integration.Test
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'enable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'enable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
@@ -376,7 +376,7 @@ namespace Dotnet.Integration.Test
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.True(result.Output.Contains("warn : NU1803: You are running the 'disable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'disable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
             }
         }
 
