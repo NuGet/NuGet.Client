@@ -127,6 +127,11 @@ NuGet.VisualStudio.IVsNuGetFramework
 NuGet.VisualStudio.IVsNuGetFramework.TargetFrameworkMoniker.get -> string
 NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMinVersion.get -> string
 NuGet.VisualStudio.IVsNuGetFramework.TargetPlatformMoniker.get -> string
+NuGet.VisualStudio.IVsNuGetProjectUpdateEvents
+NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.ProjectUpdateFinished -> NuGet.VisualStudio.ProjectUpdateEventHandler
+NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.ProjectUpdateStarted -> NuGet.VisualStudio.ProjectUpdateEventHandler
+NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.SolutionRestoreFinished -> NuGet.VisualStudio.SolutionRestoreEventHandler
+NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.SolutionRestoreStarted -> NuGet.VisualStudio.SolutionRestoreEventHandler
 NuGet.VisualStudio.IVsPackageInstaller
 NuGet.VisualStudio.IVsPackageInstaller.InstallPackage(NuGet.IPackageRepository repository, EnvDTE.Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences) -> void
 NuGet.VisualStudio.IVsPackageInstaller.InstallPackage(string source, EnvDTE.Project project, string packageId, System.Version version, bool ignoreDependencies) -> void
@@ -198,6 +203,8 @@ NuGet.VisualStudio.IVsProjectJsonToPackageReferenceMigrator.MigrateProjectJsonTo
 NuGet.VisualStudio.IVsSemanticVersionComparer
 NuGet.VisualStudio.IVsSemanticVersionComparer.Compare(string versionA, string versionB) -> int
 NuGet.VisualStudio.IVsTemplateWizard
+NuGet.VisualStudio.ProjectUpdateEventHandler
+NuGet.VisualStudio.SolutionRestoreEventHandler
 NuGet.VisualStudio.VsPackageEventHandler
 NuGet.VisualStudio.VsPackageProjectEventHandler
 override NuGet.SemanticVersion.Equals(object obj) -> bool

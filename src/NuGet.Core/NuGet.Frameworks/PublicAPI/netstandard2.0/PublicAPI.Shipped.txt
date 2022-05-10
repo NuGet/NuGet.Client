@@ -230,6 +230,7 @@ const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.DotNet = "dotnet"
 const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.MonoAndroid = "MonoAndroid" -> string
 const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.MonoMac = "MonoMac" -> string
 const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.MonoTouch = "MonoTouch" -> string
+const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.NanoFramework = ".NETnanoFramework" -> string
 const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.Native = "native" -> string
 const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.Net = ".NETFramework" -> string
 const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.NetCore = ".NETCore" -> string

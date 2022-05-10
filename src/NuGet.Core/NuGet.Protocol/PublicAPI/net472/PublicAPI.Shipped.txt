@@ -600,12 +600,8 @@ NuGet.Protocol.LocalPackageArchiveDownloader.SetThrottle(System.Threading.Semaph
 NuGet.Protocol.LocalPackageArchiveDownloader.SignedPackageReader.get -> NuGet.Packaging.Signing.ISignedPackageReader
 NuGet.Protocol.LocalPackageArchiveDownloader.Source.get -> string
 NuGet.Protocol.LocalPackageFileCache
-virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddFiles(string expandedPath) -> System.Lazy<System.Collections.Generic.IReadOnlyList<string>>
-virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddNuspec(string manifestPath, string expandedPath) -> System.Lazy<NuGet.Packaging.NuspecReader>
-virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddRuntimeGraph(string expandedPath) -> System.Lazy<NuGet.RuntimeModel.RuntimeGraph>
-virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddSha512(string sha512Path) -> System.Lazy<string>
 NuGet.Protocol.LocalPackageFileCache.LocalPackageFileCache() -> void
-virtual NuGet.Protocol.LocalPackageFileCache.Sha512Exists(string sha512Path) -> bool
+NuGet.Protocol.LocalPackageFileCache.UpdateLastAccessTime(string nupkgMetadataPath) -> void
 NuGet.Protocol.LocalPackageInfo
 NuGet.Protocol.LocalPackageInfo.LocalPackageInfo() -> void
 NuGet.Protocol.LocalPackageInfo.LocalPackageInfo(NuGet.Packaging.Core.PackageIdentity identity, string path, System.DateTime lastWriteTimeUtc, System.Lazy<NuGet.Packaging.NuspecReader> nuspec, System.Func<NuGet.Packaging.PackageReaderBase> getPackageReader) -> void
@@ -1495,6 +1491,7 @@ NuGet.Repositories.NuGetv3LocalRepository.FindPackage(string packageId, NuGet.Ve
 NuGet.Repositories.NuGetv3LocalRepository.FindPackagesById(string packageId) -> System.Collections.Generic.IEnumerable<NuGet.Repositories.LocalPackageInfo>
 NuGet.Repositories.NuGetv3LocalRepository.NuGetv3LocalRepository(string path) -> void
 NuGet.Repositories.NuGetv3LocalRepository.NuGetv3LocalRepository(string path, NuGet.Protocol.LocalPackageFileCache packageFileCache, bool isFallbackFolder) -> void
+NuGet.Repositories.NuGetv3LocalRepository.NuGetv3LocalRepository(string path, NuGet.Protocol.LocalPackageFileCache packageFileCache, bool isFallbackFolder, bool updateLastAccessTime) -> void
 NuGet.Repositories.NuGetv3LocalRepository.PathResolver.get -> NuGet.Packaging.VersionFolderPathResolver
 NuGet.Repositories.NuGetv3LocalRepository.RepositoryRoot.get -> string
 NuGet.Repositories.NuGetv3LocalRepositoryUtility
@@ -1933,20 +1930,29 @@ static NuGet.Protocol.LocalFolderUtility.GetDistinctPackages(System.Collections.
 static NuGet.Protocol.LocalFolderUtility.GetIdentityFromNupkgPath(System.IO.FileInfo file, string id) -> NuGet.Packaging.Core.PackageIdentity
 static NuGet.Protocol.LocalFolderUtility.GetLocalFeedType(string root, NuGet.Common.ILogger log) -> NuGet.Protocol.FeedType
 static NuGet.Protocol.LocalFolderUtility.GetNupkgsFromFlatFolder(string root, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<System.IO.FileInfo>
+static NuGet.Protocol.LocalFolderUtility.GetNupkgsFromFlatFolder(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<System.IO.FileInfo>
 static NuGet.Protocol.LocalFolderUtility.GetNupkgsFromFlatFolder(string root, string id, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<System.IO.FileInfo>
+static NuGet.Protocol.LocalFolderUtility.GetNupkgsFromFlatFolder(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<System.IO.FileInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackage(System.Uri path, NuGet.Common.ILogger log) -> NuGet.Protocol.LocalPackageInfo
 static NuGet.Protocol.LocalFolderUtility.GetPackageV2(string root, NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger log) -> NuGet.Protocol.LocalPackageInfo
+static NuGet.Protocol.LocalFolderUtility.GetPackageV2(string root, NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> NuGet.Protocol.LocalPackageInfo
 static NuGet.Protocol.LocalFolderUtility.GetPackageV2(string root, string id, NuGet.Versioning.NuGetVersion version, NuGet.Common.ILogger log) -> NuGet.Protocol.LocalPackageInfo
+static NuGet.Protocol.LocalFolderUtility.GetPackageV2(string root, string id, NuGet.Versioning.NuGetVersion version, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> NuGet.Protocol.LocalPackageInfo
 static NuGet.Protocol.LocalFolderUtility.GetPackageV3(string root, NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger log) -> NuGet.Protocol.LocalPackageInfo
 static NuGet.Protocol.LocalFolderUtility.GetPackageV3(string root, string id, NuGet.Versioning.NuGetVersion version, NuGet.Common.ILogger log) -> NuGet.Protocol.LocalPackageInfo
 static NuGet.Protocol.LocalFolderUtility.GetPackagesConfigFolderPackage(string root, NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger log) -> NuGet.Protocol.LocalPackageInfo
 static NuGet.Protocol.LocalFolderUtility.GetPackagesConfigFolderPackage(string root, string id, NuGet.Versioning.NuGetVersion version, NuGet.Common.ILogger log) -> NuGet.Protocol.LocalPackageInfo
 static NuGet.Protocol.LocalFolderUtility.GetPackagesConfigFolderPackages(string root, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesConfigFolderPackages(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackagesConfigFolderPackages(string root, string id, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, string id, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV2(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, string id, NuGet.Common.ILogger log) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
+static NuGet.Protocol.LocalFolderUtility.GetPackagesV3(string root, string id, NuGet.Common.ILogger log, System.Threading.CancellationToken cancellationToken) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo>
 static NuGet.Protocol.LocalFolderUtility.GetVersionFromFileName(string fileName, string id, string extension) -> NuGet.Versioning.NuGetVersion
 static NuGet.Protocol.LocalFolderUtility.IsPossiblePackageMatch(System.IO.FileInfo file, NuGet.Packaging.Core.PackageIdentity identity) -> bool
 static NuGet.Protocol.LocalFolderUtility.IsPossiblePackageMatch(System.IO.FileInfo file, string id) -> bool
@@ -2054,6 +2060,11 @@ virtual NuGet.Protocol.HttpSource.Dispose(bool disposing) -> void
 virtual NuGet.Protocol.HttpSource.GetAsync<T>(NuGet.Protocol.HttpSourceCachedRequest request, System.Func<NuGet.Protocol.HttpSourceResult, System.Threading.Tasks.Task<T>> processAsync, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
 virtual NuGet.Protocol.HttpSource.TryReadCacheFile(string uri, System.TimeSpan maxAge, string cacheFile) -> System.IO.Stream
 virtual NuGet.Protocol.HttpSourceResult.Dispose(bool disposing) -> void
+virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddFiles(string expandedPath) -> System.Lazy<System.Collections.Generic.IReadOnlyList<string>>
+virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddNuspec(string manifestPath, string expandedPath) -> System.Lazy<NuGet.Packaging.NuspecReader>
+virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddRuntimeGraph(string expandedPath) -> System.Lazy<NuGet.RuntimeModel.RuntimeGraph>
+virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddSha512(string sha512Path) -> System.Lazy<string>
+virtual NuGet.Protocol.LocalPackageFileCache.Sha512Exists(string sha512Path) -> bool
 virtual NuGet.Protocol.LocalPackageInfo.GetReader() -> NuGet.Packaging.PackageReaderBase
 virtual NuGet.Protocol.LocalPackageInfo.Identity.get -> NuGet.Packaging.Core.PackageIdentity
 virtual NuGet.Protocol.LocalPackageInfo.IsNupkg.get -> bool
