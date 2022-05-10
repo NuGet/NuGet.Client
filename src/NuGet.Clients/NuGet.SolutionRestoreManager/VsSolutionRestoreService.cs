@@ -300,7 +300,7 @@ namespace NuGet.SolutionRestoreManager
 
             // Initialize OTF and CT values when original value of OTF property is not provided.
             var originalTargetFrameworks = tfis
-                .Select(tfi => tfi.FrameworkName.GetShortFolderName())
+                .Select(tfi => string.IsNullOrEmpty(tfi.TargetAlias) ? tfi.FrameworkName.GetShortFolderName() : tfi.TargetAlias)
                 .ToArray();
             var crossTargeting = originalTargetFrameworks.Length > 1;
 
