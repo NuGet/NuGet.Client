@@ -145,8 +145,6 @@
           TaskParameter="TargetOutputs"
           ItemName="DllsToSign" />
     </MSBuild>
-    <Message Text="Count1:   @(DllsToSign->Count())" />
-    <Message Text="Files to sign1: @(DllsToSign, '%0a')" Importance="High"/>
     <MsBuild Condition="'$(BuildRTM)' != 'true'"
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetLocalizedDllsForSigning"
@@ -155,8 +153,6 @@
         TaskParameter="TargetOutputs"
         ItemName="DllsToSign"/>
     </MsBuild>
-    <Message Text="Count2:   @(DllsToSign->Count())" />
-    <Message Text="Files to sign2: @(DllsToSign, '%0a')" Importance="High"/>
   </Target>
 
   <Target Name="GetXPLATProject" Returns="@(XPLATProjects)">
@@ -177,8 +173,6 @@
         <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
         <StrongNameKey Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(MS_PFX_PATH)</StrongNameKey>
       </LocalizedDllsToSign>
-    <Message Text="Count localized:   @(LocalizedDllsToSign->Count())" />
-    <Message Text="Files to sign localized: @(LocalizedDllsToSign, '%0a')" Importance="High"/>      
     </ItemGroup>
   </Target>
 
@@ -188,13 +182,9 @@
         <StrongName>$(StrongNameCert)</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsToSignWithMetadata>
-      <Message Text="Count00:   @(DllsToSignWithMetadata->Count())" />
-      <Message Text="Files to sign00: @(DllsToSignWithMetadata, '%0a')" Importance="High"/>      
       <DllsToSignWithMetadata Include="@(DocumentationProjectOutputGroupOutput->'%(FinalOutputPath)')" KeepDuplicates="false">
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsToSignWithMetadata>
-      <Message Text="Count01:   @(DllsToSignWithMetadata->Count())" />
-      <Message Text="Files to sign01: @(DllsToSignWithMetadata, '%0a')" Importance="High"/>            
     </ItemGroup>
   </Target>
 

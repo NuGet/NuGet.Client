@@ -27,9 +27,8 @@
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
-    <Message Text="!!!!NuGet.SolutionRestoreManager.Interop Files to sign: @(DllsToSign, '%0a')" Importance="High"/>
     <ItemGroup>
-      <DllsToSign Include="$(ArtifactsDirectory)NuGet.SolutionRestoreManager.Interop\**\NuGet.SolutionRestoreManager.Interop*.dll">
+      <DllsToSign Include="$(ArtifactsDirectory)NuGet.SolutionRestoreManager.Interop\**\NuGet.SolutionRestoreManager.Interop.dll">
         <StrongName>67</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsToSign>
@@ -37,7 +36,6 @@
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsToSign>      
     </ItemGroup>
-    <Message Text="!!!!NuGet.SolutionRestoreManager.Interop Files to sign: @(DllsToSign, '%0a')" Importance="High"/>    
   </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

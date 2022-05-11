@@ -23,16 +23,16 @@ Path to a temporary folder to extract the VSIX artifact.
 param
 (
     [Parameter(Mandatory=$True)]
-    [string]$RepoRoot,
-    
+    [string]$RepoRoot,    
+
     [Parameter(Mandatory=$True)]
     [string]$OutputLogsBasePath,
-    
+
     [Parameter(Mandatory=$True)]
     [string]$BuildRTM,
-    
+
     [switch]$ValidateVsix,
-    
+
     [string]$TmpPath = $Env:TEMP
 )
 

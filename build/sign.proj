@@ -31,7 +31,6 @@
         <StrongName>67</StrongName>
       </FilesToSign>
     </ItemGroup>
-     <Message Text="Projects to sign: @(SolutionProjectsWithoutVSIX, '%0a')" Importance="High"/>
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Targets="GetSigningInputs">

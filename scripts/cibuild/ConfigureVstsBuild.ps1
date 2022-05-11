@@ -163,15 +163,6 @@ else
     $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
     $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
     $ToolsetTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetToolsetTargetBranches
-    Write-Host $VsTargetBranch
-    Write-Host '$newBuildCounter' $newBuildCounter
-    Write-Host '$env:BUILD_SOURCEVERSION' $env:BUILD_SOURCEVERSION
-    Write-Host '$env:BUILD_SOURCEBRANCHNAME' $env:BUILD_SOURCEBRANCHNAME
-    Write-Host '$NuGetLocalizationRepoBranch' $NuGetLocalizationRepoBranch
-    Write-Host '$LocalizationRepoCommitHash' $LocalizationRepoCommitHash
-    Write-Host '$CliTargetBranches' $CliTargetBranches
-    Write-Host '$SdkTargetBranches' $SdkTargetBranches
-    Write-Host '$ToolsetTargetBranches' $ToolsetTargetBranches
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION
