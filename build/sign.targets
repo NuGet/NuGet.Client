@@ -12,7 +12,6 @@
 
     <StrongNameKey>$(MS_PFX_PATH)</StrongNameKey>
     <DefaultStrongNameCert>MsSharedLib72</DefaultStrongNameCert>
-    <StrongNameCert>MsSharedLib72</StrongNameCert>
   </PropertyGroup>
 
   <PropertyGroup Condition = " Exists($(StrongNameKey)) ">
@@ -20,8 +19,8 @@
     <DelaySign Condition="'$(IsXplat)' != 'true'">true</DelaySign>
     <PublicSign Condition="'$(IsXplat)' == 'true'">true</PublicSign>
     <StrongNameCert Condition="'$(StrongNameKey)' == '$(MS_PFX_PATH)'">MsSharedLib72</StrongNameCert>
-    <StrongNameCert Condition="'$(StrongNameCert)' == ''">$(DefaultStrongNameCert)</StrongNameCert>
     <AssemblyOriginatorKeyFile Condition = " '$(AssemblyOriginatorKeyFile)' == '' ">$(StrongNameKey)</AssemblyOriginatorKeyFile>
+    <StrongNameCert Condition="'$(StrongNameCert)' == ''">$(DefaultStrongNameCert)</StrongNameCert>
     <DefineConstants>$(DefineConstants);SIGNED_BUILD</DefineConstants>
   </PropertyGroup>
 
