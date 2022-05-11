@@ -8,6 +8,9 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.CommandLine.Test;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
@@ -254,6 +257,53 @@ namespace NuGet.CommandLine.FuncTest.Commands
             Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);
 
             return r;
+        }
+
+        [Fact]
+        public async Task Install_WithHttpSource_Warns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var packageAPath = Path.Combine(pathContext.PackageSource, "a", "1.0.0", "a.1.0.0.nupkg");
+
+            pathContext.Settings.AddSource("http-feed", "http://api.source/api/v2");
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json");
+
+            var net461 = NuGetFramework.Parse("net461");
+            var projectA = new SimpleTestProjectContext(
+                "a",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+            var packagesFolder = Path.Combine(pathContext.WorkingDirectory, "packages");
+            // Act
+
+            var args = new string[]
+            {
+                Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config"),
+                "-OutputDirectory",
+                packagesFolder
+            };
+
+            // Act
+            var result = RunInstall(_nugetExePath, pathContext, expectedExitCode: 0, additionalArgs: args);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{packagesFolder}'", result.Output);
+            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.", result.Output);
         }
     }
 }
