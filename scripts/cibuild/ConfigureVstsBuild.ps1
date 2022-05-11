@@ -60,6 +60,23 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
+Function Set-RtmLabel {
+    param(
+        [string]$BuildRTM
+    )
+
+    if ($BuildRTM -eq $true) {
+        $label = "RTM"
+    } else {
+        $label = "NonRTM"
+    }
+
+    Write-Host "RTM Label: $label"
+    Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
+}
+
+Set-RtmLabel -BuildRTM $BuildRTM
+
 $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
 
 # Turn off strong name verification for common DevDiv public keys so that people can execute things against
@@ -78,8 +95,26 @@ $enableLongPathSupport = "LongPathsEnabled"
 $NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
 $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
 
+# NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
-$NuGetLocalizationRepoBranch = 'master'
+
+# Check if there is a localization branch associated with this branch repo 
+$currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
+$lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
+Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
+$lsResult = & git -C $NuGetLocalization $lsRemoteOpts
+
+if ($lsResult)
+{
+    $NuGetLocalizationRepoBranch = $currentNuGetBranch
+}
+else
+{
+    $NuGetLocalizationRepoBranch = 'dev'
+}
+Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
+
+# update submodule NuGet.Build.Localization
 $updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
 
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
@@ -126,9 +161,9 @@ else
 {
     $newBuildCounter = $env:BUILD_BUILDNUMBER
     $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
-    $CliTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranch
-    $SdkTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranch
-    Write-Host $VsTargetBranch
+    $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
+    $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
+    $ToolsetTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetToolsetTargetBranches
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
         CommitHash = $env:BUILD_SOURCEVERSION

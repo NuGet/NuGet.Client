@@ -4,10 +4,8 @@
 
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
-    <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>

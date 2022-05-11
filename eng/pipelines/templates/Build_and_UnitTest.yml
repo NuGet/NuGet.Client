@@ -21,7 +21,7 @@ steps:
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
-    arguments: "-BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -SkipUpdateBuildNumber"
+    arguments: "-BuildRTM $(BuildRTM)"
   displayName: "Configure VSTS CI Environment"
 
 - task: PowerShell@1
@@ -160,12 +160,12 @@ steps:
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
-- task: CopyFiles@2
-  displayName: "Copy Nupkgs"
+- task: PublishPipelineArtifact@1
+  displayName: "Publish nupkgs"
   inputs:
-    SourceFolder: "artifacts\\$(NupkgOutputDir)"
-    Contents: "*.nupkg"
-    TargetFolder: "$(BuildOutputTargetPath)\\artifacts\\$(VsixPublishDir)\\$(NupkgOutputDir)"
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
+    artifactName: "nupkgs - $(RtmLabel)"
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
@@ -191,37 +191,22 @@ steps:
     failOnStandardError: "false"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
-- task: CopyFiles@2
-  displayName: "Copy NuGet.exe, VSIX and EndToEnd"
-  inputs:
-    SourceFolder: "artifacts"
-    Contents: |
-      $(VsixPublishDir)\\NuGet.exe
-      $(VsixPublishDir)\\NuGet.pdb
-      $(VsixPublishDir)\\NuGet.Mssign.exe
-      $(VsixPublishDir)\\NuGet.Mssign.pdb
-      $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.Core.json 
-      $(VsixPublishDir)\\NuGet.Tools.vsix
-      $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.vsix
-      $(VsixPublishDir)\\Microsoft.VisualStudio.NuGet.BuildTools.json
-      $(VsixPublishDir)\\EndToEnd.zip 
-    TargetFolder: "$(BuildOutputTargetPath)\\artifacts"
-
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
   inputs:
     PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)"
-    ArtifactName: "VS15"
+    ArtifactName: "$(VsixPublishDir)"
     ArtifactType: "Container"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: CopyFiles@2
-  displayName: "Copy LCG Files"
+  displayName: "Copy LCG Files to staging (deprecated)"
   inputs:
     SourceFolder: "artifacts\\"
-    Contents: "**\\*.lcg"
-    TargetFolder: "$(CIRoot)\\PLOC\\$(Build.SourceBranchName)\\$(Build.BuildNumber)"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
+    Contents: |
+      **\*.lcg
+      !localize\**\*
+    TargetFolder: "$(Build.ArtifactStagingDirectory)\\PLOC"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PowerShell@1
   displayName: "Publish Artifacts to MyGet"
@@ -232,38 +217,41 @@ steps:
     failOnStandardError: "true"
   condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
+- task: NuGetCommand@2
+  displayName: Publish public Nuget packages to nuget-build
+  inputs:
+    command: push
+    packagesToPush: 'artifacts\nupkgs\*.nupkg;!artifacts\nupkgs\*.symbols.nupkg'
+    nuGetFeedType: external
+    allowPackageConflicts: true
+    publishFeedCredentials : nuget-build-dnceng-public-feed
+  condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
 - task: MSBuild@1
   displayName: "Collect Build Symbols"
   inputs:
     solution: "build\\symbols.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:IsSymbolBuild=true"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "
-  
-- task: CopyFiles@2
-  displayName: "Copy Symbols"
-  inputs:
-    SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    Contents: "**\\*"
-    TargetFolder: "$(BuildOutputTargetPath)\\symbols"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "      
+    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: ms-vscs-artifact.build-tasks.artifactSymbolTask-1.artifactSymbolTask@0
-  displayName: "Publish Symbols on Symweb"
+- task: PublishPipelineArtifact@1
+  displayName: "Publish symbols as pipeline artifacts"
   inputs:
-    symbolServiceURI: "https://microsoft.artifacts.visualstudio.com/DefaultCollection"
-    requestName: "CollectionId/$(System.CollectionId)/ProjectId/$(System.TeamProjectId)/$(TeamName)/BuildId/$(Build.BuildId)"
-    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
-    detailedLog: "true"
-    expirationInDays: "45"
-    usePat: "false"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true')) "  	
+    targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
+    artifactName: "symbols - $(RtmLabel)"
+  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: MicroBuildUploadVstsDropFolder@1
+- task: artifactDropTask@0
   displayName: "Upload VSTS Drop"
   inputs:
-    DropFolder: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+    buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+    toLowerCase: false
+    usePat: true
+    dropMetadataContainerName: "DropMetadata-Product"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
@@ -285,7 +273,7 @@ steps:
   inputs:
     artifactName: LocValidationLogs
     targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
-  condition: "eq(variables['BuildRTM'], 'false')"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"

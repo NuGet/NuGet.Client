@@ -32,7 +32,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   pool:
-    name: VSEng-MicroBuildVS2017
+    name: VSEngSS-MicroBuild2017-1ES
     demands:
       - DotNetFramework
       - msbuild
@@ -53,7 +53,7 @@ jobs:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
-    name: VSEngSS-MicroBuild2017
+    name: VSEngSS-MicroBuild2017-1ES
     demands:
         - DotNetFramework
         - msbuild
@@ -86,35 +86,35 @@ jobs:
   steps:
   - template: Tests_On_Mac.yml
 
-- job: End_To_End_Tests_On_Windows
-  dependsOn:
-  - Build_and_UnitTest
-  - Initialize_Build
-  timeoutInMinutes: 100
-  variables:
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
-  pool:
-    name: DDNuGet-Windows
-    demands:
-    - DotNetFramework
-    - Allow_NuGet_E2E_Tests -equals true
-  steps:
-  - template: End_To_End_Tests_On_Windows.yml
+# - job: End_To_End_Tests_On_Windows
+#   dependsOn:
+#   - Build_and_UnitTest
+#   - Initialize_Build
+#   timeoutInMinutes: 100
+#   variables:
+#     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
+#   pool:
+#     name: DDNuGet-Windows
+#     demands:
+#     - DotNetFramework
+#     - Allow_NuGet_E2E_Tests -equals true
+#   steps:
+#   - template: End_To_End_Tests_On_Windows.yml
 
-- job: Apex_Tests_On_Windows
-  dependsOn:
-  - Build_and_UnitTest
-  - Initialize_Build
-  timeoutInMinutes: 120
-  variables:
-    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
-  pool:
-    name: DDNuGet-Windows
-    demands:
-    - DotNetFramework
-    - Allow_NuGet_Apex_Tests -equals true
-  steps:
-  - template: Apex_Tests_On_Windows.yml
+# - job: Apex_Tests_On_Windows
+#   dependsOn:
+#   - Build_and_UnitTest
+#   - Initialize_Build
+#   timeoutInMinutes: 120
+#   variables:
+#     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+#     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
+#   pool:
+#     name: DDNuGet-Windows
+#     demands:
+#     - DotNetFramework
+#     - Allow_NuGet_Apex_Tests -equals true
+#   steps:
+#   - template: Apex_Tests_On_Windows.yml
