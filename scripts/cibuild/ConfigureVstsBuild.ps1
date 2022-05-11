@@ -116,6 +116,7 @@ Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
 
 # update submodule NuGet.Build.Localization
 $updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
+
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
 # Get the commit of the localization repository that will be used for this build.
