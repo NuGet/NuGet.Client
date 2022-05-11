@@ -60,8 +60,8 @@ namespace NuGet.Commands
                 symbolSource,
                 timeoutSeconds,
                 disableBuffering,
-                endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
-                symbolsEndpoint => symbolApiKey ?? CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolSource, apiKey, isSymbolApiKey: true),
+                endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source),
+                symbolsEndpoint => symbolApiKey ?? CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolSource),
                 noServiceEndpoint,
                 symbolPackageUpdateResource,
                 logger);
