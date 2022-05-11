@@ -40,18 +40,5 @@
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
-
-  <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
-    <ItemGroup>
-      <DllsToSign Include="$(ArtifactsDirectory)NuGet.VisualStudio\**\NuGet.VisualStudio*.dll">
-        <StrongName>67</StrongName>
-        <Authenticode>Microsoft400</Authenticode>
-      </DllsToSign>
-      <DllsToSign Include="$(ArtifactsDirectory)NuGet.VisualStudio\**\NuGet.VisualStudio.xml">
-        <Authenticode>MicrosoftXmlSHA2</Authenticode>
-      </DllsToSign>      
-    </ItemGroup>
-  </Target>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
