@@ -430,6 +430,10 @@ NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash.
 NuGet.ProjectModel.ProjectRestoreMetadata
 NuGet.ProjectModel.ProjectRestoreMetadata.CacheFilePath.get -> string
 NuGet.ProjectModel.ProjectRestoreMetadata.CacheFilePath.set -> void
+NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageTransitivePinningEnabled.get -> bool
+NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageTransitivePinningEnabled.set -> void
+NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageVersionOverrideDisabled.get -> bool
+NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageVersionOverrideDisabled.set -> void
 NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageVersionsEnabled.get -> bool
 NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageVersionsEnabled.set -> void
 NuGet.ProjectModel.ProjectRestoreMetadata.ConfigFilePaths.get -> System.Collections.Generic.IList<string>

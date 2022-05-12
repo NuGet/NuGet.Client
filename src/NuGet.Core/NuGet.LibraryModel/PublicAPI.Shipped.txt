@@ -63,6 +63,8 @@ NuGet.LibraryModel.LibraryDependency.SuppressParent.get -> NuGet.LibraryModel.Li
 NuGet.LibraryModel.LibraryDependency.SuppressParent.set -> void
 NuGet.LibraryModel.LibraryDependency.VersionCentrallyManaged.get -> bool
 NuGet.LibraryModel.LibraryDependency.VersionCentrallyManaged.set -> void
+NuGet.LibraryModel.LibraryDependency.VersionOverride.get -> NuGet.Versioning.VersionRange
+NuGet.LibraryModel.LibraryDependency.VersionOverride.set -> void
 NuGet.LibraryModel.LibraryDependencyInfo
 NuGet.LibraryModel.LibraryDependencyInfo.Dependencies.get -> System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency>
 NuGet.LibraryModel.LibraryDependencyInfo.Framework.get -> NuGet.Frameworks.NuGetFramework
