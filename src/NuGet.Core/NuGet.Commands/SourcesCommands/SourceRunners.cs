@@ -62,7 +62,7 @@ namespace NuGet.Commands
 
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
 
-            if (newPackageSource.IsHttp)
+            if (newPackageSource.IsHttp && !newPackageSource.IsHttps)
             {
                 getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "add source", args.Source));
             }
@@ -150,7 +150,7 @@ namespace NuGet.Commands
                                 source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
                             getLogger().LogMinimal(string.Format("{0}{1}", sourcePadding, source.Source));
 
-                            if (source.IsHttp)
+                            if (source.IsHttp && !source.IsHttps)
                             {
                                 getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source));
                             }
@@ -179,7 +179,7 @@ namespace NuGet.Commands
                             legend += " ";
                             getLogger().LogMinimal(legend + source.Source);
 
-                            if (source.IsHttp)
+                            if (source.IsHttp && !source.IsHttps)
                             {
                                 getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source));
                             }
@@ -243,7 +243,7 @@ namespace NuGet.Commands
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
 
                 // If the existing source is not http, warn the user
-                if (existingSource.IsHttp)
+                if (existingSource.IsHttp && !existingSource.IsHttps)
                 {
                     getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "update source", args.Source));
                 }
@@ -339,7 +339,7 @@ namespace NuGet.Commands
                     Strings.SourcesCommandSourceDisabledSuccessfully, name));
             }
 
-            if (packageSource.IsHttp)
+            if (packageSource.IsHttp && !packageSource.IsHttps)
             {
                 var operation = enable ? "enable" : "disable";
                 getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, operation + " source", packageSource.Source));
