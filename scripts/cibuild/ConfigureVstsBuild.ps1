@@ -79,6 +79,18 @@ Function Set-RtmLabel {
     Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
 }
 
+Function Get-LocBranchExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$branchName
+    )
+
+    Write-Host "Looking for branch '$branchName' in NuGet.Build.Localization"
+    $lsRemoteOpts = 'ls-remote', 'origin', $branchName
+    $branchExists = & git -C $NuGetLocalization $lsRemoteOpts
+    return $branchExists
+}
+
 $isRTMBuild = [boolean]::Parse($BuildRTM)
 
 Set-RtmLabel -isRTMBuild $isRTMBuild
@@ -98,17 +110,25 @@ $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
 
 # Check if there is a localization branch associated with this branch repo
 $currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
-$lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
-Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
-$lsResult = & git -C $NuGetLocalization $lsRemoteOpts
-
-if ($lsResult)
+if (Get-LocBranchExists $currentNuGetBranch)
 {
     $NuGetLocalizationRepoBranch = $currentNuGetBranch
 }
 else
 {
-    $NuGetLocalizationRepoBranch = 'dev'
+    if ($currentNuGetBranch -like "*-MSRC") {
+        $currentNuGetBranch = $currentNuGetBranch -replace "-MSRC$", ""
+        if (Get-LocBranchExists $currentNuGetBranch) {
+            $NuGetLocalizationRepoBranch = $currentNuGetBranch
+        }
+        else
+        {
+            $NuGetLocalizationRepoBranch = "dev"
+        }
+    }
+    else {
+        $NuGetLocalizationRepoBranch = 'dev'
+    }
 }
 Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
 
