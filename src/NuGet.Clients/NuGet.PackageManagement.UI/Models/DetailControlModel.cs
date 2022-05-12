@@ -684,7 +684,7 @@ namespace NuGet.PackageManagement.UI
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
                 // The project level is the only one that has an editable combobox and we can only see one project.
-                if (!IsSolution && _nugetProjects.Count() == 1 && FirstDisplayedVersion == null && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
+                if (!IsSolution && _nugetProjects.Count() == 1 && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
                 {
                     // For the Updates and Browse tab we select the latest version, for the installed tab
                     // select the installed version by default. Otherwise, select the first version in the version list.
@@ -692,6 +692,7 @@ namespace NuGet.PackageManagement.UI
                     if (_filter.Equals(ItemFilter.UpdatesAvailable) || _filter.Equals(ItemFilter.All))
                     {
                         SelectedVersion = possibleVersions.FirstOrDefault(v => v.Range.OriginalString.Equals(latestVersion.ToString(), StringComparison.OrdinalIgnoreCase));
+                        FirstDisplayedVersion = SelectedVersion;
                         UserInput = SelectedVersion.ToString();
                     }
                     else
@@ -699,10 +700,9 @@ namespace NuGet.PackageManagement.UI
                         SelectedVersion =
                             possibleVersions.FirstOrDefault(v => StringComparer.OrdinalIgnoreCase.Equals(v.Range?.OriginalString, _searchResultPackage?.AllowedVersions?.OriginalString))
                             ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
+                        FirstDisplayedVersion = SelectedVersion;
                         UserInput = _searchResultPackage.AllowedVersions?.OriginalString ?? SelectedVersion.ToString();
                     }
-
-                    FirstDisplayedVersion = SelectedVersion;
                 }
                 else
                 {

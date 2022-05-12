@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (PackageDetailControlModel.IsProjectPackageReference)
             {
-                string comboboxText = _versions.Text.Replace(" ", "");
+                string comboboxText = _versions.Text;
                 bool userTypedAVersionRange = comboboxText.StartsWith("(", StringComparison.OrdinalIgnoreCase) || comboboxText.StartsWith("[", StringComparison.OrdinalIgnoreCase);
                 IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
 
@@ -242,17 +242,15 @@ namespace NuGet.PackageManagement.UI
             if (_versions.SelectedIndex != -1 && matchVersion?.ToString() != _versions.Items[_versions.SelectedIndex].ToString())
             {
                 _versions.SelectedIndex = -1;
-                PackageDetailControlModel.SelectedVersion = null;
             }
 
             // Automatically select the item when the input or custom range text matches it
             for (int i = 0; i < _versions.Items.Count; i++)
             {
-                var currentItem = _versions.Items[i];
+                DisplayVersion currentItem = _versions.Items[i] as DisplayVersion;
                 if (currentItem != null && (comboboxText == _versions.Items[i].ToString() || _versions.Items[i].ToString() == matchVersion?.ToString()))
                 {
                     _versions.SelectedIndex = i;
-                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRange, matchVersion, additionalInfo: null);
                 }
             }
         }
