@@ -426,6 +426,7 @@ static NuGet.Configuration.SettingsUtility.GetPluginsCacheFolder() -> string
 static NuGet.Configuration.SettingsUtility.GetRepositoryPath(NuGet.Configuration.ISettings settings) -> string
 static NuGet.Configuration.SettingsUtility.GetRevocationMode(NuGet.Common.IEnvironmentVariableReader environmentVariableReader = null) -> NuGet.Common.RevocationMode
 static NuGet.Configuration.SettingsUtility.GetSignatureValidationMode(NuGet.Configuration.ISettings settings) -> NuGet.Common.SignatureValidationMode
+static NuGet.Configuration.SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(NuGet.Configuration.ISettings settings) -> bool
 static NuGet.Configuration.SettingsUtility.GetValueForAddItem(NuGet.Configuration.ISettings settings, string section, string key, bool isPath = false) -> string
 static NuGet.Configuration.SettingsUtility.SetConfigValue(NuGet.Configuration.ISettings settings, string key, string value, bool encrypt = false) -> void
 static NuGet.Configuration.SettingsUtility.SetEncryptedValueForAddItem(NuGet.Configuration.ISettings settings, string section, string key, string value) -> void
@@ -491,6 +492,7 @@ static readonly NuGet.Configuration.ConfigurationConstants.StoreCertificate -> s
 static readonly NuGet.Configuration.ConfigurationConstants.StoreLocationAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.StoreNameAttribute -> string
 static readonly NuGet.Configuration.ConfigurationConstants.TrustedSigners -> string
+static readonly NuGet.Configuration.ConfigurationConstants.UpdatePackageLastAccessTime -> string
 static readonly NuGet.Configuration.ConfigurationConstants.UserKey -> string
 static readonly NuGet.Configuration.ConfigurationConstants.UsernameToken -> string
 static readonly NuGet.Configuration.ConfigurationConstants.ValidAuthenticationTypesToken -> string

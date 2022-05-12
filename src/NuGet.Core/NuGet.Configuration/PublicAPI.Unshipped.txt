@@ -1,2 +1,0 @@
-static NuGet.Configuration.SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(NuGet.Configuration.ISettings settings) -> bool
-static readonly NuGet.Configuration.ConfigurationConstants.UpdatePackageLastAccessTime -> string
