@@ -59,36 +59,28 @@ namespace NuGet.Build.Tasks
             // MSBuild 16.5 added a new interface, IBuildEngine6, which has a GetGlobalProperties() method.  However, we compile against
             // Microsoft.Build.Framework version 4.0 when targeting .NET Framework, so reflection is required since type checking
             // can't be done at compile time
-            var buildEngine6Type = typeof(IBuildEngine).Assembly.GetType("Microsoft.Build.Framework.IBuildEngine6");
 
-            if (buildEngine6Type != null)
+            var getGlobalPropertiesMethod = BuildEngine.GetType().GetMethod("GetGlobalProperties", BindingFlags.Instance | BindingFlags.Public);
+
+            if (getGlobalPropertiesMethod != null)
             {
-                var getGlobalPropertiesMethod = buildEngine6Type.GetMethod("GetGlobalProperties", BindingFlags.Instance | BindingFlags.Public);
-
-                if (getGlobalPropertiesMethod != null)
+                try
                 {
-                    try
+                    if (getGlobalPropertiesMethod.Invoke(BuildEngine, null) is IReadOnlyDictionary<string, string> globalProperties)
                     {
-                        if (getGlobalPropertiesMethod.Invoke(BuildEngine, null) is IReadOnlyDictionary<string, string> globalProperties)
-                        {
-                            msBuildGlobalProperties = globalProperties;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        // This is an unexpected error, so we don't localize.
-                        logger.LogError($"Internal Error. Failed calling the Microsoft.Build.Framework.IBuildEngine6.GetGlobalProperties method via reflection. Unable to determine the global properties.{e}");
+                        msBuildGlobalProperties = globalProperties;
                     }
                 }
-                else
+                catch (Exception e)
                 {
                     // This is an unexpected error, so we don't localize.
-                    logger.LogError($"Internal Error. Failed calling the Microsoft.Build.Framework.IBuildEngine6.GetGlobalProperties method via reflection. Unable to determine the global properties.");
+                    logger.LogError($"Internal Error. Failed calling the Microsoft.Build.Framework.IBuildEngine6.GetGlobalProperties method via reflection. Unable to determine the global properties.{e}");
                 }
             }
             else
             {
-                logger.LogDebug("The current version of MSBuild does not have the means to get global properties");
+                // This is an unexpected error, so we don't localize.
+                logger.LogError($"Internal Error. Failed calling the Microsoft.Build.Framework.IBuildEngine6.GetGlobalProperties method via reflection. Unable to determine the global properties.");
             }
 #endif
             return msBuildGlobalProperties;
