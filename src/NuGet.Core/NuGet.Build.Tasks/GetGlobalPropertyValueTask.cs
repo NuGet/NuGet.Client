@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if !IS_CORECLR
 using System.Reflection;
+#endif
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
 using Task = Microsoft.Build.Utilities.Task;
@@ -25,7 +27,8 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var globalProperties = GetGlobalProperties();
+            var logger = new MSBuildLogger(Log);
+            var globalProperties = GetGlobalProperties(logger);
 
             if (globalProperties != null)
             {
@@ -43,7 +46,7 @@ namespace NuGet.Build.Tasks
         /// Get the global property from the IBuildEngine API. 
         /// </summary>
         /// <returns>Returns the dictionary with the global properties if they can be accessed. <see langword="null"/> otherwise, which means that the msbuild version doesn't implement this API. </returns>
-        internal IReadOnlyDictionary<string, string> GetGlobalProperties()
+        internal IReadOnlyDictionary<string, string> GetGlobalProperties(Common.ILogger logger)
         {
 #if IS_CORECLR
             // MSBuild 16.5 and above has a method to get the global properties, older versions do not
@@ -71,11 +74,21 @@ namespace NuGet.Build.Tasks
                             msBuildGlobalProperties = globalProperties;
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        // Ignored
+                        // This is an unexpected error, so we don't localize.
+                        logger.LogError($"Internal Error. Failed calling the Microsoft.Build.Framework.IBuildEngine6.GetGlobalProperties method via reflection. Unable to determine the global properties.{e}");
                     }
                 }
+                else
+                {
+                    // This is an unexpected error, so we don't localize.
+                    logger.LogError($"Internal Error. Failed calling the Microsoft.Build.Framework.IBuildEngine6.GetGlobalProperties method via reflection. Unable to determine the global properties.");
+                }
+            }
+            else
+            {
+                logger.LogDebug("The current version of MSBuild does not have the means to get global properties");
             }
 #endif
             return msBuildGlobalProperties;
