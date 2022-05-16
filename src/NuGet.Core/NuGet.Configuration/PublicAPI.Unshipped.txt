@@ -1,0 +1,1 @@
+NuGet.Configuration.PackageSourceMapping.PackageSourceMapping(System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<string>> patterns) -> void
