@@ -1042,8 +1042,3 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>0 - operation. 1 - list of source uris</comment>
   </data>
 </root>
-  <data name="Warning_HttpSource" xml:space="preserve">
-    <value>A 'http' source, '{0}', was found. Support for 'http' sources will be removed in a future version.</value>
-    <comment>0 - source</comment>
-  </data>
-</root>

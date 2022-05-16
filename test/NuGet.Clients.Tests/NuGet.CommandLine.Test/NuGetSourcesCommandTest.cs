@@ -47,6 +47,40 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void SourcesCommandTest_AddSource_NoWarnWhenUsingHttps()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "https://test_source",
+                    "-ConfigFile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://test_source", sourceItem.GetValueAsPath());
+                Assert.False(result.Output.Contains("WARNING"));
+            }
+        }
+
+        [Fact]
         public void SourcesCommandTest_UpdateSource_WarnWhenUsingHttp()
         {
             using (var configFileDirectory = TestDirectory.Create())
@@ -90,6 +124,53 @@ namespace NuGet.CommandLine.Test
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
                 Assert.True(result.Output.Contains("WARNING: You are running the 'update source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_UpdateSource_NoWarnWhenUsingHttps()
+        {
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test"" />
+  </packageSources>
+</configuration>";
+                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
+
+                // Arrange
+                var args = new string[] {
+                    "sources",
+                    "Update",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "https://test_source",
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    configFileDirectory,
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                var loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://test_source", sourceItem.GetValueAsPath());
+                Assert.False(result.Output.Contains("WARNING"));
             }
         }
 

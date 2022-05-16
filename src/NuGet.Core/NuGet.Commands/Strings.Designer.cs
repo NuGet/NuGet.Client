@@ -2390,11 +2390,6 @@ namespace NuGet.Commands {
         internal static string Warning_HttpServerUsage_MultipleSources {
             get {
                 return ResourceManager.GetString("Warning_HttpServerUsage_MultipleSources", resourceCulture);
-        ///   Looks up a localized string similar to A &apos;http&apos; source, &apos;{0}&apos;, was found. Support for &apos;http&apos; sources will be removed in a future version..
-        /// </summary>
-        internal static string Warning_HttpSource {
-            get {
-                return ResourceManager.GetString("Warning_HttpSource", resourceCulture);
             }
         }
         
