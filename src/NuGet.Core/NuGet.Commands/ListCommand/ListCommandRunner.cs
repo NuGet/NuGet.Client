@@ -33,6 +33,10 @@ namespace NuGet.Commands
 
             foreach (PackageSource packageSource in listArgs.ListEndpoints)
             {
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    listArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "list", packageSource.Source));
+                }
                 var sourceRepository = Repository.Factory.GetCoreV3(packageSource);
                 var feed = await sourceRepository.GetResourceAsync<ListResource>(listArgs.CancellationToken);
 

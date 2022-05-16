@@ -947,5 +947,77 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.DoesNotContain(">", $"{result.AllOutput}");
             }
         }
+
+        [Fact]
+        public void SearchgCommand_WhenSearchWithHttpSource_Warns()
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            using MockServer server = new MockServer();
+            using SimpleTestPathContext config = new SimpleTestPathContext();
+            CommandRunner.Run(
+                nugetexe,
+                config.WorkingDirectory,
+                $"source add -name mockSource -source {server.Uri}v3/index.json -configfile {config.NuGetConfig}",
+                waitForExit: true);
+
+            string index = $@"
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{server.Uri + "search/query"}"",
+                        ""@type"": ""SearchQueryService/Versioned"",
+                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
+
+            server.Get.Add("/v3/index.json", r => index);
+
+            string queryResult = $@"
+                {{
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/schema#"",
+                        ""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
+                    }},
+                    ""totalHits"": 396,
+                    ""data"": []
+                }}";
+
+            server.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => queryResult);
+
+            server.Start();
+
+            // Act
+            string[] args = new[]
+            {
+                "search",
+                "json",
+            };
+
+            CommandRunnerResult result = CommandRunner.Run(
+                nugetexe,
+                config.WorkingDirectory,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            server.Stop();
+
+            // Assert
+            Assert.True(result.Success, $"{result.AllOutput}");
+            Assert.Contains("No results found.", $"{result.AllOutput}");
+            Assert.DoesNotContain(">", $"{result.AllOutput}");
+            Assert.Contains("WARNING: You are running the 'search' operation with an 'http' source", result.AllOutput);
+        }
     }
 }
