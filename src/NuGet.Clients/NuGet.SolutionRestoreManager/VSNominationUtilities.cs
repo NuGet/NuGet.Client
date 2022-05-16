@@ -127,7 +127,7 @@ namespace NuGet.SolutionRestoreManager
                     tfi.DownloadDependencies.AddRange(
                        targetFrameworkInfo2.PackageDownloads
                            .Cast<IVsReferenceItem>()
-                           .Select(ToPackageDownloadDependency));
+                           .SelectMany(ToPackageDownloadDependency));
                 }
 
                 if (cpvmEnabled && targetFrameworkInfo is IVsTargetFrameworkInfo3 targetFrameworkInfo3)
@@ -408,18 +408,21 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static DownloadDependency ToPackageDownloadDependency(IVsReferenceItem item)
+        private static IEnumerable<DownloadDependency> ToPackageDownloadDependency(IVsReferenceItem item)
         {
             var id = item.Name;
-            var versionRange = GetVersionRange(item);
-            if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
+            var versionRanges = GetVersionRangeList(item);
+            foreach (var versionRange in versionRanges)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                }
+
+                var downloadDependency = new DownloadDependency(id, versionRange);
+
+                yield return downloadDependency;
             }
-
-            var downloadDependency = new DownloadDependency(id, versionRange);
-
-            return downloadDependency;
         }
 
         private static CentralPackageVersion ToCentralPackageVersion(IVsReferenceItem item)
@@ -481,6 +484,25 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return versionRange != null;
+        }
+
+        private static IEnumerable<VersionRange> GetVersionRangeList(IVsReferenceItem item)
+        {
+            char[] splitChars = new[] { ';' };
+            string versionString = GetPropertyValueOrNull(item, "Version");
+
+            if (versionString != null)
+            {
+                var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var version in versions)
+                {
+                    yield return VersionRange.Parse(version);
+                }
+            }
+            else
+            {
+                yield return VersionRange.All;
+            }
         }
 
         private static VersionRange GetVersionRange(IVsReferenceItem item)
