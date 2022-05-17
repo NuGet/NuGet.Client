@@ -9,6 +9,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test
 {
@@ -35,7 +36,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        var mockResponse = _builder.BuildV3IndexResponse(this);
+                        var mockResponse = _builder.BuildV3IndexResponse(Uri);
                         response.ContentType = mockResponse.ContentType;
                         SetResponseContent(response, mockResponse.Content);
                     });
@@ -116,7 +117,7 @@ namespace NuGet.CommandLine.Test
                         {
                             response.ContentType = "text/javascript";
                             var packageToListedMapping = packages.Select(e => new KeyValuePair<PackageIdentity, bool>(e.Identity, !UnlistedPackages.Contains(e.Identity))).ToArray();
-                            MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(this, packageToListedMapping);
+                            MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(Uri, packageToListedMapping);
                             SetResponseContent(response, mockResponse.Content);
                         });
                     }

@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.Test
 {
     public class SelfUpdaterTests
     {
-        [SkipMono(Skip = "Mono has issues if the MockServer has anything else running in the same process https://github.com/NuGet/Home/issues/8594")]
+        [SkipMono]
         public async Task SelfUpdater_WithV3Server_WithUnlistedPackages_IgnoresUnlistedPackagesAsync()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -71,7 +71,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [SkipMono(Skip = "Mono has issues if the MockServer has anything else running in the same process https://github.com/NuGet/Home/issues/8594")]
+        [SkipMono]
         public async Task SelfUpdater_WithV3Server_SucceedsAsync()
         {
             using (var testDirectory = TestDirectory.Create())

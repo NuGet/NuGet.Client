@@ -7,13 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using Newtonsoft.Json.Linq;
-using NuGet.CommandLine.Test;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
+using Test.Utility;
 
 namespace Dotnet.Integration.Test
 {
-    public class FileSystemBackedV3MockServer : MockServer
+    internal class FileSystemBackedV3MockServer : MockServer
     {
         private string _packageDirectory;
         private readonly MockResponseBuilder _builder;
@@ -26,7 +27,7 @@ namespace Dotnet.Integration.Test
 
         public ISet<PackageIdentity> UnlistedPackages { get; } = new HashSet<PackageIdentity>();
 
-        public string ServiceIndexUri => Uri + _builder.GetV3IndexPath();
+        public string ServiceIndexUri => _builder.GetV3Source();
 
         private void InitializeServer()
         {
@@ -36,7 +37,7 @@ namespace Dotnet.Integration.Test
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        var mockResponse = _builder.BuildV3IndexResponse(this);
+                        var mockResponse = _builder.BuildV3IndexResponse(Uri);
                         response.ContentType = mockResponse.ContentType;
                         SetResponseContent(response, mockResponse.Content);
                     });
@@ -67,7 +68,7 @@ namespace Dotnet.Integration.Test
 
                         var id = parts[parts.Length - 2];
 
-                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance))
+                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(_packageDirectory, id, NullLogger.Instance))
                         {
                             array.Add(pkg.Identity.Version.ToNormalizedString());
                         }
@@ -86,7 +87,7 @@ namespace Dotnet.Integration.Test
                             response.ContentType = "application/zip";
                             using (var stream = file.OpenRead())
                             {
-                                var content = stream.ReadAllBytes();
+                                var content = ReadAllBytes(stream);
                                 SetResponseContent(response, content);
                             }
                         });
@@ -109,7 +110,7 @@ namespace Dotnet.Integration.Test
                 else if (path.StartsWith("/reg/") && path.EndsWith("/index.json"))
                 {
                     var id = parts[parts.Length - 2];
-                    var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance);
+                    var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, NullLogger.Instance);
 
                     if (packages.Any())
                     {
@@ -117,7 +118,7 @@ namespace Dotnet.Integration.Test
                         {
                             response.ContentType = "text/javascript";
                             var packageToListedMapping = packages.Select(e => new KeyValuePair<PackageIdentity, bool>(e.Identity, !UnlistedPackages.Contains(e.Identity))).ToArray();
-                            MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(this, packageToListedMapping);
+                            MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(ServiceIndexUri, packageToListedMapping);
                             SetResponseContent(response, mockResponse.Content);
                         });
                     }
@@ -138,6 +139,23 @@ namespace Dotnet.Integration.Test
             {
                 // Debug here
                 throw;
+            }
+        }
+
+        public static byte[] ReadAllBytes(Stream stream)
+        {
+            var memoryStream = stream as MemoryStream;
+            if (memoryStream != null)
+            {
+                return memoryStream.ToArray();
+            }
+            else
+            {
+                using (memoryStream = new MemoryStream())
+                {
+                    stream.CopyTo(memoryStream);
+                    return memoryStream.ToArray();
+                }
             }
         }
     }

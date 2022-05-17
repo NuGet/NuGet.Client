@@ -481,6 +481,40 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public async Task ListPackage_WithHttpSource_Warns()
+        {
+            // Arrange
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+            var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
+
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    packageA100,
+                    packageA200);
+
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            mockServer.Start();
+            pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri);
+
+            var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0");
+            Assert.True(addResult.Success);
+
+            // Act
+            var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated");
+            mockServer.Stop();
+
+            // Assert
+            var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            Assert.True(lines.Any(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0")), listResult.AllOutput);
+            Assert.True(lines.Any(l => l.Contains("warn : You are running the 'list package' operation with an 'http' source")), listResult.AllOutput);
+        }
+
+        // We can add test here
+
         private static string CollapseSpaces(string input)
         {
             return Regex.Replace(input, " +", " ");
