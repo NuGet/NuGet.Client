@@ -110,8 +110,8 @@ namespace NuGet.CommandLine.XPlat
                             {
                                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                                 {
-
                                     PopulateSourceRepositoryCache(listPackageArgs);
+                                    WarnForHttpSources(listPackageArgs);
                                     await GetRegistrationMetadataAsync(packages, listPackageArgs);
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
                                 }
@@ -159,6 +159,19 @@ namespace NuGet.CommandLine.XPlat
             if (autoReferenceFound)
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+            }
+        }
+
+        private static void WarnForHttpSources(ListPackageArgs listPackageArgs)
+        {
+            // TODO NK - Is this the right spot for warning? How does it look like?
+            // I sohuld be able to write a test here no? We have a mock server, so the hell not.
+            foreach (PackageSource packageSource in listPackageArgs.PackageSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    listPackageArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "list package", packageSource.Source));
+                }
             }
         }
 
