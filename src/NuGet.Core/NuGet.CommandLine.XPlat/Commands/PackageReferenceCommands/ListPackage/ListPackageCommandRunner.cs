@@ -164,8 +164,6 @@ namespace NuGet.CommandLine.XPlat
 
         private static void WarnForHttpSources(ListPackageArgs listPackageArgs)
         {
-            // TODO NK - Is this the right spot for warning? How does it look like?
-            // I sohuld be able to write a test here no? We have a mock server, so the hell not.
             foreach (PackageSource packageSource in listPackageArgs.PackageSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps)

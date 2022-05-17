@@ -40,10 +40,6 @@ namespace NuGet.CommandLine.Test
             {
                 Skip = "Skip this test on mono for now.";
             }
-            else
-            {
-                Skip = null;
-            }
         }
     }
 

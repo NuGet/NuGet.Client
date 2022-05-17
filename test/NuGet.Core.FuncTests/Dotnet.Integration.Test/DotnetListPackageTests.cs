@@ -510,10 +510,8 @@ namespace Dotnet.Integration.Test
             // Assert
             var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             Assert.True(lines.Any(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0")), listResult.AllOutput);
-            Assert.True(lines.Any(l => l.Contains("warn : You are running the 'list package' operation with an 'http' source")), listResult.AllOutput);
+            Assert.True(lines.Any(l => l.Contains("warn : You are running the 'list package' operation with an 'HTTP' source")), listResult.AllOutput);
         }
-
-        // We can add test here
 
         private static string CollapseSpaces(string input)
         {
