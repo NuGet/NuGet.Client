@@ -40,7 +40,7 @@ resources:
   - repository: DartLabTemplates
     type: git
     name: DartLab.Templates
-    ref: refs/heads/main
+    ref: refs/heads/dev/bradwhit/Checkpoints/PersistTags
 
 variables:
   DOTNET_NOLOGO: 1
