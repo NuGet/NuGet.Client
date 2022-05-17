@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.UI
                 DisplayVersion currentItem = _versions.Items[i] as DisplayVersion;
                 if (currentItem != null && (comboboxText == _versions.Items[i].ToString() || _versions.Items[i].ToString() == matchVersion?.ToString()))
                 {
-                    _versions.SelectedIndex = i;
+                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRange, matchVersion, additionalInfo: null);
                 }
             }
         }
