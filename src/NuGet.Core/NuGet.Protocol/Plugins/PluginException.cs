@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -9,7 +10,7 @@ namespace NuGet.Protocol.Plugins
     /// A plugin exception.
     /// </summary>
     [Serializable]
-    public sealed class PluginException : Exception
+    public class PluginException : Exception
     {
         /// <summary>
         /// Instantiates a new <see cref="PluginException" /> class.
@@ -27,6 +28,10 @@ namespace NuGet.Protocol.Plugins
         /// <param name="innerException">The inner exception.</param>
         public PluginException(string message, Exception innerException)
             : base(message, innerException)
+        {
+        }
+
+        protected PluginException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }
