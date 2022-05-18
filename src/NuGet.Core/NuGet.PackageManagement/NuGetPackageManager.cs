@@ -1110,8 +1110,8 @@ namespace NuGet.PackageManagement
 
                 // Step-1 : Get metadata resources using gatherer
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-                nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Environment.NewLine);
-                nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
+                nuGetProjectContext.Log(MessageLevel.Info, Environment.NewLine);
+                nuGetProjectContext.Log(MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
 
                 var allSources = new List<SourceRepository>(primarySources);
                 var primarySourcesSet = new HashSet<string>(primarySources.Select(s => s.PackageSource.Source));
@@ -1120,6 +1120,15 @@ namespace NuGet.PackageManagement
                     if (!primarySourcesSet.Contains(secondarySource.PackageSource.Source))
                     {
                         allSources.Add(secondarySource);
+                    }
+                }
+
+                foreach (SourceRepository enabledSource in allSources)
+                {
+                    PackageSource source = enabledSource.PackageSource;
+                    if (source.IsHttp && !source.IsHttps)
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_HttpServerUsage, "update", source.Source);
                     }
                 }
 
@@ -1772,6 +1781,15 @@ namespace NuGet.PackageManagement
 
             var effectiveSources = GetEffectiveSources(primarySources, secondarySources);
 
+            foreach (SourceRepository enabledSource in effectiveSources)
+            {
+                PackageSource source = enabledSource.PackageSource;
+                if (source.IsHttp && !source.IsHttps)
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_HttpServerUsage, "install", source.Source);
+                }
+            }
+
             if (resolutionContext.DependencyBehavior != DependencyBehavior.Ignore)
             {
                 try
@@ -2322,7 +2340,6 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Environment.NewLine);
             nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, packageReferenceTargetFramework);
 
-            // TODO: IncludePrerelease is a big question mark
             var log = new LoggerAdapter(nuGetProjectContext);
             var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolderAsync(installedPackageIdentities,

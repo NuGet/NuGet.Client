@@ -11,8 +11,10 @@ using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration.Test;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -2022,6 +2024,116 @@ namespace NuGet.CommandLine.Test
             Assert.Contains($"Package source mapping matches found for package ID 'Contoso.MVC.ASP' are: 'SharedRepository'", r.Output);
             r.AllOutput.Should().NotContain("NU1000");
             r.Errors.Should().Contain("Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.");
+        }
+
+
+        // Tests that when no version is specified, nuget will query the server to get
+        // the latest version number first.
+        [Fact]
+        public void InstallCommand_WithPackageInstall_AndHttpSource_Warns()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var packageDirectory = pathContext.PackageSource;
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var package1 = new FileInfo(packageFileName);
+                packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0", packageDirectory);
+                var package2 = new FileInfo(packageFileName);
+                var nugetexe = Util.GetNuGetExePath();
+
+                using (var server = Util.CreateMockServer(new[] { package1, package2 }))
+                {
+                    server.Start();
+
+                    // Act
+                    var args = "install testPackage1 -Source " + server.Uri + "nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        args,
+                        waitForExit: true);
+
+                    // Assert
+                    r1.Success.Should().BeTrue(because: r1.AllOutput);
+
+                    // testPackage1 1.2.0 is installed
+                    Assert.True(Directory.Exists(Path.Combine(pathContext.PackagesV2, "testPackage1.1.2.0")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Install_WithPackagesConfigAndHttpSource_Warns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var packageAPath = Path.Combine(pathContext.PackageSource, packageA.Id, packageA.Version, packageA.PackageName);
+
+            pathContext.Settings.AddSource("http-feed", "http://api.source/api/v2");
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json");
+
+            var projectA = new SimpleTestProjectContext(
+                "a",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+            var packagesFolder = Path.Combine(pathContext.WorkingDirectory, "packages");
+
+            var config = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config");
+            var args = new string[]
+            {
+                "-OutputDirectory",
+                packagesFolder
+            };
+
+            // Act
+            var result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{packagesFolder}'", result.Output);
+            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.", result.Output);
+        }
+
+        [Fact]
+        public async Task Install_WithPackageIdAndHttpSource_Warns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageA = new SimpleTestPackageContext("A", "1.0.0");
+            var feedPath = Path.Combine(pathContext.WorkingDirectory, "http-source");
+            await SimpleTestPackageUtility.CreatePackagesAsync(feedPath, packageA);
+            var packageAFileInfo = new FileInfo(Path.Combine(feedPath, packageA.PackageName));
+
+            using var server = Util.CreateMockServer(new[] { packageAFileInfo });
+            server.Start();
+
+            // Act & Assert
+            var result = RunInstall(pathContext, packageA.Id, expectedExitCode: 0, additionalArgs: $"-Source {server.Uri}nuget");
+
+            server.Stop();
+            Assert.Contains($"Added package 'A.1.0.0' to folder", result.Output);
+            Assert.Contains("You are running the 'install' operation with an 'http' source", result.Output);
         }
 
         public static CommandRunnerResult RunInstall(SimpleTestPathContext pathContext, string input, int expectedExitCode = 0, params string[] additionalArgs)
