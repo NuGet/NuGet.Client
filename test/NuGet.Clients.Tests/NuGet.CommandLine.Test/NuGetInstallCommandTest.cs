@@ -2026,51 +2026,6 @@ namespace NuGet.CommandLine.Test
             r.Errors.Should().Contain("Unable to find version '1.0.0' of package 'Contoso.MVC.ASP'.");
         }
 
-
-        // Tests that when no version is specified, nuget will query the server to get
-        // the latest version number first.
-        [Fact]
-        public void InstallCommand_WithPackageInstall_AndHttpSource_Warns()
-        {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var workingPath = pathContext.WorkingDirectory;
-                var packageDirectory = pathContext.PackageSource;
-
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-
-                // Arrange
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package1 = new FileInfo(packageFileName);
-                packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0", packageDirectory);
-                var package2 = new FileInfo(packageFileName);
-                var nugetexe = Util.GetNuGetExePath();
-
-                using (var server = Util.CreateMockServer(new[] { package1, package2 }))
-                {
-                    server.Start();
-
-                    // Act
-                    var args = "install testPackage1 -Source " + server.Uri + "nuget";
-                    var r1 = CommandRunner.Run(
-                        nugetexe,
-                        workingPath,
-                        args,
-                        waitForExit: true);
-
-                    // Assert
-                    r1.Success.Should().BeTrue(because: r1.AllOutput);
-
-                    // testPackage1 1.2.0 is installed
-                    Assert.True(Directory.Exists(Path.Combine(pathContext.PackagesV2, "testPackage1.1.2.0")));
-                }
-            }
-        }
-
         [Fact]
         public async Task Install_WithPackagesConfigAndHttpSource_Warns()
         {
@@ -2097,13 +2052,12 @@ namespace NuGet.CommandLine.Test
 
             solution.Projects.Add(projectA);
             solution.Create(pathContext.SolutionRoot);
-            var packagesFolder = Path.Combine(pathContext.WorkingDirectory, "packages");
 
             var config = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config");
             var args = new string[]
             {
                 "-OutputDirectory",
-                packagesFolder
+                pathContext.PackagesV2
             };
 
             // Act
@@ -2111,7 +2065,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{packagesFolder}'", result.Output);
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'", result.Output);
             Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.", result.Output);
         }
 

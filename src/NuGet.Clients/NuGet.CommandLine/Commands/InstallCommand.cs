@@ -280,7 +280,6 @@ namespace NuGet.CommandLine
             var packageSources = GetPackageSources(Settings);
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
             Console.PrintPackageSources(packageSources);
-            // TODO NK - Warn for all sources?
 
             var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
 
