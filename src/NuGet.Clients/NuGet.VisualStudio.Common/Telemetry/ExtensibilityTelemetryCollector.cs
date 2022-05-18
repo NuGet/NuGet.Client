@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio.Telemetry
             _counts = new Dictionary<string, Count>()
             {
                 // INuGetProjectService
-                ["INuGetProjectService" + "." + "INuGetProjectService.GetInstalledPackagesAsync"] = new Count(),
+                ["INuGetProjectService" + "." + "GetInstalledPackagesAsync"] = new Count(),
 
                 // IVsFrameworkCompatibility
                 [nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetNetStandardFrameworks)] = new Count(),
