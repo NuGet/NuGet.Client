@@ -11,7 +11,6 @@ using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration.Test;
-using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -2065,8 +2064,8 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'", result.Output);
-            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.", result.Output);
+            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
+            result.AllOutput.Should().Contain("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.");
         }
 
         [Fact]
@@ -2086,8 +2085,8 @@ namespace NuGet.CommandLine.Test
             var result = RunInstall(pathContext, packageA.Id, expectedExitCode: 0, additionalArgs: $"-Source {server.Uri}nuget");
 
             server.Stop();
-            Assert.Contains($"Added package 'A.1.0.0' to folder", result.Output);
-            Assert.Contains("You are running the 'install' operation with an 'http' source", result.Output);
+            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder");
+            result.AllOutput.Should().Contain("You are running the 'install' operation with an 'http' source");
         }
 
         public static CommandRunnerResult RunInstall(SimpleTestPathContext pathContext, string input, int expectedExitCode = 0, params string[] additionalArgs)

@@ -1871,8 +1871,6 @@ namespace NuGet.CommandLine.Test
             //Arrange
             using var pathContext = new SimpleTestPathContext();
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packagesDirectory = pathContext.PackagesV2;
-
             var httpSourceDirectory = Path.Combine(pathContext.WorkingDirectory, "http-source");
             var packageA100 = new SimpleTestPackageContext("a", "1.0.0");
             var packageA200 = new SimpleTestPackageContext("a", "2.0.0");
@@ -1897,7 +1895,6 @@ namespace NuGet.CommandLine.Test
 
             solution.Projects.Add(projectA);
             solution.Create(pathContext.SolutionRoot);
-            var packagesFolder = Path.Combine(pathContext.WorkingDirectory, "packages");
 
             var args = new[]
             {
@@ -1931,7 +1928,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             r.Success.Should().BeTrue(r.AllOutput);
-            r.Output.Should().Contain("You are running the 'restore' operation with an 'http' source");
+            r.AllOutput.Should().Contain("You are running the 'update' operation with an 'http' source");
         }
     }
 }
