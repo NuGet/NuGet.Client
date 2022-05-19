@@ -255,6 +255,10 @@ namespace NuGet.Commands
                     currentFrameworkString = "Silverlight,Version=v4.0,Profile=WindowsPhone71";
                     return NuGetFramework.Parse(currentFrameworkString);
                 }
+                if (isCppCli) // Don't use the platform moniker to CPP/CLI.
+                {
+                    platformMoniker = null;
+                }
                 NuGetFramework framework = NuGetFramework.ParseComponents(currentFrameworkString, platformMoniker);
 
                 if (isCppCli)
