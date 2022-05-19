@@ -151,7 +151,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task GetCredentialsAsync_SecondCallHasRetryTrue()
+        public async Task GetCredentialsAsync_SecondCallDoesNotHaveRetryTrue()
         {
             // Arrange
             IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
@@ -195,10 +195,67 @@ namespace NuGet.Credentials.Test
                 /*isRetry*/ false,
                 /*nonInteractive*/ false,
                 CancellationToken.None));
+
+            //cache is used instead
             _mockProvider.Verify(x => x.GetAsync(
                 uri1,
                 webProxy,
                 /*type*/ CredentialRequestType.Unauthorized,
+                /*message*/ null,
+                /*isRetry*/ false,
+                /*nonInteractive*/ false,
+                CancellationToken.None), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetCredentialsAsync_SecondCallHasRetryTrue_WhenTypeIsForbidden()
+        {
+            // Arrange
+            IEnumerable<ICredentialProvider> providers = new[] { _mockProvider.Object };
+            var service = new CredentialService(
+                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult(providers)),
+                nonInteractive: false,
+                handlesDefaultCredentials: true);
+            _mockProvider.Setup(
+                x => x.GetAsync(
+                    It.IsAny<Uri>(),
+                    It.IsAny<IWebProxy>(),
+                    It.IsAny<CredentialRequestType>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(new CredentialResponse(new NetworkCredential())));
+            var uri1 = new Uri("http://uri1");
+            var webProxy = new WebProxy();
+
+            // Act
+            await service.GetCredentialsAsync(
+                uri1,
+                proxy: null,
+                type: CredentialRequestType.Unauthorized,
+                message: null,
+                cancellationToken: CancellationToken.None);
+            await service.GetCredentialsAsync(
+                uri1,
+                webProxy,
+                type: CredentialRequestType.Forbidden,
+                message: null,
+                cancellationToken: CancellationToken.None);
+
+            // Assert
+            _mockProvider.Verify(x => x.GetAsync(
+                uri1,
+                null,
+                /*type*/ CredentialRequestType.Unauthorized,
+                /*message*/ null,
+                /*isRetry*/ false,
+                /*nonInteractive*/ false,
+                CancellationToken.None));
+            _mockProvider.Verify(x => x.GetAsync(
+                uri1,
+                webProxy,
+                /*type*/ CredentialRequestType.Forbidden,
                 /*message*/ null,
                 /*isRetry*/ true,
                 /*nonInteractive*/ false,
@@ -449,7 +506,7 @@ namespace NuGet.Credentials.Test
             var result2 = await service.GetCredentialsAsync(
                 uri1,
                 proxy: null,
-                type: CredentialRequestType.Unauthorized,
+                type: CredentialRequestType.Forbidden,
                 message: null,
                 cancellationToken: CancellationToken.None);
 
