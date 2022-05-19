@@ -4439,12 +4439,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   <data name="FileConflictChoiceText_cht" xml:space="preserve">
     <value>[Y] 是  [A] 全部皆是  [N] 否  [L] 全部皆否 ?</value>
   </data>
-  <data name="Error_InvalidSolutionDirectory_deu" xml:space="preserve">
-    <value>Ungültiger Projektordner: '{0}'</value>
-  </data>
-  <data name="Error_InvalidSolutionDirectory_esp" xml:space="preserve">
-    <value>Carpeta de solución no válida: '{0}'</value>
-  </data>
   <data name="Error_MultipleSolutions_csy" xml:space="preserve">
     <value>Tato složka obsahuje více než jeden soubor řešení.</value>
   </data>

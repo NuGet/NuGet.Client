@@ -2833,24 +2833,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ungültiger Projektordner: &apos;{0}&apos;.
-        /// </summary>
-        public static string Error_InvalidSolutionDirectory_deu {
-            get {
-                return ResourceManager.GetString("Error_InvalidSolutionDirectory_deu", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Carpeta de solución no válida: &apos;{0}&apos;.
-        /// </summary>
-        public static string Error_InvalidSolutionDirectory_esp {
-            get {
-                return ResourceManager.GetString("Error_InvalidSolutionDirectory_esp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         public static string Error_MissingSourceParameter {
