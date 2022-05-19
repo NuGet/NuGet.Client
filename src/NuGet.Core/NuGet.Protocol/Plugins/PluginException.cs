@@ -10,7 +10,7 @@ namespace NuGet.Protocol.Plugins
     /// A plugin exception.
     /// </summary>
     [Serializable]
-    public class PluginException : Exception
+    public sealed class PluginException : Exception
     {
         /// <summary>
         /// Instantiates a new <see cref="PluginException" /> class.
@@ -31,7 +31,7 @@ namespace NuGet.Protocol.Plugins
         {
         }
 
-        protected PluginException(SerializationInfo info, StreamingContext context) : base(info, context)
+        private PluginException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }
