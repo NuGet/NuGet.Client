@@ -90,7 +90,7 @@ namespace NuGet.Credentials
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var retryKey = RetryCacheKey(uri, type, provider);
-                var isRetry = _retryCache.ContainsKey(retryKey);
+                var isRetry = (type == CredentialRequestType.Forbidden) && _retryCache.ContainsKey(retryKey);
 
                 try
                 {
