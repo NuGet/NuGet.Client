@@ -40,6 +40,8 @@ namespace NuGet.PackageManagement.UI
             _searchService = searchService;
         }
 
+        public IProjectContextInfo Project { get; set; }
+
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
 
@@ -360,46 +362,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _isPackageDeprecated;
-        public bool IsPackageDeprecated
-        {
-            get { return _isPackageDeprecated; }
-            set
-            {
-                if (_isPackageDeprecated != value)
-                {
-                    _isPackageDeprecated = value;
-                    OnPropertyChanged(nameof(IsPackageDeprecated));
-                    OnPropertyChanged(nameof(IsPackageWithWarnings));
-                }
-            }
-        }
+        public bool IsPackageDeprecated => DeprecationMetadata != null;
 
-        public bool IsPackageVulnerable
-        {
-            get => VulnerabilityMaxSeverity > -1;
-        }
+        public bool IsPackageVulnerable => VulnerabilityMaxSeverity > -1;
 
-        private int _vulnerabilityMaxSeverity = -1;
-        public int VulnerabilityMaxSeverity
-        {
-            get { return _vulnerabilityMaxSeverity; }
-            set
-            {
-                if (_vulnerabilityMaxSeverity != value)
-                {
-                    _vulnerabilityMaxSeverity = value;
-                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
-                    OnPropertyChanged(nameof(IsPackageVulnerable));
-                    OnPropertyChanged(nameof(IsPackageWithWarnings));
-                }
-            }
-        }
+        public int VulnerabilityMaxSeverity => Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
 
-        public bool IsPackageWithWarnings
-        {
-            get => IsPackageDeprecated || IsPackageVulnerable;
-        }
+        public bool IsPackageWithWarnings => IsPackageDeprecated || IsPackageVulnerable;
 
         private Uri _iconUrl;
         public Uri IconUrl
@@ -500,27 +469,13 @@ namespace NuGet.PackageManagement.UI
             return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
         }
 
-        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var identity = new PackageIdentity(Id, Version);
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
-        }
-
-        // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
-        // and there are tests that don't mock IServiceBroker and INuGetSearchService. It's called via a jtf.RunAsync that is
-        // not awaited. By keeping this AsyncLazy, we ensure that the exception is thrown in an async continuation. Whereas
-        // if we get rid of it and have GetDetailedPackageSearchMetadataAsync call _searchService directly, then the exception
-        // will not be thrown in a continuation, and the test will fail.
-        private Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> _detailedPackageSearchMetadata =>
-            new Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>(async () =>
-            {
-                var identity = new PackageIdentity(Id, Version);
-                return await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
-            });
-        public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync()
-        {
-            return _detailedPackageSearchMetadata.Value;
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, token);
         }
 
         private PackageDeprecationMetadataContextInfo _deprecationMetadata;
@@ -533,11 +488,28 @@ namespace NuGet.PackageManagement.UI
                 {
                     _deprecationMetadata = value;
                     OnPropertyChanged(nameof(DeprecationMetadata));
+                    OnPropertyChanged(nameof(IsPackageDeprecated));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
                 }
             }
         }
 
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
+        private IEnumerable<PackageVulnerabilityMetadataContextInfo> _vulnerabilities;
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities
+        {
+            get => _vulnerabilities;
+            set
+            {
+                if (_vulnerabilities != value)
+                {
+                    _vulnerabilities = value;
+                    OnPropertyChanged(nameof(Vulnerabilities));
+                    OnPropertyChanged(nameof(IsPackageVulnerable));
+                    OnPropertyChanged(nameof(IsPackageWithWarnings));
+                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
+                }
+            }
+        }
 
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {
@@ -685,7 +657,7 @@ namespace NuGet.PackageManagement.UI
             BitmapImageCache.Set(cacheKey, iconBitmapImage, policy);
         }
 
-        private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
+        private async Task ReloadPackageVersionsAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
@@ -710,26 +682,47 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        internal PackageSearchMetadataContextInfo PackageMetadata { get; set; }
+
         private async Task ReloadPackageMetadataAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                var identity = new PackageIdentity(Id, Version);
-                (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
-                    await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
-
-                DeprecationMetadata = deprecationMetadata;
-                IsPackageDeprecated = deprecationMetadata != null;
-                VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+                PackageSearchMetadataContextInfo meta = null;
+                PackageDeprecationMetadataContextInfo deprecation = null;
+                (meta, deprecation) = await ReloadPackageMetadataAsync(Version, cancellationToken);
+                PackageMetadata = meta;
+                DeprecationMetadata = deprecation;
+                Vulnerabilities = meta.Vulnerabilities;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // UI requested cancellation.
             }
+        }
+
+
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+        internal async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo?)> ReloadPackageMetadataAsync(NuGetVersion newVersion, CancellationToken token)
+#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+        {
+            token.ThrowIfCancellationRequested();
+            PackageSearchMetadataContextInfo meta = null;
+            PackageDeprecationMetadataContextInfo deprecation = null;
+            var identity = new PackageIdentity(Id, newVersion);
+            if (PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(Version))
+            {
+                (meta, deprecation) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, PackageLevel == PackageLevel.Transitive, token);
+            }
+            else if (PackageLevel == PackageLevel.Transitive)
+            {
+                // Get only local metadata for transitive packages
+                meta = await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, token);
+            }
+
+            return (meta, deprecation);
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)

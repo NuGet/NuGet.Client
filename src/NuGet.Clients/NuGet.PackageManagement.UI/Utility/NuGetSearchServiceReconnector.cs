@@ -146,6 +146,16 @@ namespace NuGet.PackageManagement.UI.Utility
                 return _parent._service.GetPackageMetadataAsync(identity, packageSources, includePrerelease, cancellationToken);
             }
 
+            public ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetPackageMetadataAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, bool isTransitive, CancellationToken cancellationToken)
+            {
+                return _parent._service.GetPackageMetadataAsync(identity, packageSources, includePrerelease, isTransitive, cancellationToken);
+            }
+
+            public ValueTask<PackageSearchMetadataContextInfo> GetPackageMetadataFromLocalSourcesAsync(PackageIdentity identity, IProjectContextInfo currentProject, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
+            {
+                return _parent._service.GetPackageMetadataFromLocalSourcesAsync(identity, currentProject, packageSources, cancellationToken);
+            }
+
             public ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetPackageMetadataListAsync(string id, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
             {
                 return _parent._service.GetPackageMetadataListAsync(id, packageSources, includePrerelease, includeUnlisted, cancellationToken);

@@ -126,13 +126,13 @@
 
       <!-- version -->
       <TextBlock
-        Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
+        Visibility="{Binding Path=Version, Converter={StaticResource NullToVisibilityConverter}}"
         Grid.Row="0"
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
         x:Name="_versionLabel"
-        AutomationProperties.Name="{Binding Text}"
+        AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Text, Mode=OneWay}"
         Text="{x:Static nuget:Resources.Label_Version}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -152,7 +152,7 @@
         Margin="0,8,0,0"
         FontWeight="Bold"
         x:Name="_ownersLabel"
-        AutomationProperties.Name="{Binding Text}"
+        AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Text, Mode=OneWay}"
         Text="{x:Static nuget:Resources.Label_Owners}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -172,7 +172,7 @@
         Margin="0,8,0,0"
         FontWeight="Bold"
         x:Name="_authorsLabel"
-        AutomationProperties.Name="{Binding Text}"
+        AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Text, Mode=OneWay}"
         Text="{x:Static nuget:Resources.Label_Authors}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
@@ -192,7 +192,7 @@
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_licenseLabel"
-        AutomationProperties.Name="{Binding Text}"
+        AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Text, Mode=OneWay}"
         Text="{x:Static nuget:Resources.Label_License}"/>
 
       <ItemsControl Grid.Row="3" Grid.Column="1" ItemsSource="{Binding LicenseLinks}" IsTabStop="False">
@@ -211,7 +211,7 @@
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_readmeLabel"
-        AutomationProperties.Name="{Binding Text}"
+        AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Text, Mode=OneWay}"
         Text="{x:Static nuget:Resources.Label_Readme}"/>
 
       <TextBlock
@@ -277,7 +277,7 @@
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_projectUrlLabel"
-        AutomationProperties.Name="{Binding Text}"
+        AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Text}"
         Text="{x:Static nuget:Resources.Label_ProjectUrl}" />
 
       <TextBlock

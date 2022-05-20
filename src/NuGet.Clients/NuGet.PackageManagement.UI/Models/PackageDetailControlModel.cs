@@ -28,6 +28,11 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<IProjectContextInfo> projects)
             : base(serviceBroker, projects)
         {
+            if (solutionManager == null)
+            {
+                throw new ArgumentNullException(nameof(solutionManager));
+            }
+
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
         }
@@ -35,8 +40,11 @@ namespace NuGet.PackageManagement.UI
         public async override Task SetCurrentPackageAsync(
             PackageItemViewModel searchResultPackage,
             ItemFilter filter,
-            Func<PackageItemViewModel> getPackageItemViewModel)
+            Func<PackageItemViewModel> getPackageItemViewModel,
+            CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             // Set InstalledVersion before fetching versions list.
             PackageLevel = searchResultPackage.PackageLevel;
             InstalledVersion = searchResultPackage.InstalledVersion;
@@ -51,7 +59,7 @@ namespace NuGet.PackageManagement.UI
 
             OnPropertyChanged(nameof(VersionsView));
 
-            await base.SetCurrentPackageAsync(searchResultPackage, filter, getPackageItemViewModel);
+            await base.SetCurrentPackageAsync(searchResultPackage, filter, getPackageItemViewModel, token);
 
             // SetCurrentPackage can take long time to return, user might changed selected package.
             // Check selected package.
@@ -107,12 +115,6 @@ namespace NuGet.PackageManagement.UI
         {
             UpdateInstalledVersion();
             await CreateVersionsAsync(cancellationToken);
-        }
-
-        private static bool HasId(string id, IEnumerable<PackageIdentity> packages)
-        {
-            return packages.Any(p =>
-                StringComparer.OrdinalIgnoreCase.Equals(p.Id, id));
         }
 
         public override void CleanUp()

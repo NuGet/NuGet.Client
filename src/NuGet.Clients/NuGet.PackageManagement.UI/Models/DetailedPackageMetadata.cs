@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
-using NuGet.Protocol;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -19,6 +18,11 @@ namespace NuGet.PackageManagement.UI
 
         public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, long? downloadCount)
         {
+            if (serverData == null)
+            {
+                throw new ArgumentNullException(nameof(serverData));
+            }
+
             Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;

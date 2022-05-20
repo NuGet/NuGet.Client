@@ -24,18 +24,20 @@ using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
-namespace NuGet.PackageManagement.UI.Test.Models
+namespace NuGet.PackageManagement.UI.Test
 {
     [Collection(MockedVS.Collection)]
     public abstract class V3DetailControlModelTestBase : IClassFixture<V3PackageSearchMetadataFixture>
     {
         protected readonly V3PackageSearchMetadataFixture _testData;
         protected readonly PackageItemViewModel _testViewModel;
+        protected readonly Mock<IReconnectingNuGetSearchService> _reconnectingSearchServiceMock;
 
         public V3DetailControlModelTestBase(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
         {
             sp.Reset();
             _testData = testData;
+            _reconnectingSearchServiceMock = new Mock<IReconnectingNuGetSearchService>();
 
             // The versions pre-baked into the view model provide data for the first step of metadata extraction
             // which fails (null) in a V3 scenario--they need to be extracted using a metadata provider (below)
@@ -44,9 +46,16 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion(0, 0, 1)),
                 new VersionInfoContextInfo(new NuGetVersion(0, 0, 2))
             };
+            _reconnectingSearchServiceMock.Setup(ss => ss.GetPackageVersionsAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<IEnumerable<IProjectContextInfo>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<VersionInfoContextInfo>>(testVersions));
 
-            var searchService = new Mock<IReconnectingNuGetSearchService>();
-            _testViewModel = new PackageItemViewModel(searchService.Object)
+            _testViewModel = new PackageItemViewModel(_reconnectingSearchServiceMock.Object)
             {
                 Id = "nuget.psm",
                 Version = testVersion,
@@ -82,8 +91,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
     {
         private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>(TypeEquivalenceComparer.Instance);
         private readonly PackageDetailControlModel _testInstance;
-    public V3PackageDetailControlModelTests(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
-            : base(sp, testData)
+        public V3PackageDetailControlModelTests(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
+                : base(sp, testData)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
 
@@ -92,9 +101,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 PackageSearchMetadataContextInfo.Create(_testData.TestData)
             };
 
-            var mockSearchService = new Mock<INuGetSearchService>();
-            mockSearchService.Setup(x =>
-                x.GetPackageMetadataListAsync(
+            _reconnectingSearchServiceMock.Setup(x => x.GetPackageMetadataListAsync(
                     It.IsAny<string>(),
                     It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                     It.IsAny<bool>(),
@@ -102,15 +109,14 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>>(packageSearchMetadata));
 
-            mockSearchService.Setup(x =>
-                x.GetDeprecationMetadataAsync(
+            _reconnectingSearchServiceMock.Setup(x => x.GetDeprecationMetadataAsync(
                     It.IsAny<PackageIdentity>(),
                     It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(null);
 
-            mockSearchService.Setup(x => x.GetPackageMetadataAsync(
+            _reconnectingSearchServiceMock.Setup(x => x.GetPackageMetadataAsync(
                     It.IsAny<PackageIdentity>(),
                     It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                     It.IsAny<bool>(),
@@ -118,14 +124,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .Returns(new ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>((packageSearchMetadata[0], null)));
 
             var mockServiceBroker = new Mock<IServiceBroker>();
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(
+            _ = mockServiceBroker.Setup(
                 x => x.GetProxyAsync<INuGetSearchService>(
                     NuGetServices.SearchService,
                     It.IsAny<ServiceActivationOptions>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(new ValueTask<INuGetSearchService>(mockSearchService.Object));
-#pragma warning restore ISB001 // Dispose of proxies
+                .Returns(new ValueTask<INuGetSearchService>(_reconnectingSearchServiceMock.Object));
 
             _testInstance = new PackageDetailControlModel(
                 mockServiceBroker.Object,
@@ -134,7 +138,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
-                () => null).Wait();
+                () => _testViewModel,
+                CancellationToken.None).Wait();
         }
 
         [Fact]
@@ -167,7 +172,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
+        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDescAsync()
         {
             // Arrange
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
@@ -187,19 +192,24 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
+            var packageMetadata = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("package", installedVersion),
+            };
             var vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "package",
                 InstalledVersion = installedVersion,
                 Version = installedVersion,
+                PackageMetadata = PackageSearchMetadataContextInfo.Create(packageMetadata),
             };
 
             // Act
-
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             var expectedAdditionalInfo = string.Empty;
@@ -223,7 +233,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public async Task SetCurrentPackageAsync_ClearVersions_Always()
+        public async Task SetCurrentPackageAsync_ClearVersions_AlwaysAsync()
         {
             // Arrange
             var installedVersion = NuGetVersion.Parse("1.0.0");
@@ -240,12 +250,18 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                 It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-            var vm = new PackageItemViewModel(searchService.Object);
-
-            vm.Id = "a";
-            vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
-            vm.InstalledVersion = installedVersion;
-            vm.Version = installedVersion;
+            var packageMetadata = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("package", installedVersion),
+            };
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                PackageMetadata = PackageSearchMetadataContextInfo.Create(packageMetadata),
+                Id = "a",
+                Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>()),
+                InstalledVersion = installedVersion,
+                Version = installedVersion
+            };
 
             // Test Setup already selected a package.
             int previousVersionListCount = _testInstance.Versions.Count;
@@ -273,7 +289,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
 
@@ -312,10 +329,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
 
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(projectManagerService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
 
             var project = new Mock<IProjectContextInfo>();
 
@@ -333,10 +348,24 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
                 new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
             };
-
+            var ipsm = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("Contoso.A", NuGetVersion.Parse("1.0.0")),
+            };
+            var psmCtxInfo = PackageSearchMetadataContextInfo.Create(ipsm);
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
+            searchService.Setup(ss => ss.GetPackageMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((psmCtxInfo, null));
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<IReconnectingNuGetSearchService>(
+                    It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.SearchService.Moniker),
+                    It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(searchService.Object);
 
             // Act
             var vm = new PackageItemViewModel(searchService.Object)
@@ -351,7 +380,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.Installed,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
@@ -393,10 +423,9 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
 
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(projectManagerService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
+
 
             var project = new Mock<IProjectContextInfo>();
 
@@ -418,6 +447,19 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
+            var ipsm = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("Contoso.A", NuGetVersion.Parse("1.0.0")),
+            };
+            var psmCtxInfo = PackageSearchMetadataContextInfo.Create(ipsm);
+            searchService.Setup(ss => ss.GetPackageMetadataAsync(
+                    It.IsAny<PackageIdentity>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((psmCtxInfo, null));
+            _ = mockServiceBroker.Setup(x => x.GetProxyAsync<IReconnectingNuGetSearchService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.SearchService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(searchService.Object);
 
             // Act
             var vm = new PackageItemViewModel(searchService.Object)
@@ -432,7 +474,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
@@ -521,7 +564,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 await _testInstance.SetCurrentPackageAsync(
                     _testViewModel,
                     ItemFilter.All,
-                    () => null);
+                    () => null,
+                    CancellationToken.None);
             });
         }
 
@@ -536,7 +580,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
+        public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDescAsync()
         {
             // Arrange
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
@@ -555,20 +599,24 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-
+            var packageMetadata = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("package", installedVersion),
+            };
             var vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "package",
                 InstalledVersion = installedVersion,
                 Version = installedVersion,
+                PackageMetadata = PackageSearchMetadataContextInfo.Create(packageMetadata),
             };
 
             // Act
-
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
             var expectedAdditionalInfo = string.Empty;
@@ -592,7 +640,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public async Task SetCurrentPackageAsync_ClearVersions_Always()
+        public async Task SetCurrentPackageAsync_ClearVersions_AlwaysAsync()
         {
             // Arrange
             var installedVersion = NuGetVersion.Parse("1.0.0");
@@ -609,12 +657,18 @@ namespace NuGet.PackageManagement.UI.Test.Models
             searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
                 It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
-            var vm = new PackageItemViewModel(searchService.Object);
-
-            vm.Id = "a";
-            vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
-            vm.InstalledVersion = installedVersion;
-            vm.Version = installedVersion;
+            var packageMetadata = new TestPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("package", installedVersion),
+            };
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "a",
+                Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>()),
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+                PackageMetadata = PackageSearchMetadataContextInfo.Create(packageMetadata),
+            };
 
             // Test Setup already selected a package.
             int previousVersionListCount = _testInstance.Versions.Count;
@@ -642,10 +696,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await _testInstance.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
-                () => vm);
+                () => vm,
+                CancellationToken.None);
 
             // Assert
-
             Assert.True(previousVersionListCount > 0, "Test setup did not pre-populate versions list.");
             Assert.True(wasVersionsListCleared, "Versions list was not cleared.");
         }

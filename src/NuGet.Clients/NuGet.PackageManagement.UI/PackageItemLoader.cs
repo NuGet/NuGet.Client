@@ -15,7 +15,6 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -139,15 +138,6 @@ namespace NuGet.PackageManagement.UI
                 _packageFileService?.Dispose();
                 _packageFileService = await GetPackageFileServiceAsync(CancellationToken.None);
             }).PostOnFailure(nameof(PackageItemLoader), nameof(OnAvailabilityChanged));
-        }
-
-        private async ValueTask<INuGetSearchService> GetSearchServiceAsync(CancellationToken cancellationToken)
-        {
-#pragma warning disable ISB001 // Dispose of proxies
-            INuGetSearchService searchService = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken);
-#pragma warning restore ISB001 // Dispose of proxies
-            Assumes.NotNull(searchService);
-            return searchService;
         }
 
         private async ValueTask<INuGetPackageFileService> GetPackageFileServiceAsync(CancellationToken cancellationToken)
@@ -307,8 +297,9 @@ namespace NuGet.PackageManagement.UI
                 {
                     listItem.UpdatePackageStatus(_installedPackages);
                 }
-                else
+                else // is transitive
                 {
+                    listItem.Project = _context.Projects.First();
                     listItem.UpdateTransitivePackageStatus(metadata.Identity.Version);
                 }
 
@@ -316,27 +307,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             return listItemViewModels.ToArray();
-        }
-
-        private async Task<PackageDeprecationMetadataContextInfo> GetDeprecationMetadataAsync(PackageIdentity identity)
-        {
-            Assumes.NotNull(identity);
-
-            return await _searchService.GetDeprecationMetadataAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
-        }
-
-        private async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionInfoAsync(PackageIdentity identity)
-        {
-            Assumes.NotNull(identity);
-
-            return await _searchService.GetPackageVersionsAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
-        }
-
-        private async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataContextInfoAsync(PackageIdentity identity)
-        {
-            Assumes.NotNull(identity);
-
-            return await _searchService.GetPackageMetadataAsync(identity, _packageSources, _includePrerelease, CancellationToken.None);
         }
 
         public void Dispose()

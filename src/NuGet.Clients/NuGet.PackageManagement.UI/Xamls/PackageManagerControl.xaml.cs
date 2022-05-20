@@ -1074,7 +1074,7 @@ namespace NuGet.PackageManagement.UI
 
                 EmitSearchSelectionTelemetry(selectedItem);
 
-                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem, cancellationToken);
                 _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
 
                 _packageDetail.ScrollToHome();
