@@ -1,2 +1,0 @@
-NuGet.Build.Tasks.Pack.IPackTaskLogic.GetPackArgs(NuGet.Build.Tasks.Pack.IPackTaskRequest<NuGet.Commands.IMSBuildItem> request, NuGet.Commands.PackCommand.WarningPropertiesCollection warningPropertiesCollection) -> NuGet.Commands.PackArgs
-NuGet.Build.Tasks.Pack.PackTaskLogic.GetPackArgs(NuGet.Build.Tasks.Pack.IPackTaskRequest<NuGet.Commands.IMSBuildItem> request, NuGet.Commands.PackCommand.WarningPropertiesCollection warningPropertiesCollection) -> NuGet.Commands.PackArgs
