@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.UI
             SearchResult = searchResultPackage;
             _filter = filter;
 
-            DetailedPackageMetadata meta = null;
+            DetailedPackageMetadata meta;
             if (searchResultPackage.PackageMetadata != null)
             {
                 meta = new DetailedPackageMetadata(searchResultPackage.PackageMetadata, searchResultPackage.DeprecationMetadata, searchResultPackage.DownloadCount);

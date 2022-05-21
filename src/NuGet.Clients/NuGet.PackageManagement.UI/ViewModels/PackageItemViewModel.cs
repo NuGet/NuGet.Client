@@ -690,8 +690,9 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                PackageSearchMetadataContextInfo meta = null;
-                PackageDeprecationMetadataContextInfo deprecation = null;
+                PackageSearchMetadataContextInfo meta;
+                PackageDeprecationMetadataContextInfo deprecation;
+
                 (meta, deprecation) = await ReloadPackageMetadataAsync(Version, cancellationToken);
                 PackageMetadata = meta;
                 DeprecationMetadata = deprecation;
@@ -709,20 +710,7 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
         {
             token.ThrowIfCancellationRequested();
-            PackageSearchMetadataContextInfo meta = null;
-            PackageDeprecationMetadataContextInfo deprecation = null;
-            var identity = new PackageIdentity(Id, newVersion);
-            if (PackageLevel == PackageLevel.TopLevel || !newVersion.Equals(Version))
-            {
-                (meta, deprecation) = await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, PackageLevel == PackageLevel.Transitive, token);
-            }
-            else if (PackageLevel == PackageLevel.Transitive)
-            {
-                // Get only local metadata for transitive packages
-                meta = await _searchService.GetPackageMetadataFromLocalSourcesAsync(identity, Project, Sources, token);
-            }
-
-            return (meta, deprecation);
+            return await _searchService.GetPackageMetadataAsync(new PackageIdentity(Id, newVersion), Sources, IncludePrerelease, token);
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)
