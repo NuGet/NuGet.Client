@@ -197,6 +197,8 @@ namespace NuGet.PackageManagement.UI
 
         protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // The value will be null if the server does not return any versions.
             if (_allPackageVersions == null || _allPackageVersions.Count == 0)
             {

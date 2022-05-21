@@ -804,6 +804,8 @@ namespace NuGet.PackageManagement.UI
 
         private async Task RecreateVersionsAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             await CreateVersionsAsync(token);
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await OnCurrentPackageChangedAsync(token))
