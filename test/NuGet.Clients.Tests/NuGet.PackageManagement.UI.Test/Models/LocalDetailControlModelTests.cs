@@ -210,6 +210,15 @@ namespace NuGet.PackageManagement.UI.Test.Models
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await model.SetCurrentPackageAsync(null, It.IsAny<ItemFilter>(), () => null, CancellationToken.None));
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await model.SetCurrentPackageAsync(It.IsAny<PackageItemViewModel>(), It.IsAny<ItemFilter>(), null, CancellationToken.None));
         }
+
+        [Fact]
+        public void PackageDetailControlModel_WithNullArgument_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => new PackageDetailControlModel(
+                Mock.Of<IServiceBroker>(),
+                null,
+                projects: new IProjectContextInfo[] { }));
+        }
     }
 
     public class LocalPackageSolutionDetailControlModelTests : LocalDetailControlModelTestBase
