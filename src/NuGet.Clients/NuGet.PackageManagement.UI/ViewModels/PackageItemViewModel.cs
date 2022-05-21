@@ -509,6 +509,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        internal PackageSearchMetadataContextInfo PackageMetadata { get; set; }
+
         private (BitmapSource, IconBitmapStatus) GetInitialIconBitmapAndStatus()
         {
             BitmapSource imageBitmap = null;
@@ -679,8 +681,6 @@ namespace NuGet.PackageManagement.UI
                 // UI requested cancellation
             }
         }
-
-        internal PackageSearchMetadataContextInfo PackageMetadata { get; set; }
 
         private async Task ReloadPackageMetadataAsync()
         {
