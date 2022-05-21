@@ -7,6 +7,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
+using Moq;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -44,6 +45,12 @@ namespace NuGet.PackageManagement.UI
             var target = new DetailedPackageMetadata(packageSearchMetadataContextInfo, deprecationMetadata: null, downloadCount: null);
 
             Assert.Equal(expected, target.PackageDetailsText);
+        }
+
+        [Fact]
+        public void DetailedPackageMetadata_WithNullPackageSearchMetadataContextInfo_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => new DetailedPackageMetadata(null, It.IsAny<PackageDeprecationMetadataContextInfo>(), It.IsAny<long?>()));
         }
     }
 }

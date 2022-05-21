@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -175,6 +176,39 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.NotNull(model.SelectedVersion);
             Assert.NotNull(model.InstalledVersion);
             Assert.True(model.IsSelectedVersionInstalled);
+        }
+
+        [Fact]
+        public async Task SetCurrentPackageAsync_WithCancellationToken_ThrowsAsync()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            var project = new Mock<IProjectContextInfo>();
+            var model = new PackageDetailControlModel(
+               Mock.Of<IServiceBroker>(),
+               Mock.Of<INuGetSolutionManagerService>(),
+               projects: new[] { project.Object });
+
+            // Act
+            cts.Cancel();
+
+            // Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await model.SetCurrentPackageAsync(It.IsAny<PackageItemViewModel>(), It.IsAny<ItemFilter>(), () => null, cts.Token));
+        }
+
+        [Fact]
+        public async Task SetCurrentPackageAsync_WithNullArguments_ThrowsAsync()
+        {
+            // Arrange
+            var project = new Mock<IProjectContextInfo>();
+            var model = new PackageDetailControlModel(
+               Mock.Of<IServiceBroker>(),
+               Mock.Of<INuGetSolutionManagerService>(),
+               projects: new[] { project.Object });
+
+            // Act and Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await model.SetCurrentPackageAsync(null, It.IsAny<ItemFilter>(), () => null, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await model.SetCurrentPackageAsync(It.IsAny<PackageItemViewModel>(), It.IsAny<ItemFilter>(), null, CancellationToken.None));
         }
     }
 
