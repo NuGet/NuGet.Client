@@ -11,6 +11,7 @@ namespace NuGet.ContentModel
     public class ContentItemCollection
     {
         private List<Asset> _assets;
+        private Dictionary<string, string> _assemblyRelatedExtensions;
 
         /// <summary>
         /// True if lib/contract exists
@@ -43,6 +44,8 @@ namespace NuGet.ContentModel
                     }
                 }
             }
+
+            _assemblyRelatedExtensions = new Dictionary<string, string>();
         }
 
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
@@ -271,7 +274,7 @@ namespace NuGet.ContentModel
                         //If the item is assembly, populate the "related files extentions property".
                         if (contentItem.Properties.ContainsKey("assembly"))
                         {
-                            string relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem, assets);
+                            string relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem.Path, assets);
                             if (relatedFileExtensionsProperty is not null)
                             {
                                 contentItem.Properties.Add("related", relatedFileExtensionsProperty);
@@ -286,16 +289,21 @@ namespace NuGet.ContentModel
             return itemsList;
         }
 
-        private string GetRelatedFileExtensionProperty(ContentItem contentItem, IEnumerable<Asset> assets)
+        private string GetRelatedFileExtensionProperty(string assemblyPath, IEnumerable<Asset> assets)
         {
             //E.g. if path is "lib/net472/A.B.C.dll", the prefix will be "lib/net472/A.B.C."
-            string assemblyPrefix = contentItem.Path.Substring(0, contentItem.Path.LastIndexOf('.') + 1);
+            string assemblyPrefix = assemblyPath.Substring(0, assemblyPath.LastIndexOf('.') + 1);
+
+            if (_assemblyRelatedExtensions.TryGetValue(assemblyPrefix, out var relatedProperty))
+            {
+                return relatedProperty;
+            }
 
             List<string> relatedFileExtensionList = null;
             foreach (var asset in assets)
             {
                 if (asset.Path is not null &&
-                    asset.Path != contentItem.Path &&
+                    asset.Path != assemblyPath &&
                     asset.Path.StartsWith(assemblyPrefix, StringComparison.Ordinal))
                 {
                     if (relatedFileExtensionList is null)
@@ -314,7 +322,8 @@ namespace NuGet.ContentModel
             else
             {
                 relatedFileExtensionList.Sort();
-                string relatedFileExtensionsProperty = String.Join(";", relatedFileExtensionList.ToArray());
+                string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList.ToArray());
+                _assemblyRelatedExtensions.Add(assemblyPrefix, relatedFileExtensionsProperty);
                 return relatedFileExtensionsProperty;
             }
         }

@@ -250,6 +250,102 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public async Task RelatedProperty_TopLevelPackageWithMultipleAssetsMultipleTFMs_RelatedPropertyAppliedOnCompileRuntimeEmbedOnly()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var frameworks = new string[] { "net5.0", "net6.0" };
+                // A -> packaegX
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    "A",
+                    pathContext.SolutionRoot,
+                    frameworks);
+
+                var packageX = new SimpleTestPackageContext("packageX", "1.0.0");
+                packageX.Files.Clear();
+                // Compile
+                packageX.AddFile("ref/net5.0/X.dll");
+                packageX.AddFile("ref/net5.0/X.xml");
+
+                packageX.AddFile("ref/net6.0/X.dll");
+                packageX.AddFile("ref/net6.0/X.pdb");
+                // Runtime
+                packageX.AddFile("lib/net5.0/X.dll");
+                packageX.AddFile("lib/net5.0/X.xml");
+
+                packageX.AddFile("lib/net6.0/X.dll");
+                packageX.AddFile("lib/net6.0/X.pdb");
+                // Embed
+                packageX.AddFile("embed/net5.0/X.dll");
+                packageX.AddFile("embed/net5.0/X.xml");
+
+                packageX.AddFile("embed/net6.0/X.dll");
+                packageX.AddFile("embed/net6.0/X.pdb");
+                // Resources
+                packageX.AddFile("lib/net5.0/en-US/X.resources.dll");
+                packageX.AddFile("lib/net5.0/en-US/X.resources.xml");
+
+                packageX.AddFile("lib/net6.0/en-US/X.resources.dll");
+                packageX.AddFile("lib/net6.0/en-US/X.resources.pdb");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+                projectA.Sources = sources;
+                projectA.FallbackFolders = new List<string>();
+                projectA.FallbackFolders.Add(pathContext.FallbackFolder);
+                projectA.GlobalPackagesFolder = pathContext.UserPackagesFolder;
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(projectA.PackageSpec, projectA.Sources, pathContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = projectA.AssetsFileOutputPath
+                };
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Asert
+                Assert.True(result.Success);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                var targetsNet5 = assetsFile.GetTarget(NuGetFramework.Parse("net5.0"), null);
+                var libNet5 = targetsNet5.Libraries.Single();
+                var targetsNet6 = assetsFile.GetTarget(NuGetFramework.Parse("net6.0"), null);
+                var libNet6 = targetsNet6.Libraries.Single();
+
+                // Compile, "related" property is applied.
+                var compileAssembliesNet5 = libNet5.CompileTimeAssemblies;
+                AssertRelatedProperty(compileAssembliesNet5, "ref/net5.0/X.dll", ".xml");
+                var compileAssembliesNet6 = libNet6.CompileTimeAssemblies;
+                AssertRelatedProperty(compileAssembliesNet6, "ref/net6.0/X.dll", ".pdb");
+
+                // Runtime, "related" property is applied.
+                var runtimeAssembliesNet5 = libNet5.RuntimeAssemblies;
+                AssertRelatedProperty(runtimeAssembliesNet5, "lib/net5.0/X.dll", ".xml");
+                var runtimeAssembliesNet6 = libNet6.RuntimeAssemblies;
+                AssertRelatedProperty(runtimeAssembliesNet6, "lib/net6.0/X.dll", ".pdb");
+
+                // Embed, "related" property is applied.
+                var embedAssembliesNet5 = libNet5.EmbedAssemblies;
+                AssertRelatedProperty(embedAssembliesNet5, "embed/net5.0/X.dll", ".xml");
+                var embedAssembliesNet6 = libNet6.EmbedAssemblies;
+                AssertRelatedProperty(embedAssembliesNet6, "embed/net6.0/X.dll", ".pdb");
+
+                // Resources, "related" property is NOT applied.
+                var resourceAssembliesNet5 = libNet5.ResourceAssemblies;
+                AssertRelatedProperty(resourceAssembliesNet5, "lib/net5.0/en-US/X.resources.dll", null);
+                var resourceAssembliesNet6 = libNet6.ResourceAssemblies;
+                AssertRelatedProperty(resourceAssembliesNet6, "lib/net6.0/en-US/X.resources.dll", null);
+            }
+        }
 
         private void AssertRelatedProperty(IList<LockFileItem> items, string path, string related)
         {
