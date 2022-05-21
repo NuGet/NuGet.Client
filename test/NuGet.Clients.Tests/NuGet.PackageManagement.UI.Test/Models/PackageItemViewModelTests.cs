@@ -401,6 +401,23 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [Fact]
+        public async Task GetVersionsAsync_WithCancellationToken_ThrowsAsync()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            var packageItemViewModel = new PackageItemViewModel(_searchService.Object)
+            {
+                Id = "test",
+            };
+
+            // Act
+            cts.Cancel();
+
+            // Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await packageItemViewModel.GetVersionsAsync(It.IsAny<IEnumerable<IProjectContextInfo>>(), cts.Token));
+        }
+
         private static void VerifyImageResult(object result, IconBitmapStatus bitmapStatus)
         {
             Assert.NotNull(result);
