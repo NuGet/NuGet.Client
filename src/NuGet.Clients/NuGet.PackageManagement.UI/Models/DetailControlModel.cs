@@ -782,7 +782,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Reload package metadata from remote/local NuGet feeds
+        /// Reloads package metadata from remote/local NuGet feeds using ViewModel object
         /// </summary>
         private async ValueTask<DetailedPackageMetadata> ReloadDetailedMetadataAsync(PackageItemViewModel searchResultPackage, NuGetVersion newVersion, Func<PackageItemViewModel> getCurrentPackageItemViewModel, CancellationToken cancellationToken)
         {

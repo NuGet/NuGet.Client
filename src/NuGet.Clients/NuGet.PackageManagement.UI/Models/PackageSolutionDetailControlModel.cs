@@ -117,6 +117,8 @@ namespace NuGet.PackageManagement.UI
 
         private async Task UpdateInstalledVersionsAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var hash = new HashSet<NuGetVersion>();
 
             foreach (var project in _projects)
