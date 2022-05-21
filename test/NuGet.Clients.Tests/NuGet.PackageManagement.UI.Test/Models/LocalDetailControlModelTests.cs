@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             cts.Cancel();
 
             // Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await model.SetCurrentPackageAsync(It.IsAny<PackageItemViewModel>(), It.IsAny<ItemFilter>(), () => null, cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await model.SetCurrentPackageAsync(_testViewModel, It.IsAny<ItemFilter>(), () => null, cts.Token));
         }
 
         [Fact]
