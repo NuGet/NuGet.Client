@@ -40,8 +40,6 @@ namespace NuGet.PackageManagement.UI
             _searchService = searchService;
         }
 
-        public IProjectContextInfo Project { get; set; }
-
         // same URIs can reuse the bitmapImage that we've already used.
         private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
 

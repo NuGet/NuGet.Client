@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI
         // Project constraints on the allowed package versions.
         protected List<ProjectVersionConstraint> _projectVersionConstraints;
 
-        private readonly Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
+        private readonly Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict = new();
 
         protected DetailControlModel(
             IServiceBroker serviceBroker,
