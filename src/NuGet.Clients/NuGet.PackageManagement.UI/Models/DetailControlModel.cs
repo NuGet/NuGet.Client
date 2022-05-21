@@ -178,7 +178,9 @@ namespace NuGet.PackageManagement.UI
                     VersionRange range = packageReference?.AllowedVersions;
                     if (range != null && !VersionRange.All.Equals(range))
                     {
-                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(ServiceBroker, token);
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                            ServiceBroker,
+                            token);
                         constraint = new ProjectVersionConstraint()
                         {
                             ProjectName = projectMetadata.Name,
@@ -199,7 +201,9 @@ namespace NuGet.PackageManagement.UI
 
                     if (autoReferenced != null)
                     {
-                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(ServiceBroker, token);
+                        IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                            ServiceBroker,
+                            token);
                         // Add constraint for auto referenced package.
                         constraint = new ProjectVersionConstraint()
                         {
