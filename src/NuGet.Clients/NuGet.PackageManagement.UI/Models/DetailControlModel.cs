@@ -162,21 +162,6 @@ namespace NuGet.PackageManagement.UI
             SearchResult = searchResultPackage;
             _filter = filter;
 
-            DetailedPackageMetadata meta;
-            if (searchResultPackage.PackageMetadata != null)
-            {
-                meta = new DetailedPackageMetadata(searchResultPackage.PackageMetadata, searchResultPackage.DeprecationMetadata, searchResultPackage.DownloadCount);
-            }
-            else
-            {
-                meta = await ReloadDetailedMetadataAsync(searchResultPackage, searchResultPackage.Version, getPackageItemViewModel, token);
-            }
-            if (meta != null)
-            {
-                PackageMetadata = meta;
-                _metadataDict[meta.Version] = meta;
-            }
-
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
             // Filter out projects that are not managed by NuGet.
             var projects = _nugetProjects.Where(project => project.ProjectKind != NuGetProjectKind.ProjectK).ToArray();
@@ -256,9 +241,26 @@ namespace NuGet.PackageManagement.UI
                 .Where(v => v?.Version != null)
                 .Select(GetVersion)
                 .ToList();
+
             await CreateVersionsAsync(token);
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await OnCurrentPackageChangedAsync(token))
                 .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChangedAsync));
+
+            DetailedPackageMetadata meta;
+            if (searchResultPackage.PackageMetadata != null)
+            {
+                meta = new DetailedPackageMetadata(searchResultPackage.PackageMetadata, searchResultPackage.DeprecationMetadata, searchResultPackage.DownloadCount);
+            }
+            else
+            {
+                meta = await ReloadDetailedMetadataAsync(searchResultPackage, searchResultPackage.Version, getPackageItemViewModel, token);
+            }
+            if (meta != null)
+            {
+                PackageMetadata = meta;
+                _metadataDict[meta.Version] = meta;
+            }
         }
 
         private (NuGetVersion version, bool isDeprecated) GetVersion(VersionInfoContextInfo versionInfo)

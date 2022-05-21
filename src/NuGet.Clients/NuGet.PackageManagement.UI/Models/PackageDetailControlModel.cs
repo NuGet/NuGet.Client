@@ -43,6 +43,14 @@ namespace NuGet.PackageManagement.UI
             Func<PackageItemViewModel> getPackageItemViewModel,
             CancellationToken token)
         {
+            if (searchResultPackage == null)
+            {
+                throw new ArgumentNullException(nameof(searchResultPackage));
+            }
+            if (getPackageItemViewModel == null)
+            {
+                throw new ArgumentNullException(nameof(getPackageItemViewModel));
+            }
             token.ThrowIfCancellationRequested();
 
             // Set InstalledVersion before fetching versions list.
