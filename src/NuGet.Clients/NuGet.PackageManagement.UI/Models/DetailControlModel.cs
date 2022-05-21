@@ -228,9 +228,7 @@ namespace NuGet.PackageManagement.UI
             {
                 (searchResultPackage.Version, false)
             };
-            await CreateVersionsAsync(token);
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await OnCurrentPackageChangedAsync(token))
-                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChangedAsync));
+            await RecreateVersionsAsync(token);
 
             // GetVersionAsync can take long time to finish, user might changed selected package.
             // Check selected package.
@@ -245,11 +243,7 @@ namespace NuGet.PackageManagement.UI
                 .Where(v => v?.Version != null)
                 .Select(GetVersion)
                 .ToList();
-
-            await CreateVersionsAsync(token);
-
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await OnCurrentPackageChangedAsync(token))
-                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChangedAsync));
+            await RecreateVersionsAsync(token);
 
             DetailedPackageMetadata meta;
             if (searchResultPackage.PackageMetadata != null)
@@ -267,7 +261,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private (NuGetVersion version, bool isDeprecated) GetVersion(VersionInfoContextInfo versionInfo)
+        private static (NuGetVersion version, bool isDeprecated) GetVersion(VersionInfoContextInfo versionInfo)
         {
             var isDeprecated = false;
             if (versionInfo.PackageSearchMetadata != null)
@@ -550,27 +544,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        /// <summary>
-        /// Reload package metadata from remote/local nuget feeds
-        /// </summary>
-        private async ValueTask<DetailedPackageMetadata> ReloadDetailedMetadataAsync(PackageItemViewModel searchResultPackage, NuGetVersion newVersion, Func<PackageItemViewModel> getCurrentPackageItemViewModel, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            DetailedPackageMetadata result = null;
-            // Getting the metadata can take a while, check to see if its still selected
-            if (getCurrentPackageItemViewModel() == searchResultPackage)
-            {
-                PackageSearchMetadataContextInfo meta;
-                PackageDeprecationMetadataContextInfo deprecation;
-                (meta, deprecation) = await searchResultPackage.ReloadPackageMetadataAsync(newVersion, cancellationToken);
-
-                result = new DetailedPackageMetadata(meta, deprecation, meta?.DownloadCount);
-            }
-
-            return result;
-        }
-
         private async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, NuGetVersion newVersion, CancellationToken cancellationToken)
         {
             // Load the detailed metadata that we already have and check to see if this matches what is selected, we cannot use the _metadataDict here unfortunately as it won't be populated yet
@@ -806,6 +779,35 @@ namespace NuGet.PackageManagement.UI
                     _searchResultPackage.AutoReferenced = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Reload package metadata from remote/local NuGet feeds
+        /// </summary>
+        private async ValueTask<DetailedPackageMetadata> ReloadDetailedMetadataAsync(PackageItemViewModel searchResultPackage, NuGetVersion newVersion, Func<PackageItemViewModel> getCurrentPackageItemViewModel, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            DetailedPackageMetadata result = null;
+            // Getting the metadata can take a while, check to see if its still selected
+            if (getCurrentPackageItemViewModel() == searchResultPackage)
+            {
+                PackageSearchMetadataContextInfo meta;
+                PackageDeprecationMetadataContextInfo deprecation;
+                (meta, deprecation) = await searchResultPackage.ReloadPackageMetadataAsync(newVersion, cancellationToken);
+
+                result = new DetailedPackageMetadata(meta, deprecation, meta?.DownloadCount);
+            }
+
+            return result;
+        }
+
+        private async Task RecreateVersionsAsync(CancellationToken token)
+        {
+            await CreateVersionsAsync(token);
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await OnCurrentPackageChangedAsync(token))
+                .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChangedAsync));
         }
     }
 }
