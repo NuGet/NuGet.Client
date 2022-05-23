@@ -690,12 +690,12 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    SelectVersionNonPakageReferenceProject(latestVersion);
+                    SelectVersionNonPackageReferenceProject(latestVersion);
                 }
             }
         }
 
-        private void SelectVersionNonPakageReferenceProject(NuGetVersion latestVersion)
+        private void SelectVersionNonPackageReferenceProject(NuGetVersion latestVersion)
         {
             IEnumerable<DisplayVersion> possibleVersions = _versions.Where(v => v != null);
             if (_filter.Equals(ItemFilter.UpdatesAvailable) || _filter.Equals(ItemFilter.All))
