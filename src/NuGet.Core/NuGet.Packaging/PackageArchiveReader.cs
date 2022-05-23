@@ -524,19 +524,21 @@ namespace NuGet.Packaging
                 // Please note: Linux/MAC case sensitive for env var name.
                 string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable("DOTNET_NUGET_SIGNATURE_VERIFICATION");
 
-                // Not opt-out option, only opt-in feature.
+                bool canVerify = RuntimeEnvironmentHelper.IsLinux && X509TrustStore.IsEnabled;
+
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable))
                 {
-                    if (signVerifyEnvVariable.Equals(bool.TrueString.ToUpperInvariant(), StringComparison.Ordinal))
+                    if (string.Equals(bool.TrueString, signVerifyEnvVariable, StringComparison.OrdinalIgnoreCase))
                     {
-                        return true;
+                        canVerify = true;
                     }
-
-                    // other values are unsupported
-                    return false;
+                    else if (string.Equals(bool.FalseString, signVerifyEnvVariable, StringComparison.OrdinalIgnoreCase))
+                    {
+                        canVerify = false;
+                    }
                 }
 
-                return false;
+                return canVerify;
             }
             else
             {

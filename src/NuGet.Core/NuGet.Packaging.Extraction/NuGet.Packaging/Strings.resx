@@ -882,4 +882,7 @@ Valid from:</comment>
     <value>The {0}'s timestamping certificate is not trusted by the trust provider.</value>
     <comment>0 -Signature friendly name</comment>
   </data>
+  <data name="ChainBuilding_UsingDefaultTrustStore" xml:space="preserve">
+    <value>X.509 certificate chain validation will use the default trust store selected by .NET.</value>
+  </data>
 </root>

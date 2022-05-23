@@ -34,6 +34,8 @@ namespace NuGet.Packaging.FuncTest
 
         public SigningTestFixture()
         {
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: true);
+
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
@@ -249,6 +251,8 @@ namespace NuGet.Packaging.FuncTest
             {
                 _testServer.Value.Result.Dispose();
             }
+
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: false);
         }
     }
 }

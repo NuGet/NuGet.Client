@@ -17,6 +17,8 @@ namespace NuGet.Commands.Test
 
         public CertificatesFixture()
         {
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: true);
+
             _defaultCertificate = SigningTestUtility.GenerateCertificate("test", generator => { });
 
             X509Certificate2 _defaultCertificateForTrust = SigningTestUtility.GenerateCertificate("test trusted", generator => { });
@@ -34,6 +36,8 @@ namespace NuGet.Commands.Test
                 _defaultCertificate.Dispose();
 
                 _trustedDefaultCertificate.Dispose();
+
+                TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: false);
 
                 GC.SuppressFinalize(this);
 

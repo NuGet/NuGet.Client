@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Test
 {
     using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
 
-    public class PackageExtractorTests
+    public class PackageExtractorTests : IDisposable
     {
         private static ClientPolicyContext _defaultContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, NullLogger.Instance);
 
@@ -42,6 +42,16 @@ namespace NuGet.Packaging.Test
         private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
         private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
         private const string UntrustedChainCertError = "The author primary signature's signing certificate is not trusted by the trust provider.";
+
+        public PackageExtractorTests()
+        {
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: true);
+        }
+
+        public void Dispose()
+        {
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: false);
+        }
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()

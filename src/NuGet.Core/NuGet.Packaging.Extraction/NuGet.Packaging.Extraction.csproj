@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'NuGet.sln'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -56,7 +56,7 @@
 
   <Target Name="GetFinalBuildOutput" Returns="@(DllsToIndex)">
     <ItemGroup>
-      <DllsToIndex Include="$(ILMergeDirectory)*.dll"/>
+      <DllsToIndex Include="$(ILMergeDirectory)*.dll" />
     </ItemGroup>
   </Target>
 
@@ -239,6 +239,9 @@
     <Compile Include="..\NuGet.Packaging\Signing\Timestamp\Extension.cs" Link="NuGet.Packaging\Signing\Timestamp\Extension.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\ITrustedSignersProvider.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" Link="NuGet.Packaging\Signing\TrustedSigners\TrustedSignersProvider.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\TrustStore\DotNetDefaultTrustStoreX509ChainFactory.cs" Link="NuGet.Packaging\Signing\TrustStore\DotNetDefaultTrustStoreX509ChainFactory.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\TrustStore\IX509ChainFactory.cs" Link="NuGet.Packaging\Signing\TrustStore\IX509ChainFactory.cs" />
+    <Compile Include="..\NuGet.Packaging\Signing\TrustStore\X509TrustStore.cs" Link="NuGet.Packaging\Signing\TrustStore\X509TrustStore.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Utility\RepositorySignatureInfoUtility.cs" Link="NuGet.Packaging\Signing\Utility\RepositorySignatureInfoUtility.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Utility\MarshalUtility.cs" Link="NuGet.Packaging\Signing\Utility\MarshalUtility.cs" />
     <Compile Include="..\NuGet.Packaging\Signing\Utility\CertificateUtility.cs" Link="NuGet.Packaging\Signing\Utility\CertificateUtility.cs" />
@@ -340,6 +343,7 @@
     <EmbeddedResource Update="NuGet.Packaging\Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>NuGet.Packaging</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Update="NuGet.Packaging\PackageCreation\Resources\NuGetResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -353,16 +357,16 @@
       <PathToMergedNPE>$(ILMergeDirectory)NuGet.Packaging.Extraction.dll</PathToMergedNPE>
     </PropertyGroup>
     <ItemGroup>
-      <MergeInclude Include="$(OutputPath)NuGet.Common.dll"/>
-      <MergeInclude Include="$(OutputPath)NuGet.Configuration.dll"/>
-      <MergeInclude Include="$(OutputPath)NuGet.Frameworks.dll"/>
-      <MergeInclude Include="$(OutputPath)NuGet.Versioning.dll"/>
+      <MergeInclude Include="$(OutputPath)NuGet.Common.dll" />
+      <MergeInclude Include="$(OutputPath)NuGet.Configuration.dll" />
+      <MergeInclude Include="$(OutputPath)NuGet.Frameworks.dll" />
+      <MergeInclude Include="$(OutputPath)NuGet.Versioning.dll" />
 
-      <MergeAllowdup Include="Strings"/>
-      <MergeAllowdup Include="EncodingUtility"/>
-      <MergeAllowdup Include="EqualityUtility"/>
-      <MergeAllowdup Include="HashCodeCombiner"/>
-      <MergeAllowdup Include="Extensions"/>
+      <MergeAllowdup Include="Strings" />
+      <MergeAllowdup Include="EncodingUtility" />
+      <MergeAllowdup Include="EqualityUtility" />
+      <MergeAllowdup Include="HashCodeCombiner" />
+      <MergeAllowdup Include="Extensions" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNPE)" Importance="High" />
   </Target>
@@ -371,7 +375,7 @@
           DependsOnTargets="DetermineILMergeNPEInputsOutputs"
           Inputs="$(PathToBuiltNPE);@(MergeInclude)"
           Outputs="$(PathToMergedNPE)"
-          Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNPE)' != 'true'" >
+          Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNPE)' != 'true'">
     <PropertyGroup>
       <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /t:library /out:$(PathToMergedNPE) @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>

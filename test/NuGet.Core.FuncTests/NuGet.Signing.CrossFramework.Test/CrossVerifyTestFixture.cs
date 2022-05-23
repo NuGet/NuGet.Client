@@ -38,6 +38,8 @@ namespace NuGet.Signing.CrossFramework.Test
 
         public CrossVerifyTestFixture()
         {
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: true);
+
 #if IS_DESKTOP
             var patchedCliFolder = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(sdkVersion: SdkVersion, sdkTfm: SdkTfm);
             _dotnetExePath = Path.Combine(patchedCliFolder, DotnetExe);
@@ -177,6 +179,8 @@ namespace NuGet.Signing.CrossFramework.Test
             }
 
             _responders.Dispose();
+
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: false);
         }
     }
 }

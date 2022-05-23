@@ -1,0 +1,2 @@
+NuGet.Packaging.Signing.X509TrustStore
+static NuGet.Packaging.Signing.X509TrustStore.InitializeForDotNetSdk(NuGet.Common.ILogger logger) -> void

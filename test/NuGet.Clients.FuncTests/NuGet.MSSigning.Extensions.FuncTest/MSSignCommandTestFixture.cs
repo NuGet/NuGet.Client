@@ -25,9 +25,10 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
 
-
         public MSSignCommandTestFixture()
         {
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: true);
+
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
@@ -143,6 +144,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             {
                 _testServer.Value.Result.Dispose();
             }
+
+            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: false);
         }
     }
 }
