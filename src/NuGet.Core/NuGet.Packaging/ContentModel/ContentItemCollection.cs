@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
@@ -11,7 +12,7 @@ namespace NuGet.ContentModel
     public class ContentItemCollection
     {
         private List<Asset> _assets;
-        private Dictionary<string, string> _assemblyRelatedExtensions;
+        private ConcurrentDictionary<string, string> _assemblyRelatedExtensions;
 
         /// <summary>
         /// True if lib/contract exists
@@ -45,7 +46,7 @@ namespace NuGet.ContentModel
                 }
             }
 
-            _assemblyRelatedExtensions = new Dictionary<string, string>();
+            _assemblyRelatedExtensions = new ConcurrentDictionary<string, string>();
         }
 
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
@@ -323,7 +324,7 @@ namespace NuGet.ContentModel
             {
                 relatedFileExtensionList.Sort();
                 string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList.ToArray());
-                _assemblyRelatedExtensions.Add(assemblyPrefix, relatedFileExtensionsProperty);
+                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, relatedFileExtensionsProperty);
                 return relatedFileExtensionsProperty;
             }
         }
