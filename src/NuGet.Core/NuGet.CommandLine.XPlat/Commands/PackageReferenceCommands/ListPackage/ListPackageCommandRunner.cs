@@ -164,13 +164,39 @@ namespace NuGet.CommandLine.XPlat
 
         private static void WarnForHttpSources(ListPackageArgs listPackageArgs)
         {
+            List<PackageSource> httpPackageSources = null;
             foreach (PackageSource packageSource in listPackageArgs.PackageSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps)
                 {
-                    listPackageArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "list package", packageSource.Source));
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
                 }
             }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    listPackageArgs.Logger.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage,
+                        "list package",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    listPackageArgs.Logger.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage_MultipleSources,
+                        "list package",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                }
+            }
+
         }
 
         public static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
