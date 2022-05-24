@@ -12,22 +12,22 @@ namespace NuGet.VisualStudio
 {
     internal class ExtensionManagerShim
     {
-        private static Type _iVsExtensionManagerType;
-        private static Type _sVsExtensionManagerType;
-        private static MethodInfo _tryGetInstalledExtensionMethod;
-        private static bool _typesInitialized;
+        private static Type IVsExtensionManagerType;
+        private static Type SVsExtensionManagerType;
+        private static MethodInfo TryGetInstalledExtensionMethod;
+        private static bool TypesInitialized;
 
         private readonly object _extensionManager;
 
         public ExtensionManagerShim(object extensionManager, Action<string> errorHandler)
         {
             InitializeTypes(errorHandler);
-            _extensionManager = extensionManager ?? AsyncPackage.GetGlobalService(_sVsExtensionManagerType);
+            _extensionManager = extensionManager ?? AsyncPackage.GetGlobalService(SVsExtensionManagerType);
         }
 
         private static void InitializeTypes(Action<string> errorHandler)
         {
-            if (_typesInitialized)
+            if (TypesInitialized)
             {
                 return;
             }
@@ -36,18 +36,18 @@ namespace NuGet.VisualStudio
             {
                 Assembly extensionManagerAssembly = AppDomain.CurrentDomain.GetAssemblies()
                     .First(a => a.FullName.StartsWith("Microsoft.VisualStudio.ExtensionManager,", StringComparison.InvariantCultureIgnoreCase));
-                _sVsExtensionManagerType =
+                SVsExtensionManagerType =
                     extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager");
-                _iVsExtensionManagerType =
+                IVsExtensionManagerType =
                     extensionManagerAssembly.GetType("Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager");
-                _tryGetInstalledExtensionMethod = _iVsExtensionManagerType.GetMethod("TryGetInstalledExtension",
+                TryGetInstalledExtensionMethod = IVsExtensionManagerType.GetMethod("TryGetInstalledExtension",
                     new[] { typeof(string), typeof(IInstalledExtension).MakeByRefType() });
-                if (_tryGetInstalledExtensionMethod == null || _sVsExtensionManagerType == null)
+                if (TryGetInstalledExtensionMethod == null || SVsExtensionManagerType == null)
                 {
                     throw new Exception();
                 }
 
-                _typesInitialized = true;
+                TypesInitialized = true;
             }
             catch
             {
@@ -61,7 +61,7 @@ namespace NuGet.VisualStudio
         {
             installPath = null;
             object[] parameters = { extensionId, null };
-            bool result = (bool)_tryGetInstalledExtensionMethod.Invoke(_extensionManager, parameters);
+            bool result = (bool)TryGetInstalledExtensionMethod.Invoke(_extensionManager, parameters);
             if (!result)
             {
                 return false;
