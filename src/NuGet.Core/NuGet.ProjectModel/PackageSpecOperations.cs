@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel
 
             if (!existing.Any())
             {
-                AddDependency(spec.Dependencies, dependency.Id, range);
+                AddDependency(spec.Dependencies, dependency.Id, range, spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }
         }
 
@@ -52,7 +52,17 @@ namespace NuGet.ProjectModel
 
             foreach (var list in lists)
             {
-                AddOrUpdateDependencyInDependencyList(list, dependency.Id, dependency.VersionRange);
+                AddOrUpdateDependencyInDependencyList(spec, list, dependency.Id, dependency.VersionRange);
+            }
+
+            if (spec.RestoreMetadata.CentralPackageVersionsEnabled)
+            {
+                var centralPackageVersionLists = GetCentralPackageVersions(spec, frameworksToAdd);
+
+                foreach (var centralPackageVersionList in centralPackageVersionLists)
+                {
+                    centralPackageVersionList[dependency.Id] = new CentralPackageVersion(dependency.Id, dependency.VersionRange);
+                }
             }
         }
 
@@ -117,6 +127,19 @@ namespace NuGet.ProjectModel
             }
         }
 
+        private static IEnumerable<IDictionary<string, CentralPackageVersion>> GetCentralPackageVersions(
+            PackageSpec spec,
+            IEnumerable<NuGetFramework> frameworksToConsider)
+        {
+            foreach (var targetFramework in spec.TargetFrameworks)
+            {
+                if (frameworksToConsider == null || frameworksToConsider.Contains(targetFramework.FrameworkName))
+                {
+                    yield return targetFramework.CentralPackageVersions;
+                }
+            }
+        }
+
         private static List<LibraryDependency> GetExistingDependencies(PackageSpec spec, string packageId)
         {
             return GetDependencyLists(spec, frameworksToConsider: null, includeGenericDependencies: true)
@@ -126,6 +149,7 @@ namespace NuGet.ProjectModel
         }
 
         private static void AddOrUpdateDependencyInDependencyList(
+            PackageSpec spec,
             IList<LibraryDependency> list,
             string packageId,
             VersionRange range)
@@ -142,12 +166,7 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                var dependency = new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package)
-                };
-
-                list.Add(dependency);
+                AddDependency(list, packageId, range, spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }
 
         }
@@ -155,11 +174,13 @@ namespace NuGet.ProjectModel
         private static void AddDependency(
             IList<LibraryDependency> list,
             string packageId,
-            VersionRange range)
+            VersionRange range,
+            bool versionCentrallyManaged)
         {
             var dependency = new LibraryDependency
             {
-                LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package)
+                LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package),
+                VersionCentrallyManaged = versionCentrallyManaged
             };
 
             list.Add(dependency);
