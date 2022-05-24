@@ -1,2 +1,0 @@
-NuGet.LibraryModel.LibraryDependency.VersionOverride.get -> NuGet.Versioning.VersionRange
-NuGet.LibraryModel.LibraryDependency.VersionOverride.set -> void

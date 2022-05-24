@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +13,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace NuGet.CommandLine.Test
+namespace Test.Utility
 {
     public class MockResponseBuilder
     {
@@ -170,23 +173,23 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        public MockResponse BuildRegistrationIndexResponse(MockServer mockServer, PackageIdentity[] packageIdentities)
+        public MockResponse BuildRegistrationIndexResponse(string serverUri, PackageIdentity[] packageIdentities)
         {
-            return BuildRegistrationIndexResponse(mockServer,
+            return BuildRegistrationIndexResponse(serverUri,
                 packageIdentities.Select(e =>
                     new KeyValuePair<PackageIdentity, bool>(
                         e,
                         true)).ToArray());
         }
 
-        public MockResponse BuildRegistrationIndexResponse(MockServer mockServer, KeyValuePair<PackageIdentity, bool>[] packageIdentityToListed)
+        public MockResponse BuildRegistrationIndexResponse(string serverUri, KeyValuePair<PackageIdentity, bool>[] packageIdentityToListed)
         {
             var id = packageIdentityToListed[0].Key.Id.ToLowerInvariant();
             var versions = packageIdentityToListed.Select(
                 e => new KeyValuePair<string, bool>(
                     e.Key.Version.ToNormalizedString().ToLowerInvariant(),
                     e.Value));
-            var registrationIndex = Util.CreatePackageRegistrationBlob(mockServer, id, versions);
+            var registrationIndex = FeedUtilities.CreatePackageRegistrationBlob(serverUri, id, versions);
 
             return new MockResponse
             {
@@ -212,12 +215,12 @@ namespace NuGet.CommandLine.Test
             };
         }
 
-        public MockResponse BuildV3IndexResponse(MockServer mockServer)
+        public MockResponse BuildV3IndexResponse(string serverUri)
         {
-            var indexJson = Util.CreateIndexJson();
+            var indexJson = FeedUtilities.CreateIndexJson();
 
-            Util.AddFlatContainerResource(indexJson, mockServer);
-            Util.AddRegistrationResource(indexJson, mockServer);
+            FeedUtilities.AddFlatContainerResource(indexJson, serverUri);
+            FeedUtilities.AddRegistrationResource(indexJson, serverUri);
 
             return new MockResponse
             {
@@ -226,7 +229,7 @@ namespace NuGet.CommandLine.Test
             };
         }
 
-        public MockResponse BuildV2IndexResponse(MockServer mockServer)
+        public MockResponse BuildV2IndexResponse()
         {
             return new MockResponse
             {

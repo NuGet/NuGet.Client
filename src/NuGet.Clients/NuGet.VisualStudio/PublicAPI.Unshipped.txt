@@ -1,7 +1,0 @@
-NuGet.VisualStudio.IVsNuGetProjectUpdateEvents
-NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.ProjectUpdateFinished -> NuGet.VisualStudio.ProjectUpdateEventHandler
-NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.ProjectUpdateStarted -> NuGet.VisualStudio.ProjectUpdateEventHandler
-NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.SolutionRestoreFinished -> NuGet.VisualStudio.SolutionRestoreEventHandler
-NuGet.VisualStudio.IVsNuGetProjectUpdateEvents.SolutionRestoreStarted -> NuGet.VisualStudio.SolutionRestoreEventHandler
-NuGet.VisualStudio.ProjectUpdateEventHandler
-NuGet.VisualStudio.SolutionRestoreEventHandler

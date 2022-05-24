@@ -16,6 +16,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
 {
@@ -89,7 +90,7 @@ namespace NuGet.CommandLine.Test.Caching
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        var mockResponse = builder.BuildV3IndexResponse(MockServer);
+                        var mockResponse = builder.BuildV3IndexResponse(MockServer.Uri);
 
                         response.ContentType = mockResponse.ContentType;
                         MockServer.SetResponseContent(response, mockResponse.Content);
@@ -110,7 +111,7 @@ namespace NuGet.CommandLine.Test.Caching
                             return;
                         }
 
-                        var mockResponse = builder.BuildV2IndexResponse(MockServer);
+                        var mockResponse = builder.BuildV2IndexResponse();
 
                         response.ContentType = mockResponse.ContentType;
                         MockServer.SetResponseContent(response, mockResponse.Content);
@@ -176,7 +177,7 @@ namespace NuGet.CommandLine.Test.Caching
                             return;
                         }
 
-                        var mockResponse = builder.BuildRegistrationIndexResponse(MockServer, new PackageIdentity[] { identity });
+                        var mockResponse = builder.BuildRegistrationIndexResponse(MockServer.Uri, new PackageIdentity[] { identity });
 
                         response.ContentType = mockResponse.ContentType;
                         MockServer.SetResponseContent(response, mockResponse.Content);

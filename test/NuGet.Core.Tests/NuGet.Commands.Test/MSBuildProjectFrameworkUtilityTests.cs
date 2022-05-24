@@ -273,6 +273,7 @@ namespace NuGet.Commands.Test
         [InlineData(@"C:\project.vcxproj", ".NETFramework,Version=v4.5", "", "", "false", "native", null)]
         [InlineData(@"C:\project.vcxproj", ".NETFramework,Version=v4.5", "", "", "NetFx", "native", null)]
         [InlineData(@"C:\project.vcxproj", ".NETCoreApp,Version=v5.0", "", "", "NetCore", "net5.0", "native")]
+        [InlineData(@"C:\project.vcxproj", ".NETCoreApp,Version=v5.0", "Windows,Version=7.0", "", "NetCore", "net5.0", "native")]
         [InlineData(@"C:\project.csproj", ".NETCoreApp,Version=v5.0", "", "", "NetCore", "net5.0", null)]
         [InlineData(@"C:\project.csproj", ".NETFramework,Version=v4.5", "", "", "NetFramework", "net45", null)]
         public void GetProjectFramework_WithCLRSupport_VariousInputs(

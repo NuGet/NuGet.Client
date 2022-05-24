@@ -292,6 +292,9 @@ NuGet.Commands.IProjectFactory.GetWarningPropertiesForProject() -> NuGet.Project
 NuGet.Commands.IProjectFactory.Logger.get -> NuGet.Common.ILogger
 NuGet.Commands.IProjectFactory.Logger.set -> void
 NuGet.Commands.IProjectFactory.SetIncludeSymbols(bool includeSymbols) -> void
+NuGet.Commands.IRestoreProgressReporter
+NuGet.Commands.IRestoreProgressReporter.EndProjectUpdate(string projectPath, System.Collections.Generic.IReadOnlyList<string> updatedFiles) -> void
+NuGet.Commands.IRestoreProgressReporter.StartProjectUpdate(string projectPath, System.Collections.Generic.IReadOnlyList<string> updatedFiles) -> void
 NuGet.Commands.IRestoreRequestProvider
 NuGet.Commands.IRestoreRequestProvider.CreateRequests(string inputPath, NuGet.Commands.RestoreArgs restoreContext) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<NuGet.Commands.RestoreSummaryRequest>>
 NuGet.Commands.IRestoreRequestProvider.Supports(string path) -> System.Threading.Tasks.Task<bool>
@@ -527,8 +530,11 @@ NuGet.Commands.PackArgs.WarningProperties.set -> void
 NuGet.Commands.PackCollectorLogger
 NuGet.Commands.PackCollectorLogger.Errors.get -> System.Collections.Generic.IEnumerable<NuGet.Common.ILogMessage>
 NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger innerLogger, NuGet.ProjectModel.WarningProperties warningProperties) -> void
+NuGet.Commands.PackCollectorLogger.PackCollectorLogger(NuGet.Common.ILogger innerLogger, NuGet.ProjectModel.WarningProperties warningProperties, NuGet.Commands.PackCommand.PackageSpecificWarningProperties packageSpecificWarningProperties) -> void
 NuGet.Commands.PackCollectorLogger.WarningProperties.get -> NuGet.ProjectModel.WarningProperties
 NuGet.Commands.PackCollectorLogger.WarningProperties.set -> void
+NuGet.Commands.PackCommand.PackageSpecificWarningProperties
+NuGet.Commands.PackCommand.PackageSpecificWarningProperties.PackageSpecificWarningProperties() -> void
 NuGet.Commands.PackCommandRunner
 NuGet.Commands.PackCommandRunner.BuildPackage() -> void
 NuGet.Commands.PackCommandRunner.BuildPackage(NuGet.Packaging.PackageBuilder builder, string outputPath = null) -> NuGet.Packaging.PackageArchiveReader
@@ -623,6 +629,8 @@ NuGet.Commands.RestoreArgs.ParentId.get -> System.Guid
 NuGet.Commands.RestoreArgs.ParentId.set -> void
 NuGet.Commands.RestoreArgs.PreLoadedRequestProviders.get -> System.Collections.Generic.List<NuGet.Commands.IPreLoadedRestoreRequestProvider>
 NuGet.Commands.RestoreArgs.PreLoadedRequestProviders.set -> void
+NuGet.Commands.RestoreArgs.ProgressReporter.get -> NuGet.Commands.IRestoreProgressReporter
+NuGet.Commands.RestoreArgs.ProgressReporter.set -> void
 NuGet.Commands.RestoreArgs.RequestProviders.get -> System.Collections.Generic.List<NuGet.Commands.IRestoreRequestProvider>
 NuGet.Commands.RestoreArgs.RequestProviders.set -> void
 NuGet.Commands.RestoreArgs.RestoreArgs() -> void
@@ -667,6 +675,7 @@ NuGet.Commands.RestoreCommandProviders.RemoteProviders.get -> System.Collections
 NuGet.Commands.RestoreCommandProviders.RestoreCommandProviders(NuGet.Repositories.NuGetv3LocalRepository globalPackages, System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository> fallbackPackageFolders, System.Collections.Generic.IReadOnlyList<NuGet.DependencyResolver.IRemoteDependencyProvider> localProviders, System.Collections.Generic.IReadOnlyList<NuGet.DependencyResolver.IRemoteDependencyProvider> remoteProviders, NuGet.Protocol.LocalPackageFileCache packageFileCache) -> void
 NuGet.Commands.RestoreCommandProvidersCache
 NuGet.Commands.RestoreCommandProvidersCache.GetOrCreate(string globalPackagesPath, System.Collections.Generic.IReadOnlyList<string> fallbackPackagesPaths, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository> sources, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log) -> NuGet.Commands.RestoreCommandProviders
+NuGet.Commands.RestoreCommandProvidersCache.GetOrCreate(string globalPackagesPath, System.Collections.Generic.IReadOnlyList<string> fallbackPackagesPaths, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Core.Types.SourceRepository> sources, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log, bool updateLastAccess) -> NuGet.Commands.RestoreCommandProviders
 NuGet.Commands.RestoreCommandProvidersCache.RestoreCommandProvidersCache() -> void
 NuGet.Commands.RestoreRequest
 NuGet.Commands.RestoreRequest.AdditionalMessages.get -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.IAssetsLogMessage>
@@ -718,6 +727,8 @@ NuGet.Commands.RestoreRequest.RestoreOutputPath.get -> string
 NuGet.Commands.RestoreRequest.RestoreOutputPath.set -> void
 NuGet.Commands.RestoreRequest.RestoreRequest(NuGet.ProjectModel.PackageSpec project, NuGet.Commands.RestoreCommandProviders dependencyProviders, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Packaging.Signing.ClientPolicyContext clientPolicyContext, NuGet.Common.ILogger log) -> void
 NuGet.Commands.RestoreRequest.RestoreRequest(NuGet.ProjectModel.PackageSpec project, NuGet.Commands.RestoreCommandProviders dependencyProviders, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Packaging.Signing.ClientPolicyContext clientPolicyContext, NuGet.Configuration.PackageSourceMapping packageSourceMapping, NuGet.Common.ILogger log, NuGet.Commands.LockFileBuilderCache lockFileBuilderCache) -> void
+NuGet.Commands.RestoreRequest.UpdatePackageLastAccessTime.get -> bool
+NuGet.Commands.RestoreRequest.UpdatePackageLastAccessTime.set -> void
 NuGet.Commands.RestoreRequest.ValidateRuntimeAssets.get -> bool
 NuGet.Commands.RestoreRequest.ValidateRuntimeAssets.set -> void
 NuGet.Commands.RestoreRequest.XmlDocFileSaveMode.get -> NuGet.Packaging.XmlDocFileSaveMode
@@ -949,6 +960,8 @@ NuGet.Commands.VerifyArgs.PackagePath.get -> string
 NuGet.Commands.VerifyArgs.PackagePath.set -> void
 NuGet.Commands.VerifyArgs.PackagePaths.get -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.Commands.VerifyArgs.PackagePaths.set -> void
+NuGet.Commands.VerifyArgs.Settings.get -> NuGet.Configuration.ISettings
+NuGet.Commands.VerifyArgs.Settings.set -> void
 NuGet.Commands.VerifyArgs.Verification
 NuGet.Commands.VerifyArgs.Verification.All = 1 -> NuGet.Commands.VerifyArgs.Verification
 NuGet.Commands.VerifyArgs.Verification.Signatures = 2 -> NuGet.Commands.VerifyArgs.Verification
@@ -1113,6 +1126,7 @@ static NuGet.Commands.MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(System.
 static NuGet.Commands.NoOpRestoreUtilities.GetProjectCacheFilePath(string cacheRoot) -> string
 static NuGet.Commands.NoOpRestoreUtilities.GetProjectCacheFilePath(string cacheRoot, string projectPath) -> string
 static NuGet.Commands.PackArgs.GetSymbolPackageFormat(string symbolPackageFormat) -> NuGet.Commands.SymbolPackageFormat
+static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties
 static NuGet.Commands.PackCommandRunner.AddDependencyGroups(System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, NuGet.Frameworks.NuGetFramework framework, NuGet.Packaging.PackageBuilder builder) -> void
 static NuGet.Commands.PackCommandRunner.AddLibraryDependency(NuGet.LibraryModel.LibraryDependency dependency, System.Collections.Generic.ISet<NuGet.LibraryModel.LibraryDependency> list) -> void
 static NuGet.Commands.PackCommandRunner.AddPackageDependency(NuGet.Packaging.Core.PackageDependency dependency, System.Collections.Generic.ISet<NuGet.Packaging.Core.PackageDependency> set) -> void

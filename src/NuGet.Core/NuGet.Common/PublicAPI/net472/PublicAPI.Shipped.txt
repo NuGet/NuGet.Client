@@ -100,6 +100,10 @@ NuGet.Common.INuGetTelemetryService
 NuGet.Common.INuGetTelemetryService.EmitTelemetryEvent(NuGet.Common.TelemetryEvent telemetryData) -> void
 NuGet.Common.INuGetTelemetryService.StartActivity(string activityName) -> System.IDisposable
 NuGet.Common.IPackLogMessage
+NuGet.Common.IPackLogMessage.Framework.get -> NuGet.Frameworks.NuGetFramework
+NuGet.Common.IPackLogMessage.Framework.set -> void
+NuGet.Common.IPackLogMessage.LibraryId.get -> string
+NuGet.Common.IPackLogMessage.LibraryId.set -> void
 NuGet.Common.IRestoreLogMessage
 NuGet.Common.IRestoreLogMessage.LibraryId.get -> string
 NuGet.Common.IRestoreLogMessage.LibraryId.set -> void
@@ -169,6 +173,7 @@ NuGet.Common.NuGetLogCode.NU1009 = 1009 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1010 = 1010 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1011 = 1011 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1012 = 1012 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1013 = 1013 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1100 = 1100 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1101 = 1101 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1102 = 1102 -> NuGet.Common.NuGetLogCode
@@ -186,6 +191,7 @@ NuGet.Common.NuGetLogCode.NU1204 = 1204 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1211 = 1211 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1212 = 1212 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1213 = 1213 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1301 = 1301 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1401 = 1401 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1402 = 1402 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1403 = 1403 -> NuGet.Common.NuGetLogCode
@@ -194,6 +200,7 @@ NuGet.Common.NuGetLogCode.NU1500 = 1500 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1501 = 1501 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1502 = 1502 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1503 = 1503 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1507 = 1507 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1601 = 1601 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1602 = 1602 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1603 = 1603 -> NuGet.Common.NuGetLogCode
@@ -204,6 +211,7 @@ NuGet.Common.NuGetLogCode.NU1701 = 1701 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1702 = 1702 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1703 = 1703 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1801 = 1801 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1802 = 1802 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3000 = 3000 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3001 = 3001 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3002 = 3002 -> NuGet.Common.NuGetLogCode
@@ -325,6 +333,7 @@ NuGet.Common.NuGetLogCode.NU5129 = 5129 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5130 = 5130 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5131 = 5131 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5132 = 5132 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5133 = 5133 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5500 = 5500 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5501 = 5501 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.Undefined = 0 -> NuGet.Common.NuGetLogCode
@@ -344,8 +353,12 @@ NuGet.Common.PackagingLogMessage.EndLineNumber.get -> int
 NuGet.Common.PackagingLogMessage.EndLineNumber.set -> void
 NuGet.Common.PackagingLogMessage.FilePath.get -> string
 NuGet.Common.PackagingLogMessage.FilePath.set -> void
+NuGet.Common.PackagingLogMessage.Framework.get -> NuGet.Frameworks.NuGetFramework
+NuGet.Common.PackagingLogMessage.Framework.set -> void
 NuGet.Common.PackagingLogMessage.Level.get -> NuGet.Common.LogLevel
 NuGet.Common.PackagingLogMessage.Level.set -> void
+NuGet.Common.PackagingLogMessage.LibraryId.get -> string
+NuGet.Common.PackagingLogMessage.LibraryId.set -> void
 NuGet.Common.PackagingLogMessage.Message.get -> string
 NuGet.Common.PackagingLogMessage.Message.set -> void
 NuGet.Common.PackagingLogMessage.ProjectPath.get -> string
@@ -547,6 +560,7 @@ static NuGet.Common.NullLogger.Instance.get -> NuGet.Common.ILogger
 static NuGet.Common.PackagingLogMessage.CreateError(string message, NuGet.Common.NuGetLogCode code) -> NuGet.Common.PackagingLogMessage
 static NuGet.Common.PackagingLogMessage.CreateMessage(string message, NuGet.Common.LogLevel logLevel) -> NuGet.Common.PackagingLogMessage
 static NuGet.Common.PackagingLogMessage.CreateWarning(string message, NuGet.Common.NuGetLogCode code) -> NuGet.Common.PackagingLogMessage
+static NuGet.Common.PackagingLogMessage.CreateWarning(string message, NuGet.Common.NuGetLogCode code, string libraryId, NuGet.Frameworks.NuGetFramework framework) -> NuGet.Common.PackagingLogMessage
 static NuGet.Common.PathResolver.FilterPackageFiles<T>(System.Collections.Generic.ICollection<T> source, System.Func<T, string> getPath, System.Collections.Generic.IEnumerable<string> wildcards) -> void
 static NuGet.Common.PathResolver.GetFilteredPackageFiles<T>(System.Collections.Generic.ICollection<T> source, System.Func<T, string> getPath, System.Collections.Generic.IEnumerable<string> wildcards) -> System.Collections.Generic.IEnumerable<T>
 static NuGet.Common.PathResolver.GetMatches<T>(System.Collections.Generic.IEnumerable<T> source, System.Func<T, string> getPath, System.Collections.Generic.IEnumerable<string> wildcards) -> System.Collections.Generic.IEnumerable<T>

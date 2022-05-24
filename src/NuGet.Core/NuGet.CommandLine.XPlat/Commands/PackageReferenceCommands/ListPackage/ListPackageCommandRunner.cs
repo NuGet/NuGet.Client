@@ -110,8 +110,8 @@ namespace NuGet.CommandLine.XPlat
                             {
                                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                                 {
-
                                     PopulateSourceRepositoryCache(listPackageArgs);
+                                    WarnForHttpSources(listPackageArgs);
                                     await GetRegistrationMetadataAsync(packages, listPackageArgs);
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
                                 }
@@ -160,6 +160,43 @@ namespace NuGet.CommandLine.XPlat
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }
+        }
+
+        private static void WarnForHttpSources(ListPackageArgs listPackageArgs)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in listPackageArgs.PackageSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    listPackageArgs.Logger.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage,
+                        "list package",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    listPackageArgs.Logger.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage_MultipleSources,
+                        "list package",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                }
+            }
+
         }
 
         public static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
