@@ -1494,6 +1494,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string String1 {
+            get {
+                return ResourceManager.GetString("String1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the symbol server..
         /// </summary>
         internal static string SymbolApiKey_Description {
@@ -1751,6 +1760,25 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Warn_AddPkgWithoutRestore {
             get {
                 return ResourceManager.GetString("Warn_AddPkgWithoutRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source, &apos;{1}&apos;. Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
+        /// </summary>
+        internal static string Warning_HttpServerUsage {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with &apos;HTTP&apos; sources: {1}
+        ///Non-HTTPS access will be removed in a future version. Consider migrating to &apos;HTTPS&apos; sources..
+        /// </summary>
+        internal static string Warning_HttpServerUsage_MultipleSources {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage_MultipleSources", resourceCulture);
             }
         }
     }
