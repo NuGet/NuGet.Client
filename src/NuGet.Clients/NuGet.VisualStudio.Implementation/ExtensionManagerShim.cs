@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio
         public ExtensionManagerShim(object extensionManager, Action<string> errorHandler)
         {
             InitializeTypes(errorHandler);
-            _extensionManager = extensionManager ?? Package.GetGlobalService(_sVsExtensionManagerType);
+            _extensionManager = extensionManager ?? AsyncPackage.GetGlobalService(_sVsExtensionManagerType);
         }
 
         private static void InitializeTypes(Action<string> errorHandler)
