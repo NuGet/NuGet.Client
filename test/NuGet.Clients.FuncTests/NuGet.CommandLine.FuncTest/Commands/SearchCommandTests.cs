@@ -1017,7 +1017,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             Assert.True(result.Success, $"{result.AllOutput}");
             Assert.Contains("No results found.", $"{result.AllOutput}");
             Assert.DoesNotContain(">", $"{result.AllOutput}");
-            Assert.Contains("WARNING: You are running the 'search' operation with an 'http' source", result.AllOutput);
+            Assert.Contains("WARNING: You are running the 'search' operation with an 'HTTP' source", result.AllOutput);
         }
     }
 }

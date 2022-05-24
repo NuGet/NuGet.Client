@@ -1187,7 +1187,7 @@ namespace NuGet.CommandLine.Test
             // verify that only package id & version is displayed
             var expectedOutput = "testPackage1 1.1.0";
             Assert.Contains(expectedOutput, result.Output);
-            Assert.Contains("WARNING: You are running the 'list' operation with an 'http' source", result.AllOutput);
+            Assert.Contains("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
         }
     }
 }
