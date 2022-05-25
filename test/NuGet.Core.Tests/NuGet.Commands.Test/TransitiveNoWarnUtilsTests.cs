@@ -1173,6 +1173,318 @@ namespace NuGet.Commands.Test
             result.Should().Be(false);
         }
 
+        // Tests for NodeWarningProperties.GetIntersect
+        [Theory]
+        [InlineData(new object[] { null, null })]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1000" } })]
+        [InlineData(new object[] { "", null })]
+        [InlineData(new object[] { "", new string[0] })]
+        [InlineData(new object[] { "", new[] { "test_id1:" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:" } })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingItselfShouldEqualItself(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Arrange
+            var node = new TransitiveNoWarnUtils.NodeWarningProperties(
+                MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // Act
+            var result = node.GetIntersect(node);
+
+            // Assert
+            result.Should().BeEquivalentTo(node);
+        }
+
+        [Theory]
+        [InlineData(new object[] { null, null })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1000" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingEquivalentShouldEqualItself(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Note: this test differs from the one above in that GetIntersect cannot rely on the ReferenceEquals check
+
+            // Arrange
+            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // Act
+            var result = firstNode.GetIntersect(secondNode);
+
+            // Assert
+            result.Should().BeEquivalentTo(secondNode);
+        }
+
+        [Theory]
+        [InlineData(new object[] { null, null })]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { "", null })]
+        [InlineData(new object[] { "", new string[0] })]
+        [InlineData(new object[] { "", new[] { "test_id1:" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingEquivalentSimplifiesEmptySets(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Note: this test differs from the one above in that GetIntersect cannot rely on the ReferenceEquals check AND we don't expect them to be exactly equal:
+            // instead, we expect empty sets to be simplified to null where appropriate
+
+            // Arrange
+            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // simplify the package-specific nowarns.
+            Dictionary<string, HashSet<NuGetLogCode>> simplifiedPackageSpecificNoWarn = null;
+            if (packageSpecificNoWarn != null)
+            {
+                simplifiedPackageSpecificNoWarn = GetPackageSpecificNoWarn(packageSpecificNoWarn);
+                foreach (var key in simplifiedPackageSpecificNoWarn.Keys.ToArray())
+                {
+                    if (simplifiedPackageSpecificNoWarn.TryGetValue(key, out var value) &&
+                        (value == null || value.Count == 0))
+                    {
+                        simplifiedPackageSpecificNoWarn.Remove(key);
+                    }
+                }
+
+                if (simplifiedPackageSpecificNoWarn.Count == 0)
+                {
+                    simplifiedPackageSpecificNoWarn = null;
+                }
+            }
+
+            var expectedResultNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                string.IsNullOrEmpty(projectWideNoWarn) ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                simplifiedPackageSpecificNoWarn);
+
+            // Act
+            var result = firstNode.GetIntersect(secondNode);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedResultNode);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingNullShouldEqualNull(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Arrange
+            var node = new TransitiveNoWarnUtils.NodeWarningProperties(
+                MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // Act
+            var result = node.GetIntersect(null);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingEmptyShouldEqualEmpty(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Arrange
+            var node = new TransitiveNoWarnUtils.NodeWarningProperties(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+
+            // Act
+            var resultOne = node.GetIntersect(empty);
+            var resultTwo = empty.GetIntersect(node);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("NU1000")]
+        [InlineData("NU1605, NU1604, NU1701")]
+        public void NodeWarningPropertiesGetIntersect_ProjectWideEmptyIntersection(
+            string firstProjectWideNoWarn)
+        {
+            // Arrange
+            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                firstProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstProjectWideNoWarn).ToHashSet(),
+                null);
+            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(empty);
+            var resultTwo = empty.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData("NU1605, NU1604, NU1701", "NU1000", null)]
+        [InlineData("NU1605, NU1604, NU1701", "NU1000, NU1604", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1703, NU1605, NU1604", "NU1605, NU1604")]
+        public void NodeWarningPropertiesGetIntersect_ProjectWide(
+            string firstProjectWideNoWarn,
+            string secondProjectWideNoWarn,
+            string expectedProjectWideNoWarn)
+        {
+            // Arrange
+            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                firstProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstProjectWideNoWarn).ToHashSet(),
+                null);
+            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                secondProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondProjectWideNoWarn).ToHashSet(),
+                null);
+            var expectedResultNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                expectedProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(expectedProjectWideNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(secondNode);
+            var resultTwo = secondNode.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(expectedResultNode);
+            resultTwo.Should().BeEquivalentTo(expectedResultNode);
+        }
+
+        [Theory]
+        [InlineData(new object[] { null })]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU1605, NU1604" } })]
+        public void NodeWarningPropertiesGetIntersect_PackageSpecificEmptyIntersection(
+            string[] firstPackageSpecificNoWarn)
+        {
+            // Arrange
+            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
+            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(empty);
+            var resultTwo = empty.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new[] { "test_id1:NU1701" }, new[] { "test_id1:1000" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id1:NU1000, NU1703" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id2:NU1703, NU3018, NU1604" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU1605, NU3018" }, new[] { "test_id1:NU1703, NU3018", "test_id2:NU1604, NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU1605, NU3018" }, new[] { "test_id1:NU1703, NU3018", "test_id3:NU1703, NU1605, NU3018" } })]
+        public void NodeWarningPropertiesGetIntersect_PackageSpecificNonintersecting(
+            string[] firstPackageSpecificNoWarn,
+            string[] secondPackageSpecificNoWarn)
+        {
+            // Arrange
+            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
+            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(secondPackageSpecificNoWarn));
+            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(secondNode);
+            var resultTwo = secondNode.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new[] { "test_id1:NU1701, NU1605" }, new[] { "test_id1:NU1604, NU1701" }, new[] { "test_id1:NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id1:NU1000, NU1604" }, new[] { "test_id1:NU1604" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id1:NU1703, NU1605, NU1604" }, new[] { "test_id1:NU1605, NU1604" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU3018, NU1701" }, new[] { "test_id1:NU1703, NU3018, NU1701", "test_id2:NU1604" }, new[] { "test_id1:NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id3:NU1703, NU3018, NU1701" }, new[] { "test_id2:NU1703, NU3018, NU1701", "test_id3:NU1604, NU3018, NU1701" }, new[] { "test_id3:NU3018, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_PackageSpecificIntersecting(
+            string[] firstPackageSpecificNoWarn,
+            string[] secondPackageSpecificNoWarn,
+            string[] expectedPackageSpecificNoWarn)
+        {
+            // Arrange
+            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
+            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(secondPackageSpecificNoWarn));
+            var expectedResultNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+                null,
+                GetPackageSpecificNoWarn(expectedPackageSpecificNoWarn));
+
+            // Act
+            var resultOne = firstNode.GetIntersect(secondNode);
+            var resultTwo = secondNode.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(expectedResultNode);
+            resultTwo.Should().BeEquivalentTo(expectedResultNode);
+        }
+
         private static Dictionary<string, HashSet<NuGetLogCode>> GetPackageSpecificNoWarn(IEnumerable<string> values)
         {
             if (values == null)

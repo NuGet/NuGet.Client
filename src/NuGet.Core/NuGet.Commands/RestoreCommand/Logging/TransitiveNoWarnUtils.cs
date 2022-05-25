@@ -74,7 +74,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Traverses a Dependency grpah starting from the parent project in BF style.
+        /// Traverses a Dependency graph starting from the parent project in BF style.
         /// </summary>
         /// <param name="targetGraph">Parent project restore target graph.</param>
         /// <param name="parentProjectName">File path of the parent project.</param>
@@ -285,7 +285,7 @@ namespace NuGet.Commands
             if (!seen.TryGetValue(id, out var visitedProps))
             {
                 // New id
-                seen.Add(id, node.NodeWarningProperties);
+                seen.Add(id, nodeProps);
                 return true;
             }
             if (!nodeProps.IsSubSetOf(visitedProps))
@@ -736,7 +736,6 @@ namespace NuGet.Commands
             // We do not use framework here as DependencyNode is created per parent project framework.
             public Dictionary<string, HashSet<NuGetLogCode>> PackageSpecific { get; }
 
-
             public NodeWarningProperties(
                 HashSet<NuGetLogCode> projectWide,
                 Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
@@ -760,7 +759,6 @@ namespace NuGet.Commands
                 return Equals(obj as NodeWarningProperties);
             }
 
-
             public bool Equals(NodeWarningProperties other)
             {
                 if (other == null)
@@ -777,27 +775,30 @@ namespace NuGet.Commands
                     EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualsWithNullCheck(s, o));
             }
 
+            /// <summary>
+            /// Obtain the intersection of this node and the other node
+            /// </summary>
+            /// <remarks>Null is considered an empty set, which has an empty intersection with anything else.</remarks>
+            /// <param name="other">other node to intersect with</param>
+            /// <returns>intersection between this node and other node</returns>
             public NodeWarningProperties GetIntersect(NodeWarningProperties other)
             {
-                if (other == null || ReferenceEquals(this, other))
+                if (other == null)
+                {
+                    return null;
+                }
+
+                if (ReferenceEquals(this, other))
                 {
                     return new NodeWarningProperties(ProjectWide, PackageSpecific);
                 }
 
                 var thisPackages = PackageSpecific;
                 var otherPackages = other.PackageSpecific;
-                var projectWide = Intersect(ProjectWide, other.ProjectWide);
-                Dictionary<string, HashSet<NuGetLogCode>> packages = null;
 
-                if (thisPackages != null && otherPackages == null)
-                {
-                    packages = thisPackages;
-                }
-                else if (thisPackages == null && otherPackages != null)
-                {
-                    packages = otherPackages;
-                }
-                else if (thisPackages != null && otherPackages != null)
+                // null is empty and cannot intersect
+                Dictionary<string, HashSet<NuGetLogCode>> packages = null;
+                if (thisPackages != null && otherPackages != null)
                 {
                     packages = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
@@ -809,10 +810,20 @@ namespace NuGet.Commands
                         thisPackages.TryGetValue(key, out var thisCodes);
                         otherPackages.TryGetValue(key, out var otherCodes);
 
-                        packages.Add(key, Intersect(thisCodes, otherCodes));
+                        var intersect = Intersect(thisCodes, otherCodes);
+                        if (intersect != null)
+                        {
+                            packages.Add(key, intersect);
+                        }
+                    }
+
+                    if (packages.Count == 0)
+                    {
+                        packages = null;
                     }
                 }
 
+                var projectWide = Intersect(ProjectWide, other.ProjectWide);
                 return new NodeWarningProperties(projectWide, packages);
             }
 
@@ -902,18 +913,23 @@ namespace NuGet.Commands
                     return first;
                 }
 
-                if (first == null)
+                // null is empty and cannot intersect
+                if (first == null || first.Count == 0)
                 {
-                    return second;
+                    return null;
                 }
 
-                if (second == null)
+                if (second == null || second.Count == 0)
                 {
-                    return first;
+                    return null;
                 }
 
                 var result = new HashSet<NuGetLogCode>(first);
                 result.IntersectWith(second);
+                if (result.Count == 0)
+                {
+                    return null;
+                }
 
                 return result;
             }
