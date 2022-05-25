@@ -66,13 +66,9 @@ namespace NuGet.CommandLine
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
 
+            WarnForHTTPSources(listEndpoints);
             foreach (PackageSource source in listEndpoints)
             {
-                if (source.IsHttp && !source.IsHttps)
-                {
-                    logger.LogWarning(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("Warning_HttpServerUsage"), "search", source.Source));
-                }
-
                 SourceRepository repository = Repository.Factory.GetCoreV3(source);
                 PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
 
@@ -126,6 +122,42 @@ namespace NuGet.CommandLine
                     System.Console.WriteLine("No results found.");
                     Console.WriteLine(packageSeparator);
                     System.Console.WriteLine();
+                }
+            }
+        }
+
+        private void WarnForHTTPSources(IList<PackageSource> packageSources)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in packageSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    Console.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        NuGetResources.Warning_HttpServerUsage,
+                        "search",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    Console.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        NuGetResources.Warning_HttpSources_Multiple,
+                        "search",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }
             }
         }

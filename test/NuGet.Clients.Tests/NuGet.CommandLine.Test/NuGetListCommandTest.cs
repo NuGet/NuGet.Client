@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using FluentAssertions;
@@ -227,7 +228,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, result.Output);
+                    Assert.Equal(expectedOutput, RemoveHttpWarning(result.Output));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -284,7 +285,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
                     var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Output);
+                    Assert.Equal(expectedOutput, RemoveHttpWarning(r1.Output));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -346,7 +347,7 @@ namespace NuGet.CommandLine.Test
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Output);
+                    Assert.Equal(expectedOutput, RemoveHttpWarning(r1.Output));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -460,7 +461,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Output);
+                    Assert.Equal(expectedOutput, RemoveHttpWarning(r1.Output));
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -580,7 +581,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    r1.Output.Should().Be(expectedOutput);
+                    RemoveHttpWarning(r1.Output).Should().Be(expectedOutput);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -680,7 +681,7 @@ namespace NuGet.CommandLine.Test
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                             "testPackage2 2.1.0" + Environment.NewLine;
-                        Assert.Equal(expectedOutput, result.Output);
+                        Assert.Equal(expectedOutput, RemoveHttpWarning(result.Output));
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);
                         Assert.Contains("searchTerm='test", searchRequest);
@@ -1188,6 +1189,74 @@ namespace NuGet.CommandLine.Test
             var expectedOutput = "testPackage1 1.1.0";
             Assert.Contains(expectedOutput, result.Output);
             Assert.Contains("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
+        }
+
+        [Fact]
+        public void ListCommand_WhenListWithHttpSources_Warns()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using var packageDirectory = TestDirectory.Create();
+            using var server1 = new MockServer();
+            using var server2 = new MockServer();
+            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+
+            server1.Get.Add("/nuget/$metadata", r =>
+                Util.GetMockServerResource());
+            server1.Get.Add("/nuget/Search()", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    string searchRequest = r.Url.ToString();
+                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                    string feed = server1.ToODataFeed(new[] { new FileInfo(packageFileName1) }, "Search");
+                    MockServer.SetResponseContent(response, feed);
+                }));
+            server1.Get.Add("/nuget", r => "OK");
+
+            server1.Start();
+
+            server2.Get.Add("/nuget/$metadata", r =>
+               Util.GetMockServerResource());
+            server2.Get.Add("/nuget/Search()", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    string searchRequest = r.Url.ToString();
+                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                    string feed = server2.ToODataFeed(new[] { new FileInfo(packageFileName1) }, "Search");
+                    MockServer.SetResponseContent(response, feed);
+                }));
+            server2.Get.Add("/nuget", r => "OK");
+
+            server2.Start();
+
+            // Act
+            var args = "list test -Source " + server1.Uri + "nuget" + " -Source " + server1.Uri + "nuget";
+            var result = CommandRunner.Run(
+                nugetexe,
+                packageDirectory,
+                args,
+                waitForExit: true);
+            server1.Stop();
+            server2.Stop();
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+
+            // verify that only package id & version is displayed
+            var expectedOutput = "testPackage1 1.1.0";
+            Assert.Contains(expectedOutput, result.Output);
+            Assert.Contains("WARNING: You are running the 'list' operation with 'HTTP' sources", result.AllOutput);
+        }
+
+        private static string RemoveHttpWarning(string input)
+        {
+            string[] lines = input.Split(
+                new string[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None
+            );
+
+            return string.Join(Environment.NewLine, lines.Select(e => e).Where(e => !e.StartsWith("WARNING: You are running the")));
         }
     }
 }
