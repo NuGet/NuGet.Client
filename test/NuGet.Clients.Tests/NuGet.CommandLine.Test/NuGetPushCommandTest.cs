@@ -2192,8 +2192,8 @@ namespace NuGet.CommandLine.Test
                         // Assert
                         result.Success.Should().BeTrue(result.AllOutput);
                         result.AllOutput.Should().Contain("Your package was pushed");
-                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'http' source, '{serverV3.Uri}index.json'");
-                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'http' source, '{serverV2.Uri}push/'");
+                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{serverV3.Uri}index.json'");
+                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{serverV2.Uri}push/'");
                         AssertFileEqual(packageFileName, outputFileName);
                     }
                 }
