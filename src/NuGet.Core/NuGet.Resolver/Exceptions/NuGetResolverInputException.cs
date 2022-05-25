@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace NuGet.Resolver
 {
@@ -13,6 +14,10 @@ namespace NuGet.Resolver
     {
         public NuGetResolverInputException(string message)
             : base(message)
+        {
+        }
+
+        protected NuGetResolverInputException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }
