@@ -34,6 +34,7 @@
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" />
     <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS">
@@ -44,6 +45,9 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS">
       <HintPath>$(NuGetPackageRoot)microsoft.visualstudio.projectsystem.managed.vs\$(ProjectSystemManagedVersion)\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ExtensionEngine">
+      <HintPath>$(PkgMicrosoft_VSSDK_BuildTools)\tools\vssdk\Microsoft.VisualStudio.ExtensionEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
