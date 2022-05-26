@@ -454,7 +454,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.ExitCode);
                 Assert.True(deleteRequestIsCalled);
-                Assert.Contains("WARNING: You are running the 'delete' operation with an 'http' source", r.AllOutput);
+                Assert.Contains("WARNING: You are running the 'delete' operation with an 'HTTP' source", r.AllOutput);
             }
         }
 
