@@ -375,7 +375,6 @@ namespace NuGet.Commands
                 getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture,
                     Strings.SourcesCommandSourceDisabledSuccessfully, name));
             }
-
         }
 
         public static void ValidateCredentials(string username, string password, string validAuthenticationTypes)
