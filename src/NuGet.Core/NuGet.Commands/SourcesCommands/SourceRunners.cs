@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -64,7 +65,11 @@ namespace NuGet.Commands
 
             if (newPackageSource.IsHttp && !newPackageSource.IsHttps)
             {
-                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "add source", args.Source));
+                getLogger().LogWarning(
+                    string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage,
+                        "add source",
+                        args.Source));
             }
 
             if (!string.IsNullOrEmpty(args.Username))
@@ -118,6 +123,8 @@ namespace NuGet.Commands
                 Enum.TryParse<SourcesListFormat>(args.Format, ignoreCase: true, out format);
             }
 
+            List<PackageSource> httpPackageSources = null;
+
             switch (format)
             {
                 case SourcesListFormat.Detailed:
@@ -152,8 +159,21 @@ namespace NuGet.Commands
 
                             if (source.IsHttp && !source.IsHttps)
                             {
-                                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source));
+                                if (httpPackageSources == null)
+                                {
+                                    httpPackageSources = new();
+                                }
+                                httpPackageSources.Add(source);
                             }
+                        }
+
+                        if (httpPackageSources != null)
+                        {
+                            getLogger().LogWarning(
+                                string.Format(CultureInfo.CurrentCulture,
+                                Strings.Warning_HttpServerUsage_MultipleSources,
+                                "list source",
+                                Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                         }
                     }
                     break;
@@ -181,8 +201,21 @@ namespace NuGet.Commands
 
                             if (source.IsHttp && !source.IsHttps)
                             {
-                                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpSource, source.Source));
+                                if (httpPackageSources == null)
+                                {
+                                    httpPackageSources = new();
+                                }
+                                httpPackageSources.Add(source);
                             }
+                        }
+
+                        if (httpPackageSources != null)
+                        {
+                            getLogger().LogWarning(
+                                string.Format(CultureInfo.CurrentCulture,
+                                Strings.Warning_HttpServerUsage_MultipleSources,
+                                "list source",
+                                Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                         }
                     }
                     break;
@@ -332,6 +365,10 @@ namespace NuGet.Commands
             {
                 getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture,
                     Strings.SourcesCommandSourceEnabledSuccessfully, name));
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "enable source", packageSource.Source));
+                }
             }
             else
             {
@@ -339,11 +376,6 @@ namespace NuGet.Commands
                     Strings.SourcesCommandSourceDisabledSuccessfully, name));
             }
 
-            if (packageSource.IsHttp && !packageSource.IsHttps)
-            {
-                var operation = enable ? "enable" : "disable";
-                getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, operation + " source", packageSource.Source));
-            }
         }
 
         public static void ValidateCredentials(string username, string password, string validAuthenticationTypes)

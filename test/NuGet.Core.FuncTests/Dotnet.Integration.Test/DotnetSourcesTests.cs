@@ -135,7 +135,43 @@ namespace Dotnet.Integration.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://source.test", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("warn : You are running the 'add source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'add source' operation with an 'HTTP' source, 'http://source.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_NoWarnWhenAddingHttpsSource()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
+                Assert.False(result.Output.Contains("warn :"));
             }
         }
 
@@ -193,7 +229,7 @@ namespace Dotnet.Integration.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://source2.test", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("warn : You are running the 'update source' operation with an 'http' source, 'http://source2.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'update source' operation with an 'HTTP' source, 'http://source2.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
             }
         }
 
@@ -241,7 +277,57 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.Success, result.Output + " " + result.Errors);
-                Assert.True(result.Output.Contains("warn : A 'http' source, 'http://source.test', was found. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'list source' operation with 'HTTP' source"));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_NoWarnWhenListHttpsSource()
+        {
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "list",
+                    "source",
+                    "--configfile",
+                    configFilePath
+                };
+
+                // Act
+                var settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                var source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("https://source.test", source.Source);
+
+                // Act
+                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+                Assert.False(result.Output.Contains("warn"));
             }
         }
 
@@ -310,12 +396,12 @@ namespace Dotnet.Integration.Test
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.True(result.Output.Contains("warn : You are running the 'enable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("warn : You are running the 'enable source' operation with an 'HTTP' source, 'http://source.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
             }
         }
 
         [PlatformFact(Platform.Windows)]
-        public void Sources_WarnWhenDisableHttpSource()
+        public void Sources_NoWarnWhenDisableHttpSource()
         {
             using (var configFileDirectory = _fixture.CreateTestDirectory())
             {
@@ -376,7 +462,7 @@ namespace Dotnet.Integration.Test
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.True(result.Output.Contains("warn : You are running the 'disable source' operation with an 'http' source, 'http://source.test'. Support for 'http' sources will be removed in a future version."));
+                Assert.False(result.Output.Contains("warn :"));
             }
         }
 

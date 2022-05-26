@@ -42,7 +42,7 @@ namespace NuGet.CommandLine.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("WARNING: You are running the 'add source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: You are running the 'add source' operation with an 'HTTP' source, 'http://test_source'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
             }
         }
 
@@ -71,7 +71,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -118,12 +118,12 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("WARNING: You are running the 'update source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: You are running the 'update source' operation with an 'HTTP' source, 'http://test_source'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
             }
         }
 
@@ -165,7 +165,7 @@ namespace NuGet.CommandLine.Test
                     true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -231,12 +231,12 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
                 Assert.True(source.IsEnabled, "Source is not enabled");
-                Assert.True(result.Output.Contains("WARNING: You are running the 'enable source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: You are running the 'enable source' operation with an 'HTTP' source, 'http://test_source'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
             }
         }
 
         [Fact]
-        public void SourcesCommandTest_DisableSource_WarnWhenUsingHttp()
+        public void SourcesCommandTest_DisableSource_NoWarnWhenUsingHttp()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -288,7 +288,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
                 Assert.False(source.IsEnabled, "Source is not disabled");
-                Assert.Equal(result.Output, ("WARNING: You are running the 'disable source' operation with an 'http' source, 'http://test_source'. Support for 'http' sources will be removed in a future version."));
+                Assert.False(result.Output.Contains("WARNING:"));
             }
         }
 
@@ -330,7 +330,49 @@ namespace NuGet.CommandLine.Test
 
                 // test to ensure detailed format is the default
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
-                Assert.True(result.Output.Contains("WARNING: A 'http' source, 'http://test_source', was found. Support for 'http' sources will be removed in a future version."));
+                Assert.True(result.Output.Contains("WARNING: You are running the 'list source' operation with 'HTTP' source"));
+            }
+        }
+
+        [Fact]
+        public void SourcesList_WithDefaultFormat_UsesDetailedFormat_NoWarnWhenUsingHttps()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://test_source"" />
+  </packageSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "list",
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Main Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                // test to ensure detailed format is the default
+                Assert.True(result.Output.StartsWith("Registered Sources:"));
+                Assert.False(result.Output.Contains("WARNING:"));
             }
         }
 
