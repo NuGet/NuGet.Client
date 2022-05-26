@@ -286,7 +286,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("1.*", "2.10.0")]
         [InlineData("(0.1,3.4)", "2.10.0")]
         [InlineData("2.10.0", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab(string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -367,7 +367,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("1.*", "2.10.0")]
         [InlineData("(0.1,3.4)", "2.10.0")]
         [InlineData("2.10.0", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsPackageReference_And_CustomVersion_UpdatesTab(string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -448,7 +448,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("1.*", "2.10.0")]
         [InlineData("(0.1,3.4)", "2.10.0")]
         [InlineData("2.10.0", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab(string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -530,7 +530,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -607,7 +607,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -685,7 +685,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
