@@ -28,14 +28,25 @@ namespace NuGet.Protocol.Tests
             {
                 Credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: true, validAuthenticationTypesText: null)
             };
-            var clientHandler = new HttpClientHandler();
-            var credentialService = Mock.Of<ICredentialService>();
 
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
+            var clientHandler = new HttpClientHandler();
+#endif
+
+            var credentialService = Mock.Of<ICredentialService>();
             var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
 
+#if NETFRAMEWORK
+            Assert.NotNull(clientHandler.ServerCredentials);
+            var actualCredentials = clientHandler.ServerCredentials.GetCredential(packageSource.SourceUri, "Basic");
+#else
             Assert.NotNull(clientHandler.Credentials);
-
             var actualCredentials = clientHandler.Credentials.GetCredential(packageSource.SourceUri, "Basic");
+#endif
+
+
             Assert.NotNull(actualCredentials);
             Assert.Equal("user", actualCredentials.UserName);
             Assert.Equal("password", actualCredentials.Password);
@@ -45,11 +56,16 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WithUnauthenticatedSource_PassesThru()
         {
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
             credentialService.SetupGet(x => x.HandlesDefaultCredentials)
                 .Returns(false);
+
             var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object)
             {
                 InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK)
@@ -65,7 +81,11 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WithAcquiredCredentialsOn401_RetriesRequest()
         {
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
@@ -105,7 +125,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
@@ -147,7 +171,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
             credentialService.SetupGet(x => x.HandlesDefaultCredentials)
@@ -173,7 +201,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
@@ -219,7 +251,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var cts = new CancellationTokenSource();
 
@@ -268,7 +304,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
@@ -317,7 +357,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
 
@@ -357,7 +401,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
@@ -406,7 +454,11 @@ namespace NuGet.Protocol.Tests
         {
             var packageSource = new PackageSource("http://package.source.test");
             Stopwatch stopwatch = Stopwatch.StartNew();
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
@@ -448,7 +500,11 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_RetryWithClonedGetRequest()
         {
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)
@@ -500,7 +556,11 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_RetryWithClonedPostRequest(HttpContent httpContent)
         {
             var packageSource = new PackageSource("http://package.source.test");
+#if NETFRAMEWORK
+            var clientHandler = new WinHttpHandler();
+#else
             var clientHandler = new HttpClientHandler();
+#endif
 
             var credentialService = Mock.Of<ICredentialService>();
             Mock.Get(credentialService)

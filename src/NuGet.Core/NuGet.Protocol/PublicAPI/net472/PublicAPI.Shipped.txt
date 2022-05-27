@@ -443,7 +443,6 @@ NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.HttpFileSystemBasedFin
 NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResourceProvider
 NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResourceProvider.HttpFileSystemBasedFindPackageByIdResourceProvider() -> void
 NuGet.Protocol.HttpHandlerResourceV3
-NuGet.Protocol.HttpHandlerResourceV3.HttpHandlerResourceV3(System.Net.Http.HttpClientHandler clientHandler, System.Net.Http.HttpMessageHandler messageHandler) -> void
 NuGet.Protocol.HttpHandlerResourceV3Provider
 NuGet.Protocol.HttpHandlerResourceV3Provider.HttpHandlerResourceV3Provider() -> void
 NuGet.Protocol.HttpRequestMessageConfiguration
@@ -491,7 +490,6 @@ NuGet.Protocol.HttpSource.ProcessStreamAsync<T>(NuGet.Protocol.HttpSourceRequest
 NuGet.Protocol.HttpSource.RetryHandler.get -> NuGet.Protocol.IHttpRetryHandler
 NuGet.Protocol.HttpSource.RetryHandler.set -> void
 NuGet.Protocol.HttpSourceAuthenticationHandler
-NuGet.Protocol.HttpSourceAuthenticationHandler.HttpSourceAuthenticationHandler(NuGet.Configuration.PackageSource packageSource, System.Net.Http.HttpClientHandler clientHandler, NuGet.Configuration.ICredentialService credentialService) -> void
 NuGet.Protocol.HttpSourceCachedRequest
 NuGet.Protocol.HttpSourceCachedRequest.AcceptHeaderValues.get -> System.Collections.Generic.IList<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>
 NuGet.Protocol.HttpSourceCachedRequest.CacheContext.get -> NuGet.Protocol.Core.Types.HttpSourceCacheContext
@@ -1308,7 +1306,6 @@ NuGet.Protocol.Plugins.WindowsEmbeddedSignatureVerifier
 NuGet.Protocol.Plugins.WindowsEmbeddedSignatureVerifier.WindowsEmbeddedSignatureVerifier() -> void
 NuGet.Protocol.ProtocolConstants
 NuGet.Protocol.ProxyAuthenticationHandler
-NuGet.Protocol.ProxyAuthenticationHandler.ProxyAuthenticationHandler(System.Net.Http.HttpClientHandler clientHandler, NuGet.Configuration.ICredentialService credentialService, NuGet.Configuration.IProxyCredentialCache credentialCache) -> void
 NuGet.Protocol.RawSearchResourceV3
 NuGet.Protocol.RawSearchResourceV3.RawSearchResourceV3(NuGet.Protocol.HttpSource client, System.Collections.Generic.IEnumerable<System.Uri> searchEndpoints) -> void
 NuGet.Protocol.RawSearchResourceV3Provider
@@ -1374,7 +1371,6 @@ NuGet.Protocol.SemaphoreSlimThrottle.Release() -> void
 NuGet.Protocol.SemaphoreSlimThrottle.SemaphoreSlimThrottle(System.Threading.SemaphoreSlim semaphore) -> void
 NuGet.Protocol.SemaphoreSlimThrottle.WaitAsync() -> System.Threading.Tasks.Task
 NuGet.Protocol.ServerWarningLogHandler
-NuGet.Protocol.ServerWarningLogHandler.ServerWarningLogHandler(System.Net.Http.HttpClientHandler clientHandler) -> void
 NuGet.Protocol.ServiceIndexEntry
 NuGet.Protocol.ServiceIndexEntry.ClientVersion.get -> NuGet.Versioning.SemanticVersion
 NuGet.Protocol.ServiceIndexEntry.ServiceIndexEntry(System.Uri serviceUri, string serviceType, NuGet.Versioning.SemanticVersion clientVersion) -> void
@@ -1505,7 +1501,6 @@ abstract NuGet.Protocol.Core.Types.FindPackageByIdResource.DoesPackageExistAsync
 abstract NuGet.Protocol.Core.Types.FindPackageByIdResource.GetAllVersionsAsync(string id, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion>>
 abstract NuGet.Protocol.Core.Types.FindPackageByIdResource.GetDependencyInfoAsync(string id, NuGet.Versioning.NuGetVersion version, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.FindPackageByIdDependencyInfo>
 abstract NuGet.Protocol.Core.Types.FindPackageByIdResource.GetPackageDownloaderAsync(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Packaging.IPackageDownloader>
-abstract NuGet.Protocol.Core.Types.HttpHandlerResource.ClientHandler.get -> System.Net.Http.HttpClientHandler
 abstract NuGet.Protocol.Core.Types.HttpHandlerResource.MessageHandler.get -> System.Net.Http.HttpMessageHandler
 abstract NuGet.Protocol.Core.Types.LegacyFeedCapabilityResource.SupportsIsAbsoluteLatestVersionAsync(NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
 abstract NuGet.Protocol.Core.Types.LegacyFeedCapabilityResource.SupportsSearchAsync(NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
@@ -1666,7 +1661,6 @@ override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.GetAllVersion
 override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.GetDependencyInfoAsync(string id, NuGet.Versioning.NuGetVersion version, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.FindPackageByIdDependencyInfo>
 override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.GetPackageDownloaderAsync(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Packaging.IPackageDownloader>
 override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository sourceRepository, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
-override NuGet.Protocol.HttpHandlerResourceV3.ClientHandler.get -> System.Net.Http.HttpClientHandler
 override NuGet.Protocol.HttpHandlerResourceV3.MessageHandler.get -> System.Net.Http.HttpMessageHandler
 override NuGet.Protocol.HttpHandlerResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 override NuGet.Protocol.HttpSourceAuthenticationHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>

@@ -11,7 +11,11 @@ using System.Threading.Tasks;
 
 namespace Test.Utility
 {
+#if NETFRAMEWORK
+    public class TestMessageHandler : WinHttpHandler
+#else
     public class TestMessageHandler : HttpClientHandler
+#endif
     {
         private Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> _responses;
         private int _currentRequestCount;

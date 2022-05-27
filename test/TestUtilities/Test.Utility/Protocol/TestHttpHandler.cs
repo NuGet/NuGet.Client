@@ -8,6 +8,17 @@ namespace Test.Utility
 {
     public class TestHttpHandler : HttpHandlerResource
     {
+#if NETFRAMEWORK
+        private WinHttpHandler _messageHandler;
+        public TestHttpHandler(WinHttpHandler messageHandler)
+        {
+            _messageHandler = messageHandler;
+        }
+        public override WinHttpHandler ClientHandler
+        {
+            get { return _messageHandler; }
+        }
+#else
         private HttpClientHandler _messageHandler;
 
         public TestHttpHandler(HttpClientHandler messageHandler)
@@ -19,6 +30,7 @@ namespace Test.Utility
         {
             get { return _messageHandler; }
         }
+#endif
 
         public override HttpMessageHandler MessageHandler
         {

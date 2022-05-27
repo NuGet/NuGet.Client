@@ -41,12 +41,21 @@ namespace NuGet.Protocol
             var sourceUri = packageSource.SourceUri;
             var proxy = ProxyCache.Instance.GetProxy(sourceUri);
 
+#if NETFRAMEWORK
+            // replace the handler with the proxy aware handler
+            var clientHandler = new WinHttpHandler
+            {
+                Proxy = proxy,
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
+            };
+#else
             // replace the handler with the proxy aware handler
             var clientHandler = new HttpClientHandler
             {
                 Proxy = proxy,
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             };
+#endif
 
             // Setup http client handler client certificates
             if (packageSource.ClientCertificates != null)

@@ -261,13 +261,23 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(HttpStatusCode.ProxyAuthenticationRequired, response.StatusCode);
         }
 
+#if NETFRAMEWORK
+        private static WinHttpHandler GetDefaultClientHandler()
+        {
+            var proxy = new TestProxy(ProxyAddress);
+
+            return new WinHttpHandler { Proxy = proxy };
+        }
+#else
         private static HttpClientHandler GetDefaultClientHandler()
         {
             var proxy = new TestProxy(ProxyAddress);
-            return new HttpClientHandler { Proxy = proxy };
-        }
 
-        private static LambdaMessageHandler GetLambdaHandler(HttpStatusCode statusCode)
+            return new HttpClientHandler { Proxy = proxy };
+        } 
+#endif    
+
+    private static LambdaMessageHandler GetLambdaHandler(HttpStatusCode statusCode)
         {
             return new LambdaMessageHandler(
                 _ => new HttpResponseMessage(statusCode));

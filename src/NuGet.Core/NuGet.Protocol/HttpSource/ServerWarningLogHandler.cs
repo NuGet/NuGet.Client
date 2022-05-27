@@ -10,11 +10,18 @@ namespace NuGet.Protocol
     public class ServerWarningLogHandler
         : DelegatingHandler
     {
+
+#if NETFRAMEWORK
+        public ServerWarningLogHandler(WinHttpHandler clientHandler)
+            : base(clientHandler)
+        {
+        }
+#else
         public ServerWarningLogHandler(HttpClientHandler clientHandler)
             : base(clientHandler)
         {
         }
-
+#endif
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var configuration = request.GetOrCreateConfiguration();

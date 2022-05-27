@@ -14,9 +14,31 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpHandlerResourceV3 : HttpHandlerResource
     {
+#if NETFRAMEWORK
+        private readonly WinHttpHandler _clientHandler;
+#else
         private readonly HttpClientHandler _clientHandler;
+#endif
         private readonly HttpMessageHandler _messageHandler;
 
+
+#if NETFRAMEWORK
+        public HttpHandlerResourceV3(WinHttpHandler clientHandler, HttpMessageHandler messageHandler)
+        {
+            if (clientHandler == null)
+            {
+                throw new ArgumentNullException(nameof(clientHandler));
+            }
+
+            if (messageHandler == null)
+            {
+                throw new ArgumentNullException(nameof(messageHandler));
+            }
+
+            _clientHandler = clientHandler;
+            _messageHandler = messageHandler;
+        }
+#else
         public HttpHandlerResourceV3(HttpClientHandler clientHandler, HttpMessageHandler messageHandler)
         {
             if (clientHandler == null)
@@ -32,9 +54,13 @@ namespace NuGet.Protocol
             _clientHandler = clientHandler;
             _messageHandler = messageHandler;
         }
+#endif
 
+#if NETFRAMEWORK
+        public override WinHttpHandler ClientHandler => _clientHandler;
+#else
         public override HttpClientHandler ClientHandler => _clientHandler;
-
+#endif
         public override HttpMessageHandler MessageHandler => _messageHandler;
 
         public static Lazy<ICredentialService> CredentialService { get; set; }

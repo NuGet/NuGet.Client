@@ -11,13 +11,23 @@ namespace Test.Utility
 {
     public class TestHttpHandlerProvider : ResourceProvider
     {
+#if NETFRAMEWORK
+        private Func<WinHttpHandler> _messageHandlerFactory;
+
+        public TestHttpHandlerProvider(Func<WinHttpHandler> messageHandlerFactory)
+            : base(typeof(HttpHandlerResource), "testhandler", NuGetResourceProviderPositions.First)
+        {
+            _messageHandlerFactory = messageHandlerFactory;
+        }
+#else
         private Func<HttpClientHandler> _messageHandlerFactory;
 
         public TestHttpHandlerProvider(Func<HttpClientHandler> messageHandlerFactory)
             : base(typeof(HttpHandlerResource), "testhandler", NuGetResourceProviderPositions.First)
         {
             _messageHandlerFactory = messageHandlerFactory;
-        }
+        }        
+#endif
 
         public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {

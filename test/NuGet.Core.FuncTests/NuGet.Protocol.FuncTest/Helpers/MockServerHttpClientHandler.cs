@@ -6,7 +6,11 @@ using System.Net.Http;
 
 namespace NuGet.Protocol.FuncTest.Helpers
 {
+#if NETFRAMEWORK
+    internal abstract class MockServerHttpClientHandler : WinHttpHandler
+#else
     internal abstract class MockServerHttpClientHandler : HttpClientHandler
+#endif
     {
         protected MockServerHttpClientHandler(Uri baseAddress)
         {

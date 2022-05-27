@@ -22,18 +22,57 @@ namespace NuGet.Protocol
         private readonly static SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
 
         private readonly PackageSource _packageSource;
+#if NETFRAMEWORK
+        private readonly WinHttpHandler _clientHandler;
+#else
         private readonly HttpClientHandler _clientHandler;
+#endif
+
         private readonly ICredentialService _credentialService;
 
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
         private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
         private HttpSourceCredentials _credentials;
 
+#if NETFRAMEWORK
         public HttpSourceAuthenticationHandler(
             PackageSource packageSource,
-            HttpClientHandler clientHandler,
+            WinHttpHandler clientHandler,
             ICredentialService credentialService)
             : base(clientHandler)
+        {
+            _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
+            _clientHandler = clientHandler ?? throw new ArgumentNullException(nameof(clientHandler));
+
+            // credential service is optional as credentials may be attached to a package source
+            _credentialService = credentialService;
+
+            // Create a new wrapper for ICredentials that can be modified
+
+            if (_credentialService == null || !_credentialService.HandlesDefaultCredentials)
+            {
+                // This is used to match the value of HttpClientHandler.UseDefaultCredentials = true
+                _credentials = new HttpSourceCredentials(CredentialCache.DefaultNetworkCredentials);
+            }
+            else
+            {
+                _credentials = new HttpSourceCredentials();
+            }
+
+            if (packageSource.Credentials != null &&
+                packageSource.Credentials.IsValid())
+            {
+                _credentials.Credentials = packageSource.Credentials.ToICredentials();
+            }
+
+            _clientHandler.ServerCredentials = _credentials;
+        }
+#else
+        public HttpSourceAuthenticationHandler(
+        PackageSource packageSource,
+        HttpClientHandler clientHandler,
+        ICredentialService credentialService)
+        : base(clientHandler)
         {
             _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
             _clientHandler = clientHandler ?? throw new ArgumentNullException(nameof(clientHandler));
@@ -63,6 +102,7 @@ namespace NuGet.Protocol
             // Always take the credentials from the helper.
             _clientHandler.UseDefaultCredentials = false;
         }
+#endif
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

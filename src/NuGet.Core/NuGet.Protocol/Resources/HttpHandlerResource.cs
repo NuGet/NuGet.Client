@@ -13,7 +13,11 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// HttpClientHandler used for credential support.
         /// </summary>
+#if NETFRAMEWORK
+        public abstract WinHttpHandler ClientHandler { get; }
+#else
         public abstract HttpClientHandler ClientHandler { get; }
+#endif
 
         /// <summary>
         /// Message handler containing the ClientHandler.

@@ -228,7 +228,11 @@ namespace NuGet.Protocol.Tests
                     SleepDuration = TimeSpan.FromSeconds(10)
                 };
                 var packageSource = new PackageSource(FakeSource);
+#if NETFRAMEWORK
+                var handler = new WinHttpHandler();
+#else
                 var handler = new HttpClientHandler();
+#endif
                 var handlerResource = new HttpHandlerResourceV3(handler, handler);
                 var httpSource = new HttpSource(
                     packageSource,

@@ -24,17 +24,22 @@ namespace NuGet.Protocol
         // Only one source may prompt at a time
         private static readonly SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
 
+#if NETFRAMEWORK
+        private readonly WinHttpHandler _clientHandler;
+#else
         private readonly HttpClientHandler _clientHandler;
+#endif
+
         private readonly ICredentialService _credentialService;
         private readonly IProxyCredentialCache _credentialCache;
 
         private int _authRetries;
-
+#if NETFRAMEWORK
         public ProxyAuthenticationHandler(
-            HttpClientHandler clientHandler,
-            ICredentialService credentialService,
-            IProxyCredentialCache credentialCache)
-            : base(clientHandler)
+                WinHttpHandler clientHandler,
+                ICredentialService credentialService,
+                IProxyCredentialCache credentialCache)
+                : base(clientHandler)
         {
             if (clientHandler == null)
             {
@@ -53,7 +58,31 @@ namespace NuGet.Protocol
 
             _credentialCache = credentialCache;
         }
+#else
+        public ProxyAuthenticationHandler(
+                HttpClientHandler clientHandler,
+                ICredentialService credentialService,
+                IProxyCredentialCache credentialCache)
+                : base(clientHandler)
+        {
+            if (clientHandler == null)
+            {
+                throw new ArgumentNullException(nameof(clientHandler));
+            }
 
+            _clientHandler = clientHandler;
+
+            // credential service is optional
+            _credentialService = credentialService;
+
+            if (credentialCache == null)
+            {
+                throw new ArgumentNullException(nameof(credentialCache));
+            }
+
+            _credentialCache = credentialCache;
+        }
+#endif
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
