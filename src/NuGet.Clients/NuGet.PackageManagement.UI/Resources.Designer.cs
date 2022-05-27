@@ -2151,11 +2151,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Transitively referenced version: {0}.
+        ///   Looks up a localized string similar to Transitively referenced version.
         /// </summary>
         public static string ToolTip_TransitiveDependency {
             get {
                 return ResourceManager.GetString("ToolTip_TransitiveDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitively referenced version: {0}.
+        /// </summary>
+        public static string ToolTip_TransitiveDependencyVersion {
+            get {
+                return ResourceManager.GetString("ToolTip_TransitiveDependencyVersion", resourceCulture);
             }
         }
         
