@@ -145,7 +145,7 @@ namespace NuGet.PackageManagement.UI
                     if (_latestVersion != null)
                     {
                         var displayVersion = new DisplayVersion(_latestVersion, string.Empty);
-                        string toolTipText = PackageLevel == PackageLevel.Transitive ? Resources.ToolTip_TransitiveDependency : Resources.ToolTip_LatestVersion;
+                        string toolTipText = PackageLevel == PackageLevel.Transitive ? Resources.ToolTip_TransitiveDependencyVersion : Resources.ToolTip_LatestVersion;
                         LatestVersionToolTip = string.Format(
                             CultureInfo.CurrentUICulture,
                             toolTipText,
