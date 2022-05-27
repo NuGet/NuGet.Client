@@ -254,7 +254,42 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void AddOrUpdateDependency_WithCentralPackageManagementEnabled_AddsNewDependency()
+        public void AddOrUpdateDependency_WithCentralPackageManagementEnabled_AddsDependency()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("1.0.0"));
+
+            var targetFrameworkInformation = new TargetFrameworkInformation
+            {
+                FrameworkName = FrameworkConstants.CommonFrameworks.Net45
+            };
+
+            var spec = new PackageSpec(new[] { targetFrameworkInformation })
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    CentralPackageVersionsEnabled = true
+                }
+            };
+
+            // Act
+            PackageSpecOperations.AddOrUpdateDependency(
+                spec,
+                packageIdentity,
+                new[] { targetFrameworkInformation.FrameworkName });
+
+            // Assert
+            Assert.Equal(1, spec.TargetFrameworks[0].Dependencies.Count);
+            Assert.Equal(packageIdentity.Id, spec.TargetFrameworks[0].Dependencies[0].LibraryRange.Name);
+            Assert.Equal(packageIdentity.Version, spec.TargetFrameworks[0].Dependencies[0].LibraryRange.VersionRange.MinVersion);
+            Assert.True(spec.TargetFrameworks[0].Dependencies[0].VersionCentrallyManaged);
+
+            Assert.True(spec.TargetFrameworks[0].CentralPackageVersions.ContainsKey(packageIdentity.Id));
+            Assert.Equal(packageIdentity.Version, spec.TargetFrameworks[0].CentralPackageVersions[packageIdentity.Id].VersionRange.MinVersion);
+        }
+
+        [Fact]
+        public void AddOrUpdateDependency_WithCentralPackageManagementEnabled_UpdatesDependency()
         {
             // Arrange
             var packageId = "NuGet.Versioning";

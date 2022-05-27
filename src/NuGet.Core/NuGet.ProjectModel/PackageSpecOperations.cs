@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel
 
             if (!existing.Any())
             {
-                AddDependency(spec.Dependencies, dependency.Id, range, spec.RestoreMetadata.CentralPackageVersionsEnabled);
+                AddDependency(spec, spec.Dependencies, dependency.Id, range);
             }
         }
 
@@ -55,14 +55,9 @@ namespace NuGet.ProjectModel
                 AddOrUpdateDependencyInDependencyList(spec, list, dependency.Id, dependency.VersionRange);
             }
 
-            if (spec.RestoreMetadata.CentralPackageVersionsEnabled)
+            foreach (IDictionary<string, CentralPackageVersion> centralPackageVersionList in GetCentralPackageVersionLists(spec, frameworksToAdd))
             {
-                var centralPackageVersionLists = GetCentralPackageVersions(spec, frameworksToAdd);
-
-                foreach (var centralPackageVersionList in centralPackageVersionLists)
-                {
-                    centralPackageVersionList[dependency.Id] = new CentralPackageVersion(dependency.Id, dependency.VersionRange);
-                }
+                centralPackageVersionList[dependency.Id] = new CentralPackageVersion(dependency.Id, dependency.VersionRange);
             }
         }
 
@@ -127,15 +122,18 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static IEnumerable<IDictionary<string, CentralPackageVersion>> GetCentralPackageVersions(
+        private static IEnumerable<IDictionary<string, CentralPackageVersion>> GetCentralPackageVersionLists(
             PackageSpec spec,
             IEnumerable<NuGetFramework> frameworksToConsider)
         {
-            foreach (var targetFramework in spec.TargetFrameworks)
+            if (spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false)
             {
-                if (frameworksToConsider == null || frameworksToConsider.Contains(targetFramework.FrameworkName))
+                foreach (var targetFramework in spec.TargetFrameworks)
                 {
-                    yield return targetFramework.CentralPackageVersions;
+                    if (frameworksToConsider == null || frameworksToConsider.Contains(targetFramework.FrameworkName))
+                    {
+                        yield return targetFramework.CentralPackageVersions;
+                    }
                 }
             }
         }
@@ -166,21 +164,21 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                AddDependency(list, packageId, range, spec.RestoreMetadata.CentralPackageVersionsEnabled);
+                AddDependency(spec, list, packageId, range);
             }
 
         }
 
         private static void AddDependency(
+            PackageSpec spec,
             IList<LibraryDependency> list,
             string packageId,
-            VersionRange range,
-            bool versionCentrallyManaged)
+            VersionRange range)
         {
             var dependency = new LibraryDependency
             {
                 LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package),
-                VersionCentrallyManaged = versionCentrallyManaged
+                VersionCentrallyManaged = spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false
             };
 
             list.Add(dependency);
