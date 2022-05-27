@@ -145,9 +145,10 @@ namespace NuGet.PackageManagement.UI
                     if (_latestVersion != null)
                     {
                         var displayVersion = new DisplayVersion(_latestVersion, string.Empty);
+                        string toolTipText = PackageLevel == PackageLevel.Transitive ? Resources.ToolTip_TransitiveDependency : Resources.ToolTip_LatestVersion;
                         LatestVersionToolTip = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Resources.ToolTip_LatestVersion,
+                            CultureInfo.CurrentUICulture,
+                            toolTipText,
                             displayVersion);
                     }
                     else
@@ -757,9 +758,8 @@ namespace NuGet.PackageManagement.UI
         {
             InstalledVersion = installedVersion;
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageVersionsAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
+            // Transitive packages cannot be updated and can only be installed as top-level packages with their currently installed version.
+            LatestVersion = installedVersion;
 
             OnPropertyChanged(nameof(Status));
         }
