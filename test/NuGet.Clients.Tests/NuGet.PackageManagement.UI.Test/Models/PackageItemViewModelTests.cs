@@ -323,6 +323,13 @@ namespace NuGet.PackageManagement.UI.Test
             };
         }
 
+        [Fact]
+        public void UpdateTransitivePackageStatus_WhenGivenInstalledVersion_SetsLatestVersionEqualToInstalledVersion()
+        {
+            _testInstance.UpdateTransitivePackageStatus(new NuGetVersion("1.0.0"));
+            Assert.Equal(_testInstance.LatestVersion, _testInstance.InstalledVersion);
+        }
+
         /// <summary>
         /// Tests the final bitmap returned by the view model, by waiting for the BitmapStatus to be "complete".
         /// </summary>
