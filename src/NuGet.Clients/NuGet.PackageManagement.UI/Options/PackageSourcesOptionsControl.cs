@@ -661,6 +661,21 @@ namespace NuGet.Options
             // Otherwise, Path.IsPathRooted() will throw an ArgumentException.
             return path.IndexOfAny(Path.GetInvalidPathChars()) == -1 && Path.IsPathRooted(path);
         }
+
+        private void NewPackageSource_TextChanged(object sender, EventArgs e)
+        {
+            var source = NewPackageSource.Text.Trim();
+
+            // Warn if the source is http, support for this will be removed
+            if (!source.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            {
+                HttpWarning.Visible = true;
+            }
+            else
+            {
+                HttpWarning.Visible = false;
+            }
+        }
     }
 
     internal enum TryUpdateSourceResults

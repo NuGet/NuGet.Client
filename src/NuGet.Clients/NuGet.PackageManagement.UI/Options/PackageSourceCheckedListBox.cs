@@ -6,8 +6,18 @@ using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using Microsoft.Internal.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Utilities;
 using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio.Internal.Contracts;
+using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
+using static Microsoft.Build.Utilities.SDKManifest;
+using GelUtilities = Microsoft.Internal.VisualStudio.PlatformUI.Utilities;
+using NuGet.Configuration;
 
 namespace NuGet.Options
 {
@@ -88,6 +98,21 @@ namespace NuGet.Options
                         // [checkbox] Name
                         //            Source (italics)
 
+                        ImageAttributes attributes = new ImageAttributes
+                        {
+                            StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                            ImageType = (uint)_UIImageType.IT_Icon,
+                            Format = (uint)_UIDataFormat.DF_WinForms,
+                            LogicalWidth = 16,
+                            LogicalHeight = 16,
+                            Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+                        };
+
+                        IVsImageService2 vsImageService = (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
+                        IVsUIObject uIObj = vsImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+                        Icon warningIcon = (Icon)GelUtilities.GetObjectData(uIObj);
+
                         var textWidth = e.Bounds.Width - checkBoxSize.Width - edgeMargin - textMargin;
 
                         var nameSize = graphics.MeasureString(currentItem.Name, e.Font, textWidth, drawFormat);
@@ -101,8 +126,22 @@ namespace NuGet.Options
 
                         graphics.DrawString(currentItem.Name, e.Font, foreBrush, nameBounds, drawFormat);
 
+                        var packageSource = new PackageSource(currentItem.Source, currentItem.Name);
+                        var isSourceHttp = packageSource.IsHttp && !packageSource.IsHttps;
+                        Rectangle warningBounds = default;
+
+                        if (isSourceHttp)
+                        {
+                            warningBounds = new Rectangle(
+                                nameBounds.Left,
+                                nameBounds.Bottom,
+                                warningIcon.Width,
+                                warningIcon.Height);
+                            graphics.DrawIcon(warningIcon, warningBounds);
+                        }
+
                         var sourceBounds = new Rectangle(
-                            nameBounds.Left,
+                            isSourceHttp ? warningBounds.Right : nameBounds.Left,
                             nameBounds.Bottom,
                             textWidth,
                             e.Bounds.Bottom - nameBounds.Bottom);
