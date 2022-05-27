@@ -45,7 +45,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
                 var output = result.Output;
                 Assert.DoesNotContain("WARNING: No API Key was provided", output);
-                Assert.DoesNotContain("WARNING: You are attempting to push to an 'http' source", output);
+                Assert.DoesNotContain("WARNING: You are attempting to push to an 'HTTP' source", output);
             }
         }
 
@@ -83,7 +83,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg.sha512")));
-                Assert.DoesNotContain("WARNING: You are attempting to push to an 'http' source", result.Output);
+                Assert.DoesNotContain("WARNING: You are attempting to push to an 'HTTP' source", result.Output);
             }
         }
 
@@ -2069,7 +2069,7 @@ namespace NuGet.CommandLine.Test
                             true);
             // Assert
             result.Success.Should().BeTrue(result.AllOutput);
-            result.AllOutput.Should().Contain("WARNING: You are running the 'push' operation with an 'http' source");
+            result.AllOutput.Should().Contain("WARNING: You are running the 'push' operation with an 'HTTP' source");
         }
 
         [Fact]
@@ -2117,8 +2117,8 @@ namespace NuGet.CommandLine.Test
             Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Output);
             Assert.Contains($"Created {pushSymbolsUri}", result.Output);
             Assert.Contains("Your package was pushed.", result.Output);
-            Assert.Contains($"WARNING: You are running the 'push' operation with an 'http' source, '{pushUri}/'", result.AllOutput);
-            Assert.Contains($"WARNING: You are running the 'push' operation with an 'http' source, '{pushSymbolsUri}/'", result.AllOutput);
+            Assert.Contains($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{pushUri}/'", result.AllOutput);
+            Assert.Contains($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{pushSymbolsUri}/'", result.AllOutput);
         }
 
         [Fact]
@@ -2192,8 +2192,8 @@ namespace NuGet.CommandLine.Test
                         // Assert
                         result.Success.Should().BeTrue(result.AllOutput);
                         result.AllOutput.Should().Contain("Your package was pushed");
-                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'http' source, '{serverV3.Uri}index.json'");
-                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'http' source, '{serverV2.Uri}push/'");
+                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{serverV3.Uri}index.json'");
+                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{serverV2.Uri}push/'");
                         AssertFileEqual(packageFileName, outputFileName);
                     }
                 }
