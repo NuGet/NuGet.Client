@@ -205,6 +205,7 @@ namespace NuGet.Options
             // HttpWarning
             // 
             resources.ApplyResources(this.HttpWarning, "HttpWarning");
+            this.HttpWarning.Image = global::NuGet.PackageManagement.UI.Resources.StatusWarning;
             this.HttpWarning.Name = "HttpWarning";
             // 
             // images32px

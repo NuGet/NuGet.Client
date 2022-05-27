@@ -537,6 +537,7 @@
     <PMUIAssemblyVersion>$(SemanticVersion).$(PreReleaseVersion)</PMUIAssemblyVersion>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Resources\StatusWarning.png" />
     <T4ParameterValues Include="PMUIAssemblyVersion">
       <Value>$(PMUIAssemblyVersion)</Value>
       <Visible>false</Visible>
