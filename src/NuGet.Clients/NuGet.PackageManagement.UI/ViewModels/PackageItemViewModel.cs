@@ -756,7 +756,7 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateTransitivePackageStatus(NuGetVersion installedVersion)
         {
-            InstalledVersion = installedVersion;
+            InstalledVersion = installedVersion ?? throw new ArgumentNullException(nameof(installedVersion)); ;
 
             // Transitive packages cannot be updated and can only be installed as top-level packages with their currently installed version.
             LatestVersion = installedVersion;
