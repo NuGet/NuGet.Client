@@ -2445,7 +2445,7 @@ EndGlobal";
                         "x",
                         framework: "",
                         new Dictionary<string, string>(),
-                        new Dictionary<string, string>(){{"Version", "1.0.0"}});
+                        new Dictionary<string, string>() { { "Version", "1.0.0" } });
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -2468,6 +2468,142 @@ EndGlobal";
                 result.ExitCode.Should().Be(0, because: result.AllOutput);
                 result.AllOutput.Should().Contain("All projects are up-to-date for restore.");
             }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        // [InlineData(true)] - Disabled static graph tests due to https://github.com/NuGet/Home/issues/11761.
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_RestoresForSingleFramework(bool useStaticGraphEvaluation)
+        {
+            // Arrange
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new SimpleTestPackageContext("x", "1.0.0"));
+
+            string projectFileContents =
+@"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""x"" Version=""1.0.0"" />
+        <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""DoesNotExist"" Version=""1.0.0"" />
+    </ItemGroup>
+</Project>";
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "a.csproj"), projectFileContents);
+
+            // Act
+            var additionalArgs = useStaticGraphEvaluation ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+            var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args: $"restore a.csproj {additionalArgs} /p:TargetFramework=\"net5.0\"", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            var assetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", LockFileFormat.AssetsFileName);
+            var format = new LockFileFormat();
+            LockFile assetsFile = format.Read(assetsFilePath);
+
+            var targetsWithoutARuntime = assetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+            targetsWithoutARuntime.Count().Should().Be(1, because: "Expected that only the framework passed in as a global property is restored.");
+            var net50Target = targetsWithoutARuntime.Single();
+
+            net50Target.Libraries.Should().HaveCount(1);
+            net50Target.Libraries.Single().Name.Should().Be("x");
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        // [InlineData(true)] - Disabled static graph tests due to https://github.com/NuGet/Home/issues/11761.
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargetingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_AndPerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework(bool useStaticGraphEvaluation)
+        {
+            // Arrange
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new SimpleTestPackageContext("x", "1.0.0"));
+            var projectAWorkingDirectory = Path.Combine(pathContext.SolutionRoot, "a");
+            var projectBWorkingDirectory = Path.Combine(pathContext.SolutionRoot, "b");
+            Directory.CreateDirectory(projectAWorkingDirectory);
+            Directory.CreateDirectory(projectBWorkingDirectory);
+            var projectAPath = Path.Combine(projectAWorkingDirectory, "a.csproj");
+            var projectBPath = Path.Combine(projectBWorkingDirectory, "b.csproj");
+            string projectAFileContents =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""..\b\b.csproj"" Version=""1.0.0"" />
+    </ItemGroup>
+</Project>";
+            string projectBFileContents =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>net5.0</TargetFrameworks>
+    </PropertyGroup>
+</Project>";
+            File.WriteAllText(projectAPath, projectAFileContents);
+            File.WriteAllText(projectBPath, projectBFileContents);
+
+            // Act
+            var additionalArgs = useStaticGraphEvaluation ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+            var result = _msbuildFixture.RunDotnet(projectAWorkingDirectory, args: $"restore a.csproj /p:TargetFramework=\"net5.0\" /p:RestoreRecursive=\"false\" {additionalArgs}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            var assetsFilePath = Path.Combine(projectAWorkingDirectory, "obj", LockFileFormat.AssetsFileName);
+            var format = new LockFileFormat();
+            LockFile assetsFile = format.Read(assetsFilePath);
+
+            var targetsWithoutARuntime = assetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+            targetsWithoutARuntime.Count().Should().Be(1, because: "Expected that only the framework passed in as a global property is restored.");
+            var net50Target = targetsWithoutARuntime.Single();
+
+            net50Target.Libraries.Should().HaveCount(1);
+            net50Target.Libraries.Single().Name.Should().Be("b");
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        // [InlineData(true)] - Disabled static graph tests due to https://github.com/NuGet/Home/issues/11761.
+        [InlineData(false)]
+        public async Task DotnetRestore_WithMultiTargettingProject_WhenTargetFrameworkIsSpecifiedOnTheCommandline_PerFrameworkProjectReferencesAreUsed_RestoresForSingleFramework(bool useStaticGraphEvaluation)
+        {
+            // Arrange
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+            var additionalSource = Path.Combine(pathContext.SolutionRoot, "additionalSource");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(additionalSource, new SimpleTestPackageContext("x", "1.0.0"));
+
+            string projectFileContents =
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+        <RestoreAdditionalProjectSources Condition=""'$(TargetFramework)' == 'net5.0'"">{additionalSource}</RestoreAdditionalProjectSources>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""x"" Version=""1.0.0"" />
+        <PackageReference Condition=""'$(TargetFramework)' == 'netstandard2.0'"" Include=""DoesNotExist"" Version=""1.0.0"" />
+    </ItemGroup>
+</Project>";
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "a.csproj"), projectFileContents);
+
+            // Act
+            var additionalArgs = useStaticGraphEvaluation ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
+            var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args: $"restore a.csproj /p:TargetFramework=\"net5.0\" {additionalArgs}", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            var assetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", LockFileFormat.AssetsFileName);
+            var format = new LockFileFormat();
+            LockFile assetsFile = format.Read(assetsFilePath);
+
+            var targetsWithoutARuntime = assetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+            targetsWithoutARuntime.Count().Should().Be(1, because: "Expected that only the framework passed in as a global property is restored.");
+            var net50Target = targetsWithoutARuntime.Single();
+
+            net50Target.Libraries.Should().HaveCount(1);
+            net50Target.Libraries.Single().Name.Should().Be("x");
+            assetsFile.PackageSpec.RestoreMetadata.Sources.Select(e => e.Source).Should().Contain(additionalSource);
+
+            var condition = @"<ItemGroup Condition="" '$(TargetFramework)' == 'net5.0' AND '$(ExcludeRestorePackageImports)' != 'true' "">";
+            var targetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", "a.csproj.nuget.g.props");
+            var allTargets = File.ReadAllText(targetsFilePath);
+            allTargets.Should().Contain(condition);
         }
     }
 }
