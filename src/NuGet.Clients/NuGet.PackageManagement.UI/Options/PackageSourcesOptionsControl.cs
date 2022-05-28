@@ -670,10 +670,12 @@ namespace NuGet.Options
             if (!source.StartsWith("https", StringComparison.OrdinalIgnoreCase))
             {
                 HttpWarning.Visible = true;
+                pictureBox1.Visible = true;
             }
             else
             {
                 HttpWarning.Visible = false;
+                pictureBox1.Visible = false;
             }
         }
     }

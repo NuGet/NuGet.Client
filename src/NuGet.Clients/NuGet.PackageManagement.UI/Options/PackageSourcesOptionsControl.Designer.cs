@@ -50,13 +50,17 @@ namespace NuGet.Options
             this.MachineWideSourcesLabel = new System.Windows.Forms.Label();
             this.MachineWidePackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.HttpWarning = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.images32px = new System.Windows.Forms.ImageList(this.components);
             this.images64px = new System.Windows.Forms.ImageList(this.components);
             this.PackageSourcesContextMenu.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
+            this.tableLayoutPanel4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // HeaderLabel
@@ -140,9 +144,9 @@ namespace NuGet.Options
             this.tableLayoutPanel1.Controls.Add(this.NewPackageNameLabel, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.NewPackageSourceLabel, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel3, 1, 5);
-            this.tableLayoutPanel1.Controls.Add(this.NewPackageName, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.BrowseButton, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.updateButton, 3, 5);
+            this.tableLayoutPanel1.Controls.Add(this.NewPackageName, 1, 4);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             // 
             // tableLayoutPanel2
@@ -199,14 +203,27 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.tableLayoutPanel3, "tableLayoutPanel3");
             this.tableLayoutPanel3.Controls.Add(this.NewPackageSource, 0, 0);
-            this.tableLayoutPanel3.Controls.Add(this.HttpWarning, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel4, 0, 1);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            // 
+            // tableLayoutPanel4
+            // 
+            resources.ApplyResources(this.tableLayoutPanel4, "tableLayoutPanel4");
+            this.tableLayoutPanel4.Controls.Add(this.HttpWarning, 1, 0);
+            this.tableLayoutPanel4.Controls.Add(this.pictureBox1, 0, 0);
+            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             // 
             // HttpWarning
             // 
             resources.ApplyResources(this.HttpWarning, "HttpWarning");
-            this.HttpWarning.Image = global::NuGet.PackageManagement.UI.Resources.StatusWarning;
             this.HttpWarning.Name = "HttpWarning";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::NuGet.PackageManagement.UI.Resources.StatusWarning;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
             // 
             // images32px
             // 
@@ -239,6 +256,9 @@ namespace NuGet.Options
             this.tableLayoutPanel2.PerformLayout();
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel3.PerformLayout();
+            this.tableLayoutPanel4.ResumeLayout(false);
+            this.tableLayoutPanel4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -268,5 +288,7 @@ namespace NuGet.Options
         private ImageList images64px;
         private TableLayoutPanel tableLayoutPanel3;
         private Label HttpWarning;
+        private PictureBox pictureBox1;
+        private TableLayoutPanel tableLayoutPanel4;
     }
 }
