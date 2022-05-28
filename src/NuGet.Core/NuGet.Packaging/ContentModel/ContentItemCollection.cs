@@ -314,7 +314,7 @@ namespace NuGet.ContentModel
             else
             {
                 relatedFileExtensionList.Sort();
-                string relatedFileExtensionsProperty = String.Join(";", relatedFileExtensionList.ToArray());
+                string relatedFileExtensionsProperty = String.Join(";", relatedFileExtensionList);
                 return relatedFileExtensionsProperty;
             }
         }
