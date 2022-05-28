@@ -77,26 +77,17 @@ namespace NuGet.Packaging.FuncTest
                 SystemCertificateBundleX509ChainFactory.ProbePaths,
                 out X509Certificate2Collection certificates,
                 out string _);
-            CertificateBundleX509ChainFactory certificateBundleFactory = null;
+            var certificateBundleFactory = (CertificateBundleX509ChainFactory)factory;
 
-            if (X509TrustStore.IsEnabled)
+            if (wasFound)
             {
-                certificateBundleFactory = (CertificateBundleX509ChainFactory)factory;
-
-                if (wasFound)
-                {
-                    Assert.IsType<SystemCertificateBundleX509ChainFactory>(factory);
-                    Assert.Equal(certificates.Count, certificateBundleFactory.Certificates.Count);
-                }
-                else
-                {
-                    Assert.IsType<FallbackCertificateBundleX509ChainFactory>(factory);
-                    Assert.True(certificateBundleFactory.Certificates.Count > 0);
-                }
+                Assert.IsType<SystemCertificateBundleX509ChainFactory>(factory);
+                Assert.Equal(certificates.Count, certificateBundleFactory.Certificates.Count);
             }
             else
             {
-                Assert.IsType<DotNetDefaultTrustStoreX509ChainFactory>(factory);
+                Assert.IsType<FallbackCertificateBundleX509ChainFactory>(factory);
+                Assert.True(certificateBundleFactory.Certificates.Count > 0);
             }
 
             Assert.Equal(1, _logger.Messages.Count);
@@ -105,26 +96,19 @@ namespace NuGet.Packaging.FuncTest
 
             string expectedMessage;
 
-            if (X509TrustStore.IsEnabled)
+            if (wasFound)
             {
-                if (wasFound)
-                {
-                    expectedMessage = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.ChainBuilding_UsingSystemCertificateBundle,
-                        certificateBundleFactory.FilePath);
-                }
-                else
-                {
-                    expectedMessage = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.ChainBuilding_UsingFallbackCertificateBundle,
-                        certificateBundleFactory.FilePath);
-                }
+                expectedMessage = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ChainBuilding_UsingSystemCertificateBundle,
+                    certificateBundleFactory.FilePath);
             }
             else
             {
-                expectedMessage = Strings.ChainBuilding_UsingDefaultTrustStore;
+                expectedMessage = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ChainBuilding_UsingFallbackCertificateBundle,
+                    certificateBundleFactory.FilePath);
             }
 
             Assert.Equal(expectedMessage, actualMessage);
@@ -134,23 +118,13 @@ namespace NuGet.Packaging.FuncTest
         public void CreateX509ChainFactoryForDotNetSdk_OnMacOsAlways_ReturnsInstance()
         {
             IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactoryForDotNetSdk(_logger);
-            string expectedMessage;
-            
-            if (X509TrustStore.IsEnabled)
-            {
-                Assert.IsType<FallbackCertificateBundleX509ChainFactory>(factory);
 
-                expectedMessage = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.ChainBuilding_UsingFallbackCertificateBundle,
-                    ((CertificateBundleX509ChainFactory)factory).FilePath);
-            }
-            else
-            {
-                Assert.IsType<DotNetDefaultTrustStoreX509ChainFactory>(factory);
+            Assert.IsType<FallbackCertificateBundleX509ChainFactory>(factory);
 
-                expectedMessage = Strings.ChainBuilding_UsingDefaultTrustStore;
-            }
+            string expectedMessage = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.ChainBuilding_UsingFallbackCertificateBundle,
+                ((CertificateBundleX509ChainFactory)factory).FilePath);
 
             Assert.Equal(1, _logger.Messages.Count);
             Assert.Equal(1, _logger.VerboseMessages.Count);

@@ -45,7 +45,7 @@ namespace Test.Utility.Signing
             IX509ChainFactory factory = null;
 
 #if NET5_0_OR_GREATER
-            if (X509TrustStore.IsEnabled && tryUseAsDefault && !RuntimeEnvironmentHelper.IsWindows)
+            if (tryUseAsDefault && !RuntimeEnvironmentHelper.IsWindows)
             {
                 factory = Instance;
             }

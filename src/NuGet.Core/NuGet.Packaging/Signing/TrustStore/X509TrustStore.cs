@@ -15,15 +15,6 @@ namespace NuGet.Packaging.Signing
         private static IX509ChainFactory Instance;
         private static readonly object LockObject = new();
 
-        internal static bool IsEnabled { get; }
-
-        static X509TrustStore()
-        {
-            Version DotNet7 = new(major: 7, minor: 0);
-
-            IsEnabled = Environment.Version >= DotNet7;
-        }
-
         /// <summary>
         /// Initializes the X.509 trust store for NuGet .NET SDK scenarios and logs details about the attempt.
         /// If initialization has already happened, a call to this method will have no effect.
@@ -68,60 +59,57 @@ namespace NuGet.Packaging.Signing
         // Non-private for testing purposes only
         internal static IX509ChainFactory CreateX509ChainFactoryForDotNetSdk(ILogger logger)
         {
-            if (IsEnabled)
-            {
 #if NET5_0_OR_GREATER
-                if (RuntimeEnvironmentHelper.IsLinux)
+            if (RuntimeEnvironmentHelper.IsLinux)
+            {
+                if (SystemCertificateBundleX509ChainFactory.TryCreate(
+                    out SystemCertificateBundleX509ChainFactory systemBundleFactory))
                 {
-                    if (SystemCertificateBundleX509ChainFactory.TryCreate(
-                        out SystemCertificateBundleX509ChainFactory systemBundleFactory))
-                    {
-                        logger.LogVerbose(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.ChainBuilding_UsingSystemCertificateBundle,
-                                systemBundleFactory.FilePath));
+                    logger.LogVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ChainBuilding_UsingSystemCertificateBundle,
+                            systemBundleFactory.FilePath));
 
-                        return systemBundleFactory;
-                    }
-
-                    if (FallbackCertificateBundleX509ChainFactory.TryCreate(
-                        out FallbackCertificateBundleX509ChainFactory fallbackBundleFactory))
-                    {
-                        logger.LogVerbose(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.ChainBuilding_UsingFallbackCertificateBundle,
-                                fallbackBundleFactory.FilePath));
-
-                        return fallbackBundleFactory;
-                    }
-
-                    logger.LogVerbose(Strings.ChainBuilding_UsingNoCertificateBundle);
-
-                    return new NoCertificateBundleX509ChainFactory();
+                    return systemBundleFactory;
                 }
 
-                if (RuntimeEnvironmentHelper.IsMacOSX)
+                if (FallbackCertificateBundleX509ChainFactory.TryCreate(
+                    out FallbackCertificateBundleX509ChainFactory fallbackBundleFactory))
                 {
-                    if (FallbackCertificateBundleX509ChainFactory.TryCreate(
-                        out FallbackCertificateBundleX509ChainFactory fallbackBundleFactory))
-                    {
-                        logger.LogVerbose(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.ChainBuilding_UsingFallbackCertificateBundle,
-                                fallbackBundleFactory.FilePath));
+                    logger.LogVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ChainBuilding_UsingFallbackCertificateBundle,
+                            fallbackBundleFactory.FilePath));
 
-                        return fallbackBundleFactory;
-                    }
-
-                    logger.LogVerbose(Strings.ChainBuilding_UsingNoCertificateBundle);
-
-                    return new NoCertificateBundleX509ChainFactory();
+                    return fallbackBundleFactory;
                 }
-#endif
+
+                logger.LogVerbose(Strings.ChainBuilding_UsingNoCertificateBundle);
+
+                return new NoCertificateBundleX509ChainFactory();
             }
+
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                if (FallbackCertificateBundleX509ChainFactory.TryCreate(
+                    out FallbackCertificateBundleX509ChainFactory fallbackBundleFactory))
+                {
+                    logger.LogVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ChainBuilding_UsingFallbackCertificateBundle,
+                            fallbackBundleFactory.FilePath));
+
+                    return fallbackBundleFactory;
+                }
+
+                logger.LogVerbose(Strings.ChainBuilding_UsingNoCertificateBundle);
+
+                return new NoCertificateBundleX509ChainFactory();
+            }
+#endif
 
             return CreateX509ChainFactory(logger);
         }

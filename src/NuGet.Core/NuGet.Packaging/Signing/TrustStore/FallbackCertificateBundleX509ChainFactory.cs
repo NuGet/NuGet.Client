@@ -12,6 +12,8 @@ namespace NuGet.Packaging.Signing
 {
     internal sealed class FallbackCertificateBundleX509ChainFactory : CertificateBundleX509ChainFactory
     {
+        // These constants are dictated by the .NET SDK.
+        private const string SubdirectoryName = "trustedroots";
         internal const string FileName = "codesignctl.pem";
 
         private static readonly Lazy<string> ThisAssemblyDirectoryPath = new(GetThisAssemblyDirectoryPath, LazyThreadSafetyMode.ExecutionAndPublication);
@@ -25,7 +27,7 @@ namespace NuGet.Packaging.Signing
         {
             factory = null;
 
-            string fullFilePath = Path.Combine(ThisAssemblyDirectoryPath.Value, filePath);
+            string fullFilePath = Path.Combine(ThisAssemblyDirectoryPath.Value, SubdirectoryName, filePath);
 
             if (TryImportFromPemFile(fullFilePath, out X509Certificate2Collection certificates))
             {

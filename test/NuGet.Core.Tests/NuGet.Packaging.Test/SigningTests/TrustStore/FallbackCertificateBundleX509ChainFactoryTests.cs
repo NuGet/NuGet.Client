@@ -57,14 +57,16 @@ namespace NuGet.Packaging.Test
                     subdirectory.Create();
 
                     FileInfo bundleFile = CreateBundleFile(subdirectory.FullName, certificate);
-                    string relativePath = bundleFile.FullName.Substring(currentDirectory.Length + 1 /* path separator */);
+                    string relativePath = ".." + bundleFile.FullName.Substring(currentDirectory.Length);
 
                     bool wasCreated = FallbackCertificateBundleX509ChainFactory.TryCreate(
                         out FallbackCertificateBundleX509ChainFactory factory,
                         relativePath);
 
+                    string absoluteActualPath = Path.GetFullPath(factory.FilePath);
+
                     Assert.True(wasCreated);
-                    Assert.Equal(bundleFile.FullName, factory.FilePath);
+                    Assert.Equal(bundleFile.FullName, absoluteActualPath);
                 }
                 finally
                 {

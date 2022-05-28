@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 
 namespace Test.Utility.Signing
@@ -40,7 +41,7 @@ namespace Test.Utility.Signing
         private bool _isDisposed;
 
         private static readonly IRootX509Store RootX509Store =
-            X509TrustStore.IsEnabled ? CustomRootX509Store.Instance : PlatformX509Store.Instance;
+            RuntimeEnvironmentHelper.IsWindows ? PlatformX509Store.Instance : CustomRootX509Store.Instance;
         private static readonly IX509Store OtherX509Store = PlatformX509Store.Instance;
 
         public TrustedTestCert(T source,
