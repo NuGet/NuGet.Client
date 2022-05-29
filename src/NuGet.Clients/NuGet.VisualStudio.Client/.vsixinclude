@@ -32,6 +32,10 @@ NuGet.Protocol.dll
 NuGet.Resolver.dll
 NuGet.Versioning.dll
 System.Net.Http.WinHttpHandler.dll
+System.Memory.dll
+System.Buffers.dll
+System.Numerics.Vectors.dll
+System.Runtime.CompilerServices.Unsafe.dll
 
 # 3rd party dlls to keep
 Lucene.Net.dll

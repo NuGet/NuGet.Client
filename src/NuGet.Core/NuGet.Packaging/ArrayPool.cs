@@ -3,9 +3,7 @@
 
 #if NETFRAMEWORK || NETSTANDARD2_0
 
-using NuGet;
-
-namespace System.Buffers
+namespace NuGet.Buffers
 {
     /// <summary>
     /// Provides a resource pool that enables reusing instances of arrays.
