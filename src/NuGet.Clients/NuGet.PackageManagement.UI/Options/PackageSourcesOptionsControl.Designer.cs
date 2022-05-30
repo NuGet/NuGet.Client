@@ -52,7 +52,7 @@ namespace NuGet.Options
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.HttpWarning = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.HttpWarningIcon = new System.Windows.Forms.PictureBox();
             this.images32px = new System.Windows.Forms.ImageList(this.components);
             this.images64px = new System.Windows.Forms.ImageList(this.components);
             this.PackageSourcesContextMenu.SuspendLayout();
@@ -60,7 +60,7 @@ namespace NuGet.Options
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HttpWarningIcon)).BeginInit();
             this.SuspendLayout();
             // 
             // HeaderLabel
@@ -210,7 +210,7 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.tableLayoutPanel4, "tableLayoutPanel4");
             this.tableLayoutPanel4.Controls.Add(this.HttpWarning, 1, 0);
-            this.tableLayoutPanel4.Controls.Add(this.pictureBox1, 0, 0);
+            this.tableLayoutPanel4.Controls.Add(this.HttpWarningIcon, 0, 0);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             // 
             // HttpWarning
@@ -218,12 +218,12 @@ namespace NuGet.Options
             resources.ApplyResources(this.HttpWarning, "HttpWarning");
             this.HttpWarning.Name = "HttpWarning";
             // 
-            // pictureBox1
+            // HttpWarningIcon
             // 
-            this.pictureBox1.Image = global::NuGet.PackageManagement.UI.Resources.StatusWarning;
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.TabStop = false;
+            this.HttpWarningIcon.Image = global::NuGet.PackageManagement.UI.Resources.StatusWarning;
+            resources.ApplyResources(this.HttpWarningIcon, "HttpWarningIcon");
+            this.HttpWarningIcon.Name = "HttpWarningIcon";
+            this.HttpWarningIcon.TabStop = false;
             // 
             // images32px
             // 
@@ -258,7 +258,7 @@ namespace NuGet.Options
             this.tableLayoutPanel3.PerformLayout();
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HttpWarningIcon)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -288,7 +288,7 @@ namespace NuGet.Options
         private ImageList images64px;
         private TableLayoutPanel tableLayoutPanel3;
         private Label HttpWarning;
-        private PictureBox pictureBox1;
+        private PictureBox HttpWarningIcon;
         private TableLayoutPanel tableLayoutPanel4;
     }
 }

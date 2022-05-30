@@ -6,16 +6,11 @@ using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
-using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Utilities;
 using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio.Internal.Contracts;
-using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
-using static Microsoft.Build.Utilities.SDKManifest;
 using GelUtilities = Microsoft.Internal.VisualStudio.PlatformUI.Utilities;
 using NuGet.Configuration;
 
