@@ -323,7 +323,7 @@ namespace NuGet.ContentModel
             else
             {
                 relatedFileExtensionList.Sort();
-                string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList.ToArray());
+                string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList);
                 _assemblyRelatedExtensions.TryAdd(assemblyPrefix, relatedFileExtensionsProperty);
                 return relatedFileExtensionsProperty;
             }
