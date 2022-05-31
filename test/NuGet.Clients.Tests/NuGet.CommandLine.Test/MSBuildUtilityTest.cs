@@ -343,7 +343,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void CombinePathWithVerboseError_IllegalCharacters_MessageContainsBadPath()
         {
-            const string badPath = @"C:\bad>dir";
+            const string badPath = @"C:\bad:>dir";
             var exception = Assert.Throws<ArgumentException>(() => MsBuildUtility.CombinePathWithVerboseError(badPath, "file.txt"));
             Assert.Contains(badPath, exception.Message);
         }
