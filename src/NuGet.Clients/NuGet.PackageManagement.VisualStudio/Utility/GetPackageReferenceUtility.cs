@@ -210,8 +210,10 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             if (transitiveOrigins.Any())
             {
                 merged = transitiveOrigins
+                // unique packageId per project
                 .GroupBy(tr => tr.PackageIdentity.Id)
-                .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).ThenByDescending(pr => pr.TargetFramework).First())
+                // highest version found
+                .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).First())
                 .ToList();
             }
             else

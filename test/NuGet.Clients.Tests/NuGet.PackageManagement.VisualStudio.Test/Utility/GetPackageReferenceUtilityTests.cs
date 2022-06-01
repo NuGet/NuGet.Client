@@ -21,9 +21,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public void MergeTransitiveOrigin_DuplicateTransitiveOrigins_Merges()
         {
+            // Arrange
             var net472 = NuGetFramework.Parse("net472");
             var pr = new PackageReference(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), net472);
-
             var te = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
             {
                 {
@@ -36,16 +36,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }
             };
 
+            // Act
             TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, te);
 
+            // Assert
             var transitiveOrigin = transitivePackageReference.TransitiveOrigins.Single();
-
             Assert.Equal(NuGetVersion.Parse("0.0.2"), transitiveOrigin.PackageIdentity.Version);
         }
 
         [Fact]
         public void MergeTransitiveOrigin_EmptyList_Succeeds()
         {
+            // Arrange
             var framework = NuGetFramework.Parse("net6.0");
             var pr = new PackageReference(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), framework);
             var fwRuntimePair = new FrameworkRuntimePair(framework, string.Empty);
@@ -54,11 +56,84 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 [fwRuntimePair] = new List<PackageReference>(),
             };
 
+            // Act
             TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
+
+            // Assert
             Assert.Equal(pr.PackageIdentity, transitivePackageReference.PackageIdentity);
             Assert.Empty(transitivePackageReference.TransitiveOrigins);
         }
 
+        [Theory]
+        [MemberData(nameof(GetDataWithNulls))]
+        public void MergeTransitiveOrigin_ListWithNulls_Succeeds(List<PackageReference> transitiveOrigins, int expectedElementCount)
+        {
+            // Arrange
+            var fwRidPair = new FrameworkRuntimePair(NuGetFramework.Parse("net6.0"), string.Empty);
+            var pr = new PackageReference(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), fwRidPair.Framework);
+            var transitiveEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
+            {
+                [fwRidPair] = transitiveOrigins,
+            };
+
+            // Act
+            TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
+
+            // Assert
+            Assert.Equal(expectedElementCount, transitivePackageReference.TransitiveOrigins.Count());
+        }
+
+        [Fact]
+        public void MergeTransitiveOrigin_NullArgument_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(null, It.IsAny<TransitiveEntry>()));
+            Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(It.IsAny<PackageReference>(), null));
+        }
+
+        [Fact]
+        public void MergeTransitiveOrigin_WithNullTransitiveEntryList_ReturnsEmpty()
+        {
+            // Arrange
+            var fwRidNetCore = new FrameworkRuntimePair(NuGetFramework.Parse("net6.0"), string.Empty);
+            var fwRidNetFx = new FrameworkRuntimePair(NuGetFramework.Parse("net472"), string.Empty);
+            var pr = new PackageReference(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), fwRidNetCore.Framework);
+            var transitiveEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
+            {
+                [fwRidNetCore] = new List<PackageReference>()
+                {
+                    new PackageReference(new PackageIdentity("package2", new NuGetVersion("0.0.1")), fwRidNetCore.Framework),
+                    new PackageReference(new PackageIdentity("package1", new NuGetVersion("0.0.1")), fwRidNetCore.Framework),
+                    null,
+                },
+                [fwRidNetFx] = new List<PackageReference>()
+                {
+                    null,
+                    new PackageReference(new PackageIdentity("package3", new NuGetVersion("0.0.1")), fwRidNetFx.Framework),
+                    new PackageReference(new PackageIdentity("package1", new NuGetVersion("0.0.2")), fwRidNetFx.Framework),
+                    null,
+                },
+            };
+
+            // Act
+            TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
+
+            // Assert
+            // Target framework does not matter because PM UI doesn't support multitargeting
+            Assert.Collection(transitivePackageReference.TransitiveOrigins,
+                item => Assert.Equal(CreatePackageIdentity("package1", "0.0.2"), item.PackageIdentity), // highest version found
+                item => Assert.Equal(CreatePackageIdentity("package2", "0.0.1"), item.PackageIdentity),
+                item => Assert.Equal(CreatePackageIdentity("package3", "0.0.1"), item.PackageIdentity));
+        }
+
+        private static PackageReference CreatePackageReference(string id, string version, string framework)
+        {
+            return new PackageReference(CreatePackageIdentity(id, version), NuGetFramework.Parse(framework));
+        }
+
+        private static PackageIdentity CreatePackageIdentity(string id, string version)
+        {
+            return new PackageIdentity(id, NuGetVersion.Parse(version));
+        }
 
         public static IEnumerable<object[]> GetDataWithNulls()
         {
@@ -91,64 +166,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 null,
                 0,
             };
-        }
-
-        [Theory]
-        [MemberData(nameof(GetDataWithNulls))]
-        public void MergeTransitiveOrigin_ListWithNulls_Succeeds(List<PackageReference> transitiveOrigins, int expectedElementCount)
-        {
-            var fwRidPair = new FrameworkRuntimePair(NuGetFramework.Parse("net6.0"), string.Empty);
-            var pr = new PackageReference(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), fwRidPair.Framework);
-            var transitiveEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
-            {
-                [fwRidPair] = transitiveOrigins,
-            };
-
-            TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
-            Assert.Equal(expectedElementCount, transitivePackageReference.TransitiveOrigins.Count());
-        }
-
-        [Fact]
-        public void MergeTransitiveOrigin_NullArgument_Throws()
-        {
-            Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(null, It.IsAny<TransitiveEntry>()));
-            Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(It.IsAny<PackageReference>(), null));
-        }
-
-        [Fact]
-        public void MergeTransitiveOrigin_WithNullTransitiveEntryList_ReturnsEmpty()
-        {
-            var fwRidNetCore = new FrameworkRuntimePair(NuGetFramework.Parse("net6.0"), string.Empty);
-            var fwRidNetFx = new FrameworkRuntimePair(NuGetFramework.Parse("net472"), string.Empty);
-            var pr = new PackageReference(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), fwRidNetCore.Framework);
-
-            var transitiveEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
-            {
-                [fwRidNetCore] = new List<PackageReference>()
-                {
-                    new PackageReference(new PackageIdentity("package2", new NuGetVersion("0.0.1")), fwRidNetCore.Framework),
-                    new PackageReference(new PackageIdentity("package1", new NuGetVersion("0.0.1")), fwRidNetCore.Framework),
-                    null,
-                },
-                [fwRidNetFx] = new List<PackageReference>()
-                {
-                    null,
-                    new PackageReference(new PackageIdentity("package3", new NuGetVersion("0.0.1")), fwRidNetFx.Framework),
-                    new PackageReference(new PackageIdentity("package1", new NuGetVersion("0.0.2")), fwRidNetFx.Framework),
-                    null,
-                },
-            };
-
-            TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
-            Assert.Collection(transitivePackageReference.TransitiveOrigins,
-                item => Assert.Equal(CreatePackageReference("package1", "0.0.1", "net472"), item), // sorted
-                item => Assert.Equal(CreatePackageReference("package2", "0.0.1", "net6.0"), item),
-                item => Assert.Equal(CreatePackageReference("package3", "0.0.1", "net6.0"), item));
-        }
-
-        private static PackageReference CreatePackageReference(string id, string version, string framework)
-        {
-            return new PackageReference(new PackageIdentity(id, NuGetVersion.Parse(version)), NuGetFramework.Parse(framework));
         }
     }
 }
