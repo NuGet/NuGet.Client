@@ -188,9 +188,6 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             }
 
             var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
-            /*
-            transitiveEntry?.Keys?.ForEach(key => transitiveOrigins.AddRange(transitiveEntry[key]));
-            */
             transitiveEntry?.Keys?.ForEach(fwRuntimePair =>
             {
                 if (fwRuntimePair != null)
