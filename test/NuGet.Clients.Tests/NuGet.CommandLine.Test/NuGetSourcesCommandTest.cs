@@ -12,8 +12,10 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetSourcesCommandTest
     {
-        [Fact]
-        public void SourcesCommandTest_AddSource_WarnWhenUsingHttp()
+        [Theory]
+        [InlineData("http://test_source", true)]
+        [InlineData("https://test_source", false)]
+        public void SourcesCommandTest_AddSource(string source, bool shouldWarn)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -28,7 +30,7 @@ namespace NuGet.CommandLine.Test
                     "-Name",
                     "test_source",
                     "-Source",
-                    "http://test_source",
+                    source,
                     "-ConfigFile",
                     settings.ConfigPath
                 };
@@ -41,47 +43,15 @@ namespace NuGet.CommandLine.Test
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("WARNING: You are running the 'add source' operation with an 'HTTP' source, 'http://test_source'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
+                Assert.Equal(source, sourceItem.GetValueAsPath());
+                Assert.Equal(shouldWarn, result.Output.Contains("WARNING: You are running the 'add source' operation with an 'HTTP' source"));
             }
         }
 
-        [Fact]
-        public void SourcesCommandTest_AddSource_NoWarnWhenUsingHttps()
-        {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var workingPath = pathContext.WorkingDirectory;
-                var settings = pathContext.Settings;
-
-                // Arrange
-                var nugetexe = Util.GetNuGetExePath();
-                var args = new string[] {
-                    "sources",
-                    "Add",
-                    "-Name",
-                    "test_source",
-                    "-Source",
-                    "https://test_source",
-                    "-ConfigFile",
-                    settings.ConfigPath
-                };
-
-                // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
-
-                // Assert
-                Assert.Equal(0, result.ExitCode);
-                var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
-                var packageSourcesSection = loadedSettings.GetSection("packageSources");
-                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("https://test_source", sourceItem.GetValueAsPath());
-                Assert.False(result.Output.Contains("WARNING"));
-            }
-        }
-
-        [Fact]
-        public void SourcesCommandTest_UpdateSource_WarnWhenUsingHttp()
+        [Theory]
+        [InlineData("http://source.test", true)]
+        [InlineData("https://source.test", false)]
+        public void SourcesCommandTest_UpdateSource(string source, bool shouldWarn)
         {
             using (var configFileDirectory = TestDirectory.Create())
             {
@@ -89,13 +59,13 @@ namespace NuGet.CommandLine.Test
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
-                var nugetConfig =
+                var nugetConfig = string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""test_source"" value=""http://source.test"" />
+    <add key=""test_source"" value=""http://source.test.initial"" />
   </packageSources>
-</configuration>";
+</configuration>", source);
                 Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
 
                 // Arrange
@@ -105,7 +75,7 @@ namespace NuGet.CommandLine.Test
                     "-Name",
                     "test_source",
                     "-Source",
-                    "http://test_source",
+                    source,
                     "-ConfigFile",
                     configFilePath
                 };
@@ -122,55 +92,8 @@ namespace NuGet.CommandLine.Test
                 var loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
-                Assert.True(result.Output.Contains("WARNING: You are running the 'update source' operation with an 'HTTP' source, 'http://test_source'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
-            }
-        }
-
-        [Fact]
-        public void SourcesCommandTest_UpdateSource_NoWarnWhenUsingHttps()
-        {
-            using (var configFileDirectory = TestDirectory.Create())
-            {
-                var nugetexe = Util.GetNuGetExePath();
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(configFileDirectory, configFileName);
-
-                var nugetConfig =
-                    @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSources>
-    <add key=""test_source"" value=""http://source.test"" />
-  </packageSources>
-</configuration>";
-                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
-
-                // Arrange
-                var args = new string[] {
-                    "sources",
-                    "Update",
-                    "-Name",
-                    "test_source",
-                    "-Source",
-                    "https://test_source",
-                    "-ConfigFile",
-                    configFilePath
-                };
-
-                // Act
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    configFileDirectory,
-                    string.Join(" ", args),
-                    true);
-
-                // Assert
-                Assert.Equal(0, result.ExitCode);
-                var loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
-                var packageSourcesSection = loadedSettings.GetSection("packageSources");
-                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("https://test_source", sourceItem.GetValueAsPath());
-                Assert.False(result.Output.Contains("WARNING"));
+                Assert.Equal(source, sourceItem.GetValueAsPath());
+                Assert.Equal(shouldWarn, result.Output.Contains("WARNING: You are running the 'update source' operation with an 'HTTP' source"));
             }
         }
 
@@ -292,8 +215,10 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public void SourcesList_WithDefaultFormat_UsesDetailedFormat_WarnWhenUsingHttp()
+        [Theory]
+        [InlineData("http://source.test", true)]
+        [InlineData("https://source.test", false)]
+        public void SourcesList_WithDefaultFormat_UsesDetailedFormat(string source, bool shouldWarn)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -303,13 +228,13 @@ namespace NuGet.CommandLine.Test
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
-                Util.CreateFile(configFileDirectory, configFileName,
+                Util.CreateFile(configFileDirectory, configFileName, string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""test_source"" value=""http://test_source"" />
+    <add key=""test_source"" value=""{0}"" />
   </packageSources>
-</configuration>");
+</configuration>", source));
 
                 var args = new string[] {
                     "sources",
@@ -330,49 +255,7 @@ namespace NuGet.CommandLine.Test
 
                 // test to ensure detailed format is the default
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
-                Assert.True(result.Output.Contains("WARNING: You are running the 'list source' operation with 'HTTP' source"));
-            }
-        }
-
-        [Fact]
-        public void SourcesList_WithDefaultFormat_UsesDetailedFormat_NoWarnWhenUsingHttps()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var configFileDirectory = TestDirectory.Create())
-            {
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(configFileDirectory, configFileName);
-
-                Util.CreateFile(configFileDirectory, configFileName,
-                    @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSources>
-    <add key=""test_source"" value=""https://test_source"" />
-  </packageSources>
-</configuration>");
-
-                var args = new string[] {
-                    "sources",
-                    "list",
-                    "-ConfigFile",
-                    configFilePath
-                };
-
-                // Main Act
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
-
-                // Assert
-                Util.VerifyResultSuccess(result);
-
-                // test to ensure detailed format is the default
-                Assert.True(result.Output.StartsWith("Registered Sources:"));
-                Assert.False(result.Output.Contains("WARNING:"));
+                Assert.Equal(shouldWarn, result.Output.Contains("WARNING: You are running the 'list source' operation with 'HTTP' source"));
             }
         }
 
@@ -682,46 +565,6 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public void SourcesList_WithDefaultFormat_UsesDetailedFormat()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var configFileDirectory = TestDirectory.Create())
-            {
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(configFileDirectory, configFileName);
-
-                Util.CreateFile(configFileDirectory, configFileName,
-                    @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSources>
-    <add key=""test_source"" value=""http://test_source"" />
-  </packageSources>
-</configuration>");
-
-                var args = new string[] {
-                    "sources",
-                    "list",
-                    "-ConfigFile",
-                    configFilePath
-                };
-
-                // Main Act
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
-
-                // Assert
-                Util.VerifyResultSuccess(result);
-
-                // test to ensure detailed format is the default
-                Assert.True(result.Output.StartsWith("Registered Sources:"));
-            }
-        }
 
         [Theory]
         [InlineData("sources a b")]

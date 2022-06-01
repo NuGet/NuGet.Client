@@ -1034,11 +1034,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="Warning_HttpServerUsage" xml:space="preserve">
     <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
-    <comment>0 - The command name. Ex. Push/Delete. 1 - server uri.</comment>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - server URI.</comment>
   </data>
   <data name="Warning_HttpServerUsage_MultipleSources" xml:space="preserve">
     <value>You are running the '{0}' operation with 'HTTP' sources: {1}
 Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
-    <comment>0 - The command name. Ex. Push/Delete. 1 - list of server uris</comment>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</comment>
   </data>
 </root>
