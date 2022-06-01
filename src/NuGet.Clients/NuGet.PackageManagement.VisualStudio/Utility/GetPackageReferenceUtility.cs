@@ -193,11 +193,14 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                 if (fwRuntimePair != null)
                 {
                     IList<PackageReference> fwTransitiveOrigins = transitiveEntry[fwRuntimePair];
-                    foreach (PackageReference transitiveOrigin in fwTransitiveOrigins)
+                    if (fwTransitiveOrigins != null)
                     {
-                        if (transitiveOrigin != null && transitiveOrigin.PackageIdentity != null && transitiveOrigin.PackageIdentity.Id != null && transitiveOrigin.PackageIdentity.Version != null)
+                        foreach (PackageReference transitiveOrigin in fwTransitiveOrigins)
                         {
-                            transitiveOrigins.Add(transitiveOrigin);
+                            if (transitiveOrigin != null && transitiveOrigin.PackageIdentity != null && transitiveOrigin.PackageIdentity.Id != null && transitiveOrigin.PackageIdentity.Version != null)
+                            {
+                                transitiveOrigins.Add(transitiveOrigin);
+                            }
                         }
                     }
                 }
@@ -208,7 +211,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             {
                 merged = transitiveOrigins
                 .GroupBy(tr => tr.PackageIdentity.Id)
-                .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).First())
+                .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).ThenByDescending(pr => pr.TargetFramework).First())
                 .ToList();
             }
             else
