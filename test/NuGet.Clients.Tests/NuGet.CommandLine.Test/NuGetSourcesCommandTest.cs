@@ -591,7 +591,7 @@ namespace NuGet.CommandLine.Test
                     "-Name",
                     "test_source",
                     "-Source",
-                    "http://test_source",
+                    "https://test_source",
                     "-Verbosity",
                     "Quiet"
                 };
@@ -607,7 +607,7 @@ namespace NuGet.CommandLine.Test
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
 
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
+                Assert.Equal("https://test_source", sourceItem.GetValueAsPath());
             }
         }
 
