@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -34,8 +33,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <typeparam name="U">Type of the collection elements for Installed and Transitive packages</typeparam>
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>, new()
     {
-        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
         private static readonly NuGetFrameworkSorter FrameworkSorter = new();
+        private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
@@ -418,25 +417,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
             }
-        }
-
-        internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
-        {
-            var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
-
-            transitiveEntry?.Keys?.ForEach(key => transitiveOrigins.AddRange(transitiveEntry[key]));
-
-            List<PackageReference> merged = transitiveOrigins
-                .GroupBy(tr => tr.PackageIdentity.Id)
-                .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).First())
-                .ToList();
-
-            var transitivePR = new TransitivePackageReference(currentPackage)
-            {
-                TransitiveOrigins = merged,
-            };
-
-            return transitivePR;
         }
 
         /// <inheritdoc />

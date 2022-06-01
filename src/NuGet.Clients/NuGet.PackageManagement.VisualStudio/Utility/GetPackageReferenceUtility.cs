@@ -4,16 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.Services.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
+using static Lucene.Net.Search.FieldValueHitQueue;
+using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
+
 
 namespace NuGet.PackageManagement.VisualStudio.Utility
 {
     internal static class GetPackageReferenceUtility
     {
+        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
+
         /// <summary>
         /// Compares the project and the assets files returning the installed package.
         /// Assets information can be null and returns the package from the project files.
@@ -166,6 +174,57 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             }
 
             return null;
+        }
+
+        internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
+        {
+            if (currentPackage == null)
+            {
+                throw new ArgumentNullException(nameof(currentPackage));
+            }
+            if (transitiveEntry == null)
+            {
+                throw new ArgumentNullException(nameof(transitiveEntry));
+            }
+
+            var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
+            /*
+            transitiveEntry?.Keys?.ForEach(key => transitiveOrigins.AddRange(transitiveEntry[key]));
+            */
+            transitiveEntry?.Keys?.ForEach(fwRuntimePair =>
+            {
+                if (fwRuntimePair != null)
+                {
+                    IList<PackageReference> fwTransitiveOrigins = transitiveEntry[fwRuntimePair];
+                    foreach (PackageReference transitiveOrigin in fwTransitiveOrigins)
+                    {
+                        if (transitiveOrigin != null && transitiveOrigin.PackageIdentity != null && transitiveOrigin.PackageIdentity.Id != null && transitiveOrigin.PackageIdentity.Version != null)
+                        {
+                            transitiveOrigins.Add(transitiveOrigin);
+                        }
+                    }
+                }
+            });
+
+            List<PackageReference> merged;
+            if (transitiveOrigins.Any())
+            {
+                merged = transitiveOrigins
+                .GroupBy(tr => tr.PackageIdentity.Id)
+                .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).First())
+                .ToList();
+            }
+            else
+            {
+                merged = new();
+            }
+
+            var transitivePR = new TransitivePackageReference(currentPackage)
+            {
+                TransitiveOrigins = merged,
+            };
+
+            return transitivePR;
         }
     }
 }
