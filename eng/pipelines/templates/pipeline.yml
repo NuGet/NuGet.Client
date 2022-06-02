@@ -1,0 +1,120 @@
+jobs:
+- job: Initialize_Build_SemanticVersion
+  timeoutInMinutes: 2
+  pool:
+    vmImage: windows-latest
+    demands:
+      - DotNetFramework
+      - msbuild
+
+  steps:
+  - template: Initialize_Build_SemanticVersion.yml
+
+- job: Initialize_Build
+  dependsOn: Initialize_Build_SemanticVersion
+  timeoutInMinutes: 10
+  variables:
+    SemanticVersion: $[dependencies.Initialize_Build_SemanticVersion.outputs['setsemanticversion.SemanticVersion']]
+    BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 1)]
+
+  pool:
+    vmImage: windows-latest
+    demands:
+      - DotNetFramework
+      - msbuild
+  steps:
+  - template: Initialize_Build.yml
+
+- job: Build_and_UnitTest
+  dependsOn: Initialize_Build
+  timeoutInMinutes: 170
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+  pool:
+    name: VSEngSS-MicroBuild2017-1ES
+    demands:
+      - DotNetFramework
+      - msbuild
+  strategy:
+    matrix:
+      RTM:
+        BuildRTM: "true"
+      NonRTM:
+        BuildRTM: "false"
+  steps:
+  - template: Build_and_UnitTest.yml
+
+- job: Functional_Tests_On_Windows
+  dependsOn: Initialize_Build
+  timeoutInMinutes: 120
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
+  pool:
+    name: VSEngSS-MicroBuild2017-1ES
+    demands:
+        - DotNetFramework
+        - msbuild
+  steps:
+  - template: Functional_Tests_On_Windows.yml
+
+- job: Tests_On_Linux
+  dependsOn: Initialize_Build
+  timeoutInMinutes: 45
+  variables:
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
+  pool:
+    vmImage: ubuntu-latest
+    demands: sh
+  steps:
+  - template: Tests_On_Linux.yml
+
+- job: Tests_On_Mac
+  dependsOn:
+  - Build_and_UnitTest
+  - Initialize_Build
+  timeoutInMinutes: 75
+  variables:
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+  condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
+  pool:
+    vmImage: macos-latest
+
+  steps:
+  - template: Tests_On_Mac.yml
+
+# - job: End_To_End_Tests_On_Windows
+#   dependsOn:
+#   - Build_and_UnitTest
+#   - Initialize_Build
+#   timeoutInMinutes: 100
+#   variables:
+#     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
+#   pool:
+#     name: DDNuGet-Windows
+#     demands:
+#     - DotNetFramework
+#     - Allow_NuGet_E2E_Tests -equals true
+#   steps:
+#   - template: End_To_End_Tests_On_Windows.yml
+
+# - job: Apex_Tests_On_Windows
+#   dependsOn:
+#   - Build_and_UnitTest
+#   - Initialize_Build
+#   timeoutInMinutes: 120
+#   variables:
+#     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+#     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+#   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
+#   pool:
+#     name: DDNuGet-Windows
+#     demands:
+#     - DotNetFramework
+#     - Allow_NuGet_Apex_Tests -equals true
+#   steps:
+#   - template: Apex_Tests_On_Windows.yml

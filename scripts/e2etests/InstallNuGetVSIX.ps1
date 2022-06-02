@@ -8,7 +8,7 @@ param (
     [Parameter(Mandatory = $true)]
     [int]$ProcessExitTimeoutInSeconds,
     [Parameter(Mandatory = $true)]
-    [ValidateSet("16.0")]
+    [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
     [string]$VSVersion)
 
 . "$PSScriptRoot\VSUtils.ps1"
@@ -28,20 +28,29 @@ $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
 Copy-Item $VSIXSrcPath $VSIXPath
 
-# Because we are upgrading an installed system component vsix, we need to downgrade first.
-$numberOfTries = 0
-$success = $false
-do {
+# Since dev14 vsix is not uild with vssdk 3.0, we can uninstall and re installing
+# For dev 15, we upgrade an installed system component vsix
+if ($VSVersion -eq '14.0') {
     KillRunningInstancesOfVS
-    $numberOfTries++
-    Write-Host "Attempt # $numberOfTries to downgrade VSIX..."
-    $success = DowngradeVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
+    $success = UninstallVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
+    if ($success -eq $false) {
+        exit 1
+    }
 }
-until (($success -eq $true) -or ($numberOfTries -gt 3))    
+else {
+    $numberOfTries = 0
+    $success = $false
+    do {
+        KillRunningInstancesOfVS
+        $numberOfTries++
+        Write-Host "Attempt # $numberOfTries to downgrade VSIX..."
+        $success = DowngradeVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
+    }
+    until (($success -eq $true) -or ($numberOfTries -gt 3))    
 
-# Clearing MEF cache helps load the right dlls for vsix
-ClearMEFCache
-
+    # Clearing MEF cache helps load the right dlls for vsix
+    ClearDev15MEFCache
+}
 
 $numberOfTries = 0
 $success = $false

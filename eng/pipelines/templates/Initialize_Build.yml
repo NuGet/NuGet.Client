@@ -1,0 +1,33 @@
+steps:
+- task: PowerShell@1
+  displayName: "Initialize Git Commit Status on GitHub"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+      InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+
+- task: PowerShell@1
+  displayName: "Update Build Number"
+  name: "updatebuildnumber"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $FullBuildNumber = "$(SemanticVersion).$(BuildRevision)"
+        Write-Host "##vso[build.updatebuildnumber]$FullBuildNumber"
+        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$(BuildRevision)"
+        Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set build number"
+        exit 1
+      }
+
+- task: PowerShell@1
+  displayName: "Add Build Tags"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEVERSIONAUTHOR"
+      Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEBRANCHNAME" 
