@@ -229,7 +229,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public async Task SetCurrentPackageAsync_CorrectSelectedVersion(ItemFilter tab, string expectedSelectedVersion)
         {
             // Arrange
-            NuGetVersion installedVersion = NuGetVersion.Parse("*");
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
             var testVersions = new List<VersionInfoContextInfo>() {
                 new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
