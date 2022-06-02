@@ -12,7 +12,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
-using static Lucene.Net.Search.FieldValueHitQueue;
 using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
 
