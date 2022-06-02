@@ -286,7 +286,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("1.*", "2.10.0")]
         [InlineData("(0.1,3.4)", "2.10.0")]
         [InlineData("2.10.0", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsPackageReference_And_CustomVersion(string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -363,11 +363,174 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Theory]
+        [InlineData("*", "2.10.0")]
+        [InlineData("1.*", "2.10.0")]
+        [InlineData("(0.1,3.4)", "2.10.0")]
+        [InlineData("2.10.0", "2.10.0")]
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
+        {
+            // Arange project
+            var mockServiceBroker = new Mock<IServiceBroker>();
+            var mockSearchService = new Mock<INuGetSearchService>();
+
+            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+
+            var installedPackages = new PackageReferenceContextInfo[]
+            {
+                PackageReferenceContextInfo.Create(
+                    new PackageReference(
+                        packageIdentity,
+                        NuGetFramework.Parse("net45"),
+                        userInstalled: true,
+                        developmentDependency: false,
+                        requireReinstallation: false,
+                        allowedVersions: VersionRange.Parse(allowedVersions)))
+            };
+
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
+
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projectManagerService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            var project = new Mock<IProjectContextInfo>();
+
+            project.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
+            project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
+            project.SetupGet(p => p.ProjectId).Returns("ProjectId");
+
+            var model = new PackageDetailControlModel(
+                mockServiceBroker.Object,
+                solutionManager: new Mock<INuGetSolutionManagerService>().Object,
+                projects: new[] { project.Object });
+
+            // Arrange
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+            };
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            // Act
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "Contoso.A",
+                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
+                InstalledVersion = NuGetVersion.Parse(installedVersion),
+                AllowedVersions = VersionRange.Parse(allowedVersions),
+                Version = NuGetVersion.Parse(installedVersion),
+            };
+
+            await model.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.UpdatesAvailable,
+                () => vm);
+
+            // Assert
+            VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
+            NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
+            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+
+            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1-dev-01248");
+            Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
+        }
+
+        [Theory]
+        [InlineData("*", "2.10.0")]
+        [InlineData("1.*", "2.10.0")]
+        [InlineData("(0.1,3.4)", "2.10.0")]
+        [InlineData("2.10.0", "2.10.0")]
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
+        {
+            // Arange project
+            var mockServiceBroker = new Mock<IServiceBroker>();
+            var mockSearchService = new Mock<INuGetSearchService>();
+
+            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+
+            var installedPackages = new PackageReferenceContextInfo[]
+            {
+                PackageReferenceContextInfo.Create(
+                    new PackageReference(
+                        packageIdentity,
+                        NuGetFramework.Parse("net45"),
+                        userInstalled: true,
+                        developmentDependency: false,
+                        requireReinstallation: false,
+                        allowedVersions: VersionRange.Parse(allowedVersions)))
+            };
+
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
+
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projectManagerService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            var project = new Mock<IProjectContextInfo>();
+
+            project.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
+            project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
+            project.SetupGet(p => p.ProjectId).Returns("ProjectId");
+
+            var model = new PackageDetailControlModel(
+                mockServiceBroker.Object,
+                solutionManager: new Mock<INuGetSolutionManagerService>().Object,
+                projects: new[] { project.Object });
+
+            // Arrange
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+            };
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            // Act
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "Contoso.A",
+                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
+                InstalledVersion = NuGetVersion.Parse(installedVersion),
+                AllowedVersions = VersionRange.Parse(allowedVersions),
+                Version = NuGetVersion.Parse(installedVersion),
+            };
+
+            await model.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.All,
+                () => vm);
+
+            // Assert
+            VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
+            NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
+            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+
+            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1-dev-01248");
+            Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
+        }
+
+
+        [Theory]
         [InlineData(NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "2.10.0")]
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
         [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
-        public async void IsSelectedVersionCorrect_WhenPackageStyleIsNotPackageReference_And_CustomVersion(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -431,12 +594,168 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             await model.SetCurrentPackageAsync(
                 vm,
-                ItemFilter.All,
+                ItemFilter.Installed,
                 () => vm);
 
             // Assert
             Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
             Assert.Equal(model.SelectedVersion.Version.ToString(), installedVersion);
+        }
+
+        [Theory]
+        [InlineData(NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "2.10.0")]
+        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
+        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        {
+            // Arange project
+            var mockServiceBroker = new Mock<IServiceBroker>();
+            var mockSearchService = new Mock<INuGetSearchService>();
+
+            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+
+            var installedPackages = new PackageReferenceContextInfo[]
+            {
+                PackageReferenceContextInfo.Create(
+                    new PackageReference(
+                        packageIdentity,
+                        NuGetFramework.Parse("net45"),
+                        userInstalled: true,
+                        developmentDependency: false,
+                        requireReinstallation: false,
+                        allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
+            };
+
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
+
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projectManagerService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            var project = new Mock<IProjectContextInfo>();
+
+            project.SetupGet(p => p.ProjectKind).Returns(projectKind);
+            project.SetupGet(p => p.ProjectStyle).Returns(projectStyle);
+            project.SetupGet(p => p.ProjectId).Returns("ProjectId");
+
+            var model = new PackageDetailControlModel(
+                mockServiceBroker.Object,
+                solutionManager: new Mock<INuGetSolutionManagerService>().Object,
+                projects: new[] { project.Object });
+
+            // Arrange
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+            };
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            // Act
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "Contoso.A",
+                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
+                InstalledVersion = NuGetVersion.Parse(installedVersion),
+                AllowedVersions = allowedVersions != null ? VersionRange.Parse(allowedVersions) : null,
+                Version = NuGetVersion.Parse(installedVersion),
+            };
+
+            await model.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.All,
+                () => vm);
+
+            // Assert
+            Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
+            // Browse Tab should display latest available version
+            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1");
+        }
+
+        [Theory]
+        [InlineData(NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "2.10.0")]
+        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
+        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        {
+            // Arange project
+            var mockServiceBroker = new Mock<IServiceBroker>();
+            var mockSearchService = new Mock<INuGetSearchService>();
+
+            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+
+            var installedPackages = new PackageReferenceContextInfo[]
+            {
+                PackageReferenceContextInfo.Create(
+                    new PackageReference(
+                        packageIdentity,
+                        NuGetFramework.Parse("net45"),
+                        userInstalled: true,
+                        developmentDependency: false,
+                        requireReinstallation: false,
+                        allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
+            };
+
+            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(installedPackages));
+
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(projectManagerService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+
+            var project = new Mock<IProjectContextInfo>();
+
+            project.SetupGet(p => p.ProjectKind).Returns(projectKind);
+            project.SetupGet(p => p.ProjectStyle).Returns(projectStyle);
+            project.SetupGet(p => p.ProjectId).Returns("ProjectId");
+
+            var model = new PackageDetailControlModel(
+                mockServiceBroker.Object,
+                solutionManager: new Mock<INuGetSolutionManagerService>().Object,
+                projects: new[] { project.Object });
+
+            // Arrange
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+            };
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            // Act
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "Contoso.A",
+                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
+                InstalledVersion = NuGetVersion.Parse(installedVersion),
+                AllowedVersions = allowedVersions != null ? VersionRange.Parse(allowedVersions) : null,
+                Version = NuGetVersion.Parse(installedVersion),
+            };
+
+            await model.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.UpdatesAvailable,
+                () => vm);
+
+            // Assert
+            Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
+            // Updates Tab should display latest available version
+            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1");
         }
 
         public Task<object> GetServiceAsync(Type serviceType)

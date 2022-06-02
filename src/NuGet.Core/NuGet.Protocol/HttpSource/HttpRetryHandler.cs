@@ -209,7 +209,7 @@ namespace NuGet.Protocol
                             success = false;
                         }
                     }
-                    catch (OperationCanceledException)
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                     {
                         response?.Dispose();
 

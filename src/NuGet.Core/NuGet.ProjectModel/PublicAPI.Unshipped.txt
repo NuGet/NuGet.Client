@@ -1,4 +1,0 @@
-NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageVersionOverrideDisabled.get -> bool
-NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageVersionOverrideDisabled.set -> void
-NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageTransitivePinningEnabled.get -> bool
-NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageTransitivePinningEnabled.set -> void

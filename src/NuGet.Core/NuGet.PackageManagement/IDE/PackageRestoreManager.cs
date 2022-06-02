@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -273,7 +274,7 @@ namespace NuGet.PackageManagement
                 token,
                 PackageRestoredEvent,
                 PackageRestoreFailedEvent,
-                sourceRepositories: null,
+                sourceRepositories: SourceRepositoryProvider.GetRepositories(),
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 logger: NullLogger.Instance);
 
@@ -309,7 +310,7 @@ namespace NuGet.PackageManagement
                 token,
                 PackageRestoredEvent,
                 PackageRestoreFailedEvent,
-                sourceRepositories: null,
+                sourceRepositories: SourceRepositoryProvider.GetRepositories(),
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 logger: logger);
 
@@ -376,6 +377,15 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
+
+            foreach (SourceRepository enabledSource in packageRestoreContext.SourceRepositories)
+            {
+                PackageSource source = enabledSource.PackageSource;
+                if (source.IsHttp && !source.IsHttps)
+                {
+                    packageRestoreContext.Logger.Log(LogLevel.Warning, string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
+                }
+            }
 
             var attemptedPackages = await ThrottledPackageRestoreAsync(
                 hashSetOfMissingPackageReferences,

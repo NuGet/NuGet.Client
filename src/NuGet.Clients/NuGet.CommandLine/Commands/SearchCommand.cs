@@ -3,27 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Resources;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
@@ -78,6 +66,7 @@ namespace NuGet.CommandLine
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
 
+            WarnForHTTPSources(listEndpoints);
             foreach (PackageSource source in listEndpoints)
             {
                 SourceRepository repository = Repository.Factory.GetCoreV3(source);
@@ -133,6 +122,42 @@ namespace NuGet.CommandLine
                     System.Console.WriteLine("No results found.");
                     Console.WriteLine(packageSeparator);
                     System.Console.WriteLine();
+                }
+            }
+        }
+
+        private void WarnForHTTPSources(IList<PackageSource> packageSources)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in packageSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    Console.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        NuGetResources.Warning_HttpServerUsage,
+                        "search",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    Console.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        NuGetResources.Warning_HttpSources_Multiple,
+                        "search",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }
             }
         }

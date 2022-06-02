@@ -403,6 +403,45 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Theory]
+        [InlineData(
+@"{
+    ""frameworks"": {
+        ""net5.0-windows7.0"": {
+            ""targetAlias"": ""net5.0-windows""
+        }
+    }
+}", "", "net5.0-windows")]
+        public async Task NominateProjectAsync_WithoutOriginalTargetFrameworks_SetOriginalTargetFrameworksToAlias(
+            string projectJson, string rawOriginalTargetFrameworks, string expectedOriginalTargetFrameworks)
+        {
+            var cps = NewCpsProject(
+                projectJson: projectJson,
+                crossTargeting: true);
+            var projectFullPath = cps.ProjectFullPath;
+            var pri2 = cps.ProjectRestoreInfo2;
+
+            pri2.OriginalTargetFrameworks = rawOriginalTargetFrameworks;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, pri2);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.False(actualMetadata.CrossTargeting);
+
+            var actualOriginalTargetFrameworks = string.Join(";", actualMetadata.OriginalTargetFrameworks);
+            Assert.Equal(
+                expectedOriginalTargetFrameworks,
+                actualOriginalTargetFrameworks);
+        }
+
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task NominateProjectAsync_Imports(bool isV2Nomination)

@@ -8,7 +8,6 @@ using System.Diagnostics.Tracing;
 using System.Threading;
 using NuGet.Common;
 using NuGet.SolutionRestoreManager;
-using NuGet.VisualStudio.Contracts;
 using NuGet.VisualStudio.Etw;
 
 namespace NuGet.VisualStudio.Telemetry
@@ -37,7 +36,7 @@ namespace NuGet.VisualStudio.Telemetry
             _counts = new Dictionary<string, Count>()
             {
                 // INuGetProjectService
-                [nameof(INuGetProjectService) + "." + nameof(INuGetProjectService.GetInstalledPackagesAsync)] = new Count(),
+                ["INuGetProjectService" + "." + "GetInstalledPackagesAsync"] = new Count(),
 
                 // IVsFrameworkCompatibility
                 [nameof(IVsFrameworkCompatibility) + "." + nameof(IVsFrameworkCompatibility.GetNetStandardFrameworks)] = new Count(),
@@ -244,6 +243,16 @@ namespace NuGet.VisualStudio.Telemetry
                     }
                 }
             }
+        }
+    }
+
+    internal static class DeconstructionExtensions
+    {
+        [DebuggerStepThrough]
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value)
+        {
+            key = pair.Key;
+            value = pair.Value;
         }
     }
 }

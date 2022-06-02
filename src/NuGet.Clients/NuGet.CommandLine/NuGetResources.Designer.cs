@@ -9729,7 +9729,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Der Paketordner zum Widerherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie &quot;-PackagesDirectory&quot; oder &quot;-SolutionDirectory&quot; an..
+        ///   Looks up a localized string similar to Der Paketordner zum Wiederherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie &quot;-PackagesDirectory&quot; oder &quot;-SolutionDirectory&quot; an..
         /// </summary>
         public static string RestoreCommandCannotDeterminePackagesFolder_deu {
             get {
@@ -14643,6 +14643,25 @@ namespace NuGet.CommandLine {
         public static string Warning_FileDoesNotExist_trk {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source, &apos;{1}&apos;. Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
+        /// </summary>
+        public static string Warning_HttpServerUsage {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with &apos;HTTP&apos; sources: {1}
+        ///Non-HTTPS access will be removed in a future version. Consider migrating to &apos;HTTPS&apos; sources..
+        /// </summary>
+        public static string Warning_HttpSources_Multiple {
+            get {
+                return ResourceManager.GetString("Warning_HttpSources_Multiple", resourceCulture);
             }
         }
         

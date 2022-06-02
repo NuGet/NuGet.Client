@@ -3856,7 +3856,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages.Should().HaveCount(1);
             IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
             logMessage.Code.Should().Be(NuGetLogCode.NU1803);
-            logMessage.Message.Should().Be("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.");
+            logMessage.Message.Should().Be("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.");
         }
 
         static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)

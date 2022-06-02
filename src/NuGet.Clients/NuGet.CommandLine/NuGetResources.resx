@@ -4710,7 +4710,7 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
     <value>Nelze určit složku balíčků pro obnovení balíčků NuGet. Zadejte parametr -PackagesDirectory nebo -SolutionDirectory.</value>
   </data>
   <data name="RestoreCommandCannotDeterminePackagesFolder_deu" xml:space="preserve">
-    <value>Der Paketordner zum Widerherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie "-PackagesDirectory" oder "-SolutionDirectory" an.</value>
+    <value>Der Paketordner zum Wiederherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie "-PackagesDirectory" oder "-SolutionDirectory" an.</value>
   </data>
   <data name="RestoreCommandCannotDeterminePackagesFolder_esp" xml:space="preserve">
     <value>No se puede determinar la carpeta de paquetes para restaurar los paquetes NuGet. Especifique PackagesDirectory o SolutionDirectory.</value>
@@ -5435,5 +5435,13 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
   </data>
   <data name="Error_NuGetExeNeedsToBeUnblockedAfterDownloading" xml:space="preserve">
     <value>NuGet.exe file on path {0} needs to be unblocked after downloading.</value>
+  </data>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - server uri.</comment>
+  </data>
+  <data name="Warning_HttpSources_Multiple" xml:space="preserve">
+    <value>You are running the '{0}' operation with 'HTTP' sources: {1}
+Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
   </data>
 </root>

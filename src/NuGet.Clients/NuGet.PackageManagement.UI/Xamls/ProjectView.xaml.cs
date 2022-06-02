@@ -152,8 +152,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (PackageDetailControlModel.IsProjectPackageReference)
             {
-                string comboboxText = _versions.Text.Replace(" ", "");
-                bool userTypedAVersionRange = comboboxText.StartsWith("(", StringComparison.OrdinalIgnoreCase) || comboboxText.StartsWith("[", StringComparison.OrdinalIgnoreCase);
+                string comboboxText = _versions.Text;
                 IEnumerable<NuGetVersion> versions = DetailModel.Versions.Where(v => v != null).Select(v => v.Version);
 
                 switch (e.Key)
@@ -208,7 +207,7 @@ namespace NuGet.PackageManagement.UI
                             var selectionStart = TextBox.SelectionStart;
 
                             PackageDetailControlModel.UserInput = comboboxText; // Update the variable so the filter refreshes
-                            SetComboboxCurrentVersion(comboboxText, userTypedAVersionRange, versions);
+                            SetComboboxCurrentVersion(comboboxText, versions);
 
                             _versions.Text = comboboxText;
                             TextBox.SelectionStart = selectionStart;
@@ -226,7 +225,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void SetComboboxCurrentVersion(string comboboxText, bool userTypedAVersionRange, IEnumerable<NuGetVersion> versions)
+        private void SetComboboxCurrentVersion(string comboboxText, IEnumerable<NuGetVersion> versions)
         {
             NuGetVersion matchVersion = null;
             VersionRange userRange = null;
@@ -238,20 +237,24 @@ namespace NuGet.PackageManagement.UI
                 matchVersion = userRange.FindBestMatch(versions);
             }
 
+            if (matchVersion == null && userRange == null)
+            {
+                return;
+            }
+
             // If the selected version is not the correct one, deselect a version so Install/Update button is disabled.
             if (_versions.SelectedIndex != -1 && matchVersion?.ToString() != _versions.Items[_versions.SelectedIndex].ToString())
             {
                 _versions.SelectedIndex = -1;
-                PackageDetailControlModel.SelectedVersion = null;
             }
 
             // Automatically select the item when the input or custom range text matches it
             for (int i = 0; i < _versions.Items.Count; i++)
             {
-                var currentItem = _versions.Items[i];
+                DisplayVersion currentItem = _versions.Items[i] as DisplayVersion;
                 if (currentItem != null && (comboboxText == _versions.Items[i].ToString() || _versions.Items[i].ToString() == matchVersion?.ToString()))
                 {
-                    _versions.SelectedIndex = i;
+                    _versions.SelectedIndex = i; // This is the "select" effect in the dropdown
                     PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRange, matchVersion, additionalInfo: null);
                 }
             }

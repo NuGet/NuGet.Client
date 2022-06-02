@@ -881,7 +881,6 @@ function Test-SimpleBindingRedirectsWebsite {
 
 
 function Test-BindingRedirectInstallLargeProject {
-    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1572')]
     param($context)
 
     $numProjects = 25

@@ -27,6 +27,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public void OpenFile(string filePath, bool isReadOnly)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var rdt = new RunningDocumentTable(_serviceProvider);
 
             IVsWindowFrame? windowFrame = null;

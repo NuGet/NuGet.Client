@@ -521,7 +521,7 @@ namespace NuGet.ProjectModel
             {
                 var ordered = library.Dependencies.OrderBy(dependency => dependency.Id, StringComparer.Ordinal);
 
-                json[DependenciesProperty] = JsonUtility.WriteObject(ordered, JsonUtility.WritePackageDependency);
+                json[DependenciesProperty] = JsonUtility.WriteObject(ordered, JsonUtility.WritePackageDependencyWithLegacyString);
             }
 
             if (library.FrameworkAssemblies.Count > 0)

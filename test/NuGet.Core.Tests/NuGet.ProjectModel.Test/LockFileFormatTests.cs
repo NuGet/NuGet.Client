@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 using static NuGet.Test.Utility.TestPackagesCore;
@@ -239,6 +240,34 @@ namespace NuGet.ProjectModel.Test
             var netPlatDepGroup = lockFile.ProjectFileDependencyGroups.Last();
             Assert.Equal(NuGetFramework.Parse("dotnet").DotNetFrameworkName, netPlatDepGroup.FrameworkName);
             Assert.Empty(netPlatDepGroup.Dependencies);
+        }
+
+        [Theory]
+        [InlineData("1.0.0", "1.0.0")]
+        [InlineData("1.0.0-beta", "1.0.0-beta")]
+        [InlineData("1.0.0-*", "1.0.0")]
+        [InlineData("1.0.*", "1.0.0")]
+        [InlineData("(1.0.*, )", "(1.0.0, )")]
+        public void Test_WritePackageDependencyWithLegacyString(string version, string expectedVersion)
+        {
+            var package = new PackageDependency("a", VersionRange.Parse(version));
+            var dependency = JsonUtility.WritePackageDependencyWithLegacyString(package);
+
+            Assert.Equal(dependency.Value, expectedVersion);
+        }
+
+        [Theory]
+        [InlineData("1.0.0", "[1.0.0, )")]
+        [InlineData("1.0.0-beta", "[1.0.0-beta, )")]
+        [InlineData("1.0.0-*", "[1.0.0-*, )")]
+        [InlineData("1.0.*", "[1.0.*, )")]
+        [InlineData("(1.0.*, )", "(1.0.*, )")]
+        public void Test_WritePackageDependency(string version, string expectedVersion)
+        {
+            var package = new PackageDependency("a", VersionRange.Parse(version));
+            var dependency = JsonUtility.WritePackageDependency(package);
+
+            Assert.Equal(dependency.Value, expectedVersion);
         }
 
         [Fact]

@@ -22,7 +22,6 @@ namespace Dotnet.Integration.Test
     /// <summary>
     /// A Mock Server that is used to mimic a NuGet Server.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     internal class MockServer : IDisposable
     {
         private Task _listenerTask;

@@ -486,7 +486,7 @@ namespace NuGet.Commands
             // Log a warning if there are more than one configured source and package source mapping is not enabled
             if (restoreRequest.Project.RestoreMetadata.Sources.Count > 1 && !restoreRequest.PackageSourceMapping.IsEnabled)
             {
-                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping, restoreRequest.Project.RestoreMetadata.Sources.Count)));
+                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping, restoreRequest.Project.RestoreMetadata.Sources.Count, string.Join(", ", restoreRequest.Project.RestoreMetadata.Sources.Select(i => i.Name)))));
             }
 
             // The dependencies should not have versions explicitly defined if cpvm is enabled.

@@ -1,1 +1,1 @@
-const NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers.NanoFramework = ".NETnanoFramework" -> string
+NuGet.Frameworks.FrameworkException.FrameworkException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void

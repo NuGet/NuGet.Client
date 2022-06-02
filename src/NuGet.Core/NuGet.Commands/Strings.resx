@@ -805,8 +805,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>0 - The name of a package reference.</comment>
   </data>
   <data name="Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping" xml:space="preserve">
-    <value>There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source.</value>
-    <comment>0 - The number of package sources.</comment>
+    <value>There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</value>
+    <comment>0 - The number of package sources, 1 - The URL of the package sources, comma separated.</comment>
   </data>
   <data name="SourcesCommandNoMatchingSourcesFound" xml:space="preserve">
     <value>Unable to find any package source(s) matching name: {0}.</value>
@@ -1033,7 +1033,12 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>This package is signed but not by a trusted signer.</value>
   </data>
   <data name="Warning_HttpServerUsage" xml:space="preserve">
-    <value>You are running the '{0}' operation with an 'http' source, '{1}'. Support for 'http' sources will be removed in a future version.</value>
+    <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
     <comment>0 - The command name. Ex. Push/Delete. 1 - server uri.</comment>
+  </data>
+  <data name="Warning_HttpServerUsage_MultipleSources" xml:space="preserve">
+    <value>You are running the '{0}' operation with 'HTTP' sources: {1}
+Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
+    <comment>0 - operation. 1 - list of source uris</comment>
   </data>
 </root>

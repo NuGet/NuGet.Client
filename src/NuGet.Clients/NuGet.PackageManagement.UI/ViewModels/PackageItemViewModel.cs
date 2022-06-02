@@ -139,14 +139,16 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsNotInstalled));
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(LatestVersion));
+                    OnPropertyChanged(nameof(IsUninstalledOrTransitive));
 
                     // update tool tip
                     if (_latestVersion != null)
                     {
                         var displayVersion = new DisplayVersion(_latestVersion, string.Empty);
+                        string toolTipText = PackageLevel == PackageLevel.Transitive ? Resources.ToolTip_TransitiveDependencyVersion : Resources.ToolTip_LatestVersion;
                         LatestVersionToolTip = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Resources.ToolTip_LatestVersion,
+                            CultureInfo.CurrentUICulture,
+                            toolTipText,
                             displayVersion);
                     }
                     else
@@ -271,7 +273,7 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(IsUninstallable));
                     OnPropertyChanged(nameof(IsNotInstalled));
-                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
+                    OnPropertyChanged(nameof(IsUninstalledOrTransitive));
                 }
             }
         }
@@ -286,7 +288,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsUninstalledAndTransitive => (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
+        public bool IsUninstalledOrTransitive => (Status == PackageStatus.NotInstalled && LatestVersion != null) || PackageLevel == PackageLevel.Transitive;
 
         public bool IsInstalledAndTransitive => PackageLevel == PackageLevel.Transitive || InstalledVersion != null;
 
@@ -486,7 +488,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     _packageLevel = value;
                     OnPropertyChanged(nameof(PackageLevel));
-                    OnPropertyChanged(nameof(IsUninstalledAndTransitive));
+                    OnPropertyChanged(nameof(IsUninstalledOrTransitive));
                     OnPropertyChanged(nameof(IsInstalledAndTransitive));
                 }
             }
@@ -754,11 +756,10 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateTransitivePackageStatus(NuGetVersion installedVersion)
         {
-            InstalledVersion = installedVersion;
+            InstalledVersion = installedVersion ?? throw new ArgumentNullException(nameof(installedVersion)); ;
 
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageVersionsAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVersionsAsync));
+            // Transitive packages cannot be updated and can only be installed as top-level packages with their currently installed version.
+            LatestVersion = installedVersion;
 
             OnPropertyChanged(nameof(Status));
         }

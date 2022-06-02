@@ -871,7 +871,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.NotNull(sourceRequest);
             Assert.Equal(1, logger.WarningMessages.Count);
-            Assert.Contains("You are running the 'push' operation with an 'http' source", logger.WarningMessages.First());
+            Assert.Contains("You are running the 'push' operation with an 'HTTP' source", logger.WarningMessages.First());
 
         }
 
@@ -930,7 +930,7 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(sourceRequest);
             Assert.NotNull(symbolRequest);
             Assert.Equal(1, logger.WarningMessages.Count);
-            Assert.Contains("You are running the 'push' operation with an 'http' source", logger.WarningMessages.First());
+            Assert.Contains("You are running the 'push' operation with an 'HTTP' source", logger.WarningMessages.First());
         }
 
         [Fact]
@@ -988,8 +988,8 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(sourceRequest);
             Assert.NotNull(symbolRequest);
             Assert.Equal(2, logger.WarningMessages.Count);
-            Assert.Contains("You are running the 'push' operation with an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.First());
-            Assert.Contains("You are running the 'push' operation with an 'http' source, 'http://other.smbsrc.net/api/v2/package/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
+            Assert.Contains("You are running the 'push' operation with an 'HTTP' source, 'http://www.nuget.org/api/v2/'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", logger.WarningMessages.First());
+            Assert.Contains("You are running the 'push' operation with an 'HTTP' source, 'http://other.smbsrc.net/api/v2/package/'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", logger.WarningMessages.Last());
         }
 
         [Fact]
@@ -1030,7 +1030,7 @@ namespace NuGet.Protocol.Tests
                 Assert.NotNull(actualRequest);
                 Assert.Equal(HttpMethod.Delete, actualRequest.Method);
                 Assert.Equal(3, logger.WarningMessages.Count);
-                Assert.Contains("You are running the 'delete' operation with an 'http' source, 'http://www.nuget.org/api/v2/'. Support for 'http' sources will be removed in a future version.", logger.WarningMessages.Last());
+                Assert.Contains("You are running the 'delete' operation with an 'HTTP' source, 'http://www.nuget.org/api/v2/'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", logger.WarningMessages.Last());
             }
         }
     }
