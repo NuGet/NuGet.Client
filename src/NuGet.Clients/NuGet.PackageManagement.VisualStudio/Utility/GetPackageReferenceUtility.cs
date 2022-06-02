@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                     {
                         foreach (PackageReference transitiveOrigin in fwTransitiveOrigins)
                         {
-                            if (transitiveOrigin != null && transitiveOrigin.PackageIdentity != null && transitiveOrigin.PackageIdentity.Id != null && transitiveOrigin.PackageIdentity.Version != null)
+                            if (transitiveOrigin?.PackageIdentity != null && transitiveOrigin.PackageIdentity.Id != null && transitiveOrigin.PackageIdentity.Version != null)
                             {
                                 transitiveOrigins.Add(transitiveOrigin);
                             }
