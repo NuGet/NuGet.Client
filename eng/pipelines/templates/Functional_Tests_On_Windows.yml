@@ -30,7 +30,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreVS15 /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
 - task: MSBuild@1
   displayName: "Run Functional Tests"
