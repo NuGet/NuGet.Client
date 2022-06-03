@@ -350,10 +350,6 @@ Function Get-BuildNumber() {
     [uint16]((((Get-Date) - (Get-Date $NuGetEpoch)).TotalMinutes / 5) % [uint16]::MaxValue)
 }
 
-Function Format-BuildNumber([int]$BuildNumber) {
-    '{0:D4}' -f $BuildNumber
-}
-
 Function Clear-PackageCache {
     [CmdletBinding()]
     param()
