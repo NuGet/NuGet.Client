@@ -129,7 +129,7 @@ steps:
     solution: "build\\build.proj"
     msbuildVersion: "15.0"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildVS15VSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
+    msbuildArguments: "/t:BuildVS15 /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
