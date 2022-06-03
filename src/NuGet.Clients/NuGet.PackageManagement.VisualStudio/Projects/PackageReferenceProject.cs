@@ -167,14 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dictionary<string, TransitiveEntry> transitiveOrigins;
                 if (IsInstalledAndTransitiveComputationNeeded || TransitiveOriginsCache == null)
                 {
-                    if (calculatedTransitivePackages.Any())
-                    {
-                        transitiveOrigins = ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token);
-                    }
-                    else
-                    {
-                        transitiveOrigins = new Dictionary<string, TransitiveEntry>();
-                    }
+                    transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, TransitiveEntry>();
                 }
                 else
                 {
@@ -271,22 +264,23 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Get All Installed packages that transitively install a given transitive package in this project
         /// </summary>
-        /// <param name="transitivePackage">Identity of given transtive package</param>
+        /// <param name="installedPackages">The list of installed packages</param>
+        /// <param name="targetsList">The list of targets</param>
         /// <param name="ct">Cancellation Token</param>
         /// <returns>A dictionary, indexed by Framework/Runtime-ID with all top (installed)
-        /// packages that depends on given transitive package, or <c>null</c> if none found</returns>
+        /// packages that depends on given transitive package</returns>
         /// <remarks>Computes all transitive origins for each Framework/Runtime-ID combiation. Runtime-ID can be <c>null</c>.
         /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
-        internal Dictionary<string, TransitiveEntry> ComputeTransitivePackageOrigins(List<PackageReference> installedPackages, IReadOnlyList<LockFileTarget> targetsList, CancellationToken ct)
+        static internal Dictionary<string, TransitiveEntry> ComputeTransitivePackageOrigins(List<PackageReference> installedPackages, IReadOnlyList<LockFileTarget> targetsList, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
-            // Assets file has changed. Recompute Transitive Origins
+
             Dictionary<string, TransitiveEntry> transitiveOriginsCache = new();
 
-            // Otherwise, find all Transitive origin and update cache
+            // Find all Transitive origins and update cache
             var memoryVisited = new HashSet<PackageIdentity>();
 
-            // 3. For each target framework graph (Framework, RID)-pair:
+            // For each target framework graph (Framework, RID)-pair:
             foreach (LockFileTarget targetFxGraph in targetsList)
             {
                 var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
@@ -294,7 +288,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 foreach (var directPkg in installedPackages) // 3.1 For each direct dependency
                 {
                     memoryVisited.Clear();
-                    // 3.1.1 Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
+                    // Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
                     MarkTransitiveOrigin(transitiveOriginsCache, directPkg, directPkg, targetFxGraph, memoryVisited, key, ct);
                 }
             }
@@ -362,7 +356,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="graph">Package dependency graph, from assets file</param>
         /// <param name="visited">Dictionary to remember visited nodes</param>
         /// <param name="fxRidEntry">Framework/Runtime-ID associated with current <paramref name="graph"/></param>
-        private void MarkTransitiveOrigin(Dictionary<string, TransitiveEntry> transitiveOriginsCache, PackageReference top, PackageReference current, LockFileTarget graph, HashSet<PackageIdentity> visited, FrameworkRuntimePair fxRidEntry, CancellationToken token)
+        private static void MarkTransitiveOrigin(Dictionary<string, TransitiveEntry> transitiveOriginsCache, PackageReference top, PackageReference current, LockFileTarget graph, HashSet<PackageIdentity> visited, FrameworkRuntimePair fxRidEntry, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
