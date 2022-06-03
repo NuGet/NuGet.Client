@@ -340,7 +340,7 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(Path.Combine(paths), MsBuildUtility.CombinePathWithVerboseError(paths));
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void CombinePathWithVerboseError_IllegalCharacters_MessageContainsBadPath()
         {
             const string badPath = @"C:\bad:>dir";
