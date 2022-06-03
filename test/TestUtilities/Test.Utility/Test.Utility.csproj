@@ -6,9 +6,6 @@
     <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <NoWarn Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'">$(NoWarn);CS1998</NoWarn>
-    <PackProject>true</PackProject>
-    <Shipping>true</Shipping>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
