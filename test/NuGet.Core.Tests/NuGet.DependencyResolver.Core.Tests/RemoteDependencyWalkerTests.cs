@@ -1849,23 +1849,26 @@ namespace NuGet.DependencyResolver.Tests
         public async Task TransitiveDependenciesFromNonRootLibraries_AreIgnored()
         {
             var context = new TestRemoteWalkContext();
-            var provider = new DependencyProvider();
-            provider.Package("A", "1.0")
-                .DependsOn("B", "1.0")
+            var projectProvider = new DependencyProvider();
+            projectProvider.Package("A", "1.0")
+                .DependsOn("B", "1.0", LibraryDependencyTarget.Project)
                 .DependsOn("D", "1.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
-            provider.Package("B", "1.0")
-                .DependsOn("C", "1.0")
+            projectProvider.Package("B", "1.0", LibraryType.Project)
+                .DependsOn("C", "1.0", LibraryDependencyTarget.Project)
                 .DependsOn("D", "3.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
-            provider.Package("C", "1.0")
-                .DependsOn("D", "2.0");
+            projectProvider.Package("C", "1.0", LibraryType.Project)
+                .DependsOn("D", "2.0", LibraryDependencyTarget.Package);
 
-            provider.Package("D", "1.0");
-            provider.Package("D", "2.0");
-            provider.Package("D", "3.0");
+            context.ProjectLibraryProviders.Add(projectProvider);
 
-            context.LocalLibraryProviders.Add(provider);
+            var libraryProvider = new DependencyProvider();
+            libraryProvider.Package("D", "1.0", LibraryType.Package);
+            libraryProvider.Package("D", "2.0", LibraryType.Package);
+            libraryProvider.Package("D", "3.0", LibraryType.Package);
+
+            context.LocalLibraryProviders.Add(libraryProvider);
 
             var walker = new RemoteDependencyWalker(context);
             var root = await DoWalkAsync(walker, "A");
