@@ -157,7 +157,7 @@
     <ItemGroup>
       <LocalizedDllsToSign Include="$(OutputPath)**\$(AssemblyName).resources.dll">
         <StrongName>$(StrongNameCert)</StrongName>
-        <Authenticode>Microsoft</Authenticode>
+        <Authenticode>Microsoft400</Authenticode>
       </LocalizedDllsToSign>
     </ItemGroup>
   </Target>
@@ -166,10 +166,10 @@
     <ItemGroup>
       <DllsToSignWithMetadata Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" Condition="'%(Extension)' == '.dll' OR '%(Extension)' == '.exe'" KeepDuplicates="false">
         <StrongName>$(StrongNameCert)</StrongName>
-        <Authenticode>Microsoft</Authenticode>
+        <Authenticode>Microsoft400</Authenticode>
       </DllsToSignWithMetadata>
       <DllsToSignWithMetadata Include="@(DocumentationProjectOutputGroupOutput->'%(FinalOutputPath)')" KeepDuplicates="false">
-        <Authenticode>XML94</Authenticode>
+        <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsToSignWithMetadata>
     </ItemGroup>
   </Target>
@@ -319,5 +319,7 @@
       Text="Newtonsoft.Json must be version $(NewtonsoftJsonVersionCore) but resolved %(Reference.NuGetPackageVersion)"
       Condition=" %(Reference.NuGetPackageId) == 'Newtonsoft.Json' AND %(Reference.NuGetPackageVersion) != '$(NewtonsoftJsonVersionCore)' " />
   </Target>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\packages\Microsoft.VisualStudioEng.MicroBuild.Core\1.0.0\build\Microsoft.VisualStudioEng.MicroBuild.Core.targets" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), &quot;README.md&quot;))\packages\Microsoft.VisualStudioEng.MicroBuild.Core\1.0.0\build\Microsoft.VisualStudioEng.MicroBuild.Core.targets')" />
 
 </Project>

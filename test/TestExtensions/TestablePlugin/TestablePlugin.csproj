@@ -9,6 +9,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>Plugin.Testable</AssemblyName>
     <NoWarn>$(NoWarn);CS1701</NoWarn>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

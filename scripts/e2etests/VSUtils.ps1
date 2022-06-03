@@ -5,7 +5,7 @@ $VSInstallerProcessName = "VSIXInstaller"
 function GetVSFolderPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
 
@@ -14,11 +14,20 @@ function GetVSFolderPath {
         $ProgramFilesPath = ${env:ProgramFiles(x86)}
     }
 
+    $VS15PreviewRelativePath = "Microsoft Visual Studio\Preview\Enterprise"
+    $VS15StableRelativePath = "Microsoft Visual Studio\2017\Enterprise"
 
-    $VS16PreviewRelativePath = "Microsoft Visual Studio\2019\Preview"
-
-    if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath)) {
-        $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
+    if ($VSVersion -eq "15.0") {
+        # Give preference to preview installation of VS2017
+        if (Test-Path (Join-Path $ProgramFilesPath $VS15PreviewRelativePath)) {
+            $VSFolderPath = Join-Path $ProgramFilesPath $VS15PreviewRelativePath
+        }
+        elseif (Test-Path (Join-Path $ProgramFilesPath $VS15StableRelativePath)) {
+            $VSFolderPath = Join-Path $ProgramFilesPath $VS15StableRelativePath
+        }
+    }
+    else {
+        $VSFolderPath = Join-Path $ProgramFilesPath ("Microsoft Visual Studio " + $VSVersion)
     }
     
     return $VSFolderPath
@@ -28,7 +37,7 @@ function LaunchVSAndWaitForDTE {
     param (
         [string]$ActivityLogFullPath,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         $DTEReadyPollFrequencyInSecs,
@@ -68,7 +77,7 @@ function LaunchVSAndWaitForDTE {
 function GetVSIDEFolderPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
 
@@ -96,7 +105,7 @@ function KillRunningInstancesOfVS {
 function LaunchVS {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion,
         [string]$ActivityLogFullPath
     )
@@ -115,7 +124,7 @@ function LaunchVS {
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
 
@@ -177,20 +186,19 @@ function ExecuteCommand {
 function GetVSIXInstallerPath {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion
     )
 
     $VSIDEFolderPath = GetVSIDEFolderPath $VSVersion
     $VSIXInstallerPath = Join-Path $VSIDEFolderPath "$VSInstallerProcessName.exe"
 
-    # TODO: This needs to be removed when https://developercommunity.visualstudio.com/content/problem/441998/vsixinstallerexe-not-working-in-vs2019-preview-20.html is fixed (it should be in Preview 4)
-    return "C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXInstaller.exe"
+    return $VSIXInstallerPath
 }
 
-function GetMEFCachePath {
+function GetDev15MEFCachePath {
     $cachePath = $env:localappdata
-    @( "Microsoft", "VisualStudio", "16.*", "ComponentModelCache" ) | % { $cachePath = Join-Path $cachePath $_ }
+    @( "Microsoft", "VisualStudio", "15.*", "ComponentModelCache" ) | % { $cachePath = Join-Path $cachePath $_ }
 
     return $cachePath
 }
@@ -201,7 +209,7 @@ function UninstallVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixID,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -235,7 +243,7 @@ function DowngradeVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixID,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -270,7 +278,7 @@ function InstallVSIX {
         [Parameter(Mandatory = $true)]
         [string]$vsixpath,
         [Parameter(Mandatory = $true)]
-        [ValidateSet("16.0")]
+        [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
         [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
@@ -294,10 +302,10 @@ function InstallVSIX {
 }
 
 
-function ClearMEFCache {
-    $mefCachePath = GetMEFCachePath
+function ClearDev15MEFCache {
+    $dev15MEFCachePath = GetDev15MEFCachePath
 
-    Write-Host "rm -r $mefCachePath..."
-    rm -r $mefCachePath
-    Write-Host "Done clearing MEF cache..."
+    Write-Host "rm -r $dev15MEFCachePath..."
+    rm -r $dev15MEFCachePath
+    Write-Host "Done clearing dev15 MEF cache..."
 }

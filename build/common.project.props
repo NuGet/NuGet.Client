@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\packages\Microsoft.VisualStudioEng.MicroBuild.Core.1.0.0\build\Microsoft.VisualStudioEng.MicroBuild.Core.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), &quot;README.md&quot;))\packages\Microsoft.VisualStudioEng.MicroBuild.Core.1.0.0\build\Microsoft.VisualStudioEng.MicroBuild.Core.props')" />
+
   <!-- Helper properties -->
   <PropertyGroup>
     <IsXPlat>false</IsXPlat>
@@ -39,7 +41,7 @@
     <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
     <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
-    <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
+    <MicroBuildDirectory>$(SolutionPackagesFolder)Microsoft.VisualStudioEng.MicroBuild.Core.1.0.0\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.2.0-beta.19178.1\tools\net472\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
     <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)Microsoft.DotNet.Maestro.Tasks.1.1.0-beta.19178.1\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>

@@ -128,7 +128,7 @@
     <ItemGroup>
       <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
         <StrongName>MsSharedLib72</StrongName>
-        <Authenticode>Microsoft</Authenticode>
+        <Authenticode>Microsoft400</Authenticode>
       </DllsToSign>
     </ItemGroup>
   </Target>

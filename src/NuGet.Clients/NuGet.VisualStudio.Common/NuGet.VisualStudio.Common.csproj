@@ -4,10 +4,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-    <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>

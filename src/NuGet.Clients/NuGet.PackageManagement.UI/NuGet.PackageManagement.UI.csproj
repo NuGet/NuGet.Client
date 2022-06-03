@@ -5,8 +5,6 @@
   <PropertyGroup>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <PackProject>true</PackProject>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>
@@ -535,7 +533,4 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
-  <PropertyGroup>
-    <IncludeContentInPack>false</IncludeContentInPack>
-  </PropertyGroup>
 </Project>

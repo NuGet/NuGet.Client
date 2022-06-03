@@ -12,7 +12,7 @@ param (
     [Parameter(Mandatory=$true)]
     [string]$RunCounter,
     [Parameter(Mandatory=$true)]
-	[ValidateSet("16.0")]
+	[ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
     [string]$VSVersion)
 
 trap
