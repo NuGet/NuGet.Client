@@ -43,12 +43,6 @@ steps:
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
 
-- task: PublishPipelineArtifact@1
-  displayName: "Publish build artifacts1"
-  inputs:
-    artifactName: Build artifacts1 MicroBuild - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    targetPath: "$(BUILD.STAGINGDIRECTORY)\\MicroBuild"
-
 - task: MSBuild@1
   displayName: "Restore for VS2017"
   inputs:
