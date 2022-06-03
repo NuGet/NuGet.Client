@@ -51,6 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
         private protected IList<LockFileItem> _packageFolders;
+        private readonly NuGetFrameworkSorter _frameworkSorter;
 
         protected bool IsInstalledAndTransitiveComputationNeeded { get; set; } = true;
 
@@ -142,14 +143,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            var frameworkSorter = new NuGetFrameworkSorter(); // TODO: Should we promote to instance variable and not allocate on each call??
-
             // get installed packages
             List<PackageReference> calculatedInstalledPackages = packageSpec
                 .TargetFrameworks
                 .SelectMany(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
+                .Select(g => g.OrderBy(p => p.TargetFramework, _frameworkSorter).First())
                 .ToList();
 
             // get transitive packages
@@ -157,7 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .TargetFrameworks
                 .SelectMany(f => ResolvedTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
+                .Select(g => g.OrderBy(p => p.TargetFramework, _frameworkSorter).First());
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
