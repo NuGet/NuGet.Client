@@ -63,6 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectName = projectName;
             ProjectUniqueName = projectUniqueName;
             ProjectFullPath = projectFullPath;
+            _frameworkSorter = new NuGetFrameworkSorter();
         }
 
         public override async Task<string> GetAssetsFilePathAsync()
