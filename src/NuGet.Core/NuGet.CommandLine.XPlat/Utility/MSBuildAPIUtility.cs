@@ -157,19 +157,57 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<ProjectItem> existingPackageReferences,
             string framework = null)
         {
-            var itemGroups = GetItemGroups(project);
+            string directoryPackagesPropsPath = project.GetPropertyValue("DirectoryPackagesPropsPath");
+            Console.Write(directoryPackagesPropsPath);
 
-            if (!existingPackageReferences.Any())
+            // the props file does not exist, therefore the project is not onboarded to CPM
+            if (directoryPackagesPropsPath == "")
             {
-                // Add packageReference only if it does not exist.
-                var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
-                AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+                var itemGroups = GetItemGroups(project);
+
+                if (!existingPackageReferences.Any())
+                {
+                    // Add packageReference only if it does not exist.
+                    var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
+                    AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+                }
+                else
+                {
+                    // If the package already has a reference then try to update the reference.
+                    UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
+                }
             }
             else
             {
-                // If the package already has a reference then try to update the reference.
-                UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
+                // If onboarded to CPM onboarded
+                // Get the Directory.Build.props
+                ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath)).ImportedProject;
+                // Get the ItemGroup to add a PackageVersion to
+                //   Find the first <ItemGroup /> that contains a <PackageVersion />
+                //   -or-
+                //   Find the first <ItemGroup />
+                //   -or-
+                //   Add an <ItemGroup />
+                // maybe this can go in the GetItemGroup function?
+                ProjectItemGroupElement packageVersionItemGroupElement = directoryBuildPropsRootElement.ItemGroups.FirstOrDefault(i => i.Items.Any(i => i.ItemType == "PackageVersion"))
+                    ?? directoryBuildPropsRootElement.ItemGroups.FirstOrDefault()
+                    ?? directoryBuildPropsRootElement.AddItemGroup();
+
+                AddPackageReferenceIntoItemGroup(packageVersionItemGroupElement, libraryDependency);
+                // Add a <PackageVersion /> item
+                //ProjectItemElement packageVersionItemElement = packageVersionItemGroupElement.AddItem("PackageVersion", id);
+                // Set the Version attribute
+                //packageVersionItemElement.AddMetadata("Version", version, expressAsAttribute: true);
+
+                //var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
+                //libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+
+                //var item = packageVersionItemGroupElement.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
+                //item.AddMetadata(VERSION_TAG, packageVersion, expressAsAttribute: true);
+
+                directoryBuildPropsRootElement.Save();
             }
+
             project.Save();
         }
 
