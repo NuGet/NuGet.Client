@@ -27,12 +27,6 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
   <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" Condition="'$(SkipILMergeOfNuGetExe)' != 'true'">
       <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe" DestinationFolder="$(OutputPath)NuGet\" />
   </Target>
