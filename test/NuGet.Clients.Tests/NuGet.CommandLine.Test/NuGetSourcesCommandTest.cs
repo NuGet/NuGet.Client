@@ -17,13 +17,13 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://test_source", false)]
         public void SourcesCommandTest_AddSource(string source, bool shouldWarn)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
-                var workingPath = pathContext.WorkingDirectory;
-                var settings = pathContext.Settings;
+                TestDirectory workingPath = pathContext.WorkingDirectory;
+                SimpleTestSettingsContext settings = pathContext.Settings;
 
                 // Arrange
-                var nugetexe = Util.GetNuGetExePath();
+                string nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
                     "sources",
                     "Add",
@@ -36,13 +36,13 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
-                var loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
-                var packageSourcesSection = loadedSettings.GetSection("packageSources");
-                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal(source, sourceItem.GetValueAsPath());
                 Assert.Equal(shouldWarn, result.Output.Contains("WARNING: You are running the 'add source' operation with an 'HTTP' source"));
             }
@@ -53,11 +53,11 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://source.test", false)]
         public void SourcesCommandTest_UpdateSource(string source, bool shouldWarn)
         {
-            using (var configFileDirectory = TestDirectory.Create())
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
-                var nugetexe = Util.GetNuGetExePath();
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+                string nugetexe = Util.GetNuGetExePath();
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 var nugetConfig = string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -81,7 +81,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     configFileDirectory,
                     string.Join(" ", args),
@@ -89,9 +89,9 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
-                var loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
-                var packageSourcesSection = loadedSettings.GetSection("packageSources");
-                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal(source, sourceItem.GetValueAsPath());
                 Assert.Equal(shouldWarn, result.Output.Contains("WARNING: You are running the 'update source' operation with an 'HTTP' source"));
             }
@@ -101,12 +101,12 @@ namespace NuGet.CommandLine.Test
         public void SourcesCommandTest_EnableSource_WarnWhenUsingHttp()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
-            using (var configFileDirectory = TestDirectory.Create())
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName,
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -130,7 +130,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
@@ -139,17 +139,17 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Util.VerifyResultSuccess(result);
 
-                var settings = Configuration.Settings.LoadDefaultSettings(
+                ISettings settings = Configuration.Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
                     null);
 
-                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                PackageSourceProvider packageSourceProvider = new Configuration.PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 var testSources = sources.Where(s => s.Name == "test_source");
                 Assert.Single(testSources);
-                var source = testSources.Single();
+                PackageSource source = testSources.Single();
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
@@ -162,12 +162,12 @@ namespace NuGet.CommandLine.Test
         public void SourcesCommandTest_DisableSource_NoWarnWhenUsingHttp()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
             using (var configFileDirectory = TestDirectory.Create())
             {
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName,
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -187,7 +187,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
@@ -196,17 +196,17 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Util.VerifyResultSuccess(result);
 
-                var settings = Configuration.Settings.LoadDefaultSettings(
+                ISettings settings = Configuration.Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
                     null);
 
-                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                PackageSourceProvider packageSourceProvider = new Configuration.PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 var testSources = sources.Where(s => s.Name == "test_source");
                 Assert.Single(testSources);
-                var source = testSources.Single();
+                PackageSource source = testSources.Single();
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
@@ -221,12 +221,12 @@ namespace NuGet.CommandLine.Test
         public void SourcesList_WithDefaultFormat_UsesDetailedFormat(string source, bool shouldWarn)
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
-            using (var configFileDirectory = TestDirectory.Create())
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName, string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -244,7 +244,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Main Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
