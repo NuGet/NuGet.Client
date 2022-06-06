@@ -152,16 +152,51 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        private string GetPropsPath(Project project)
+        {
+            string directoryPackagesPropsPath = project.GetPropertyValue("DirectoryPackagesPropsPath");
+            return directoryPackagesPropsPath;
+        }
+
+        private bool OnboardedToCPM(Project project)
+        {
+            string directoryPackagesPropsPath = GetPropsPath(project);
+            if (directoryPackagesPropsPath == "")
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
+
+        private ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
+        {
+            string directoryPackagesPropsPath = GetPropsPath(project);
+            ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath)).ImportedProject;
+            return directoryBuildPropsRootElement;
+        }
+
         private void AddPackageReference(Project project,
             LibraryDependency libraryDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
             string framework = null)
         {
-            string directoryPackagesPropsPath = project.GetPropertyValue("DirectoryPackagesPropsPath");
-            Console.Write(directoryPackagesPropsPath);
 
-            // the props file does not exist, therefore the project is not onboarded to CPM
-            if (directoryPackagesPropsPath == "")
+            if (OnboardedToCPM(project)) {
+                // TODO: can we integrate GetItemGroups() here?
+
+                // If onboarded to CPM onboarded get the directoryBuildPropsRootElement
+                ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
+
+                // Get the ItemGroup to add a PackageVersion to
+                var itemGroup = GetItemGroup(directoryBuildPropsRootElement.ItemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
+                AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+                directoryBuildPropsRootElement.Save();
+
+                //TODO: add support for when package reference already exists, i.e. need to UPDATE the package version
+            }
+            else
             {
                 var itemGroups = GetItemGroups(project);
 
@@ -176,26 +211,6 @@ namespace NuGet.CommandLine.XPlat
                     // If the package already has a reference then try to update the reference.
                     UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
                 }
-            }
-            else
-            {
-                // If onboarded to CPM onboarded get the Directory.Build.props
-                ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath)).ImportedProject;
-
-                // Get the ItemGroup to add a PackageVersion to
-                //   Find the first <ItemGroup /> that contains a <PackageVersion />
-                //   -or-
-                //   Find the first <ItemGroup />
-                //   -or-
-                //   Add an <ItemGroup />
-                // maybe this can go in the GetItemGroup function?
-                ProjectItemGroupElement packageVersionItemGroupElement = directoryBuildPropsRootElement.ItemGroups.FirstOrDefault(i => i.Items.Any(i => i.ItemType == "PackageVersion"))
-                    ?? directoryBuildPropsRootElement.ItemGroups.FirstOrDefault()
-                    ?? directoryBuildPropsRootElement.AddItemGroup();
-
-                AddPackageReferenceIntoItemGroup(packageVersionItemGroupElement, libraryDependency);
-
-                //directoryBuildPropsRootElement.Save();
             }
 
             project.Save();
