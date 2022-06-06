@@ -179,9 +179,9 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                // If onboarded to CPM onboarded
-                // Get the Directory.Build.props
+                // If onboarded to CPM onboarded get the Directory.Build.props
                 ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath)).ImportedProject;
+
                 // Get the ItemGroup to add a PackageVersion to
                 //   Find the first <ItemGroup /> that contains a <PackageVersion />
                 //   -or-
@@ -194,18 +194,8 @@ namespace NuGet.CommandLine.XPlat
                     ?? directoryBuildPropsRootElement.AddItemGroup();
 
                 AddPackageReferenceIntoItemGroup(packageVersionItemGroupElement, libraryDependency);
-                // Add a <PackageVersion /> item
-                //ProjectItemElement packageVersionItemElement = packageVersionItemGroupElement.AddItem("PackageVersion", id);
-                // Set the Version attribute
-                //packageVersionItemElement.AddMetadata("Version", version, expressAsAttribute: true);
 
-                //var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
-                //libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
-
-                //var item = packageVersionItemGroupElement.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
-                //item.AddMetadata(VERSION_TAG, packageVersion, expressAsAttribute: true);
-
-                directoryBuildPropsRootElement.Save();
+                //directoryBuildPropsRootElement.Save();
             }
 
             project.Save();
