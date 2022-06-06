@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static void ValidateProjectPath(CommandOption projectPath, string commandName)
         {
-            if (!File.Exists(projectPath.Value()) || !projectPath.Value().EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+            if (!File.Exists(projectPath.Value()))  //|| !projectPath.Value().EndsWith("proj", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_PkgMissingOrInvalidProjectFile,
