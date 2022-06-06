@@ -222,6 +222,45 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(expectedVersions, actualVersions);
         }
 
+        [Theory]
+        [InlineData(ItemFilter.All, "3.0.0")]
+        [InlineData(ItemFilter.Installed, "1.0.0")]
+        [InlineData(ItemFilter.UpdatesAvailable, "3.0.0")]
+        public async Task SetCurrentPackageAsync_CorrectSelectedVersion(ItemFilter tab, string expectedSelectedVersion)
+        {
+            // Arrange
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+                new VersionInfoContextInfo(new NuGetVersion("3.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+            };
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "package",
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+            };
+
+            // Act
+
+            await _testInstance.SetCurrentPackageAsync(
+                vm,
+                tab,
+                () => vm);
+
+            NuGetVersion selectedVersion = NuGetVersion.Parse(expectedSelectedVersion);
+
+            Assert.Equal(_testInstance.SelectedVersion.Version, selectedVersion);
+        }
+
         [Fact]
         public async Task SetCurrentPackageAsync_ClearVersions_Always()
         {
@@ -523,7 +562,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1-dev-01248");
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
         }
-
 
         [Theory]
         [InlineData(NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "2.10.0")]
@@ -908,6 +946,44 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
 
             Assert.Equal(expectedVersions, actualVersions);
+        }
+
+        [Theory]
+        [InlineData(ItemFilter.All, "3.0.0")]
+        [InlineData(ItemFilter.Installed, "1.0.0")]
+        [InlineData(ItemFilter.UpdatesAvailable, "3.0.0")]
+        public async Task SetCurrentPackageAsync_CorrectSelectedVersion(ItemFilter tab, string expectedSelectedVersion)
+        {
+            // Arrange
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
+                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
+                new VersionInfoContextInfo(new NuGetVersion("3.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+            };
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "package",
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+            };
+
+            // Act
+            await _testInstance.SetCurrentPackageAsync(
+                vm,
+                tab,
+                () => vm);
+
+            NuGetVersion selectedVersion = NuGetVersion.Parse(expectedSelectedVersion);
+
+            Assert.Equal(_testInstance.SelectedVersion.Version, selectedVersion);
         }
 
         [Fact]
