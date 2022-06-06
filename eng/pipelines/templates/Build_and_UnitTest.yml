@@ -212,14 +212,6 @@ steps:
     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true /bl:$(Build.StagingDirectory)\\binlog\\11.BuildToolsVSIX.binlog"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish msbuild.binlog as an artifact'
-  inputs:
-    ArtifactName: 'msbuild.binlog'
-    ArtifactType: 'Container'
-    PathToPublish: '$(Build.Repository.LocalPath)\msbuild.binlog'
-  condition: "and(succeededOrFailed(), eq(variables['BuildRTM'], 'false'))"
-
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
   inputs:
