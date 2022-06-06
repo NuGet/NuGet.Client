@@ -14,30 +14,17 @@ namespace NuGet.Commands.Test
     public class TransitiveNoWarnUtilsTests
     {
 
-        // Tests for TransitiveNoWarnUtils.ExtractPathNoWarnProperties
-        [Fact]
-        public void ExtractPathNoWarnProperties_ReturnsEmptySetIfPathPropertiesAreNull()
-        {
-            // Arrange & Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(null, "test_id");
-
-            // Assert
-            extractedNoWarnSet.Should().NotBeNull();
-            extractedNoWarnSet.Should().BeEmpty();
-        }
-
         [Fact]
         public void ExtractPathNoWarnProperties_CorrectlyReadsProjectWideNoWarns()
         {
             // Arrange
             var projectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
-            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn,
                 null);
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
-                pathWarningProperties,
+            var extractedNoWarnSet = pathWarningProperties.ExtractPathNoWarnProperties(
                 "test_id");
 
             // Assert
@@ -53,7 +40,7 @@ namespace NuGet.Commands.Test
             var framework = NuGetFramework.Parse("net461");
             var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1605 };
 
-            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>>
                 {
@@ -61,8 +48,7 @@ namespace NuGet.Commands.Test
                 });
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
-                pathWarningProperties,
+            var extractedNoWarnSet = pathWarningProperties.ExtractPathNoWarnProperties(
                 packageId);
 
             // Assert
@@ -81,7 +67,7 @@ namespace NuGet.Commands.Test
             var packageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1107 };
             var otherPackageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1701 };
 
-            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarnSet,
                 new Dictionary<string, HashSet<NuGetLogCode>>
                 {
@@ -90,8 +76,7 @@ namespace NuGet.Commands.Test
                 });
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
-                pathWarningProperties,
+            var extractedNoWarnSet = pathWarningProperties.ExtractPathNoWarnProperties(
                 packageId);
 
             // Assert
@@ -615,7 +600,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(null, null));
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null));
 
             TransitiveNoWarnUtils.DependencyNode second = null;
 
@@ -637,7 +622,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(null, null));
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null));
 
             // Act
             var seen = new HashSet<TransitiveNoWarnUtils.DependencyNode>
@@ -659,7 +644,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -667,7 +652,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -711,7 +696,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -719,7 +704,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -745,7 +730,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -753,7 +738,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: false,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -761,7 +746,7 @@ namespace NuGet.Commands.Test
             var third = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test_other",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -810,7 +795,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -818,7 +803,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -859,7 +844,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -867,7 +852,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -906,7 +891,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -914,7 +899,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -940,10 +925,10 @@ namespace NuGet.Commands.Test
             string noWarn)
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
                 null);
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
                 null);
 
@@ -960,10 +945,10 @@ namespace NuGet.Commands.Test
         public void NodeWarningPropertiesIsSubSetOf_WithNullAndEmptyProjectWideNoWarns_Succeeds(bool nullFirst)
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 nullFirst ? null : new HashSet<NuGetLogCode>(),
                 null);
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 nullFirst ? new HashSet<NuGetLogCode>() : null,
                 null);
 
@@ -994,10 +979,10 @@ namespace NuGet.Commands.Test
             string secondNoWarn)
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
                 null);
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 secondNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
                 null);
 
@@ -1032,10 +1017,10 @@ namespace NuGet.Commands.Test
             string secondNoWarn)
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 firstNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
                 null);
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
                 null);
 
@@ -1061,10 +1046,10 @@ namespace NuGet.Commands.Test
             string[] secondNoWarn)
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(firstNoWarn));
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(secondNoWarn));
 
@@ -1083,10 +1068,10 @@ namespace NuGet.Commands.Test
             string[] firstNoWarn)
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(firstNoWarn));
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
 
@@ -1105,10 +1090,10 @@ namespace NuGet.Commands.Test
             string[] secondNoWarn)
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(secondNoWarn));
 
@@ -1123,10 +1108,10 @@ namespace NuGet.Commands.Test
         public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeySameValue_Succeeds()
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
 
@@ -1141,10 +1126,10 @@ namespace NuGet.Commands.Test
         public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeyDifferentValue_Fails()
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1001 } });
 
@@ -1159,10 +1144,10 @@ namespace NuGet.Commands.Test
         public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveDifferentKeySameValue_Fails()
         {
             // Arrange
-            var first = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
-            var second = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id2"] = new() { NuGetLogCode.NU1000 } });
 
@@ -1199,7 +1184,7 @@ namespace NuGet.Commands.Test
             string[] packageSpecificNoWarn)
         {
             // Arrange
-            var node = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var node = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 GetPackageSpecificNoWarn(packageSpecificNoWarn));
 
@@ -1228,10 +1213,10 @@ namespace NuGet.Commands.Test
             // Note: this test differs from the one above in that GetIntersect cannot rely on the ReferenceEquals check
 
             // Arrange
-            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 GetPackageSpecificNoWarn(packageSpecificNoWarn));
-            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 GetPackageSpecificNoWarn(packageSpecificNoWarn));
 
@@ -1261,10 +1246,10 @@ namespace NuGet.Commands.Test
             // instead, we expect empty sets to be simplified to null where appropriate
 
             // Arrange
-            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 GetPackageSpecificNoWarn(packageSpecificNoWarn));
-            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 GetPackageSpecificNoWarn(packageSpecificNoWarn));
 
@@ -1288,7 +1273,7 @@ namespace NuGet.Commands.Test
                 }
             }
 
-            var expectedResultNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var expectedResultNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 string.IsNullOrEmpty(projectWideNoWarn) ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 simplifiedPackageSpecificNoWarn);
 
@@ -1312,7 +1297,7 @@ namespace NuGet.Commands.Test
             string[] packageSpecificNoWarn)
         {
             // Arrange
-            var node = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var node = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 GetPackageSpecificNoWarn(packageSpecificNoWarn));
 
@@ -1336,10 +1321,10 @@ namespace NuGet.Commands.Test
             string[] packageSpecificNoWarn)
         {
             // Arrange
-            var node = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var node = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
                 GetPackageSpecificNoWarn(packageSpecificNoWarn));
-            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
 
             // Act
             var resultOne = node.GetIntersect(empty);
@@ -1359,10 +1344,10 @@ namespace NuGet.Commands.Test
             string firstProjectWideNoWarn)
         {
             // Arrange
-            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 firstProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstProjectWideNoWarn).ToHashSet(),
                 null);
-            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
 
             // Act
             var resultOne = firstNode.GetIntersect(empty);
@@ -1383,13 +1368,13 @@ namespace NuGet.Commands.Test
             string expectedProjectWideNoWarn)
         {
             // Arrange
-            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 firstProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstProjectWideNoWarn).ToHashSet(),
                 null);
-            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 secondProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondProjectWideNoWarn).ToHashSet(),
                 null);
-            var expectedResultNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var expectedResultNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 expectedProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(expectedProjectWideNoWarn).ToHashSet(),
                 null);
 
@@ -1412,10 +1397,10 @@ namespace NuGet.Commands.Test
             string[] firstPackageSpecificNoWarn)
         {
             // Arrange
-            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
-            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
 
             // Act
             var resultOne = firstNode.GetIntersect(empty);
@@ -1437,13 +1422,13 @@ namespace NuGet.Commands.Test
             string[] secondPackageSpecificNoWarn)
         {
             // Arrange
-            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
-            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(secondPackageSpecificNoWarn));
-            var empty = new TransitiveNoWarnUtils.NodeWarningProperties(null, null);
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
 
             // Act
             var resultOne = firstNode.GetIntersect(secondNode);
@@ -1466,13 +1451,13 @@ namespace NuGet.Commands.Test
             string[] expectedPackageSpecificNoWarn)
         {
             // Arrange
-            var firstNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
-            var secondNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(secondPackageSpecificNoWarn));
-            var expectedResultNode = new TransitiveNoWarnUtils.NodeWarningProperties(
+            var expectedResultNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 GetPackageSpecificNoWarn(expectedPackageSpecificNoWarn));
 

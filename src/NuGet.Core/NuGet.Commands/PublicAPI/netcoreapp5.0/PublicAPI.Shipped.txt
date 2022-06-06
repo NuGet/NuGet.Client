@@ -857,18 +857,16 @@ NuGet.Commands.ToolRestoreUtility
 NuGet.Commands.TransitiveNoWarnUtils
 NuGet.Commands.TransitiveNoWarnUtils.DependencyNode
 NuGet.Commands.TransitiveNoWarnUtils.DependencyNode.DependencyNode(string id, bool isProject, NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties nodeWarningProperties) -> void
-NuGet.Commands.TransitiveNoWarnUtils.DependencyNode.DependencyNode(string id, bool isProject, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode> projectWideNoWarn, System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>> packageSpecificNoWarn) -> void
 NuGet.Commands.TransitiveNoWarnUtils.DependencyNode.Equals(NuGet.Commands.TransitiveNoWarnUtils.DependencyNode other) -> bool
 NuGet.Commands.TransitiveNoWarnUtils.DependencyNode.Id.get -> string
 NuGet.Commands.TransitiveNoWarnUtils.DependencyNode.IsProject.get -> bool
 NuGet.Commands.TransitiveNoWarnUtils.DependencyNode.NodeWarningProperties.get -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
 NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
 NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.Equals(NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties other) -> bool
+NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.ExtractPathNoWarnProperties(string libraryId) -> System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>
 NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.GetIntersect(NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties other) -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
 NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.IsSubSetOf(NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties other) -> bool
-NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.NodeWarningProperties(System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode> projectWide, System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>> packageSpecific) -> void
-NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.PackageSpecific.get -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>>
-NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.ProjectWide.get -> System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>
+NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.Merge(NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties other) -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
 NuGet.Commands.TrustedSignerActionsProvider
 NuGet.Commands.TrustedSignerActionsProvider.AddOrUpdateTrustedSigner(string name, string fingerprint, NuGet.Common.HashAlgorithmName hashAlgorithm, bool allowUntrustedRoot) -> void
 NuGet.Commands.TrustedSignerActionsProvider.AddTrustedRepositoryAsync(string name, System.Uri serviceIndex, System.Collections.Generic.IEnumerable<string> owners, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
@@ -1168,10 +1166,10 @@ static NuGet.Commands.ToolRestoreUtility.GetUniqueName(string id, string framewo
 static NuGet.Commands.TransitiveNoWarnUtils.CreateTransitiveWarningPropertiesCollection(System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreTargetGraph> targetGraphs, NuGet.ProjectModel.PackageSpec parentProjectSpec) -> NuGet.Commands.WarningPropertiesCollection
 static NuGet.Commands.TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework(NuGet.Commands.PackageSpecificWarningProperties packageSpecificWarningProperties, NuGet.Frameworks.NuGetFramework framework) -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>>
 static NuGet.Commands.TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnPerFramework(NuGet.Commands.PackageSpecificWarningProperties packageSpecificWarningProperties) -> System.Collections.Generic.Dictionary<NuGet.Frameworks.NuGetFramework, System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>>>
-static NuGet.Commands.TransitiveNoWarnUtils.ExtractPathNoWarnProperties(NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties nodeWarningProperties, string libraryId) -> System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>
 static NuGet.Commands.TransitiveNoWarnUtils.MergeCodes(System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode> first, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode> second) -> System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>
 static NuGet.Commands.TransitiveNoWarnUtils.MergePackageSpecificNoWarn(System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>> first, System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>> second) -> System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>>
 static NuGet.Commands.TransitiveNoWarnUtils.MergePackageSpecificWarningProperties(NuGet.Commands.PackageSpecificWarningProperties first, NuGet.Commands.PackageSpecificWarningProperties second) -> NuGet.Commands.PackageSpecificWarningProperties
+static NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.Create(System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode> projectWide, System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>> packageSpecific) -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
 static NuGet.Commands.TransitiveNoWarnUtils.TryMergeNullObjects<T>(T first, T second, out T merged) -> bool
 static NuGet.Commands.UnexpectedDependencyMessages.DependencyRangeHasMissingExactMatch(NuGet.Commands.ResolvedDependencyKey dependency) -> bool
 static NuGet.Commands.UnexpectedDependencyMessages.GetBumpedUpDependencies(System.Collections.Generic.List<NuGet.Commands.IndexedRestoreTargetGraph> graphs, NuGet.ProjectModel.PackageSpec project, System.Collections.Generic.ISet<string> ignoreIds) -> System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage>
@@ -1194,6 +1192,7 @@ static readonly NuGet.Commands.MSBuildRestoreItemGroup.ImportGroup -> string
 static readonly NuGet.Commands.MSBuildRestoreItemGroup.ItemGroup -> string
 static readonly NuGet.Commands.MSBuildRestoreUtility.Clear -> string
 static readonly NuGet.Commands.RestoreRequest.DefaultDegreeOfConcurrency -> int
+static readonly NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.Empty -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
 virtual Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContext<TFrame>.Declare(System.Action<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment, bool> declare) -> void
 virtual Microsoft.Extensions.FileSystemGlobbing.Matcher.AddExclude(string pattern) -> Microsoft.Extensions.FileSystemGlobbing.Matcher
 virtual Microsoft.Extensions.FileSystemGlobbing.Matcher.AddInclude(string pattern) -> Microsoft.Extensions.FileSystemGlobbing.Matcher
