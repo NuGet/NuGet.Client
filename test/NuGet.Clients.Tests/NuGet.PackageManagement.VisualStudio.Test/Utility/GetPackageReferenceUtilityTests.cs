@@ -12,7 +12,6 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
-using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -86,7 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public void MergeTransitiveOrigin_NullArgument_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(null, It.IsAny<TransitiveEntry>()));
+            Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(null, It.IsAny<IDictionary<FrameworkRuntimePair, IList<PackageReference>>>()));
             Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(It.IsAny<PackageReference>(), null));
         }
 
@@ -118,21 +117,71 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
 
             // Assert
-            // Target framework does not matter because PM UI doesn't support multitargeting
+            // Target framework does not matter because PM UI doesn't support multi-targeting
             Assert.Collection(transitivePackageReference.TransitiveOrigins,
                 item => Assert.Equal(CreatePackageIdentity("package1", "0.0.2"), item.PackageIdentity), // highest version found
                 item => Assert.Equal(CreatePackageIdentity("package2", "0.0.1"), item.PackageIdentity),
                 item => Assert.Equal(CreatePackageIdentity("package3", "0.0.1"), item.PackageIdentity));
         }
 
+        [Theory]
+        [InlineData("a", "1.0", "b", "1.0")]
+        [InlineData("a", "1.0", "b", null)]
+        [InlineData("09a", "1.0", "b", null)]
+        [InlineData("a", "1.0", "a", "2.0")]
+        public void PackageReferenceMergeComparer_DifferentPackageIdentities_ReturnLessThanZero(string id1, string version1, string id2, string version2)
+        {
+            // Arrange
+            PackageReference first = CreatePackageReference(id1, version1, "net6.0");
+            PackageReference second = CreatePackageReference(id2, version2, null);
+
+            // Act
+            int result = GetPackageReferenceUtility.PackageReferenceMergeComparer.Compare(first, second);
+
+            // Assert
+            Assert.True(result < 0);
+}
+
+        [Fact]
+        public void PackageReferenceMergeComparer_EqualPackageIdentities_ReturnsZero()
+        {
+            // Arrange
+            PackageReference first = CreatePackageReference("Abc", "1.0", "net6.0");
+            PackageReference second = CreatePackageReference("abc", "1.0", null);
+
+            // Act
+            int result = GetPackageReferenceUtility.PackageReferenceMergeComparer.Compare(first, second);
+
+            // Assert
+            Assert.Equal(0, result);
+        }
+
+        [Theory]
+        [InlineData("b", "1.0", "a", "1.0")]
+        [InlineData("a", "2.0", "a", "1.0")]
+        public void PackageReferenceMergeComparer_DifferentPackageIdentities_ReturnGreaterThanZero(string id1, string version1, string id2, string version2)
+        {
+            // Arrange
+            PackageReference first = CreatePackageReference(id1, version1, "net6.0");
+            PackageReference second = CreatePackageReference(id2, version2, null);
+
+            // Act
+            int result = GetPackageReferenceUtility.PackageReferenceMergeComparer.Compare(first, second);
+
+            // Assert
+            Assert.True(result > 0);
+        }
+
         private static PackageReference CreatePackageReference(string id, string version, string framework)
         {
-            return new PackageReference(CreatePackageIdentity(id, version), NuGetFramework.Parse(framework));
+            NuGetFramework fw = string.IsNullOrEmpty(framework) ? null : NuGetFramework.Parse(framework);
+            return new PackageReference(CreatePackageIdentity(id, version), fw);
         }
 
         private static PackageIdentity CreatePackageIdentity(string id, string version)
         {
-            return new PackageIdentity(id, NuGetVersion.Parse(version));
+            NuGetVersion ver = string.IsNullOrEmpty(version) ? null : NuGetVersion.Parse(version);
+            return new PackageIdentity(id, ver);
         }
 
         public static IEnumerable<object[]> GetDataWithNulls()
