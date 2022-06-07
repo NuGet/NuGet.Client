@@ -133,7 +133,7 @@ namespace NuGet.Test.Server
 
         private static Mutex GetGlobalMutex()
         {
-            Mutex mutex = new Mutex(initiallyOwned: true, name: "NuGet-RandomPortAcquisition", out bool mutexWasCreated);
+            Mutex mutex = new Mutex(initiallyOwned: true, name: "Global\\NuGet-RandomPortAcquisition" + Guid.NewGuid(), out bool mutexWasCreated);
             if (!mutexWasCreated && !mutex.WaitOne(30000))
             {
                 throw new InvalidOperationException();
