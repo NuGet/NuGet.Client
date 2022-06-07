@@ -149,26 +149,30 @@ namespace NuGet.Configuration
         }
 
         protected override IReadOnlyCollection<string> AllowedAttributes { get; }
-            = IReadOnlyCollectionUtility.Create<string>(
-                ConfigurationConstants.PackageSourceAttribute,
-                ConfigurationConstants.StoreLocationAttribute,
-                ConfigurationConstants.StoreNameAttribute,
-                ConfigurationConstants.FindByAttribute,
-                ConfigurationConstants.FindValueAttribute);
+            = new HashSet<string>(new[]
+                {
+                    ConfigurationConstants.PackageSourceAttribute,
+                    ConfigurationConstants.StoreLocationAttribute,
+                    ConfigurationConstants.StoreNameAttribute,
+                    ConfigurationConstants.FindByAttribute,
+                    ConfigurationConstants.FindValueAttribute
+                });
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>
         {
             {
                 ConfigurationConstants.StoreLocationAttribute,
-                IReadOnlyCollectionUtility.Create<string>(
-                    StringComparer.OrdinalIgnoreCase,
+                new HashSet<string>(new[]
+                {
                     GetString(StoreLocation.CurrentUser),
-                    GetString(StoreLocation.LocalMachine))
+                    GetString(StoreLocation.LocalMachine)
+                },
+                    StringComparer.OrdinalIgnoreCase)
             },
             {
                 ConfigurationConstants.StoreNameAttribute,
-                IReadOnlyCollectionUtility.Create<string>(
-                    StringComparer.OrdinalIgnoreCase,
+                new HashSet<string>(new []
+                {
                     GetString(StoreName.AddressBook),
                     GetString(StoreName.AuthRoot),
                     GetString(StoreName.CertificateAuthority),
@@ -176,12 +180,14 @@ namespace NuGet.Configuration
                     GetString(StoreName.My),
                     GetString(StoreName.Root),
                     GetString(StoreName.TrustedPeople),
-                    GetString(StoreName.TrustedPublisher))
+                    GetString(StoreName.TrustedPublisher)
+                },
+                    StringComparer.OrdinalIgnoreCase)
             },
             {
                 ConfigurationConstants.FindByAttribute,
-                IReadOnlyCollectionUtility.Create<string>(
-                    StringComparer.OrdinalIgnoreCase,
+                new HashSet<string>(new[]
+                {
                     GetString(X509FindType.FindByThumbprint),
                     GetString(X509FindType.FindBySubjectName),
                     GetString(X509FindType.FindBySubjectDistinguishedName),
@@ -196,12 +202,15 @@ namespace NuGet.Configuration
                     GetString(X509FindType.FindByCertificatePolicy),
                     GetString(X509FindType.FindByExtension),
                     GetString(X509FindType.FindByKeyUsage),
-                    GetString(X509FindType.FindBySubjectKeyIdentifier))
+                    GetString(X509FindType.FindBySubjectKeyIdentifier)
+                },
+                    StringComparer.OrdinalIgnoreCase)
             }
         };
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
-            = IReadOnlyCollectionUtility.Create(ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute);
+        protected override IReadOnlyCollection<string> RequiredAttributes
+        { get; }
+        = new HashSet<string>(new[] { ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute });
 
         internal override XNode AsXNode()
         {

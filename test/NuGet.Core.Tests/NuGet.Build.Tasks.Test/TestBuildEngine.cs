@@ -24,6 +24,7 @@ namespace NuGet.Build.Tasks.Test
 
         public TestBuildEngine()
         {
+            _globalProperties = new Dictionary<string, string>();
         }
 
         public TestBuildEngine(IReadOnlyDictionary<string, string> globalProperties)

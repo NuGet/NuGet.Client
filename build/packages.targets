@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <MicrosoftBuildPackageVersion Condition="'$(MicrosoftBuildPackageVersion)' == ''">16.8.0</MicrosoftBuildPackageVersion>
+        <MicrosoftBuildPackageVersion>16.8.0</MicrosoftBuildPackageVersion>
         <NewtonsoftJsonPackageVersion Condition="$(NewtonsoftJsonPackageVersion) == ''">13.0.1</NewtonsoftJsonPackageVersion>
         <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
         <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
@@ -10,7 +10,7 @@
         <CryptographyPackagesVersion>5.0.0</CryptographyPackagesVersion>
         <NuGetCoreV2Version>2.14.0-rtm-832</NuGetCoreV2Version>
         <ProjectSystemManagedVersion>17.0.0-beta1-10402-05</ProjectSystemManagedVersion>
-        <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion Condition="'$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)' == ''">3.0.0-preview6.19253.5</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+        <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview6.19253.5</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->

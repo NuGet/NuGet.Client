@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace NuGet.Configuration
@@ -18,6 +19,10 @@ namespace NuGet.Configuration
 
         public NuGetConfigurationException(string message, Exception innerException)
             : base(message, innerException)
+        {
+        }
+
+        protected NuGetConfigurationException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

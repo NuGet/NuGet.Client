@@ -27,7 +27,6 @@ Param (
 "NuGet.Localization",
 "NuGet.PackageManagement",
 "NuGet.Packaging.Core",
-"NuGet.Packaging.Extraction",
 "NuGet.Packaging",
 "NuGet.ProjectModel",
 "NuGet.Protocol",

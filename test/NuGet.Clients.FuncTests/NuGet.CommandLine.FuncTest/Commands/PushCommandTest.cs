@@ -871,7 +871,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             Assert.True(result.Success, result.AllOutput);
-            Assert.Contains("WARNING: You are running the 'push' operation with an 'http' source", result.AllOutput);
+            Assert.Contains("WARNING: You are running the 'push' operation with an 'HTTP' source", result.AllOutput);
         }
 
         #region Helpers

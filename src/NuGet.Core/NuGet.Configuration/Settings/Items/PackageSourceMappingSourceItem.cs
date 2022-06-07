@@ -31,7 +31,7 @@ namespace NuGet.Configuration
         /// </summary>
         public virtual string Key => Attributes[ConfigurationConstants.KeyAttribute];
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = IReadOnlyCollectionUtility.Create(ConfigurationConstants.KeyAttribute);
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>(new[] { ConfigurationConstants.KeyAttribute });
 
         protected void SetKey(string value)
         {
