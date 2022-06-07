@@ -152,7 +152,8 @@ namespace NuGet.ProjectModel
             PackageSpec spec,
             IList<LibraryDependency> list,
             string packageId,
-            VersionRange range)
+            VersionRange range,
+            bool CPMEnabled)
         {
 
             var dependencies = list.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId)).ToList();
