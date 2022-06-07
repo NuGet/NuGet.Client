@@ -89,41 +89,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Throws<ArgumentNullException>(() => GetPackageReferenceUtility.MergeTransitiveOrigin(It.IsAny<PackageReference>(), null));
         }
 
-        [Fact]
-        public void MergeTransitiveOrigin_WithNullTransitiveEntryList_ReturnsEmpty()
-        {
-            // Arrange
-            var fwRidNetCore = new FrameworkRuntimePair(NuGetFramework.Parse("net6.0"), string.Empty);
-            var fwRidNetFx = new FrameworkRuntimePair(NuGetFramework.Parse("net472"), string.Empty);
-            var pr = new PackageReference(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), fwRidNetCore.Framework);
-            var transitiveEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
-            {
-                [fwRidNetCore] = new List<PackageReference>()
-                {
-                    new PackageReference(new PackageIdentity("package2", new NuGetVersion("0.0.1")), fwRidNetCore.Framework),
-                    new PackageReference(new PackageIdentity("package1", new NuGetVersion("0.0.1")), fwRidNetCore.Framework),
-                    null,
-                },
-                [fwRidNetFx] = new List<PackageReference>()
-                {
-                    null,
-                    new PackageReference(new PackageIdentity("package3", new NuGetVersion("0.0.1")), fwRidNetFx.Framework),
-                    new PackageReference(new PackageIdentity("package1", new NuGetVersion("0.0.2")), fwRidNetFx.Framework),
-                    null,
-                },
-            };
-
-            // Act
-            TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
-
-            // Assert
-            // Target framework does not matter because PM UI doesn't support multi-targeting
-            Assert.Collection(transitivePackageReference.TransitiveOrigins,
-                item => Assert.Equal(CreatePackageIdentity("package1", "0.0.2"), item.PackageIdentity), // highest version found
-                item => Assert.Equal(CreatePackageIdentity("package2", "0.0.1"), item.PackageIdentity),
-                item => Assert.Equal(CreatePackageIdentity("package3", "0.0.1"), item.PackageIdentity));
-        }
-
         [Theory]
         [InlineData("a", "1.0", "b", "1.0")]
         [InlineData("a", "1.0", "b", null)]
@@ -184,39 +149,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return new PackageIdentity(id, ver);
         }
 
-        public static IEnumerable<object[]> GetDataWithNulls()
-        {
-            // return list and expectedResultcount
-            yield return new object[]
-            {
-                new List<PackageReference>() { null, null },
-                0,
-            };
-
-            yield return new object[]
-            {
-                new List<PackageReference>()
-                {
-                    null,
-                    new PackageReference(new PackageIdentity("package1", new NuGetVersion("0.0.1")), NuGetFramework.Parse("net6.0")),
-                    null,
-                },
-                1,
-            };
-
-            yield return new object[]
-            {
-                new List<PackageReference>(),
-                0,
-            };
-
-            yield return new object[]
-            {
-                null,
-                0,
-            };
-        }
-
         [Fact]
         public void MergeTransitiveOrigin_WithNullTransitiveEntryList_ReturnsEmpty()
         {
@@ -245,23 +177,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             TransitivePackageReference transitivePackageReference = GetPackageReferenceUtility.MergeTransitiveOrigin(pr, transitiveEntry);
 
             // Assert
-            // Target framework does not matter because PM UI doesn't support multitargeting
+            // Target framework does not matter because PM UI doesn't support multi-targeting
             Assert.Collection(transitivePackageReference.TransitiveOrigins,
                 item => Assert.Equal(CreatePackageIdentity("package1", "0.0.2"), item.PackageIdentity), // highest version found
                 item => Assert.Equal(CreatePackageIdentity("package2", "0.0.1"), item.PackageIdentity),
                 item => Assert.Equal(CreatePackageIdentity("package3", "0.0.1"), item.PackageIdentity));
         }
-
-        private static PackageReference CreatePackageReference(string id, string version, string framework)
-        {
-            return new PackageReference(CreatePackageIdentity(id, version), NuGetFramework.Parse(framework));
-        }
-
-        private static PackageIdentity CreatePackageIdentity(string id, string version)
-        {
-            return new PackageIdentity(id, NuGetVersion.Parse(version));
-        }
-
         public static IEnumerable<object[]> GetDataWithNulls()
         {
             // return list and expectedResultcount
