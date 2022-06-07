@@ -160,6 +160,14 @@ steps:
   inputs:
     TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
+- task: MicroBuildCodesignVerify@3
+  displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
+  inputs:
+    TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(VsixPublishDir)'
+    ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+    ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
+
 - task: PublishPipelineArtifact@1
   displayName: "Publish nupkgs"
   inputs:
