@@ -18,7 +18,27 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 {
     internal static class GetPackageReferenceUtility
     {
-        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
+        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create(ComparePackageReferenceByIdentity);
+
+        internal static int ComparePackageReferenceByIdentity(PackageReference a, PackageReference b)
+        {
+            if (a?.PackageIdentity == null && b?.PackageIdentity == null)
+            {
+                return 0;
+            }
+
+            if (a?.PackageIdentity != null && b?.PackageIdentity == null)
+            {
+                return 1;
+            }
+
+            if (a?.PackageIdentity == null && b?.PackageIdentity != null)
+            {
+                return -1;
+            }
+
+            return a.PackageIdentity.CompareTo(b.PackageIdentity);
+        }
 
         /// <summary>
         /// Compares the project and the assets files returning the installed package.
