@@ -145,7 +145,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .TargetFrameworks
                 .SelectMany(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First())
+                .Select(g => g.OrderBy(p => p.TargetFramework, NuGetFrameworkSorter.Instance).First())
                 .ToList();
 
             // get transitive packages
@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .TargetFrameworks
                 .SelectMany(f => ResolvedTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First());
+                .Select(g => g.OrderBy(p => p.TargetFramework, NuGetFrameworkSorter.Instance).First());
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;

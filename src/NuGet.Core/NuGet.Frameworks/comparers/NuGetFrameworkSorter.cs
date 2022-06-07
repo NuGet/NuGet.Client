@@ -13,6 +13,8 @@ namespace NuGet.Frameworks
     /// </summary>
     public class NuGetFrameworkSorter : IComparer<NuGetFramework>
     {
+        public static readonly NuGetFrameworkSorter Instance = new();
+
         public NuGetFrameworkSorter()
         {
         }

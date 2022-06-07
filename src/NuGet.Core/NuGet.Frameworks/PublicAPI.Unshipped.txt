@@ -1,1 +1,2 @@
 NuGet.Frameworks.FrameworkException.FrameworkException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+static readonly NuGet.Frameworks.NuGetFrameworkSorter.Instance -> NuGet.Frameworks.NuGetFrameworkSorter

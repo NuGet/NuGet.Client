@@ -225,7 +225,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                     // unique packageId per project
                     .GroupBy(tr => tr.PackageIdentity.Id)
                     // highest version found
-                    .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).First())
+                    .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).ThenByDescending(pr => pr.TargetFramework, NuGetFrameworkSorter.Instance).First())
                     .ToList();
             }
             else
