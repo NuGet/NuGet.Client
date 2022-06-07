@@ -216,9 +216,10 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("http://source.test", true)]
-        [InlineData("https://source.test", false)]
-        public void SourcesList_WithDefaultFormat_UsesDetailedFormat(string source, bool shouldWarn)
+        [InlineData("http://source.test", "http://source.test.2", true, "WARNING: You are running the 'list source' operation with 'HTTP' source")]
+        [InlineData("https://source.test", "http://source.test.2", true, "WARNING: You are running the 'list source' operation with an 'HTTP' source")]
+        [InlineData("https://source.test", "https://source.test.2", false, "WARNING")]
+        public void SourcesList_WithDefaultFormat_UsesDetailedFormat(string source, string secondSource, bool shouldWarn, string warningMessage)
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
@@ -233,8 +234,9 @@ namespace NuGet.CommandLine.Test
 <configuration>
   <packageSources>
     <add key=""test_source"" value=""{0}"" />
+    <add key=""test_source_2"" value=""{1}"" />
   </packageSources>
-</configuration>", source));
+</configuration>", source, secondSource));
 
                 var args = new string[] {
                     "sources",
@@ -255,7 +257,7 @@ namespace NuGet.CommandLine.Test
 
                 // test to ensure detailed format is the default
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
-                Assert.Equal(shouldWarn, result.Output.Contains("WARNING: You are running the 'list source' operation with 'HTTP' source"));
+                Assert.Equal(shouldWarn, result.Output.Contains(warningMessage));
             }
         }
 

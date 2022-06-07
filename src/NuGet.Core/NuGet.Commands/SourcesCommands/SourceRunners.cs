@@ -213,7 +213,7 @@ namespace NuGet.Commands
                     getLogger().LogWarning(
                     string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage,
-                        "list package",
+                        "list source",
                         httpPackageSources[0]));
                 }
                 else

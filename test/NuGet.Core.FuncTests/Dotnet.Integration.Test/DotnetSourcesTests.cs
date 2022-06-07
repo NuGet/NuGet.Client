@@ -202,9 +202,10 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("http://source.test", true)]
-        [InlineData("https://source.test", false)]
-        public void Sources_WarnWhenListHttpSource(string initialSource, bool shouldWarn)
+        [InlineData("http://source.test", "http://source.test.2", true, "warn : You are running the 'list source' operation with 'HTTP' source")]
+        [InlineData("https://source.test", "http://source.test.2", true, "warn : You are running the 'list source' operation with an 'HTTP' source")]
+        [InlineData("https://source.test", "https://source.test.2", false, "warn")]
+        public void Sources_WarnWhenListHttpSource(string initialSource, string secondSource, bool shouldWarn, string warningMessage)
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
@@ -216,8 +217,9 @@ namespace Dotnet.Integration.Test
 <configuration>
   <packageSources>
     <add key=""test_source"" value=""{0}"" />
+    <add key=""test_source_2"" value=""{1}"" />
   </packageSources>
-</configuration>", initialSource);
+</configuration>", initialSource, secondSource);
                 CreateXmlFile(configFilePath, nugetConfig);
 
                 // Arrange
@@ -234,20 +236,12 @@ namespace Dotnet.Integration.Test
                     configFileName,
                     null);
 
-                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
-                var sources = packageSourceProvider.LoadPackageSources().ToList();
-                Assert.Single(sources);
-
-                PackageSource source = sources.Single();
-                Assert.Equal("test_source", source.Name);
-                Assert.Equal(initialSource, source.Source);
-
                 // Act
                 CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.Success, result.Output + " " + result.Errors);
-                Assert.Equal(shouldWarn, result.Output.Contains("warn : You are running the 'list source' operation with 'HTTP' source"));
+                Assert.Equal(shouldWarn, result.Output.Contains(warningMessage));
             }
         }
 
