@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft;
 using Microsoft.VisualStudio.Services.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -12,8 +13,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
-using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
-
 
 namespace NuGet.PackageManagement.VisualStudio.Utility
 {
@@ -175,7 +174,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             return null;
         }
 
-        internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
+        internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, IDictionary<FrameworkRuntimePair, IList<PackageReference>> transitiveEntry)
         {
             if (currentPackage == null)
             {
@@ -187,7 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             }
 
             var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
-            transitiveEntry?.Keys?.ForEach(fwRuntimePair =>
+            transitiveEntry.Keys?.ForEach(fwRuntimePair =>
             {
                 if (fwRuntimePair != null)
                 {
@@ -205,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                 }
             });
 
-            List<PackageReference> merged;
+            IEnumerable<PackageReference> merged;
             if (transitiveOrigins.Any())
             {
                 merged = transitiveOrigins
@@ -217,7 +216,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             }
             else
             {
-                merged = new();
+                merged = Enumerable.Empty<PackageReference>();
             }
 
             var transitivePR = new TransitivePackageReference(currentPackage)

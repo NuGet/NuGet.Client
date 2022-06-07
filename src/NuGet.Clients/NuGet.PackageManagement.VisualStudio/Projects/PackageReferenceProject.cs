@@ -20,7 +20,6 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio.Internal.Contracts;
-using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -34,14 +33,13 @@ namespace NuGet.PackageManagement.VisualStudio
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>, new()
     {
         private static readonly NuGetFrameworkSorter FrameworkSorter = new();
-        private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
         private readonly protected string _projectFullPath;
 
         // Cache
-        private protected Dictionary<string, TransitiveEntry> TransitiveOriginsCache { get; set; }
+        private protected readonly Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>> TransitiveOriginsCache = new();
         protected T InstalledPackages { get; set; }
         protected T TransitivePackages { get; set; }
 
