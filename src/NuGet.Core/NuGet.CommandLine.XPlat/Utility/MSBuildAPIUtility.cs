@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -158,18 +159,6 @@ namespace NuGet.CommandLine.XPlat
             return directoryPackagesPropsPath;
         }
 
-        private bool OnboardedToCPM(Project project)
-        {
-            string directoryPackagesPropsPath = GetPropsPath(project);
-            if (directoryPackagesPropsPath == "")
-            {
-                return true;
-            } else
-            {
-                return false;
-            }
-        }
-
         private ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
         {
             string directoryPackagesPropsPath = GetPropsPath(project);
@@ -183,7 +172,8 @@ namespace NuGet.CommandLine.XPlat
             string framework = null)
         {
 
-            if (OnboardedToCPM(project)) {
+            if (libraryDependency.VersionCentrallyManaged)
+            {
                 // TODO: can we integrate GetItemGroups() here?
 
                 // If onboarded to CPM onboarded get the directoryBuildPropsRootElement

@@ -101,6 +101,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
+            Console.Write(originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled);
 
             // 2. Determine the version
 
@@ -276,6 +277,9 @@ namespace NuGet.CommandLine.XPlat
             // update default packages path if user specified custom package directory
             var packagesPath = project.RestoreMetadata.PackagesPath;
 
+            // get if the project is onboarded to CPM
+            var CPMEnabled = project.RestoreMetadata.CentralPackageVersionsEnabled;
+
             if (!string.IsNullOrEmpty(packageReferenceArgs.PackageDirectory))
             {
                 packagesPath = packageReferenceArgs.PackageDirectory;
@@ -314,6 +318,7 @@ namespace NuGet.CommandLine.XPlat
                     if (dependency != null)
                     {
                         dependency.LibraryRange.VersionRange = version;
+                        dependency.VersionCentrallyManaged = CPMEnabled;
                         return dependency;
                     }
                 }
@@ -324,7 +329,8 @@ namespace NuGet.CommandLine.XPlat
                 LibraryRange = new LibraryRange(
                     name: packageReferenceArgs.PackageId,
                     versionRange: version,
-                    typeConstraint: LibraryDependencyTarget.Package)
+                    typeConstraint: LibraryDependencyTarget.Package),
+                VersionCentrallyManaged = CPMEnabled
             };
         }
 
