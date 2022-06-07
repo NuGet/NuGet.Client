@@ -13,7 +13,7 @@ namespace NuGet.Configuration
         public override string ElementName => ConfigurationConstants.Author;
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
-            = IReadOnlyCollectionUtility.Create<string>(ConfigurationConstants.NameAttribute);
+            = new HashSet<string>(new[] { ConfigurationConstants.NameAttribute });
 
         public AuthorItem(string name, params CertificateItem[] certificates)
             : base(name, certificates)

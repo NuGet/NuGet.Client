@@ -18,7 +18,7 @@ namespace NuGet.Configuration
         public string Pattern => Attributes[ConfigurationConstants.PatternAttribute];
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
-                = IReadOnlyCollectionUtility.Create(ConfigurationConstants.PatternAttribute);
+                = new HashSet<string>(new[] { ConfigurationConstants.PatternAttribute });
 
         public PackagePatternItem(string pattern)
             : base()

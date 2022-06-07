@@ -26,11 +26,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
         {
             new byte[] { (byte)DerSequenceReader.DerTag.Null },
             new byte[] { 0 },
-#if NET45
-            new byte[0],
-#else
             Array.Empty<byte>(),
-#endif
         };
 
         private static byte[] EncodeLength(int length)
